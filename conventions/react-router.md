@@ -62,10 +62,11 @@ routes + auto-splitting for full build control.
 
 ## Idiomatic Patterns
 
-> ⚠ **Code samples below are data-mode-era** (`createBrowserRouter`/`router.tsx`) and predate the framework-mode
-> switch above. The *principles* still hold — socket provider above the router, Canvas in a layout that never
-> remounts, router owns location-not-game-state — but the boilerplate will be replaced with framework-mode
-> equivalents (`app/root.tsx`, `app/routes.ts`, Route Modules) during scaffold.
+> ⚠ **Code samples below are data-mode-era and illustrative only.** The client was scaffolded in **framework
+> mode** — the real boilerplate lives in **`apps/client/`** (`app/root.tsx`, `app/routes.ts`,
+> `react-router.config.ts` with `ssr:false`, `vite.config.ts`). The *principles* below still hold (socket
+> provider above the router, Canvas in a layout that never remounts, router owns location-not-game-state); the
+> `createBrowserRouter`/`router.tsx` snippets do **not** reflect our setup — read `apps/client/` for that.
 
 **Router setup — socket provider wraps the router, canvas does not remount:**
 

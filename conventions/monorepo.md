@@ -10,6 +10,16 @@
 
 ---
 
+> **As-built reconciliation (2026-08-06).** The scaffold follows this doc's core decisions (3 packages, compiled
+> `shared`, catalog pins, project references, no Turborepo) with these deviations — **treat these as authoritative
+> over the illustrative excerpts below**:
+> - **Package scope is `@slur/*`** (examples below say `@game/*`).
+> - **Lint/format = Biome + ls-lint**, not ESLint. No `eslint.config.js`; root scripts are `biome check .` / `ls-lint`.
+> - **Client = React Router 8 _framework mode_ SPA** (`@react-router/dev`, `react-router dev/build`), not the plain-Vite client in the excerpt.
+> - **0.17 client SDK is `@colyseus/sdk`** (deferred), NOT `colyseus.js` — the version line above and client excerpt below are wrong on this; `colyseus.js` is frozen at 0.16.
+> - **Server transport:** `@colyseus/core` + `@colyseus/ws-transport` + `express` (ws-transport's optional peer), not the `colyseus` meta-package — pnpm blocks its git-based uWebSockets subdep.
+> - **pnpm gates:** `allowBuilds: [esbuild, msgpackr-extract]`; `packageManager` = installed `pnpm@11.12.0`.
+
 ## TL;DR — the rules that matter most
 
 1. **Two apps, one shared package. Start there.** `apps/client`, `apps/server`, `packages/shared`. Do **not**
