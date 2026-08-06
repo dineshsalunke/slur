@@ -94,5 +94,5 @@ Scaffolded and verified 2026-08-06 (**runnable blank skeletons, no game logic ye
 ## Working method
 
 - **Design docs are living.** Each carries `OPEN QUESTIONS`; resolve with the team, fold the decision in, delete the question. Don't silently diverge from the docs — update them.
-- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill; phase notes in `.claude/phases/<date>-<topic>.md`. **Status: setup complete** (design + research + monorepo scaffold done & verified — see `.claude/phases/2026-08-06-setup.md`). **Next: `/implement`** — shared `simulate()` + schema, then a movement prototype.
+- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; **reviewed code is documented in the phase doc as reference, NOT written to source until Implement**. Phase notes in `.claude/phases/`. **Status: S1 (flight feel) PREP COMPLETE** — full reviewed spec in `.claude/phases/2026-08-06-s1-flight-feel.md`; **next = Implement S1** (build `@slur/shared` sim + client `app/game/` from the reference, then human-gate playtest). Roadmap S1–S7 in `.claude/backlog.md`.
 - **Batch related file changes** into one review turn.

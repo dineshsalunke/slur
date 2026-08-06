@@ -60,6 +60,8 @@ React Router (SPA)
 ## 4. Simulation model
 
 - **One shared `simulate(state, input, dt)` module** in `@slur/shared`, imported by BOTH server (authority) and client (prediction). Divergent sim code = misprediction; a single module is the fix (see `netcode.md`).
+- **Integration: semi-implicit Euler** over a plain framework-free `SimShip` shape — the S2 `PlayerState` schema declares the same fields, so a Schema instance structurally satisfies it → identical sim server-side, zero rework. Kinematic control (no physics engine). `stepShip` is split into pure phase-mutators; `resolveCollisions` is the seam S3 swaps for real track collision.
+- **Client = two loops:** fixed-60 physics accumulator + render on rAF/display-refresh (not pinnable to 60), bridged by **interpolation** (`advance()` returns `alpha`; render lerps prev→curr into `Object3D` refs via koota — no per-frame React re-render). Same accumulator the server uses. Cameras: rubberband chase now; **rearview mirror** (2nd render pass) is an S5 requirement.
 - **Fixed timestep 60 Hz** (accumulator loop) on server via `setSimulationInterval`; **`patchRate` ~20 Hz** to clients (decoupled from sim rate).
 - Client renders at display rate (60+), **interpolating** (~50–100 ms delay; linear pos / slerp rot) between authoritative snapshots for remote ships.
 - **Local player:** client-side prediction from local input + **server reconciliation** (`lastProcessedInput` seq). On LAN this can start interpolate-only and add prediction if felt needed — see `netcode.md` "Pragmatic Baseline for LAN".

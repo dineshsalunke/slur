@@ -90,6 +90,7 @@ function Ship({ entity }: { entity: Entity }) {
 - **Emissive without `toneMapped={false}`** — WHY: tone mapping clamps color to [0,1], so bloom's luminance threshold never triggers and neon looks flat. Values must exceed 1.0.
 - **`<SelectiveBloom>` by default** — WHY: requires wiring `lights` + `selection` refs and an extra layer/render; for a scene where *everything* glowing should bloom (synthwave), a single global `<Bloom>` keyed on HDR luminance is simpler and faster. Reach for selective only to exclude specific bright-but-non-glowing surfaces.
 - **Deep React trees driven by ECS data via props** — WHY: prop changes re-render subtrees. Bridge through refs/imperative sync, not prop drilling of positions.
+- **Subscribing to a store/query in a high-level component that wraps siblings** — WHY: a change re-renders the whole subtree (all siblings), causing frame stutters. **Colocate every subscription at the leaf that consumes it:** each archetype view owns its own `useQuery` (re-renders only on *its* spawn/despawn); the root/canvas holds *zero* reactive subscriptions (only `useWorld()` context + `useFrame`). Per-frame values are never a subscription — mutate refs in a local `useFrame`. Purely cosmetic pooled objects (side-scenery, particles) should be **fully imperative** (a local `useFrame` mutating the `InstancedMesh` matrices, no subscription at all).
 - **Bumping `three` past 0.185** — WHY: breaks the `postprocessing@6.39.4` peer range (`< 0.186`).
 
 ## Gotchas / Footguns

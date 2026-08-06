@@ -67,7 +67,7 @@ Survival reuses the same systems. *Confirm this ordering (see §10).*
 - **Lateral: smooth analog strafe** with a generous clamp (flying feel). *Fallback:* discrete 3–5 lanes if playtest shows analog is too twitchy on keyboard.
 - **Jump: controlled & expressive** — tap = small hop, **hold = higher jump** (variable height), plus a **double jump**. For crossing gaps, clearing obstacles, and air-dodges (SkyRoads).
 - **Boost:** momentary overdrive *above* cruise max; drains energy, cooldown. Distinct from normal throttle — no permaboost.
-- **Fuel / energy** (SkyRoads pressure): boosting and firing drain it; pickups and clean flying refill it. *OPEN: full fuel-pressure system, or energy only gates boost/fire? Prototype behind a flag.*
+- **Fuel / energy** (SkyRoads pressure): boosting and firing drain it; pickups and clean flying refill it. *S1 decision: **energy gates boost only** (drain while boosting, regen otherwise); full fuel-pressure (firing/altitude drain) revisited in a later slice.*
 
 > **Forward-pressure (resolved, see §4):** Race mode self-pressures via the finish line (+ optional timer).
 > Survival mode uses a **chasing derezz-wall + distance/time scoring** — camp and the wall catches you.
