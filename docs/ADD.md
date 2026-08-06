@@ -43,9 +43,13 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 - **Trails:** each ship leaves a fading light-trail in its hue (identity + speed read).
 - VFX are **client-local** (not networked) — driven by ECS/game events. See TDD §5.
 
-## 6. Camera
-- Chase cam behind the player ship, low and close for speed; slight look-ahead into turns; kick-back on boost.
-- Spectators: follow-cam on the pack / cycle players.
+## 6. Camera — **third-person chase** (decided)
+- Chase cam behind + slightly above the ship, low and close for speed. First-person is rejected: it hides your ship's hue/trail (your **identity** signal) and worsens dodge awareness.
+- **Aim at a look-ahead point** *ahead* of the ship (not the ship itself) so you read incoming track early.
+- **Speed cues:** FOV widens + camera pulls back on boost; subtle bank into strafes; light shake at high speed.
+- **On hit/stun: spin the *ship*, keep the *camera* stable** — disrupt without disorienting (fair, not nauseating).
+- **Comfort options (day one):** sliders to dampen shake / FOV-kick / chromatic aberration — cheap motion-sickness insurance.
+- **Death:** TRON derezz, then **spectator** follow-cam on the pack / cycle players.
 
 ## 7. UI / HUD — **LCARS-flavored**
 - **LCARS as the interface language:** curved-corner black panels, warm amber/purple/blue color blocks, confident sans type, "computer" chrome — applied to lobby/host/join and the in-game HUD. Star Trek gives us a ready-made, instantly-readable, *fun* UI kit that reads as "spaceship cockpit."

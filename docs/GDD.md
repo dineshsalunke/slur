@@ -5,8 +5,11 @@
 ## 1. Vision statement
 
 A fast, neon, drop-in-anytime ship racer you launch on the office LAN and play in a 5-minute burst.
-Fly a ship down an endless procedural track, grab power-ups, and mess with your colleagues — dodge,
-boost, shoot, shield. Easy to join, hard to master, funny to lose.
+Fly a ship down a track — a finite course to a **finish line**, or an **endless survival run** — grab
+power-ups, and **mess with your friends**: dodge, boost, shoot, shield. Easy to join, hard to master, funny to lose.
+
+> **North star:** this is a **casual party game between colleagues**. The point is *messing with each other*,
+> not competitive balance. When a design call is close, bias toward **fun chaos over fairness**.
 
 **Pillars** (every feature must serve at least one):
 1. **Instant** — from "host launches" to "I'm flying" in seconds. Zero setup, zero accounts.
@@ -35,28 +38,44 @@ Host launches game ──► Host starts a RUN ──► Players join the LIVE r
 - **Join mid-run:** new player spawns adjacent to the current pack (not at the origin) and is immediately alive.
 - **No lobby gate:** you can be watching and then jump in without stopping anyone.
 
-## 4. Match structure — **OPEN, needs a decision**
+## 4. Game modes
 
-The core tension: it's an *endless* runner but also *competitive PvP*. Endless + competitive need a win condition. Candidates:
+Two modes share the same flight + combat + power-up core. Given the north star, win conditions exist to give
+a round *shape*, not to be fair — pickups and combat are **sabotage tools** to mess with each other.
 
-| Model | Win condition | Pros | Cons |
-|-------|---------------|------|------|
-| **A. Last ship flying** | Survive; others die to track/combat | Clean PvP, natural tension, matches "chaotic" pillar | Eliminated players wait (mitigate: fast respawn or spectate+heckle) |
-| **B. Furthest distance / score** | Highest distance when timer/first-death ends | Everyone plays till the end, endless-native | Combat feels less decisive |
-| **C. Lap/checkpoint race** | First to N checkpoints | Blur-like, clear winner | Not really "endless"; needs track goals |
-| **D. Rounds of A** | Best-of-N short survival rounds | Re-entry is fast, keeps everyone in | More session state |
+**A. Race (finite track) — recommended for v1.** A course with a start and a **finish line**; first across
+wins. Natural round end, obvious goal, trivially re-runnable, clear winner, no "endless balancing" to solve.
+(Blur.) *Optional round timer as a backstop.*
 
-**Recommendation:** start with **A (last ship flying) in short rounds (D)** — fast death → fast respawn into next round, no one waits long, PvP stays decisive. Revisit after first playtest.
+**B. Survival (endless) — fast-follow.** Procedural endless track; a **chasing derezz-wall** sweeps forward
+behind the pack (camp = caught) with **distance/time as score**. Furthest/last-flying wins. (cuberun + our
+chase mechanic.) This is the home of the §5.1 forward-pressure mechanism.
+
+**Forward pressure (resolved):** Race self-pressures via the finish line (+ optional timer). Survival uses the
+**chase-wall + distance/time** combo (your "1 & 3"). Both deliberately **light-touch** — casual, not punishing.
+
+**v1 scope:** build **Race** first — it's the shortest path to a complete, fun, self-contained session;
+Survival reuses the same systems. *Confirm this ordering (see §10).*
+
+**Re-entry:** rounds are short; death → quick respawn (Race) or spectate-until-next (either). No one sits out long.
 
 ## 5. Mechanics
 
-### 5.1 Movement
-- Auto-forward at an escalating base speed (cuberun). Player controls **lateral** movement + **vertical** (jump/hop, SkyRoads) + **boost**.
-- Track is **lane-ish** but analog (smooth lateral), with gaps/ramps/walls as hazards.
-- **Fuel / energy** (SkyRoads pressure): boosting and firing drain it; pickups and clean flying refill it. *OPEN: is fuel fun or fiddly on LAN? Prototype behind a flag.*
+### 5.1 Movement — **constrained flight, player-controlled speed** (decided)
+- **Model: constrained**, not free 6DOF. Lateral is **strafe, never turning**; pitch/yaw/roll are **cosmetic banking**, never control axes. Chosen for readability, low motion-sickness, party accessibility, and simpler deterministic netcode. (Closer to SkyRoads than cuberun.)
+- **Player-controlled speed** (changed from auto-forward): **throttle** to accelerate up to a cruise max, **brake** to decelerate (no reverse). Speed control adds depth — brake to thread a hazard, feather speed in a dogfight, dive a straight.
+- **Lateral: smooth analog strafe** with a generous clamp (flying feel). *Fallback:* discrete 3–5 lanes if playtest shows analog is too twitchy on keyboard.
+- **Jump: controlled & expressive** — tap = small hop, **hold = higher jump** (variable height), plus a **double jump**. For crossing gaps, clearing obstacles, and air-dodges (SkyRoads).
+- **Boost:** momentary overdrive *above* cruise max; drains energy, cooldown. Distinct from normal throttle — no permaboost.
+- **Fuel / energy** (SkyRoads pressure): boosting and firing drain it; pickups and clean flying refill it. *OPEN: full fuel-pressure system, or energy only gates boost/fire? Prototype behind a flag.*
+
+> **Forward-pressure (resolved, see §4):** Race mode self-pressures via the finish line (+ optional timer).
+> Survival mode uses a **chasing derezz-wall + distance/time scoring** — camp and the wall catches you.
+> Both light-touch, in keeping with the casual north star.
 
 ### 5.2 Track & hazards
 - Procedurally generated, seeded so **all clients share the same track** (server sends seed). Deterministic generation from seed = no per-tile sync.
+- **Two track forms:** *finite* seeded **courses with a finish line** (Race), and *endless* procedural runs (Survival). Both deterministic from seed; a finite course is just an endless generator with a defined length + finish gate.
 - Hazard vocabulary: gaps (fall = death/respawn), walls (dodge), narrowings, ramps/jumps, moving obstacles, speed gates.
 - Difficulty ramps with distance (speed ↑, hazard density ↑).
 
@@ -99,6 +118,10 @@ scales with armour (tanks can't thread gaps), (b) armour resists *combat* disrup
 gap, (c) speed/handling classes dodge the track that kills the tanks. Roster is extensible — add classes only
 when they occupy a genuinely new corner of the triangle, not just re-skins.
 
+**v1 scope: ship 3 classes** — **Fighter** (balanced/agile), **Freighter** (tank, large hitbox), **Interceptor**
+(pure speed, fragile). This trio spans the speed↔armour axis with maximum felt difference for minimum balancing.
+**Gunship** and **Scout** are a later wave.
+
 *OPEN: exact stat values (tune in playtest), whether class is locked per-round or swappable on respawn, and
 whether any class gets a unique active ability vs stats-only.*
 
@@ -110,10 +133,24 @@ whether any class gets a unique active ability vs stats-only.*
 ## 7. Progression / meta — **out of scope for v1**
 No unlocks, no persistence. Every session is fresh. (Revisit only if it has legs.)
 
-## 8. Controls (draft)
-Keyboard-first (office laptops). Gamepad = nice-to-have later.
-- Steer: A/D or ←/→ · Vertical/jump: W / Space · Boost: Shift · Use power-up: E / LMB · (Aim-back for mine: auto)
-*OPEN: full mapping after movement prototype.*
+## 8. Controls (constrained model)
+Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live multiplayer).
+
+| Action | Key | Notes |
+|--------|-----|-------|
+| Throttle / accelerate | W or ↑ | Hold to speed up toward cruise max |
+| Brake / slow | S or ↓ | Hold to decelerate (no reverse) |
+| Strafe left/right | A / D or ← / → | Lateral, **not turning**; smooth analog (lanes fallback) |
+| Jump | Space | Tap = small hop · hold = higher · double-tap = double jump |
+| Boost | Shift (hold) | Overdrive above cruise max; drains energy; cooldown |
+| Use power-up | E or LMB | Uses held power-up |
+| Mute | M | Someone always needs to mute fast |
+| Leave run | Esc | No pause; leaving drops you to spectate/menu |
+
+- **Aiming:** offensive power-ups (Bolt) **auto-lock the nearest target in a forward cone** — combat is disruption, not precision, so no aim skill-wall. Mines drop behind automatically.
+- Chords needed simultaneously (strafe + boost + hop + fire) use common non-ghosting keys; verify on real laptops.
+
+*OPEN: rebind support, gamepad mapping — after movement prototype.*
 
 ## 9. Success criteria (for the side project)
 - A run of 6 people in the office produces genuine laughter.
@@ -121,7 +158,7 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later.
 - Nobody asks "how do I play?" after one round.
 
 ## 10. OPEN QUESTIONS (resolve with team)
-1. **Match model** — commit to §4 recommendation (rounds of last-ship-flying) or pick another?
+1. **v1 mode** — §4 lands two modes (Race / Survival). Confirm **Race-to-finish first** for v1, or start with Survival?
 2. **Fuel/energy** — keep the SkyRoads resource pressure, or cut for simplicity?
 3. **Death penalty** — respawn into same round, wait for next round, or spectate-only until round ends?
 4. **Power-up carry** — hold 1, hold 2, or slot + queue?
