@@ -1,0 +1,27 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Fail fast if a workspace dependency cycle is introduced (see monorepo.md, Gotchas §5).
+disallowWorkspaceCycles: true
+
+# Single source of version truth for third-party deps shared by more than one package.
+# Two copies of react / three / @colyseus/schema is a runtime failure, not a style nit.
+catalog:
+  '@colyseus/schema': ^4.0.30
+  react: ^19.2.8
+  react-dom: ^19.2.8
+  three: ^0.185.1 # caret on 0.x locks the minor → stays <0.186 (postprocessing peer)
+  typescript: ^7.0.2
+
+minimumReleaseAgeExclude:
+  - '@colyseus/core@0.17.47'
+  - tsx@4.23.9
+  - vite@8.2.1
+
+# Dependencies permitted to run install/build scripts (pnpm blocks the rest by default).
+# esbuild ships its binary via platform optional-deps; msgpackr-extract is an optional
+# native serialization accelerator used by Colyseus (JS fallback if it can't build).
+allowBuilds:
+  esbuild: true
+  msgpackr-extract: true

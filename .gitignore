@@ -13,6 +13,9 @@ out/
 .cache/
 .turbo/
 
+# React Router (framework mode) typegen output
+.react-router/
+
 # Env / secrets
 .env
 .env.*

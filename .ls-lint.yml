@@ -1,0 +1,17 @@
+ls:
+  apps/client/app:
+    .dir: kebab-case
+    .ts: kebab-case
+    .tsx: kebab-case
+  apps/server/src:
+    .dir: kebab-case
+    .ts: kebab-case
+  packages/shared/src:
+    .dir: kebab-case
+    .ts: kebab-case
+
+ignore:
+  - node_modules
+  - '**/dist'
+  - '**/build'
+  - '**/.react-router'

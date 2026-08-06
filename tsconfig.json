@@ -1,0 +1,5 @@
+{
+    "//": "Solution file for the TS/Node side (tsc -b). The client is framework-mode and typechecks via its own react-router typegen + tsc.",
+    "files": [],
+    "references": [ { "path": "./packages/shared" }, { "path": "./apps/server" } ]
+}

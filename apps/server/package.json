@@ -1,0 +1,22 @@
+{
+    "name": "@slur/server",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc -b",
+        "typecheck": "tsc -b",
+        "start": "node dist/index.js"
+    },
+    "dependencies": {
+        "@slur/shared": "workspace:*",
+        "@colyseus/core": "^0.17.47",
+        "@colyseus/ws-transport": "^0.17.13",
+        "express": "^5.2.1"
+    },
+    "devDependencies": {
+        "tsx": "^4.23.9",
+        "typescript": "catalog:"
+    }
+}
