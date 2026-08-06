@@ -10,43 +10,62 @@
 
 ## TL;DR — the rules that matter most
 
-1. Use **Data mode** (`createBrowserRouter` + `<RouterProvider>`), **not** framework mode, **not** plain `<BrowserRouter>`. No SSR, but you keep `route.lazy` code-splitting, layout routes, and `useBlocker` (the last two you need for a game).
+1. Use **Framework mode in SPA mode** (`ssr: false` in `react-router.config.ts`). Pure client SPA — static `build/client/`, any static host — with **typed routes**, **automatic code-splitting**, and the **Route Module API** (the colocated `routes/<name>/route.tsx` pattern). Not declarative (`<BrowserRouter>`), not plain data mode.
 2. **The R3F `<Canvas>` lives in a layout route and never unmounts across in-game navigations.** Route changes swap DOM overlays through `<Outlet/>`; the WebGL context is created once.
 3. **The Colyseus/WebSocket connection lives in a React context provider _above_ `<RouterProvider>`** — never in a `loader`. Loaders re-run on navigation/revalidation; a socket must not.
 4. **The router owns _location_, not _game state_.** URL = which screen (lobby / join / room). Real-time tick, score, positions come from Colyseus, never the URL or route state.
-5. **Guard the back button during a live match** with `useBlocker` (data-mode only) so a stray swipe/`Esc` doesn't nuke the match.
+5. **Guard the back button during a live match** with `useBlocker` (available in **framework & data** mode; ❌ declarative only) so a stray swipe/`Esc` doesn't nuke the match.
 6. Import from **`react-router`**. Not `react-router-dom`.
 
 ---
 
-## Mode Decision (why SPA/declarative for our game)
+## Mode Decision — **Framework mode, SPA (`ssr: false`)**
 
-React Router v8 ships **three modes**, same library, escalating capability:
+> **Correction (2026-08-06):** an earlier version of this doc recommended *data mode* and rejected framework
+> mode as "SSR we don't need." **That was wrong.** SPA is a *rendering strategy*, not a mode — framework mode
+> runs as a pure client SPA via `ssr: false`, and `useBlocker` is available in framework mode. Below is the
+> corrected decision.
 
-| Mode | Top-level API | Routing config | Data APIs | SSR/file-routing |
+React Router v8 ships **three modes**, same library, escalating capability. **SPA is orthogonal** — any mode
+can be client-only; framework mode chooses it with `ssr: false`.
+
+| Mode | Top-level API | Routing config | Data APIs | Rendering |
 |---|---|---|---|---|
-| **Declarative** | `<BrowserRouter>` + `<Routes>/<Route>` | JSX elements | none | no |
-| **Data** ← *our choice* | `createBrowserRouter([...])` + `<RouterProvider>` | route objects | loaders, actions, `lazy`, middleware, `useBlocker`, error boundaries | no (client-only) |
-| **Framework** | Vite plugin, file-based routes | filesystem convention | all of Data + type-gen | **yes (SSR/SSG/streaming)** |
+| **Declarative** | `<BrowserRouter>` + `<Routes>/<Route>` | JSX elements | none | client |
+| **Data** | `createBrowserRouter([...])` + `<RouterProvider>` | `RouteObject[]` | loaders, actions, `lazy`, middleware, `useBlocker` | client |
+| **Framework** ← *our choice (SPA)* | `@react-router/dev` Vite plugin | `routes.ts` + Route Modules | all of Data + **typed routes / `href`** | **SPA / SSR / SSG** — we use **SPA (`ssr:false`)** |
 
-**The Remix merge, briefly:** Remix folded into React Router. Remix's meta-framework (loaders/actions/SSR/file routing) became **framework mode**; the classic library became **declarative + data mode**. So "React Router" and "Remix" are now one product at different opt-in levels.
+**"Framework mode" ≠ "server-rendered."** With `ssr: false` in `react-router.config.ts`, framework mode
+pre-renders only the root shell at build time and emits a static `build/client/` you serve from any static
+host. Pure SPA, no server — ideal for LAN.
 
-### Why not framework mode
-Framework mode's whole value proposition is **server rendering, streaming, and server data loaders**. This is a **LAN, real-time, canvas-first SPA** — there is no server render step, no SEO surface, no first-paint-of-HTML story worth optimizing. Adopting framework mode would buy us a Vite plugin, a dev server convention, and type-gen we don't need, while adding a build/runtime shape (server entry, `.data` requests, hydration) that fights a WebGL app whose "content" is a live socket, not a document. Rejected.
+### Why framework mode (SPA)
+- **Route Modules + `routes.ts`** are exactly our colocated route-module structure (`routes/<name>/route.tsx` + colocated `components/`/`utils/`) — native, not hand-rolled.
+- **Automatic intelligent code-splitting** keeps the heavy Three.js/koota bundle off the lobby with zero manual `route.lazy` wiring.
+- **Typed routes / params / `href`** — real bug prevention.
+- `useBlocker` (✅ framework, ✅ data, ❌ declarative) guards the back-button mid-match.
+- SPA build = trivial static hosting; no hydration-of-live-data model to fight.
 
-### Why data mode over declarative
-Declarative (`<BrowserRouter>`) is the minimal option, but it **lacks `useBlocker`** (verified: declarative ❌, data ✅) — and back-button-during-match protection is a hard requirement for a multiplayer game. Data mode also gives config-as-data routing (easier to reason about and lazy-load) and first-class `route.lazy` for splitting the heavy Three.js bundle off the lobby route. We pay effectively nothing for it since we simply **don't define loaders/actions** where we don't want them.
+### The one real trade
+Framework mode's Vite plugin co-owns the build. For a standard Vite + React + R3F app this costs nothing (add
+Vite plugins as normal). If a later WebGPU/brometal shader spike needs exotic build steps, add a Vite plugin
+then — it's still Vite underneath. **Fallback:** if day-one total control of the Vite config were a hard
+requirement, **data mode** (`createBrowserRouter`, explicit `RouteObject[]`, manual `route.lazy`) trades typed
+routes + auto-splitting for full build control.
 
-### What we gain / lose vs framework mode
-- **Gain:** zero server, trivial static hosting, full control over bundling, no hydration model to fight, the socket and canvas live in plain React context.
-- **Lose:** SSR/SEO (don't care), file-based routing convention (we prefer an explicit route table anyway), automatic `href`/params type-gen (recoverable manually or via a small typed-paths helper).
-
-### `createBrowserRouter` vs `<BrowserRouter>`
-`<BrowserRouter>` reads route config from the JSX tree during render — config and UI are entangled, and the data/blocker APIs are unavailable. `createBrowserRouter` moves the route table **out of the render tree** into a plain data structure, which is what unlocks `lazy`, `middleware`, error boundaries, and `useBlocker`. Use `createBrowserRouter`.
+### SPA caveats (`ssr: false`)
+- Only the **root route** may have a build-time `loader`; other routes use **`clientLoader`/`clientAction`** at runtime (we barely use either — our data is the live Colyseus socket).
+- Initial render must be **SSR-safe** (no `window` at module top / first render) — the root shell pre-renders at build time.
+- Configure the static host to route all URLs → `index.html`.
 
 ---
 
 ## Idiomatic Patterns
+
+> ⚠ **Code samples below are data-mode-era** (`createBrowserRouter`/`router.tsx`) and predate the framework-mode
+> switch above. The *principles* still hold — socket provider above the router, Canvas in a layout that never
+> remounts, router owns location-not-game-state — but the boilerplate will be replaced with framework-mode
+> equivalents (`app/root.tsx`, `app/routes.ts`, Route Modules) during scaffold.
 
 **Router setup — socket provider wraps the router, canvas does not remount:**
 

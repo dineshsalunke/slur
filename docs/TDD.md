@@ -11,7 +11,7 @@
 | Server | **Colyseus 0.17.10** | Authoritative rooms, `@colyseus/schema` **4.0.30**. See `conventions/colyseus.md` |
 | Client SDK | **`@colyseus/sdk` 0.17.43** | NOT legacy `colyseus.js` (frozen at 0.16) |
 | Transport | WebSocket (Colyseus) | LAN = low latency; TCP HOL acceptable. See `conventions/netcode.md` |
-| Client routing | **React Router 8.3.0** (data mode, SPA) | No SSR; import from `react-router`. See `conventions/react-router.md` |
+| Client routing | **React Router 8.3.0** (framework mode, SPA `ssr:false`) | Static SPA, typed routes, auto code-split, Route Modules. Import from `react-router`. See `conventions/react-router.md` |
 | Rendering | **R3F 9.7.0** + drei 10.7.8 + postprocessing 3.0.4 | Neon/bloom. **Pin `three@0.185.x`** (postprocessing peer `<0.186`). See `conventions/r3f.md` |
 | Shaders (experimental) | **brometal** — later spike | TS→WGSL shader compiler for WebGPU (not a renderer); author custom track/trail shaders in TS, consume from R3F |
 | Simulation | **koota 0.6.6** (ECS) | Chosen over miniplex (frozen) / bitECS (overkill). See `conventions/ecs.md` |

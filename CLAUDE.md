@@ -22,7 +22,7 @@ need — do not bulk-load all six every session (wasteful). This rule replaces a
 | Touching… | Read first | Verified-this-session pins & gotchas |
 |-----------|-----------|--------------------------------------|
 | Server / rooms / state sync | `conventions/colyseus.md` | Colyseus **0.17.10**; client is **`@colyseus/sdk` 0.17.43** (NOT legacy `colyseus.js`); `@colyseus/schema` **4.0.30**; callbacks via `getStateCallbacks(room)` |
-| Client routing / app shell | `conventions/react-router.md` | React Router **8.3.0**, **data mode** (`createBrowserRouter`); import from `react-router` (no `react-router-dom`); ESM-only; `useBlocker` guards back-button mid-match |
+| Client routing / app shell | `conventions/react-router.md` | React Router **8.3.0**, **framework mode SPA** (`ssr:false`); Route Modules + `routes.ts`; import from `react-router` (no `react-router-dom`); ESM-only; `useBlocker` guards back-button mid-match |
 | Rendering / VFX / bloom | `conventions/r3f.md` | R3F **9.7.0**, drei **10.7.8**, postprocessing **3.0.4**; **pin `three@0.185.x`** (postprocessing peer `<0.186`); HDR emissive + single global `<Bloom>` |
 | Entities / systems / sim | `conventions/ecs.md` | **koota 0.6.6** (chosen over miniplex/bitECS); no-re-render bridge; `reconcile()` Colyseus→ECS |
 | Networking / prediction | `conventions/netcode.md` | Inputs-not-positions; shared 60Hz `simulate()`; `patchRate` 20Hz; server-authoritative hits |
@@ -37,7 +37,7 @@ See `conventions/README.md` for the index.
 | Layer | Choice |
 |-------|--------|
 | Server | Colyseus 0.17 (`@colyseus/schema` 4) |
-| Client routing | React Router 8 (data mode, SPA — no SSR) |
+| Client routing | React Router 8 (framework mode, SPA `ssr:false`) |
 | Rendering | React Three Fiber 9 + drei + postprocessing (three **0.185.x**) |
 | Simulation | **koota** ECS |
 | Repo | pnpm workspace monorepo (plain `pnpm -r`, no Turborepo yet) |
