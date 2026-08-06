@@ -1,6 +1,5 @@
 import { Server } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
-import { SHARED_PACKAGE } from '@slur/shared';
 
 const port = Number( process.env.PORT ?? 2567 );
 
@@ -13,7 +12,7 @@ const gameServer = new Server( { transport: new WebSocketTransport() } );
 gameServer
     .listen( port )
     .then( () => {
-        console.log( `[slur] server up on ws://localhost:${ port } (wired to ${ SHARED_PACKAGE })` );
+        console.log( `[slur] server up on ws://localhost:${ port }` );
     } )
     .catch( ( err: unknown ) => {
         console.error( '[slur] server failed to start', err );

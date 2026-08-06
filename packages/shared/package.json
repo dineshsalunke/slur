@@ -15,7 +15,8 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch --preserveWatchOutput",
-        "typecheck": "tsc -b"
+        "typecheck": "tsc -b",
+        "test": "tsc -b && node --test"
     },
     "dependencies": {
         "@colyseus/schema": "catalog:"
