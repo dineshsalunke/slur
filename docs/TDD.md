@@ -1,0 +1,123 @@
+# SLUR — Technical Design Document (TDD)
+
+> Status: **v0 (reconciled with research)**. Architecture sketch. Stack-specific idioms live in
+> `../conventions/*` — this doc references them rather than repeating them. Stack decisions below are final;
+> tuning/behaviour details remain open (see §10).
+
+## 1. Stack (decided — versions verified 2026-08-06, pinned via pnpm catalog)
+
+| Layer | Choice | Notes |
+|-------|--------|-------|
+| Server | **Colyseus 0.17.10** | Authoritative rooms, `@colyseus/schema` **4.0.30**. See `conventions/colyseus.md` |
+| Client SDK | **`@colyseus/sdk` 0.17.43** | NOT legacy `colyseus.js` (frozen at 0.16) |
+| Transport | WebSocket (Colyseus) | LAN = low latency; TCP HOL acceptable. See `conventions/netcode.md` |
+| Client routing | **React Router 8.3.0** (data mode, SPA) | No SSR; import from `react-router`. See `conventions/react-router.md` |
+| Rendering | **R3F 9.7.0** + drei 10.7.8 + postprocessing 3.0.4 | Neon/bloom. **Pin `three@0.185.x`** (postprocessing peer `<0.186`). See `conventions/r3f.md` |
+| Shaders (experimental) | **brometal** — later spike | TS→WGSL shader compiler for WebGPU (not a renderer); author custom track/trail shaders in TS, consume from R3F |
+| Simulation | **koota 0.6.6** (ECS) | Chosen over miniplex (frozen) / bitECS (overkill). See `conventions/ecs.md` |
+| Repo | **pnpm 11 monorepo** (`pnpm -r`, no Turborepo) | `apps/{client,server}` + `packages/shared`. See `conventions/monorepo.md` |
+| Build | Vite 8 (client) · tsx/Node ESM (server) · `tsc -b` (shared) | TS end-to-end, ESM everywhere |
+| Language | **TypeScript 7** (strict) | Shared types/schema via `@slur/shared` |
+
+## 2. Topology
+
+```
+                       ┌──────────────────────── LAN ────────────────────────┐
+                       │                                                      │
+   ┌───────────────┐   │   WebSocket (Colyseus)     ┌────────────────────┐    │
+   │  HOST client  │───┼──────────────────────────►│   Colyseus server  │    │
+   │ (also a peer) │   │                            │  ┌──────────────┐  │    │
+   └───────────────┘   │                            │  │   RunRoom    │  │    │
+   ┌───────────────┐   │                            │  │  authoritative│ │    │
+   │  PEER clients │───┼──────────────────────────►│  │  sim @ fixed  │  │    │
+   │   (2..12)     │◄──┼── state patches @ ~20Hz ───│  │  timestep     │  │    │
+   └───────────────┘   │                            │  └──────────────┘  │    │
+                       │                            └────────────────────┘    │
+                       └──────────────────────────────────────────────────────┘
+```
+
+- **Server owns truth:** positions, hits, pickups, deaths. Clients send **inputs**, not positions.
+- **Host** is just the client that created the room (has start/config authority at the *session* level). The **server** holds the *simulation* authority. Host ≠ server-trust.
+- Server may run on the host's machine or a dedicated box on the LAN. *OPEN: co-located on host, or standalone?*
+
+## 3. Client architecture
+
+```
+React Router (SPA)
+  └─ <AppLayout>                     persistent: Colyseus connection + <Canvas> live across routes
+       ├─ /            Landing / host-or-join
+       ├─ /host        Room config → start
+       ├─ /join        Discover/enter room
+       └─ /run         In-game (mounts game systems, NOT the Canvas — Canvas is in layout)
+```
+
+- **Persistent `<Canvas>` and socket in the layout**, not per-route — never remount the renderer on navigation (see `conventions/react-router.md`, `r3f.md`).
+- **Networked state → local ECS → R3F render.** The ECS is the bridge:
+  - Colyseus `onStateChange` / schema callbacks feed authoritative snapshots into the ECS.
+  - Systems interpolate/predict and mutate entity transforms.
+  - R3F reads entity transforms in `useFrame` via **refs/instancing — no per-frame React re-renders** (see `conventions/ecs.md`, `r3f.md`).
+
+## 4. Simulation model
+
+- **One shared `simulate(state, input, dt)` module** in `@slur/shared`, imported by BOTH server (authority) and client (prediction). Divergent sim code = misprediction; a single module is the fix (see `netcode.md`).
+- **Fixed timestep 60 Hz** (accumulator loop) on server via `setSimulationInterval`; **`patchRate` ~20 Hz** to clients (decoupled from sim rate).
+- Client renders at display rate (60+), **interpolating** (~50–100 ms delay; linear pos / slerp rot) between authoritative snapshots for remote ships.
+- **Local player:** client-side prediction from local input + **server reconciliation** (`lastProcessedInput` seq). On LAN this can start interpolate-only and add prediction if felt needed — see `netcode.md` "Pragmatic Baseline for LAN".
+- **Deterministic track:** server sends a **seed** (in room state); both ends generate identical geometry from it → never sync track tile-by-tile, only seed + progression params.
+- **Lag compensation deferred**, but server keeps a cheap per-ship position-history ring buffer so it's a drop-in later.
+
+## 5. Networked state (Colyseus Schema) — first cut ⏳
+
+```
+RunState (room state)
+  ├─ phase: 'lobby' | 'running' | 'results'
+  ├─ seed: number                       // deterministic track
+  ├─ tick: number
+  ├─ players: MapSchema<PlayerState>
+  └─ pickups: MapSchema<PickupState>    // spawned/consumed authoritatively
+
+PlayerState
+  ├─ id, name, color
+  ├─ pos {x,y,z}, vel, heading          // authoritative transform
+  ├─ status: 'alive'|'stunned'|'dead'|'spectating'
+  ├─ held: PowerUpType | null
+  └─ score / distance
+```
+Keep state **minimal** — sync only what clients can't derive. Effects/particles are client-local. (Anti-pattern: syncing render state. See `conventions/colyseus.md`.)
+
+## 6. Server systems (per fixed tick)
+1. Ingest queued player inputs (with input seq #).
+2. Integrate movement (authoritative), clamp to track.
+3. Spawn/despawn pickups; resolve pickups (collision vs pickup).
+4. Resolve power-up effects & **combat hit detection** (server-side).
+5. Resolve track collisions / deaths / respawns.
+6. Advance difficulty (speed/hazard density by distance).
+7. Emit patch.
+
+## 7. Shared code — `@slur/shared` (`packages/shared`)
+Client and server MUST share: `@colyseus/schema` definitions, the `simulate()` step, the deterministic track
+generator, pure game math, the **`ShipClass` stat table** (GDD §5.5), and power-up/enum constants. The
+**track generator + `simulate()` being shared and deterministic** is the linchpin that avoids syncing geometry
+and prevents client/server misprediction.
+
+- **Compiled with `tsc` → `dist`** (NOT source-consumed): `@colyseus/schema@4` needs `experimentalDecorators`
+  + `useDefineForClassFields:false`; JIT source-consumption makes esbuild/tsx disagree on decorator config and
+  silently corrupt the wire format. ESM-only, private, `exports` map, project references + `tsc -b`. See `monorepo.md`.
+- Package scope is **`@slur/*`** (`@slur/shared`, `@slur/client`, `@slur/server`).
+
+## 8. Testing strategy (lightweight — it's a side project)
+- **Unit:** pure logic — track generator determinism (same seed → same track), power-up effect resolution, collision math. (Vitest.)
+- **Determinism guard:** a test that generates a track from a fixed seed on "server" and "client" code paths and asserts equality.
+- **Integration (later):** spin a headless Colyseus room, connect N mock clients, assert join-mid-run spawns alive.
+- No heavy E2E for v1 — playtesting is the real test.
+
+## 9. Non-goals (v1)
+Matchmaking across networks, persistence/accounts, anti-cheat hardening (it's the office), mobile/touch, gamepad, spectator replays.
+
+## 10. OPEN QUESTIONS
+1. **Server host** — co-locate on the host client's machine, or a dedicated LAN box?
+2. **Prediction depth** — full client-prediction+reconciliation from day 1, or interpolate-only baseline first (LAN latency is tiny)? Start interpolate-only per `netcode.md`; add prediction if it feels floaty.
+3. **Sim on server: koota or plain?** — does the server run koota too (shared systems), or a plain schema-driven `simulate()` with koota only client-side for rendering? Leaning: `simulate()` is plain/pure in `@slur/shared`; koota is the *client* entity/render layer that consumes it. Confirm.
+4. **Sim/patch rates** — 60/20 Hz is the starting point; confirm after first movement prototype.
+
+_Resolved by research: ECS = koota; monorepo = plain `pnpm -r`, 3 packages; shared `simulate()` module; `@slur/shared` compiled._
