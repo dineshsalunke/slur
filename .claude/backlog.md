@@ -22,6 +22,9 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
 - [ ] 2026-08-06 [feature] [slice] S7 — Survival mode + hardening
   why: second mode + robustness. endless track + chasing derezz-wall + distance/time scoring; LAN discovery (room-code QR / mDNS); reconnection hardening; perf tuning for 8–12 ships.
 
+- [ ] 2026-08-07 [research] [assets] Find CC-licensed X-wing-style / low-poly space-fighter GLBs for ship models
+  why: user wants X-wing-style ships. Surface CC-licensed options (Sketchfab CC, Poly Pizza, Quaternius, Kenney, Fab) + IP caveat — actual X-wing is Lucasfilm IP, so use CC "X-wing-style" or original fighters, not a rip. Do after context clear (user's call: "we'll do it once we're back").
+
 ## Done
 - [x] 2026-08-06 → 2026-08-06 [decision] [netcode] v1 mode = **Race** (finite, finish-line). Survival deferred to S7.
 - [x] 2026-08-06 → 2026-08-06 [decision] [infra] Colyseus server **co-located on host laptop** (zero-setup office play).
