@@ -3,8 +3,9 @@
 **Goal:** fly ONE ship solo down a simple flat track with the constrained-flight controls, tuning until it **feels
 good**. No Colyseus, no schema, no hazards, no bloom. **Acceptance = you fly it and say "feels good"** (human gate).
 
-> Status: **prep complete, reviewed & approved (shared + client), 2026-08-07.** This doc is the reference the
-> Implement phase builds from — **no source written yet**. Code below is reference, not final source.
+> Status: **IMPLEMENTED & playable at `/solo`; feel-tuning in progress (human gate). 2026-08-07.** The **code is
+> now the source of truth** (`@slur/shared/src`, `apps/client/app/game/`); the reference snippets below are the
+> pre-build spec, kept for rationale — where they differ, the code wins. See "Reconcile — as-built" at the bottom.
 
 ## Decisions in force
 - v1 mode = **Race**; server co-located on host (N/A this slice — local only).
@@ -254,3 +255,21 @@ ship responds. **Then you fly it** and we tune `FlightTuning` + camera live unti
 
 ## Out of scope (later slices)
 Netcode/schema (S2) · real track+hazards+finish+collision+bloom (S3) · lobby/rooms/results (S4) · combat + **rearview camera** (S5) · classes/audio/juice (S6).
+
+## Reconcile — as-built (2026-08-07)
+**S1 is implemented and playable at `/solo`; feel-tuning is ongoing (the human gate).** Commits: `969a08e` (feat —
+via a background agent that died mid-handoff but had already committed), `78ac023` (fixes). **The code is the source
+of truth** now (`@slur/shared/src`, `apps/client/app/game/`); reference snippets above are the pre-build spec — where
+they differ, the code wins.
+
+Deltas from the reviewed spec:
+- **Jump model upgraded to derived** (GDC *"Building a Better Jump"*, Pittman): tune `DEFAULT_JUMP`
+  (`height/apexTime/descentTime/doubleHeight/minHeight`); `deriveJump()` computes gravity/impulse. **`minJumpVel`
+  (min-height cap) replaced `jumpCutFactor`.** `applyJump` extracted a `consumeBufferedJump` helper.
+- **Left/right fixed:** chase cam faces **+z**, so world **+x renders screen-left** — `keyboard.ts` maps physical keys
+  to screen direction. *If banking ever looks reversed, flip the `grp.rotation.z` sign in `syncRenderSystem`.*
+- **Verify-at-implement resolved:** `createWorld()` is koota's constructor ✓; `<primitive object={group}>{mesh}` child-attach works ✓.
+- `FlightTuning` fields fully commented (what each is + which direction changes feel). Some starting values changed during playtest.
+- **Verified:** typecheck/build/lint green; runtime rendered + responded (user playtest — Chrome automation was declined, so runtime confidence is the fly-through).
+
+**Remaining for S1 "done":** finish feel-tuning (human gate). Then S2 (networked flight).

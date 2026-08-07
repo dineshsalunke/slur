@@ -88,11 +88,12 @@ Scaffolded and verified 2026-08-06 (**runnable blank skeletons, no game logic ye
 - **Server transport:** `@colyseus/core` + `@colyseus/ws-transport` + `express` — NOT the `colyseus` meta-package (it pulls a git-based uWebSockets build pnpm blocks, plus auth/monitor/redis we don't need). `express` is ws-transport's optional peer.
 - **0.17 client SDK is `@colyseus/sdk`**, not legacy `colyseus.js` (frozen at 0.16) — deferred until the client talks to the server.
 - **Deferred deps (implement phase):** R3F/three/drei/postprocessing/koota/`@colyseus/sdk` are NOT installed yet; client renders a blank page.
-- **`@slur/shared` is a placeholder export** — schema/sim/constants land in implement.
+- **`@slur/shared` now holds the S1 flight sim** — tuning/constants, input, `SimShip`, phase-split `stepShip`, fixed-step. Jump physics **derived** from `DEFAULT_JUMP` (GDC "Building a Better Jump"). Schema/networked state still land in S2.
+- **S1 flight prototype is playable:** `pnpm dev` → http://localhost:5173/**solo** — W/S throttle-brake, A/D strafe, Space jump (tap/hold/double), Shift boost. Tune feel via `DEFAULT_JUMP` + `DEFAULT_TUNING` in `packages/shared/src/constants.ts` (every field commented).
 - **pnpm gates:** `allowBuilds: [esbuild, msgpackr-extract]` in `pnpm-workspace.yaml`; a global `minimumReleaseAge` policy auto-records version exclusions. `packageManager` pinned to `pnpm@11.12.0`.
 
 ## Working method
 
 - **Design docs are living.** Each carries `OPEN QUESTIONS`; resolve with the team, fold the decision in, delete the question. Don't silently diverge from the docs — update them.
-- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; **reviewed code is documented in the phase doc as reference, NOT written to source until Implement**. Phase notes in `.claude/phases/`. **Status: S1 (flight feel) PREP COMPLETE** — full reviewed spec in `.claude/phases/2026-08-06-s1-flight-feel.md`; **next = Implement S1** (build `@slur/shared` sim + client `app/game/` from the reference, then human-gate playtest). Roadmap S1–S7 in `.claude/backlog.md`.
+- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; reviewed code is documented in the phase doc as reference, then built in Implement. Phase notes in `.claude/phases/`. **Status: S1 (flight feel) IMPLEMENTED & playable at `/solo`, feel-tuning in progress** (spec + as-built reconcile in `.claude/phases/2026-08-06-s1-flight-feel.md`). **Next: finish S1 tuning (human gate), then S2 (networked flight).** Roadmap S1–S7 in `.claude/backlog.md`.
 - **Batch related file changes** into one review turn.

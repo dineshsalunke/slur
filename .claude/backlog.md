@@ -7,8 +7,8 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
 
 ## Pending
 
-- [ ] 2026-08-06 [feature] [slice] S1 — Flight feel (local, no network) — **PREP COMPLETE, ready for Implement**
-  why: nail constrained-flight feel (biggest unknown) cheaply before networking. Full reviewed spec + reference code: `.claude/phases/2026-08-06-s1-flight-feel.md`. Done: one ship flies solo and feels good (human gate).
+- [ ] 2026-08-06 [feature] [slice] S1 — Flight feel (local, no network) — **IMPLEMENTED & playable at `/solo`; feel-tuning in progress**
+  why: nail constrained-flight feel. Code is source of truth (`@slur/shared/src`, `apps/client/app/game/`); spec + as-built reconcile: `.claude/phases/2026-08-06-s1-flight-feel.md`. Jump = derived (GDC "Building a Better Jump"). Done when: it feels good (human gate) → then S2.
 - [ ] 2026-08-06 [feature] [slice] S2 — Networked flight (server-authoritative)
   why: de-risk netcode + the schema-decorator footgun while the surface is tiny. shared: @colyseus/schema + same simulate() server-side; server: RunRoom fixed-timestep loop + buffered inputs; client: @colyseus/sdk, send inputs, reconcile→koota (predict local, interpolate remotes). Done: two laptops fly the same seeded track and see each other.
 - [ ] 2026-08-06 [feature] [slice] S3 — Track, hazards, collision
