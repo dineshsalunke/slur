@@ -51,7 +51,7 @@ export function applyJump( s: SimShip, input: PlayerInput, t: FlightTuning, dt: 
     s.coyoteTimer = s.grounded ? t.coyoteTime : Math.max( 0, s.coyoteTimer - dt );
     s.bufferTimer = Math.max( 0, s.bufferTimer - dt );
     if ( input.jump && ! s.jumpHeld ) s.bufferTimer = t.jumpBuffer; // buffer a fresh press
-    if ( ! input.jump && s.jumpHeld && s.vy > 0 ) s.vy *= t.jumpCutFactor; // jump-cut variable height
+    if ( ! input.jump && s.jumpHeld && s.vy > t.minJumpVel ) s.vy = t.minJumpVel; // early release → short hop (min height)
     if ( s.bufferTimer > 0 ) consumeBufferedJump( s, t );
     s.jumpHeld = input.jump;
 }

@@ -9,7 +9,9 @@ const has = ( ...codes: string[] ) => codes.some( ( c ) => down.has( c ) );
 function recompute(): void {
     input.throttle = has( 'KeyW', 'ArrowUp' ) ? 1 : 0;
     input.brake = has( 'KeyS', 'ArrowDown' ) ? 1 : 0;
-    input.strafe = ( has( 'KeyD', 'ArrowRight' ) ? 1 : 0 ) - ( has( 'KeyA', 'ArrowLeft' ) ? 1 : 0 );
+    // strafe drives world +x, but the chase camera faces +z so world +x renders screen-LEFT.
+    // Map Left→+1 / Right→-1 so on-screen left/right match the keys.
+    input.strafe = ( has( 'KeyA', 'ArrowLeft' ) ? 1 : 0 ) - ( has( 'KeyD', 'ArrowRight' ) ? 1 : 0 );
     input.jump = has( 'Space' );
     input.boost = has( 'ShiftLeft', 'ShiftRight' );
     input.usePowerUp = has( 'KeyE' );
