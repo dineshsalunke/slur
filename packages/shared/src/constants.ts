@@ -86,3 +86,19 @@ export const DEFAULT_TUNING: FlightTuning = {
     coyoteTime: 0.1,
     jumpBuffer: 0.1,
 };
+
+// Fraction of the theoretical jump reach the generator may use when sizing a hazard — leaves headroom
+// so hazards clear with margin, not frame-perfect. Difficulty knob (lower = easier).
+const JUMP_SAFETY = 0.8;
+
+// ── Derived hazard limits (track generator fairness) ──
+// The generator NEVER emits a gap wider than a jump can cross or a step taller than a jump can reach.
+// DERIVED from the jump feel (DEFAULT_JUMP) + top speed, so tuning the jump auto-retunes the track's
+// fairness — difficulty is a config edit, not a code change (project convention).
+//
+// MAX_GAP: horizontal z-distance covered while airborne over one jump arc (apex + descent) at cruise
+//   speed, × safety. A gap segment's z-length (SEG_LEN) must be ≤ this so a well-timed jump clears it.
+// MAX_STEP: peak rise of a single ground jump (design height), × safety. A height-step's rise must be
+//   ≤ this so you can jump onto it from below.
+export const MAX_GAP = DEFAULT_TUNING.maxCruise * ( DEFAULT_JUMP.apexTime + DEFAULT_JUMP.descentTime ) * JUMP_SAFETY;
+export const MAX_STEP = DEFAULT_JUMP.height * JUMP_SAFETY;

@@ -5,5 +5,7 @@ export * from './constants.js';
 export * from './schema.js';
 export * from './sim/fixed-step.js';
 export * from './sim/input.js';
+export * from './sim/rng.js';
 export * from './sim/step.js';
+export * from './sim/track.js';
 export * from './sim/types.js';

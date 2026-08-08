@@ -7,5 +7,8 @@
         "module": "NodeNext",
         "moduleResolution": "nodenext"
     },
-    "include": [ "src" ]
+    "include": [ "src" ],
+    // Tests compile via tsconfig.test.json (they need node types). Keeping them out of the lib build
+    // means the shipped dist stays framework-free — no node globals leak into browser-run sim code.
+    "exclude": [ "src/**/*.test.ts" ]
 }
