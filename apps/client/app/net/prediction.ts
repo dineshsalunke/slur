@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, FIXED_DT, type PlayerInput, type SimShip, simulate } from '@slur/shared';
+import { DEFAULT_TUNING, FIXED_DT, type PlayerInput, type SimShip, simulate, type Track } from '@slur/shared';
 
 // Client-side prediction + reconciliation for the LOCAL ship (Gambetta). The client predicts every
 // input immediately via simulate() and keeps them in a pending list; when an authoritative snapshot
@@ -26,6 +26,14 @@ export function copyShip( dst: SimShip, src: SimShip ): void {
     dst.jumpHeld = src.jumpHeld;
     dst.coyoteTimer = src.coyoteTimer;
     dst.bufferTimer = src.bufferTimer;
+    // S3 death/finish state — MUST snap too, or the client's replay re-derives death from stale state
+    // and mispredicts the derezz/respawn (see netcode: replay needs the FULL SimShip).
+    dst.dead = src.dead;
+    dst.respawnTimer = src.respawnTimer;
+    dst.invulnTimer = src.invulnTimer;
+    dst.lastSafeX = src.lastSafeX;
+    dst.lastSafeZ = src.lastSafeZ;
+    dst.finished = src.finished;
 }
 
 export interface Predictor {
@@ -34,7 +42,8 @@ export interface Predictor {
     // Inputs not yet sent; marks them sent. Fed to the batched room.send().
     drainUnsent(): PlayerInput[];
     // Reconcile local Sim against an authoritative snapshot: snap → drop acked → replay pending.
-    reconcile( sim: SimShip, snapshot: SimShip & { lastProcessedInput: number } ): void;
+    // Replays through the SAME track the server used, so predicted death/finish reconcile exactly.
+    reconcile( sim: SimShip, snapshot: SimShip & { lastProcessedInput: number }, track: Track ): void;
 }
 
 export function createPredictor(): Predictor {
@@ -53,11 +62,11 @@ export function createPredictor(): Predictor {
             }
             return out;
         },
-        reconcile( sim, snapshot ) {
+        reconcile( sim, snapshot, track ) {
             copyShip( sim, snapshot ); // snap to authoritative truth
             const ack = snapshot.lastProcessedInput;
             while ( pending.length > 0 && pending[ 0 ].seq <= ack ) pending.shift(); // drop acked
-            for ( const p of pending ) simulate( sim, p.input, FIXED_DT, DEFAULT_TUNING ); // replay the rest
+            for ( const p of pending ) simulate( sim, p.input, FIXED_DT, DEFAULT_TUNING, track ); // replay the rest
         },
     };
 }

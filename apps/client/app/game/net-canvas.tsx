@@ -1,12 +1,12 @@
 import { getStateCallbacks } from '@colyseus/sdk';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { createFixedStep, FIXED_DT, INPUT_MESSAGE } from '@slur/shared';
+import { createFixedStep, FIXED_DT, INPUT_MESSAGE, makeTrack, type Track as TrackHandle } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useWorld, WorldProvider } from 'koota/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PerspectiveCamera } from 'three';
-import { useRoom } from '../net/room-context';
 import { copyShip, createPredictor, type Predictor } from '../net/prediction';
+import { useRoom } from '../net/room-context';
 import { updateChaseCamera } from './camera/chase';
 import { netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
 import { syncRenderSystem } from './ecs/systems';
@@ -23,11 +23,11 @@ const INPUT_SEND_MS = 1000 / 30;
 
 // The ONE networked loop: local predict (fixed-60, records pending) → interpolate local (prev→sim)
 // → interpolate remotes (buffered snapshots) → chase camera. Default priority keeps R3F auto-render on.
-function NetLoop( { predictor }: { predictor: Predictor } ) {
+function NetLoop( { predictor, track }: { predictor: Predictor; track: TrackHandle } ) {
     const world = useWorld();
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
     useFrame( ( state, delta ) => {
-        const alpha = advance( delta, ( dt ) => netFlightSystem( world, dt, predictor ) );
+        const alpha = advance( delta, ( dt ) => netFlightSystem( world, dt, predictor, track ) );
         syncRenderSystem( world, alpha ); // local ship only (remotes have no Sim/Prev)
         remoteInterpSystem( world ); // remote ships
         updateChaseCamera( state.camera as PerspectiveCamera, world, delta );
@@ -40,13 +40,15 @@ function NetLoop( { predictor }: { predictor: Predictor } ) {
 // landed in separate rooms (a different bug). ★ marks your own ship.
 function NetDebugHud() {
     const room = useRoom();
-    const [ rows, setRows ] = useState<string[]>( [] );
+    const [ rows, setRows ] = useState< string[] >( [] );
     useEffect( () => {
         const id = setInterval( () => {
             const out: string[] = [];
             room.state.players.forEach( ( p, sid ) => {
                 const me = sid === room.sessionId ? '★' : ' ';
-                out.push( `${ me } ${ sid.slice( 0, 4 ) }  x=${ p.x.toFixed( 1 ) } z=${ p.z.toFixed( 1 ) }${ p.connected ? '' : ' (gone)' }` );
+                out.push(
+                    `${ me } ${ sid.slice( 0, 4 ) }  x=${ p.x.toFixed( 1 ) } z=${ p.z.toFixed( 1 ) }${ p.connected ? '' : ' (gone)' }`,
+                );
             } );
             setRows( out );
         }, 200 );
@@ -55,9 +57,17 @@ function NetDebugHud() {
     return (
         <div
             style={ {
-                position: 'fixed', top: 8, left: 8, zIndex: 10, pointerEvents: 'none',
-                font: '12px monospace', color: '#00ff88', background: 'rgba(0,0,0,0.6)',
-                padding: '6px 8px', whiteSpace: 'pre', borderRadius: 4,
+                position: 'fixed',
+                top: 8,
+                left: 8,
+                zIndex: 10,
+                pointerEvents: 'none',
+                font: '12px monospace',
+                color: '#00ff88',
+                background: 'rgba(0,0,0,0.6)',
+                padding: '6px 8px',
+                whiteSpace: 'pre',
+                borderRadius: 4,
             } }
         >
             { `room: ${ room.roomId }  (you: ${ room.sessionId.slice( 0, 4 ) })\nplayers: ${ rows.length }\n${ rows.join( '\n' ) }` }
@@ -69,14 +79,23 @@ export function NetCanvas() {
     const room = useRoom();
     const predictor = useMemo( createPredictor, [] );
 
+    // The track is a pure function of the synced seed — DERIVE it during render (not a useEffect).
+    // Client + server build it from the same seed, so prediction and authority resolve identical
+    // geometry. seed is stable for a room's life, so this memo effectively runs once.
+    const track = useMemo( () => makeTrack( room.state.seed ), [ room.state.seed ] );
+    // Latest-track ref so the Colyseus subscription effect below can reconcile against the current
+    // track WITHOUT listing it as a dependency (which would tear down + re-subscribe the room wiring).
+    const trackRef = useRef( track );
+    trackRef.current = track;
+
     useEffect( attachKeyboard, [] );
 
     // Wire Colyseus → ECS: onAdd spawns an entity (local = predicted, remote = interpolated);
     // per-player onChange reconciles the local ship or feeds a remote's interp buffer.
     useEffect( () => {
         const $ = getStateCallbacks( room );
-        const byId = new Map<string, Entity>();
-        const detach: Array<() => void> = [];
+        const byId = new Map< string, Entity >();
+        const detach: Array< () => void > = [];
 
         const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {
             const isLocal = sid === room.sessionId;
@@ -95,7 +114,7 @@ export function NetCanvas() {
                 if ( ! ent ) return;
                 if ( isLocal ) {
                     const s = ent.get( Sim );
-                    if ( s ) predictor.reconcile( s, p );
+                    if ( s ) predictor.reconcile( s, p, trackRef.current );
                 } else {
                     const interp = ent.get( Interp );
                     if ( ! interp ) return;
@@ -134,7 +153,7 @@ export function NetCanvas() {
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
                 <color attach="background" args={ [ '#05060a' ] } />
                 <ambientLight intensity={ 0.5 } />
-                <NetLoop predictor={ predictor } />
+                <NetLoop predictor={ predictor } track={ track } />
                 <Track />
                 <Scenery count={ 50 } seed={ room.state.seed || 1234 } />
                 <Ships />

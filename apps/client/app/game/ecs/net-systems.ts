@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, simulate } from '@slur/shared';
+import { DEFAULT_TUNING, simulate, type Track } from '@slur/shared';
 import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { currentInput } from '../input/keyboard';
@@ -10,7 +10,7 @@ const RENDER_DELAY_MS = 100;
 
 // Local predicted flight tick (fixed step). Same as S1's flightSystem but it RECORDS each input into
 // the predictor (value-copied, since keyboard.ts reuses one object) so reconciliation can replay it.
-export function netFlightSystem( world: World, dt: number, predictor: Predictor ): void {
+export function netFlightSystem( world: World, dt: number, predictor: Predictor, track: Track ): void {
     const q = world.query( Sim, Prev, LocalPlayer );
     if ( q.length === 0 ) return; // local ship not spawned yet (waiting on players.onAdd)
     const input = { ...currentInput() }; // value copy — the pending list must not alias the reused object
@@ -19,7 +19,7 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor 
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        simulate( s, input, dt, DEFAULT_TUNING );
+        simulate( s, input, dt, DEFAULT_TUNING, track ); // predict on the SAME track the server authorities
     } );
 }
 
