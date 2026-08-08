@@ -67,11 +67,11 @@ export function deriveJump( d: JumpDesign ) {
 
 // THE intuitive jump-tuning surface — edit these (units + seconds), not gravity numbers.
 export const DEFAULT_JUMP: JumpDesign = {
-    height: 1,
-    apexTime: 0.42,
-    descentTime: 0.3,
-    doubleHeight: 4.5,
-    minHeight: 1.5,
+    height: 2.4, // was 1 — a hop that clears the ship + tall platforms. MAX_STEP auto-rises to 2.4×0.8=1.92.
+    apexTime: 0.34, // was 0.42 — faster rise → punchier launch (jumpImpulse ~4.8 → ~14) and less hang.
+    descentTime: 0.26, // was 0.3 — snappy fall (< apexTime); the higher fallGravity kills the floaty hang time.
+    doubleHeight: 3.0, // was 4.5 — a controlled second jump, not a huge boost.
+    minHeight: 0.8, // was 1.5 — BUG: minHeight > height made minJumpVel > jumpImpulse, so early-release never fired (every jump = max height, no tap control). Now < height → variable jump works: tap ≈ 0.8u hop, hold = full 2.4.
 };
 
 // Starting values — tuned live in playtest. Do NOT tune here to "feel"; that is the human gate.
@@ -85,9 +85,9 @@ export const DEFAULT_TUNING: FlightTuning = {
     energyMax: 100,
     energyDrain: 45,
     energyRegen: 22,
-    strafeAccel: 120,
-    strafeClamp: 200,
-    strafeDamp: 1,
+    strafeAccel: 300, // was 120 — snappier sideways response (reaches the cap in ~0.27s)
+    strafeClamp: 80, // was 200 (never actually reached) — a controllable, quickly-attained lateral top speed
+    strafeDamp: 8, // was 1 (drifty) — release now bleeds sideways momentum fast, so it stops crisply
     halfWidth: 16,
     ...deriveJump( DEFAULT_JUMP ),
     maxJumps: 2,
