@@ -9,6 +9,7 @@ disallowWorkspaceCycles: true
 # Two copies of react / three / @colyseus/schema is a runtime failure, not a style nit.
 catalog:
   '@colyseus/schema': ^4.0.30
+  '@colyseus/sdk': ^0.17.43 # 0.17 client SDK (NOT legacy colyseus.js, frozen at 0.16); exports getStateCallbacks
   react: ^19.2.8
   react-dom: ^19.2.8
   three: ^0.185.1 # caret on 0.x locks the minor → stays <0.186 (postprocessing peer)

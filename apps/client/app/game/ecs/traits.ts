@@ -2,7 +2,7 @@ import { spawnShip } from '@slur/shared';
 import { trait } from 'koota';
 import * as THREE from 'three';
 
-// AoS callback trait → a live SimShip reference (not a snapshot); stepShip mutates it in place.
+// AoS callback trait → a live SimShip reference (not a snapshot); simulate() mutates it in place.
 export const Sim = trait( () => spawnShip() );
 
 // Physics transform captured BEFORE the last step — the source we interpolate from (SoA scalars).
@@ -13,3 +13,24 @@ export const Render = trait( () => new THREE.Group() );
 
 // Tag: this entity is the locally-controlled ship.
 export const LocalPlayer = trait();
+
+// ── S2 networked traits ──
+
+// Every networked ship (local + remote) carries its Colyseus sessionId — the reconciliation key
+// mapping schema player → ECS entity.
+export const Net = trait( { sessionId: '' } );
+
+// Tag: a remote (interpolated) ship. Remotes NEVER get Sim/Prev — they are never predicted, only
+// eased toward buffered server snapshots (netcode "two reconciliations": predict local, interp remote).
+export const Remote = trait();
+
+// Per-remote snapshot ring buffer (AoS callback → a live object, not a snapshot). We push one entry
+// per received patch and render ~RENDER_DELAY ms in the past by lerping between the two straddling it.
+export interface Snapshot {
+    t: number; // client receive time (performance.now), the interpolation clock
+    x: number;
+    y: number;
+    z: number;
+    vx: number; // for the cosmetic bank
+}
+export const Interp = trait( () => ( { buffer: [] as Snapshot[] } ) );

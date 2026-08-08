@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, stepShip } from '@slur/shared';
+import { DEFAULT_TUNING, simulate } from '@slur/shared';
 import type { World } from 'koota';
 import { currentInput } from '../input/keyboard';
 import { LocalPlayer, Prev, Render, Sim } from './traits';
@@ -11,7 +11,7 @@ export function flightSystem( world: World, dt: number ): void {
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        stepShip( s, input, dt, DEFAULT_TUNING );
+        simulate( s, input, dt, DEFAULT_TUNING );
     } );
 }
 

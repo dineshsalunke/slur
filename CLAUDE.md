@@ -70,6 +70,18 @@ slur/
 5. **`@slur/shared` is `tsc`-compiled to `dist`**, not JIT-source-consumed — the `@colyseus/schema` decorator config makes source-consumption a silent wire-corruption footgun.
 6. **Ship stats are data** (`ShipClass` config in `@slur/shared`), server-authoritative — balancing is a config edit, not code.
 7. **No Python** for tooling/scripts (inherits user rule NN-1): jq/yq → fish/bash → node.
+8. **`useEffect` is an escape hatch, NOT the default — and never the *only* way.** React's own docs file
+   Effects under **"Escape Hatches"** and ship a page titled *"You Might Not Need an Effect"*: Effects
+   exist to synchronize with systems *outside* React, and are the tool of **last** resort. Reach for the
+   idiomatic mechanism FIRST — derive during render, handle events in handlers, own/flow data through
+   **React Router loaders/actions**, use refs for imperative work, and keep **long-lived resources
+   (sockets, subscriptions, the Colyseus room, timers) OUTSIDE React on module singletons** — never tied
+   to a component's mount/unmount. **Coupling a connection's lifetime to a `useEffect` cleanup is the
+   exact bug that cost S2** (`room.leave()` in an unmount cleanup → a route remount tore the room down →
+   a new room every render, two clients never shared one). Meta-rule: the framework authors built these
+   idioms deliberately — "most code does X" (including model training priors) is **not** evidence X is
+   right; it is usually the mediocre default. Follow the idiom, and understand **why** before deviating.
+   *(This is a hard non-negotiable, per explicit user directive after the S2 incident.)*
 
 ## Dev workflow
 

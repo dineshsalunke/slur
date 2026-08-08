@@ -272,4 +272,4 @@ Deltas from the reviewed spec:
 - `FlightTuning` fields fully commented (what each is + which direction changes feel). Some starting values changed during playtest.
 - **Verified:** typecheck/build/lint green; runtime rendered + responded (user playtest — Chrome automation was declined, so runtime confidence is the fly-through).
 
-**Remaining for S1 "done":** finish feel-tuning (human gate). Then S2 (networked flight).
+**S1 DONE — human gate passed 2026-08-07** ("controls are good"). Next: S2 (networked flight).

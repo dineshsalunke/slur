@@ -16,6 +16,13 @@
 4. **The router owns _location_, not _game state_.** URL = which screen (lobby / join / room). Real-time tick, score, positions come from Colyseus, never the URL or route state.
 5. **Guard the back button during a live match** with `useBlocker` (available in **framework & data** mode; ❌ declarative only) so a stray swipe/`Esc` doesn't nuke the match.
 6. Import from **`react-router`**. Not `react-router-dom`.
+7. **`useEffect` is an escape hatch, not the default — and not the only way.** React's own docs file
+   Effects under *"Escape Hatches"* (and *"You Might Not Need an Effect"*): they sync with systems
+   *outside* React and are the last resort, not the first reach. **Never own a long-lived resource's
+   lifetime in a `useEffect`** — the Colyseus room lives on a module singleton + loader, never a
+   component. Tying the room to a component (`useEffect(() => () => room.leave())`) means every remount
+   tears it down → a new room per render. Prefer: render-derivation → event handlers → loader/action
+   data → refs → *then* `useEffect`.
 
 ---
 
@@ -197,6 +204,7 @@ import { redirect } from "react-router";
 - **❌ Using `<BrowserRouter>` (declarative) for the game.** WHY: `useBlocker` doesn't exist in declarative mode (verified), so you cannot cleanly guard the back button during a match, and you lose config-based `route.lazy`.
 - **❌ Importing from `react-router-dom`.** WHY: the package was **removed in v8**. It won't resolve; even if a stale copy is installed, you're mixing versions.
 - **❌ Remounting `<RouterProvider>` or recreating the router on renders.** WHY: `createBrowserRouter` must be called once at module scope; recreating it resets history and blows away the whole tree including the canvas.
+- **❌ Reaching for `useEffect` first, or tying a resource's lifetime to it.** WHY: `useEffect` is an escape hatch (React's own categorization — *"Escape Hatches"* / *"You Might Not Need an Effect"*), meant for synchronizing with systems *outside* React — not for data flow, derived state, or owning connections. `useEffect(() => () => room.leave(), [])` couples the Colyseus room to the component: **any remount fires the cleanup and disposes the room**, so every render creates a fresh room and two clients never share one. **This is the real S2 bug — it cost hours of debugging a failure this very file already warned about** (see the "socket in a loader / above the router" rules above). Own long-lived resources (socket, room, subscriptions, timers) OUTSIDE React on a **module singleton + loader**; reach for `useEffect` only after ruling out render-derivation, event handlers, loader/action data, and refs. "The majority of React code uses an Effect here" is not a reason — it's usually the mediocre default; the framework authors built the idioms deliberately, so follow them and know *why* before deviating.
 
 ---
 

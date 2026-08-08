@@ -85,7 +85,9 @@ export function resolveCollisions( s: SimShip, t: FlightTuning ): void {
     }
 }
 
-export function stepShip( s: SimShip, input: PlayerInput, dt: number, t: FlightTuning ): void {
+// The shared authoritative step: one fixed-dt advance of a ship from its input. Imported by both
+// the client (local prediction, S1) and the server (authority, S2) — identical math, same dt.
+export function simulate( s: SimShip, input: PlayerInput, dt: number, t: FlightTuning ): void {
     applyLongitudinal( s, input, t, dt );
     applyStrafe( s, input, t, dt );
     applyJump( s, input, t, dt );

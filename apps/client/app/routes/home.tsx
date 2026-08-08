@@ -12,6 +12,9 @@ export default function Home() {
             <p>
                 <Link to="/solo">Fly solo →</Link>
             </p>
+            <p>
+                <Link to="/run">Fly online →</Link>
+            </p>
         </main>
     );
 }

@@ -28,10 +28,10 @@ interface Box {
 
 // Recycled instanced side-boxes — the primary parallax speed cue. PURE IMPERATIVE: a local useFrame
 // mutating the InstancedMesh matrices, zero subscriptions, zero re-renders during play.
-export function Scenery( { count = 50 }: { count?: number } ) {
+export function Scenery( { count = 50, seed = 1234 }: { count?: number; seed?: number } ) {
     const world = useWorld();
     const ref = useRef< THREE.InstancedMesh | null >( null );
-    const rng = useMemo( () => mulberry32( 1234 ), [] );
+    const rng = useMemo( () => mulberry32( seed ), [ seed ] ); // networked: seed from room.state.seed → same scenery on every client
     const boxes = useMemo< Box[] >(
         () =>
             Array.from( { length: count }, ( _, i ) => ( {

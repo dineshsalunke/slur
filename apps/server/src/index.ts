@@ -1,13 +1,13 @@
 import { Server } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
+import { ROOM_NAME } from '@slur/shared';
+import { RunRoom } from './rooms/run-room.js';
 
 const port = Number( process.env.PORT ?? 2567 );
 
 const gameServer = new Server( { transport: new WebSocketTransport() } );
 
-// Rooms are registered in the implement phase, e.g.:
-//   import { ROOM_NAME } from '@slur/shared';
-//   gameServer.define( ROOM_NAME, RunRoom );
+gameServer.define( ROOM_NAME, RunRoom );
 
 gameServer
     .listen( port )
