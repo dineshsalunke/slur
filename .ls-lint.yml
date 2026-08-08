@@ -9,6 +9,11 @@ ls:
   packages/shared/src:
     .dir: kebab-case
     .ts: kebab-case
+  apps/client/public:
+    .dir: kebab-case
+    .gltf: kebab-case
+    .glb: kebab-case
+    .png: kebab-case
 
 ignore:
   - node_modules

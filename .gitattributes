@@ -1,0 +1,10 @@
+# Git LFS — large binary game assets (3D models + textures) under public/models/.
+# These are opaque binaries, not diff-able text; LFS keeps them out of the packed history.
+# Scoped to models/ so favicon.ico and small UI images stay in regular git.
+apps/client/public/models/**/*.gltf  filter=lfs diff=lfs merge=lfs -text
+apps/client/public/models/**/*.glb   filter=lfs diff=lfs merge=lfs -text
+apps/client/public/models/**/*.bin   filter=lfs diff=lfs merge=lfs -text
+apps/client/public/models/**/*.png   filter=lfs diff=lfs merge=lfs -text
+apps/client/public/models/**/*.jpg   filter=lfs diff=lfs merge=lfs -text
+apps/client/public/models/**/*.ktx2  filter=lfs diff=lfs merge=lfs -text
+apps/client/public/models/**/*.hdr   filter=lfs diff=lfs merge=lfs -text
