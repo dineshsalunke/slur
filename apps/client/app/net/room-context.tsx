@@ -8,13 +8,13 @@ import { createContext, type ReactNode, useContext } from 'react';
 // route remount must never tear down the socket (that coupling caused create→leave→dispose churn —
 // a new room every render). Teardown is a deliberate action (page close / explicit leave), not a
 // component side effect.
-const RoomContext = createContext<Room<RunState> | null>( null );
+const RoomContext = createContext< Room< RunState > | null >( null );
 
-export function RoomProvider( { room, children }: { room: Room<RunState>; children: ReactNode } ) {
+export function RoomProvider( { room, children }: { room: Room< RunState >; children: ReactNode } ) {
     return <RoomContext.Provider value={ room }>{ children }</RoomContext.Provider>;
 }
 
-export function useRoom(): Room<RunState> {
+export function useRoom(): Room< RunState > {
     const room = useContext( RoomContext );
     if ( ! room ) throw new Error( 'useRoom must be used within <RoomProvider>' );
     return room;

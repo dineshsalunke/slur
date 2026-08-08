@@ -23,6 +23,13 @@
    component. Tying the room to a component (`useEffect(() => () => room.leave())`) means every remount
    tears it down → a new room per render. Prefer: render-derivation → event handlers → loader/action
    data → refs → *then* `useEffect`.
+   **MANDATORY JUSTIFICATION COMMENT:** every `useEffect` that survives review MUST carry a comment
+   stating (a) the *external system* it synchronizes with (the only legitimate reason), and (b) which
+   cheaper idiom it rejected and why (why it can't be render-derivation / an event handler / loader or
+   action data / a ref / a module singleton). An `useEffect` with no such comment is a **review
+   failure** — treat an uncommented Effect as a bug, not a style nit. (This rule exists because an
+   unjustified Effect at a Canvas-wrapping parent re-rendered the whole scene on a one-time seed sync,
+   and separately because the S2 room-in-cleanup bug hid behind an Effect nobody had to justify.)
 
 ---
 
