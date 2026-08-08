@@ -53,6 +53,6 @@ export class PlayerState extends Schema implements SimShip {
 export class RunState extends Schema {
     @type( 'uint8' ) phase = 1; // S2 stays running(1); 0=lobby / 2=finished are S4
     @type( 'float32' ) elapsed = 0;
-    @type( 'uint32' ) seed = 1234;
+    @type( 'uint32' ) seed = 0; // 0 = "not seeded yet" sentinel; the server sets a real non-zero seed in onCreate. The client loader waits for this to decode (non-zero) before building the track, so client + server never disagree on geometry.
     @type( { map: PlayerState } ) players = new MapSchema< PlayerState >();
 }
