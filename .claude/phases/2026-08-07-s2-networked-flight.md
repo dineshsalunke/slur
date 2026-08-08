@@ -279,3 +279,38 @@ Track/scenery: reuse S1, seeded from `room.state.seed`.
 Real track/hazards/finish/collision/bloom (S3); lobby/results/join-by-id/spawn-beside-moving-pack (S4);
 combat/rearview (S5); lag compensation, hermite interp, error-blend smoothing, position-history ring
 buffer. Keep S1's flat-floor + side-wall `resolveCollisions`.
+
+---
+
+# S2 — RECONCILE (as-built, 2026-08-08)
+
+**Human gate: PASSED** — two browser windows on `/run`; both players spawn, are visible, and move
+smoothly enough. Committed as `432eb1b`. `pnpm typecheck` green across shared/server/client.
+
+**Landed as specced:** PlayerState `implements SimShip` (compile-time structural guard) + RunState;
+RunRoom 60Hz accumulator with per-player buffered input queue (cap 120) + `lastProcessedInput`;
+`@colyseus/sdk` lazy singleton + join-in-`clientLoader` (idempotent); predict-and-reconcile-by-replay
+for the local ship; ~100ms buffered interpolation for remotes; koota trait split
+(`Sim`/`LocalPlayer` predicted vs `Remote`/`Interp` interpolated).
+
+**Deviations from the prep spec (4):**
+1. **`stepShip` renamed → `simulate`** — the single shared authority fn imported by client + server.
+   Aligns with non-negotiable #3 ("one shared `simulate()`"); the prep already assumed this name.
+2. **Reconnection landed early.** `allowReconnection(20)` + `onDrop` shipped here, not S4. The prep
+   flagged this ("cheaper to build now than retrofit"); backlog S4 line updated to *verify/harden*,
+   not rebuild.
+3. **koota tag-order footgun found + fixed.** `remoteInterpSystem` read the wrong trait because koota
+   fills query results **positionally** and a tag trait was not last. Fix: data traits first, tags
+   last. Pinned in `conventions/ecs.md` Gotchas so S3+ don't re-hit it.
+4. **Dev-only HUD added** (not in spec) — a debug overlay (seq/reconcile counters); harmless, gated
+   to dev.
+
+**Codified rule (the S2 incident):** connection lifetime was originally coupled to a `useEffect`
+cleanup (`room.leave()`), which tore the room down on every route remount → a new room per render, so
+two clients never shared one. Fixed by moving the room to a module singleton + join-in-loader. Now
+**non-negotiable #8** in CLAUDE.md + `react-router.md` (TL;DR + anti-pattern with the WHY).
+
+**What remains for S3 to build on:** the reconcile/interp bridge and trait split are the load-bearing
+substrate — S3's server-authoritative collision runs inside the *existing* `simulate()`, so it
+auto-networks with no wire-protocol change. Track segments stay **local-only, generated from
+`room.state.seed`** (per `ecs.md` — keeps bandwidth low), not synced tile-by-tile.

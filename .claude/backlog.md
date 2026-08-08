@@ -9,12 +9,12 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
 
 - [x] 2026-08-06 → 2026-08-07 [feature] [slice] S1 — Flight feel (local, no network) — **DONE; human gate passed 2026-08-07 ("controls are good")**
   Code is source of truth (`@slur/shared/src`, `apps/client/app/game/`); spec + as-built reconcile: `.claude/phases/2026-08-06-s1-flight-feel.md`. Jump = derived (GDC "Building a Better Jump").
-- [ ] 2026-08-06 [feature] [slice] S2 — Networked flight (server-authoritative)
-  why: de-risk netcode + the schema-decorator footgun while the surface is tiny. shared: @colyseus/schema + same simulate() server-side; server: RunRoom fixed-timestep loop + buffered inputs; client: @colyseus/sdk, send inputs, reconcile→koota (predict local, interpolate remotes). Done: two laptops fly the same seeded track and see each other.
+- [x] 2026-08-06 → 2026-08-08 [feature] [slice] S2 — Networked flight (server-authoritative) — **DONE; human gate passed 2026-08-08 (two browser windows, both players visible + smooth)**
+  Code is source of truth (`@slur/shared` schema + `simulate()`; `apps/server/src/rooms/run-room.ts`; `apps/client/app/net/` + `app/game/net-canvas.tsx`). Spec + as-built reconcile: `.claude/phases/2026-08-07-s2-networked-flight.md`. Reconnection (`allowReconnection(20)`) landed here, not S4.
 - [ ] 2026-08-06 [feature] [slice] S3 — Track, hazards, collision
   why: built on the shared sim → auto-networked, no port. Deterministic seeded track + finish gate, hazards (gaps/walls/gates), collision + death; client instanced track/hazards + camera juice + first bloom. Done: race a hazard track to a finish, can die/win.
 - [ ] 2026-08-06 [feature] [slice] S4 — Session flow → complete Race
-  why: makes it "a game". server lifecycle (lobby→running→results, finish detection, standings, restart, join-mid-run spawn-beside-pack, reconnection); client landing/host/join/room routes, lobby + ship/colour pick, results, spectate. Done: full office race lobby→results with a winner.
+  why: makes it "a game". server lifecycle (lobby→running→results, finish detection, standings, restart, join-mid-run spawn-beside-pack); client landing/host/join/room routes, lobby + ship/colour pick, results, spectate. Done: full office race lobby→results with a winner. (Reconnection already landed in S2 — verify/harden here, don't rebuild.)
 - [ ] 2026-08-06 [feature] [slice] S5 — Combat & power-ups
   why: the "mess with your friends" payload — after the loop works. shared: pickups + roster (Bolt/Mine/Shield/Boost…), server-authoritative hit detection, disruption (stun/spin), auto-lock-nearest; client: instanced pickups, combat VFX + threat-warning HUD, held-powerup HUD. **Includes the rearview mirror camera** (2nd render pass → RenderTexture on a HUD inset; main Loop takes render priority) — needed to see tracking projectiles from behind. Design note in S1 phase doc.
 - [ ] 2026-08-06 [feature] [slice] S6 — Identity: ship classes + audio + juice
