@@ -11,8 +11,9 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
   Code is source of truth (`@slur/shared/src`, `apps/client/app/game/`); spec + as-built reconcile: `.claude/phases/2026-08-06-s1-flight-feel.md`. Jump = derived (GDC "Building a Better Jump").
 - [x] 2026-08-06 → 2026-08-08 [feature] [slice] S2 — Networked flight (server-authoritative) — **DONE; human gate passed 2026-08-08 (two browser windows, both players visible + smooth)**
   Code is source of truth (`@slur/shared` schema + `simulate()`; `apps/server/src/rooms/run-room.ts`; `apps/client/app/net/` + `app/game/net-canvas.tsx`). Spec + as-built reconcile: `.claude/phases/2026-08-07-s2-networked-flight.md`. Reconnection (`allowReconnection(20)`) landed here, not S4.
-- [ ] 2026-08-06 [feature] [slice] S3 — Track, hazards, collision
-  why: built on the shared sim → auto-networked, no port. Deterministic seeded track + finish gate, hazards (gaps/walls/gates), collision + death; client instanced track/hazards + camera juice + first bloom. Done: race a hazard track to a finish, can die/win.
+- [~] 2026-08-06 → 2026-08-08 [feature] [slice] S3 — Track, hazards, collision — **IMPLEMENTED + fix pass; typecheck/build/11 tests GREEN; human feel-gate PENDING**
+  why: built on the shared sim → auto-networked, no port. Deterministic seeded track + finish gate, hazards (gaps/walls/platforms), collision + death/respawn; client instanced track/hazards + edge-rails + first bloom + Quaternius ship model.
+  As-built + the 6 playtest fixes (esp. the client/server seed-desync root cause): `.claude/phases/2026-08-08-s3-track-hazards-collision.md` RECONCILE. **Resume:** confirm gaps show on a *fresh* load + jump/strafe feel, tune, confirm `SHIP_FACING`, then commit-verify. Then S4.
 - [ ] 2026-08-06 [feature] [slice] S4 — Session flow → complete Race
   why: makes it "a game". server lifecycle (lobby→running→results, finish detection, standings, restart, join-mid-run spawn-beside-pack); client landing/host/join/room routes, lobby + ship/colour pick, results, spectate. Done: full office race lobby→results with a winner. (Reconnection already landed in S2 — verify/harden here, don't rebuild.)
 - [ ] 2026-08-06 [feature] [slice] S5 — Combat & power-ups
@@ -22,8 +23,7 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
 - [ ] 2026-08-06 [feature] [slice] S7 — Survival mode + hardening
   why: second mode + robustness. endless track + chasing derezz-wall + distance/time scoring; LAN discovery (room-code QR / mDNS); reconnection hardening; perf tuning for 8–12 ships.
 
-- [ ] 2026-08-07 [research] [assets] Find CC-licensed X-wing-style / low-poly space-fighter GLBs for ship models
-  why: user wants X-wing-style ships. Surface CC-licensed options (Sketchfab CC, Poly Pizza, Quaternius, Kenney, Fab) + IP caveat — actual X-wing is Lucasfilm IP, so use CC "X-wing-style" or original fighters, not a rip. Do after context clear (user's call: "we'll do it once we're back").
+- [x] 2026-08-07 → 2026-08-08 [research] [assets] Find CC-licensed X-wing-style / low-poly space-fighter GLBs — **DONE.** Chose **Quaternius "Ultimate Spaceships Pack" (CC0)**; 5 gltf ships added under `apps/client/public/models/ships/` (Git LFS-tracked). Poly Pizza X-wing/TIE results excluded as Lucasfilm IP; one Sketchfab CC-BY-NC excluded (non-commercial). `bob.gltf` wired into `/run`. Remaining: per-class assignment + neon material/team-colour pass (S6).
 
 ## Done
 - [x] 2026-08-06 → 2026-08-06 [decision] [netcode] v1 mode = **Race** (finite, finish-line). Survival deferred to S7.

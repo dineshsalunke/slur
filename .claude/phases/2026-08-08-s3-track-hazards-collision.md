@@ -114,3 +114,191 @@ death + respawn, instanced rendering, first global Bloom, generation fairness co
 5. **Tuning constants:** `deathY`, respawn point rule, invuln duration, respawn velocity, derived
    max-jump-distance for gap constraint. All commented tuning fields (per project convention).
 6. **Render windowing:** `<Instances limit>` sizing + the Z-window cull range.
+
+---
+
+# S3 — PREP (implement spec for background agent)
+
+Build order = 5 commits, each ends green (`pnpm typecheck && pnpm build`). Shared-first: the sim +
+track land and compile before any caller changes. **Do NOT touch `/solo`** (S1) or the S2 net
+substrate beyond the two `simulate()` call-sites.
+
+## Keystone (locked): continuous x-intervals
+A segment expresses floor as **x-intervals** (`{x0,x1,y}`), gaps = uncovered x, blocks = AABBs.
+Movement stays S1-continuous. Rendering still instances (unit box, per-instance **scale** = span size).
+
+## Determinism constraints (non-negotiable — a desync = the game breaks)
+- **Per-segment seeding, O(1):** `segmentAt(seed,i)` seeds a *local* RNG from `hash(seed,i)` — it must
+  NOT advance one global stream (that would make `segmentAt` O(i) and non-random-access). Each segment
+  is independently reproducible.
+- **Integer/float only — NO transcendentals in generation.** `Math.sin/cos/tan/pow` can differ by an
+  ULP across JS engines (browser client vs Node server) → divergent geometry → divergent deaths. Keep
+  generation to `Math.imul`/int ops/`+-*/`/compare. (mulberry32 is all int ops — safe.)
+- Ship→segment index is pure: `segIndexForZ(z) = Math.floor(z / SEG_LEN)`.
+
+## C1 — `@slur/shared` track core (pure, no callers yet)
+
+**`sim/rng.ts`** — seeded PRNG + hash. `mulberry32` (canonical, public-domain — *verify the exact
+constants against bryc's PRNG reference at implement, add a determinism unit test*; do NOT ship from
+memory, per NN-2):
+```ts
+export function mulberry32(a: number): () => number { /* int-ops PRNG, returns [0,1) */ }
+export function hash2(seed: number, i: number): number { /* mix seed+i → uint32 for per-segment RNG */ }
+```
+
+**`sim/track.ts`** — types + generator + fairness + constants:
+```ts
+export interface FloorSpan { x0: number; x1: number; y: number }      // solid floor over [x0,x1] at height y
+export interface Block     { x0: number; x1: number; y0: number; y1: number } // lethal AABB (x×y) over the seg's z-range
+export interface Segment {
+  index: number; z0: number; z1: number;   // world z-range [z0, z1)
+  floors: FloorSpan[];                       // gaps = x not covered by any span
+  blocks: Block[];
+  isFinish: boolean;
+}
+export interface Track {
+  seed: number; finishZ: number;
+  segmentAt(i: number): Segment;
+  segmentAtZ(z: number): Segment;
+}
+export function makeTrack(seed: number): Track   // closure bound to seed — this is the `track` param
+```
+- **Start safe:** segments `i < START_SAFE` = full-width flat floor, no blocks (spawn/accel zone).
+- **Fairness (baked in, derived tuning):** gap width ≤ `MAX_GAP` (derived from `DEFAULT_JUMP` +
+  `maxCruise` air-distance × safety 0.8); height step ≤ jumpable rise; **always ≥1 continuous passable
+  x-corridor** entry→exit (no block+gap combo that walls the segment). Assert in the determinism test.
+- **Track constants** (commented, tunable): `SEG_LEN`, `TRACK_SEGMENTS` (→ `finishZ`), lane-width range,
+  block density, height-step set.
+
+## C2 — sim fields + collision + `simulate()` signature (compiles; callers updated minimally)
+
+**`sim/types.ts`** — append to `SimShip` + `spawnShip()`:
+`dead:boolean`, `respawnTimer:number`, `invulnTimer:number`, `lastSafeX:number`, `lastSafeZ:number`,
+`finished:boolean`. (Not `finishTime` — that's server-stamped, PlayerState-only.)
+
+**`constants.ts`** — new commented tuning: `deathY` (below lowest floor), `RESPAWN_DELAY`,
+`INVULN_TIME`, `respawnSetback` (z back-step), `respawnVz`, + the derived `MAX_GAP`/`MAX_STEP` used by
+the generator. Difficulty = a config edit (project convention).
+
+**`sim/step.ts`** — the S3 swap:
+```ts
+export function resolveCollisions(s: SimShip, track: Track, t: FlightTuning): void {
+  const seg = track.segmentAtZ(s.z);
+  // FLOOR: highest span covering s.x with span.y <= s.y + STEP_TOL (can't clip up through a ledge)
+  //   found & s.y <= floorY → land (y=floorY, vy<0→0, grounded, jumpsUsed=0, update lastSafeX/Z) else grounded=false
+  // DEATH: s.y < t.deathY (fell through a gap)  → markDead(s,t)
+  // DEATH: any seg.block AABB overlaps (s.x,s.y) → markDead(s,t)   [skip while invulnTimer>0]
+  // EDGE: keep S1 ±halfWidth stop (edges don't kill)
+  // FINISH: seg.isFinish && s.z >= track.finishZ && !s.finished → s.finished = true
+}
+function markDead(s, t){ s.dead = true; s.respawnTimer = t.RESPAWN_DELAY; s.vx=s.vy=s.vz=0 }
+function respawn(s, t){ s.dead=false; s.x=s.lastSafeX; s.z=s.lastSafeZ - t.respawnSetback; s.y=…; s.vz=t.respawnVz; s.invulnTimer=t.INVULN_TIME; s.grounded=true; s.jumpsUsed=0 }
+
+export function simulate(s, input, dt, t, track): void {   // ← track param added
+  if (s.dead) { s.respawnTimer -= dt; if (s.respawnTimer <= 0) respawn(s,t); return }
+  if (s.finished) { /* freeze or coast — TBD trivial */ }
+  applyLongitudinal; applyStrafe; applyJump; applyGravity; integrate;
+  resolveCollisions(s, track, t);
+  if (s.invulnTimer > 0) s.invulnTimer -= dt;
+}
+```
+Death is **predicted locally + reconciled** — deterministic track + inputs ⇒ client & server kill on the
+same tick, so no rubber-band. Server stays authority (can't cheat a wall).
+
+**`schema.ts`** — ⚠ **APPEND ONLY** (declaration order = wire format). After `connected`, append:
+`dead:boolean`, `respawnTimer:float32`, `invulnTimer:float32`, `lastSafeX:float32`, `lastSafeZ:float32`,
+`finished:boolean`, `finishTime:float32` (server-stamped; extra field beyond SimShip — structural match
+allows extras). `RunState.seed` already exists — no change.
+
+## C3 — server wire-in (`apps/server/src/rooms/run-room.ts`)
+`const track = makeTrack(this.state.seed)` once at room init; pass `track` into every `simulate(...)`
+call in the fixed-step loop. When a player's `finished` flips true, stamp `finishTime` from the room's
+authoritative elapsed/tick. (Multiplayer standings/results = S4 — S3 only sets the per-player flag+time.)
+
+## C4 — client predict/reconcile wire-in (`apps/client/app/net/prediction.ts` + `game/net-canvas.tsx`)
+Build `const track = makeTrack(room.state.seed)` (seed already synced). Pass `track` into `simulate()`
+in **both** the predict tick and the reconcile **replay** loop. Remote ships: unchanged (interpolated) —
+but read `dead` to hide/ghost a derezzed remote.
+
+## C5 — client rendering (`apps/client/app/game/scene/…`) + deps
+**Deps to add first** (VERIFY exact versions at implement via `npm view … peerDependencies`, respect
+three `<0.186`, honor the `minimumReleaseAge` gate): `@react-three/postprocessing` (≈3.0.4, wraps
+`postprocessing` ≈6.39.4, peer three `>=0.168 <0.186`). Add both to the catalog + client dep.
+- **`TrackView`** — each frame (imperative `useFrame`, NO React state): compute visible Z-window
+  `[camZ-BACK, camZ+AHEAD]` → segment indices → gather `floors`/`blocks` → drive two pooled
+  `<Instances limit=…>` (floors, blocks); per-instance **position + scale** from span/AABB. Pool by
+  `range`, never remount per frame (r3f.md hot-path rules).
+- **`FinishGate`** — one emissive arch/plane at `track.finishZ`.
+- **First Bloom** — single global `<Bloom mipmapBlur>` in `<EffectComposer multisampling={0}>`; neon via
+  HDR `emissive`+`emissiveIntensity>1`+`toneMapped={false}`. All glowing surfaces opt in.
+- **Death VFX** — minimal for core loop (hide/derezz-flash local ship while `dead`); full TRON derezz = S6.
+- Reuse S1 chase camera. Track is **local-only** (from seed) — never reconciled.
+
+## Verification the agent must run (report results)
+1. **Determinism test** (shared): `segmentAt(seed,i)` stable across calls; two `makeTrack(seed)` byte-identical
+   for i∈[0,N); fairness invariants hold (gap≤MAX_GAP, ≥1 passable corridor) for many seeds. `pnpm typecheck && pnpm build` green after EACH commit.
+2. Boot server + **two** clients on `/run`: both see the **same** track layout (determinism across
+   client/server); can **die** on a gap and on a block; **respawn** at last-safe; **cross the finish** →
+   `finished=true` + `finishTime` set. Remotes render each other's death.
+3. **Do NOT touch `/solo`.** Report: files changed, deviations, exact dep versions installed, what
+   remains for the human feel-gate.
+
+## Out of scope for the agent (do NOT build)
+Moving hazards, ring-gates, curves, extra obstacle shapes (S3.5/S5); lobby/results/standings/restart
+(S4 — S3 sets only the per-player `finished`/`finishTime`); lag comp/hermite/error-blend (out per S2);
+full TRON derezz VFX (S6); Survival endless (S7 — but `segmentAt` already supports unbounded `i`).
+
+---
+
+# S3 — RECONCILE (as-built, 2026-08-08)
+
+**Status: core loop IMPLEMENTED + a heavy bug/feel-fix pass. typecheck + build + 11/11 shared tests
+GREEN. Human feel-gate NOT yet signed off** (resume: confirm gaps render on a *fresh* load + jump/feel,
+then tune). The background agent built C1–C5 (commits `520f675..bec32fd`); the fixes below came from
+live playtesting in this session and are uncommitted-at-time-of-writing (grouped into the commits noted).
+
+## The bugs playtesting surfaced (and their fixes)
+
+1. **Client/server TRACK DESYNC — the root cause of "ship falls at ~120 with no visible gap."**
+   `NetCanvas` built the track from `room.state.seed` read *during render*. But (a) Colyseus state
+   mutations do NOT re-render React, and (b) decoded state arrives *after* the join handshake
+   (`colyseus.md`). So the client captured a **stale seed**, built a track that DIDN'T match the
+   server's, never rebuilt it (until an unrelated HMR re-render — hence "gaps only appear after HMR"),
+   and the server authoritatively killed the ship at hazards the client never drew. **Fix:** the seed
+   is now acquired in the **route `clientLoader`** (awaits decode via `$(room.state).listen('seed')`)
+   and passed to `NetCanvas` as a **stable prop** → track built once, matches server, ZERO reactive
+   subscriptions at the Canvas-wrapping parent. `schema.seed` default → `0` (unseeded sentinel).
+   *This was THE bug; the render tweaks below are real improvements but were not the cause.*
+
+2. **"Height steps" were invisible death-traps → redesigned to JUMP-ONTO PLATFORMS (user's call).**
+   The generator made steps up to `MAX_STEP`(0.8) tall while `stepTol`=0.3 only let you climb 0.3, and a
+   step segment had NO floor at y=0 — so you fell into the void under a barely-visible ledge. Now a
+   platform is a **full-width solid block** (`blocks:[{-HW,HW,0,H}]`) + a landable **top floor** at `H`;
+   hit the face low → derezz, clear the lip → land on top. Block-death upper bound made **strict**
+   (`s.y < b.y1`) so standing *on* the top is safe. Added `kind` to `Segment`; fairness test exempts
+   platforms (passable-by-jump, not by corridor). Renders for free (existing block+floor instancing).
+
+3. **Gap legibility + instanced-mesh vanishing.** Gaps rendered correctly (missing slabs) but
+   foreshortened to nothing at the shallow chase angle; worse, **all instanced meshes were being
+   frustum-culled** past ~z=120 (three caches an InstancedMesh bounding sphere once; we move instances
+   every frame → stale volume). **Fix:** `frustumCulled={false}` on floor/block/rail/scenery + added
+   **cyan edge-rails** that break at gaps (frame the track, make holes read).
+
+4. **Ship model.** Loaded Quaternius CC0 `bob.gltf` via drei `useGLTF` + `<Clone>`. Scale + lift are
+   DERIVED from measured accessor bounds (wingspan 10.5→~3.5u via `TARGET_WINGSPAN`; hull bottom lifted
+   to y=0). Team-colour emissive beacon for local(cyan)/remote(magenta) legibility. **OPEN: confirm nose
+   orientation** — `SHIP_FACING` is identity; flip to `[0,Math.PI,0]` if the nose faces the camera.
+
+5. **Feel tuning** (`constants.ts`, all live-tunable): **jump** height 1→2.4, apex 0.42→0.34, descent
+   0.3→0.26 (punchier + de-floated), and fixed a **dead variable-jump** (`minHeight` 1.5 > `height` made
+   early-release never fire → every jump was max height; now 0.8). **strafe** accel 120→300, clamp
+   200→80, damp 1→8 (snappier). `MAX_GAP` re-derives to 26.4 ≥ `SEG_LEN` 20 → fairness holds.
+
+6. **`useEffect` audit + convention.** All 5 client effects reasoned 5× and justified in-place; the
+   dev-HUD effect was refactored from `setState` to an imperative `textContent` ref write (zero
+   re-renders). New rule in `react-router.md`: every `useEffect` MUST carry a justification comment.
+
+## What remains (next session)
+- **S3 human feel-gate** — fresh-load gaps visible? jump/strafe feel? platforms clearly jumpable?
+- Tune: jump `JumpDesign`, strafe, platform frequency/height, `SHIP_FACING` orientation.
+- Then S4 (session flow / lobby→results). Ship-model team-colour material pass belongs to S6.
