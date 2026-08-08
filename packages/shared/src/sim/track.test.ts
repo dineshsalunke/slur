@@ -87,16 +87,23 @@ test( 'fairness invariants hold for every segment across many seeds', () => {
                 assert.ok( ! isHole( t.segmentAt( i + 1 ) ), `hole ${ i } not followed by a pad` );
                 assert.equal( t.segmentAt( i + 1 ).floors[ 0 ].y, 0, `pad after hole ${ i } not flat y=0` );
             } else {
-                // Non-hole: must leave a laterally-passable corridor (no all-lane wall).
-                assert.ok(
-                    passableCorridorWidth( s ) >= MIN_CORRIDOR - 1e-6,
-                    `seed ${ seed } seg ${ i } corridor ${ passableCorridorWidth( s ) } < ${ MIN_CORRIDOR }`,
-                );
-                // Any raised step is within jump reach.
+                // Any raised floor (a platform top) must be within a single jump's reach.
                 for ( const f of s.floors ) {
                     assert.ok(
                         f.y <= MAX_STEP + 1e-6,
-                        `seed ${ seed } seg ${ i } step ${ f.y } > MAX_STEP ${ MAX_STEP }`,
+                        `seed ${ seed } seg ${ i } raised floor ${ f.y } > MAX_STEP ${ MAX_STEP }`,
+                    );
+                }
+                if ( s.kind === 'platform' ) {
+                    // Passable by JUMPING onto it: a full-width solid body (no lateral corridor by design)
+                    // with a raised, jump-clearable top (height asserted above).
+                    assert.equal( s.blocks.length, 1, `seed ${ seed } platform ${ i } missing solid body` );
+                    assert.ok( s.floors[ 0 ].y > 0, `seed ${ seed } platform ${ i } is not raised` );
+                } else {
+                    // Every other non-hole segment must leave a laterally-passable corridor (no all-lane wall).
+                    assert.ok(
+                        passableCorridorWidth( s ) >= MIN_CORRIDOR - 1e-6,
+                        `seed ${ seed } seg ${ i } corridor ${ passableCorridorWidth( s ) } < ${ MIN_CORRIDOR }`,
                     );
                 }
             }

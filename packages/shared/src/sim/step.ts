@@ -159,10 +159,12 @@ export function resolveCollisions( s: SimShip, track: Track, t: FlightTuning ): 
         return;
     }
 
-    // Lethal block AABB (skipped during post-respawn invuln).
+    // Lethal block AABB (skipped during post-respawn invuln). Upper bound is STRICT (`< b.y1`) so that
+    // standing ON a platform's top (its floor sits exactly at b.y1) is safe, while hitting the face
+    // from below (y < top) crashes — that's the "jump onto it or crash" contract.
     if ( s.invulnTimer <= 0 ) {
         for ( const b of seg.blocks ) {
-            if ( s.x >= b.x0 && s.x <= b.x1 && s.y >= b.y0 && s.y <= b.y1 ) {
+            if ( s.x >= b.x0 && s.x <= b.x1 && s.y >= b.y0 && s.y < b.y1 ) {
                 markDead( s, t );
                 return;
             }

@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT } from '../constants.js';
 import { emptyInput } from './input.js';
 import { simulate } from './step.js';
-import { SEG_LEN, type Track } from './track.js';
+import { SEG_LEN, type Segment, type Track } from './track.js';
 import { spawnShip } from './types.js';
 
 const t = DEFAULT_TUNING;
@@ -15,10 +15,11 @@ const idle = emptyInput();
 
 // A hand-built flat track so these tests don't depend on the random generator's layout.
 function flatTrack( finishSeg: number ): Track {
-    const seg = ( i: number ) => ( {
+    const seg = ( i: number ): Segment => ( {
         index: i,
         z0: i * SEG_LEN,
         z1: ( i + 1 ) * SEG_LEN,
+        kind: 'plain',
         floors: [ { x0: -16, x1: 16, y: 0 } ],
         blocks: [],
         isFinish: i >= finishSeg,
@@ -45,10 +46,11 @@ test( 'grounded on a floor resets jumpsUsed and records a safe anchor (jump cont
 
 test( 'falling through a gap kills, then respawns at the last safe anchor', () => {
     // Track: floor everywhere EXCEPT segment 2 is a hole.
-    const seg = ( i: number ) => ( {
+    const seg = ( i: number ): Segment => ( {
         index: i,
         z0: i * SEG_LEN,
         z1: ( i + 1 ) * SEG_LEN,
+        kind: i === 2 ? 'gap' : 'plain',
         floors: i === 2 ? [] : [ { x0: -16, x1: 16, y: 0 } ],
         blocks: [],
         isFinish: false,

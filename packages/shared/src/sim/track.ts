@@ -27,10 +27,15 @@ export interface Block {
     y1: number;
 }
 
+// What a segment is, for rendering + the fairness test. Collision ignores this (it reads floors/blocks
+// generically); it exists so the test knows a `platform` is passable-by-jump, not passable-by-corridor.
+export type SegmentKind = 'plain' | 'block' | 'platform' | 'gap' | 'finish';
+
 export interface Segment {
     index: number;
     z0: number; // world z-range [z0, z1)
     z1: number;
+    kind: SegmentKind;
     floors: FloorSpan[]; // gaps = x uncovered by any span (fall-through)
     blocks: Block[];
     isFinish: boolean;
@@ -53,16 +58,16 @@ export const BLOCK_HEIGHT = 2.5; // block top (y). Below double-jump reach on pu
 const CORRIDOR_EXTRA = 8; // block corridors vary in [MIN_CORRIDOR, MIN_CORRIDOR+CORRIDOR_EXTRA] — some tight, some loose.
 
 // Archetype mix. Probabilities are the difficulty dial; they sum to 1 across the [0,1) roll.
-type Archetype = 'plain' | 'block' | 'step' | 'gap';
+type Archetype = 'plain' | 'block' | 'platform' | 'gap';
 const P_PLAIN = 0.4;
 const P_BLOCK = 0.22; // cumulative 0.62
-const P_STEP = 0.2; // cumulative 0.82
+const P_PLATFORM = 0.2; // cumulative 0.82
 // remainder (0.18) → gap
 
 function pickArchetype( r: number ): Archetype {
     if ( r < P_PLAIN ) return 'plain';
     if ( r < P_PLAIN + P_BLOCK ) return 'block';
-    if ( r < P_PLAIN + P_BLOCK + P_STEP ) return 'step';
+    if ( r < P_PLAIN + P_BLOCK + P_PLATFORM ) return 'platform';
     return 'gap';
 }
 
@@ -83,9 +88,9 @@ function buildSegment( seed: number, i: number ): Segment {
     const base = { index: i, z0, z1, blocks: [] as Block[], isFinish: false };
 
     // Finish: a flat full-width pad from TRACK_SEGMENTS onward (isFinish flips `finished` on cross).
-    if ( i >= TRACK_SEGMENTS ) return { ...base, floors: fullFloor( 0 ), isFinish: true };
+    if ( i >= TRACK_SEGMENTS ) return { ...base, kind: 'finish', floors: fullFloor( 0 ), isFinish: true };
     // Start-safe accel zone.
-    if ( i < START_SAFE ) return { ...base, floors: fullFloor( 0 ) };
+    if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
     const rng = mulberry32( hash2( seed, i ) );
     let arch = pickArchetype( rng() ); // consumes the SAME first roll as rawArchetypeAt(seed, i)
@@ -96,11 +101,14 @@ function buildSegment( seed: number, i: number ): Segment {
 
     switch ( arch ) {
         case 'gap':
-            return { ...base, floors: [] }; // no floor across the whole width → fall unless airborne
-        case 'step': {
-            // Raised full-width ledge; rise ≤ MAX_STEP so a single jump reaches it.
-            const y = MAX_STEP * ( 0.4 + 0.6 * rng() );
-            return { ...base, floors: fullFloor( y ) };
+            return { ...base, kind: 'gap', floors: [] }; // no floor across the whole width → fall unless airborne
+        case 'platform': {
+            // Raised SOLID section spanning the full width: JUMP onto it (land on the top floor) or
+            // CRASH into its lethal face. Top ≤ MAX_STEP so a single ground jump clears it. Renders as
+            // the block body (visible, solid) + the top floor — no more invisible floating ledge.
+            const y = MAX_STEP * ( 0.55 + 0.45 * rng() ); // 0.55..1.0 × MAX_STEP → reads clearly + jumpable
+            const body: Block = { x0: -HALF_WIDTH, x1: HALF_WIDTH, y0: 0, y1: y };
+            return { ...base, kind: 'platform', floors: fullFloor( y ), blocks: [ body ] };
         }
         case 'block': {
             // Flat floor + one lethal block against one edge, leaving a passable corridor on the other.
@@ -109,10 +117,10 @@ function buildSegment( seed: number, i: number ): Segment {
             const block: Block = openRight
                 ? { x0: -HALF_WIDTH, x1: HALF_WIDTH - corridor, y0: 0, y1: BLOCK_HEIGHT }
                 : { x0: -HALF_WIDTH + corridor, x1: HALF_WIDTH, y0: 0, y1: BLOCK_HEIGHT };
-            return { ...base, floors: fullFloor( 0 ), blocks: [ block ] };
+            return { ...base, kind: 'block', floors: fullFloor( 0 ), blocks: [ block ] };
         }
         default:
-            return { ...base, floors: fullFloor( 0 ) };
+            return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
     }
 }
 
