@@ -66,7 +66,7 @@ export function Scenery( { count = 50, seed = 1234 }: { count?: number; seed?: n
     } );
 
     return (
-        <instancedMesh ref={ ref } args={ [ undefined, undefined, count ] }>
+        <instancedMesh ref={ ref } frustumCulled={ false } args={ [ undefined, undefined, count ] }>
             <boxGeometry />
             <meshStandardMaterial emissive="#ff2bd6" emissiveIntensity={ 2 } toneMapped={ false } />
         </instancedMesh>

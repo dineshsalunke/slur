@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { SEG_LEN, type Track } from '@slur/shared';
+import { HALF_WIDTH, SEG_LEN, type Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useRef } from 'react';
 import * as THREE from 'three';
@@ -15,7 +15,10 @@ const BACK = 80;
 // (AHEAD+BACK)/SEG_LEN ≈ 49 segments; floors ~1/seg, blocks ~0.22/seg → these have generous margin.
 const FLOOR_LIMIT = 256;
 const BLOCK_LIMIT = 128;
+const RAIL_LIMIT = 128; // 2 edge rails per floored segment × ~49 visible ≈ 98
 const FLOOR_THICK = 0.6; // floor slab thickness; the span's `y` is the WALKABLE TOP, slab hangs below it
+const RAIL_W = 0.5; // edge-rail cross-section (x). Rails frame the track AND, by their absence, make gaps read.
+const RAIL_H = 0.5; // edge-rail cross-section (y), standing proud of the floor so it reads at the shallow chase angle
 
 const _m = new THREE.Object3D(); // module-scope scratch — no per-frame allocation (r3f hot-path rule)
 const _hidden = ( () => {
@@ -58,24 +61,36 @@ export function TrackView( { track }: { track: Track } ) {
     const world = useWorld();
     const floorRef = useRef< THREE.InstancedMesh | null >( null );
     const blockRef = useRef< THREE.InstancedMesh | null >( null );
+    const railRef = useRef< THREE.InstancedMesh | null >( null );
     const prevFloor = useRef( 0 );
     const prevBlock = useRef( 0 );
+    const prevRail = useRef( 0 );
 
     useFrame( () => {
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
         const floors = floorRef.current;
         const blocks = blockRef.current;
-        if ( ! sim || ! floors || ! blocks ) return;
+        const rails = railRef.current;
+        if ( ! sim || ! floors || ! blocks || ! rails ) return;
 
         const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
         const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );
 
         let fi = 0;
         let bi = 0;
+        let ri = 0;
         for ( let i = i0; i <= i1; i++ ) {
             const seg = track.segmentAt( i );
             const cz = ( seg.z0 + seg.z1 ) / 2;
             const len = seg.z1 - seg.z0;
+            // Edge rails on floored segments only → they break over gaps, making holes read at the
+            // shallow chase angle (a flat ribbon's gaps foreshorten to nothing). Rail rides the floor
+            // height, so it also outlines raised platforms.
+            if ( seg.floors.length > 0 ) {
+                const railY = seg.floors[ 0 ].y + RAIL_H / 2;
+                ri = put( rails, ri, RAIL_LIMIT, -HALF_WIDTH, railY, cz, RAIL_W, RAIL_H, len );
+                ri = put( rails, ri, RAIL_LIMIT, HALF_WIDTH, railY, cz, RAIL_W, RAIL_H, len );
+            }
             for ( const f of seg.floors ) {
                 fi = put(
                     floors,
@@ -105,15 +120,21 @@ export function TrackView( { track }: { track: Track } ) {
         }
         park( floors, fi, prevFloor.current );
         park( blocks, bi, prevBlock.current );
+        park( rails, ri, prevRail.current );
         prevFloor.current = fi;
         prevBlock.current = bi;
+        prevRail.current = ri;
         floors.instanceMatrix.needsUpdate = true;
         blocks.instanceMatrix.needsUpdate = true;
+        rails.instanceMatrix.needsUpdate = true;
     } );
 
     return (
         <>
-            <instancedMesh ref={ floorRef } args={ [ undefined, undefined, FLOOR_LIMIT ] }>
+            { /* frustumCulled=false: we mutate instanceMatrix every frame but three only computes the
+                 InstancedMesh bounding sphere ONCE — a stale volume culls the whole track once the ship
+                 flies past it (~z=120), making the floor/rails/blocks vanish. These are always on-screen. */ }
+            <instancedMesh ref={ floorRef } frustumCulled={ false } args={ [ undefined, undefined, FLOOR_LIMIT ] }>
                 <boxGeometry />
                 <meshStandardMaterial
                     emissive="#0aa5ff"
@@ -122,12 +143,21 @@ export function TrackView( { track }: { track: Track } ) {
                     toneMapped={ false }
                 />
             </instancedMesh>
-            <instancedMesh ref={ blockRef } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
+            <instancedMesh ref={ blockRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
                 <meshStandardMaterial
                     emissive="#ff2740"
                     emissiveIntensity={ 2.2 }
                     color="#1a0206"
+                    toneMapped={ false }
+                />
+            </instancedMesh>
+            <instancedMesh ref={ railRef } frustumCulled={ false } args={ [ undefined, undefined, RAIL_LIMIT ] }>
+                <boxGeometry />
+                <meshStandardMaterial
+                    emissive="#39ffe6"
+                    emissiveIntensity={ 2.6 }
+                    color="#062b28"
                     toneMapped={ false }
                 />
             </instancedMesh>
