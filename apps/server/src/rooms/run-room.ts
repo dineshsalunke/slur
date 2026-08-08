@@ -3,12 +3,14 @@ import {
     createFixedStep,
     DEFAULT_TUNING,
     FIXED_DT,
-    type InputMessage,
     INPUT_MESSAGE,
+    type InputMessage,
+    makeTrack,
     type PlayerInput,
     PlayerState,
     RunState,
     simulate,
+    type Track,
 } from '@slur/shared';
 
 // How long a dropped client may reconnect before we evict them (office WiFi / lid-close is short).
@@ -21,23 +23,29 @@ const MAX_QUEUED_INPUTS = 120;
 // schema instance (it structurally satisfies SimShip), so every physics mutation is a tracked delta
 // flushed at patchRate. Clients send seq-numbered inputs; the server records lastProcessedInput so
 // each client can reconcile (drop acked inputs, replay the rest).
-export class RunRoom extends Room<{ state: RunState }> {
+export class RunRoom extends Room< { state: RunState } > {
     maxClients = 12;
 
     // Buffered per-player inputs, drained inside the fixed-step loop (never applied on the message
     // clock — keeps all mutation on one clock, avoids torn deltas). Keyed by sessionId.
-    private queues = new Map<string, PlayerInput[]>();
+    private queues = new Map< string, PlayerInput[] >();
 
     // Fixed-timestep accumulator (shared with the client) — advances server wall-time in whole
     // FIXED_DT ticks so physics is deterministic regardless of setSimulationInterval jitter.
     private advance = createFixedStep( FIXED_DT );
 
+    // The authoritative track — generated ONCE from the room seed (same seed the client builds from),
+    // so server collision and client prediction resolve on identical geometry. Not schema (never synced
+    // tile-by-tile); it's a pure function of state.seed, which IS synced.
+    private track!: Track;
+
     onCreate(): void {
         this.state = new RunState();
-        this.state.seed = ( Math.random() * 0xffffffff ) >>> 0; // deterministic scenery seed, synced to every client
+        this.state.seed = ( Math.random() * 0xffffffff ) >>> 0; // deterministic scenery + track seed, synced to every client
+        this.track = makeTrack( this.state.seed );
         this.patchRate = 50; // 20Hz network flush (default) — decoupled from the 60Hz sim
 
-        this.onMessage<InputMessage>( INPUT_MESSAGE, ( client, msg ) => {
+        this.onMessage< InputMessage >( INPUT_MESSAGE, ( client, msg ) => {
             const q = this.queues.get( client.sessionId );
             if ( ! q || ! msg?.inputs?.length ) return;
             for ( const input of msg.inputs ) q.push( input );
@@ -60,8 +68,10 @@ export class RunRoom extends Room<{ state: RunState }> {
             const q = this.queues.get( sessionId );
             const input = q?.shift();
             if ( ! input ) return; // no queued input this tick → ship holds; the input will arrive & step next tick
-            simulate( player, input, dt, DEFAULT_TUNING );
+            simulate( player, input, dt, DEFAULT_TUNING, this.track );
             player.lastProcessedInput = input.seq;
+            // Stamp the authoritative finish time the tick `finished` first latches (S4 owns standings).
+            if ( player.finished && player.finishTime === 0 ) player.finishTime = this.state.elapsed;
         } );
         this.state.elapsed += dt;
     }
@@ -71,12 +81,14 @@ export class RunRoom extends Room<{ state: RunState }> {
         // Staggered spawn so joiners don't materialise on top of the pack (server-chosen, never client).
         p.x = this.state.players.size * 4;
         p.z = 0;
+        p.lastSafeX = p.x; // spawn is in the start-safe zone → it's the first respawn anchor
+        p.lastSafeZ = p.z;
         this.state.players.set( client.sessionId, p );
         this.queues.set( client.sessionId, [] );
     }
 
     // Abnormal disconnect: hold the seat open for a reconnection window; ghost the ship meanwhile.
-    async onDrop( client: Client ): Promise<void> {
+    async onDrop( client: Client ): Promise< void > {
         const p = this.state.players.get( client.sessionId );
         if ( p ) p.connected = false;
         try {
