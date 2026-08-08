@@ -34,6 +34,14 @@ export interface FlightTuning {
     maxJumps: number; // total jumps before landing. 2 = double jump · 1 = single · 3 = triple.
     coyoteTime: number; // grace window (s) after leaving a ledge where a jump still counts. Higher = more forgiving.
     jumpBuffer: number; // window (s) before landing where an early jump press still fires on touchdown. Higher = more forgiving.
+
+    // ── S3 collision / death / respawn (all in world units + seconds) ──
+    deathY: number; // fall-through kill plane: y below this = fell through a gap → death. MUST be under the lowest floor (0) with margin.
+    stepTol: number; // landing snap tolerance (units): you land on a floor/ledge when within this of it — also caps how high a ledge you can "step up" onto without clipping through.
+    respawnDelay: number; // seconds derezzed before you respawn (the time-loss stake).
+    invulnTime: number; // seconds of block-immunity right after respawn so you don't instantly re-die on the same hazard (falling still kills).
+    respawnSetback: number; // world-z you're pushed BACK from the last safe point on respawn — re-approach the hazard, don't teleport past it.
+    respawnVz: number; // forward speed (u/s) you respawn with (a fraction of cruise) so you're not dead-stopped.
 }
 
 // Jump authored by feel, physics derived — GDC "Building a Better Jump" (Pittman).
@@ -85,6 +93,12 @@ export const DEFAULT_TUNING: FlightTuning = {
     maxJumps: 2,
     coyoteTime: 0.1,
     jumpBuffer: 0.1,
+    deathY: -6, // floors sit at y>=0; -6 gives a clear fall before death registers
+    stepTol: 0.3,
+    respawnDelay: 1, // 1s dead — a real setback, not a game-over
+    invulnTime: 1.5,
+    respawnSetback: 12, // ~half a segment behind the last safe ground
+    respawnVz: 20, // ~36% of maxCruise — moving, but you lost your speed
 };
 
 // Fraction of the theoretical jump reach the generator may use when sizing a hazard — leaves headroom

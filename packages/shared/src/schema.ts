@@ -37,6 +37,16 @@ export class PlayerState extends Schema implements SimShip {
     // ── Netcode bookkeeping (NOT part of SimShip) ──
     @type( 'uint32' ) lastProcessedInput = 0; // seq of the last input the server consumed for this player → client drops acked pending inputs, replays the rest
     @type( 'boolean' ) connected = true; // false while dropped (reconnection window open) → peers ghost the ship
+
+    // ── S3 track/collision state — APPENDED after `connected` (declaration order = wire format). These
+    //    mirror the new SimShip fields in the SAME order so simulate() mutates them in place. ──
+    @type( 'boolean' ) dead = false;
+    @type( 'float32' ) respawnTimer = 0;
+    @type( 'float32' ) invulnTimer = 0;
+    @type( 'float32' ) lastSafeX = 0;
+    @type( 'float32' ) lastSafeZ = 0;
+    @type( 'boolean' ) finished = false;
+    @type( 'float32' ) finishTime = 0; // server-stamped elapsed at finish; extra beyond SimShip (structural match allows extras)
 }
 
 // Room-wide state. `seed` drives deterministic scenery/track on every client (never sync geometry).
@@ -44,5 +54,5 @@ export class RunState extends Schema {
     @type( 'uint8' ) phase = 1; // S2 stays running(1); 0=lobby / 2=finished are S4
     @type( 'float32' ) elapsed = 0;
     @type( 'uint32' ) seed = 1234;
-    @type( { map: PlayerState } ) players = new MapSchema<PlayerState>();
+    @type( { map: PlayerState } ) players = new MapSchema< PlayerState >();
 }

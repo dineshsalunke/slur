@@ -4,6 +4,7 @@
 
 import type { FlightTuning } from '../constants.js';
 import type { PlayerInput } from './input.js';
+import type { Segment, Track } from './track.js';
 import type { SimShip } from './types.js';
 
 export function applyLongitudinal( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
@@ -66,16 +67,24 @@ export function integrate( s: SimShip, dt: number ): void {
     s.z += s.vz * dt;
 }
 
-// S3 replaces this with real track collision. For now: flat floor at y=0 + side walls.
-export function resolveCollisions( s: SimShip, t: FlightTuning ): void {
+// Legacy S1 collision: an INFINITE flat floor at y=0 + side walls. Kept for /solo, which runs
+// simulate() with no track. Owns the grounded/jumpsUsed reset that makes jump work.
+function resolveFlatFloor( s: SimShip, t: FlightTuning ): void {
     if ( s.y <= 0 ) {
         s.y = 0;
         if ( s.vy < 0 ) s.vy = 0;
         s.grounded = true;
         s.jumpsUsed = 0;
+        s.lastSafeX = s.x;
+        s.lastSafeZ = s.z;
     } else {
         s.grounded = false;
     }
+    clampToEdges( s, t );
+}
+
+// Edge walls: STOP + slide (S1 behavior) — edges don't kill, else strafing is punishing.
+function clampToEdges( s: SimShip, t: FlightTuning ): void {
     if ( s.x < -t.halfWidth ) {
         s.x = -t.halfWidth;
         if ( s.vx < 0 ) s.vx = 0;
@@ -85,13 +94,108 @@ export function resolveCollisions( s: SimShip, t: FlightTuning ): void {
     }
 }
 
+// Highest landable floor height under the ship's lateral x within reach (span.y <= s.y + stepTol so
+// you can't clip up through a ledge from below), or null if the ship is over a gap here.
+function floorUnder( seg: Segment, x: number, y: number, stepTol: number ): number | null {
+    let best: number | null = null;
+    for ( const f of seg.floors ) {
+        if ( x >= f.x0 && x <= f.x1 && f.y <= y + stepTol ) {
+            if ( best === null || f.y > best ) best = f.y;
+        }
+    }
+    return best;
+}
+
+function markDead( s: SimShip, t: FlightTuning ): void {
+    s.dead = true;
+    s.respawnTimer = t.respawnDelay;
+    s.vx = 0;
+    s.vy = 0;
+    s.vz = 0;
+}
+
+// Reposition to the last safe ground, stepped back so you re-approach the hazard. Falls back to the
+// exact last-safe point if the setback lands over a gap (guarantees floor under the respawn).
+function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
+    s.dead = false;
+    s.x = s.lastSafeX;
+    let z = s.lastSafeZ - t.respawnSetback;
+    let floorY = floorUnder( track.segmentAtZ( z ), s.x, Number.POSITIVE_INFINITY, t.stepTol );
+    if ( floorY === null ) {
+        z = s.lastSafeZ; // setback fell in a gap → land exactly where we last stood
+        floorY = floorUnder( track.segmentAtZ( z ), s.x, Number.POSITIVE_INFINITY, t.stepTol ) ?? 0;
+    }
+    s.z = z;
+    s.y = floorY;
+    s.vx = 0;
+    s.vy = 0;
+    s.vz = t.respawnVz;
+    s.grounded = true;
+    s.jumpsUsed = 0;
+    s.invulnTimer = t.invulnTime;
+}
+
+// S3 track collision: per-tile floor (land + reset jump), gap → fall → death, block AABB → death,
+// edge walls stop, finish gate latches `finished`. Replaces the S1 flat floor. Preserves the
+// grounded/jumpsUsed reset contract (jump breaks otherwise).
+export function resolveCollisions( s: SimShip, track: Track, t: FlightTuning ): void {
+    const seg = track.segmentAtZ( s.z );
+
+    const floorY = floorUnder( seg, s.x, s.y, t.stepTol );
+    if ( floorY !== null && s.y <= floorY ) {
+        s.y = floorY;
+        if ( s.vy < 0 ) s.vy = 0;
+        s.grounded = true;
+        s.jumpsUsed = 0;
+        s.lastSafeX = s.x;
+        s.lastSafeZ = s.z;
+    } else {
+        s.grounded = false;
+    }
+
+    // Fell through a gap → death (invuln does NOT save you from falling).
+    if ( s.y < t.deathY ) {
+        markDead( s, t );
+        return;
+    }
+
+    // Lethal block AABB (skipped during post-respawn invuln).
+    if ( s.invulnTimer <= 0 ) {
+        for ( const b of seg.blocks ) {
+            if ( s.x >= b.x0 && s.x <= b.x1 && s.y >= b.y0 && s.y <= b.y1 ) {
+                markDead( s, t );
+                return;
+            }
+        }
+    }
+
+    clampToEdges( s, t );
+
+    if ( seg.isFinish && s.z >= track.finishZ && ! s.finished ) s.finished = true;
+}
+
 // The shared authoritative step: one fixed-dt advance of a ship from its input. Imported by both
-// the client (local prediction, S1) and the server (authority, S2) — identical math, same dt.
-export function simulate( s: SimShip, input: PlayerInput, dt: number, t: FlightTuning ): void {
+// the client (prediction) and the server (authority) — identical math, same dt. `track` is optional:
+// with it, real S3 collision runs (networked /run); without it, the S1 flat floor (/solo, unchanged).
+export function simulate( s: SimShip, input: PlayerInput, dt: number, t: FlightTuning, track?: Track ): void {
+    // Dead: freeze the sim and count down to respawn (predicted locally, reconciled by the server —
+    // deterministic track + inputs ⇒ both ends kill/respawn on the same tick, so no rubber-band).
+    if ( s.dead ) {
+        s.respawnTimer -= dt;
+        if ( s.respawnTimer <= 0 ) {
+            if ( track ) respawn( s, track, t );
+            else s.dead = false; // no track (solo) → nothing to respawn onto; just clear
+        }
+        return;
+    }
+
     applyLongitudinal( s, input, t, dt );
     applyStrafe( s, input, t, dt );
     applyJump( s, input, t, dt );
     applyGravity( s, t, dt );
     integrate( s, dt );
-    resolveCollisions( s, t );
+    if ( track ) resolveCollisions( s, track, t );
+    else resolveFlatFloor( s, t );
+
+    if ( s.invulnTimer > 0 ) s.invulnTimer -= dt;
 }
