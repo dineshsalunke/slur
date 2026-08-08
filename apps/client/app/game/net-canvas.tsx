@@ -1,5 +1,6 @@
 import { getStateCallbacks } from '@colyseus/sdk';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { createFixedStep, FIXED_DT, INPUT_MESSAGE, makeTrack, type Track as TrackHandle } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useWorld, WorldProvider } from 'koota/react';
@@ -8,14 +9,15 @@ import type { PerspectiveCamera } from 'three';
 import { copyShip, createPredictor, type Predictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
 import { updateChaseCamera } from './camera/chase';
-import { netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
+import { localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
 import { syncRenderSystem } from './ecs/systems';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './ecs/traits';
 import { world } from './ecs/world';
 import { attachKeyboard } from './input/keyboard';
+import { FinishGate } from './scene/finish-gate';
 import { Scenery } from './scene/scenery';
 import { Ships } from './scene/ship';
-import { Track } from './scene/track';
+import { TrackView } from './scene/track-view';
 
 // Send buffered inputs at 30Hz (not per render frame) — the batched sender drains every input
 // produced since the last send; the server drains them 1-per-tick, so cadence is a bandwidth knob.
@@ -29,7 +31,8 @@ function NetLoop( { predictor, track }: { predictor: Predictor; track: TrackHand
     useFrame( ( state, delta ) => {
         const alpha = advance( delta, ( dt ) => netFlightSystem( world, dt, predictor, track ) );
         syncRenderSystem( world, alpha ); // local ship only (remotes have no Sim/Prev)
-        remoteInterpSystem( world ); // remote ships
+        remoteInterpSystem( world ); // remote ships (also hides derezzed remotes)
+        localDeathVfxSystem( world ); // hide the local ship while derezzed
         updateChaseCamera( state.camera as PerspectiveCamera, world, delta );
     } );
     return null;
@@ -118,7 +121,7 @@ export function NetCanvas() {
                 } else {
                     const interp = ent.get( Interp );
                     if ( ! interp ) return;
-                    interp.buffer.push( { t: performance.now(), x: p.x, y: p.y, z: p.z, vx: p.vx } );
+                    interp.buffer.push( { t: performance.now(), x: p.x, y: p.y, z: p.z, vx: p.vx, dead: p.dead } );
                     if ( interp.buffer.length > 120 ) interp.buffer.shift(); // trim to ~1s @ 20Hz
                 }
             } );
@@ -154,9 +157,13 @@ export function NetCanvas() {
                 <color attach="background" args={ [ '#05060a' ] } />
                 <ambientLight intensity={ 0.5 } />
                 <NetLoop predictor={ predictor } track={ track } />
-                <Track />
+                <TrackView track={ track } />
+                <FinishGate track={ track } />
                 <Scenery count={ 50 } seed={ room.state.seed || 1234 } />
                 <Ships />
+                <EffectComposer multisampling={ 0 }>
+                    <Bloom mipmapBlur intensity={ 1.2 } luminanceThreshold={ 0.6 } luminanceSmoothing={ 0.2 } />
+                </EffectComposer>
             </Canvas>
             { import.meta.env.DEV && <NetDebugHud /> }
         </WorldProvider>

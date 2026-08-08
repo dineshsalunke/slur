@@ -10,6 +10,8 @@ disallowWorkspaceCycles: true
 catalog:
   '@colyseus/schema': ^4.0.30
   '@colyseus/sdk': ^0.17.43 # 0.17 client SDK (NOT legacy colyseus.js, frozen at 0.16); exports getStateCallbacks
+  '@react-three/postprocessing': ^3.0.4 # R3F bloom wrapper; peer three >= 0.156, fiber ^9
+  postprocessing: ^6.39.4 # bloom engine; peer three ">= 0.168 < 0.186" — pins the three ceiling with the catalog above
   react: ^19.2.8
   react-dom: ^19.2.8
   three: ^0.185.1 # caret on 0.x locks the minor → stays <0.186 (postprocessing peer)

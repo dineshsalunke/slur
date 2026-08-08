@@ -4,6 +4,14 @@ import type { Predictor } from '../../net/prediction';
 import { currentInput } from '../input/keyboard';
 import { Interp, LocalPlayer, Prev, Remote, Render, Sim } from './traits';
 
+// Death VFX (minimal for the core loop): hide the local ship while it's derezzed. Full TRON derezz is
+// S6. Imperative (mutates the live Render group), no React state.
+export function localDeathVfxSystem( world: World ): void {
+    world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ] ) => {
+        grp.visible = ! s.dead;
+    } );
+}
+
 // Render remote ships this far in the past so we always have a "next" snapshot to interpolate toward
 // (netcode: ≥1 patch interval; patchRate is 50ms, so 100ms = 2 patches of slack for jitter/loss).
 const RENDER_DELAY_MS = 100;
@@ -63,5 +71,6 @@ export function remoteInterpSystem( world: World ): void {
         }
         grp.position.set( x, y, z );
         grp.rotation.z = -( vx / DEFAULT_TUNING.strafeClamp ) * 0.5; // cosmetic bank (mirrors syncRenderSystem)
+        grp.visible = ! buf[ buf.length - 1 ].dead; // hide a derezzed remote (latest server truth)
     } );
 }
