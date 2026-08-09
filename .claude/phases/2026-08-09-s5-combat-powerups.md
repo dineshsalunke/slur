@@ -102,3 +102,29 @@ Grounded in netcode.md / colyseus.md (source-verified acceptance criteria):
 3. C1 touches the S2-sensitive room lifecycle — but it's behavior-identical code-motion; the room stays
    loader-owned, only the effect BODY moves to a module fn. Verify two-tab still races before C2.
 4. Projectile y-overlap generous for v1 (bolts at shooter y) — refine if it feels off at the feel-gate.
+
+---
+
+## Reconcile — S5 combat CLOSED (2026-08-10; human gate passed)
+
+**Planned vs built** — the thin-vertical slice landed as designed, C1→C4c, each commit reviewed + green:
+- C1 `9538e0e` bridge extraction · C2 `027116b` shared foundations (stun/projectiles/pickups; the `SIM_SHIP_KEYS`
+  guard tripped on a stale test fixture — working as designed) · C3 `4c41a46` server authority · C4a `6d20b99`
+  client views · C4b `87567cb` hit-spark + stun cue · C4c `fd6bdb3` threat HUD. Feel-gate tuning + dev-HUD
+  readout `a310b92`.
+- **Deviations from Prep (all caught in review/playtest, all improvements):** fire-feedback split C4b(spark+stun
+  cue)/C4c(threat HUD); the on-ship **stun-flicker** was added beyond Prep's spark-only scope after the playtest
+  showed a landed hit was invisible — victim ship now strobes off predicted `Sim.stunTimer` (local) / a new
+  snapshot `stunned` flag carried like `dead` (remote); pickup placement made **hazard-aware** (plain segments
+  only); race-boundary **`clearCombat`** added (stale bolts/held/pickups were leaking across rounds).
+
+**Debugging note (instrument-first win):** "bolt fires but doesn't affect the ship" was NOT a hit-detection bug —
+it was zero hit feedback. Surfacing authoritative `stunTimer` as `st=` in the dev HUD isolated server-hit
+(working) from client-visual (missing). See [[instrument-dont-theorize]].
+
+**Human gate:** passed 2026-08-10 — two-tab, fire → bolt → hit → spark + stun-flicker on both clients.
+Functionality locked; visuals polish deferred.
+
+**Deferred:** auto-lock (BC8) · rearview mirror · Mine/Shield/Boost pickups · wider `BOLT_HALF`/aim-assist if aim
+feels fussy · combat visuals polish · **hardening**: per-bolt `onChange` detach, `@colyseus/testing` room test,
+`overlays.css` maxLines.

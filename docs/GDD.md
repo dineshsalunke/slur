@@ -191,8 +191,8 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Hazards + collision — **AABB** (footprint = model box), swept land + swept body-kill | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable); generous grounded rule; WYSIWYG |
 | Death → shard-burst VFX → respawn (position-scoped grace) | **LIVE** | 1s derezz, setback + re-approach |
 | Netcode — authoritative, predict+reconcile, interp, drop-in | **LIVE** | inputs-not-positions, 60Hz sim / 20Hz patch |
-| **Boost** | **PLANNED (S5)** | *removed from base flight → pickup power-up* |
-| Power-ups + combat (Bolt/Mine/Shield/Boost/…) | **PLANNED (S5)** | `E` reserved; server-authoritative hits |
+| **Boost** | **PLANNED (S5 fast-follow)** | *removed from base flight → pickup power-up; v1 shipped Bolt only* |
+| Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine/Shield/Boost/auto-lock = fast-follows |
 | Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); `armour` / combat stats → S5/S6 |
 | Session flow (lobby→race→results, standings, restart) | **PLANNED (S4)** | one seeded track runs today |
 | Survival mode (endless + chase-wall) | **PLANNED (S7)** | Race is the v1 mode |
@@ -218,8 +218,8 @@ render only). Implement one at a time; the BC changes are called out so they're 
 
 | BC | Capability | Status | Note |
 |----|-----------|--------|------|
-| **BC1** | Dynamic entities — server-sim projectiles/mines/drops/decoys (MapSchema + client interp) | **keystone (S5)** | unlocks the whole Mess half |
-| **BC2** | Status effects — networked per-ship modifiers the sim + client read | planned | the disruption "verbs" |
+| **BC1** | Dynamic entities — server-sim projectiles/mines/drops/decoys (MapSchema + client interp) | **LIVE (S5)** | keystone shipped — bolts server-simmed + client-interpolated; mines/drops/decoys ride the same pipe |
+| **BC2** | Status effects — networked per-ship modifiers the sim + client read | **partial (S5: stun)** | the disruption "verbs" — `stunTimer` shipped (predicted); spin/slow/reverse/blind still open |
 | **BC3-trig** | Player-triggered world events (a switch arms/toggles a hazard or gate) | candidate | NOT autonomous motion |
 | **BC4** | Position discontinuity — sim handles teleport/blink/grapple + prediction replays it | candidate | |
 | **BC5** | Floor/zone metadata — a floor/zone carries a type that modifies the sim | candidate | cheap, high value |
