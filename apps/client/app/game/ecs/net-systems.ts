@@ -5,6 +5,19 @@ import { currentInput } from '../input/keyboard';
 import { localRole } from '../spectator';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
 
+// Freeze the local ship's interpolation when the sim ISN'T stepping (lobby/countdown/finished/spectating):
+// copy Sim→Prev so syncRenderSystem's prev→sim lerp becomes the identity and the ship sits still at its
+// authoritative pose. Without this, netFlightSystem (the only Prev writer) doesn't run, so a STALE Prev gets
+// lerped toward Sim by the oscillating fixed-step alpha → violent per-frame jitter (and the lobby hero-cam
+// that looks at the ship flickers). Cheap: the single local entity.
+export function freezeLocalPrev( world: World ): void {
+    world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
+        prev.x = s.x;
+        prev.y = s.y;
+        prev.z = s.z;
+    } );
+}
+
 // Death VFX (minimal for the core loop): hide the local ship while it's derezzed OR while spectating (a
 // mid-race joiner owns a frozen local ship it must not see). Full TRON derezz is S6. Imperative (mutates the
 // live Render group), no React state.

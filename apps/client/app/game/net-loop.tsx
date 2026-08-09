@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import type { PerspectiveCamera } from 'three';
 import type { Predictor } from '../net/prediction';
 import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from './camera/chase';
-import { localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
+import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
 import { syncRenderSystem } from './ecs/systems';
 import { localRole, runPhase, spectatorCam } from './spectator';
 
@@ -19,11 +19,13 @@ export function NetLoop( { predictor, track }: { predictor: Predictor; track: Tr
     useFrame( ( state, delta ) => {
         // Predict ONLY while actually racing (and not spectating) — frozen otherwise, matching the server,
         // which integrates ships ONLY in `racing`. Lobby/countdown/finished ships hold their pose.
+        const racing = runPhase.value === PHASE.racing && ! localRole.spectating;
         const alpha = advance( delta, ( dt ) => {
-            if ( runPhase.value === PHASE.racing && ! localRole.spectating ) {
-                netFlightSystem( world, dt, predictor, track );
-            }
+            if ( racing ) netFlightSystem( world, dt, predictor, track );
         } );
+        // When frozen, netFlightSystem doesn't refresh Prev → syncRenderSystem would lerp a STALE Prev→Sim by
+        // the oscillating alpha and jitter the ship every frame. Keep Prev==Sim so it renders its static pose.
+        if ( ! racing ) freezeLocalPrev( world );
         syncRenderSystem( world, alpha ); // local ship only (remotes have no Sim/Prev)
         remoteInterpSystem( world ); // remote ships (also hides derezzed remotes)
         localDeathVfxSystem( world ); // hide the local ship while derezzed or spectating
