@@ -61,7 +61,7 @@ React Router (SPA)
 
 - **One shared `simulate(state, input, dt)` module** in `@slur/shared`, imported by BOTH server (authority) and client (prediction). Divergent sim code = misprediction; a single module is the fix (see `netcode.md`).
 - **Integration: semi-implicit Euler** over a plain framework-free `SimShip` shape — the S2 `PlayerState` schema declares the same fields, so a Schema instance structurally satisfies it → identical sim server-side, zero rework. Kinematic control (no physics engine). `stepShip` is split into pure phase-mutators; `resolveCollisions` is the seam S3 swaps for real track collision. **Jump is authored intuitively** (height + apex/descent times) and the physics derived — GDC *"Building a Better Jump"* (`DEFAULT_JUMP` → `deriveJump`).
-- **Client = two loops:** fixed-60 physics accumulator + render on rAF/display-refresh (not pinnable to 60), bridged by **interpolation** (`advance()` returns `alpha`; render lerps prev→curr into `Object3D` refs via koota — no per-frame React re-render). Same accumulator the server uses. Cameras: rubberband chase now; **rearview mirror** (2nd render pass) is an S5 requirement.
+- **Client = two loops:** fixed-60 physics accumulator + render on rAF/display-refresh (not pinnable to 60), bridged by **interpolation** (`advance()` returns `alpha`; render lerps prev→curr into `Object3D` refs via koota — no per-frame React re-render). Same accumulator the server uses. Cameras: rubberband chase now; **rearview mirror** (2nd render pass) was **deferred at S5** — v1 ships a **threat-warning HUD** for rear awareness (cheaper; no bloom/render-priority cost). The mirror is a fast-follow (rides with homing/mines).
 - **Fixed timestep 60 Hz** (accumulator loop) on server via `setSimulationInterval`; **`patchRate` ~20 Hz** to clients (decoupled from sim rate).
 - Client renders at display rate (60+), **interpolating** (~50–100 ms delay; linear pos / slerp rot) between authoritative snapshots for remote ships.
 - **Local player:** client-side prediction from local input + **server reconciliation** (`lastProcessedInput` seq). On LAN this can start interpolate-only and add prediction if felt needed — see `netcode.md` "Pragmatic Baseline for LAN".
@@ -78,8 +78,14 @@ RunState (room state)
   ├─ players: MapSchema<PlayerState>
   ├─ hostId: string          // sessionId; owns GO / Play-Again; reassigned on host leave
   ├─ countdown: float32      // >0 only during countdown; client renders ceil()
-  └─ finishDeadline: float32 // leader+grace race-end clock (0 until first finisher)
-  // (S5) pickups: MapSchema<PickupState> — spawned/consumed authoritatively
+  ├─ finishDeadline: float32 // leader+grace race-end clock (0 until first finisher)
+  ├─ projectiles: MapSchema<Projectile>  // (S5) server-sim bolts; interp-only on clients; pruned on hit/expire
+  └─ pickupTaken: MapSchema<boolean>     // (S5) per-slot availability (present&&true = taken); positions derive from seed, NEVER synced
+
+Projectile (S5) — a live bolt; server-owned, client-interpolated like a remote ship (never predicted)
+  ├─ x,y,z: float32          // authoritative pose (straight ribbon: x fixed at fire, z advances)
+  ├─ ownerId: string         // firer sessionId — owner-immune in boltHits
+  └─ ttl: float32            // seconds to expiry; server prunes at <=0
 
 PlayerState (implements SimShip → server runs the shared simulate() on the schema instance directly)
   ├─ x,y,z, vx,vy,vz                                   // authoritative transform
@@ -90,8 +96,9 @@ PlayerState (implements SimShip → server runs the shared simulate() on the sch
   ├─ name: string, colorId: uint8                      // identity — lobby list, standings, ship tint
   ├─ spectating: boolean                               // joined mid-round (Race) → NOT simulated
   ├─ connected: boolean                                // false while dropped (reconnection window)
-  └─ lastProcessedInput: uint32                        // client reconciliation seq
-  // (S5) held: PowerUpType, charge, score/distance
+  ├─ lastProcessedInput: uint32                        // client reconciliation seq
+  ├─ stunTimer: float32                                // (S5) SimShip field — >0 freezes control (predicted); set on bolt hit
+  └─ heldPower: uint8                                  // (S5) held slot (0 none / 1 bolt); schema-only, sim never reads it
 ```
 Keep state **minimal** — sync only what clients can't derive. Effects/particles are client-local. (Anti-pattern:
 syncing render state. See `conventions/colyseus.md`.) **Room list = the built-in Colyseus `LobbyRoom`**
@@ -106,8 +113,10 @@ The fixed loop switches on `phase` (S4):
   safety-cap) → finished.
 - **lobby / finished:** idle — ships hold pose.
 - Host `start`/`restart` + ship/colour picks (lobby-only) are **messages**, validated server-side (host + phase).
-- **(S5)** spawn/despawn + resolve pickups; power-up effects & **combat hit detection**. **(S7 Survival)** advance
-  difficulty (speed/hazard density) by distance.
+- **(S5) — AS-BUILT:** `stepWorld` (runs after `stepRace`) advances bolts (shared `stepProjectiles`) → owner-immune
+  AABB `boltHits` → victim `stunTimer` + one-shot `broadcast('hit')` → prune; pickup grab-on-overlap → `heldPower` +
+  server-plain respawn timer; `USE_POWERUP` message spawns a bolt from the authoritative pose; `clearCombat` on each
+  race boundary. **(S7 Survival)** advance difficulty (speed/hazard density) by distance.
 - Emit patch (`patchRate` ~20 Hz).
 
 ## 7. Shared code — `@slur/shared` (`packages/shared`)
@@ -127,7 +136,7 @@ and prevents client/server misprediction.
 - **Integration (later):** spin a headless Colyseus room, connect N mock clients, assert the round lifecycle
   (lobby→countdown→racing→finished) + standings order + join-mid-race → spectate. *(S4 started this: a headless
   `@colyseus/sdk` E2E drove lobby→countdown→racing and verified the live room-list metadata.)*
-- No heavy E2E for v1 — playtesting is the real test.
+- No heavy E2E for v1 — playtesting is the real test. **(S5)** added combat pure-fn tests (`stepProjectiles` / `boltHits` / pickups → **41 shared tests**) + a throwaway room harness for `stepWorld`; `@colyseus/testing` still not installed (hardening item).
 
 ## 9. Non-goals (v1)
 Matchmaking across networks, persistence/accounts, anti-cheat hardening (it's the office), mobile/touch, gamepad, spectator replays.

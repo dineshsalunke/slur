@@ -97,13 +97,14 @@ Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time
 | Utility | **Warp/Blink** | Short teleport/dodge (also SkyRoads-y gap crosser) |
 | Chaos | **Scramble** | Invert/blur a nearby rival's controls or view briefly |
 
-*OPEN: exact roster, cooldowns, whether powers stack, friendly-fire rules.*
+*OPEN: full roster + cooldowns. **S5 resolved:** v1 roster = **Bolt** (fire→stun); **single held slot** (no stacking); owner-immune only — everyone else is a target (teams / friendly-fire are a later mode). Mine/Shield/Boost = fast-follows.*
 
 > The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the redefined **Tractor** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 
 ### 5.4 Combat & interactions
 - **Server-authoritative hit detection** (never trust client for hits — see TDD / `conventions/netcode.md`).
 - Getting hit = disruption (stun, spin, brief control loss), rarely instant death — deaths should mostly come from the *track* while disrupted. Keeps it funny, not punishing.
+- **As-built (S5):** server-sim bolts (`stepWorld`) → owner-immune AABB hit → `stunTimer` (predicted `SimShip` field) freezes control while momentum coasts → you drift into a hazard and derezz. Client feedback: hit-spark + on-ship stun-flicker + threat-warning HUD. Spin/slow/reverse/blind verbs still open (BC2).
 
 ### 5.5 Ship classes (asymmetric) — **LOCKED 5-class matrix (2026-08-09)**
 You pick a class at join. Five classes trade along multiple axes so none dominates; properties are pure data

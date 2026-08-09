@@ -39,7 +39,7 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 ## 5. VFX (the juice)
 - **Bloom** (postprocessing EffectComposer) — the signature. Emissive materials + selective bloom on ships/pickups/track lines. See `conventions/r3f.md`.
 - **Speed cues:** motion streaks, FOV/camera-shake on boost, star/grid parallax, chromatic aberration ramp with speed.
-- **Combat VFX:** bright bolt tracers, shield shimmer, hit-flash + spin, mine pulse.
+- **Combat VFX:** **(S5 built)** cyan bolt tracers (instanced+interpolated), hit-spark burst (additive HDR), on-ship stun-flicker. **Planned:** shield shimmer, mine pulse, hit-spin, ship light-trails.
 - **Trails:** each ship leaves a fading light-trail in its hue (identity + speed read).
 - VFX are **client-local** (not networked) — driven by ECS/game events. See TDD §5.
 
@@ -53,7 +53,7 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 
 ## 7. UI / HUD — **LCARS-flavored**
 - **LCARS as the interface language:** curved-corner black panels, warm amber/purple/blue color blocks, confident sans type, "computer" chrome — applied to lobby/host/join and the in-game HUD. Star Trek gives us a ready-made, instantly-readable, *fun* UI kit that reads as "spaceship cockpit."
-- HUD content: speed/fuel, held power-up, position/alive-count, mini threat indicators (incoming bolt/mine).
+- HUD content: speed/fuel, held power-up, position/alive-count, mini threat indicators (incoming bolt/mine). **(S5 built:** `heldPower` chip + directional threat-warning HUD; dev stun/held/bolt readout. Speed/position/alive-count still to do.)
 - Diegetic-lite and minimal — LCARS styling, but never clutter the flight view; readable in peripheral vision at speed.
 - Death = **TRON derezz** dissolve; respawn = materialize-in.
 - *Caveat: LCARS is a distinctive look — evoke it, don't clone Trek assets/logos (it's an office toy, but keep it original).*
@@ -77,3 +77,25 @@ These exist so the art *stays* 60fps with 12 ships + pickups + projectiles:
 3. **Palette lock** — commit the 12-hue player palette + category colors.
 4. **Chromatic aberration / heavy post** — how far to push before it hurts readability?
 5. **Perf budgets** — tris/draw-calls per frame target.
+
+## 11. As-built + art research (2026-08-10) — inputs for the S6 art pass
+
+*(S5 shipped the first real combat VFX; a research pass then inventoried the scene + surveyed the aesthetic
+space. This section **persists that research** — it is INPUT for S6, not locked decisions.)*
+
+**As-built scene reality (the gap vs the pillar):**
+- **Two divergent scenes:** `/solo` (`game-canvas`) has **no bloom at all**; the networked race has bloom but **timid** (`intensity 0.5, threshold 0.6`). The signature look only half-exists.
+- **No atmosphere:** flat `#05060a` void — no fog, skybox/gradient, or real starfield (cuberun, our anchor, leans on fog + a ~10k-star field + a galaxy skybox for depth).
+- **Ship identity is a beacon pip**, not the hull — at speed you read a small glowing dot, not a coloured ship (contradicts §4's "silhouette + colour").
+- **`COLOR_COUNT` is 8**, not the 12 §3 reserves. Instancing discipline is solid (few draw calls) — the art can get much richer with no perf bill.
+
+**Cheap, high-impact moves (S6):** unify solo/net into one scene module + push bloom (~`1.0–1.5` / threshold `~0.4`); add **atmosphere** (`fog` + drei `<Stars>` + gradient backdrop → new `scene/environment.tsx`); put the team hue **on the hull**; vignette + subtle grain; speed-ramped chromatic aberration (the core set merges into ~one full-screen pass — largely ship-count-independent).
+
+**Research-informed answers to §10:**
+- **OQ1 (ship fidelity):** keep the authored Quaternius CC0 models — already integrated, WYSIWYG collision (GDD §5.5). Pure-primitive is a bigger pivot; don't chase it.
+- **OQ2 (tube vs ribbon):** still open — tube = cheap enclosed atmosphere + speed cues; open ribbon fits the current sim/hazards. Trade-off, unresolved.
+- **OQ3 (palette):** colour science caps categorical palettes at ~8; 12 against black under bloom is hard. Three concrete proposals exist (Wong-extended / max-chroma neon-wheel / value-staggered); lean on **silhouette + value-staggering** as the colourblind backstop, or auto-assign for max pairwise distance among present players. **Decide in S6** (and raise `COLOR_COUNT` 8→12).
+- **OQ4 (heavy post):** the synthwave set (Bloom/Vignette/ChromaticAberration/Noise/Scanline) is confirmed in `@react-three/postprocessing` and composes cheaply — but it directly threatens **combat legibility** (bolts + 12 ships wash to white). Gate it behind a **comfort/intensity slider** (§6/§7); consider **SelectiveBloom** now that combat is on screen. Verify exotic effects (DoF/N8AO/GodRays) against the pinned `3.0.4` before use.
+- **OQ5 (perf budgets):** set after a first 12-ship test; drei `<PerformanceMonitor>` + `<AdaptiveDpr>` as insurance.
+
+*Key files an S6 art pass would touch: `net-canvas.tsx`, `game-canvas.tsx`, `scene/track-view.tsx`, `scene/scenery.tsx`, `scene/ship-model.tsx`, `colors.ts` (+ `@slur/shared` `COLOR_COUNT`), `scene/explosions.tsx`; new `scene/environment.tsx`, `scene/trails.tsx`.*

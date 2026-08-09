@@ -43,6 +43,8 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 | UI (nav/select/confirm/error) | LCARS chirps | Consistent set, not per-screen randoms |
 | Countdown / go | Rising blips → downbeat | Syncs to run-start |
 
+*As-built hooks (S5): the combat **events** to bind SFX to now exist — `USE_POWERUP` fire, the `'hit'` broadcast, `stunTimer` (disrupt), pickup grab, and a directional threat-warning HUD (pairs with the "incoming" blip + OQ5 lead-time). No audio is implemented yet — S6 binds these.*
+
 ## 5. Spatial / mix
 - **3D positional audio** for other ships and threats (Web Audio `PannerNode` via three.js `PositionalAudio`) —
   hearing *where* a rival/bolt is = a real gameplay signal. Engine of nearby ships pans/attenuates by position.
