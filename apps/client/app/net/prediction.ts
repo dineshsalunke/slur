@@ -1,4 +1,12 @@
-import { FIXED_DT, type PlayerInput, type SimShip, simulate, type Track, tuningForShip } from '@slur/shared';
+import {
+    copySimShip,
+    FIXED_DT,
+    type PlayerInput,
+    type SimShip,
+    simulate,
+    type Track,
+    tuningForShip,
+} from '@slur/shared';
 
 // Client-side prediction + reconciliation for the LOCAL ship (Gambetta). The client predicts every
 // input immediately via simulate() and keeps them in a pending list; when an authoritative snapshot
@@ -12,28 +20,11 @@ interface Pending {
     sent: boolean; // batched sender marks these; unsent ones go out on the next tick
 }
 
-// Copy every SimShip field (server truth → local sim). Field-by-field so no schema-only extras leak in.
-export function copyShip( dst: SimShip, src: SimShip ): void {
-    dst.x = src.x;
-    dst.y = src.y;
-    dst.z = src.z;
-    dst.vx = src.vx;
-    dst.vy = src.vy;
-    dst.vz = src.vz;
-    dst.grounded = src.grounded;
-    dst.jumpsUsed = src.jumpsUsed;
-    dst.jumpHeld = src.jumpHeld;
-    dst.coyoteTimer = src.coyoteTimer;
-    dst.bufferTimer = src.bufferTimer;
-    // S3 death/finish state — MUST snap too, or the client's replay re-derives death from stale state
-    // and mispredicts the derezz/respawn (see netcode: replay needs the FULL SimShip).
-    dst.dead = src.dead;
-    dst.respawnTimer = src.respawnTimer;
-    dst.invulnTimer = src.invulnTimer;
-    dst.lastSafeX = src.lastSafeX;
-    dst.lastSafeZ = src.lastSafeZ;
-    dst.finished = src.finished;
-}
+// Snap the local sim to authoritative server truth. Thin alias over the shared, EXHAUSTIVE copier
+// (copySimShip iterates SIM_SHIP_KEYS), so a new SimShip field can no longer silently miss the replay
+// path — the exact bug that mispredicts derezz/respawn. Copies only SimShip fields; schema-only extras
+// (finishTime, netcode bookkeeping) never leak into the local sim.
+export const copyShip = copySimShip;
 
 export interface Predictor {
     // Record a predicted input (a VALUE COPY — keyboard.ts reuses one object).

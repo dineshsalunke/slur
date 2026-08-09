@@ -3,7 +3,7 @@
 // so run-room.ts stays thin orchestration over these.
 
 import { COLOR_COUNT, MAX_RACE_SECONDS, START_STAGGER } from '../constants.js';
-import type { SimShip } from '../sim/types.js';
+import { copySimShip, type SimShip, spawnShip } from '../sim/types.js';
 
 // 4-phase run lifecycle. GO (host, from lobby) is the SINGLE lock line: picks + ships freeze the instant we
 // leave `lobby`. Countdown is prep only — no ship motion. The sim integrates ships ONLY in `racing`.
@@ -45,24 +45,8 @@ type RacerState = SimShip & { finishTime: number };
 // that aliasing. Called for each racer at GO and for everyone on restart.
 export function resetPlayerForRace( p: RacerState, index: number ): void {
     const x = index * START_STAGGER; // left-aligned stagger (matches onJoin); centring is a feel-gate tweak.
-    p.x = x;
-    p.y = 0;
-    p.z = 0;
-    p.vx = 0;
-    p.vy = 0;
-    p.vz = 0;
-    p.grounded = true;
-    p.jumpsUsed = 0;
-    p.jumpHeld = false;
-    p.coyoteTimer = 0;
-    p.bufferTimer = 0;
-    p.dead = false;
-    p.respawnTimer = 0;
-    p.invulnTimer = 0;
-    p.lastSafeX = x; // spawn is on safe ground → the first respawn anchor
-    p.lastSafeZ = 0;
-    p.finished = false;
-    p.finishTime = 0;
+    copySimShip( p, spawnShip( x, 0 ) ); // reset every SimShip field to a fresh start-line spawn (exhaustive; lastSafeX=x)
+    p.finishTime = 0; // schema-extra beyond SimShip (server-stamped at finish) — zero it for the new race
 }
 
 // Standings input — the fields ranking reads off each player (structural; the room builds these from the
