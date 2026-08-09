@@ -1,5 +1,5 @@
 import { redirect } from 'react-router';
-import { NetCanvas } from '../../game/net-canvas';
+import { GameShell } from '../../game/game-shell';
 import { waitForSeed } from '../../net/matchmaking';
 import { RoomProvider } from '../../net/room-context';
 import { session } from '../../net/session';
@@ -29,7 +29,7 @@ export function shouldRevalidate() {
 export default function Game( { loaderData }: Route.ComponentProps ) {
     return (
         <RoomProvider room={ loaderData.room }>
-            <NetCanvas seed={ loaderData.seed } />
+            <GameShell seed={ loaderData.seed } />
         </RoomProvider>
     );
 }

@@ -17,16 +17,17 @@ import { FinishGate } from './scene/finish-gate';
 import { Scenery } from './scene/scenery';
 import { Ships } from './scene/ship';
 import { TrackView } from './scene/track-view';
+import { localRole, runPhase } from './spectator';
 
 // Send buffered inputs at 30Hz (not per render frame) — the batched sender drains every input
 // produced since the last send; the server drains them 1-per-tick, so cadence is a bandwidth knob.
 const INPUT_SEND_MS = 1000 / 30;
 
-// Mirror a class hot-swap into the ECS ONLY when shipId actually changes (not every 20Hz patch), so the
-// ship view re-renders its model on a swap, not continuously.
-function mirrorShipId( ent: Entity, sessionId: string, shipId: string ): void {
+// Mirror the networked identity (shipId + colorId) into the ECS ONLY when it actually changes (not every
+// 20Hz patch), so the ship view re-renders its model/tint on a swap, not continuously.
+function mirrorNet( ent: Entity, sessionId: string, shipId: string, colorId: number ): void {
     const cur = ent.get( Net );
-    if ( cur && cur.shipId !== shipId ) ent.set( Net, { sessionId, shipId } );
+    if ( cur && ( cur.shipId !== shipId || cur.colorId !== colorId ) ) ent.set( Net, { sessionId, shipId, colorId } );
 }
 
 export function NetCanvas( { seed }: { seed: number } ) {
@@ -88,17 +89,23 @@ export function NetCanvas( { seed }: { seed: number } ) {
         const $ = getStateCallbacks( room );
         const byId = new Map< string, Entity >();
         const detach: Array< () => void > = [];
-        // Something over here
+
+        // Mirror the run phase to the loop's module singleton (no React) so the camera/predict branch reads
+        // it every frame without a subscription re-rendering this WebGL parent (acceptance gate #3).
+        const offPhase = $( room.state ).listen( 'phase', ( v ) => {
+            runPhase.value = v;
+        } );
 
         const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {
             const isLocal = sid === room.sessionId;
-            const net = { sessionId: sid, shipId: p.shipId };
+            const net = { sessionId: sid, shipId: p.shipId, colorId: p.colorId };
             const e = isLocal
                 ? world.spawn( Render, Net( net ), Sim, Prev, LocalPlayer )
                 : world.spawn( Render, Net( net ), Remote, Interp );
             byId.set( sid, e );
 
             if ( isLocal ) {
+                localRole.spectating = p.spectating; // seed the role at spawn (a mid-race joiner spawns spectating)
                 const s = e.get( Sim );
                 if ( s ) copyShip( s, p ); // seed prediction from the authoritative spawn
             }
@@ -106,8 +113,11 @@ export function NetCanvas( { seed }: { seed: number } ) {
             const offChange = $( p ).onChange( () => {
                 const ent = byId.get( sid );
                 if ( ! ent ) return;
-                mirrorShipId( ent, sid, p.shipId );
+                mirrorNet( ent, sid, p.shipId, p.colorId );
                 if ( isLocal ) {
+                    // Role-flip seam: mirror spectating to the loop singleton (freezes predict + switches to
+                    // the spectator cam). This is how Play-Again promotes a spectator back into a racer.
+                    localRole.spectating = p.spectating;
                     const s = ent.get( Sim );
                     if ( s ) predictor.reconcile( s, p, trackRef.current );
                 } else {
@@ -135,6 +145,7 @@ export function NetCanvas( { seed }: { seed: number } ) {
 
         return () => {
             clearInterval( timer );
+            offPhase();
             offAdd();
             offRemove();
             for ( const off of detach ) off();

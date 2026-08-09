@@ -3,8 +3,10 @@
 **SLUR** is a casual **LAN multiplayer ship-racer** for the office — a party game about *messing with your
 friends*. Player-controlled flight down a track in two modes: **Race** (finite, finish-line) and **Survival**
 (endless, chase-wall). SkyRoads (1993) speed/jump × Blur (2010) pickup-combat × [cuberun](https://github.com/akarlsten/cuberun)
-neon. **TRON / Star Trek** aesthetic. Server-authoritative, **drop-in-anytime** (host launches a run, players
-join live and spawn beside the pack). Asymmetric ship classes (Fighter/Freighter/Interceptor…).
+neon. **TRON / Star Trek** aesthetic. Server-authoritative, **round-based** — the host launches a run and
+everyone in the room races together; **join a room anytime and race the next round** (Race locks the field at
+GO; late joiners spectate). *Survival keeps live drop-in — spawn beside the pack.* Asymmetric ship classes
+(Fighter/Freighter/Interceptor…).
 
 Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we build**.
 

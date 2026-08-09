@@ -223,13 +223,39 @@ _(pending)_
 - **E2E verified headlessly** (node + @colyseus/sdk, NN-1): live list shows `{hostName, phase}`; host authority;
   lobby→START→countdown(2.65…)→racing; list metadata tracked the phase to `[2]` live.
 
-### Batch 4 — Client overlays + spectator cam + 3D preview + leave guard (NEXT)
-Decisions locked: spectator = **cycle any racer** (Tab/click); lobby pick = **full rotating 3D preview**.
-Key architecture: GameShell holds NO reactive state (Canvas never re-renders); an Overlays leaf owns the
-phase/countdown/players subscription (colocated at the leaf per think-rerender rule). Spectator target +
-local-role on a module singleton (read by NetLoop camera/flight, set by overlay Tab) — not props into the loop.
-Local player always a LocalPlayer entity; spectating toggles visibility + camera + prediction-skip (no
-re-spawn on Play-Again role flip). useBlocker(racing) + beforeunload + Leave button (deliberate room.leave).
+### Batch 4 — Client overlays + spectator + lobby-cam preview + leave guard ✓ (built in subagent; INDEPENDENTLY reviewed + verified)
+Full spec: `…-s4-batch4-spec.md`. Delivered: 14 new files (`colors.ts`, `spectator.ts`, `net/use-run-view.ts`,
+`game-shell.tsx`, `overlays/{overlays,roster,lobby-overlay,countdown-overlay,race-hud,spectator-bar,results-overlay,leave-guard,leave-button}.tsx`,
+`overlays/overlays.css`) + 8 edits (`routes/game/route.tsx`, `net-canvas.tsx`, `net-loop.tsx`, `ecs/traits.ts`,
+`ecs/net-systems.ts`, `camera/chase.ts`, `scene/ship-view.tsx`, `net/matchmaking.ts`).
+- **Preview = REUSE main scene** (user call): `updateLobbyCamera` hero-orbits the real local ship (no 2nd Canvas).
+- **Spectator = cycle-any-racer** (Tab/←/→/◀▶); target + local-role + phase on module singletons read by NetLoop.
+- Local player always a LocalPlayer entity; spectating toggles predict-skip + camera + hide — no re-spawn on
+  Play-Again flip (the `localRole.spectating` onChange seam, guarded `isLocal`).
+- **I re-verified (not trusting the subagent):** all 7 gates by code-reading; net-canvas complexity still 24
+  (not raised); typecheck + 28 shared tests + lint (only pre-existing debt) + full SPA build GREEN.
+- Deviations (all benign): RaceHud drops unused `room` prop; LeaveGuard.proceed() doesn't leaveRoom (spec-literal
+  — teardown is the explicit Leave button); Roster shows a "waiting" placeholder when empty.
+- **REMAINING human gate:** two-tab browser playtest (host→pick→GO→race→results→Play-Again; join-mid-race→spectate→cycle).
+
+### Batch 5 — Docs reconcile ✓
+GDD §1/§3/§4 (round model + per-mode join-policy column), CLAUDE.md tagline, backlog S4 line — all updated to
+the round-based model. Procgen (separate thread) captured in `…-procgen-flow-progression.md` (post-S4).
+
+## RECONCILE (arc close: planned vs done)
+**All 5 batches shipped.** S4 = a complete office Race: live room list → host/join → lobby ship+colour pick
+(hero-orbit preview) → host GO → 3·2·1 → race → leader+grace → standings (DNF) → Play Again; mid-race joiners
+spectate (cycle any racer) then join next round; host authority + migration; leave guard.
+
+**Deviations from the original Prep (all deliberate, captured above):**
+- `getAvailableRooms` removed in SDK 0.17 → built-in **`LobbyRoom` + `enableRealtimeListing()`** (verified).
+- 3D preview: planned 2nd Canvas → **reuse main scene via lobby camera** (user; simpler + WYSIWYG + no 2nd ctx).
+- **Full ship+colour pick pulled forward** into S4 (user); spectator upgraded to **cycle-any-racer** (user).
+- Model: **drop-in-beside-pack → round-gated, per-mode** (Race spectate-next / Survival drop-in via seam).
+
+**Verified:** typecheck (all 3 pkgs) · 28 shared tests · lint (only pre-existing net-canvas debt) · full SPA
+build · headless E2E (server lifecycle + room list) · full code-review of all 7 client gates. **NOT yet run:**
+the human two-tab browser playtest (the feel/visual gate). **NEXT after that passes: S5 (combat & power-ups).**
 
 ## RECONCILE
 _(pending)_

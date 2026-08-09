@@ -4,7 +4,7 @@
 
 ## 1. Vision statement
 
-A fast, neon, drop-in-anytime ship racer you launch on the office LAN and play in a 5-minute burst.
+A fast, neon, quick-to-join ship racer you launch on the office LAN and play in a 5-minute burst.
 Fly a ship down a track — a finite course to a **finish line**, or an **endless survival run** — grab
 power-ups, and **mess with your friends**: dodge, boost, shoot, shield. Easy to join, hard to master, funny to lose.
 
@@ -27,16 +27,15 @@ power-ups, and **mess with your friends**: dodge, boost, shoot, shield. Easy to 
 ## 3. Core loop
 
 ```
-Host launches game ──► Host starts a RUN ──► Players join the LIVE run, spawn beside the pack
-        │                                              │
-        └──────────────◄── run ends ◄──── fly · dodge track · grab pickups · fight ──┘
-                              │
-                      results / restart
+Host a room ──► players join & pick ship/colour ──► host hits GO ──► 3·2·1 ──► RACE
+     ▲                                                                            │
+     └──── back to lobby ◄── host "Play Again" ◄── RESULTS ◄── finish / grace ◄────┘
+   (join a room anytime; if a race is already live you SPECTATE until it ends, then race the next round)
 ```
 
-- **Host-authoritative session, server-authoritative sim.** Host clicks "Start Run"; others join in progress.
-- **Join mid-run:** new player spawns adjacent to the current pack (not at the origin) and is immediately alive.
-- **No lobby gate:** you can be watching and then jump in without stopping anyone.
+- **Host-authoritative session, server-authoritative sim.** The host owns GO / Play-Again; the server owns positions, hits, standings, and the phase machine (lobby → countdown → racing → finished).
+- **Round-based (Race):** the field **locks at GO**. Everyone in the room at that instant races together; **late joiners spectate** the pack (chase-cam, cycle any racer) until the round ends, then join the next one. *(Superseded the old "spawn beside the pack" — that's now the Survival policy; see §4.)*
+- **Join a room anytime**, pick ship + colour in the lobby; **once the host starts, picks lock.** The room is chosen from a **live room list** (host name · player count · phase), not a typed code.
 
 ## 4. Game modes
 
@@ -58,6 +57,11 @@ chase mechanic.) This is the home of the §5.1 forward-pressure mechanism.
 Survival reuses the same systems. *Confirm this ordering (see §10).*
 
 **Re-entry:** rounds are short; death → quick respawn (Race) or spectate-until-next (either). No one sits out long.
+
+**Join policy — per mode (decided S4):** **Race** locks the field at GO — joining a live race → you **spectate**
+the current round (chase-cam, cycle any racer) and race the next. **Survival** keeps **live drop-in** — a late
+joiner **spawns beside the pack** (an endless track has no start line to gate on). This is one server seam
+(`shouldSpectateOnJoin`), so the policy is a per-mode branch, not two code paths.
 
 ## 5. Mechanics
 

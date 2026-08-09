@@ -2,13 +2,15 @@ import { simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { currentInput } from '../input/keyboard';
+import { localRole } from '../spectator';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
 
-// Death VFX (minimal for the core loop): hide the local ship while it's derezzed. Full TRON derezz is
-// S6. Imperative (mutates the live Render group), no React state.
+// Death VFX (minimal for the core loop): hide the local ship while it's derezzed OR while spectating (a
+// mid-race joiner owns a frozen local ship it must not see). Full TRON derezz is S6. Imperative (mutates the
+// live Render group), no React state.
 export function localDeathVfxSystem( world: World ): void {
     world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ] ) => {
-        grp.visible = ! s.dead;
+        grp.visible = ! s.dead && ! localRole.spectating;
     } );
 }
 

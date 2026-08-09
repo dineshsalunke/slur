@@ -35,6 +35,13 @@ export async function joinLobby(): Promise< void > {
     attachLobbyStore( lobby );
 }
 
+// Leave = a DELIBERATE teardown (the only place a run room is closed) — never a component unmount cleanup
+// (the S2 bug). The caller navigates to '/' afterwards; a fresh Host/Join stashes a new room on the session.
+export function leaveRoom(): void {
+    session.room?.leave();
+    session.room = null;
+}
+
 // The seed is server-authoritative (set in onCreate) but decodes AFTER the join handshake. Resolve once it's
 // a real (non-zero) value so the /game loader can hand NetCanvas a seed that MATCHES the server from the
 // first render (identical track both ends). Lives here, not a component effect — same reason as S2.
