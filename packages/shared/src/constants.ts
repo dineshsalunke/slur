@@ -125,3 +125,10 @@ export function jumpAirtime( t: FlightTuning ): number {
 export function jumpReach( t: FlightTuning ): number {
     return t.maxCruise * jumpAirtime( t ) * JUMP_SAFETY;
 }
+
+// ── S4 session/race lifecycle (seconds; framework-free, read by the server room + client overlays) ──
+export const COUNTDOWN_SECONDS = 3; // "3-2-1" prep after host GO; ships + picks frozen, NO sim motion yet.
+export const RACE_GRACE_SECONDS = 20; // after the FIRST finisher, everyone else has this long before results.
+export const MAX_RACE_SECONDS = 180; // hard safety cap: a race with no finisher at all still ends (→ all DNF).
+export const COLOR_COUNT = 8; // team-colour palette size (colorId ∈ [0, COLOR_COUNT)); the hexes live client-side.
+export const START_STAGGER = CELL; // lateral spacing (u) between racers on the start line (feel-gate tweakable).

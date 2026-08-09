@@ -2,6 +2,7 @@
 // Never import @colyseus/schema from the sim; the schema will structurally match SimShip in S2.
 
 export * from './constants.js';
+export * from './race/director.js';
 export * from './schema.js';
 export * from './ship-classes.js';
 export * from './sim/fixed-step.js';

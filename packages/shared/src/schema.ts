@@ -56,12 +56,24 @@ export class PlayerState extends Schema implements SimShip {
     //    it (set on join, updated by the `setClass` message); BOTH ends resolve shipId → class → FlightTuning
     //    via ship-classes.ts so the shared simulate() runs identical math. ──
     @type( 'string' ) shipId = DEFAULT_SHIP;
+
+    // ── S4 session/identity — APPENDED after `shipId` (declaration order = wire format). ──
+    @type( 'string' ) name = ''; // display name (join option); shown in the lobby list + standings
+    @type( 'uint8' ) colorId = 0; // team-colour palette index (see COLOR_COUNT); cosmetic, synced so peers tint the ship
+    @type( 'boolean' ) spectating = false; // joined mid-round under the Race lock → NOT simulated; watches, races next round
 }
 
 // Room-wide state. `seed` drives deterministic scenery/track on every client (never sync geometry).
 export class RunState extends Schema {
-    @type( 'uint8' ) phase = 1; // S2 stays running(1); 0=lobby / 2=finished are S4
-    @type( 'float32' ) elapsed = 0;
+    // S4 4-phase lifecycle (see race/director.ts PHASE): 0=lobby · 1=countdown · 2=racing · 3=finished.
+    // Default is lobby now (S2's default of 1 meant "running"; the enum was reassigned pre-launch).
+    @type( 'uint8' ) phase = 0;
+    @type( 'float32' ) elapsed = 0; // RACE clock: reset to 0 at GO, advanced ONLY during racing → finishTime/deadline are race-relative
     @type( 'uint32' ) seed = 0; // 0 = "not seeded yet" sentinel; the server sets a real non-zero seed in onCreate. The client loader waits for this to decode (non-zero) before building the track, so client + server never disagree on geometry.
     @type( { map: PlayerState } ) players = new MapSchema< PlayerState >();
+
+    // ── S4 session lifecycle — APPENDED after `players` (declaration order = wire format). ──
+    @type( 'string' ) hostId = ''; // sessionId of the host (first joiner; reassigned on host leave). Only the host may start/restart.
+    @type( 'float32' ) countdown = 0; // >0 only during phase 1 (countdown); client renders ceil(). Ships + picks frozen the whole time.
+    @type( 'float32' ) finishDeadline = 0; // 0 until the first finisher; then elapsed+GRACE — the race ends when the clock passes it.
 }
