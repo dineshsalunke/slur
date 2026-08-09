@@ -9,7 +9,7 @@ import type { SimShip } from './types.js';
 
 // Neutral intent used while STUNNED — a module const (emptyInput-style, no per-tick allocation). Fed to the
 // control phases so a stunned ship coasts + drifts; gravity/integrate/collision still run on its real state.
-const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false, usePowerUp: false };
+const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
 
 export function applyLongitudinal( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
     if ( input.throttle > 0 ) s.vz += t.accel * input.throttle * dt;

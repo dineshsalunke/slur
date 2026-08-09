@@ -13,7 +13,8 @@ function recompute(): void {
     // Map Left→+1 / Right→-1 so on-screen left/right match the keys.
     input.strafe = ( has( 'KeyA', 'ArrowLeft' ) ? 1 : 0 ) - ( has( 'KeyD', 'ArrowRight' ) ? 1 : 0 );
     input.jump = has( 'Space' );
-    input.usePowerUp = has( 'KeyE' ); // reserved for S5 pickups; no effect yet. (Shift is now free — boost is a pickup.)
+    // Fire (KeyE) is NOT an input axis — it's a discrete reliable room.send(USE_POWERUP_MESSAGE) in net-canvas
+    // (an axis would machine-gun on hold). Shift is free too — boost became a pickup.
 }
 
 // Attach global key listeners; returns a cleanup fn for useEffect.

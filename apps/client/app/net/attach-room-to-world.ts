@@ -1,8 +1,8 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { INPUT_MESSAGE, type PlayerState, type RunState, type Track } from '@slur/shared';
+import { INPUT_MESSAGE, type PlayerState, type ProjectileState, type RunState, type Track } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
-import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from '../game/ecs/traits';
+import { Interp, LocalPlayer, Net, NetProjectile, Prev, ProjInterp, Remote, Render, Sim } from '../game/ecs/traits';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
 
@@ -33,6 +33,15 @@ function pushRemote( ent: Entity, p: PlayerState ): void {
     if ( interp.buffer.length > 120 ) interp.buffer.shift();
 }
 
+// A projectile (bolt) is INTERP-ONLY (never predicted): push each authoritative pose into its buffer. Bolts
+// are short-lived (ttl ~2.5s ⇒ ~50 patches), so a small buffer is plenty.
+function pushProjectile( ent: Entity, proj: ProjectileState ): void {
+    const pi = ent.get( ProjInterp );
+    if ( ! pi ) return;
+    pi.buffer.push( { t: performance.now(), x: proj.x, y: proj.y, z: proj.z } );
+    if ( pi.buffer.length > 30 ) pi.buffer.shift();
+}
+
 // Spawn the ECS entity for a player: local = predicted (Sim/Prev/LocalPlayer), remote = interpolated.
 function spawnPlayer(
     world: World,
@@ -59,6 +68,7 @@ export function attachRoomToWorld(
 ): () => void {
     const $ = getStateCallbacks( room );
     const byId = new Map< string, Entity >();
+    const projById = new Map< string, Entity >(); // bolt id → its interp-only ECS entity
     const detach: Array< () => void > = [];
 
     // Mirror the run phase to the loop's module singleton (no React) so the camera/predict branch reads
@@ -96,6 +106,27 @@ export function attachRoomToWorld(
         }
     } );
 
+    // Projectiles = server-owned, INTERP-ONLY entities. onAdd spawns a bolt ECS entity; onChange feeds its
+    // interp buffer; onRemove (server prune on hit/expire) destroys it. The client NEVER predicts these.
+    const offProjAdd = $( room.state ).projectiles.onAdd( ( proj, id ) => {
+        const e = world.spawn( ProjInterp, NetProjectile );
+        projById.set( id, e );
+        pushProjectile( e, proj );
+        const offProjChange = $( proj ).onChange( () => {
+            const ent = projById.get( id );
+            if ( ent ) pushProjectile( ent, proj );
+        } );
+        detach.push( offProjChange );
+    } );
+
+    const offProjRemove = $( room.state ).projectiles.onRemove( ( _proj, id ) => {
+        const e = projById.get( id );
+        if ( e ) {
+            e.destroy();
+            projById.delete( id );
+        }
+    } );
+
     const timer = setInterval( () => {
         const inputs = predictor.drainUnsent();
         if ( inputs.length > 0 ) room.send( INPUT_MESSAGE, { inputs } );
@@ -106,8 +137,12 @@ export function attachRoomToWorld(
         offPhase();
         offAdd();
         offRemove();
+        offProjAdd();
+        offProjRemove();
         for ( const off of detach ) off();
         for ( const e of byId.values() ) e.destroy();
+        for ( const e of projById.values() ) e.destroy();
         byId.clear();
+        projById.clear();
     };
 }

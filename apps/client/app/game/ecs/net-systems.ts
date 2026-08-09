@@ -29,7 +29,8 @@ export function localDeathVfxSystem( world: World ): void {
 
 // Render remote ships this far in the past so we always have a "next" snapshot to interpolate toward
 // (netcode: ≥1 patch interval; patchRate is 50ms, so 100ms = 2 patches of slack for jitter/loss).
-const RENDER_DELAY_MS = 100;
+// Exported so the projectile field interpolates on the SAME clock as remote ships (shared render delay).
+export const RENDER_DELAY_MS = 100;
 
 // Local predicted flight tick (fixed step). Same as S1's flightSystem but it RECORDS each input into
 // the predictor (value-copied, since keyboard.ts reuses one object) so reconciliation can replay it.

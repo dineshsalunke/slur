@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { makeTrack, SET_CLASS_MESSAGE, SHIP_ORDER } from '@slur/shared';
+import { makeTrack, SET_CLASS_MESSAGE, SHIP_ORDER, USE_POWERUP_MESSAGE } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
@@ -12,6 +12,8 @@ import { NetDebugHud } from './net-debug-hud';
 import { NetLoop } from './net-loop';
 import { ExplosionField } from './scene/explosions';
 import { FinishGate } from './scene/finish-gate';
+import { PickupField } from './scene/pickup-field';
+import { ProjectileField } from './scene/projectile-field';
 import { Scenery } from './scene/scenery';
 import { Ships } from './scene/ship';
 import { TrackView } from './scene/track-view';
@@ -58,6 +60,23 @@ export function NetCanvas( { seed }: { seed: number } ) {
         return () => removeEventListener( 'keydown', onKey );
     }, [ room ] );
 
+    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (E) → a discrete Colyseus fire message.
+    // The SERVER validates + spawns the authoritative projectile (the client never predicts a bolt); firing is
+    // a reliable one-shot, NOT an input axis (an axis would machine-gun). `e.repeat` is ignored so holding E
+    // fires once. Same external-sync shape as the keys-1–5 hot-swap above.
+    //  1) render-derivation? no — a discrete keypress isn't derivable from render state.
+    //  2) event handler? this IS the handler; the effect only brackets its window-listener lifetime.
+    //  3) loader/action data? no — a live per-keystroke intent, not navigation data.
+    //  4) ref/module singleton? the room is loader-owned (useRoom); only the listener needs a mount lifetime.
+    //  5) external sync? YES — DOM keydown → room.send. VERDICT: keep.
+    useEffect( () => {
+        const onKey = ( e: KeyboardEvent ) => {
+            if ( e.code === 'KeyE' && ! e.repeat ) room.send( USE_POWERUP_MESSAGE );
+        };
+        addEventListener( 'keydown', onKey );
+        return () => removeEventListener( 'keydown', onKey );
+    }, [ room ] );
+
     // JUSTIFIED EFFECT — syncs with an external system: the Colyseus room (schema callbacks) → ECS, plus
     // a 30Hz input-send timer. The wiring itself lives in attachRoomToWorld (net/) so this parent stays
     // free of the dense reconcile (and so the S5 projectile reconcile has a home); the effect only brackets
@@ -88,6 +107,8 @@ export function NetCanvas( { seed }: { seed: number } ) {
                 <TrackView track={ track } />
                 <FinishGate track={ track } />
                 <Scenery count={ 50 } seed={ seed } />
+                <PickupField room={ room } seed={ seed } />
+                <ProjectileField />
                 <Ships />
                 <EffectComposer multisampling={ 0 }>
                     <Bloom mipmapBlur intensity={ 0.5 } luminanceThreshold={ 0.6 } luminanceSmoothing={ 0.2 } />

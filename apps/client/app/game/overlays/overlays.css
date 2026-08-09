@@ -206,6 +206,38 @@
     opacity: 0.5;
 }
 
+/* Held power-up chip (E:[BOLT]) — bottom-centre, gold to match the pickup; shown only while armed. */
+.slur-held {
+    bottom: 16px;
+    left: 50%;
+    transform: translateX( -50% );
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-color: rgba( 255, 210, 74, 0.7 );
+    box-shadow: 0 0 16px rgba( 255, 210, 74, 0.35 );
+    font:
+        700 14px / 1 ui-monospace,
+        monospace;
+    letter-spacing: 2px;
+}
+.slur-held-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid #ffd24a;
+    color: #ffd24a;
+    font-size: 12px;
+}
+.slur-held-name {
+    color: #ffd24a;
+    text-shadow: 0 0 10px rgba( 255, 210, 74, 0.7 );
+}
+
 /* Buttons */
 .slur-btn {
     font-size: 13px;

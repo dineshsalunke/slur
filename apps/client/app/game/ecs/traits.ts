@@ -39,3 +39,19 @@ export interface Snapshot {
     dead: boolean; // derezzed on the server → hide/ghost the remote ship (S3)
 }
 export const Interp = trait( () => ( { buffer: [] as Snapshot[] } ) );
+
+// ── S5 projectile (bolt) traits ──
+// A server-owned bolt is INTERP-ONLY (never predicted — netcode.md) and INSTANCED (rendered from one
+// <instancedMesh>, not a per-entity Group), so it deliberately gets NEITHER `Render` NOR `Sim` — that keeps
+// the Ships() query, syncRenderSystem, and remoteInterpSystem from ever picking a bolt up.
+export const NetProjectile = trait(); // tag: this entity mirrors a RunState.projectiles bolt
+
+// Per-bolt snapshot ring buffer (position only — bolts don't bank/derezz). One entry per received patch;
+// the field renders ~RENDER_DELAY ms in the past by lerping between the two straddling snapshots.
+export interface ProjSnapshot {
+    t: number; // client receive time (performance.now) — the interpolation clock
+    x: number;
+    y: number;
+    z: number;
+}
+export const ProjInterp = trait( () => ( { buffer: [] as ProjSnapshot[] } ) );
