@@ -9,6 +9,7 @@ import { LeaveGuard } from './leave-guard';
 import { LobbyOverlay } from './lobby-overlay';
 import { RaceHud } from './race-hud';
 import { ResultsOverlay } from './results-overlay';
+import { ThreatHud } from './threat-hud';
 
 // The ONLY DOM subscriber to run state (acceptance gate #1) — a sibling of <NetCanvas> under <GameShell>, so
 // its re-renders (up to 20Hz, driven by `elapsed`) never reach the WebGL scene. Reads the snapshot via
@@ -24,6 +25,7 @@ export function Overlays() {
             { view.phase === PHASE.countdown && <CountdownOverlay seconds={ view.countdown } /> }
             { view.phase === PHASE.racing && <RaceHud view={ view } /> }
             { view.phase === PHASE.racing && <HeldPowerChip room={ room } /> }
+            { view.phase === PHASE.racing && <ThreatHud room={ room } /> }
             { view.phase === PHASE.finished && <ResultsOverlay room={ room } view={ view } /> }
         </Fragment>
     );
