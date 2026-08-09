@@ -68,33 +68,47 @@ React Router (SPA)
 - **Deterministic track:** server sends a **seed** (in room state); both ends generate identical geometry from it → never sync track tile-by-tile, only seed + progression params.
 - **Lag compensation deferred**, but server keeps a cheap per-ship position-history ring buffer so it's a drop-in later.
 
-## 5. Networked state (Colyseus Schema) — first cut ⏳
+## 5. Networked state (Colyseus Schema) — AS-BUILT through S4 (APPEND-ONLY: declaration order = wire format)
 
 ```
 RunState (room state)
-  ├─ phase: 'lobby' | 'running' | 'results'
-  ├─ seed: number                       // deterministic track
-  ├─ tick: number
+  ├─ phase: uint8            // 0 lobby · 1 countdown · 2 racing · 3 finished  (@slur/shared race/director.ts PHASE)
+  ├─ elapsed: float32        // RACE clock — reset at GO, advances ONLY while racing (→ finishTime/deadline are race-relative)
+  ├─ seed: uint32            // deterministic track (ONE per room for S4)
   ├─ players: MapSchema<PlayerState>
-  └─ pickups: MapSchema<PickupState>    // spawned/consumed authoritatively
+  ├─ hostId: string          // sessionId; owns GO / Play-Again; reassigned on host leave
+  ├─ countdown: float32      // >0 only during countdown; client renders ceil()
+  └─ finishDeadline: float32 // leader+grace race-end clock (0 until first finisher)
+  // (S5) pickups: MapSchema<PickupState> — spawned/consumed authoritatively
 
-PlayerState
-  ├─ id, name, color
-  ├─ pos {x,y,z}, vel, heading          // authoritative transform
-  ├─ status: 'alive'|'stunned'|'dead'|'spectating'
-  ├─ held: PowerUpType | null
-  └─ score / distance
+PlayerState (implements SimShip → server runs the shared simulate() on the schema instance directly)
+  ├─ x,y,z, vx,vy,vz                                   // authoritative transform
+  ├─ grounded, jumpsUsed, jumpHeld, coyote/bufferTimer // jump state (MUST sync so client replay re-predicts)
+  ├─ dead, respawnTimer, invulnTimer, lastSafeX/Z      // collision / respawn (S3)
+  ├─ finished, finishTime                              // finish latch + server-stamped race time
+  ├─ shipId: string                                    // → class → FlightTuning, resolved BOTH ends
+  ├─ name: string, colorId: uint8                      // identity — lobby list, standings, ship tint
+  ├─ spectating: boolean                               // joined mid-round (Race) → NOT simulated
+  ├─ connected: boolean                                // false while dropped (reconnection window)
+  └─ lastProcessedInput: uint32                        // client reconciliation seq
+  // (S5) held: PowerUpType, charge, score/distance
 ```
-Keep state **minimal** — sync only what clients can't derive. Effects/particles are client-local. (Anti-pattern: syncing render state. See `conventions/colyseus.md`.)
+Keep state **minimal** — sync only what clients can't derive. Effects/particles are client-local. (Anti-pattern:
+syncing render state. See `conventions/colyseus.md`.) **Room list = the built-in Colyseus `LobbyRoom`**
+(`define('lobby', LobbyRoom)` + `RunRoom…enableRealtimeListing()` — REQUIRED, the updateLobby hooks live inside
+it); `{ hostName, phase }` rides along as non-schema `setMetadata`. No custom HTTP route.
 
-## 6. Server systems (per fixed tick)
-1. Ingest queued player inputs (with input seq #).
-2. Integrate movement (authoritative), clamp to track.
-3. Spawn/despawn pickups; resolve pickups (collision vs pickup).
-4. Resolve power-up effects & **combat hit detection** (server-side).
-5. Resolve track collisions / deaths / respawns.
-6. Advance difficulty (speed/hazard density by distance).
-7. Emit patch.
+## 6. Server systems (per fixed tick — PHASE-GATED, `race/director.ts`)
+The fixed loop switches on `phase` (S4):
+- **countdown:** bleed the countdown timer; NO ship motion; → racing at 0 (queues cleared).
+- **racing:** ingest queued inputs (seq #) → integrate ONLY racers (spectators skipped) → resolve track
+  collisions / deaths / respawns → stamp `finishTime` on finish → `raceShouldEnd?` (all-done / leader-grace /
+  safety-cap) → finished.
+- **lobby / finished:** idle — ships hold pose.
+- Host `start`/`restart` + ship/colour picks (lobby-only) are **messages**, validated server-side (host + phase).
+- **(S5)** spawn/despawn + resolve pickups; power-up effects & **combat hit detection**. **(S7 Survival)** advance
+  difficulty (speed/hazard density) by distance.
+- Emit patch (`patchRate` ~20 Hz).
 
 ## 7. Shared code — `@slur/shared` (`packages/shared`)
 Client and server MUST share: `@colyseus/schema` definitions, the `simulate()` step, the deterministic track
@@ -110,16 +124,19 @@ and prevents client/server misprediction.
 ## 8. Testing strategy (lightweight — it's a side project)
 - **Unit:** pure logic — track generator determinism (same seed → same track), power-up effect resolution, collision math. (Vitest.)
 - **Determinism guard:** a test that generates a track from a fixed seed on "server" and "client" code paths and asserts equality.
-- **Integration (later):** spin a headless Colyseus room, connect N mock clients, assert join-mid-run spawns alive.
+- **Integration (later):** spin a headless Colyseus room, connect N mock clients, assert the round lifecycle
+  (lobby→countdown→racing→finished) + standings order + join-mid-race → spectate. *(S4 started this: a headless
+  `@colyseus/sdk` E2E drove lobby→countdown→racing and verified the live room-list metadata.)*
 - No heavy E2E for v1 — playtesting is the real test.
 
 ## 9. Non-goals (v1)
 Matchmaking across networks, persistence/accounts, anti-cheat hardening (it's the office), mobile/touch, gamepad, spectator replays.
 
 ## 10. OPEN QUESTIONS
-1. **Server host** — co-locate on the host client's machine, or a dedicated LAN box?
-2. **Prediction depth** — full client-prediction+reconciliation from day 1, or interpolate-only baseline first (LAN latency is tiny)? Start interpolate-only per `netcode.md`; add prediction if it feels floaty.
-3. **Sim on server: koota or plain?** — does the server run koota too (shared systems), or a plain schema-driven `simulate()` with koota only client-side for rendering? Leaning: `simulate()` is plain/pure in `@slur/shared`; koota is the *client* entity/render layer that consumes it. Confirm.
-4. **Sim/patch rates** — 60/20 Hz is the starting point; confirm after first movement prototype.
+_(All initial questions RESOLVED by S1–S4 as-built — folded in below.)_
+1. ~~**Server host**~~ → **co-located on the host laptop** (zero-setup office play; backlog decision 2026-08-06).
+2. ~~**Prediction depth**~~ → **full client-prediction + reconciliation** (shipped S2; `lastProcessedInput` seq, `simulate()` replay). Not interpolate-only.
+3. ~~**Sim on server: koota or plain?**~~ → **plain pure `simulate()` in `@slur/shared`** run directly on the schema; **koota is client-only** (render/entity layer). Confirmed by S1–S4.
+4. ~~**Sim/patch rates**~~ → **60 Hz sim / 20 Hz patch** (`patchRate=50`), confirmed across S2–S4.
 
 _Resolved by research: ECS = koota; monorepo = plain `pnpm -r`, 3 packages; shared `simulate()` module; `@slur/shared` compiled._
