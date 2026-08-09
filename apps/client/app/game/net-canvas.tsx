@@ -1,13 +1,11 @@
-import { getStateCallbacks } from '@colyseus/sdk';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { INPUT_MESSAGE, makeTrack, SET_CLASS_MESSAGE, SHIP_ORDER } from '@slur/shared';
-import type { Entity } from 'koota';
+import { makeTrack, SET_CLASS_MESSAGE, SHIP_ORDER } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
-import { copyShip, createPredictor } from '../net/prediction';
+import { attachRoomToWorld } from '../net/attach-room-to-world';
+import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
-import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './ecs/traits';
 import { world } from './ecs/world';
 import { attachKeyboard } from './input/keyboard';
 import { NetDebugHud } from './net-debug-hud';
@@ -17,18 +15,6 @@ import { FinishGate } from './scene/finish-gate';
 import { Scenery } from './scene/scenery';
 import { Ships } from './scene/ship';
 import { TrackView } from './scene/track-view';
-import { localRole, runPhase } from './spectator';
-
-// Send buffered inputs at 30Hz (not per render frame) — the batched sender drains every input
-// produced since the last send; the server drains them 1-per-tick, so cadence is a bandwidth knob.
-const INPUT_SEND_MS = 1000 / 30;
-
-// Mirror the networked identity (shipId + colorId) into the ECS ONLY when it actually changes (not every
-// 20Hz patch), so the ship view re-renders its model/tint on a swap, not continuously.
-function mirrorNet( ent: Entity, sessionId: string, shipId: string, colorId: number ): void {
-    const cur = ent.get( Net );
-    if ( cur && ( cur.shipId !== shipId || cur.colorId !== colorId ) ) ent.set( Net, { sessionId, shipId, colorId } );
-}
 
 export function NetCanvas( { seed }: { seed: number } ) {
     const room = useRoom();
@@ -73,86 +59,22 @@ export function NetCanvas( { seed }: { seed: number } ) {
     }, [ room ] );
 
     // JUSTIFIED EFFECT — syncs with an external system: the Colyseus room (schema callbacks) → ECS, plus
-    // a 30Hz input-send timer. onAdd spawns an entity (local = predicted, remote = interpolated);
-    // per-player onChange reconciles the local ship or feeds a remote's interp buffer.
+    // a 30Hz input-send timer. The wiring itself lives in attachRoomToWorld (net/) so this parent stays
+    // free of the dense reconcile (and so the S5 projectile reconcile has a home); the effect only brackets
+    // that subscription's mount-scoped lifetime.
     //  1) render-derivation? no — schema mutations arrive over the wire outside React; nothing to derive.
-    //  2) event handler? no DOM/user event — these are network callbacks; the effect registers them.
+    //  2) event handler? no DOM/user event — these are network callbacks; attachRoomToWorld registers them.
     //  3) loader/action data? no — the loader OWNS the room (S2 lesson); this only SUBSCRIBES to its live
     //     stream. Moving room ownership here would be the create→leave→dispose churn bug; we never do that.
     //  4) ref/module singleton? the room is already a module-singleton/loader-owned resource (we only read
     //     it via useRoom); the onAdd/onChange registrations + send timer need mount-scoped teardown so we
     //     stop spawning ECS entities and sending inputs when this Canvas unmounts.
     //  5) external sync? YES — Colyseus schema callbacks + a timer. VERDICT: keep. Subscribes (does NOT
-    //     own) the room and mirrors its player set into the ECS; the cleanup only detaches callbacks and
-    //     clears the timer — it never touches the connection. No cheaper idiom bridges a live wire stream.
-    useEffect( () => {
-        const $ = getStateCallbacks( room );
-        const byId = new Map< string, Entity >();
-        const detach: Array< () => void > = [];
-
-        // Mirror the run phase to the loop's module singleton (no React) so the camera/predict branch reads
-        // it every frame without a subscription re-rendering this WebGL parent (acceptance gate #3).
-        const offPhase = $( room.state ).listen( 'phase', ( v ) => {
-            runPhase.value = v;
-        } );
-
-        const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {
-            const isLocal = sid === room.sessionId;
-            const net = { sessionId: sid, shipId: p.shipId, colorId: p.colorId };
-            const e = isLocal
-                ? world.spawn( Render, Net( net ), Sim, Prev, LocalPlayer )
-                : world.spawn( Render, Net( net ), Remote, Interp );
-            byId.set( sid, e );
-
-            if ( isLocal ) {
-                localRole.spectating = p.spectating; // seed the role at spawn (a mid-race joiner spawns spectating)
-                const s = e.get( Sim );
-                if ( s ) copyShip( s, p ); // seed prediction from the authoritative spawn
-            }
-
-            const offChange = $( p ).onChange( () => {
-                const ent = byId.get( sid );
-                if ( ! ent ) return;
-                mirrorNet( ent, sid, p.shipId, p.colorId );
-                if ( isLocal ) {
-                    // Role-flip seam: mirror spectating to the loop singleton (freezes predict + switches to
-                    // the spectator cam). This is how Play-Again promotes a spectator back into a racer.
-                    localRole.spectating = p.spectating;
-                    const s = ent.get( Sim );
-                    if ( s ) predictor.reconcile( s, p, trackRef.current );
-                } else {
-                    const interp = ent.get( Interp );
-                    if ( ! interp ) return;
-                    interp.buffer.push( { t: performance.now(), x: p.x, y: p.y, z: p.z, vx: p.vx, dead: p.dead } );
-                    if ( interp.buffer.length > 120 ) interp.buffer.shift(); // trim to ~1s @ 20Hz
-                }
-            } );
-            detach.push( offChange );
-        } );
-
-        const offRemove = $( room.state ).players.onRemove( ( _p, sid ) => {
-            const e = byId.get( sid );
-            if ( e ) {
-                e.destroy();
-                byId.delete( sid );
-            }
-        } );
-
-        const timer = setInterval( () => {
-            const inputs = predictor.drainUnsent();
-            if ( inputs.length > 0 ) room.send( INPUT_MESSAGE, { inputs } );
-        }, INPUT_SEND_MS );
-
-        return () => {
-            clearInterval( timer );
-            offPhase();
-            offAdd();
-            offRemove();
-            for ( const off of detach ) off();
-            for ( const e of byId.values() ) e.destroy();
-            byId.clear();
-        };
-    }, [ room, predictor ] );
+    //     own) the room and mirrors its player set into the ECS; the returned teardown only detaches
+    //     callbacks and clears the timer — it never touches the connection. No cheaper idiom bridges a live
+    //     wire stream. Deps: [room, predictor] only — world is a module singleton and trackRef a stable ref
+    //     (read via .current), so listing them would needlessly tear down + re-subscribe the room wiring.
+    useEffect( () => attachRoomToWorld( room, world, predictor, trackRef ), [ room, predictor ] );
 
     return (
         <WorldProvider world={ world }>
