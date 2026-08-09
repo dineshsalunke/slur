@@ -76,8 +76,10 @@ Survival reuses the same systems. *Confirm this ordering (see §10).*
 ### 5.2 Track & hazards
 - Procedurally generated, seeded so **all clients share the same track** (server sends seed). Deterministic generation from seed = no per-tile sync.
 - **Two track forms:** *finite* seeded **courses with a finish line** (Race), and *endless* procedural runs (Survival). Both deterministic from seed; a finite course is just an endless generator with a defined length + finish gate.
-- Hazard vocabulary: gaps (fall = death/respawn), walls (dodge), narrowings, ramps/jumps, moving obstacles, speed gates.
-- Difficulty ramps with distance (speed ↑, hazard density ↑).
+- **Core hazard vocabulary (implemented):** *cube fields* (1×1-cell **un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump is **gaps-only**; blocks are **strafe-or-destroy** — the two never overlap. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
+- **Locked constraints (2026-08-09):** **straight ribbon** — the track *never turns/curves* (no loops/corkscrews/banked corners); **strafing is the only lateral movement** (reaffirms §5.1). **No autonomous moving geometry** (no crushers / moving cubes / conveyors) — obstacles are static; the challenge is *your* motion through them. Verticality is **impulse-only** (a launch pad pops you up; you land back on the flat ribbon — no multi-level terrain/ceilings/gravity-flip). Player-*triggered* changes (a switch) are allowed — an event, not autonomous motion.
+- **Levels will be hand-authored** (procedural gen is filler/endless — both feed the same `Track.segmentAt()`, so the sim is unchanged). **Fairness = two hard floors only:** **FIT** (a connected corridor ≥ the widest ship links entry→exit) and **GAP-REACH** (every gap ≤ the worst jumper's reach). **Weave difficulty is *uncapped*** — it self-balances via the speed dial (any ship crawls through at a time-cost). A **validator** (z-monotonic flood-fill + per-gap reach) enforces the two floors on *any* level, authored or generated. (Balance is playstyle-level, not geometry-equal — §5.5, §5.7.)
+- **Difficulty progression:** authored levels are hand-paced; the procedural source uses a difficulty scalar `D(z)` → a **trend** (linear/ease-out for finite Race so the whole field finishes; exponential for endless Survival) **+ a deterministic triangle-wave** for tension-release pacing (NOT `Math.sin` — determinism forbids it in the generator). `D` drives the knobs (`ROW_FILL`, gap probability, cube density).
 
 ### 5.3 Power-ups (Blur trinity) — starter set
 Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time.
@@ -92,6 +94,8 @@ Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time
 | Chaos | **Scramble** | Invert/blur a nearby rival's controls or view briefly |
 
 *OPEN: exact roster, cooldowns, whether powers stack, friendly-fire rules.*
+
+> The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the redefined **Tractor** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 
 ### 5.4 Combat & interactions
 - **Server-authoritative hit detection** (never trust client for hits — see TDD / `conventions/netcode.md`).
@@ -179,15 +183,143 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Throttle · brake · coast · cruise cap | **LIVE** | player-controlled speed (§5.1) |
 | Strafe (analog, drifty→snappy) + corridor walls | **LIVE** | walls stop+slide, non-lethal |
 | Jump — variable (tap/hold) + double + coyote/buffer | **LIVE** | derived from a jump-feel spec (GDC "Building a Better Jump") |
-| Track — deterministic-from-seed, 5 archetypes | **LIVE** | plain / block / platform / gap / finish |
-| Hazards + collision (swept land + swept body-kill) | **LIVE** | gap=fall, block=dodge/jump, platform=land-or-crash; **center-point today → AABB next** |
+| Track — deterministic-from-seed, **4u cell grid** (16-lane / 64u), 4 archetypes | **LIVE** | plain / block (open-scatter cube field) / gap / finish; *platform cut* |
+| Hazards + collision — **AABB** (footprint = model box), swept land + swept body-kill | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable); generous grounded rule; WYSIWYG |
 | Death → shard-burst VFX → respawn (position-scoped grace) | **LIVE** | 1s derezz, setback + re-approach |
 | Netcode — authoritative, predict+reconcile, interp, drop-in | **LIVE** | inputs-not-positions, 60Hz sim / 20Hz patch |
 | **Boost** | **PLANNED (S5)** | *removed from base flight → pickup power-up* |
 | Power-ups + combat (Bolt/Mine/Shield/Boost/…) | **PLANNED (S5)** | `E` reserved; server-authoritative hits |
-| Ship classes (per-class `FlightTuning` + hitbox/armour) | **PLANNED (S6)** | architecture ready — data swap, see §5.5 |
+| Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); `armour` / combat stats → S5/S6 |
 | Session flow (lobby→race→results, standings, restart) | **PLANNED (S4)** | one seeded track runs today |
 | Survival mode (endless + chase-wall) | **PLANNED (S7)** | Race is the v1 mode |
+
+### 5.7 Mechanic catalog — master menu (pick one at a time) — 2026-08-09
+
+The curated backlog of candidate mechanics from the 2026-08-09 ideation, serving both playstyles:
+**[R]** Race-clean · **[M]** Mess-with-people · **[B]** both. Each item tags the **base capability
+(BC#)** it needs — deciding a BC unlocks its whole family. `⚡` = **no base change** (authored content /
+render only). Implement one at a time; the BC changes are called out so they're decided deliberately.
+
+**Locked design constraints (bound the whole catalog):**
+- **Straight ribbon only** — never turns/curves; no loops/corkscrews/banked corners. **Strafing is the only
+  lateral movement** (§5.1). Verticality is **impulse-only** (launch pads pop you up; you land on the flat
+  ribbon) — no multi-level terrain, ceilings, or gravity-flip.
+- **No autonomous moving geometry** — no crushers, sliding/moving cubes, or conveyors. Obstacles are static;
+  the challenge is *your* motion through them. **Player-triggered** changes (a switch arms/opens something)
+  ARE allowed — that's an event, not autonomous motion.
+- **Balance is playstyle-level, not geometry-equal** — two hard fairness floors only (**FIT** + **GAP-REACH**);
+  weave is uncapped and self-balances via speed. Levels will be hand-authored (§5.2).
+
+**Base capabilities (decide → unlock a family):**
+
+| BC | Capability | Status | Note |
+|----|-----------|--------|------|
+| **BC1** | Dynamic entities — server-sim projectiles/mines/drops/decoys (MapSchema + client interp) | **keystone (S5)** | unlocks the whole Mess half |
+| **BC2** | Status effects — networked per-ship modifiers the sim + client read | planned | the disruption "verbs" |
+| **BC3-trig** | Player-triggered world events (a switch arms/toggles a hazard or gate) | candidate | NOT autonomous motion |
+| **BC4** | Position discontinuity — sim handles teleport/blink/grapple + prediction replays it | candidate | |
+| **BC5** | Floor/zone metadata — a floor/zone carries a type that modifies the sim | candidate | cheap, high value |
+| **BC6-imp** | Vertical **impulse only** — launch pads add `vy`; land on the flat ribbon | candidate | NO terrain/ceiling/gravity |
+| **BC7-lite** | Track shape — width change + parallel branches + lap-repeat; **never turns** | candidate | straight-ribbon-preserving |
+| **BC8** | Proximity/targeting — server distance queries | candidate | slipstream, near-miss, homing |
+
+#### A) Track features / world hazards
+
+| Mechanic | Play | BC | What it does |
+|---|:--:|:--:|---|
+| **Teleports** | B | BC4 | Paired portals (level data); enter A → exit B (deterministic set of x/z, prediction replays it). Forward pair = shortcut; backward pair = a grief trap. |
+| **Boost pads** | R | BC5 | Floor strip that adds forward speed on contact — rewards the optimal line. |
+| **Slow fields** | B | BC5 | Zone/floor that caps + bleeds speed and softens handling (tar/ice) — route around or power through. |
+| **Launch pads** | B | BC6-imp | Impart upward `vy` (pop over a wall / reach an air pickup); you land on the flat floor. |
+| **Wind / push zones** | B | BC5 | Zone applying a constant lateral (or fore/aft) force — fight the drift while weaving. |
+| **Switches → route hazards** | B | BC3-trig | Passing/shooting a switch arms or opens something downstream (drop a gate, open a gap, arm a hazard). Co-op or troll (arm it as a rival nears). *(user-favored)* |
+| **Destructible cubes** | B | BC1 | Cube with HP; shoot to clear a path (or leave it as a wall for chasers). Networked destroyed-state. |
+| **Shrinking track** | B | BC7-lite | `HALF_WIDTH` narrows over a section (fewer lanes) → escalating weave crescendo. |
+| **Split paths / forks** | R | BC7-lite | Ribbon branches into parallel straight lanes (risky-short vs safe-long), then rejoins. Route choice, no turning. |
+| **Fog / vision zones** | M | ⚡ render | Reduced draw distance in a band → react later. Render-only, but seed/level-driven so all clients agree where. |
+| **Chicanes / narrowing / cube patterns** | R | ⚡ authored | Pure authored cube arrangements — the bread-and-butter of a designed level. |
+| **One-way membranes** | M | ⚡+BC2 | Pass forward freely, blocked going back. Only matters once knockback/teleport can push you backward. |
+| **Explosive barrels** | M | BC1 | Static until shot/bumped; detonate → radial disrupt + chain to nearby barrels. Placed area-denial. |
+| **Pre-placed mines** | M | BC1 | Environmental mines seeded into the track (vs player-dropped, §B) — a static-position hazard entity. |
+
+#### B) Offensive pickups — all **BC1** (+**BC2** for the status payload)
+
+| Mechanic | Play | What it does |
+|---|:--:|---|
+| **Bolt / blaster** | M | Forward shot; hit → a status verb (stun/spin). The bread-and-butter weapon. |
+| **Homing seeker** | M | Locks the nearest ship ahead and chases; dodge-able; cloak/decoy counter it (BC8). |
+| **Mines (dropped)** | M | Drop behind you; a trailing ship within proximity is disrupted. |
+| **Wall drop** | M | Spawn a temporary solid cube behind you to block/crash chasers (expiring block entity). |
+| **Oil slick / caltrops** | M | Drop a floor hazard behind; whoever crosses spins out / slows. |
+| **Proximity EMP / shockwave** | M | Radial burst disrupting all ships in a radius (BC8) — strong in a pack. |
+| **Tractor beam** *(REDEFINED)* | M/R | **Momentum leech** on the nearest ship(s): *their* speed drains and *yours* rises. A Freighter tractoring 1–2 Fighters slows them and speeds itself up — the heavy ship's signature "mess + self-advance" tool and its answer to being a poor weaver. **NOT** a yank-into-hazard. Knobs: leech rate, max targets, range, duration. (BC8) |
+| **Boomerang** | M | Thrown forward, returns to you; can hit on both passes. |
+| **Lightning chain** | M | Hits the nearest ship, arcs to further nearby ones (BC8). |
+| **Ink / blind bomb** | M | Black out / smear a target's screen briefly (networked `blinded` status → victim's client renders the overlay). |
+| **Reverse-controls hex** | M | Invert a target's strafe (± throttle) for a few seconds (BC2). |
+
+#### C) Defensive / utility pickups — **BC2** (+BC1)
+
+| Mechanic | Play | What it does |
+|---|:--:|---|
+| **Shield** | B | Absorb one hit (a window or one-shot). |
+| **Reflect / parry** | B | Timing-bounce an incoming projectile back at the shooter. |
+| **Cloak** | B | Untargetable by homing/lock for a window (still physically present). |
+| **Decoy hologram** | B | Spawn a fake ship (BC1) that baits seekers/mines. |
+| **Ghost-dash** | R | Phase intangibly through ONE obstacle — a single-use collision-skip burn (must not skip a fairness floor). |
+| **Cleanse** | B | Strip your active negative status effects. |
+
+#### D) Mobility pickups (Race verbs)
+
+| Mechanic | Play | BC | What it does |
+|---|:--:|:--:|---|
+| **Boost** | R | sim (S5) | Burst of forward speed — the planned starter. |
+| **Blink / dash** | R | BC4 | Short instant reposition forward or lateral (dodge / gap-cross / cut a weave). |
+| **Air-brake / hard-stop** | R | sim | Instant strong decel to nail a tight weave entry (a tuning, not necessarily a pickup). |
+| **Grapple** | R | BC4/BC8 | Fire at a point/pickup ahead and pull yourself to it — a skill-shot shortcut. |
+
+#### E) Status verbs (the composable payloads for A/B/C) — **BC2**
+
+`stun` (no input, brief) · `spin-out` (rotate / lose heading feel) · `slow` · `reverse-controls` · `blind` ·
+**`grow-hitbox`** (footprint inflates → easier to crash — evil) · **`speed-lock`** (can't brake → forced fast
+through a weave) · `heavy` (↑gravity → jumps fall short) · `magnetize` (drawn toward the nearest hazard).
+
+#### F) Modes & scoring
+
+Race (finite) ✓ · **Lap race** (repeat the ribbon N times — a "lap" is a length re-run, no turning) ·
+**Checkpoint race** (ordered checkpoints, BC3-trig) · **Survival** (chase derezz-wall, last alive) ·
+**Elimination** (last place cut each interval/lap) · **Battle/arena** (no finish — pure disrupt/kill score,
+BC1) · **Team modes** (2 teams; combined race/elimination/battle scoring).
+*(Coin-grab and Tag — dropped.)*
+
+#### G) Catch-up & party-glue (keep all ~12 players in it)
+
+| Mechanic | Play | BC | What it does |
+|---|:--:|:--:|---|
+| **Rubber-band pickups** | B | scoring | Worse position → better item odds (Mario-Kart) — the main equalizer. |
+| **Slipstream / drafting** | R | BC8 | Riding close behind a ship grants a speed pull — rewards pack play, gives trailers a lever. |
+| **Near-miss boost** | R | BC8 | Grazing a cube *without* hitting grants speed (Burnout) — rewards risky tight lines. |
+| **Style / combo meter** | R | BC8 | Chain near-misses / clean weaves → build a boost charge. |
+| **Spectator meddling** | M | BC1 | Eliminated/dead players occasionally drop a hazard onto the live track — keeps out-players engaged. |
+| **Emotes / taunts · ping-a-hazard** | M | ⚡ | Spam reactions; mark a hazard/pickup for teammates. |
+| **Bounty** | M | scoring | Disrupting/killing the current leader pays a bonus — everyone gangs the front-runner (self-balancing lead). |
+
+#### H) Wild cards (experimental — straight-ribbon-safe only)
+
+- **Polarity lanes** [R] (BC2/BC3-trig) — Ikaruga-style: some cubes are solid only on your current "channel";
+  toggle your channel to pass matching ones. A whole skill layer; still straight-ribbon. Validate the fun first.
+
+#### Parked (kept, not selected now)
+
+- **Rewind / self time-slow** — great, but **much later**; per-player time dilation fights the shared
+  fixed-step sim (needs careful design). Backlog.
+- **Extra-jump charge** — uncertain utility; revisit if jump-heavy tracks want it.
+- **Bumpers (pinball)** — kinetic-reaction props, adjacent to the rejected moving-geometry family — parked.
+
+#### Dropped (out of scope)
+
+Coin-grab mode · Tag mode · Loops / corkscrews · Gravity-flip / ceiling-running · autonomous moving
+geometry (crushers / moving cubes / conveyors).
 
 ## 6. Players & session
 - **Count:** 2–12 (office LAN). Design readable at 8.
@@ -221,7 +353,7 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 - Nobody asks "how do I play?" after one round.
 
 ## 10. OPEN QUESTIONS (resolve with team)
-1. **v1 mode** — §4 lands two modes (Race / Survival). Confirm **Race-to-finish first** for v1, or start with Survival?
+1. ~~**v1 mode** — Race or Survival first?~~ **RESOLVED: Race-to-finish is v1** (finite, finish-line); Survival is S7. (§4, backlog.)
 2. ~~**Fuel/energy** — keep the SkyRoads resource pressure, or cut for simplicity?~~ **RESOLVED: cut.** Energy only gated boost; boost is now a pickup (§5.1, §5.3), so the meter is gone. Pickups carry their own charge.
 3. **Death penalty** — respawn into same round, wait for next round, or spectate-only until round ends?
 4. **Power-up carry** — hold 1, hold 2, or slot + queue?

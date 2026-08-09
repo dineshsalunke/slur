@@ -168,4 +168,36 @@ systems (solo), chase-camera, banking.
    resolution (4 sites) + `ship-visuals.ts` (new) + `ship-model.tsx` (per-ship model) + hot-swap keys +
    64u camera.
 
-**STATUS (pt.4): IMPLEMENTING — batch 1 (data model).**
+---
+
+## 2026-08-09 (pt.5) — RECONCILE (arc close: planned vs done)
+
+**Implemented + committed `12049bd`** (one atomic commit; typecheck + 18 shared tests + lint[only pre-existing
+net-canvas debt] GREEN):
+- **Batch 1 (data model):** `ship-classes.ts` registry (Class/Ship two-level), `CELL` grid + `halfW/halfL`
+  on `FlightTuning`, `schema.ts +shipId` (append-only string). ✓ as planned.
+- **Batch 2 (geometry/collision):** `track.ts` cell grid + `Block +z0/z1` + open-scatter cube fields +
+  platform cut + worst-class gap-fairness; `step.ts` AABB (Minkowski) + generous grounded; retired
+  `MAX_STEP`, added `jumpReach`/`jumpAirtime`; tests rewritten (wing-clip + wing-clear + generous-support +
+  per-class gap). ✓ as planned.
+- **Batch 3 (wiring):** per-ship tuning at all 6 sim/camera/bank sites; `run-room.ts` `setClass` handler;
+  `ship-visuals.ts` + live per-ship model swap (`ShipView`/`useTrait`); hot-swap keys 1–5; discrete-cube
+  render (fixed the full-segment-depth render bug). ✓ as planned. **+ lint-complexity cleanup** (extracted
+  `hitsLethalBody`/`bestFloorInSeg`/`assertSegmentFair`/`mirrorShipId`/`playerLines`+`localShipLines`).
+
+**Deviations from plan:** (a) `shipId` chosen over `classId` on the wire (a ship resolves to its class);
+(b) **Freighter capped at feel-gate** (imperial 2.16c→1.5c long, 0.9c→0.62c wide) — model was too big; weave
+penalty moved from hitbox-width to sluggish strafe; (c) full per-class flight + all 5 models pulled forward
+from S6 (user directive). Fighter footprint re-locked from the challenger model (2.6×3.8 → 2.6×2.52).
+
+**Design work this session (paper, now durable in docs — not code):**
+- **Balance principle** — playstyle-level, not geometry-equal; weave self-balances via speed; only FIT +
+  GAP-REACH are hard floors. → memory `balance-at-playstyle-not-geometry` + GDD §5.2/§5.5.
+- **Level system** — hand-authored levels via `Track.segmentAt()` abstraction; sparse-feature format; a
+  two-floor validator (flood-fill FIT + per-gap GAP-REACH); procedural `D(z)` = trend + deterministic
+  triangle-wave. → GDD §5.2 + backlog "Level authoring" (post-S4).
+- **Mechanic master-menu** — ~55 kept mechanics tagged [R/M/B] + base-capabilities BC1–BC8; straight-ribbon
+  + no-moving-geometry locked; Tractor redefined (momentum leech); parked/dropped recorded. → GDD §5.7.
+- **Ship-content pipeline** (code→JSON→DB) → backlog milestone.
+
+**S3 CLOSED. Next: S4 (session flow → complete Race).**
