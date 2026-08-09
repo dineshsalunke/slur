@@ -254,8 +254,11 @@ spectate (cycle any racer) then join next round; host authority + migration; lea
 - Model: **drop-in-beside-pack → round-gated, per-mode** (Race spectate-next / Survival drop-in via seam).
 
 **Verified:** typecheck (all 3 pkgs) · 28 shared tests · lint (only pre-existing net-canvas debt) · full SPA
-build · headless E2E (server lifecycle + room list) · full code-review of all 7 client gates. **NOT yet run:**
-the human two-tab browser playtest (the feel/visual gate). **NEXT after that passes: S5 (combat & power-ups).**
+build · headless E2E (server lifecycle + room list) · full code-review of all 7 client gates · **HUMAN GATE
+PASSED 2026-08-09** (two-tab playtest, full loop + spectate). One regression found & fixed at the gate: lobby
+ship jitter (gating netFlightSystem stranded the Prev trait → stale-Prev lerp; fixed by `freezeLocalPrev`,
+commit `e5eb5f9`). Polish deferred to S7 (reconnection under the new phase machine — see backlog). **S4 CLOSED.
+NEXT: S5 (combat & power-ups).**
 
 ## RECONCILE
 _(pending)_
