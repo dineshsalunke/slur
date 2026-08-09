@@ -3,6 +3,7 @@ import { INPUT_MESSAGE, type PlayerState, type ProjectileState, type RunState, t
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
 import { Interp, LocalPlayer, Net, NetProjectile, Prev, ProjInterp, Remote, Render, Sim } from '../game/ecs/traits';
+import { pushHit } from '../game/scene/hit-events';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
 
@@ -29,7 +30,17 @@ function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, trac
 function pushRemote( ent: Entity, p: PlayerState ): void {
     const interp = ent.get( Interp );
     if ( ! interp ) return;
-    interp.buffer.push( { t: performance.now(), x: p.x, y: p.y, z: p.z, vx: p.vx, dead: p.dead } );
+    // Carry `stunned` in the snapshot EXACTLY like `dead` — remoteInterpSystem reads the latest to flicker a
+    // hit remote (stunTimer isn't otherwise interpolated; the flag is all the cosmetic cue needs).
+    interp.buffer.push( {
+        t: performance.now(),
+        x: p.x,
+        y: p.y,
+        z: p.z,
+        vx: p.vx,
+        dead: p.dead,
+        stunned: p.stunTimer > 0,
+    } );
     if ( interp.buffer.length > 120 ) interp.buffer.shift();
 }
 
@@ -127,6 +138,12 @@ export function attachRoomToWorld(
         }
     } );
 
+    // One-shot impact FX: the server broadcasts 'hit' at the moment a bolt connects (NOT state — colyseus.md:
+    // one-shot FX are messages). Queue it for the imperative <HitSpark> field; never touches React.
+    const offHit = room.onMessage( 'hit', ( m: { x: number; y: number; z: number; victimId: string } ) => {
+        pushHit( { x: m.x, y: m.y, z: m.z } );
+    } );
+
     const timer = setInterval( () => {
         const inputs = predictor.drainUnsent();
         if ( inputs.length > 0 ) room.send( INPUT_MESSAGE, { inputs } );
@@ -139,6 +156,7 @@ export function attachRoomToWorld(
         offRemove();
         offProjAdd();
         offProjRemove();
+        offHit();
         for ( const off of detach ) off();
         for ( const e of byId.values() ) e.destroy();
         for ( const e of projById.values() ) e.destroy();

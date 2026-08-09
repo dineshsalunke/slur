@@ -12,6 +12,7 @@ import { NetDebugHud } from './net-debug-hud';
 import { NetLoop } from './net-loop';
 import { ExplosionField } from './scene/explosions';
 import { FinishGate } from './scene/finish-gate';
+import { HitSpark } from './scene/hit-spark';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
 import { Scenery } from './scene/scenery';
@@ -104,6 +105,7 @@ export function NetCanvas( { seed }: { seed: number } ) {
                 { /* After NetLoop so its useFrame (ship-position sync) runs first — the burst reads each
                      ship's Render group AFTER it's positioned, spawning at the exact derezz spot. */ }
                 <ExplosionField />
+                <HitSpark />
                 <TrackView track={ track } />
                 <FinishGate track={ track } />
                 <Scenery count={ 50 } seed={ seed } />

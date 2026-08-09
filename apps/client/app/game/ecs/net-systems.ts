@@ -18,12 +18,22 @@ export function freezeLocalPrev( world: World ): void {
     } );
 }
 
-// Death VFX (minimal for the core loop): hide the local ship while it's derezzed OR while spectating (a
-// mid-race joiner owns a frozen local ship it must not see). Full TRON derezz is S6. Imperative (mutates the
-// live Render group), no React state.
+// Rapid visible-blink while stunned — makes a hit UNMISTAKABLE ("that ship got hit"). Time-based so it needs
+// no per-entity state and no allocation; local + remote systems share the phase so all stunned ships flicker
+// in sync. ~90ms half-period = a fast, disruptive strobe over the brief stun.
+const STUN_BLINK_MS = 90;
+function stunBlink(): boolean {
+    return Math.floor( performance.now() / STUN_BLINK_MS ) % 2 === 0;
+}
+
+// Death + stun VFX (minimal for the core loop): hide the local ship while derezzed OR spectating (a mid-race
+// joiner owns a frozen local ship it must not see); while stunned (predicted Sim.stunTimer>0) strobe its
+// visibility so a hit reads on your OWN ship too. Full TRON derezz is S6. Imperative, no React state.
 export function localDeathVfxSystem( world: World ): void {
+    const blink = stunBlink();
     world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ] ) => {
-        grp.visible = ! s.dead && ! localRole.spectating;
+        const shown = ! s.dead && ! localRole.spectating;
+        grp.visible = shown && ( s.stunTimer > 0 ? blink : true );
     } );
 }
 
@@ -55,6 +65,7 @@ const lerp = ( a: number, b: number, t: number ) => a + ( b - a ) * t;
 // at the latest known pose (the classic new-joiner warm-up, handled explicitly).
 export function remoteInterpSystem( world: World ): void {
     const renderTime = performance.now() - RENDER_DELAY_MS;
+    const blink = stunBlink(); // shared strobe phase (same as the local ship) for stunned remotes
     // Trait ORDER matters: koota fills the value array positionally for every trait, tags included.
     // Put the tag (Remote) LAST so [ interp, grp ] align to Interp + Render (not Remote + Interp).
     world.query( Interp, Render, Net, Remote ).readEach( ( [ interp, grp, net ] ) => {
@@ -88,6 +99,7 @@ export function remoteInterpSystem( world: World ): void {
         }
         grp.position.set( x, y, z );
         grp.rotation.z = -( vx / tuningForShip( net.shipId ).strafeClamp ) * 0.5; // cosmetic bank (per-ship clamp)
-        grp.visible = ! buf[ buf.length - 1 ].dead; // hide a derezzed remote (latest server truth)
+        const latest = buf[ buf.length - 1 ]; // latest server truth for dead/stunned
+        grp.visible = ! latest.dead && ( latest.stunned ? blink : true ); // hide a derezzed remote; strobe a stunned one
     } );
 }

@@ -37,6 +37,7 @@ export interface Snapshot {
     z: number;
     vx: number; // for the cosmetic bank
     dead: boolean; // derezzed on the server → hide/ghost the remote ship (S3)
+    stunned: boolean; // stunTimer>0 on the server → flicker the remote ship so a hit READS (S5). Carried like `dead`.
 }
 export const Interp = trait( () => ( { buffer: [] as Snapshot[] } ) );
 
