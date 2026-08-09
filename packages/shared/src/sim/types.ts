@@ -10,7 +10,6 @@ export interface SimShip {
     vx: number;
     vy: number;
     vz: number;
-    energy: number;
     grounded: boolean;
     jumpsUsed: number;
     jumpHeld: boolean;
@@ -34,7 +33,6 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         vx: 0,
         vy: 0,
         vz: 0,
-        energy: 100,
         grounded: true,
         jumpsUsed: 0,
         jumpHeld: false,

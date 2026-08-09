@@ -12,6 +12,20 @@
 6. **Pin `three` to `0.185.x`.** `postprocessing@6.39.4` peer-requires `three >= 0.168.0 < 0.186.0`. Bumping three to 0.186+ silently breaks postprocessing. This is the single biggest version footgun in this stack.
 7. **Reuse geometries/materials; dispose what React doesn't.** R3F auto-disposes objects it created on unmount, but manually-created shared resources and pooled objects are yours to `dispose()`.
 
+## House React style (project rule)
+
+Applies to **every** `.tsx` in the client, not just R3F components.
+
+1. **No fragment shorthand.** Write `<Fragment>…</Fragment>` (imported from `react`), never `<>…</>`.
+   Named fragments read explicitly and diff cleanly. *(Not lint-enforceable — Biome has no "prefer long-form
+   fragment" rule — so it's an author/review gate.)*
+2. **One component per file.** A file exports exactly one React component; its name matches the file
+   (`ship-model.tsx` → `ShipModel`). Module-scope **helpers, hooks, constants, and scratch objects are NOT
+   components** and may share the file. Split colocated sub-components into their own files and import them.
+   - **Exception — React Router route modules** (`root.tsx`, `routes/*`): the framework mandates multiple
+     exports in one module (default component + `Layout` / `ErrorBoundary` / `loader` / `action`). Those stay
+     together — they're route slots, not free-standing components.
+
 ## Idiomatic Patterns (concise TSX snippets)
 
 **Slim, allocation-free `useFrame`** (scratch objects hoisted out of the loop):

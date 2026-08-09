@@ -1,4 +1,4 @@
-import { spawnShip } from '@slur/shared';
+import { DEFAULT_SHIP, spawnShip } from '@slur/shared';
 import { trait } from 'koota';
 import * as THREE from 'three';
 
@@ -17,8 +17,11 @@ export const LocalPlayer = trait();
 // ── S2 networked traits ──
 
 // Every networked ship (local + remote) carries its Colyseus sessionId — the reconciliation key
-// mapping schema player → ECS entity.
-export const Net = trait( { sessionId: '' } );
+// mapping schema player → ECS entity — plus its chosen shipId. shipId resolves (via ship-classes.ts)
+// to the FlightTuning the sim/camera/bank use and the model the view mounts. It's mirrored from the
+// authoritative PlayerState ONLY when it actually changes (a class hot-swap), never per patch — so the
+// ship view re-renders on a swap, not 20×/s.
+export const Net = trait( { sessionId: '', shipId: DEFAULT_SHIP as string } );
 
 // Tag: a remote (interpolated) ship. Remotes NEVER get Sim/Prev — they are never predicted, only
 // eased toward buffered server snapshots (netcode "two reconciliations": predict local, interp remote).

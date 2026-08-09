@@ -6,12 +6,11 @@ export interface PlayerInput {
     brake: number; // 0..1
     strafe: number; // -1..1
     jump: boolean;
-    boost: boolean;
-    usePowerUp: boolean;
+    usePowerUp: boolean; // reserved — fires a held pickup (S5 combat); no effect yet.
 }
 
 export function emptyInput( seq = 0 ): PlayerInput {
-    return { seq, throttle: 0, brake: 0, strafe: 0, jump: false, boost: false, usePowerUp: false };
+    return { seq, throttle: 0, brake: 0, strafe: 0, jump: false, usePowerUp: false };
 }
 
 // The client→server input message. A PLAIN object (Colyseus forbids Schema as a message payload):

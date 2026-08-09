@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
-import { HALF_WIDTH, SEG_LEN, type Track } from '@slur/shared';
+import { HALF_WIDTH, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
-import { useRef } from 'react';
+import { Fragment, useRef } from 'react';
 import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
 
@@ -54,6 +54,28 @@ function park( mesh: THREE.InstancedMesh, from: number, until: number ): void {
     for ( let k = from; k < until; k++ ) mesh.setMatrixAt( k, _hidden );
 }
 
+// Emit one segment's lethal cubes into the block pool; returns the next free slot index. Each cube is a
+// DISCRETE box — sized from its OWN [x0,x1] × [y0,y1] × [z0,z1] (a 1×1-cell footprint, 2 cells tall), NOT
+// the whole segment — so an open-scatter field reads as separate pillars you weave between. This box IS
+// the collision AABB (WYSIWYG), so what you see is exactly what the ship's footprint tests against.
+function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment ): number {
+    for ( const b of seg.blocks ) {
+        const h = Math.max( 0.05, b.y1 - b.y0 );
+        bi = put(
+            mesh,
+            bi,
+            BLOCK_LIMIT,
+            ( b.x0 + b.x1 ) / 2,
+            b.y0 + h / 2,
+            ( b.z0 + b.z1 ) / 2,
+            b.x1 - b.x0,
+            h,
+            b.z1 - b.z0,
+        );
+    }
+    return bi;
+}
+
 // Instanced track floors + hazard blocks, driven fully imperatively from a Z-window around the local
 // ship (NO React state, NO re-map per frame). Two draw calls total. Track is local-only (from the
 // synced seed) — never reconciled tile-by-tile.
@@ -104,19 +126,7 @@ export function TrackView( { track }: { track: Track } ) {
                     len,
                 );
             }
-            for ( const b of seg.blocks ) {
-                bi = put(
-                    blocks,
-                    bi,
-                    BLOCK_LIMIT,
-                    ( b.x0 + b.x1 ) / 2,
-                    ( b.y0 + b.y1 ) / 2,
-                    cz,
-                    b.x1 - b.x0,
-                    b.y1 - b.y0,
-                    len,
-                );
-            }
+            bi = emitBlocks( blocks, bi, seg );
         }
         park( floors, fi, prevFloor.current );
         park( blocks, bi, prevBlock.current );
@@ -130,7 +140,7 @@ export function TrackView( { track }: { track: Track } ) {
     } );
 
     return (
-        <>
+        <Fragment>
             { /* frustumCulled=false: we mutate instanceMatrix every frame but three only computes the
                  InstancedMesh bounding sphere ONCE — a stale volume culls the whole track once the ship
                  flies past it (~z=120), making the floor/rails/blocks vanish. These are always on-screen. */ }
@@ -161,6 +171,6 @@ export function TrackView( { track }: { track: Track } ) {
                     toneMapped={ false }
                 />
             </instancedMesh>
-        </>
+        </Fragment>
     );
 }

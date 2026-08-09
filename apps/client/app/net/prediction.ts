@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, FIXED_DT, type PlayerInput, type SimShip, simulate, type Track } from '@slur/shared';
+import { FIXED_DT, type PlayerInput, type SimShip, simulate, type Track, tuningForShip } from '@slur/shared';
 
 // Client-side prediction + reconciliation for the LOCAL ship (Gambetta). The client predicts every
 // input immediately via simulate() and keeps them in a pending list; when an authoritative snapshot
@@ -20,7 +20,6 @@ export function copyShip( dst: SimShip, src: SimShip ): void {
     dst.vx = src.vx;
     dst.vy = src.vy;
     dst.vz = src.vz;
-    dst.energy = src.energy;
     dst.grounded = src.grounded;
     dst.jumpsUsed = src.jumpsUsed;
     dst.jumpHeld = src.jumpHeld;
@@ -42,8 +41,9 @@ export interface Predictor {
     // Inputs not yet sent; marks them sent. Fed to the batched room.send().
     drainUnsent(): PlayerInput[];
     // Reconcile local Sim against an authoritative snapshot: snap → drop acked → replay pending.
-    // Replays through the SAME track the server used, so predicted death/finish reconcile exactly.
-    reconcile( sim: SimShip, snapshot: SimShip & { lastProcessedInput: number }, track: Track ): void;
+    // Replays through the SAME track AND the SAME per-ship tuning the server used (resolved from the
+    // snapshot's authoritative shipId), so predicted death/finish/flight reconcile exactly.
+    reconcile( sim: SimShip, snapshot: SimShip & { lastProcessedInput: number; shipId: string }, track: Track ): void;
 }
 
 export function createPredictor(): Predictor {
@@ -64,9 +64,10 @@ export function createPredictor(): Predictor {
         },
         reconcile( sim, snapshot, track ) {
             copyShip( sim, snapshot ); // snap to authoritative truth
+            const tuning = tuningForShip( snapshot.shipId ); // authoritative class → identical replay math
             const ack = snapshot.lastProcessedInput;
             while ( pending.length > 0 && pending[ 0 ].seq <= ack ) pending.shift(); // drop acked
-            for ( const p of pending ) simulate( sim, p.input, FIXED_DT, DEFAULT_TUNING, track ); // replay the rest
+            for ( const p of pending ) simulate( sim, p.input, FIXED_DT, tuning, track ); // replay the rest
         },
     };
 }

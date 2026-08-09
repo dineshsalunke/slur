@@ -1,16 +1,18 @@
 import { type Client, Room } from '@colyseus/core';
 import {
     createFixedStep,
-    DEFAULT_TUNING,
     FIXED_DT,
     INPUT_MESSAGE,
     type InputMessage,
+    isShipId,
     makeTrack,
     type PlayerInput,
     PlayerState,
     RunState,
+    SET_CLASS_MESSAGE,
     simulate,
     type Track,
+    tuningForShip,
 } from '@slur/shared';
 
 // How long a dropped client may reconnect before we evict them (office WiFi / lid-close is short).
@@ -52,6 +54,15 @@ export class RunRoom extends Room< { state: RunState } > {
             if ( q.length > MAX_QUEUED_INPUTS ) q.splice( 0, q.length - MAX_QUEUED_INPUTS ); // drop oldest
         } );
 
+        // Dev class hot-swap: the client asks for a ship; the SERVER validates + owns the change (never
+        // client-authoritative). The new shipId patches to every client, so the sim (both ends), camera,
+        // bank, and model all re-resolve tuning/visuals from ship-classes.ts on the next tick.
+        this.onMessage( SET_CLASS_MESSAGE, ( client, shipId ) => {
+            if ( ! isShipId( shipId ) ) return;
+            const p = this.state.players.get( client.sessionId );
+            if ( p ) p.shipId = shipId;
+        } );
+
         // setSimulationInterval gives wall-clock ms; the accumulator converts it to fixed ticks.
         this.setSimulationInterval( ( deltaMs ) => {
             this.advance( deltaMs / 1000, ( dt ) => this.fixedStep( dt ) );
@@ -68,7 +79,7 @@ export class RunRoom extends Room< { state: RunState } > {
             const q = this.queues.get( sessionId );
             const input = q?.shift();
             if ( ! input ) return; // no queued input this tick → ship holds; the input will arrive & step next tick
-            simulate( player, input, dt, DEFAULT_TUNING, this.track );
+            simulate( player, input, dt, tuningForShip( player.shipId ), this.track );
             player.lastProcessedInput = input.seq;
             // Stamp the authoritative finish time the tick `finished` first latches (S4 owns standings).
             if ( player.finished && player.finishTime === 0 ) player.finishTime = this.state.elapsed;

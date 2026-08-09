@@ -1,19 +1,18 @@
 import { getStateCallbacks } from '@colyseus/sdk';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { createFixedStep, FIXED_DT, INPUT_MESSAGE, makeTrack, type Track as TrackHandle } from '@slur/shared';
+import { INPUT_MESSAGE, makeTrack, SET_CLASS_MESSAGE, SHIP_ORDER } from '@slur/shared';
 import type { Entity } from 'koota';
-import { useWorld, WorldProvider } from 'koota/react';
+import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
-import type { PerspectiveCamera } from 'three';
-import { copyShip, createPredictor, type Predictor } from '../net/prediction';
+import { copyShip, createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
-import { updateChaseCamera } from './camera/chase';
-import { localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
-import { syncRenderSystem } from './ecs/systems';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './ecs/traits';
 import { world } from './ecs/world';
 import { attachKeyboard } from './input/keyboard';
+import { NetDebugHud } from './net-debug-hud';
+import { NetLoop } from './net-loop';
+import { ExplosionField } from './scene/explosions';
 import { FinishGate } from './scene/finish-gate';
 import { Scenery } from './scene/scenery';
 import { Ships } from './scene/ship';
@@ -23,87 +22,11 @@ import { TrackView } from './scene/track-view';
 // produced since the last send; the server drains them 1-per-tick, so cadence is a bandwidth knob.
 const INPUT_SEND_MS = 1000 / 30;
 
-// The ONE networked loop: local predict (fixed-60, records pending) → interpolate local (prev→sim)
-// → interpolate remotes (buffered snapshots) → chase camera. Default priority keeps R3F auto-render on.
-function NetLoop( { predictor, track }: { predictor: Predictor; track: TrackHandle } ) {
-    const world = useWorld();
-    const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
-    useFrame( ( state, delta ) => {
-        const alpha = advance( delta, ( dt ) => netFlightSystem( world, dt, predictor, track ) );
-        syncRenderSystem( world, alpha ); // local ship only (remotes have no Sim/Prev)
-        remoteInterpSystem( world ); // remote ships (also hides derezzed remotes)
-        localDeathVfxSystem( world ); // hide the local ship while derezzed
-        updateChaseCamera( state.camera as PerspectiveCamera, world, delta );
-    } );
-    return null;
-}
-
-// Dev-only readout: polls room.state (200ms, not per-frame) so you can CONFIRM connectivity with a
-// number. `players: 2` in both windows = same room, the fix works. `players: 1` in each = the two tabs
-// landed in separate rooms (a different bug). ★ marks your own ship.
-function NetDebugHud( { track }: { track: TrackHandle } ) {
-    const room = useRoom();
-    const world = useWorld();
-    const ref = useRef< HTMLDivElement >( null );
-    // JUSTIFIED EFFECT — syncs with external systems (Colyseus room.state + the ECS world) on a 150ms
-    // timer, writing IMPERATIVELY into a DOM ref (textContent). NO setState → it never re-renders React.
-    //  1) render-derivation? no — room.state / ECS Sim mutate OUTSIDE React and fire no re-render.
-    //  2) event handler? no discrete event — it's a periodic sample of live external state.
-    //  3) loader/action data? no — live per-frame telemetry, not navigation-time data.
-    //  4) ref/module singleton? YES for the WRITE — we push straight into a DOM ref, React uninvolved;
-    //     the effect's only job is to bracket the timer's start/stop to the HUD's mount.
-    //  5) external sync? YES — a timer polling external stores. VERDICT: keep; imperative ref write, zero re-render.
-    useEffect( () => {
-        const id = setInterval( () => {
-            const el = ref.current;
-            if ( ! el ) return;
-            const players: string[] = [];
-            room.state.players.forEach( ( p, sid ) => {
-                const me = sid === room.sessionId ? '★' : ' ';
-                players.push(
-                    `${ me } ${ sid.slice( 0, 4 ) }  x=${ p.x.toFixed( 1 ) } z=${ p.z.toFixed( 1 ) }${ p.connected ? '' : ' (gone)' }`,
-                );
-            } );
-            const extra: string[] = [];
-            // Local PREDICTED ship + what it's flying over — the diagnostic for "falls at ~120".
-            const s = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
-            if ( s && track ) {
-                const seg = track.segmentAtZ( s.z );
-                const K: Record< string, string > = { plain: '·', block: 'BLOCK', platform: 'PLATFM', gap: 'GAP', finish: 'FIN' };
-                const ahead = [ 1, 2, 3, 4, 5, 6 ].map( ( n ) => K[ track.segmentAtZ( s.z + n * 20 ).kind ] ?? '?' ).join( ' ' );
-                extra.push(
-                    `me y=${ s.y.toFixed( 2 ) } z=${ s.z.toFixed( 0 ) } grnd=${ s.grounded ? 1 : 0 } dead=${ s.dead ? 1 : 0 }`,
-                    `over: seg${ seg.index } ${ seg.kind } floors=${ seg.floors.length }`,
-                    `ahead: ${ ahead }`,
-                );
-            }
-            el.textContent = [
-                `room: ${ room.roomId }  (you: ${ room.sessionId.slice( 0, 4 ) })`,
-                `players: ${ players.length }`,
-                ...players,
-                ...extra,
-            ].join( '\n' );
-        }, 150 );
-        return () => clearInterval( id );
-    }, [ room, world, track ] );
-    return (
-        <div
-            ref={ ref }
-            style={ {
-                position: 'fixed',
-                top: 8,
-                left: 8,
-                zIndex: 10,
-                pointerEvents: 'none',
-                font: '12px monospace',
-                color: '#00ff88',
-                background: 'rgba(0,0,0,0.6)',
-                padding: '6px 8px',
-                whiteSpace: 'pre',
-                borderRadius: 4,
-            } }
-        />
-    );
+// Mirror a class hot-swap into the ECS ONLY when shipId actually changes (not every 20Hz patch), so the
+// ship view re-renders its model on a swap, not continuously.
+function mirrorShipId( ent: Entity, sessionId: string, shipId: string ): void {
+    const cur = ent.get( Net );
+    if ( cur && cur.shipId !== shipId ) ent.set( Net, { sessionId, shipId } );
 }
 
 export function NetCanvas( { seed }: { seed: number } ) {
@@ -131,6 +54,23 @@ export function NetCanvas( { seed }: { seed: number } ) {
     //     add/removeEventListener pair must bracket the scene's presence; no cheaper idiom fits.
     useEffect( attachKeyboard, [] );
 
+    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard → a Colyseus message. Dev class
+    // hot-swap (keys 1..5) requests a ship; the SERVER validates + owns the change (never client-owned),
+    // then patches shipId back so the sim/camera/bank/model re-resolve.
+    //  1) render-derivation? no — a discrete keypress is not derivable from render state.
+    //  2) event handler? this IS the handler; the effect only brackets its window-listener lifetime.
+    //  3) loader/action data? no — a live per-keystroke intent, not navigation data.
+    //  4) ref/module singleton? the room is loader-owned (read via useRoom); only the listener needs a
+    //     mount-scoped lifetime. 5) external sync? YES — DOM keydown → room.send. VERDICT: keep.
+    useEffect( () => {
+        const onKey = ( e: KeyboardEvent ) => {
+            const n = Number( e.key );
+            if ( n >= 1 && n <= SHIP_ORDER.length ) room.send( SET_CLASS_MESSAGE, SHIP_ORDER[ n - 1 ] );
+        };
+        addEventListener( 'keydown', onKey );
+        return () => removeEventListener( 'keydown', onKey );
+    }, [ room ] );
+
     // JUSTIFIED EFFECT — syncs with an external system: the Colyseus room (schema callbacks) → ECS, plus
     // a 30Hz input-send timer. onAdd spawns an entity (local = predicted, remote = interpolated);
     // per-player onChange reconciles the local ship or feeds a remote's interp buffer.
@@ -152,9 +92,10 @@ export function NetCanvas( { seed }: { seed: number } ) {
 
         const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {
             const isLocal = sid === room.sessionId;
+            const net = { sessionId: sid, shipId: p.shipId };
             const e = isLocal
-                ? world.spawn( Render, Net( { sessionId: sid } ), Sim, Prev, LocalPlayer )
-                : world.spawn( Render, Net( { sessionId: sid } ), Remote, Interp );
+                ? world.spawn( Render, Net( net ), Sim, Prev, LocalPlayer )
+                : world.spawn( Render, Net( net ), Remote, Interp );
             byId.set( sid, e );
 
             if ( isLocal ) {
@@ -165,6 +106,7 @@ export function NetCanvas( { seed }: { seed: number } ) {
             const offChange = $( p ).onChange( () => {
                 const ent = byId.get( sid );
                 if ( ! ent ) return;
+                mirrorShipId( ent, sid, p.shipId );
                 if ( isLocal ) {
                     const s = ent.get( Sim );
                     if ( s ) predictor.reconcile( s, p, trackRef.current );
@@ -205,14 +147,17 @@ export function NetCanvas( { seed }: { seed: number } ) {
         <WorldProvider world={ world }>
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
                 <color attach="background" args={ [ '#05060a' ] } />
-                <ambientLight intensity={ 0.5 } />
+                <ambientLight intensity={ 1 } />
                 <NetLoop predictor={ predictor } track={ track } />
+                { /* After NetLoop so its useFrame (ship-position sync) runs first — the burst reads each
+                     ship's Render group AFTER it's positioned, spawning at the exact derezz spot. */ }
+                <ExplosionField />
                 <TrackView track={ track } />
                 <FinishGate track={ track } />
                 <Scenery count={ 50 } seed={ seed } />
                 <Ships />
                 <EffectComposer multisampling={ 0 }>
-                    <Bloom mipmapBlur intensity={ 1.2 } luminanceThreshold={ 0.6 } luminanceSmoothing={ 0.2 } />
+                    <Bloom mipmapBlur intensity={ 0.5 } luminanceThreshold={ 0.6 } luminanceSmoothing={ 0.2 } />
                 </EffectComposer>
             </Canvas>
             { import.meta.env.DEV && <NetDebugHud track={ track } /> }

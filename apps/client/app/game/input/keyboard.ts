@@ -13,8 +13,7 @@ function recompute(): void {
     // Map Left→+1 / Right→-1 so on-screen left/right match the keys.
     input.strafe = ( has( 'KeyA', 'ArrowLeft' ) ? 1 : 0 ) - ( has( 'KeyD', 'ArrowRight' ) ? 1 : 0 );
     input.jump = has( 'Space' );
-    input.boost = has( 'ShiftLeft', 'ShiftRight' );
-    input.usePowerUp = has( 'KeyE' );
+    input.usePowerUp = has( 'KeyE' ); // reserved for S5 pickups; no effect yet. (Shift is now free — boost is a pickup.)
 }
 
 // Attach global key listeners; returns a cleanup fn for useEffect.

@@ -1,8 +1,8 @@
-import { DEFAULT_TUNING, simulate, type Track } from '@slur/shared';
+import { simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { currentInput } from '../input/keyboard';
-import { Interp, LocalPlayer, Prev, Remote, Render, Sim } from './traits';
+import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
 
 // Death VFX (minimal for the core loop): hide the local ship while it's derezzed. Full TRON derezz is
 // S6. Imperative (mutates the live Render group), no React state.
@@ -19,15 +19,16 @@ const RENDER_DELAY_MS = 100;
 // Local predicted flight tick (fixed step). Same as S1's flightSystem but it RECORDS each input into
 // the predictor (value-copied, since keyboard.ts reuses one object) so reconciliation can replay it.
 export function netFlightSystem( world: World, dt: number, predictor: Predictor, track: Track ): void {
-    const q = world.query( Sim, Prev, LocalPlayer );
+    const q = world.query( Sim, Prev, Net, LocalPlayer );
     if ( q.length === 0 ) return; // local ship not spawned yet (waiting on players.onAdd)
     const input = { ...currentInput() }; // value copy — the pending list must not alias the reused object
     predictor.record( input );
-    q.updateEach( ( [ s, prev ] ) => {
+    q.updateEach( ( [ s, prev, net ] ) => {
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        simulate( s, input, dt, DEFAULT_TUNING, track ); // predict on the SAME track the server authorities
+        // Predict with THIS ship's tuning + the SAME track the server authorities → identical replay math.
+        simulate( s, input, dt, tuningForShip( net.shipId ), track );
     } );
 }
 
@@ -40,7 +41,7 @@ export function remoteInterpSystem( world: World ): void {
     const renderTime = performance.now() - RENDER_DELAY_MS;
     // Trait ORDER matters: koota fills the value array positionally for every trait, tags included.
     // Put the tag (Remote) LAST so [ interp, grp ] align to Interp + Render (not Remote + Interp).
-    world.query( Interp, Render, Remote ).readEach( ( [ interp, grp ] ) => {
+    world.query( Interp, Render, Net, Remote ).readEach( ( [ interp, grp, net ] ) => {
         const buf = interp.buffer;
         if ( buf.length === 0 ) return;
         let a: ( typeof buf )[ number ] | null = null;
@@ -70,7 +71,7 @@ export function remoteInterpSystem( world: World ): void {
             vx = last.vx;
         }
         grp.position.set( x, y, z );
-        grp.rotation.z = -( vx / DEFAULT_TUNING.strafeClamp ) * 0.5; // cosmetic bank (mirrors syncRenderSystem)
+        grp.rotation.z = -( vx / tuningForShip( net.shipId ).strafeClamp ) * 0.5; // cosmetic bank (per-ship clamp)
         grp.visible = ! buf[ buf.length - 1 ].dead; // hide a derezzed remote (latest server truth)
     } );
 }

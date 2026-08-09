@@ -82,6 +82,10 @@ slur/
    idioms deliberately — "most code does X" (including model training priors) is **not** evidence X is
    right; it is usually the mediocre default. Follow the idiom, and understand **why** before deviating.
    *(This is a hard non-negotiable, per explicit user directive after the S2 incident.)*
+9. **React house style** (per explicit user directive, 2026-08-09): **no fragment shorthand** — write
+   `<Fragment>…</Fragment>`, never `<>…</>`; **one component per file** (file name matches the component;
+   helpers/hooks/constants may share). Exception: React Router route modules (`root.tsx`, `routes/*`) keep
+   their framework-mandated multi-export. Full rule + rationale in `conventions/r3f.md` ("House React style").
 
 ## Dev workflow
 
@@ -107,5 +111,5 @@ Scaffolded and verified 2026-08-06 (**runnable blank skeletons, no game logic ye
 ## Working method
 
 - **Design docs are living.** Each carries `OPEN QUESTIONS`; resolve with the team, fold the decision in, delete the question. Don't silently diverge from the docs — update them.
-- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; reviewed code is documented in the phase doc as reference, then built in Implement. Phase notes in `.claude/phases/`. **Status: S1 ✓ (playable `/solo`), S2 ✓ (networked flight, gate passed), S3 (track/hazards/collision) IMPLEMENTED + fix pass — typecheck/build/tests GREEN, human feel-gate PENDING.** S3 as-built + the 6 playtest fixes (incl. the client/server seed-desync root cause) in `.claude/phases/2026-08-08-s3-track-hazards-collision.md`. **Next: S3 feel-gate + tuning (human), then S4 (session flow → complete Race).** Roadmap S1–S7 in `.claude/backlog.md`.
+- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; reviewed code is documented in the phase doc as reference, then built in Implement. Phase notes in `.claude/phases/`. **Status: S1 ✓ (playable `/solo`), S2 ✓ (networked flight, gate passed), S3 (track/hazards/collision) IMPLEMENTED + hardened — typecheck/build/14 tests GREEN, human feel-gate PENDING.** S3 as-built + the 6 playtest fixes in `.claude/phases/2026-08-08-s3-track-hazards-collision.md`; the **2026-08-09 collision-hardening + jump-tune + death-VFX + boost-removal + React-refactor** pass (and the ship-size/AABB decision) in `.claude/phases/2026-08-09-collision-aabb-jump-vfx.md`. **Next: implement AABB collision (ship size LOCKED 2.6×3.8×0.9), then S3 feel-gate (human), then S4 (session flow → complete Race).** Roadmap S1–S7 in `.claude/backlog.md`.
 - **Batch related file changes** into one review turn.

@@ -5,11 +5,15 @@
 //
 // ⚠ FOOTGUN — @type declaration order IS the wire format. APPEND ONLY, never reorder or insert;
 //   the encoder/decoder index fields by declaration order and a mismatch silently corrupts decoding.
-//   Mark dead fields @deprecated() rather than removing them.
+//   Mark dead fields @deprecated() rather than removing them — UNLESS client + server are rebuilt
+//   atomically from this package with no old peers live (true in LAN dev, pre-launch). Under that
+//   condition a clean removal is safe: both ends re-derive identical indices. (`energy` was removed
+//   this way when boost became a pickup — S5 — rather than left as dead wire state.)
 //
 // `type` is the field DECORATOR — a VALUE import, NOT `import type` (verbatimModuleSyntax is on).
 
 import { MapSchema, Schema, type } from '@colyseus/schema';
+import { DEFAULT_SHIP } from './ship-classes.js';
 import type { SimShip } from './sim/types.js';
 
 export const ROOM_NAME = 'run';
@@ -24,7 +28,6 @@ export class PlayerState extends Schema implements SimShip {
     @type( 'float32' ) vx = 0;
     @type( 'float32' ) vy = 0;
     @type( 'float32' ) vz = 0;
-    @type( 'float32' ) energy = 100;
 
     // ── SimShip: transient jump state — MUST sync so the client's local replay re-predicts jumps
     //    identically (omitting these mispredicts jumps — see brainstorm "two reconciliations"). ──
@@ -47,6 +50,12 @@ export class PlayerState extends Schema implements SimShip {
     @type( 'float32' ) lastSafeZ = 0;
     @type( 'boolean' ) finished = false;
     @type( 'float32' ) finishTime = 0; // server-stamped elapsed at finish; extra beyond SimShip (structural match allows extras)
+
+    // ── Ship identity (netcode bookkeeping; NOT a SimShip field). APPEND-ONLY (declaration order = wire).
+    //    A string (not a uint8 index) so adding classes/ships never remaps existing values. The server owns
+    //    it (set on join, updated by the `setClass` message); BOTH ends resolve shipId → class → FlightTuning
+    //    via ship-classes.ts so the shared simulate() runs identical math. ──
+    @type( 'string' ) shipId = DEFAULT_SHIP;
 }
 
 // Room-wide state. `seed` drives deterministic scenery/track on every client (never sync geometry).

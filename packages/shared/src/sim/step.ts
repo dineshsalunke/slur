@@ -14,15 +14,7 @@ export function applyLongitudinal( s: SimShip, input: PlayerInput, t: FlightTuni
         const d = t.coastDrag * dt;
         s.vz = s.vz > d ? s.vz - d : 0;
     }
-    let cap = t.maxCruise;
-    if ( input.boost && s.energy > 0 ) {
-        cap = t.maxCruise * t.boostMul;
-        s.vz += t.boostAccel * dt;
-        s.energy = Math.max( 0, s.energy - t.energyDrain * dt );
-    } else {
-        s.energy = Math.min( t.energyMax, s.energy + t.energyRegen * dt );
-    }
-    s.vz = Math.min( Math.max( s.vz, 0 ), cap );
+    s.vz = Math.min( Math.max( s.vz, 0 ), t.maxCruise );
 }
 
 export function applyStrafe( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
@@ -83,25 +75,60 @@ function resolveFlatFloor( s: SimShip, t: FlightTuning ): void {
     clampToEdges( s, t );
 }
 
-// Edge walls: STOP + slide (S1 behavior) — edges don't kill, else strafing is punishing.
+// Edge walls: STOP + slide (S1 behavior) — edges don't kill, else strafing is punishing. AABB: clamp the
+// WING (x ± halfW) inside the rail, so the visible hull never pokes past the track edge.
 function clampToEdges( s: SimShip, t: FlightTuning ): void {
-    if ( s.x < -t.halfWidth ) {
-        s.x = -t.halfWidth;
+    const limit = t.halfWidth - t.halfW;
+    if ( s.x < -limit ) {
+        s.x = -limit;
         if ( s.vx < 0 ) s.vx = 0;
-    } else if ( s.x > t.halfWidth ) {
-        s.x = t.halfWidth;
+    } else if ( s.x > limit ) {
+        s.x = limit;
         if ( s.vx > 0 ) s.vx = 0;
     }
 }
 
-// Highest landable floor height under the ship's lateral x within reach (span.y <= s.y + stepTol so
-// you can't clip up through a ledge from below), or null if the ship is over a gap here.
+// Highest floor under the ship's lateral x, ignoring height — used by respawn() to find ground to
+// drop onto. Returns null only if x is over a genuine gap (no floor spans it).
 function floorUnder( seg: Segment, x: number, y: number, stepTol: number ): number | null {
     let best: number | null = null;
     for ( const f of seg.floors ) {
         if ( x >= f.x0 && x <= f.x1 && f.y <= y + stepTol ) {
             if ( best === null || f.y > best ) best = f.y;
         }
+    }
+    return best;
+}
+
+// Segments the ship's z-footprint [z−halfL, z+halfL] touches. At most 2 (halfL ≪ SEG_LEN), deduped by index.
+function footprintSegs( track: Track, z: number, halfL: number ): Segment[] {
+    const a = track.segmentAtZ( z - halfL );
+    const b = track.segmentAtZ( z + halfL );
+    return a.index === b.index ? [ a ] : [ a, b ];
+}
+
+// SWEPT + AABB landing test: the highest floor the ship's footprint crossed downward this tick. GENEROUS
+// grounded rule — ANY part of the footprint (x ± halfW, over a z-overlapping segment) above a floor supports
+// the WHOLE ship. That gives later takeoff / earlier landing across gaps (effective gap = SEG_LEN − 2·halfL).
+// Keyed off prevY (not the landed y) so a fast fall overshooting the top by > stepTol still lands — no
+// tunnelling. stepTol is also the highest ledge you can step UP onto; coming from > stepTol below = you were
+// underneath, so you pass through.
+// Highest floor in ONE segment the footprint swept onto (null if none / no z-overlap). See landingFloor.
+function bestFloorInSeg( seg: Segment, s: SimShip, prevY: number, t: FlightTuning ): number | null {
+    if ( s.z + t.halfL <= seg.z0 || s.z - t.halfL >= seg.z1 ) return null; // no z-overlap with this segment
+    let best: number | null = null;
+    for ( const f of seg.floors ) {
+        if ( s.x + t.halfW <= f.x0 || s.x - t.halfW >= f.x1 ) continue; // no x-overlap with this span
+        if ( prevY + t.stepTol >= f.y && s.y <= f.y && ( best === null || f.y > best ) ) best = f.y;
+    }
+    return best;
+}
+
+function landingFloor( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning ): number | null {
+    let best: number | null = null;
+    for ( const seg of segs ) {
+        const f = bestFloorInSeg( seg, s, prevY, t );
+        if ( f !== null && ( best === null || f > best ) ) best = f;
     }
     return best;
 }
@@ -135,14 +162,40 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.invulnTimer = t.invulnTime;
 }
 
-// S3 track collision: per-tile floor (land + reset jump), gap → fall → death, block AABB → death,
-// edge walls stop, finish gate latches `finished`. Replaces the S1 flat floor. Preserves the
-// grounded/jumpsUsed reset contract (jump breaks otherwise).
-export function resolveCollisions( s: SimShip, track: Track, t: FlightTuning ): void {
-    const seg = track.segmentAtZ( s.z );
+// Does the ship's footprint (x ± halfW, z ± halfL) overlap a lethal cube it's inside? Cubes are taller than
+// any jump (un-jumpable by design), so any footprint overlap on the ground is a crash — the strafe-or-die
+// contract; there is no "land on top". Bounds:
+//   • Upper STRICT (`s.y < b.y1`): a legit landing onto a raised floor snaps to exactly that floor's y;
+//     being below a cube's top with no such floor = inside the solid → dead.
+//   • Lower SWEPT (`prevY`, not s.y): a ground-level ship nudged just under a body base by one tick of
+//     gravity still registers (came from ≥ base), while a future FLOATING body (y0 > 0) can be passed under
+//     from genuinely below.
+function hitsLethalBody( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning ): boolean {
+    for ( const seg of segs ) {
+        for ( const b of seg.blocks ) {
+            if (
+                s.x + t.halfW > b.x0 &&
+                s.x - t.halfW < b.x1 &&
+                s.z + t.halfL > b.z0 &&
+                s.z - t.halfL < b.z1 &&
+                s.y < b.y1 &&
+                prevY + t.stepTol >= b.y0
+            ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
-    const floorY = floorUnder( seg, s.x, s.y, t.stepTol );
-    if ( floorY !== null && s.y <= floorY ) {
+// S3 track collision, AABB (footprint = the ship's model box, halfW × halfL). Floor support (land + reset
+// jump), gap → fall → death, lethal cube overlap → death, edge walls stop, finish gate latches `finished`.
+// Replaces the S1 flat floor. Preserves the grounded/jumpsUsed reset contract (jump breaks otherwise).
+export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: FlightTuning ): void {
+    const segs = footprintSegs( track, s.z, t.halfL );
+
+    const floorY = landingFloor( segs, s, prevY, t );
+    if ( floorY !== null ) {
         s.y = floorY;
         if ( s.vy < 0 ) s.vy = 0;
         s.grounded = true;
@@ -159,21 +212,22 @@ export function resolveCollisions( s: SimShip, track: Track, t: FlightTuning ): 
         return;
     }
 
-    // Lethal block AABB (skipped during post-respawn invuln). Upper bound is STRICT (`< b.y1`) so that
-    // standing ON a platform's top (its floor sits exactly at b.y1) is safe, while hitting the face
-    // from below (y < top) crashes — that's the "jump onto it or crash" contract.
-    if ( s.invulnTimer <= 0 ) {
-        for ( const b of seg.blocks ) {
-            if ( s.x >= b.x0 && s.x <= b.x1 && s.y >= b.y0 && s.y < b.y1 ) {
-                markDead( s, t );
-                return;
-            }
+    const insideBody = hitsLethalBody( segs, s, prevY, t );
+    // Post-respawn grace is POSITION-scoped, not just timed: it only spares the body we respawned into,
+    // and ENDS the first tick we're clear of every body — otherwise a respawned ship flies straight
+    // through the NEXT cube. Blind time-based invuln was exactly that bug. (Falling still kills — above.)
+    if ( insideBody ) {
+        if ( s.invulnTimer <= 0 ) {
+            markDead( s, t );
+            return;
         }
+    } else {
+        s.invulnTimer = 0;
     }
 
     clampToEdges( s, t );
 
-    if ( seg.isFinish && s.z >= track.finishZ && ! s.finished ) s.finished = true;
+    if ( track.segmentAtZ( s.z ).isFinish && s.z >= track.finishZ && ! s.finished ) s.finished = true;
 }
 
 // The shared authoritative step: one fixed-dt advance of a ship from its input. Imported by both
@@ -195,8 +249,9 @@ export function simulate( s: SimShip, input: PlayerInput, dt: number, t: FlightT
     applyStrafe( s, input, t, dt );
     applyJump( s, input, t, dt );
     applyGravity( s, t, dt );
+    const prevY = s.y; // pre-integrate y → swept landing (see landingFloor); catches fast-fall overshoot
     integrate( s, dt );
-    if ( track ) resolveCollisions( s, track, t );
+    if ( track ) resolveCollisions( s, prevY, track, t );
     else resolveFlatFloor( s, t );
 
     if ( s.invulnTimer > 0 ) s.invulnTimer -= dt;

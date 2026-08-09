@@ -6,10 +6,11 @@
 // A finite Race is indices 0..TRACK_SEGMENTS; because segmentAt accepts any i, endless Survival (S7)
 // falls out for free — do NOT materialize an array, that would force an S7 rewrite.
 //
-// DETERMINISM: integer/PRNG/`+-*/`/compare ONLY. NO Math.sin/cos/tan/pow/sqrt in this file — a single
-// ULP of cross-engine drift diverges geometry → diverges deaths → the game desyncs.
+// DETERMINISM: integer/PRNG/`+-*/`/compare/floor ONLY. NO Math.sin/cos/tan/pow/sqrt in this file — a
+// single ULP of cross-engine drift diverges geometry → diverges deaths → the game desyncs. (Jump-reach
+// fairness, which DOES need sqrt, is a one-time bound computed in constants.ts and asserted in the test.)
 
-import { MAX_GAP, MAX_STEP } from '../constants.js';
+import { CELL } from '../constants.js';
 import { hash2, mulberry32 } from './rng.js';
 
 // Solid floor over the lateral interval [x0, x1] at world height y. Gaps = x not covered by any span.
@@ -19,17 +20,19 @@ export interface FloorSpan {
     y: number;
 }
 
-// Lethal AABB in the (x, y) plane, spanning the segment's full z-range. Touch it → derezz.
+// Lethal AABB cube in (x, y) over a bounded z-range [z0, z1). Touch it (footprint overlap) → derezz.
+// z0/z1 make it a DISCRETE cube (an open-scatter field is many of these) AND supply the AABB z-extent.
 export interface Block {
     x0: number;
     x1: number;
     y0: number;
     y1: number;
+    z0: number;
+    z1: number;
 }
 
-// What a segment is, for rendering + the fairness test. Collision ignores this (it reads floors/blocks
-// generically); it exists so the test knows a `platform` is passable-by-jump, not passable-by-corridor.
-export type SegmentKind = 'plain' | 'block' | 'platform' | 'gap' | 'finish';
+// What a segment is, for rendering + the fairness test. Collision reads floors/blocks generically.
+export type SegmentKind = 'plain' | 'block' | 'gap' | 'finish';
 
 export interface Segment {
     index: number;
@@ -48,26 +51,27 @@ export interface Track {
     segmentAtZ( z: number ): Segment;
 }
 
-// ── Track constants (commented, tunable — difficulty is a config edit) ──
-export const SEG_LEN = 20; // world-z length of one segment. A GAP is one segment long, so SEG_LEN ≤ MAX_GAP is the hard fairness bound (asserted in the determinism test).
-export const TRACK_SEGMENTS = 200; // number of hazard segments before the finish → finishZ = TRACK_SEGMENTS·SEG_LEN.
-export const START_SAFE = 6; // leading segments forced flat + full-width (spawn/accel zone) — no death before you're moving.
-export const HALF_WIDTH = 16; // lateral half-extent of the track floor (matches DEFAULT_TUNING.halfWidth); full width = 2·HALF_WIDTH.
-export const MIN_CORRIDOR = 6; // narrowest guaranteed passable lane (units) a block may leave — always ≥1 way through.
-export const BLOCK_HEIGHT = 2.5; // block top (y). Below double-jump reach on purpose → strafe around OR jump over; either way there is a route.
-const CORRIDOR_EXTRA = 8; // block corridors vary in [MIN_CORRIDOR, MIN_CORRIDOR+CORRIDOR_EXTRA] — some tight, some loose.
+// ── Track constants — everything is sized in 4u CELLs (difficulty is a config edit) ──
+export const SEG_LEN = 20; // world-z length of one segment = 5 z-cells. A GAP is one segment long.
+export const TRACK_SEGMENTS = 200; // hazard segments before the finish → finishZ = TRACK_SEGMENTS·SEG_LEN.
+export const START_SAFE = 6; // leading segments forced flat + full-width (spawn/accel zone) — no early death.
+export const HALF_WIDTH = 32; // lateral half-extent → 16 lanes wide (2·HALF_WIDTH/CELL). Matches DEFAULT_TUNING.halfWidth.
+export const LANES = ( 2 * HALF_WIDTH ) / CELL; // 16 lateral cells (lanes).
+export const ZCELLS = SEG_LEN / CELL; // 5 forward cells (rows) per segment.
+export const MIN_LANE = 2 * CELL; // fairness: ≥2 contiguous open lanes (8u) guaranteed at every z-slice — even the widest class (Freighter 3.6u) threads with margin.
+export const BLOCK_HEIGHT = 8; // cube top (y) = 2 cells. ABOVE double-jump reach on purpose → UN-jumpable: strafe around or destroy, never hop.
+const ROW_FILL = 0.7; // P(a z-row holds a cube) → ~3.5 cubes/segment average. THE block-density / difficulty dial.
 
-// Archetype mix. Probabilities are the difficulty dial; they sum to 1 across the [0,1) roll.
-type Archetype = 'plain' | 'block' | 'platform' | 'gap';
-const P_PLAIN = 0.4;
-const P_BLOCK = 0.22; // cumulative 0.62
-const P_PLATFORM = 0.2; // cumulative 0.82
-// remainder (0.18) → gap
+// Archetype mix. Probabilities are the difficulty dial; they sum to 1 across the [0,1) roll. Blocks are the
+// STAR obstacle now (strafe-weave core); gaps punctuate with the jump mechanic; plain gives breathing room.
+type Archetype = 'plain' | 'block' | 'gap';
+const P_PLAIN = 0.35;
+const P_BLOCK = 0.45; // cumulative 0.80
+// remainder (0.20) → gap
 
 function pickArchetype( r: number ): Archetype {
     if ( r < P_PLAIN ) return 'plain';
     if ( r < P_PLAIN + P_BLOCK ) return 'block';
-    if ( r < P_PLAIN + P_BLOCK + P_PLATFORM ) return 'platform';
     return 'gap';
 }
 
@@ -102,22 +106,21 @@ function buildSegment( seed: number, i: number ): Segment {
     switch ( arch ) {
         case 'gap':
             return { ...base, kind: 'gap', floors: [] }; // no floor across the whole width → fall unless airborne
-        case 'platform': {
-            // Raised SOLID section spanning the full width: JUMP onto it (land on the top floor) or
-            // CRASH into its lethal face. Top ≤ MAX_STEP so a single ground jump clears it. Renders as
-            // the block body (visible, solid) + the top floor — no more invisible floating ledge.
-            const y = MAX_STEP * ( 0.55 + 0.45 * rng() ); // 0.55..1.0 × MAX_STEP → reads clearly + jumpable
-            const body: Block = { x0: -HALF_WIDTH, x1: HALF_WIDTH, y0: 0, y1: y };
-            return { ...base, kind: 'platform', floors: fullFloor( y ), blocks: [ body ] };
-        }
         case 'block': {
-            // Flat floor + one lethal block against one edge, leaving a passable corridor on the other.
-            const corridor = MIN_CORRIDOR + rng() * CORRIDOR_EXTRA;
-            const openRight = rng() < 0.5;
-            const block: Block = openRight
-                ? { x0: -HALF_WIDTH, x1: HALF_WIDTH - corridor, y0: 0, y1: BLOCK_HEIGHT }
-                : { x0: -HALF_WIDTH + corridor, x1: HALF_WIDTH, y0: 0, y1: BLOCK_HEIGHT };
-            return { ...base, kind: 'block', floors: fullFloor( 0 ), blocks: [ block ] };
+            // OPEN-SCATTER cube field on the cell grid. Each of the ZCELLS z-rows MAY hold ONE 1×1-cell cube
+            // at a random lane. ≤1 cube per row ⇒ cubes are z-disjoint ⇒ every z-slice keeps ≥ (LANES−1)
+            // lanes open, far above MIN_LANE — fair BY CONSTRUCTION (no pigeonhole needed). Full floor
+            // underneath: a block field is DODGED (strafe-weave), never fallen through.
+            const blocks: Block[] = [];
+            for ( let r = 0; r < ZCELLS; r++ ) {
+                if ( rng() < ROW_FILL ) {
+                    const lane = Math.floor( rng() * LANES ); // 0..LANES-1
+                    const bx0 = -HALF_WIDTH + lane * CELL;
+                    const bz0 = z0 + r * CELL;
+                    blocks.push( { x0: bx0, x1: bx0 + CELL, y0: 0, y1: BLOCK_HEIGHT, z0: bz0, z1: bz0 + CELL } );
+                }
+            }
+            return { ...base, kind: 'block', floors: fullFloor( 0 ), blocks };
         }
         default:
             return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
@@ -148,13 +151,12 @@ export function isHole( seg: Segment ): boolean {
     return seg.floors.length === 0;
 }
 
-// Widest continuous lateral corridor of floor NOT covered by any block (units). Used both by the
-// fairness test (must be ≥ MIN_CORRIDOR for non-hole segments) and as a shared notion of "passable".
+// Widest continuous lateral corridor of floor NOT covered by any block (units). CONSERVATIVE: it ignores
+// each cube's z-extent (treats all cubes as coexisting at one z-slice), so it under-estimates the true open
+// lane — a safe lower bound for the ≥ MIN_LANE fairness assert.
 export function passableCorridorWidth( seg: Segment ): number {
     let best = 0;
     for ( const f of seg.floors ) {
-        // Subtract each block's x-overlap from this span, tracking the largest surviving sub-interval.
-        // Blocks here only ever touch one edge, so a single running cursor suffices.
         let cursor = f.x0;
         const edges: Array< [ number, number ] > = [];
         for ( const b of seg.blocks ) {
@@ -171,5 +173,3 @@ export function passableCorridorWidth( seg: Segment ): number {
     }
     return best;
 }
-
-export { MAX_GAP, MAX_STEP };

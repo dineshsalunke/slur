@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { useWorld } from 'koota/react';
-import { useMemo, useRef } from 'react';
+import { Fragment, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
 
@@ -46,7 +46,7 @@ export function Track() {
     } );
 
     return (
-        <>
+        <Fragment>
             { [ 0, SIZE ].map( ( z, i ) => (
                 <mesh key={ z } ref={ i ? b : a } rotation-x={ -Math.PI / 2 } position={ [ 0, 0, z ] }>
                     <planeGeometry args={ [ SIZE, SIZE ] } />
@@ -59,6 +59,6 @@ export function Track() {
                     />
                 </mesh>
             ) ) }
-        </>
+        </Fragment>
     );
 }
