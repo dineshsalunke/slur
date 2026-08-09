@@ -13,6 +13,7 @@
 // `type` is the field DECORATOR — a VALUE import, NOT `import type` (verbatimModuleSyntax is on).
 
 import { MapSchema, Schema, type } from '@colyseus/schema';
+import type { ProjectileState } from './combat/projectiles.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
 import type { SimShip } from './sim/types.js';
 
@@ -61,6 +62,21 @@ export class PlayerState extends Schema implements SimShip {
     @type( 'string' ) name = ''; // display name (join option); shown in the lobby list + standings
     @type( 'uint8' ) colorId = 0; // team-colour palette index (see COLOR_COUNT); cosmetic, synced so peers tint the ship
     @type( 'boolean' ) spectating = false; // joined mid-round under the Race lock → NOT simulated; watches, races next round
+
+    // ── S5 combat — APPENDED after `spectating` (declaration order = wire format). ──
+    @type( 'float32' ) stunTimer = 0; // SimShip field: seconds of input-freeze remaining after a bolt hit (mirrors SimShip.stunTimer)
+    @type( 'uint8' ) heldPower = 0; // held power-up slot (HeldPower: 0 none / 1 bolt). NOT a SimShip field — the sim never reads it; schema-only.
+}
+
+// S5 combat — a live bolt. Server-owned + interp-only on the client (never predicted). Structurally
+// satisfies ProjectileState (combat/projectiles.ts) so the shared stepProjectiles/boltHits mutate it
+// directly server-side. Pruned from RunState.projectiles on hit/expire.
+export class Projectile extends Schema implements ProjectileState {
+    @type( 'float32' ) x = 0;
+    @type( 'float32' ) y = 0;
+    @type( 'float32' ) z = 0;
+    @type( 'string' ) ownerId = ''; // sessionId of the firer — owner-immune in boltHits
+    @type( 'float32' ) ttl = 0; // seconds remaining before expiry; server prunes at <= 0
 }
 
 // Room-wide state. `seed` drives deterministic scenery/track on every client (never sync geometry).
@@ -76,4 +92,10 @@ export class RunState extends Schema {
     @type( 'string' ) hostId = ''; // sessionId of the host (first joiner; reassigned on host leave). Only the host may start/restart.
     @type( 'float32' ) countdown = 0; // >0 only during phase 1 (countdown); client renders ceil(). Ships + picks frozen the whole time.
     @type( 'float32' ) finishDeadline = 0; // 0 until the first finisher; then elapsed+GRACE — the race ends when the clock passes it.
+
+    // ── S5 combat — APPENDED after `finishDeadline` (declaration order = wire format). ──
+    @type( { map: Projectile } ) projectiles = new MapSchema< Projectile >(); // live bolts, keyed by id; server prunes on hit/expire
+    // Pickup availability, keyed by pickupLayout() slot id. Semantics: present && true = currently taken (hidden);
+    // absent (or false) = available. Only availability syncs — positions derive from the seed on both ends.
+    @type( { map: 'boolean' } ) pickupTaken = new MapSchema< boolean >();
 }

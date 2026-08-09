@@ -242,6 +242,25 @@ test( 'crossing the finish gate latches finished', () => {
     assert.equal( s.finished, true );
 } );
 
+test( 'stun freezes control: throttle is ignored while stunTimer>0, then decrements to 0 and restores control', () => {
+    const s = spawnShip( 0, 0 );
+    s.stunTimer = 2 * FIXED_DT; // exactly two ticks of stun
+    const inp = emptyInput();
+    inp.throttle = 1; // would normally accelerate forward
+
+    simulate( s, inp, FIXED_DT, t, flatTrack( 100 ) );
+    assert.equal( s.vz, 0, 'stunned ship accelerated — control was not frozen' );
+    assert.equal( s.dead, false ); // physics still ran; it just coasted
+    assert.ok( s.stunTimer > 0 && s.stunTimer <= FIXED_DT + 1e-9, 'stunTimer did not decrement one tick' );
+
+    simulate( s, inp, FIXED_DT, t, flatTrack( 100 ) );
+    assert.equal( s.stunTimer, 0, 'stunTimer did not reach 0 after its two ticks' );
+    assert.equal( s.vz, 0, 'still frozen on the tick that zeroes the timer' );
+
+    simulate( s, inp, FIXED_DT, t, flatTrack( 100 ) );
+    assert.ok( s.vz > 0, 'control was not restored after the stun ended' );
+} );
+
 test( 'no track → legacy S1 flat floor (solo unchanged): lands at y=0, never dies', () => {
     const s = spawnShip( 0, 0 );
     s.y = 5;

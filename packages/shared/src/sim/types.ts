@@ -23,6 +23,9 @@ export interface SimShip {
     lastSafeX: number; // last grounded lateral position — the respawn anchor (updated every landing)
     lastSafeZ: number; // last grounded forward position — the respawn anchor
     finished: boolean; // crossed the finish gate (z >= finishZ); latched once true
+
+    // ── S5 combat (appended; the PlayerState schema mirrors this in the SAME order) ──
+    stunTimer: number; // seconds of input-freeze remaining (bolt hit); >0 ⇒ simulate() feeds a neutral input. A SimShip field so client replay re-freezes the same ticks.
 }
 
 export function spawnShip( x = 0, z = 0 ): SimShip {
@@ -44,6 +47,7 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         lastSafeX: x, // spawn is on safe ground, so it IS the first safe anchor
         lastSafeZ: z,
         finished: false,
+        stunTimer: 0,
     };
 }
 
@@ -81,6 +85,7 @@ export const SIM_SHIP_KEYS = keyTuple< SimShip >()(
     'lastSafeX',
     'lastSafeZ',
     'finished',
+    'stunTimer',
 );
 
 // Per-key assignment. The generic pins dst[k] and src[k] to the SAME key so the write type-checks (a bare

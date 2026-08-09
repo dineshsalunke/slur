@@ -7,6 +7,10 @@ import type { PlayerInput } from './input.js';
 import type { Segment, Track } from './track.js';
 import type { SimShip } from './types.js';
 
+// Neutral intent used while STUNNED — a module const (emptyInput-style, no per-tick allocation). Fed to the
+// control phases so a stunned ship coasts + drifts; gravity/integrate/collision still run on its real state.
+const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false, usePowerUp: false };
+
 export function applyLongitudinal( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
     if ( input.throttle > 0 ) s.vz += t.accel * input.throttle * dt;
     if ( input.brake > 0 ) s.vz -= t.brakeDecel * input.brake * dt;
@@ -245,9 +249,15 @@ export function simulate( s: SimShip, input: PlayerInput, dt: number, t: FlightT
         return;
     }
 
-    applyLongitudinal( s, input, t, dt );
-    applyStrafe( s, input, t, dt );
-    applyJump( s, input, t, dt );
+    // Stunned (bolt hit): freeze CONTROL — feed the intent phases a neutral input so the ship coasts +
+    // drifts, while gravity/integrate/collision below still run (§5.4: the track does the killing, not the
+    // bolt). Decrement deterministically so client replay re-freezes the exact same ticks the server did.
+    const control = s.stunTimer > 0 ? NEUTRAL_INPUT : input;
+    if ( s.stunTimer > 0 ) s.stunTimer = Math.max( 0, s.stunTimer - dt );
+
+    applyLongitudinal( s, control, t, dt );
+    applyStrafe( s, control, t, dt );
+    applyJump( s, control, t, dt );
     applyGravity( s, t, dt );
     const prevY = s.y; // pre-integrate y → swept landing (see landingFloor); catches fast-fall overshoot
     integrate( s, dt );
