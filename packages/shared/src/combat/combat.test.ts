@@ -3,7 +3,7 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HALF_WIDTH, START_SAFE } from '../sim/track.js';
+import { HALF_WIDTH, makeTrack, START_SAFE } from '../sim/track.js';
 import { BOLT_HALF, BOLT_SPEED } from './constants.js';
 import { grabPickup, PICKUP_GRAB_RADIUS, type Pickup, pickupLayout } from './pickups.js';
 import { boltHits, type HitShip, type ProjectileState, stepProjectiles } from './projectiles.js';
@@ -62,14 +62,10 @@ test( 'pickupLayout is deterministic — two calls with the same seed are byte-i
     assert.deepEqual( pickupLayout( 12345 ), pickupLayout( 12345 ) );
 } );
 
-test( 'pickupLayout: a different seed yields a different lateral layout', () => {
-    const a = pickupLayout( 1 );
-    const b = pickupLayout( 2 );
-    assert.equal( a.length, b.length, 'seed must not change the slot count' );
-    assert.ok(
-        a.some( ( p, i ) => p.x !== b[ i ].x ),
-        'two seeds produced an identical x layout (not seed-driven)',
-    );
+test( 'pickupLayout: a different seed yields a different layout (positions AND which segments qualify)', () => {
+    // Hazard-awareness makes the slot SET seed-dependent (different segments are plain per seed), so the two
+    // layouts differ in count and/or lateral position — just assert they are not identical.
+    assert.notDeepEqual( pickupLayout( 1 ), pickupLayout( 2 ) );
 } );
 
 test( 'pickupLayout: slots sit after the start-safe zone and inside the corridor', () => {
@@ -83,4 +79,17 @@ test( 'pickupLayout: slots sit after the start-safe zone and inside the corridor
         layout.every( ( p ) => Math.abs( p.x ) <= HALF_WIDTH ),
         'a pickup fell outside the rails',
     );
+} );
+
+test( 'pickupLayout is hazard-aware: no slot lands on a non-plain (block/gap/finish) segment', () => {
+    for ( const seed of [ 1, 2, 777, 12345, 999983 ] ) {
+        const track = makeTrack( seed );
+        for ( const p of pickupLayout( seed ) ) {
+            assert.equal(
+                track.segmentAt( Number( p.id ) ).kind,
+                'plain',
+                `seed ${ seed }: pickup ${ p.id } landed on a non-plain segment`,
+            );
+        }
+    }
 } );

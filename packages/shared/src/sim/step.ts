@@ -164,6 +164,7 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.grounded = true;
     s.jumpsUsed = 0;
     s.invulnTimer = t.invulnTime;
+    s.stunTimer = 0; // a derezzed ship wakes up unfrozen — a stun never carries across a respawn
 }
 
 // Does the ship's footprint (x ± halfW, z ± halfL) overlap a lethal cube it's inside? Cubes are taller than

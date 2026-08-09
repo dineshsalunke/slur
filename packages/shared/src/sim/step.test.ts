@@ -261,6 +261,44 @@ test( 'stun freezes control: throttle is ignored while stunTimer>0, then decreme
     assert.ok( s.vz > 0, 'control was not restored after the stun ended' );
 } );
 
+test( 'respawn wakes a derezzed ship unfrozen (stunTimer cleared)', () => {
+    // Fall through a gap to die, then stamp a stun onto the DEAD ship (the dead branch doesn't touch it),
+    // and let it respawn — the wake must clear the stun so a revived ship isn't frozen at the anchor.
+    const seg = ( i: number ): Segment => ( {
+        index: i,
+        z0: i * SEG_LEN,
+        z1: ( i + 1 ) * SEG_LEN,
+        kind: i === 2 ? 'gap' : 'plain',
+        floors: i === 2 ? [] : [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
+        blocks: [],
+        isFinish: false,
+    } );
+    const track: Track = {
+        seed: 0,
+        finishZ: 1e9,
+        segmentAt: seg,
+        segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),
+    };
+    const s = spawnShip( 0, 0 );
+    s.lastSafeX = 0;
+    s.lastSafeZ = SEG_LEN * 1.5;
+    s.z = SEG_LEN * 2.5; // over the hole
+    s.y = 0;
+    let ticks = 0;
+    while ( ! s.dead && ticks < 300 ) {
+        simulate( s, idle, FIXED_DT, t, track );
+        ticks++;
+    }
+    assert.ok( s.dead, 'ship never died over the gap' );
+    s.stunTimer = 0.5; // hit right before derezz; dead-branch leaves it untouched until respawn
+    while ( s.dead && ticks < 400 ) {
+        simulate( s, idle, FIXED_DT, t, track );
+        ticks++;
+    }
+    assert.equal( s.dead, false, 'never respawned' );
+    assert.equal( s.stunTimer, 0, 'respawn did not clear the stun' );
+} );
+
 test( 'no track → legacy S1 flat floor (solo unchanged): lands at y=0, never dies', () => {
     const s = spawnShip( 0, 0 );
     s.y = 5;

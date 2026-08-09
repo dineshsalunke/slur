@@ -1,17 +1,26 @@
 import { type Client, Room } from '@colyseus/core';
 import {
+    BOLT_TTL,
+    boltHits,
     COLOR_COUNT,
     COUNTDOWN_SECONDS,
     createFixedStep,
     FIXED_DT,
+    grabPickup,
+    HeldPower,
+    type HitShip,
     INPUT_MESSAGE,
     type InputMessage,
     isColorId,
     isShipId,
     makeTrack,
     PHASE,
+    PICKUP_RESPAWN_S,
+    type Pickup,
     type PlayerInput,
     PlayerState,
+    Projectile,
+    pickupLayout,
     RACE_GRACE_SECONDS,
     RESTART_MESSAGE,
     type RunMetadata,
@@ -22,10 +31,13 @@ import {
     SET_COLOR_MESSAGE,
     START_MESSAGE,
     START_STAGGER,
+    STUN_SECONDS,
     shouldSpectateOnJoin,
     simulate,
+    stepProjectiles,
     type Track,
     tuningForShip,
+    USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 
 // How long a dropped client may reconnect before we evict them (office WiFi / lid-close is short).
@@ -35,6 +47,10 @@ const RECONNECT_SECONDS = 20;
 const MAX_QUEUED_INPUTS = 120;
 // Max display-name length accepted from a joiner (defends the lobby list / standings against long strings).
 const MAX_NAME = 16;
+// A fired bolt spawns this far ahead of the shooter's nose (units) so it never hits its own muzzle — a
+// fixed offset that clears every class footprint (longest halfL ≈ 2.5). Owner-immunity is the real guard;
+// this just avoids a same-tick self-overlap read.
+const BOLT_SPAWN_AHEAD = 3;
 
 // Server authority for one networked run. Owns the 4-phase lifecycle (lobby → countdown → racing →
 // finished; see @slur/shared PHASE) and runs the SHARED simulate() directly on each PlayerState schema
@@ -56,10 +72,19 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     // per room for S4: every round races the same track (per-round reseed is a deliberate later follow-up).
     private track!: Track;
 
+    // S5 combat: deterministic pickup layout (computed once from the seed — same as the client) and the
+    // per-slot respawn countdown. The layout is server-PLAIN data (positions derive from the seed both ends,
+    // only availability syncs via state.pickupTaken); the timer Map is transient server bookkeeping.
+    private pickups: Pickup[] = [];
+    private pickupRespawn = new Map< string, number >();
+    // Monotonic id for spawned projectiles — the MapSchema key (grows per fire; never reused within a room).
+    private nextProjectileId = 0;
+
     onCreate(): void {
         this.state = new RunState(); // phase defaults to lobby (0)
         this.state.seed = ( Math.random() * 0xffffffff ) >>> 0; // deterministic scenery + track seed, synced to clients
         this.track = makeTrack( this.state.seed );
+        this.pickups = pickupLayout( this.state.seed ); // hazard-aware, deterministic — the client computes the same layout
         this.patchRate = 50; // 20Hz network flush (default) — decoupled from the 60Hz sim
         this.refreshMetadata();
 
@@ -92,6 +117,25 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             if ( client.sessionId === this.state.hostId && this.state.phase === PHASE.finished ) this.resetToLobby();
         } );
 
+        // Fire the held power-up: a discrete RELIABLE action (not an input axis — an axis would machine-gun
+        // on hold). Server-authoritative: validate racing + a live, unstunned, armed racer, then spawn a
+        // Projectile from the AUTHORITATIVE pose and consume the slot. Position/ownership never come from the
+        // client. (Mutating here matches the room's discrete-action precedent — setClass/start also mutate in
+        // handlers; only high-frequency INPUT is buffered into the loop.)
+        this.onMessage( USE_POWERUP_MESSAGE, ( client ) => {
+            if ( this.state.phase !== PHASE.racing ) return;
+            const p = this.state.players.get( client.sessionId );
+            if ( ! p || p.spectating || p.dead || p.stunTimer > 0 || p.heldPower === HeldPower.none ) return;
+            const bolt = new Projectile();
+            bolt.x = p.x;
+            bolt.y = p.y;
+            bolt.z = p.z + BOLT_SPAWN_AHEAD; // spawn ahead of the nose so it never self-overlaps this tick
+            bolt.ownerId = client.sessionId;
+            bolt.ttl = BOLT_TTL;
+            this.state.projectiles.set( String( this.nextProjectileId++ ), bolt );
+            p.heldPower = HeldPower.none; // single held slot — firing empties it
+        } );
+
         // setSimulationInterval gives wall-clock ms; the accumulator converts it to fixed ticks.
         this.setSimulationInterval( ( deltaMs ) => {
             this.advance( deltaMs / 1000, ( dt ) => this.fixedStep( dt ) );
@@ -115,7 +159,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
                 break;
             }
             case PHASE.racing:
-                this.stepRace( dt );
+                this.stepRace( dt ); // ships move first…
+                this.stepWorld( dt ); // …then bolts hit their MOVED positions + pickups grant
                 break;
             // lobby / finished: no simulation — ships hold position.
         }
@@ -159,6 +204,86 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         }
     }
 
+    // One fixed tick of the COMBAT world, run AFTER stepRace so bolts test against ships' MOVED positions.
+    // Server-authoritative throughout: advance bolts (shared pure step) → resolve hits into stun + a one-shot
+    // 'hit' FX message → prune spent bolts → grant/respawn pickups. Every state write is a tracked delta
+    // (MapSchema .set/.delete + schema fields); the one-shot spark is a broadcast, NOT state (colyseus.md).
+    private stepWorld( dt: number ): void {
+        stepProjectiles( this.state.projectiles.values(), dt );
+
+        // Hit targets = the live racers (skip spectators), footprint resolved from each ship's class tuning.
+        const ships: HitShip[] = [];
+        this.state.players.forEach( ( p, id ) => {
+            if ( p.spectating ) return;
+            const t = tuningForShip( p.shipId );
+            ships.push( {
+                id,
+                x: p.x,
+                y: p.y,
+                z: p.z,
+                halfW: t.halfW,
+                halfL: t.halfL,
+                dead: p.dead,
+                spectating: false,
+            } );
+        } );
+
+        // Resolve every bolt, collecting spent ids (hit OR expired) — delete AFTER the loop, never mid-iterate.
+        const spent: string[] = [];
+        this.state.projectiles.forEach( ( bolt, id ) => {
+            for ( const victimId of boltHits( bolt, ships ) ) {
+                const v = this.state.players.get( victimId );
+                if ( v ) v.stunTimer = STUN_SECONDS; // server-owned status; the client predicts-then-reconciles it
+                this.broadcast( 'hit', { x: bolt.x, y: bolt.y, z: bolt.z, victimId } ); // cosmetic spark
+                spent.push( id );
+            }
+            if ( bolt.ttl <= 0 ) spent.push( id );
+        } );
+        for ( const id of spent ) this.state.projectiles.delete( id );
+
+        this.stepPickups( dt );
+    }
+
+    // Grab-on-overlap grants a single held bolt to an empty-handed racer; a taken slot hides (pickupTaken)
+    // and respawns after PICKUP_RESPAWN_S via a server-plain timer Map.
+    private stepPickups( dt: number ): void {
+        this.state.players.forEach( ( p ) => {
+            if ( p.spectating || p.dead || p.heldPower !== HeldPower.none ) return;
+            for ( const pk of this.pickups ) {
+                if ( this.state.pickupTaken.get( pk.id ) ) continue; // already taken/hidden
+                if ( grabPickup( p, pk ) ) {
+                    p.heldPower = HeldPower.bolt;
+                    this.state.pickupTaken.set( pk.id, true );
+                    this.pickupRespawn.set( pk.id, PICKUP_RESPAWN_S );
+                    break; // single slot — at most one grab per racer per tick
+                }
+            }
+        } );
+        // Count down taken slots; a slot that reaches 0 becomes available again (pickupTaken → false).
+        for ( const [ id, timer ] of this.pickupRespawn ) {
+            const next = timer - dt;
+            if ( next <= 0 ) {
+                this.state.pickupTaken.set( id, false );
+                this.pickupRespawn.delete( id );
+            } else {
+                this.pickupRespawn.set( id, next );
+            }
+        }
+    }
+
+    // Clear all combat state at a race boundary (start / play-again) so a new round begins clean — fixes the
+    // C2-flagged leak (stale bolts / held powers / hidden pickups bleeding across rounds). stunTimer already
+    // zeroes via resetPlayerForRace; heldPower is schema-only so it needs an explicit reset here.
+    private clearCombat(): void {
+        this.state.projectiles.clear();
+        this.state.pickupTaken.clear();
+        this.pickupRespawn.clear();
+        this.nextProjectileId = 0;
+        this.state.players.forEach( ( p ) => {
+            p.heldPower = HeldPower.none;
+        } );
+    }
+
     // lobby → countdown: everyone present becomes a racer on the start line, the field locks, timer starts.
     private startRace(): void {
         let index = 0;
@@ -169,6 +294,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.queues.forEach( ( q ) => {
             q.length = 0;
         } );
+        this.clearCombat(); // fresh round — no stale bolts / held powers / hidden pickups
         this.state.elapsed = 0;
         this.state.finishDeadline = 0;
         this.state.countdown = COUNTDOWN_SECONDS;
@@ -183,6 +309,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             p.spectating = false; // waiting spectators join the next round
             resetPlayerForRace( p, index++ );
         } );
+        this.clearCombat(); // reopening the lobby also wipes combat state
         this.state.elapsed = 0;
         this.state.finishDeadline = 0;
         this.state.countdown = 0;
