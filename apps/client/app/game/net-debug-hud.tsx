@@ -14,7 +14,7 @@ function playerLines( room: Room ): string[] {
     room.state.players.forEach( ( p, sid ) => {
         const me = sid === room.sessionId ? '★' : ' ';
         lines.push(
-            `${ me } ${ sid.slice( 0, 4 ) }  x=${ p.x.toFixed( 1 ) } z=${ p.z.toFixed( 1 ) }${ p.connected ? '' : ' (gone)' }`,
+            `${ me } ${ sid.slice( 0, 4 ) }  x=${ p.x.toFixed( 1 ) } z=${ p.z.toFixed( 1 ) } st=${ p.stunTimer.toFixed( 1 ) } pw=${ p.heldPower }${ p.connected ? '' : ' (gone)' }`,
         );
     } );
     return lines;
@@ -59,7 +59,7 @@ export function NetDebugHud( { track }: { track: TrackHandle } ) {
             const players = playerLines( room );
             el.textContent = [
                 `room: ${ room.roomId }  (you: ${ room.sessionId.slice( 0, 4 ) })`,
-                `players: ${ players.length }`,
+                `players: ${ players.length }  bolts: ${ room.state.projectiles.size }`,
                 ...players,
                 ...localShipLines( world, track ),
             ].join( '\n' );

@@ -13,7 +13,7 @@ export interface Pickup {
     z: number;
 }
 
-export const PICKUP_SPACING = 8; // segments between pickup slots → one pickup roughly every PICKUP_SPACING·SEG_LEN u.
+export const PICKUP_SPACING = 3; // segments between pickup slots → a pickup roughly every PICKUP_SPACING·SEG_LEN (≈60u): dense drops.
 export const PICKUP_GRAB_RADIUS = 3; // units: fly within this in BOTH x and z to grab (grab-on-overlap).
 
 // Deterministic pickup layout: sample one candidate slot per PICKUP_SPACING segments after the start-safe
