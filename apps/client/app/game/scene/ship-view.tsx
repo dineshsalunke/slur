@@ -1,3 +1,4 @@
+import { DEFAULT_SHIP } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useTrait } from 'koota/react';
 import { Suspense } from 'react';
@@ -14,7 +15,7 @@ export function ShipView( { entity }: { entity: Entity } ) {
     const net = useTrait( entity, Net );
     if ( ! group ) return null;
     const color = colorHex( net?.colorId ?? 0 );
-    const shipId = net?.shipId ?? 'challenger';
+    const shipId = net?.shipId ?? DEFAULT_SHIP;
     return (
         <primitive object={ group }>
             <Suspense fallback={ null }>

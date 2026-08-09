@@ -1,4 +1,4 @@
-import type { Track as TrackHandle } from '@slur/shared';
+import { SEG_LEN, type Track as TrackHandle } from '@slur/shared';
 import type { World } from 'koota';
 import { useWorld } from 'koota/react';
 import { useEffect, useRef } from 'react';
@@ -26,7 +26,9 @@ function localShipLines( world: World, track: TrackHandle ): string[] {
     const s = e?.get( Sim );
     if ( ! s ) return [];
     const seg = track.segmentAtZ( s.z );
-    const ahead = [ 1, 2, 3, 4, 5, 6 ].map( ( n ) => KIND[ track.segmentAtZ( s.z + n * 20 ).kind ] ?? '?' ).join( ' ' );
+    const ahead = [ 1, 2, 3, 4, 5, 6 ]
+        .map( ( n ) => KIND[ track.segmentAtZ( s.z + n * SEG_LEN ).kind ] ?? '?' )
+        .join( ' ' );
     return [
         `ship: ${ e?.get( Net )?.shipId ?? '?' }  (keys 1-5 to swap)`,
         `me y=${ s.y.toFixed( 2 ) } z=${ s.z.toFixed( 0 ) } grnd=${ s.grounded ? 1 : 0 } dead=${ s.dead ? 1 : 0 }`,

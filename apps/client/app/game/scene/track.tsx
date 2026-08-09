@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
 
 const SIZE = 400;
-const CELL = 40; // grid repeats → dense reference lines for the speed cue
+const GRID_CELL = 40; // texture-tiling cell (NOT the shared 4u sim CELL) → dense reference lines for the speed cue
 
 // A neon grid drawn once into a CanvasTexture, tiled with RepeatWrapping.
 function makeGridTexture(): THREE.Texture {
@@ -23,7 +23,7 @@ function makeGridTexture(): THREE.Texture {
     const tex = new THREE.CanvasTexture( canvas );
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set( SIZE / CELL, SIZE / CELL );
+    tex.repeat.set( SIZE / GRID_CELL, SIZE / GRID_CELL );
     return tex;
 }
 

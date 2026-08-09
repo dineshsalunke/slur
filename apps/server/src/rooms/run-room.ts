@@ -21,6 +21,7 @@ import {
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
     START_MESSAGE,
+    START_STAGGER,
     shouldSpectateOnJoin,
     simulate,
     type Track,
@@ -198,7 +199,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         p.spectating = shouldSpectateOnJoin( this.state.phase );
         if ( ! p.spectating ) {
             // Lobby joiner → put them on the start line (staggered so they don't stack).
-            p.x = this.state.players.size * 4;
+            p.x = this.state.players.size * START_STAGGER; // same lateral stagger as resetPlayerForRace
             p.lastSafeX = p.x;
         }
         this.state.players.set( client.sessionId, p );

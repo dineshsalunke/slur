@@ -1,4 +1,4 @@
-import type { ShipId } from '@slur/shared';
+import { DEFAULT_SHIP, type ShipId } from '@slur/shared';
 
 // Client-only ship VISUALS, keyed by the SAME shipId the sim resolves tuning from. Each model is uniform-
 // scaled so its box == its class AABB footprint (WYSIWYG — you die exactly when the visible hull touches).
@@ -24,5 +24,5 @@ export const SHIP_VISUALS: Record< ShipId, ShipVisual > = {
 
 // Resolve a (possibly stale/unknown) shipId to its visuals, falling back to the default (Fighter) ship.
 export function shipVisual( shipId: string ): ShipVisual {
-    return SHIP_VISUALS[ shipId as ShipId ] ?? SHIP_VISUALS.challenger;
+    return SHIP_VISUALS[ shipId as ShipId ] ?? SHIP_VISUALS[ DEFAULT_SHIP ];
 }
