@@ -23,7 +23,11 @@ const THREAT_X = 8; // and within this lateral window shares my lane closely eno
 export function bindRoomAudio( room: Room< RunState > ): () => void {
     const $ = getStateCallbacks( room );
     const me = room.sessionId;
-    const detach: Array< () => void > = [];
+    // Per-entity onChange detaches, keyed like the prev* maps below. Every HOSTILE bolt registers one of
+    // these on spawn, so it MUST come off in onRemove — a flat array drained only at teardown grows for the
+    // whole run and keeps each dead bolt's schema object reachable.
+    const perPlayer = new Map< string, () => void >();
+    const perProjectile = new Map< string, () => void >();
 
     const prevStun = new Map< string, number >();
     const prevHeld = new Map< string, number >();
@@ -56,9 +60,14 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
         prevStun.set( sid, p.stunTimer );
         prevHeld.set( sid, p.heldPower );
         prevDead.set( sid, p.dead );
-        detach.push( $( p ).onChange( () => onPlayerChange( sid, p ) ) );
+        perPlayer.set(
+            sid,
+            $( p ).onChange( () => onPlayerChange( sid, p ) ),
+        );
     } );
     const offRemove = $( room.state ).players.onRemove( ( _p, sid ) => {
+        perPlayer.get( sid )?.();
+        perPlayer.delete( sid );
         prevStun.delete( sid );
         prevHeld.delete( sid );
         prevDead.delete( sid );
@@ -82,9 +91,14 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
             return;
         }
         checkThreat( proj, id );
-        detach.push( $( proj ).onChange( () => checkThreat( proj, id ) ) );
+        perProjectile.set(
+            id,
+            $( proj ).onChange( () => checkThreat( proj, id ) ),
+        );
     } );
     const offProjRemove = $( room.state ).projectiles.onRemove( ( _proj, id ) => {
+        perProjectile.get( id )?.();
+        perProjectile.delete( id );
         threatened.delete( id );
     } );
 
@@ -112,6 +126,9 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
         offProjRemove();
         offPhase();
         offCd();
-        for ( const off of detach ) off();
+        for ( const off of perPlayer.values() ) off();
+        for ( const off of perProjectile.values() ) off();
+        perPlayer.clear();
+        perProjectile.clear();
     };
 }
