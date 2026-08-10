@@ -237,3 +237,30 @@ finish flat. New/changed:
 
 **No renderer change needed** — the single biggest de-risk: wider blocks fall out of the existing WYSIWYG
 `emitBlocks` for free. The whole change is contained to `shared` sim + constants + tests.
+
+---
+
+## 8. AS-BUILT (S6 implement — shared only, renderer untouched)
+Implemented per plan. Files: `sim/noise.ts` (NEW), `sim/track.ts` (rewrote `buildSegment` + `passableCorridorWidth`),
+`constants.ts` (tuning + derived caps), `index.ts` (export noise), `sim/track.test.ts` (+5), `sim/noise.test.ts` (NEW +5).
+
+**Deviations from the draft, and why:**
+- **Walls are FULL-SEGMENT-DEPTH, not per-row.** The draft's per-row RLE would emit ~10–15 blocks/segment →
+  far over the renderer's `BLOCK_LIMIT=128` across the ~49-seg window (silent instance drops = invisible lethal
+  walls = broken). Instead: the corridor still moves **per row** (5 positions), but walls are placed outside the
+  **union** of the 5 rows' open bands and span the whole segment depth (`z0..z1`), RLE-merged across lanes only.
+  Keeps goal #2 (variable WIDTH via lane-RLE, measured widths 1–12 cells) and per-slice fairness; trades away
+  variable block DEPTH. Measured worst-case window block count over 3000 seeds = **105/128** (comfortable).
+- **`passableCorridorWidth` is now PER-SLICE** (min over the 5 z-rows), per parent Q1=YES. Stricter; old model
+  would still pass. Min per-slice corridor measured = exactly `MIN_LANE` (8u) at the hardest D — the floor holds.
+- **Derived caps** (`SLOPE_CAP=0.839 lanes/row`, `CURV_CAP=0.087 Δslope/row`, `FZ_ROWS=52`) computed once in
+  `track.ts` from `ALL_CLASS_TUNINGS` via pure helpers in `constants.ts` — put the *instantiation* in track.ts
+  (not constants.ts) to avoid a constants↔ship-classes import cycle (`ALL_CLASS_TUNINGS` lives in ship-classes,
+  which imports constants). Measured runtime weave: max |slope| 0.46, max |curvature| 0.056 — both well inside.
+- **Tuning landed:** `WALL_DENSITY_MAX 0.55`, `WALL_NOISE_FZ_LANE 4.5` (widened from 3.2 to clump runs → fewer,
+  fatter blocks for the budget), `D_EASE_CAP 0.85`, `CORRIDOR_W 8→2`. All feel-gate tweakable.
+- **Side effect to flag:** plain (wall-free) segments are now ~10% (was 35%), so `pickupLayout` (which only
+  places on `kind==='plain'`) yields ~6–7 pickups/track vs S5's dense drops. Not touched (out of scope; combat
+  test still green). Follow-up: place pickups inside the moving corridor of wall segments.
+- **Q2 (mode)** deferred as instructed — Race ease-out only, no room-state field. **Q3** (wall-run cap) not
+  needed — fairness holds; widths cap naturally at ~12 cells. **Q4** (start difficulty) = seg-6 corridor 8 lanes.
