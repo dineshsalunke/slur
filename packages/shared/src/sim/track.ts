@@ -1,16 +1,44 @@
 // Deterministic track generation. The ENTIRE track is a pure function of the room seed — no stored
-// geometry, no synced tiles. `segmentAt(i)` derives one segment from (seed, i) via a LOCAL PRNG
-// seeded by hash2(seed, i), so it is O(1) random-access and byte-identical on client + server (this
-// is why collision — which runs inside the shared simulate() — auto-networks with no wire change).
+// geometry, no synced tiles. `segmentAt(i)` derives one segment from (seed, i) via LOCAL hashes/PRNGs
+// seeded by hash2(seed, …), so it is O(1) random-access and byte-identical on client + server (this is
+// why collision — which runs inside the shared simulate() — auto-networks with no wire change).
 //
 // A finite Race is indices 0..TRACK_SEGMENTS; because segmentAt accepts any i, endless Survival (S7)
 // falls out for free — do NOT materialize an array, that would force an S7 rewrite.
 //
-// DETERMINISM: integer/PRNG/`+-*/`/compare/floor ONLY. NO Math.sin/cos/tan/pow/sqrt in this file — a
-// single ULP of cross-engine drift diverges geometry → diverges deaths → the game desyncs. (Jump-reach
-// fairness, which DOES need sqrt, is a one-time bound computed in constants.ts and asserted in the test.)
+// DETERMINISM: integer/PRNG/`+-*/`/compare/floor ONLY. NO Math.sin/cos/tan/pow/sqrt in the per-segment
+// path — a single ULP of cross-engine drift diverges geometry → diverges deaths → the game desyncs.
+// Coherence comes from hashed value-noise + smoothstep + triangle-wave (see noise.ts); every sqrt-needing
+// bound (jump-reach, the weave node period) is a ONE-TIME constant computed in constants.ts.
+//
+// ── S6 MODEL (procgen v2): carved racing-line + variable-width noise walls ──
+// Each hazard segment carves a value-noise "racing line" the player threads, and walls the space OUTSIDE a
+// corridor of ≥ MIN_LANE open lanes around it. Contiguous wall lanes are RLE-merged into ONE wide Block →
+// variable block widths (1/2/3+ cells). Fair BY CONSTRUCTION: the corridor is never walled, so ≥ MIN_LANE
+// contiguous open floor survives at EVERY z-slice regardless of wall shape (no per-width fairness proof).
+// Walls span the FULL segment depth (one merged Block per lane-run) — this keeps the block count within the
+// renderer's instance budget while the corridor still moves per-row (5 rows/segment) for a dense weave.
 
-import { CELL } from '../constants.js';
+import {
+    CELL,
+    CORRIDOR_W_MIN,
+    CORRIDOR_W_START,
+    D_EASE_CAP,
+    D_PACE_AMP,
+    D_PACE_WAVELENGTH,
+    D_RAMP_SEGMENTS,
+    deriveNodePeriod,
+    deriveWeaveCurvatureCap,
+    deriveWeaveSlopeCap,
+    GAP_P_MAX,
+    GAP_P_START,
+    WALL_DENSITY_MAX,
+    WALL_DENSITY_START,
+    WALL_NOISE_FZ_LANE,
+    WALL_NOISE_FZ_SEG,
+} from '../constants.js';
+import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
+import { smoothstep, tri, valueNoise1D, valueNoise2D } from './noise.js';
 import { hash2, mulberry32 } from './rng.js';
 
 // Solid floor over the lateral interval [x0, x1] at world height y. Gaps = x not covered by any span.
@@ -21,7 +49,8 @@ export interface FloorSpan {
 }
 
 // Lethal AABB cube in (x, y) over a bounded z-range [z0, z1). Touch it (footprint overlap) → derezz.
-// z0/z1 make it a DISCRETE cube (an open-scatter field is many of these) AND supply the AABB z-extent.
+// z0/z1 make it a DISCRETE block (a wall field is many of these) AND supply the AABB z-extent. Post-S6 a
+// Block may span MANY lanes laterally (RLE-merged wall run) — x1-x0 is a multiple of CELL.
 export interface Block {
     x0: number;
     x1: number;
@@ -59,27 +88,71 @@ export const HALF_WIDTH = 32; // lateral half-extent → 16 lanes wide (2·HALF_
 export const LANES = ( 2 * HALF_WIDTH ) / CELL; // 16 lateral cells (lanes).
 export const ZCELLS = SEG_LEN / CELL; // 5 forward cells (rows) per segment.
 export const MIN_LANE = 2 * CELL; // fairness: ≥2 contiguous open lanes (8u) guaranteed at every z-slice — even the widest class (Freighter 3.6u) threads with margin.
-export const BLOCK_HEIGHT = 8; // cube top (y) = 2 cells. ABOVE double-jump reach on purpose → UN-jumpable: strafe around or destroy, never hop.
-const ROW_FILL = 0.7; // P(a z-row holds a cube) → ~3.5 cubes/segment average. THE block-density / difficulty dial.
+export const BLOCK_HEIGHT = 8; // cube top (y) = 2 cells. ABOVE double-jump reach on purpose → UN-jumpable: strafe around, never hop.
 
-// Archetype mix. Probabilities are the difficulty dial; they sum to 1 across the [0,1) roll. Blocks are the
-// STAR obstacle now (strafe-weave core); gaps punctuate with the jump mechanic; plain gives breathing room.
-type Archetype = 'plain' | 'block' | 'gap';
-const P_PLAIN = 0.35;
-const P_BLOCK = 0.45; // cumulative 0.80
-// remainder (0.20) → gap
+// ── Derived weave caps (computed ONCE from the ship roster, never per-segment) ──
+// The racing line is threadable by the LEAST-capable ship BY CONSTRUCTION: its slope stays under that ship's
+// strafeClamp/maxCruise and its curvature under its strafeAccel-limited reversal rate (see constants.ts).
+export const WEAVE_AMP_LANES = LANES; // max racing-line amplitude (lanes). Actual amplitude ≤ this (shrinks with corridor width).
+export const SLOPE_CAP = deriveWeaveSlopeCap( ALL_CLASS_TUNINGS ); // [lanes/row]
+export const CURV_CAP = deriveWeaveCurvatureCap( ALL_CLASS_TUNINGS, CELL ); // [Δ(lanes/row)/row]
+export const FZ_ROWS = deriveNodePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES ); // noise node period (rows)
 
-function pickArchetype( r: number ): Archetype {
-    if ( r < P_PLAIN ) return 'plain';
-    if ( r < P_PLAIN + P_BLOCK ) return 'block';
-    return 'gap';
+// Distinct hash salts so the racing line, the wall field, and the gap roll are uncorrelated streams.
+const SALT_LINE_A = 0x1234567 | 0;
+const SALT_LINE_B = 0x2b3c4d5 | 0;
+const SALT_WALL = 0x51ed270b | 0;
+
+// Global row index (5 rows/segment): the weave moves PER ROW, not per segment → a denser, threadable line.
+function rowGlobal( i: number, r: number ): number {
+    return i * ZCELLS + r;
 }
 
-// The FIRST roll of a segment's local RNG decides its archetype. Exposed as a standalone O(1) probe so
-// segmentAt can look at the *previous* segment's raw archetype (for the "land pad after a gap" rule)
-// without recursion — each probe seeds its own independent stream, so it stays random-access.
-function rawArchetypeAt( seed: number, i: number ): Archetype {
-    return pickArchetype( mulberry32( hash2( seed, i ) )() );
+// Racing-line center in LANES at full amplitude — a 2-octave fBm value-noise curve in [0, LANES). This is
+// the continuous line the ship threads; the corridor is carved AROUND it. Slope/curvature are bounded by
+// FZ_ROWS (derived from the caps), so the least-capable ship can always follow it. Exposed for the fairness
+// test (it asserts slope ≤ SLOPE_CAP and curvature ≤ CURV_CAP directly on this signal).
+export function weaveRaw( seed: number, row: number ): number {
+    const f = row / FZ_ROWS;
+    const o0 = valueNoise1D( ( seed ^ SALT_LINE_A ) | 0, f ); // base octave
+    const o1 = valueNoise1D( ( seed ^ SALT_LINE_B ) | 0, f * 2 ); // half-period, half-amplitude → richness
+    return ( o0 + o1 * 0.5 ) / 1.5; // normalized to [0,1)
+}
+export function weaveLineLanes( seed: number, row: number ): number {
+    return weaveRaw( seed, row ) * WEAVE_AMP_LANES;
+}
+
+// ── Difficulty D(i) ∈ [0,1] — Race ease-out to a cap + triangle-wave pacing (Survival growth deferred to S7) ──
+function lerp( a: number, b: number, t: number ): number {
+    return a + ( b - a ) * t;
+}
+function clamp( v: number, lo: number, hi: number ): number {
+    return v < lo ? lo : v > hi ? hi : v;
+}
+export function difficultyAt( i: number ): number {
+    const t = clamp( ( i - START_SAFE ) / D_RAMP_SEGMENTS, 0, 1 );
+    const ease = smoothstep( t ) * D_EASE_CAP; // monotone trend
+    const pace = D_PACE_AMP * tri( i / D_PACE_WAVELENGTH ); // tension→release swing
+    return clamp( ease + pace, 0, 1 );
+}
+function corridorWidthLanes( d: number ): number {
+    const w = Math.round( lerp( CORRIDOR_W_START, CORRIDOR_W_MIN, d ) );
+    return clamp( w, CORRIDOR_W_MIN, LANES ); // never below the MIN_LANE (2-lane) fairness floor
+}
+function wallDensity( d: number ): number {
+    return lerp( WALL_DENSITY_START, WALL_DENSITY_MAX, d );
+}
+function gapProb( d: number ): number {
+    return lerp( GAP_P_START, GAP_P_MAX, d );
+}
+
+// ── Gaps — sparse jump punctuation, orthogonal to the weave ──
+// Whether segment i ROLLED a gap (first draw of its local RNG < gapProb(D)). A real gap also requires the
+// PREVIOUS segment not to have rolled one (→ no two gaps in a row, and the segment after a gap is a guaranteed
+// landing pad). Pure O(1) local lookback — each probe seeds its own independent stream.
+function rolledGap( seed: number, i: number ): boolean {
+    if ( i < START_SAFE || i >= TRACK_SEGMENTS ) return false;
+    return mulberry32( hash2( seed, i ) )() < gapProb( difficultyAt( i ) );
 }
 
 function fullFloor( y: number ): FloorSpan[] {
@@ -96,35 +169,51 @@ function buildSegment( seed: number, i: number ): Segment {
     // Start-safe accel zone.
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
-    const rng = mulberry32( hash2( seed, i ) );
-    let arch = pickArchetype( rng() ); // consumes the SAME first roll as rawArchetypeAt(seed, i)
+    // Gap: rolled one AND the previous segment didn't (guarantees a landing pad after every gap, and no two
+    // active gaps in a row). Falls through the whole width → cross it only airborne.
+    if ( rolledGap( seed, i ) && ! rolledGap( seed, i - 1 ) ) return { ...base, kind: 'gap', floors: [] };
 
-    // Fairness: the segment right after a gap MUST be a flat landing pad (guaranteed floor to land on),
-    // and this also prevents two active gaps in a row (the second becomes a pad). Purely local, O(1).
-    if ( i > START_SAFE && rawArchetypeAt( seed, i - 1 ) === 'gap' ) arch = 'plain';
+    // Carved corridor + noise walls.
+    const d = difficultyAt( i );
+    const wLanes = corridorWidthLanes( d );
+    const density = wallDensity( d );
 
-    switch ( arch ) {
-        case 'gap':
-            return { ...base, kind: 'gap', floors: [] }; // no floor across the whole width → fall unless airborne
-        case 'block': {
-            // OPEN-SCATTER cube field on the cell grid. Each of the ZCELLS z-rows MAY hold ONE 1×1-cell cube
-            // at a random lane. ≤1 cube per row ⇒ cubes are z-disjoint ⇒ every z-slice keeps ≥ (LANES−1)
-            // lanes open, far above MIN_LANE — fair BY CONSTRUCTION (no pigeonhole needed). Full floor
-            // underneath: a block field is DODGED (strafe-weave), never fallen through.
-            const blocks: Block[] = [];
-            for ( let r = 0; r < ZCELLS; r++ ) {
-                if ( rng() < ROW_FILL ) {
-                    const lane = Math.floor( rng() * LANES ); // 0..LANES-1
-                    const bx0 = -HALF_WIDTH + lane * CELL;
-                    const bz0 = z0 + r * CELL;
-                    blocks.push( { x0: bx0, x1: bx0 + CELL, y0: 0, y1: BLOCK_HEIGHT, z0: bz0, z1: bz0 + CELL } );
-                }
-            }
-            return { ...base, kind: 'block', floors: fullFloor( 0 ), blocks };
-        }
-        default:
-            return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
+    // The corridor moves per row (5 positions); walls are placed OUTSIDE the swath it sweeps this segment,
+    // so a full-segment-depth wall never intrudes on any row's open band → per-slice fairness holds.
+    let unionLo = LANES;
+    let unionHi = -1;
+    for ( let r = 0; r < ZCELLS; r++ ) {
+        const openStart = clamp( Math.round( weaveRaw( seed, rowGlobal( i, r ) ) * ( LANES - wLanes ) ), 0, LANES - wLanes );
+        const openEnd = openStart + wLanes - 1;
+        if ( openStart < unionLo ) unionLo = openStart;
+        if ( openEnd > unionHi ) unionHi = openEnd;
     }
+
+    // Wall the non-corridor lanes where coherent value-noise clears the density threshold, RLE-merging
+    // contiguous wall lanes into ONE full-depth Block (variable width). A lane is wall-eligible only OUTSIDE
+    // [unionLo, unionHi]; the wall-noise samples (lane, segment) so a run is constant over the segment's depth.
+    const blocks: Block[] = [];
+    let runStart = -1;
+    const flush = ( endLane: number ): void => {
+        const bx0 = -HALF_WIDTH + runStart * CELL;
+        const bx1 = -HALF_WIDTH + ( endLane + 1 ) * CELL;
+        blocks.push( { x0: bx0, x1: bx1, y0: 0, y1: BLOCK_HEIGHT, z0, z1 } );
+        runStart = -1;
+    };
+    for ( let lane = 0; lane < LANES; lane++ ) {
+        const inCorridor = lane >= unionLo && lane <= unionHi;
+        const isWall =
+            ! inCorridor && valueNoise2D( ( seed ^ SALT_WALL ) | 0, lane / WALL_NOISE_FZ_LANE, i / WALL_NOISE_FZ_SEG ) < density;
+        if ( isWall ) {
+            if ( runStart < 0 ) runStart = lane;
+        } else if ( runStart >= 0 ) {
+            flush( lane - 1 );
+        }
+    }
+    if ( runStart >= 0 ) flush( LANES - 1 );
+
+    // 'plain' when no walls happened to spawn (keeps pickup placement — pickups only land on plain segments).
+    return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }
 
 // Ship z → segment index. Pure, O(1) — the collision entry point.
@@ -151,25 +240,40 @@ export function isHole( seg: Segment ): boolean {
     return seg.floors.length === 0;
 }
 
-// Widest continuous lateral corridor of floor NOT covered by any block (units). CONSERVATIVE: it ignores
-// each cube's z-extent (treats all cubes as coexisting at one z-slice), so it under-estimates the true open
-// lane — a safe lower bound for the ≥ MIN_LANE fairness assert.
-export function passableCorridorWidth( seg: Segment ): number {
+// Widest contiguous lateral corridor of floor NOT covered by a wall, at ONE z-slice (z-center). Sums the
+// floor spans, subtracts wall intervals that overlap this slice, returns the largest open run (units).
+function maxOpenAtSlice( seg: Segment, zc: number ): number {
     let best = 0;
     for ( const f of seg.floors ) {
-        let cursor = f.x0;
-        const edges: Array< [ number, number ] > = [];
+        const walls: Array< [ number, number ] > = [];
         for ( const b of seg.blocks ) {
-            const lo = Math.max( f.x0, b.x0 );
-            const hi = Math.min( f.x1, b.x1 );
-            if ( hi > lo ) edges.push( [ lo, hi ] );
+            if ( b.z0 <= zc && zc < b.z1 ) {
+                const lo = Math.max( f.x0, b.x0 );
+                const hi = Math.min( f.x1, b.x1 );
+                if ( hi > lo ) walls.push( [ lo, hi ] );
+            }
         }
-        edges.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
-        for ( const [ lo, hi ] of edges ) {
+        walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
+        let cursor = f.x0;
+        for ( const [ lo, hi ] of walls ) {
             if ( lo > cursor ) best = Math.max( best, lo - cursor );
             cursor = Math.max( cursor, hi );
         }
         if ( f.x1 > cursor ) best = Math.max( best, f.x1 - cursor );
     }
     return best;
+}
+
+// PER-SLICE min contiguous open corridor (units) across the segment's z-rows — the true fairness measure now
+// that the corridor MOVES within a segment (the old whole-segment collapse would false-fail a moving corridor
+// that is fair at every slice). A hole returns 0. Stricter than the old helper; the old scatter model still
+// passes it (its cubes are already per-row). Asserted ≥ MIN_LANE in the track test.
+export function passableCorridorWidth( seg: Segment ): number {
+    if ( seg.floors.length === 0 ) return 0;
+    let worst = Number.POSITIVE_INFINITY;
+    for ( let r = 0; r < ZCELLS; r++ ) {
+        const zc = seg.z0 + r * CELL + CELL / 2;
+        worst = Math.min( worst, maxOpenAtSlice( seg, zc ) );
+    }
+    return worst === Number.POSITIVE_INFINITY ? 0 : worst;
 }

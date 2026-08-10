@@ -132,3 +132,72 @@ export const RACE_GRACE_SECONDS = 20; // after the FIRST finisher, everyone else
 export const MAX_RACE_SECONDS = 180; // hard safety cap: a race with no finisher at all still ends (→ all DNF).
 export const COLOR_COUNT = 8; // team-colour palette size (colorId ∈ [0, COLOR_COUNT)); the hexes live client-side.
 export const START_STAGGER = CELL; // lateral spacing (u) between racers on the start line (feel-gate tweakable).
+
+// ── S6 procgen v2 — coherent carved racing-line + variable-width noise walls ──────────────────────────
+// Design + derivations: .claude/phases/2026-08-10-procgen-weave-width. The generator (track.ts) carves a
+// value-noise "racing line" the player threads, walls the space OUTSIDE a corridor around it, and RLE-merges
+// contiguous wall lanes into variable-width blocks — fair BY CONSTRUCTION (the corridor is never walled).
+// EVERY field here is an intuitive, unit-carrying tuning surface ([[intuitive-tuning-surfaces]]); the derived
+// caps below are FUNCTIONS of the ship roster, not hand-picked numbers.
+
+// Headroom factors: the weave never demands more than this fraction of the LEAST-capable ship's ability
+// (like JUMP_SAFETY). Lower = easier / more margin.
+export const WEAVE_SLOPE_SAFETY = 0.8; // caps the racing-line SLOPE below (strafeClamp / maxCruise) — top lateral speed.
+export const WEAVE_CURV_SAFETY = 0.8; // caps the racing-line CURVATURE below the strafeAccel-limited REVERSAL rate.
+export const NODE_PERIOD_SAFETY = 1.1; // extra margin on the derived noise node period (rows): slower, safer weave.
+
+// Worst-case 2-octave fBm (amplitudes 1 + ½) normalized derivative factors for smoothstep value-noise:
+//   peak |ds/dt|  = 1.5 → summed-octave slope factor     = 2   (both octaves peaking together, Δnode = 1)
+//   peak |d²s/dt²| = 6  → summed-octave curvature factor  = 12
+// These are pessimistic (the octaves never actually peak in phase), so the runtime weave sits well inside caps.
+export const WEAVE_SLOPE_OCTAVE_FACTOR = 2;
+export const WEAVE_CURV_OCTAVE_FACTOR = 12;
+
+// Racing-line slope cap [lanes/row]: to hold a 1-lane offset while advancing 1 row a ship needs
+// lateral_speed / forward_speed ≥ 1, i.e. strafeClamp / maxCruise ≥ 1. Floor to the least-capable weaver.
+export function deriveWeaveSlopeCap( tunings: FlightTuning[] ): number {
+    let m = Number.POSITIVE_INFINITY;
+    for ( const t of tunings ) m = Math.min( m, t.strafeClamp / t.maxCruise );
+    return m * WEAVE_SLOPE_SAFETY;
+}
+// Racing-line curvature cap [Δ(lanes/row) per row]: a zig-zag also demands fast lateral REVERSAL, bounded by
+// strafeAccel. Per row (dt = cell/vz) the reachable slope change is strafeAccel·cell / maxCruise². The
+// slope cap alone is INSUFFICIENT (a tight oscillation inside it is still un-threadable) — this is the real
+// "harder-but-fair" lever. Floor to the least-capable class.
+export function deriveWeaveCurvatureCap( tunings: FlightTuning[], cell: number ): number {
+    let m = Number.POSITIVE_INFINITY;
+    for ( const t of tunings ) m = Math.min( m, ( t.strafeAccel * cell ) / ( t.maxCruise * t.maxCruise ) );
+    return m * WEAVE_CURV_SAFETY;
+}
+// Noise node period [rows]: the larger of the slope- and curvature-safe periods (× safety). Bigger period =
+// gentler line. sqrt is fine — this is a ONE-TIME bound computed once at makeTrack, never per-segment (same
+// rule as jumpReach). `amp` = the max racing-line amplitude in lanes (see WEAVE_AMP_LANES in track.ts).
+export function deriveNodePeriod( slopeCap: number, curvCap: number, amp: number ): number {
+    const slopeReq = ( amp * WEAVE_SLOPE_OCTAVE_FACTOR ) / slopeCap;
+    const curvReq = Math.sqrt( ( amp * WEAVE_CURV_OCTAVE_FACTOR ) / curvCap );
+    return Math.ceil( Math.max( slopeReq, curvReq ) * NODE_PERIOD_SAFETY );
+}
+
+// Corridor width curve [lanes]: wide (easy) → narrow (hard) as D:0→1. Integer lanes; never below the fairness
+// floor (2 lanes = MIN_LANE = 8u). This is THE difficulty dial for lateral pressure.
+export const CORRIDOR_W_START = 8; // open lanes at D = 0 (half of the 16-lane track — roomy).
+export const CORRIDOR_W_MIN = 2; // open lanes at D = 1 — the MIN_LANE floor; the generator clamps here, never lower.
+
+// Wall field: a non-corridor cell becomes a wall when coherent value-noise(lane, z) < density(D). Low
+// frequencies → contiguous runs (RLE-merged into wide blocks = the width-variety goal), not scatter.
+export const WALL_DENSITY_START = 0.35; // fill fraction of the wall zone at D = 0.
+export const WALL_DENSITY_MAX = 0.55; // …at D = 1. Capped for readability AND the renderer's BLOCK_LIMIT budget (worst-case ~49-seg window stays well under 128).
+export const WALL_NOISE_FZ_LANE = 4.5; // value-noise period across LANES → typical wall-run width (wider = fewer, fatter blocks → renderer budget).
+export const WALL_NOISE_FZ_SEG = 2.6; // value-noise period across SEGMENTS → walls persist/flow forward, not per-seg flicker.
+
+// Difficulty D(i) ∈ [0,1]: smoothstep ease-out to a cap (Race) + a triangle-wave pacing swing (tension/release).
+// Survival's unbounded growth is DEFERRED to S7 (no `mode` field yet — parent decision Q2).
+export const D_RAMP_SEGMENTS = 90; // segments after START_SAFE to reach the ease-out cap.
+export const D_EASE_CAP = 0.85; // Race tops out here (< 1 leaves headroom for S7 Survival to grow into).
+export const D_PACE_AMP = 0.15; // ± difficulty swing added by the pacing wave.
+export const D_PACE_WAVELENGTH = 24; // segments per tension→release cycle.
+
+// Gaps (jump punctuation) stay orthogonal to the weave: sparse, ≤ one segment, never two in a row, never in
+// start-safe. Probability rises slightly with D. GAP-REACH is already asserted per class in the track test.
+export const GAP_P_START = 0.05; // P(gap) at D = 0.
+export const GAP_P_MAX = 0.12; // P(gap) at D = 1.

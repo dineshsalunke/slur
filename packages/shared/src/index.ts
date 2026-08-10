@@ -10,6 +10,7 @@ export * from './schema.js';
 export * from './ship-classes.js';
 export * from './sim/fixed-step.js';
 export * from './sim/input.js';
+export * from './sim/noise.js';
 export * from './sim/rng.js';
 export * from './sim/step.js';
 export * from './sim/track.js';

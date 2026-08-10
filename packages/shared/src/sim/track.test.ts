@@ -6,6 +6,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     ALL_CLASS_TUNINGS,
+    CELL,
+    CURV_CAP,
     HALF_WIDTH,
     isHole,
     jumpReach,
@@ -16,9 +18,12 @@ import {
     SEG_LEN,
     type Segment,
     SHIP_CLASSES,
+    SLOPE_CAP,
     START_SAFE,
     TRACK_SEGMENTS,
     type Track,
+    weaveLineLanes,
+    ZCELLS,
 } from '../index.js';
 
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 0x0fffffff, 42, 99991, 0xffffffff ];
@@ -120,6 +125,92 @@ test( 'fairness invariants hold for every segment across many seeds', () => {
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
         for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) assertSegmentFair( t, seed, i );
+    }
+} );
+
+// ── S6 procgen v2 — coherent weave + variable-width walls ──
+
+// The racing line the ship threads must never demand more lateral SPEED (slope) than the least-capable
+// weaver can hold. Cap is DERIVED from ALL_CLASS_TUNINGS (constants.ts) — not hand-picked. Measured on the
+// continuous full-amplitude line; the generator's actual corridor uses ≤ this amplitude, so it stays fair.
+test( 'racing-line slope stays under the derived least-capable cap (weave is threadable)', () => {
+    for ( const seed of SEEDS ) {
+        let prev = weaveLineLanes( seed, 0 );
+        for ( let row = 1; row < TRACK_SEGMENTS * ZCELLS; row++ ) {
+            const cur = weaveLineLanes( seed, row );
+            assert.ok(
+                Math.abs( cur - prev ) <= SLOPE_CAP + 1e-9,
+                `seed ${ seed } row ${ row } slope ${ Math.abs( cur - prev ) } > SLOPE_CAP ${ SLOPE_CAP }`,
+            );
+            prev = cur;
+        }
+    }
+} );
+
+// Slope alone is insufficient: a tight zig-zag inside the slope cap still needs un-affordable REVERSAL.
+// Curvature (slope-change/row) must stay under a cap derived from strafeAccel — the real harder-but-fair lever.
+test( 'racing-line curvature stays under the derived reversal cap', () => {
+    for ( const seed of SEEDS ) {
+        let prev = weaveLineLanes( seed, 0 );
+        let prevSlope = weaveLineLanes( seed, 1 ) - prev;
+        for ( let row = 2; row < TRACK_SEGMENTS * ZCELLS; row++ ) {
+            const cur = weaveLineLanes( seed, row );
+            const slope = cur - weaveLineLanes( seed, row - 1 );
+            assert.ok(
+                Math.abs( slope - prevSlope ) <= CURV_CAP + 1e-9,
+                `seed ${ seed } row ${ row } curvature ${ Math.abs( slope - prevSlope ) } > CURV_CAP ${ CURV_CAP }`,
+            );
+            prevSlope = slope;
+        }
+    }
+} );
+
+// Fairness BY CONSTRUCTION: ≥ MIN_LANE contiguous open floor at EVERY z-slice, for every segment and every
+// difficulty D (D varies with segment index, so the full sweep covers the whole ramp). This is the per-slice
+// helper (a moving-within-segment corridor is fair at each slice even if the collapsed segment wouldn't be).
+test( 'every z-slice keeps a ≥ MIN_LANE open corridor across all seeds and difficulty', () => {
+    for ( const seed of SEEDS ) {
+        const t = makeTrack( seed );
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
+            const s = t.segmentAt( i );
+            if ( isHole( s ) ) continue;
+            assert.ok(
+                passableCorridorWidth( s ) >= MIN_LANE - 1e-6,
+                `seed ${ seed } seg ${ i } per-slice corridor ${ passableCorridorWidth( s ) } < MIN_LANE`,
+            );
+        }
+    }
+} );
+
+// Goal #2: RLE-merged noise walls produce VARIABLE-width blocks (not just 1-cell cubes). Assert multi-lane
+// blocks actually appear — the whole point of the corridor+RLE model.
+test( 'variable-width blocks appear (walls wider than one cell)', () => {
+    let sawWide = false;
+    let maxW = 0;
+    for ( const seed of SEEDS ) {
+        const t = makeTrack( seed );
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
+            for ( const b of t.segmentAt( i ).blocks ) {
+                const w = b.x1 - b.x0;
+                if ( w > CELL + 1e-9 ) sawWide = true;
+                if ( w > maxW ) maxW = w;
+            }
+        }
+    }
+    assert.ok( sawWide, `no multi-cell blocks emerged (max width ${ maxW })` );
+} );
+
+// Gaps stay orthogonal + sparse: never two active gaps in a row (the segment after a gap is a landing pad),
+// and none in the start-safe zone. (GAP-REACH per class is asserted separately above.)
+test( 'no two gaps in a row and none in start-safe', () => {
+    for ( const seed of SEEDS ) {
+        const t = makeTrack( seed );
+        for ( let i = 0; i < START_SAFE; i++ ) assert.ok( ! isHole( t.segmentAt( i ) ), `gap in start-safe seg ${ i }` );
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
+            if ( isHole( t.segmentAt( i ) ) ) {
+                assert.ok( ! isHole( t.segmentAt( i + 1 ) ), `seed ${ seed } two gaps in a row at ${ i }` );
+            }
+        }
     }
 } );
 
