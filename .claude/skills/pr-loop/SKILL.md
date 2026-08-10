@@ -13,9 +13,26 @@ description: >-
 One agent working the PR queue. This skill is the **body of a loop**: it reviews the open
 PRs, acts on each, and comes back. Run it under `/loop` to schedule iterations, or self-pace.
 
-Repo: `github.com/dineshsalunke/slur`. You act as **`dineshsalunke` / Claude — the repo
-owner and reviewer**. Reviewing, commenting, and merging are owner actions and need **no
-lock** (unlike implementing).
+Repo: `github.com/dineshsalunke/slur`. Reviewing and commenting need **no lock** (unlike
+implementing) — but **what you are allowed to do at the end depends on the account running**,
+so establish that first:
+
+```
+gh auth status                                    # ME = the authenticated login
+gh api repos/dineshsalunke/slur --jq .permissions # push: true = can merge; false = cannot
+```
+
+- **`push: true`** → full loop, including the guarded approve + merge in Step 5.
+- **`push: false`** → **review-only.** You can still comment and submit a review (anyone can on
+  a public repo), but `gh pr merge` **will fail** — you do not have write access. Do not attempt
+  it, and do not treat a PR as "done" because you reviewed it. Post the findings and stop;
+  merging is someone else's call.
+
+Never review your own PR as though it were independent. If `.author.login == ME`, say so in the
+comment and treat the adversarial pass in Step 2 as mandatory rather than optional.
+
+Pass `-R dineshsalunke/slur` on every `gh` call — from a fork, a bare command resolves against
+your own remote and silently targets the wrong repository.
 
 ## Rule 0 — review against the rules, not against taste (non-negotiable)
 
@@ -141,8 +158,13 @@ gh pr comment <n> --body "<findings>"
 
 ## Step 5 — approve and merge (guarded — this is the irreversible step)
 
+**Skip this entire step if `push: false`.** You cannot merge, `gh pr merge` will error, and a
+review-only pass ends at Step 4. Say plainly in your comment that you reviewed but cannot merge,
+so nobody assumes the PR is cleared to land.
+
 Merge **only when every one of these is true**:
 
+0. You have write access (`push: true`).
 1. All CI checks are green (`gh pr checks <n>` all pass).
 2. Your **local verify gate passed** (Step 3), on the current baseline.
 3. The diff **conforms to the conventions** you loaded in Rule 0 — no §5 anti-pattern, no
