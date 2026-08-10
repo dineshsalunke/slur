@@ -45,8 +45,8 @@ export function LandingScene() {
                     sectionSize={ 20 }
                     sectionThickness={ 1.1 }
                     sectionColor="#1fa8c8"
-                    fadeDistance={ 130 }
-                    fadeStrength={ 3 }
+                    fadeDistance={ 300 }
+                    fadeStrength={ 6 }
                 />
                 <Environment config={ GRID_VOID } seed={ BACKDROP_SEED } />
                 <EffectComposer multisampling={ 0 }>
