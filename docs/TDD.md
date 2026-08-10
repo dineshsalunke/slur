@@ -10,7 +10,7 @@
 |-------|--------|-------|
 | Server | **Colyseus 0.17.10** | Authoritative rooms, `@colyseus/schema` **4.0.30**. See `conventions/colyseus.md` |
 | Client SDK | **`@colyseus/sdk` 0.17.43** | NOT legacy `colyseus.js` (frozen at 0.16) |
-| Transport | WebSocket (Colyseus) | LAN = low latency; TCP HOL acceptable. See `conventions/netcode.md` |
+| Transport | WebSocket (Colyseus) | LAN = low latency; TCP HOL acceptable. Web hosting adds WAN latency — client prediction + interpolation (server-authoritative, shipped S2) absorb it. See `conventions/netcode.md` |
 | Client routing | **React Router 8.3.0** (framework mode, SPA `ssr:false`) | Static SPA, typed routes, auto code-split, Route Modules. Import from `react-router`. See `conventions/react-router.md` |
 | Rendering | **R3F 9.7.0** + drei 10.7.8 + postprocessing 3.0.4 | Neon/bloom. **Pin `three@0.185.x`** (postprocessing peer `<0.186`). See `conventions/r3f.md` |
 | Shaders (experimental) | **brometal** — later spike | TS→WGSL shader compiler for WebGPU (not a renderer); author custom track/trail shaders in TS, consume from R3F |
@@ -22,7 +22,7 @@
 ## 2. Topology
 
 ```
-                       ┌──────────────────────── LAN ────────────────────────┐
+                       ┌─────────────────────  LAN / WAN  ────────────────────┐
                        │                                                      │
    ┌───────────────┐   │   WebSocket (Colyseus)     ┌────────────────────┐    │
    │  HOST client  │───┼──────────────────────────►│   Colyseus server  │    │
@@ -38,7 +38,7 @@
 
 - **Server owns truth:** positions, hits, pickups, deaths. Clients send **inputs**, not positions.
 - **Host** is just the client that created the room (has start/config authority at the *session* level). The **server** holds the *simulation* authority. Host ≠ server-trust.
-- Server may run on the host's machine or a dedicated box on the LAN. *OPEN: co-located on host, or standalone?*
+- Server may run **co-located on the host's machine** (zero-setup LAN play) **or on a hosted web server** (play over the internet). Same authoritative `RunRoom` either way; only the deploy target and the client's server URL change.
 
 ## 3. Client architecture
 
@@ -73,7 +73,7 @@ React Router (SPA)
 - **Client = two loops:** fixed-60 physics accumulator + render on rAF/display-refresh (not pinnable to 60), bridged by **interpolation** (`advance()` returns `alpha`; render lerps prev→curr into `Object3D` refs via koota — no per-frame React re-render). Same accumulator the server uses. Cameras: rubberband chase now; **rearview mirror** (2nd render pass) was **deferred at S5** — v1 ships a **threat-warning HUD** for rear awareness (cheaper; no bloom/render-priority cost). The mirror is a fast-follow (rides with homing/mines).
 - **Fixed timestep 60 Hz** (accumulator loop) on server via `setSimulationInterval`; **`patchRate` ~20 Hz** to clients (decoupled from sim rate).
 - Client renders at display rate (60+), **interpolating** (~50–100 ms delay; linear pos / slerp rot) between authoritative snapshots for remote ships.
-- **Local player:** client-side prediction from local input + **server reconciliation** (`lastProcessedInput` seq). On LAN this can start interpolate-only and add prediction if felt needed — see `netcode.md` "Pragmatic Baseline for LAN".
+- **Local player:** client-side prediction from local input + **server reconciliation** (`lastProcessedInput` seq). Shipped full in S2 (not interpolate-only) — this is what keeps web/WAN latency playable, not just a LAN nicety. See `netcode.md`.
 - **Deterministic track:** server sends a **seed** (in room state); both ends generate identical geometry from it → never sync track tile-by-tile, only seed + progression params.
 - **(S6 — AS-BUILT 2026-08-10: `sim/noise.ts` + rewritten `sim/track.ts`) Track generator v2 — coherent weave + width variety** (plan in
   `.claude/phases/2026-08-10-procgen-weave-width-DRAFT.md`). Pickups now sit on the racing-line corridor
@@ -157,11 +157,11 @@ and prevents client/server misprediction.
 - No heavy E2E for v1 — playtesting is the real test. **(S5)** added combat pure-fn tests (`stepProjectiles` / `boltHits` / pickups → **41 shared tests**) + a throwaway room harness for `stepWorld`; `@colyseus/testing` still not installed (hardening item).
 
 ## 9. Non-goals (v1)
-Matchmaking across networks, persistence/accounts, anti-cheat hardening (it's the office), mobile/touch, gamepad, spectator replays.
+Matchmaking across networks, persistence/accounts, mobile/touch, gamepad, spectator replays. Anti-cheat stays light for LAN/trusted-crew play; **public web hosting will need it revisited** (the server is already authoritative, which is the foundation).
 
 ## 10. OPEN QUESTIONS
 _(All initial questions RESOLVED by S1–S4 as-built — folded in below.)_
-1. ~~**Server host**~~ → **co-located on the host laptop** (zero-setup office play; backlog decision 2026-08-06).
+1. ~~**Server host**~~ → **co-located on the host laptop** for zero-setup LAN play (backlog decision 2026-08-06); **a hosted web deployment is the alternative path** for internet play (same authoritative room, different deploy target + client URL).
 2. ~~**Prediction depth**~~ → **full client-prediction + reconciliation** (shipped S2; `lastProcessedInput` seq, `simulate()` replay). Not interpolate-only.
 3. ~~**Sim on server: koota or plain?**~~ → **plain pure `simulate()` in `@slur/shared`** run directly on the schema; **koota is client-only** (render/entity layer). Confirmed by S1–S4.
 4. ~~**Sim/patch rates**~~ → **60 Hz sim / 20 Hz patch** (`patchRate=50`), confirmed across S2–S4.

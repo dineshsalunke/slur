@@ -10,7 +10,7 @@ import { LandingScene } from './home/landing-scene';
 const NAME_KEY = 'slur:name';
 
 export function meta( _args: Route.MetaArgs ) {
-    return [ { title: 'SLUR' }, { name: 'description', content: 'LAN party ship-racer' } ];
+    return [ { title: 'SLUR' }, { name: 'description', content: 'Multiplayer party ship-racer' } ];
 }
 
 // clientLoader: join the live room list (idempotent — the lobby is a session singleton) and read the saved
@@ -49,7 +49,7 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                 <header className="topbar">
                     <div className="brand">
                         <h1 className="wordmark">SLUR</h1>
-                        <span className="tagline">LAN Ship-Racer</span>
+                        <span className="tagline">Multiplayer Ship-Racer</span>
                     </div>
                 </header>
 
@@ -59,8 +59,8 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                             Race your friends. <em>Wreck</em> their run.
                         </h2>
                         <p>
-                            Host a room, throw the code across the office, and drop into the next round. Bolts, boosts,
-                            and a chase-wall that doesn&apos;t care whose fault it was.
+                            Host a room, share the code with your crew, and drop into the next round. Bolts, boosts, and
+                            a chase-wall that doesn&apos;t care whose fault it was.
                         </p>
                     </div>
 

@@ -4,7 +4,7 @@
 
 ## 1. Vision statement
 
-A fast, neon, quick-to-join ship racer you launch on the office LAN and play in a 5-minute burst.
+A fast, neon, quick-to-join ship racer you launch on the office LAN or a hosted web server and play in a 5-minute burst.
 Fly a ship down a track — a finite course to a **finish line**, or an **endless survival run** — grab
 power-ups, and **mess with your friends**: dodge, boost, shoot, shield. Easy to join, hard to master, funny to lose.
 
@@ -343,7 +343,7 @@ Coin-grab mode · Tag mode · Loops / corkscrews · Gravity-flip / ceiling-runni
 geometry (crushers / moving cubes / conveyors).
 
 ## 6. Players & session
-- **Count:** 2–12 (office LAN). Design readable at 8.
+- **Count:** 2–12 (office LAN or web). Design readable at 8.
 - **Identity:** pick a name + ship color on join. Ephemeral, no accounts.
 - **Spectate:** dead/late players spectate the pack and can heckle (emotes/chat) — keeps them engaged.
 
