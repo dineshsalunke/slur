@@ -47,7 +47,13 @@ test( 'valueNoise1D is deterministic, in [0,1), and continuous at lattice nodes'
 
 test( 'valueNoise2D is deterministic and in [0,1)', () => {
     for ( const seed of SEEDS ) {
-        for ( const [ x, y ] of [ [ 0, 0 ], [ 1.5, 2.5 ], [ 10.2, -3.1 ], [ 0.9, 0.9 ], [ 200.5, 77.7 ] ] ) {
+        for ( const [ x, y ] of [
+            [ 0, 0 ],
+            [ 1.5, 2.5 ],
+            [ 10.2, -3.1 ],
+            [ 0.9, 0.9 ],
+            [ 200.5, 77.7 ],
+        ] ) {
             const a = valueNoise2D( seed, x, y );
             const b = valueNoise2D( seed, x, y );
             assert.equal( a, b, 'valueNoise2D not deterministic' );

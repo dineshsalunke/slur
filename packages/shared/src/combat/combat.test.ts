@@ -81,15 +81,14 @@ test( 'pickupLayout: slots sit after the start-safe zone and inside the corridor
     );
 } );
 
-test( 'pickupLayout is hazard-aware: no slot lands on a non-plain (block/gap/finish) segment', () => {
+test( 'pickupLayout: every slot sits on floor and inside the open corridor — never over a hole or buried in a wall', () => {
     for ( const seed of [ 1, 2, 777, 12345, 999983 ] ) {
         const track = makeTrack( seed );
         for ( const p of pickupLayout( seed ) ) {
-            assert.equal(
-                track.segmentAt( Number( p.id ) ).kind,
-                'plain',
-                `seed ${ seed }: pickup ${ p.id } landed on a non-plain segment`,
-            );
+            const seg = track.segmentAt( Number( p.id ) );
+            assert.ok( seg.floors.length > 0, `seed ${ seed }: pickup ${ p.id } placed over a hole (gap)` );
+            const buried = seg.blocks.some( ( b ) => p.x >= b.x0 && p.x < b.x1 && p.z >= b.z0 && p.z < b.z1 );
+            assert.ok( ! buried, `seed ${ seed }: pickup ${ p.id } buried inside a wall block` );
         }
     }
 } );

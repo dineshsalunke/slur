@@ -159,6 +159,64 @@ function fullFloor( y: number ): FloorSpan[] {
     return [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y } ];
 }
 
+// The lane band [lo, hi] swept by the moving corridor across a segment's 5 rows — never walled, so per-slice
+// fairness holds regardless of wall shape outside it.
+function corridorUnion( seed: number, i: number, wLanes: number ): { lo: number; hi: number } {
+    let lo = LANES;
+    let hi = -1;
+    for ( let r = 0; r < ZCELLS; r++ ) {
+        const openStart = clamp(
+            Math.round( weaveRaw( seed, rowGlobal( i, r ) ) * ( LANES - wLanes ) ),
+            0,
+            LANES - wLanes,
+        );
+        const openEnd = openStart + wLanes - 1;
+        if ( openStart < lo ) lo = openStart;
+        if ( openEnd > hi ) hi = openEnd;
+    }
+    return { lo, hi };
+}
+
+// Wall the non-corridor lanes where coherent value-noise clears the density threshold, RLE-merging contiguous
+// wall lanes into ONE full-depth Block (variable width). Wall-eligible only OUTSIDE [unionLo, unionHi]; the
+// wall-noise samples (lane, segment) so a run is constant over the segment's depth.
+function buildWalls(
+    seed: number,
+    i: number,
+    unionLo: number,
+    unionHi: number,
+    density: number,
+    z0: number,
+    z1: number,
+): Block[] {
+    const blocks: Block[] = [];
+    let runStart = -1;
+    const flush = ( endLane: number ): void => {
+        blocks.push( {
+            x0: -HALF_WIDTH + runStart * CELL,
+            x1: -HALF_WIDTH + ( endLane + 1 ) * CELL,
+            y0: 0,
+            y1: BLOCK_HEIGHT,
+            z0,
+            z1,
+        } );
+        runStart = -1;
+    };
+    for ( let lane = 0; lane < LANES; lane++ ) {
+        const inCorridor = lane >= unionLo && lane <= unionHi;
+        const isWall =
+            ! inCorridor &&
+            valueNoise2D( ( seed ^ SALT_WALL ) | 0, lane / WALL_NOISE_FZ_LANE, i / WALL_NOISE_FZ_SEG ) < density;
+        if ( isWall ) {
+            if ( runStart < 0 ) runStart = lane;
+        } else if ( runStart >= 0 ) {
+            flush( lane - 1 );
+        }
+    }
+    if ( runStart >= 0 ) flush( LANES - 1 );
+    return blocks;
+}
+
 function buildSegment( seed: number, i: number ): Segment {
     const z0 = i * SEG_LEN;
     const z1 = z0 + SEG_LEN;
@@ -173,47 +231,30 @@ function buildSegment( seed: number, i: number ): Segment {
     // active gaps in a row). Falls through the whole width → cross it only airborne.
     if ( rolledGap( seed, i ) && ! rolledGap( seed, i - 1 ) ) return { ...base, kind: 'gap', floors: [] };
 
-    // Carved corridor + noise walls.
+    // Carved corridor + noise walls (extracted to corridorUnion / buildWalls to keep this simple).
     const d = difficultyAt( i );
     const wLanes = corridorWidthLanes( d );
-    const density = wallDensity( d );
+    const { lo: unionLo, hi: unionHi } = corridorUnion( seed, i, wLanes );
+    const blocks = buildWalls( seed, i, unionLo, unionHi, wallDensity( d ), z0, z1 );
 
-    // The corridor moves per row (5 positions); walls are placed OUTSIDE the swath it sweeps this segment,
-    // so a full-segment-depth wall never intrudes on any row's open band → per-slice fairness holds.
-    let unionLo = LANES;
-    let unionHi = -1;
-    for ( let r = 0; r < ZCELLS; r++ ) {
-        const openStart = clamp( Math.round( weaveRaw( seed, rowGlobal( i, r ) ) * ( LANES - wLanes ) ), 0, LANES - wLanes );
-        const openEnd = openStart + wLanes - 1;
-        if ( openStart < unionLo ) unionLo = openStart;
-        if ( openEnd > unionHi ) unionHi = openEnd;
-    }
-
-    // Wall the non-corridor lanes where coherent value-noise clears the density threshold, RLE-merging
-    // contiguous wall lanes into ONE full-depth Block (variable width). A lane is wall-eligible only OUTSIDE
-    // [unionLo, unionHi]; the wall-noise samples (lane, segment) so a run is constant over the segment's depth.
-    const blocks: Block[] = [];
-    let runStart = -1;
-    const flush = ( endLane: number ): void => {
-        const bx0 = -HALF_WIDTH + runStart * CELL;
-        const bx1 = -HALF_WIDTH + ( endLane + 1 ) * CELL;
-        blocks.push( { x0: bx0, x1: bx1, y0: 0, y1: BLOCK_HEIGHT, z0, z1 } );
-        runStart = -1;
-    };
-    for ( let lane = 0; lane < LANES; lane++ ) {
-        const inCorridor = lane >= unionLo && lane <= unionHi;
-        const isWall =
-            ! inCorridor && valueNoise2D( ( seed ^ SALT_WALL ) | 0, lane / WALL_NOISE_FZ_LANE, i / WALL_NOISE_FZ_SEG ) < density;
-        if ( isWall ) {
-            if ( runStart < 0 ) runStart = lane;
-        } else if ( runStart >= 0 ) {
-            flush( lane - 1 );
-        }
-    }
-    if ( runStart >= 0 ) flush( LANES - 1 );
-
-    // 'plain' when no walls happened to spawn (keeps pickup placement — pickups only land on plain segments).
+    // 'plain' when no walls happened to spawn — still a valid corridor segment (pickups land here + on blocks).
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
+}
+
+// World-x centre of the open racing-line corridor at segment i's MID-ROW (= a pickup's z, SEG_LEN/2). A pickup
+// placed here sits ON the line the player threads and is ALWAYS inside the ≥ MIN_LANE open band — never a wall.
+// Mirrors buildSegment's carve, so it stays byte-identical both ends (pickups are deterministic from the seed
+// like the track). Only meaningful for non-gap segments — a gap has no floor, so callers skip holes first.
+export function corridorCenterX( seed: number, i: number ): number {
+    const wLanes = corridorWidthLanes( difficultyAt( i ) );
+    const r = Math.floor( ZCELLS / 2 ); // mid row = the pickup's z
+    const openStart = clamp(
+        Math.round( weaveRaw( seed, rowGlobal( i, r ) ) * ( LANES - wLanes ) ),
+        0,
+        LANES - wLanes,
+    );
+    const centerLane = openStart + ( wLanes - 1 ) / 2;
+    return -HALF_WIDTH + ( centerLane + 0.5 ) * CELL; // lane index → world x (lane centre)
 }
 
 // Ship z → segment index. Pure, O(1) — the collision entry point.
@@ -242,20 +283,25 @@ export function isHole( seg: Segment ): boolean {
 
 // Widest contiguous lateral corridor of floor NOT covered by a wall, at ONE z-slice (z-center). Sums the
 // floor spans, subtracts wall intervals that overlap this slice, returns the largest open run (units).
+// Wall intervals of `seg` that overlap slice z=zc, clipped to the floor span, sorted by start.
+function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Array< [ number, number ] > {
+    const walls: Array< [ number, number ] > = [];
+    for ( const b of seg.blocks ) {
+        if ( b.z0 <= zc && zc < b.z1 ) {
+            const lo = Math.max( f.x0, b.x0 );
+            const hi = Math.min( f.x1, b.x1 );
+            if ( hi > lo ) walls.push( [ lo, hi ] );
+        }
+    }
+    walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
+    return walls;
+}
+
 function maxOpenAtSlice( seg: Segment, zc: number ): number {
     let best = 0;
     for ( const f of seg.floors ) {
-        const walls: Array< [ number, number ] > = [];
-        for ( const b of seg.blocks ) {
-            if ( b.z0 <= zc && zc < b.z1 ) {
-                const lo = Math.max( f.x0, b.x0 );
-                const hi = Math.min( f.x1, b.x1 );
-                if ( hi > lo ) walls.push( [ lo, hi ] );
-            }
-        }
-        walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
         let cursor = f.x0;
-        for ( const [ lo, hi ] of walls ) {
+        for ( const [ lo, hi ] of wallsOnSlice( seg, f, zc ) ) {
             if ( lo > cursor ) best = Math.max( best, lo - cursor );
             cursor = Math.max( cursor, hi );
         }

@@ -22,7 +22,7 @@ const LOOP_URL = '/audio/sfx/engine_loop.ogg';
 
 // Diff the live remote set into the emitter map: detach departed ships, attach positional loops to new ones.
 // Extracted from the effect to keep it simple (cognitive-complexity budget).
-function syncEmitters( remotes: Entity[], map: Map< number, THREE.PositionalAudio > ): void {
+function syncEmitters( remotes: readonly Entity[], map: Map< number, THREE.PositionalAudio > ): void {
     const present = new Set( remotes.map( ( e ) => e.id() ) );
     for ( const [ id, audio ] of map ) {
         if ( ! present.has( id ) ) {

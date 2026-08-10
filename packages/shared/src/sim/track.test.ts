@@ -151,7 +151,7 @@ test( 'racing-line slope stays under the derived least-capable cap (weave is thr
 // Curvature (slope-change/row) must stay under a cap derived from strafeAccel — the real harder-but-fair lever.
 test( 'racing-line curvature stays under the derived reversal cap', () => {
     for ( const seed of SEEDS ) {
-        let prev = weaveLineLanes( seed, 0 );
+        const prev = weaveLineLanes( seed, 0 );
         let prevSlope = weaveLineLanes( seed, 1 ) - prev;
         for ( let row = 2; row < TRACK_SEGMENTS * ZCELLS; row++ ) {
             const cur = weaveLineLanes( seed, row );
@@ -205,7 +205,8 @@ test( 'variable-width blocks appear (walls wider than one cell)', () => {
 test( 'no two gaps in a row and none in start-safe', () => {
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
-        for ( let i = 0; i < START_SAFE; i++ ) assert.ok( ! isHole( t.segmentAt( i ) ), `gap in start-safe seg ${ i }` );
+        for ( let i = 0; i < START_SAFE; i++ )
+            assert.ok( ! isHole( t.segmentAt( i ) ), `gap in start-safe seg ${ i }` );
         for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
             if ( isHole( t.segmentAt( i ) ) ) {
                 assert.ok( ! isHole( t.segmentAt( i + 1 ) ), `seed ${ seed } two gaps in a row at ${ i }` );

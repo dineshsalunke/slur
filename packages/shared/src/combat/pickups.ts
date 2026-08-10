@@ -1,9 +1,13 @@
 // S5 pickups — track-placed power-ups whose LAYOUT is a pure function of the room seed (exactly like the
-// track: hash2 + mulberry32, integer/float PRNG ops — NEVER Math.random). Both ends compute identical
-// positions, so geometry never syncs; only per-slot availability (RunState.pickupTaken) does. Pure.
+// track: deterministic hashing, NEVER Math.random). Both ends compute identical positions, so geometry never
+// syncs; only per-slot availability (RunState.pickupTaken) does. Pure.
+//
+// S6: pickups sit ON the racing line (`corridorCenterX`) of EVERY non-gap segment, not only rare 'plain' ones.
+// Procgen v2 made plain (wall-free) segments scarce (~10%), which starved the drop rate (~6–7/track). Placing
+// each pickup in the moving corridor keeps density high AND rewards threading the line — the corridor is never
+// walled, so the drop is always inside the ≥ MIN_LANE open band (grabbable, never buried in a cube).
 
-import { hash2, mulberry32 } from '../sim/rng.js';
-import { HALF_WIDTH, makeTrack, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../sim/track.js';
+import { corridorCenterX, isHole, makeTrack, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../sim/track.js';
 
 // A track-placed pickup slot. `id` is the stable slot key (its segment index) → keys the pickupTaken map.
 export interface Pickup {
@@ -16,20 +20,17 @@ export interface Pickup {
 export const PICKUP_SPACING = 3; // segments between pickup slots → a pickup roughly every PICKUP_SPACING·SEG_LEN (≈60u): dense drops.
 export const PICKUP_GRAB_RADIUS = 3; // units: fly within this in BOTH x and z to grab (grab-on-overlap).
 
-// Deterministic pickup layout: sample one candidate slot per PICKUP_SPACING segments after the start-safe
-// zone, but ONLY emit it if that segment is PLAIN (skip block/gap/finish) so every pickup is actually
-// grabbable — no bolt floating inside a lethal cube or over a gap. The track is derived from the SAME seed
-// (makeTrack is O(1) random-access + deterministic), so both ends compute an identical layout. Each slot is
-// jittered laterally within the corridor (a grab-radius clear of the rails), centred forward in its segment.
+// Deterministic pickup layout: one candidate slot per PICKUP_SPACING segments after the start-safe zone,
+// emitted for EVERY segment that has floor (skip only gaps/holes — nothing to grab over). Each pickup sits at
+// the corridor centre (the racing line) at the segment's mid-row, so it is always inside the open band — no
+// bolt floating inside a lethal cube. Both ends derive the same track (makeTrack is O(1) + deterministic).
 export function pickupLayout( seed: number ): Pickup[] {
     const track = makeTrack( seed );
     const out: Pickup[] = [];
     for ( let seg = START_SAFE; seg < TRACK_SEGMENTS; seg += PICKUP_SPACING ) {
-        if ( track.segmentAt( seg ).kind !== 'plain' ) continue; // hazard-aware: only plain segments are grabbable
-        const rnd = mulberry32( hash2( seed, seg ) );
-        const x = ( rnd() * 2 - 1 ) * ( HALF_WIDTH - PICKUP_GRAB_RADIUS ); // across the lanes, clear of the side walls
-        const z = seg * SEG_LEN + SEG_LEN / 2; // centred forward in the segment
-        out.push( { id: String( seg ), x, y: 0, z } );
+        if ( isHole( track.segmentAt( seg ) ) ) continue; // gap → no floor to stand on / grab over
+        const z = seg * SEG_LEN + SEG_LEN / 2; // centred forward in the segment (the mid row corridorCenterX samples)
+        out.push( { id: String( seg ), x: corridorCenterX( seed, seg ), y: 0, z } );
     }
     return out;
 }
