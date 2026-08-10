@@ -15,6 +15,7 @@
 import { MapSchema, Schema, type } from '@colyseus/schema';
 import type { ProjectileState } from './combat/projectiles.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
+import type { TrackDescriptor } from './sim/track-provider.js';
 import type { SimShip } from './sim/types.js';
 
 export const ROOM_NAME = 'run';
@@ -79,13 +80,58 @@ export class Projectile extends Schema implements ProjectileState {
     @type( 'float32' ) ttl = 0; // seconds remaining before expiry; server prunes at <= 0
 }
 
-// Room-wide state. `seed` drives deterministic scenery/track on every client (never sync geometry).
+// ADR-001 — the networked track spec. A nested sub-schema replacing the old flat `RunState.seed`: the room,
+// client loader, and scene now speak a TrackDescriptor (see sim/track-provider.ts), NOT a bare seed. Mirrors
+// the discriminated union on the wire (a flat record — Colyseus has no union type). `kind` selects the arm;
+// `seed`/`tier`/`length` are the procgen fields (tier/length RESERVED + UNWIRED, see ProcgenDescriptor);
+// `levelId` is reserved for the authored arm (ADR-002). Fields are APPEND-ONLY like any schema.
+export class TrackDescriptorState extends Schema {
+    @type( 'string' ) kind = 'procgen';
+    @type( 'uint32' ) seed = 0; // 0 = "not resolved yet" sentinel for the procgen arm; the server sets a real non-zero seed in onCreate
+    @type( 'uint8' ) tier = 0;
+    @type( 'uint16' ) length = 0;
+    @type( 'string' ) levelId = '';
+}
+
+// Wire ⇆ plain conversions kept HERE (schema.ts owns the wire format) so consumers never poke schema fields.
+// applyDescriptor: server writes a resolved TrackDescriptor into the synced sub-schema (onCreate).
+export function applyDescriptor( state: TrackDescriptorState, d: TrackDescriptor ): void {
+    state.kind = d.kind;
+    if ( d.kind === 'procgen' ) {
+        state.seed = d.seed;
+        state.tier = d.tier;
+        state.length = d.length;
+    } else {
+        state.levelId = d.levelId;
+    }
+}
+
+// toDescriptor: client reads the decoded sub-schema back into a plain TrackDescriptor for resolveTrack().
+export function toDescriptor( state: TrackDescriptorState ): TrackDescriptor {
+    if ( state.kind === 'procgen' ) {
+        return { kind: 'procgen', seed: state.seed, tier: state.tier, length: state.length };
+    }
+    return { kind: 'authored', levelId: state.levelId };
+}
+
+// Whether the server's descriptor has decoded to a usable value yet — the client loader waits for this before
+// building the track so client + server never disagree on geometry (procgen: a real non-zero seed, the same
+// sentinel the old `seed` field used; authored: a non-empty levelId).
+export function descriptorReady( state: TrackDescriptorState ): boolean {
+    return state.kind === 'procgen' ? state.seed !== 0 : state.levelId !== '';
+}
+
+// Room-wide state. `descriptor` drives the deterministic scenery/track on every client (never sync geometry).
 export class RunState extends Schema {
     // S4 4-phase lifecycle (see race/director.ts PHASE): 0=lobby · 1=countdown · 2=racing · 3=finished.
     // Default is lobby now (S2's default of 1 meant "running"; the enum was reassigned pre-launch).
     @type( 'uint8' ) phase = 0;
     @type( 'float32' ) elapsed = 0; // RACE clock: reset to 0 at GO, advanced ONLY during racing → finishTime/deadline are race-relative
-    @type( 'uint32' ) seed = 0; // 0 = "not seeded yet" sentinel; the server sets a real non-zero seed in onCreate. The client loader waits for this to decode (non-zero) before building the track, so client + server never disagree on geometry.
+    // ADR-001: replaces the old `@type('uint32') seed`. Clean removal + replacement at the SAME field slot is
+    // sanctioned by this file's header (LAN dev, pre-launch, client+server rebuilt atomically from this pkg —
+    // both ends re-derive identical field indices). The server fills it in onCreate; the client waits for
+    // descriptorReady() before decoding the track.
+    @type( TrackDescriptorState ) descriptor = new TrackDescriptorState();
     @type( { map: PlayerState } ) players = new MapSchema< PlayerState >();
 
     // ── S4 session lifecycle — APPENDED after `players` (declaration order = wire format). ──

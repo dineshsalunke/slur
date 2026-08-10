@@ -7,7 +7,8 @@
 // each pickup in the moving corridor keeps density high AND rewards threading the line — the corridor is never
 // walled, so the drop is always inside the ≥ MIN_LANE open band (grabbable, never buried in a cube).
 
-import { corridorCenterX, isHole, makeTrack, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../sim/track.js';
+import { corridorCenterX, isHole, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../sim/track.js';
+import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 
 // A track-placed pickup slot. `id` is the stable slot key (its segment index) → keys the pickupTaken map.
 export interface Pickup {
@@ -23,9 +24,13 @@ export const PICKUP_GRAB_RADIUS = 3; // units: fly within this in BOTH x and z t
 // Deterministic pickup layout: one candidate slot per PICKUP_SPACING segments after the start-safe zone,
 // emitted for EVERY segment that has floor (skip only gaps/holes — nothing to grab over). Each pickup sits at
 // the corridor centre (the racing line) at the segment's mid-row, so it is always inside the open band — no
-// bolt floating inside a lethal cube. Both ends derive the same track (makeTrack is O(1) + deterministic).
-export function pickupLayout( seed: number ): Pickup[] {
-    const track = makeTrack( seed );
+// bolt floating inside a lethal cube. Both ends derive the same track (resolveTrack is O(1) + deterministic).
+// Takes a TrackDescriptor (ADR-001): this is the exact seam ADR-002 re-cuts for authored levels. The procgen
+// branch reads d.seed for corridorCenterX (a small procgen-internal read the authored branch will replace).
+export function pickupLayout( descriptor: TrackDescriptor ): Pickup[] {
+    if ( descriptor.kind !== 'procgen' ) throw new Error( 'authored pickup layout not built (ADR-002+)' );
+    const seed = descriptor.seed;
+    const track = resolveTrack( descriptor );
     const out: Pickup[] = [];
     for ( let seg = START_SAFE; seg < TRACK_SEGMENTS; seg += PICKUP_SPACING ) {
         if ( isHole( track.segmentAt( seg ) ) ) continue; // gap → no floor to stand on / grab over

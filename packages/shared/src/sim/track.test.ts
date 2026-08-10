@@ -6,15 +6,17 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     ALL_CLASS_TUNINGS,
+    applyDescriptor,
     CELL,
     CURV_CAP,
     HALF_WIDTH,
     isHole,
     jumpReach,
     MIN_LANE,
-    makeTrack,
     mulberry32,
     passableCorridorWidth,
+    procgenDescriptor,
+    resolveTrack,
     SEG_LEN,
     type Segment,
     SHIP_CLASSES,
@@ -22,9 +24,16 @@ import {
     START_SAFE,
     TRACK_SEGMENTS,
     type Track,
+    TrackDescriptorState,
+    toDescriptor,
     weaveLineLanes,
     ZCELLS,
 } from '../index.js';
+
+// ADR-001: `makeTrack(seed)` was folded behind the provider. These geometry tests exercise the procgen output
+// from a bare seed, so a thin wrapper over resolveTrack(procgenDescriptor(seed)) keeps every seed-driven
+// assertion readable while proving the exact same geometry flows through the new seam.
+const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed ) );
 
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 0x0fffffff, 42, 99991, 0xffffffff ];
 // Half-width of the widest hull in the roster. Track fairness floors to the CLASS SET (the principle
@@ -55,13 +64,37 @@ test( 'segmentAt is stable across repeated calls (same track instance)', () => {
     }
 } );
 
-test( 'two makeTrack(seed) are byte-identical for every segment (client == server)', () => {
+test( 'two resolveTrack(procgenDescriptor) are byte-identical for every segment (client == server)', () => {
     for ( const seed of SEEDS ) {
         const a = makeTrack( seed );
         const b = makeTrack( seed );
         for ( let i = 0; i < N; i++ ) {
             assert.ok( segEqual( a.segmentAt( i ), b.segmentAt( i ) ), `seed ${ seed } seg ${ i } diverged` );
         }
+    }
+} );
+
+// ADR-001 provider gate: resolveTrack is deterministic (two builds from one descriptor are byte-identical)
+// and a procgen descriptor survives the wire round-trip (applyDescriptor → toDescriptor) unchanged, so the
+// server's descriptor and the client's decoded descriptor resolve to the SAME track.
+test( 'resolveTrack builds byte-identical tracks from the same descriptor (determinism)', () => {
+    for ( const seed of SEEDS ) {
+        const descriptor = procgenDescriptor( seed );
+        const a = resolveTrack( descriptor );
+        const b = resolveTrack( descriptor );
+        assert.equal( a.finishZ, b.finishZ, `seed ${ seed } finishZ diverged` );
+        for ( let i = 0; i < N; i++ ) {
+            assert.ok( segEqual( a.segmentAt( i ), b.segmentAt( i ) ), `seed ${ seed } seg ${ i } diverged` );
+        }
+    }
+} );
+
+test( 'a procgen descriptor round-trips through the wire schema unchanged', () => {
+    for ( const seed of SEEDS ) {
+        const descriptor = procgenDescriptor( seed );
+        const state = new TrackDescriptorState();
+        applyDescriptor( state, descriptor );
+        assert.deepEqual( toDescriptor( state ), descriptor, `seed ${ seed } descriptor did not round-trip` );
     }
 } );
 

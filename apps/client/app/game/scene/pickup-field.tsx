@@ -1,15 +1,15 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { pickupLayout, type RunState } from '@slur/shared';
+import { pickupLayout, type RunState, type TrackDescriptor } from '@slur/shared';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 // Track-placed power-up pickups: a deterministic archetype rendered as ONE instanced mesh. The layout is a
-// pure function of the room seed (pickupLayout — identical on every client; geometry is NEVER synced), so
-// positions are fixed at mount; only per-slot VISIBILITY changes, driven imperatively from state.pickupTaken.
-// Distinct emissive gold vs the cyan bolts. No useFrame + no React re-render — visibility toggles in a
-// subscription callback (r3f.md: bridge the not-reactive MapSchema through refs, never read it during render).
-export function PickupField( { room, seed }: { room: Room< RunState >; seed: number } ) {
-    const layout = useMemo( () => pickupLayout( seed ), [ seed ] ); // networked: same seed → same layout on all clients
+// pure function of the room TrackDescriptor (pickupLayout — identical on every client; geometry is NEVER
+// synced), so positions are fixed at mount; only per-slot VISIBILITY changes, driven imperatively from
+// state.pickupTaken. Distinct emissive gold vs the cyan bolts. No useFrame + no React re-render — visibility
+// toggles in a subscription callback (r3f.md: bridge the not-reactive MapSchema through refs, never in render).
+export function PickupField( { room, descriptor }: { room: Room< RunState >; descriptor: TrackDescriptor } ) {
+    const layout = useMemo( () => pickupLayout( descriptor ), [ descriptor ] ); // networked: same descriptor → same layout on all clients
     const indexById = useMemo( () => new Map( layout.map( ( p, i ) => [ p.id, i ] as const ) ), [ layout ] );
     const ref = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );

@@ -24,7 +24,7 @@ interface Slab {
 export function TubeWalls( { config, seed = 9999 }: { config: WallConfig; seed?: number } ) {
     const world = useWorld();
     const ref = useRef< THREE.InstancedMesh | null >( null );
-    const rng = useMemo( () => mulberry32( seed ), [ seed ] ); // networked: seed off room.state.seed → same walls every client
+    const rng = useMemo( () => mulberry32( seed ), [ seed ] ); // networked: seed off the room's procgen descriptor → same walls every client
     const span = useMemo( () => Math.ceil( config.count / 2 ) * config.spacing, [ config.count, config.spacing ] );
     const slabs = useMemo< Slab[] >(
         () =>

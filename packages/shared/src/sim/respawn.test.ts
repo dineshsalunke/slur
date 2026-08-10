@@ -10,10 +10,13 @@ import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT, type FlightTuning } from '../constants.js';
 import { emptyInput } from './input.js';
 import { simulate } from './step.js';
-import { makeTrack } from './track.js';
+import type { Track } from './track.js';
+import { procgenDescriptor, resolveTrack } from './track-provider.js';
 import { type SimShip, spawnShip } from './types.js';
 
 const t = DEFAULT_TUNING;
+// ADR-001: build a procgen track from a bare seed via the provider (makeTrack folded behind resolveTrack).
+const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed ) );
 const SEEDS = [ 1, 7, 13, 28, 42, 57 ]; // spread of layouts, incl. the seeds that kill a bot soonest
 const MAX_TICKS = 3600; // 60s — ample; every seed kills a non-dodging ship far sooner
 
