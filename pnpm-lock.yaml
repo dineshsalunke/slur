@@ -15,6 +15,9 @@ catalogs:
     '@react-three/postprocessing':
       specifier: ^3.0.4
       version: 3.0.4
+    '@types/node':
+      specifier: ^22
+      version: 22.20.1
     postprocessing:
       specifier: ^6.39.4
       version: 6.39.4
@@ -91,7 +94,7 @@ importers:
         specifier: ^8.3.0
         version: 8.3.0(react-router@8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@7.0.2)(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)(tsx@4.23.9))
       '@types/node':
-        specifier: ^22
+        specifier: 'catalog:'
         version: 22.20.1
       '@types/react':
         specifier: ^19.2.14
@@ -113,7 +116,7 @@ importers:
     dependencies:
       '@colyseus/core':
         specifier: ^0.17.47
-        version: 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(express@5.2.1)
+        version: 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(@pm2/io@6.1.0)(express@5.2.1)
       '@colyseus/ws-transport':
         specifier: ^0.17.13
         version: 0.17.13(@colyseus/core@0.17.47)(express@5.2.1)
@@ -124,6 +127,15 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
     devDependencies:
+      '@colyseus/sdk':
+        specifier: 'catalog:'
+        version: 0.17.43(@colyseus/core@0.17.47)(typescript@7.0.2)
+      '@colyseus/testing':
+        specifier: ^0.17.11
+        version: 0.17.11(@colyseus/core@0.17.47)(@colyseus/sdk@0.17.43(@colyseus/core@0.17.47)(typescript@7.0.2))(@colyseus/tools@0.17.20(@colyseus/core@0.17.47)(@colyseus/ws-transport@0.17.13))
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
       tsx:
         specifier: ^4.23.9
         version: 4.23.9
@@ -138,7 +150,7 @@ importers:
         version: 4.0.30(typescript@7.0.2)
     devDependencies:
       '@types/node':
-        specifier: ^22
+        specifier: 'catalog:'
         version: 22.20.1
       typescript:
         specifier: 'catalog:'
@@ -401,8 +413,23 @@ packages:
     resolution: {integrity: sha512-GeBB9uNrjG+BWa4/LAVyAHj65ll0WKLNjWDieKiphhmbfGXgQOcmvWVxKQc8KKu+n7f5Hmrwr6IEk9Dm2Y0Qgw==}
     engines: {node: '>= 22.x'}
 
+  '@colyseus/testing@0.17.11':
+    resolution: {integrity: sha512-WJ2jonjPhDbruCiKeHP9+Q27cimfP+ajSEH19pYf3/KtuM8RU85R6FF2dJ3cMBqEvKd2AzdSqUqlDP+bokOInA==}
+    engines: {node: '>= 22.x'}
+    peerDependencies:
+      '@colyseus/core': 0.17.x
+      '@colyseus/sdk': 0.17.x
+      '@colyseus/tools': 0.17.x
+
   '@colyseus/timer@2.0.3':
     resolution: {integrity: sha512-75MI7LfXQncibesa7W6FKWUc8YBcVI6jwBrDXOq1TlgYQXSMRv7a5WFPBdDKkP5Pht9IWpE2hyUb8B1DPrLYqg==}
+
+  '@colyseus/tools@0.17.20':
+    resolution: {integrity: sha512-FFtr35uYUyq3bC1xO6uNtCA1kcxDn86Ffa2gNQLulQytFyEi/XgH0c/ZT1W9u4Y1vOstgAaRX+V1e50CPEx7SA==}
+    hasBin: true
+    peerDependencies:
+      '@colyseus/core': 0.17.x
+      '@colyseus/ws-transport': 0.17.x
 
   '@colyseus/ws-transport@0.17.13':
     resolution: {integrity: sha512-5yjNoXKQLTGVAIu5u/x12DsF29cC7y1EIQL1uOS6vBhqymPioFQz++zgmer0W3M2h2iwZuM5rHdpujG/R4IUfg==}
@@ -634,6 +661,10 @@ packages:
 
   '@oxc-project/types@0.143.0':
     resolution: {integrity: sha512-u6JZdLBTLotrNC9Vd6vPssINdzcCzleKAH6EJKImQb7GtYvX5keN2dxkoK44stCc4tffE6QQRtZTXVSzsLUlWA==}
+
+  '@pm2/io@6.1.0':
+    resolution: {integrity: sha512-IxHuYURa3+FQ6BKePlgChZkqABUKFYH6Bwbw7V/pWU1pP6iR1sCI26l7P9ThUEB385ruZn/tZS3CXDUF5IA1NQ==}
+    engines: {node: '>=6.0'}
 
   '@react-router/dev@8.3.0':
     resolution: {integrity: sha512-XR+N2fEFOPjczYo2efc3/AOtosbSICCroLF/IxnZ6ErGBeBGRG6SqAso0SYoff0e18OA05qOyhJHFhXKMGIPRw==}
@@ -980,6 +1011,9 @@ packages:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
     engines: {node: '>= 0.6'}
 
+  async@2.6.4:
+    resolution: {integrity: sha512-mzo5dfJYwAn29PeiJ0zvwTo04zj8HDJj0Mn8TD7sno7q12prdbnasKJHhkm2c1LgrhlJ0teaea8860oxi51mGA==}
+
   babel-dead-code-elimination@1.0.12:
     resolution: {integrity: sha512-GERT7L2TiYcYDtYk1IpD+ASAYXjKbLTDPhBtYj7X1NuRMDTMtAx9kyBenub1Ev41lo91OHCKdmP+egTDmfQ7Ig==}
 
@@ -1072,6 +1106,15 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
+  debug@4.3.7:
+    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -1099,6 +1142,10 @@ packages:
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
+
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+    engines: {node: '>=12'}
 
   draco3d@1.5.7:
     resolution: {integrity: sha512-m6WCKt/erDXcw+70IJXnG7M3awwQPAsZvJGX5zY7beBqpELw6RDGkYVU0W43AFxye4pDZ5i2Lbyc/NNGqwjUVQ==}
@@ -1147,6 +1194,9 @@ packages:
   etag@1.8.1:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
+
+  eventemitter2@6.4.9:
+    resolution: {integrity: sha512-JEPTiaOt9f04oa6NOkc4aH+nVp5I3wEjpHbIPqfgCdD5v5bUzy7xQqwcVO2aDQgOWhI28da57HksMrzK9HlRxg==}
 
   exit-hook@5.1.0:
     resolution: {integrity: sha512-INjr2xyxHo7bhAqf5ong++GZPPnpcuBcaXUKt03yf7Fie9yWD7FapL4teOU0+awQazGs5ucBh7xWs/AD+6nhog==}
@@ -1228,6 +1278,10 @@ packages:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
     engines: {node: '>= 0.8'}
 
+  httpie@2.0.0-next.13:
+    resolution: {integrity: sha512-KbKOnq8wt0hVEfteYCSnEsPgzaWxcVc4qZ4OaDU9mVOYLRo3XChjWs3MiuRgFu5y+4JDo7sDKdKzkAn1ljQYFA==}
+    engines: {node: '>=10'}
+
   iconv-lite@0.7.3:
     resolution: {integrity: sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==}
     engines: {node: '>=0.10.0'}
@@ -1244,6 +1298,10 @@ packages:
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
+
+  is-core-module@2.16.2:
+    resolution: {integrity: sha512-evOr8xfXKxE6qSR0hSXL2r3sd7ALj8+7jQEUvPYcm5sgZFdJ+AYzT6yNmJenvIYQBgIGwfwz08sL8zoL7yq2BA==}
+    engines: {node: '>= 0.4'}
 
   is-promise@2.2.2:
     resolution: {integrity: sha512-+lP4/6lKUBfQjZ2pdxThZvLUAafmZb8OAxFb8XXtiQmS35INgr85hdOGoEs124ez1FCnZJt6jau/T+alh58QFQ==}
@@ -1370,6 +1428,10 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  lru-cache@6.0.0:
+    resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
+    engines: {node: '>=10'}
+
   maath@0.10.8:
     resolution: {integrity: sha512-tRvbDF0Pgqz+9XUa4jjfgAQ8/aPKmQdWXilFu2tMy4GWj4NOsx99HlULO4IeREfbO3a0sA145DZYyvXPkybm0g==}
     peerDependencies:
@@ -1409,6 +1471,9 @@ packages:
   mime-types@3.0.2:
     resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
     engines: {node: '>=18'}
+
+  module-details-from-path@1.0.4:
+    resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -1462,6 +1527,9 @@ packages:
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
     engines: {node: '>=8'}
+
+  path-parse@1.0.7:
+    resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
 
   path-to-regexp@8.4.2:
     resolution: {integrity: sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA==}
@@ -1555,6 +1623,15 @@ packages:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
 
+  require-in-the-middle@5.2.0:
+    resolution: {integrity: sha512-efCx3b+0Z69/LGJmm9Yvi4cqEdxnoGnxYxGxBghkkTTFeXRtTCmmhO0AnAfHz59k957uTSuy8WaHqOs8wbYUWg==}
+    engines: {node: '>=6'}
+
+  resolve@1.22.12:
+    resolution: {integrity: sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==}
+    engines: {node: '>= 0.4'}
+    hasBin: true
+
   rolldown@1.2.3:
     resolution: {integrity: sha512-rn9wpmxplLf7NLNyCk9FyWh3FM43DbY8jOzCdEPzH7uflhTftRbCEpqi6Ly2osgoU8OwObtmavMbWLaWy4LX7A==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -1575,6 +1652,11 @@ packages:
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
+    hasBin: true
+
+  semver@7.5.4:
+    resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
+    engines: {node: '>=10'}
     hasBin: true
 
   semver@7.8.5:
@@ -1604,6 +1686,9 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
 
+  shimmer@1.2.1:
+    resolution: {integrity: sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw==}
+
   side-channel-list@1.0.1:
     resolution: {integrity: sha512-mjn/0bi/oUURjc5Xl7IaWi/OJJJumuoJFQJfDDyO46+hBWsfaVM65TBHq2eoZBhzl9EchxOijpkbRC8SVBQU0w==}
     engines: {node: '>= 0.4'}
@@ -1619,6 +1704,9 @@ packages:
   side-channel@1.1.1:
     resolution: {integrity: sha512-6x6dK6zJdpTzF4sQeNYxwtvBzf6Eg4GtlesS94HOvTudUeyK2WXAaIfmDgsyslYrRBeFIlsi54AYsFGUuhmvrQ==}
     engines: {node: '>= 0.4'}
+
+  signal-exit@3.0.7:
+    resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -1636,6 +1724,10 @@ packages:
   statuses@2.0.2:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
+
+  supports-preserve-symlinks-flag@1.0.0:
+    resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
+    engines: {node: '>= 0.4'}
 
   suspend-react@0.1.3:
     resolution: {integrity: sha512-aqldKgX9aZqpoDp3e8/BZ8Dm7x1pJl+qI3ZKxDN0i/IQTWUwBx/ManmlVJ3wowqbno6c2bmiIfs+Um6LbsjJyQ==}
@@ -1675,6 +1767,9 @@ packages:
 
   troika-worker-utils@0.52.0:
     resolution: {integrity: sha512-W1CpvTHykaPH5brv5VHLfQo9D1OYuo0cSBEUQFFT/nBUzM8iD6Lq2/tgG/f1OelbAS1WtaTPQzE5uM49egnngw==}
+
+  tslib@1.9.3:
+    resolution: {integrity: sha512-4krF8scpejhaOgqzBEcGM7yDIEfi0/8+8zDRZhNZZ2kjmHJ4hv3zCbQWxoJGz1iw5U0Jl0nma13xzHXcncMavQ==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -1801,6 +1896,9 @@ packages:
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
+
+  yallist@4.0.0:
+    resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
 
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
@@ -2073,7 +2171,7 @@ snapshots:
 
   '@colyseus/clock@2.0.3': {}
 
-  '@colyseus/core@0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(express@5.2.1)':
+  '@colyseus/core@0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(@pm2/io@6.1.0)(express@5.2.1)':
     dependencies:
       '@colyseus/better-call': 1.3.3
       '@colyseus/greeting-banner': 3.0.8
@@ -2086,6 +2184,7 @@ snapshots:
       nanoid: 3.3.17
     optionalDependencies:
       '@colyseus/ws-transport': 0.17.13(@colyseus/core@0.17.47)(express@5.2.1)
+      '@pm2/io': 6.1.0
       express: 5.2.1
     transitivePeerDependencies:
       - supports-color
@@ -2109,7 +2208,7 @@ snapshots:
       tslib: 2.8.1
       ws: 8.21.2
     optionalDependencies:
-      '@colyseus/core': 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(express@5.2.1)
+      '@colyseus/core': 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(@pm2/io@6.1.0)(express@5.2.1)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -2120,13 +2219,29 @@ snapshots:
     dependencies:
       '@standard-schema/spec': 1.1.0
 
+  '@colyseus/testing@0.17.11(@colyseus/core@0.17.47)(@colyseus/sdk@0.17.43(@colyseus/core@0.17.47)(typescript@7.0.2))(@colyseus/tools@0.17.20(@colyseus/core@0.17.47)(@colyseus/ws-transport@0.17.13))':
+    dependencies:
+      '@colyseus/core': 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(@pm2/io@6.1.0)(express@5.2.1)
+      '@colyseus/sdk': 0.17.43(@colyseus/core@0.17.47)(typescript@7.0.2)
+      '@colyseus/tools': 0.17.20(@colyseus/core@0.17.47)(@colyseus/ws-transport@0.17.13)
+      httpie: 2.0.0-next.13
+
   '@colyseus/timer@2.0.3':
     dependencies:
       '@colyseus/clock': 2.0.3
 
+  '@colyseus/tools@0.17.20(@colyseus/core@0.17.47)(@colyseus/ws-transport@0.17.13)':
+    dependencies:
+      '@colyseus/core': 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(@pm2/io@6.1.0)(express@5.2.1)
+      '@colyseus/ws-transport': 0.17.13(@colyseus/core@0.17.47)(express@5.2.1)
+      '@pm2/io': 6.1.0
+      dotenv: 17.4.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@colyseus/ws-transport@0.17.13(@colyseus/core@0.17.47)(express@5.2.1)':
     dependencies:
-      '@colyseus/core': 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(express@5.2.1)
+      '@colyseus/core': 0.17.47(@colyseus/better-call@1.3.3)(@colyseus/schema@4.0.30(typescript@7.0.2))(@colyseus/ws-transport@0.17.13)(@pm2/io@6.1.0)(express@5.2.1)
       '@types/ws': 8.18.1
       ws: 8.21.2
     optionalDependencies:
@@ -2262,6 +2377,19 @@ snapshots:
     optional: true
 
   '@oxc-project/types@0.143.0': {}
+
+  '@pm2/io@6.1.0':
+    dependencies:
+      async: 2.6.4
+      debug: 4.3.7
+      eventemitter2: 6.4.9
+      require-in-the-middle: 5.2.0
+      semver: 7.5.4
+      shimmer: 1.2.1
+      signal-exit: 3.0.7
+      tslib: 1.9.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@react-router/dev@8.3.0(react-router@8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@7.0.2)(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)(tsx@4.23.9))':
     dependencies:
@@ -2529,6 +2657,10 @@ snapshots:
       mime-types: 3.0.2
       negotiator: 1.0.0
 
+  async@2.6.4:
+    dependencies:
+      lodash: 4.18.1
+
   babel-dead-code-elimination@1.0.12:
     dependencies:
       '@babel/core': 7.29.7
@@ -2623,6 +2755,10 @@ snapshots:
 
   csstype@3.2.3: {}
 
+  debug@4.3.7:
+    dependencies:
+      ms: 2.1.3
+
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
@@ -2636,6 +2772,8 @@ snapshots:
       webgl-constants: 1.1.1
 
   detect-libc@2.1.2: {}
+
+  dotenv@17.4.2: {}
 
   draco3d@1.5.7: {}
 
@@ -2695,6 +2833,8 @@ snapshots:
   escape-html@1.0.3: {}
 
   etag@1.8.1: {}
+
+  eventemitter2@6.4.9: {}
 
   exit-hook@5.1.0: {}
 
@@ -2801,6 +2941,8 @@ snapshots:
       statuses: 2.0.2
       toidentifier: 1.0.1
 
+  httpie@2.0.0-next.13: {}
+
   iconv-lite@0.7.3:
     dependencies:
       safer-buffer: 2.1.2
@@ -2812,6 +2954,10 @@ snapshots:
   inherits@2.0.4: {}
 
   ipaddr.js@1.9.1: {}
+
+  is-core-module@2.16.2:
+    dependencies:
+      hasown: 2.0.4
 
   is-promise@2.2.2: {}
 
@@ -2898,6 +3044,10 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
+  lru-cache@6.0.0:
+    dependencies:
+      yallist: 4.0.0
+
   maath@0.10.8(@types/three@0.185.4)(three@0.185.1):
     dependencies:
       '@types/three': 0.185.4
@@ -2925,6 +3075,8 @@ snapshots:
   mime-types@3.0.2:
     dependencies:
       mime-db: 1.54.0
+
+  module-details-from-path@1.0.4: {}
 
   ms@2.1.3: {}
 
@@ -2971,6 +3123,8 @@ snapshots:
   parseurl@1.3.3: {}
 
   path-key@3.1.1: {}
+
+  path-parse@1.0.7: {}
 
   path-to-regexp@8.4.2: {}
 
@@ -3050,6 +3204,21 @@ snapshots:
 
   require-from-string@2.0.2: {}
 
+  require-in-the-middle@5.2.0:
+    dependencies:
+      debug: 4.4.3
+      module-details-from-path: 1.0.4
+      resolve: 1.22.12
+    transitivePeerDependencies:
+      - supports-color
+
+  resolve@1.22.12:
+    dependencies:
+      es-errors: 1.3.0
+      is-core-module: 2.16.2
+      path-parse: 1.0.7
+      supports-preserve-symlinks-flag: 1.0.0
+
   rolldown@1.2.3:
     dependencies:
       '@oxc-project/types': 0.143.0
@@ -3088,6 +3257,10 @@ snapshots:
 
   semver@6.3.1: {}
 
+  semver@7.5.4:
+    dependencies:
+      lru-cache: 6.0.0
+
   semver@7.8.5: {}
 
   send@1.2.1:
@@ -3125,6 +3298,8 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
+  shimmer@1.2.1: {}
+
   side-channel-list@1.0.1:
     dependencies:
       es-errors: 1.3.0
@@ -3153,6 +3328,8 @@ snapshots:
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
 
+  signal-exit@3.0.7: {}
+
   source-map-js@1.2.1: {}
 
   stats-gl@2.4.2(@types/three@0.185.4)(three@0.185.1):
@@ -3163,6 +3340,8 @@ snapshots:
   stats.js@0.17.0: {}
 
   statuses@2.0.2: {}
+
+  supports-preserve-symlinks-flag@1.0.0: {}
 
   suspend-react@0.1.3(react@19.2.8):
     dependencies:
@@ -3204,6 +3383,8 @@ snapshots:
       three: 0.185.1
 
   troika-worker-utils@0.52.0: {}
+
+  tslib@1.9.3: {}
 
   tslib@2.8.1: {}
 
@@ -3298,6 +3479,8 @@ snapshots:
   ws@8.21.2: {}
 
   yallist@3.1.1: {}
+
+  yallist@4.0.0: {}
 
   zustand@4.5.7(@types/react@19.2.18)(react@19.2.8):
     dependencies:

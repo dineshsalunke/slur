@@ -16,13 +16,13 @@
         "build": "tsc -b",
         "dev": "tsc -b --watch --preserveWatchOutput",
         "typecheck": "tsc -b",
-        "test": "tsc -p tsconfig.test.json && node --test \"test-dist/**/*.test.js\""
+        "test": "rm -rf test-dist && tsc -p tsconfig.test.json && node --test \"test-dist/**/*.test.js\""
     },
     "dependencies": {
         "@colyseus/schema": "catalog:"
     },
     "devDependencies": {
-        "@types/node": "^22",
+        "@types/node": "catalog:",
         "typescript": "catalog:"
     }
 }

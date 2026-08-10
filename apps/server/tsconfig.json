@@ -8,5 +8,8 @@
         "outDir": "dist"
     },
     "references": [ { "path": "../../packages/shared" } ],
-    "include": [ "src" ]
+    "include": [ "src" ],
+    // Tests compile via tsconfig.test.json (they need node types + the test-only deps). Keeping them out of
+    // the lib build means dist/ never carries test code or a dev-only dependency edge.
+    "exclude": [ "src/**/*.test.ts" ]
 }

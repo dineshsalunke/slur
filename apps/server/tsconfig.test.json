@@ -1,0 +1,15 @@
+{
+    // Test-only compile: adds node types (for node:test / node:assert) that the lib build omits, and picks
+    // up the *.test.ts files tsconfig.json excludes. Emits to test-dist/ (gitignored), run via `node --test`.
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "composite": false,
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
+        "rootDir": "src",
+        "outDir": "test-dist",
+        "types": [ "node" ],
+        "noEmit": false
+    },
+    "include": [ "src" ]
+}
