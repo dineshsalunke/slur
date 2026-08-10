@@ -62,9 +62,15 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 ## 7. Non-goals (v1)
 Dynamic adaptive music engine, voice-over/announcer (maybe later — an LCARS "computer" announcer would be *chef's kiss*), per-surface footstep-style detail.
 
-## 8. OPEN QUESTIONS
-1. **Music sourcing** — royalty-free/CC packs vs commissioned/generated? (Lean CC.)
-2. **Layered stems vs single loop** for intensity?
-3. **Audio tech** — three.js `PositionalAudio` only, or add Howler for buses/ducking?
-4. **Announcer** — add an LCARS "computer" voice for events, or stay SFX-only for v1?
-5. **Threat telegraph timing** — how much lead time on incoming-bolt warning to be fair but tense?
+## 8. OPEN QUESTIONS → RESOLVED (2026-08-10)
+1. **Music sourcing** — **CC-BY accepted:** in-run = Kevin MacLeod *"Neon Laser Horizon"* (CC-BY, one credit
+   line); lobby idle = The Cynic Project *"Calm Ambient 1/2"* (CC0). SFX backbone = **Kenney CC0** packs
+   (Sci-Fi / Interface / Digital / Impact) + a few Freesound CC0 one-shots → the SFX layer is zero-attribution.
+2. **Layered stems vs single loop** — **single loop first** (add intensity layers later only if it feels flat).
+3. **Audio tech** — **three.js `PositionalAudio` only for v1** (no Howler); revisit only if bus/ducking needs it.
+4. **Announcer** — **SFX-only for v1** (an LCARS "computer" voice is a maybe-later, per §7 non-goals).
+5. **Threat telegraph timing** — still a **feel-gate** tune (start ~0.6–0.8 s lead; adjust in playtest).
+
+*Asset shortlist + exact licenses live in `.claude/phases/2026-08-10-s6-identity.md` (audio sourcing block) →
+folded into a `CREDITS.md` at Implement. Engine hum is **synthesized** (no asset). The two aiff picks must be
+transcoded — `decodeAudioData` needs mp3/ogg/wav.*

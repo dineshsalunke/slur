@@ -56,6 +56,15 @@ React Router (SPA)
   - Colyseus `onStateChange` / schema callbacks feed authoritative snapshots into the ECS.
   - Systems interpolate/predict and mutate entity transforms.
   - R3F reads entity transforms in `useFrame` via **refs/instancing — no per-frame React re-renders** (see `conventions/ecs.md`, `r3f.md`).
+- **(S6) Audio subsystem — client-local, OUTSIDE React.** The `AudioContext` + master/duck buses live on a
+  **module singleton** (never a `useEffect`-owned resource — the S2 lifetime bug), resumed on the first user
+  gesture. SFX bind to ECS/game events (S5's `usePowerUp` / `'hit'` / `stunTimer` edge / pickup grab + the
+  threat HUD); positional panning via three.js `PositionalAudio` (camera = listener), read in `useFrame`.
+  Engine hum = synthesized oscillator (pitch ∝ speed); discrete SFX = CC0/CC-BY samples. See `docs/AUDIO.md`.
+- **(S6) Front-of-house over live 3D.** The landing (`/`) renders the ambient **Grid-Void** scene
+  (`scene/environment.tsx`) behind a de-rounded neon UI; the lobby likewise overlays the live scene. *(The
+  `/host`,`/join`,`/run`,`/solo` routes in the diagram above are historical — S4 collapsed flow into `/` +
+  `/game/:roomId` phase-overlays; `/solo` was removed in S6.)*
 
 ## 4. Simulation model
 
@@ -66,6 +75,14 @@ React Router (SPA)
 - Client renders at display rate (60+), **interpolating** (~50–100 ms delay; linear pos / slerp rot) between authoritative snapshots for remote ships.
 - **Local player:** client-side prediction from local input + **server reconciliation** (`lastProcessedInput` seq). On LAN this can start interpolate-only and add prediction if felt needed — see `netcode.md` "Pragmatic Baseline for LAN".
 - **Deterministic track:** server sends a **seed** (in room state); both ends generate identical geometry from it → never sync track tile-by-tile, only seed + progression params.
+- **(S6) Track generator v2 — coherent weave + width variety** (planned; full plan in
+  `.claude/phases/2026-08-10-procgen-weave-width-DRAFT.md`). Replaces the IID per-segment scatter with a
+  hash-noise **carved racing-line + noise-walls** model (new trig-free `sim/noise.ts`: value-noise + smoothstep
+  + triangle-wave), keeping `segmentAt(i)` **O(1) random-access** (endless Survival stays free). Weave
+  density/challenge rise via a **derived slope AND curvature cap** (curvature = the reversal-rate the
+  least-capable class can still thread — the insight the slope-only prior missed); **variable block widths**
+  fall out free + **fair-by-construction** once a `≥MIN_LANE` corridor is carved. `Segment`/`Block` shapes
+  unchanged → renderer + collision untouched; the fairness assert becomes per-z-slice.
 - **Lag compensation deferred**, but server keeps a cheap per-ship position-history ring buffer so it's a drop-in later.
 
 ## 5. Networked state (Colyseus Schema) — AS-BUILT through S4 (APPEND-ONLY: declaration order = wire format)
@@ -114,7 +131,7 @@ The fixed loop switches on `phase` (S4):
 - **lobby / finished:** idle — ships hold pose.
 - Host `start`/`restart` + ship/colour picks (lobby-only) are **messages**, validated server-side (host + phase).
 - **(S5) — AS-BUILT:** `stepWorld` (runs after `stepRace`) advances bolts (shared `stepProjectiles`) → owner-immune
-  AABB `boltHits` → victim `stunTimer` + one-shot `broadcast('hit')` → prune; pickup grab-on-overlap → `heldPower` +
+  AABB `boltHits` → victim `stunTimer` (= `STUN_SECONDS × (1 − class armour)`, S6 sidegrade) + one-shot `broadcast('hit')` → prune; pickup grab-on-overlap → `heldPower` +
   server-plain respawn timer; `USE_POWERUP` message spawns a bolt from the authoritative pose; `clearCombat` on each
   race boundary. **(S7 Survival)** advance difficulty (speed/hazard density) by distance.
 - Emit patch (`patchRate` ~20 Hz).

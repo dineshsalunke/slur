@@ -11,7 +11,8 @@ but are cheap (few materials, lots of instancing).
 
 **Franchise inspiration:**
 - **TRON** — the grid, light-cycle trails, glowing edges, *derezz* dissolve on death, high-contrast neon on black. This is the core visual language.
-- **Star Trek** — sleek hopeful hardware, warp/energy motifs, and especially **LCARS** (curved black panels, warm amber/purple/blue blocks, confident type) as the HUD/menu language. Keeps the neon from feeling grungy — clean, not cyberpunk-dirty.
+- **Star Trek** — sleek hopeful hardware, warp/energy motifs, and **LCARS**'s *information design* (colour-coded panel blocks, confident "computer" type) as the HUD/menu language. Keeps the neon from feeling grungy — clean, not cyberpunk-dirty.
+- **Aesthetic formula (locked 2026-08-10 — user direction):** **TRON supplies colour + material** (neon-on-black, HDR emissive, glow/bloom); **Star Trek + Star Wars supply shape + geometry — but *de-rounded*.** Take Trek's clean panel logic and Wars' hard-edged industrial paneling/greebles, and **subtract the roundness**: chamfered/angular corners, trapezoidal & hex panels — **NOT** LCARS's signature curves. Net: keep LCARS's *information design*, drop its rounded silhouette.
 
 Anchor reference: **cuberun** (the neon tunnel). Motion reference: **SkyRoads** (floating ribbon track in
 space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
@@ -24,6 +25,10 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 - **Base:** near-black background (#05060a-ish), subtle starfield/grid.
 - **Player ships:** each player gets a distinct **high-chroma emissive hue** (color-pick on join) — this is
   the primary way you tell ships apart at speed. Reserve a palette of ~12 maximally-distinct, colorblind-aware hues.
+- **Signature duo (locked 2026-08-10):** the brand/identity pair is **cyan + marigold-amber ("gainda",
+  `#00e5ff` × `#ff9f1c`)** — cyan = local/primary, marigold = the warm co-accent — replacing the earlier
+  cyan+magenta (teal-orange reads warmer + higher-contrast). **Magenta demotes to just one of the ~12
+  player hues.** Default 2-player contrast = cyan (local) / marigold (remote).
 - **Track:** cool neutral glow (cyan/violet) so player hues pop against it.
 - **Pickups:** coded by category — Offensive (red/orange), Defensive (green/cyan), Utility (yellow), Chaos (magenta).
 - **Danger:** hazards/walls flash a consistent warning hue (hot red/white) — readability over prettiness.
@@ -35,6 +40,7 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 - **Track:** a ribbon/tube of glowing edges and lane lines; hazards are bold primitive forms (blocks, gaps, gates).
 - **Pickups:** floating platonic/geometric icons that spin — shape encodes type, color encodes category.
 - Minimal texture detail; the "detail" is light, motion, and trails.
+- **Geometry = de-rounded Trek/Wars (locked 2026-08-10):** panels, ship silhouettes, and HUD frames use **chamfered/angular corners and trapezoidal/hex forms**, not rounded LCARS curves. Hard edges + cut corners read as "spaceship console"; **roundness is reserved for *lights*** (status pips, glows, colour dots) — never structural panels. See §1 aesthetic formula.
 
 ## 5. VFX (the juice)
 - **Bloom** (postprocessing EffectComposer) — the signature. Emissive materials + selective bloom on ships/pickups/track lines. See `conventions/r3f.md`.
@@ -52,7 +58,7 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 - **Death:** TRON derezz, then **spectator** follow-cam on the pack / cycle players.
 
 ## 7. UI / HUD — **LCARS-flavored**
-- **LCARS as the interface language:** curved-corner black panels, warm amber/purple/blue color blocks, confident sans type, "computer" chrome — applied to lobby/host/join and the in-game HUD. Star Trek gives us a ready-made, instantly-readable, *fun* UI kit that reads as "spaceship cockpit."
+- **LCARS-*derived*, de-rounded interface language (refined 2026-08-10):** take LCARS's *information design* — colour-coded panel blocks, confident "computer" type, instantly-readable chrome — but render it **angular, not rounded** (chamfered/cut corners, trapezoidal blocks per §4), matching the TRON×Trek/Wars formula in §1. Applied to lobby/host/join + the in-game HUD. Reads as "spaceship cockpit" without cloning Trek. *(A light-LCARS-rounded mockup was tried 2026-08-10 and rejected for being too soft — de-rounded is the call.)*
 - HUD content: speed/fuel, held power-up, position/alive-count, mini threat indicators (incoming bolt/mine). **(S5 built:** `heldPower` chip + directional threat-warning HUD; dev stun/held/bolt readout. Speed/position/alive-count still to do.)
 - Diegetic-lite and minimal — LCARS styling, but never clutter the flight view; readable in peripheral vision at speed.
 - Death = **TRON derezz** dissolve; respawn = materialize-in.
@@ -98,4 +104,12 @@ space. This section **persists that research** — it is INPUT for S6, not locke
 - **OQ4 (heavy post):** the synthwave set (Bloom/Vignette/ChromaticAberration/Noise/Scanline) is confirmed in `@react-three/postprocessing` and composes cheaply — but it directly threatens **combat legibility** (bolts + 12 ships wash to white). Gate it behind a **comfort/intensity slider** (§6/§7); consider **SelectiveBloom** now that combat is on screen. Verify exotic effects (DoF/N8AO/GodRays) against the pinned `3.0.4` before use.
 - **OQ5 (perf budgets):** set after a first 12-ship test; drei `<PerformanceMonitor>` + `<AdaptiveDpr>` as insurance.
 
-*Key files an S6 art pass would touch: `net-canvas.tsx`, `game-canvas.tsx`, `scene/track-view.tsx`, `scene/scenery.tsx`, `scene/ship-model.tsx`, `colors.ts` (+ `@slur/shared` `COLOR_COUNT`), `scene/explosions.tsx`; new `scene/environment.tsx`, `scene/trails.tsx`.*
+*Key files an S6 art pass would touch: `net-canvas.tsx`, `scene/track-view.tsx`, `scene/scenery.tsx`, `scene/ship-model.tsx`, `colors.ts` (+ `@slur/shared` `COLOR_COUNT`), `scene/explosions.tsx`; new `scene/environment.tsx` (built — env-lab), `scene/trails.tsx`.*
+
+**S6 direction LOCKED (2026-08-10):** aesthetic = **TRON colour/material × Trek-Wars geometry, de-rounded**
+(§1/§4/§7); palette = **cyan `#00e5ff` × marigold `#ff9f1c` ("gainda")**, magenta → one player hue; world =
+**hybrid open ribbon + distant non-collidable tube-walls** (resolves OQ2); post = **conservative** — bloom + fog
++ starfield + gradient only, chromatic-aberration / scanline / vignette **DEFERRED** to a post-12-ship
+legibility gate (resolves OQ4); **`COLOR_COUNT` 8→12**, value-staggered / max-pairwise auto-assign (resolves
+OQ3). Chosen environment prototype = **Grid Void** (`scene/environment.tsx`; view at `/env-lab`, keys 1/2/3).
+Integrate into the net canvas + landing during S6 Implement; retune wall density/height + bloom at the gate.

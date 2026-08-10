@@ -169,10 +169,16 @@ takes off later and lands earlier, so it clears gaps more forgivingly), weave sk
 models (Comet, Interceptor) are naturally twitchy at gaps; the long ones (Phantom, Freighter) tank them — the
 models were assigned to *match* the intended identity, so the geometry does the balancing.
 
-**Armour / combat (S5+):** `armour` (hits-to-disrupt) and `powerAffinity` (pickup slots / potency) stay per-class
-data. A large hitbox makes track hazards deadlier, so "armour isn't free"; armour resists *combat* disruption but
-**never** a fall into a gap. Combat-specialist niches (the old Gunship/Scout ideas) fold into the S5 pickup/combat
-layer rather than adding models now.
+**Armour / combat (S6 — LOCKED 2026-08-10):** `armour` is a per-class **stun-duration multiplier**
+(`effectiveStun = STUN_SECONDS × (1 − armour)`), living in the shared `FlightTuning` (resolved both ends so the
+predicted `stunTimer` stays byte-identical), and it is a **sidegrade, NOT a free stat**: the axis is
+**agility ⊥ armour** — agile ships (Interceptor/Comet) are **fragile** (long stun), heavy ships
+(Freighter/Phantom) are **tanky** (short stun). Agile dodges bolts easily but pays when caught; heavy eats bolts
+but shrugs them off. Armour resists *combat* disruption but **never** a fall into a gap (a large hitbox still
+makes track hazards deadlier — armour isn't free). **`powerAffinity` DEFERRED** until the pickup roster grows
+past one item (meaningless over Bolt alone). Combat-specialist niches (old Gunship/Scout ideas) fold into the S5
+pickup layer, not new models. *Chose the multiplier over an N-hits-to-stun threshold (rejected: adds per-ship
+hitpoint state for no gain while bolts are single-shot).*
 
 *OPEN: exact flight values (tune in playtest); class locked-per-round vs swappable on respawn; whether any class
 gets a unique active ability vs stats-only. **Freighter length 2.16c is the extreme** — may cap ~1.5c (minor tail
