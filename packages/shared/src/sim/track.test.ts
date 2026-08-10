@@ -27,6 +27,9 @@ import {
 } from '../index.js';
 
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 0x0fffffff, 42, 99991, 0xffffffff ];
+// Widest hull in the roster. Track fairness floors to the CLASS SET (the same principle ship-classes.ts
+// states), so derive this instead of hard-coding: add a wider ship and the FIT floor starts guarding it.
+const WIDEST_HULL = 2 * Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfW ) );
 const N = TRACK_SEGMENTS + 4; // include a couple of finish segments
 
 function segEqual( a: Segment, b: Segment ): boolean {
@@ -276,7 +279,7 @@ function intersectIntervals(
         }
     return out;
 }
-test( 'the open corridor is always laterally REACHABLE (no unavoidable L-shaped dead-ends)', () => {
+test( 'the open corridor is always laterally REACHABLE and wide enough for the widest hull', () => {
     const reachUnits = SLOPE_CAP * CELL; // how far the least-capable ship can strafe per forward row (world x)
     const full: Array< [ number, number ] > = [ [ -HALF_WIDTH, HALF_WIDTH ] ];
     for ( const seed of SEEDS ) {
@@ -297,6 +300,16 @@ test( 'the open corridor is always laterally REACHABLE (no unavoidable L-shaped 
                 assert.ok(
                     reach.length > 0,
                     `seed ${ seed } seg ${ i } row ${ r }: reachable corridor collapsed — unavoidable dead-end`,
+                );
+                // FIT, on the REACHABLE corridor specifically. Non-empty is not passable: a 0.1u sliver
+                // satisfies the check above while no hull fits through it. The per-slice MIN_LANE test does
+                // not cover this either — it measures the WIDEST corridor in a slice, which need not be the
+                // reachable one. Asserting both together is the floor neither check makes alone.
+                const widestReach = Math.max( ...reach.map( ( [ a, b ] ) => b - a ) );
+                assert.ok(
+                    widestReach >= WIDEST_HULL,
+                    `seed ${ seed } seg ${ i } row ${ r }: reachable corridor ${ widestReach.toFixed( 2 ) }u ` +
+                        `is narrower than the widest hull ${ WIDEST_HULL.toFixed( 2 ) }u`,
                 );
             }
         }
