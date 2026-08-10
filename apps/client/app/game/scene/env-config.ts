@@ -142,7 +142,7 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
             maxHeight: 40,
             spacing: 40,
             count: 60,
-            color: '#00e5ff',
+            color: '#c8d0d8', // TRON retone: gray-white canyon walls (structure, not accent) to match the track
             intensity: 2.6,
             yBase: 0,
         },

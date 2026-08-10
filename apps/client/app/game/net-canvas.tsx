@@ -19,7 +19,6 @@ import { FinishGate } from './scene/finish-gate';
 import { HitSpark } from './scene/hit-spark';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
-import { Scenery } from './scene/scenery';
 import { Ships } from './scene/ship';
 import { TrackView } from './scene/track-view';
 
@@ -107,7 +106,7 @@ export function NetCanvas( { seed }: { seed: number } ) {
                      canyon-walls from one config. It OWNS the background <color> and <fog>, so the old
                      hardcoded '#05060a' background is gone. Post-FX stays OUT of here — the single global
                      <Bloom> below is driven by GRID_VOID.bloom. seed is the shared track seed → identical
-                     walls/scenery on every client. Kept free of reactive state: a module constant, no useState. */ }
+                     walls on every client. Kept free of reactive state: a module constant, no useState. */ }
                 <Environment config={ GRID_VOID } seed={ seed } />
                 <ambientLight intensity={ 1 } />
                 <NetLoop predictor={ predictor } track={ track } />
@@ -117,7 +116,6 @@ export function NetCanvas( { seed }: { seed: number } ) {
                 <HitSpark />
                 <TrackView track={ track } />
                 <FinishGate track={ track } />
-                <Scenery count={ 50 } seed={ seed } />
                 <PickupField room={ room } seed={ seed } />
                 <ProjectileField />
                 <Ships />
