@@ -90,9 +90,12 @@ Before you open a pull request, all of these must pass from the repository root:
 ```
 pnpm typecheck    # tsc across shared/server/client
 pnpm lint         # biome + ls-lint
-pnpm --filter @slur/shared test   # the shared sim tests
+pnpm test         # the shared sim tests + the Colyseus room tests
 pnpm build        # topological build, catches bad imports
 ```
+
+`pnpm test` runs every package that declares a `test` script. Do **not** substitute
+`pnpm --filter @slur/shared test` — that skips the server room tests entirely.
 
 Green CI is necessary but **not sufficient** — it does not prove idiom-correctness (see §1). A reviewer still
 checks the change against the conventions.

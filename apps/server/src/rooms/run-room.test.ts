@@ -98,6 +98,12 @@ describe( 'RunRoom combat', () => {
         const shooter = playerOf( room, host.sessionId );
         const victim = playerOf( room, otherClient.sessionId );
 
+        // Pin the victim's class rather than inheriting the default ship. armour scales stun duration, so
+        // leaving it implicit would couple this assertion to whatever the default ship's armour happens to
+        // be. The Interceptor carries zero armour, which makes the STUN_SECONDS literal below both correct
+        // and meaningful — it documents "no armour ⇒ the full stun".
+        victim.shipId = 'executioner';
+
         // No client sends INPUT, and stepRace only calls simulate() when an input is queued — so both ships
         // hold exactly these poses for the whole test. That is what makes the geometry below deterministic,
         // and it also keeps the ships off the track hazards that would otherwise kill them mid-test.
@@ -122,11 +128,11 @@ describe( 'RunRoom combat', () => {
         assert.equal( shooter.heldPower, HeldPower.none, 'firing empties the single held slot' );
 
         // The bolt spawns 3u ahead of the shooter and covers 2u per tick (120u/s ÷ 60). The victim's hit
-        // window is 2 x (BOLT_HALF 1.5 + halfL 1.26) = 5.52u deep — wider than one tick of travel, so the
-        // bolt cannot tunnel past it. 0.25s carries it well beyond z=20.
+        // window is 2 x (BOLT_HALF 1.5 + Interceptor halfL 0.92) = 4.84u deep — still wider than one tick of
+        // travel, so the bolt cannot tunnel past it. 0.25s carries it well beyond z=20.
         tick( room, 0.25 );
 
-        assert.equal( victim.stunTimer, STUN_SECONDS, 'the victim takes the full stun' );
+        assert.equal( victim.stunTimer, STUN_SECONDS, 'a zero-armour ship takes the full stun' );
         assert.equal( shooter.stunTimer, 0, 'the owner is immune to its own bolt' );
         assert.equal( room.state.projectiles.size, 0, 'a spent bolt is pruned' );
 
