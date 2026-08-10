@@ -101,13 +101,13 @@ React Router (SPA)
 RunState (room state)
   ├─ phase: uint8            // 0 lobby · 1 countdown · 2 racing · 3 finished  (@slur/shared race/director.ts PHASE)
   ├─ elapsed: float32        // RACE clock — reset at GO, advances ONLY while racing (→ finishTime/deadline are race-relative)
-  ├─ seed: uint32            // deterministic track (ONE per room for S4). PLANNED → TrackDescriptor sub-schema {kind, seed?/levelId?, tier?, length?} (ADR-001, append-only wire change)
+  ├─ descriptor: TrackDescriptorState  // (ADR-001, SHIPPED) replaced the old `seed: uint32`. Nested sub-schema {kind, seed, tier, length, levelId}; kind selects the arm (procgen built · authored reserved). Both ends materialize an identical Track via resolveTrack(); tier/length reserved-unwired.
   ├─ players: MapSchema<PlayerState>
   ├─ hostId: string          // sessionId; owns GO / Play-Again; reassigned on host leave
   ├─ countdown: float32      // >0 only during countdown; client renders ceil()
   ├─ finishDeadline: float32 // leader+grace race-end clock (0 until first finisher)
   ├─ projectiles: MapSchema<Projectile>  // (S5) server-sim bolts; interp-only on clients; pruned on hit/expire
-  └─ pickupTaken: MapSchema<boolean>     // (S5) per-slot availability (present&&true = taken); positions derive from seed, NEVER synced
+  └─ pickupTaken: MapSchema<boolean>     // (S5) per-anchor availability (present&&true = taken); keyed by pickup ANCHOR id (ADR-002); positions derive from the descriptor, NEVER synced
 
 Projectile (S5) — a live bolt; server-owned, client-interpolated like a remote ship (never predicted)
   ├─ x,y,z: float32          // authoritative pose (straight ribbon: x fixed at fire, z advances)

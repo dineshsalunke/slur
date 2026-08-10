@@ -20,8 +20,9 @@ Implementation order is dependency-driven, not ADR-number order:
    real consumers (authored provider · ADR-003 grammar) means validating a moving target. Deferred until the
    generator stops changing shape.
 
-**Active now:** an implement loop builds ADR-001 → ADR-002 (each: build → full verify gate → PR → **human
-review/merge** → next on the merged base). Wire-format changes do not auto-merge.
+**SHIPPED 2026-08-10:** ADR-001 (PR #46) + ADR-002 (PR #47) merged to `dev`; docs baseline (PR #48). Verify
+gate green, **75 tests** (up from 70). **Next:** first BC5 beats (boost/slow/launch) → unlock **ADR-003**
+grammar; **ADR-005** `validateTrack()` stays last.
 
 ---
 
@@ -70,7 +71,10 @@ memory `load-bearing-track-contract`.
 
 ## ADR-001 — Seed out of room/track → provider (dependency inversion)
 
-- **Status:** Proposed · **Prepped** 2026-08-10 (not yet built) · **Date:** 2026-08-10
+- **Status:** ✅ **Accepted — SHIPPED** (PR #46, merged to `dev` 2026-08-10) · **Date:** 2026-08-10
+- **As-built:** `sim/track-provider.ts` (`TrackDescriptor` union + `resolveTrack`); `RunState.seed` → nested
+  `TrackDescriptorState` sub-schema; `makeTrack` internalised; `pickupLayout(descriptor)`; `Track.seed` dropped.
+  `length`/`tier` reserved unwired. ADR-004 comment cleanup folded in. Geometry byte-identical; +2 tests.
 - **Prep:** `.claude/phases/2026-08-10-adr-001-prep.md`. Settled: descriptor = **discriminated union**
   (`procgen` built, `authored` reserved); wire = **nested `TrackDescriptorState`** sub-schema; **`length`/`tier`
   reserved UNWIRED** (wiring `length` is procgen rule-system work → ADR-003). Slice = pure structural refactor,
@@ -99,7 +103,11 @@ seed reach-arounds), not a sim rewrite · `RunState.seed: uint32` → a `TrackDe
 
 ## ADR-002 — `Track` = physics + anchors; visuals split (3-layer mechanics)
 
-- **Status:** Proposed · **Prepped** 2026-08-10 (not yet built; blocked on ADR-001) · **Date:** 2026-08-10
+- **Status:** ✅ **Accepted — SHIPPED** (PR #47, merged to `dev` 2026-08-10) · **Date:** 2026-08-10
+- **As-built:** `Track.anchors: Anchor[]` emitted by the procgen provider; `corridorCenterX` now
+  provider-internal (last seed reach-around gone); pickups = `track.anchors.filter(kind==='pickup')`;
+  `pickupTaken` keys unchanged (anchor id = segment-index string → zero wire migration). Visual seam FROZEN —
+  renderer untouched; the WYSIWYG rule landed as **ADD.md §12** (not §6; §6 is a pointer). +3 tests.
 - **Prep:** `.claude/phases/2026-08-10-adr-002-prep.md`. Settled: **build anchors** (`Track.anchors: Anchor[]`,
   procgen emits them, pickups become `anchors.filter(kind==='pickup')`, `corridorCenterX` internalised — kills
   the last seed reach-around). **VISUAL SEAM FROZEN** — the `resolveVisual`/`VisualTrack` split stays a
