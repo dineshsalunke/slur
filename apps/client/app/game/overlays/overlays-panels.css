@@ -1,0 +1,118 @@
+/* Roster, standings, tags, and pickers — the panel CONTENT. Split from overlays.css to stay under the biome
+   300-line cap. overlays.tsx imports the three overlay sheets in source order. Keep that order: the cascade
+   depends on it. */
+
+/* Roster / standings rows */
+.slur-roster {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.slur-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+.slur-ghost {
+    opacity: 0.4;
+}
+.slur-me {
+    color: var( --slur-cyan );
+}
+.slur-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    box-shadow: 0 0 8px currentColor;
+}
+.slur-name {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.slur-ship {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.6;
+}
+.slur-rank {
+    min-width: 18px;
+    font:
+        700 13px / 1 ui-monospace,
+        monospace;
+    color: var( --slur-cyan );
+}
+
+/* Tags */
+.slur-tag {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid rgba( 230, 241, 255, 0.35 );
+    opacity: 0.85;
+}
+.slur-host {
+    border-color: var( --slur-cyan );
+    color: var( --slur-cyan );
+}
+.slur-spec {
+    border-color: var( --slur-magenta );
+    color: var( --slur-magenta );
+}
+.slur-fin {
+    border-color: #00ff85;
+    color: #00ff85;
+}
+
+/* Pickers */
+.slur-pickrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.slur-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+}
+.slur-swatch.slur-on {
+    border-color: #fff;
+    box-shadow: 0 0 10px #fff;
+}
+.slur-swatch:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+.slur-chip {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 9px;
+    border-radius: 4px;
+    border: 1px solid rgba( 0, 229, 255, 0.4 );
+    background: rgba( 0, 229, 255, 0.06 );
+    color: var( --slur-text );
+    cursor: pointer;
+}
+.slur-chip.slur-on {
+    border-color: var( --slur-cyan );
+    background: rgba( 0, 229, 255, 0.22 );
+    box-shadow: 0 0 10px rgba( 0, 229, 255, 0.4 );
+}
+.slur-chip:disabled {
+    cursor: default;
+    opacity: 0.5;
+}

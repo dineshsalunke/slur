@@ -2,7 +2,10 @@ import { PHASE } from '@slur/shared';
 import { Fragment } from 'react';
 import { useRoom } from '../../net/room-context';
 import { useRunView } from '../net/use-run-view';
+// The three overlay sheets MUST load in this order — they were one file, and the cascade still depends on it.
 import './overlays.css';
+import './overlays-panels.css';
+import './overlays-hud.css';
 import { CountdownOverlay } from './countdown-overlay';
 import { HeldPowerChip } from './held-power-chip';
 import { LeaveButton } from './leave-button';
