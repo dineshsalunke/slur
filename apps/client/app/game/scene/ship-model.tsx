@@ -125,15 +125,20 @@ export function ShipModel( { entity, shipId, color }: { entity: Entity; shipId: 
     // One uniforms bundle per ship; the same value-objects flow into every patched material of this clone.
     // The burn edge is the OWNER'S team colour — it used to be cyan-for-local / magenta-for-remote, but
     // magenta is retired from the palette and "whose ship just derezzed" is the more useful read anyway.
+    //
+    // The dep list MUST stay empty. patchDissolve binds these objects into the shader BY REFERENCE, once,
+    // in the first-frame patch below. Rebuilding the bundle (on `color`, say) yields an object the materials
+    // never sample — they keep reading the original, and every later write lands on an orphan. Colour
+    // updates ride the `.set()` in useFrame instead, which mutates the exact object the shader holds.
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
             uNoiseScale: { value: DISSOLVE_NOISE_SCALE },
             uEdgeWidth: { value: DISSOLVE_EDGE_WIDTH },
-            uEdgeColor: { value: new THREE.Color( color ) },
+            uEdgeColor: { value: new THREE.Color() }, // seeded by the first useFrame pass, long before any dissolve
             uEdgeIntensity: { value: DISSOLVE_EDGE_INTENSITY },
         } ),
-        [ color ],
+        [],
     );
 
     // Leaf-imperative: on the first frame patch the cloned materials, then every frame ease uDissolve toward
