@@ -9,6 +9,20 @@ file is the index of *what changed and when*.
 Status vocabulary: **Accepted** (in force) · **Superseded** (replaced — see link) · **Proposed** (agreed
 direction, not yet built).
 
+## Build sequence (2026-08-10)
+
+Implementation order is dependency-driven, not ADR-number order:
+
+1. **ADR-001** provider decoupling (ADR-004 comment cleanup folds in) — *the unblocker.*
+2. **ADR-002** anchors (visual seam frozen) — *depends on 001's landed provider.*
+3. *(future, gated)* **first BC5 beats** (boost/slow/launch) → unlocks **ADR-003** grammar.
+4. **ADR-005** `validateTrack()` — **LAST.** A validator validates a *settled* system; building it before its
+   real consumers (authored provider · ADR-003 grammar) means validating a moving target. Deferred until the
+   generator stops changing shape.
+
+**Active now:** an implement loop builds ADR-001 → ADR-002 (each: build → full verify gate → PR → **human
+review/merge** → next on the merged base). Wire-format changes do not auto-merge.
+
 ---
 
 ## ADR-000 — The load-bearing contract (baseline)
@@ -56,7 +70,11 @@ memory `load-bearing-track-contract`.
 
 ## ADR-001 — Seed out of room/track → provider (dependency inversion)
 
-- **Status:** Proposed (agreed; not yet built) · **Date:** 2026-08-10
+- **Status:** Proposed · **Prepped** 2026-08-10 (not yet built) · **Date:** 2026-08-10
+- **Prep:** `.claude/phases/2026-08-10-adr-001-prep.md`. Settled: descriptor = **discriminated union**
+  (`procgen` built, `authored` reserved); wire = **nested `TrackDescriptorState`** sub-schema; **`length`/`tier`
+  reserved UNWIRED** (wiring `length` is procgen rule-system work → ADR-003). Slice = pure structural refactor,
+  geometry byte-identical, one atomic commit, ADR-004 comment cleanup bundled in.
 
 **Context:** `simulate()` already consumes a `Track` interface, not a seed
 (`packages/shared/src/sim/step.ts:253`). But the seed leaks *around* that abstraction: `Track.seed`,
@@ -81,7 +99,12 @@ seed reach-arounds), not a sim rewrite · `RunState.seed: uint32` → a `TrackDe
 
 ## ADR-002 — `Track` = physics + anchors; visuals split (3-layer mechanics)
 
-- **Status:** Proposed · **Date:** 2026-08-10
+- **Status:** Proposed · **Prepped** 2026-08-10 (not yet built; blocked on ADR-001) · **Date:** 2026-08-10
+- **Prep:** `.claude/phases/2026-08-10-adr-002-prep.md`. Settled: **build anchors** (`Track.anchors: Anchor[]`,
+  procgen emits them, pickups become `anchors.filter(kind==='pickup')`, `corridorCenterX` internalised — kills
+  the last seed reach-around). **VISUAL SEAM FROZEN** — the `resolveVisual`/`VisualTrack` split stays a
+  documented rule (`ADD.md` #6) only, unfrozen when authored content / the art pass needs it. `kind:'pickup'`
+  modelled; `kind` left open. Wire impact ≈ nil (`pickupTaken` already exists, re-keyed by anchor id).
 
 **Context:** Today physics *is* visual — the client renders the exact collision AABBs
 (`track-view.tsx`), a free "what you see is what kills you" guarantee. That breaks the moment an artist
@@ -165,3 +188,24 @@ flat `Track` data. Track *length* is a descriptor parameter (short → long).
 **Affected docs:** `CLAUDE.md` · `docs/GDD.md` §1/§2/§4/§5.2 · `docs/TDD.md` §4/§6 · `.claude/backlog.md`
 S7 · memory `procgen-primary`.
 **Why / narrative:** the phase note.
+
+---
+
+## ADR-005 — `validateTrack()`: fairness as a shared, property-tested contract
+
+- **Status:** Proposed — **DEFERRED to LAST** (build after its consumers exist) · **Date:** 2026-08-10
+
+**Decision:** Fairness is enforced by ONE shared, pure `validateTrack(track, classes)` — z-monotonic
+flood-fill **FIT** (a connected corridor ≥ the widest ship links entry→exit) + per-gap **GAP-REACH** (every
+gap ≤ the worst jumper's reach) — run as a property test over descriptors AND reused as the acceptance gate
+for authored levels and the **generate == validate** half of the ADR-003 grammar.
+
+**Why deferred to last (user, 2026-08-10):** a validator validates a *settled* system. Its real consumers —
+the authored provider and the ADR-003 grammar — are future. Building it now would only guard the *current*
+procgen generator (which already has a per-slice corridor assertion in `sim/track.test.ts`), and that
+generator is about to grow anchors → beats → grammar-composition. Each new mechanic changes what "fair"
+means, so building now = **validating a moving target** and re-extending it at every step. Build it once the
+generator stops changing shape. Today's per-slice assertion holds the line until then.
+
+**Affected docs:** `docs/GDD.md` §5.2 · `docs/TDD.md` §8 · `.claude/backlog.md`.
+**Why / narrative:** the phase note + ADR-002/003.

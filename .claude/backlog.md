@@ -18,17 +18,21 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
   Landed together (one arc): **4u cell grid** (16-lane/64u track, 5-cell segments); **open-scatter cube fields** (discrete 1×1-cell un-jumpable pillars — strafe/destroy, never hop) replacing track-wide walls; **platform archetype cut** (clean gap→jump / block→strafe split); **AABB×AABB collision** (Minkowski, footprint = model box) + generous grounded rule; **per-ship FlightTuning** resolved server + client from a shared `ship-classes.ts` registry (Class = mechanics group, Ship = cosmetic variant); **5 classes wired** (Interceptor/Fighter/Comet/Phantom/Freighter) with the 5 CC0 models (WYSIWYG scale/lift) + dev **hot-swap keys 1–5** (`setClass` message, server-authoritative). GDD §5.5 rewritten; full as-built in `.claude/phases/2026-08-09-collision-aabb-jump-vfx.md` (pt.1–4). **Feel-gate findings:** imperial/Freighter too big → capped (2026-08-09).
 - [ ] 2026-08-09 [feature] [infra] Ship-content pipeline: code registry → JSON → DB (adding a ship = data + gltf, no code/build)
   why: user wants adding a ship to be "a few DB entries + gltf files, no code change/build". **NOT NOW** (YAGNI pre-S4; ships are added by devs who already build). Sequence: (1) code registry **[DONE]** → (2) **JSON registry** behind a swappable `ShipSource` interface + a **gltf-bbox measure script** (auto-computes scale/lift/halfW/halfL from the asset) + **authoritative def-sync to clients** → (3) **DB** as a drop-in source + editor UI when content-ops is real (live balance / community ships). Build (2) when roster growth justifies it. **KEY constraint:** ship tuning is server-authoritative **SIM** config — it must reach every client **identically and version-locked** (like the track seed) or client prediction desyncs. A DB doesn't remove that; it adds a layer under it.
-- [ ] 2026-08-09 [feature] [infra] Track provider + level authoring + two-floor validator + `D(i)` progression (post-S4)
-  ⚠ **REFRAMED 2026-08-10 (ADR-001/002/003/004).** Now sequenced as ADR threads: **(a) provider decoupling**
-  — `RunState.seed` → opaque `TrackDescriptor`; `resolveTrack(descriptor) → Track`; delete `pickupLayout(seed)`
-  / `corridorCenterX(seed)` reach-arounds; pickups read `track.anchors` (subtractive, unblocks the rest).
-  **(b) 3-layer content** — `Track` = physics + anchors (no visuals); visuals resolved client-side; the
-  physics/visual split adds a **WYSIWYG-collision** validator gate for authored levels. **(c) validator** —
-  z-monotonic flood-fill **FIT** + per-gap **GAP-REACH**, property-tested over descriptors; doubles as the
-  authored-level check. **(d) macro beat grammar** — sequences the §5.7 mechanic vocabulary (legality / budget
-  / no-repeat / teach-before-test), generate == validate; build *after* ≥2–3 beat types exist. `D(i)` is the
-  finite ramp only (no Survival exp branch). **Weave difficulty is uncapped** (self-balances via speed).
-  Principle: [[balance-at-playstyle]]; [[load-bearing-track-contract]]; constraints in GDD §5.2/§5.7.
+- [ ] 2026-08-09 [feature] [infra] Track provider + anchors + grammar + validator (post-S4) — **SEQUENCED as ADRs**
+  ⚠ **REFRAMED 2026-08-10 → `docs/DECISIONS.md` (ADR-001/002/003/004/005).** Build order is dependency-driven,
+  NOT ADR-number order (see the DECISIONS "Build sequence"):
+  1. **ADR-001** provider decoupling — `RunState.seed` → nested `TrackDescriptorState`; `resolveTrack(descriptor)
+     → Track`; seed becomes procgen-provider-internal. `length`/`tier` reserved UNWIRED. Folds in ADR-004 comment
+     cleanup. *(the unblocker)*
+  2. **ADR-002** anchors — `Track.anchors: Anchor[]` (procgen emits; pickups = `anchors.filter(kind==='pickup')`;
+     `corridorCenterX` internalised). **Visual seam FROZEN** (rule only, ADD.md #6). *(dep: 001)*
+  3. *(gated)* first **BC5 beats** (boost/slow/launch) → unlocks **ADR-003** macro beat grammar (sequences §5.7
+     vocabulary; generate == validate). Build the grammar only after ≥2–3 beat types exist.
+  4. **ADR-005** `validateTrack()` FIT + GAP-REACH — **LAST** (validates a settled system; deferred until its
+     consumers — authored provider + grammar — exist).
+  **ACTIVE:** an implement loop builds **ADR-001 → ADR-002** (stop at green PR for human review/merge; wire
+  changes do NOT auto-merge). `D(i)` = finite ramp only. **Weave difficulty uncapped** (self-balances via speed).
+  Principle: [[balance-at-playstyle]]; [[load-bearing-track-contract]]; constraints GDD §5.2/§5.7.
 - [x] 2026-08-06 → 2026-08-09 [feature] [slice] S4 — Session flow → complete Race — **DONE; human gate passed 2026-08-09** (two-tab playtest: full lobby→race→results→Play Again + spectate; commits `fc0418f`/`d155481`/`e5eb5f9`)
   **Polish deferred (edge cases, non-blocking):** reconnection under the NEW phase machine (a dropped racer is
   skipped but still counts toward race-end until the 20s window evicts them; host-drop reassigns host but a
