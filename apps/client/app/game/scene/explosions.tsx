@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import type { World } from 'koota';
 import { useWorld } from 'koota/react';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Interp, LocalPlayer, Render, Sim } from '../ecs/traits';
 
@@ -155,14 +155,22 @@ export function ExplosionField() {
     const wasDead = useMemo( () => new Map< number, boolean >(), [] ); // entity id → dead last frame (edge detect)
     const inited = useRef( false );
 
+    // Park every pool slot AT MOUNT (callback ref → fires during commit, BEFORE the first paint). Doing this
+    // in the first useFrame instead left MAX identity-matrix unit cubes drawn at the origin for one frame — a
+    // stray bright cube at the spawn point. A ref callback runs earlier than useFrame, so the pool is hidden
+    // before anything is shown. Not a mount EFFECT — no subscription/teardown, just imperative init.
+    const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
+        meshRef.current = mesh;
+        if ( mesh && ! inited.current ) {
+            initPool( mesh );
+            inited.current = true;
+        }
+    }, [] );
+
     // Fully imperative: detect deaths (after NetLoop synced positions) → spawn, then advance shards.
     useFrame( ( _state, delta ) => {
         const mesh = meshRef.current;
         if ( ! mesh ) return;
-        if ( ! inited.current ) {
-            initPool( mesh );
-            inited.current = true;
-        }
         detectDeaths( world, pool, wasDead );
         advanceShards( mesh, pool, delta );
     } );
@@ -171,7 +179,7 @@ export function ExplosionField() {
         // frustumCulled=false: we rewrite instanceMatrix every frame but three computes the bounding
         // sphere ONCE — a stale volume would cull the whole burst as the ship flies on (same reason as
         // TrackView). Additive + no depth-write so overlapping shards sum to a bright, self-glowing flash.
-        <instancedMesh ref={ meshRef } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
+        <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial
                 toneMapped={ false }

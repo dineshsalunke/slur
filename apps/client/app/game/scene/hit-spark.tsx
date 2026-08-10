@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { drainHits } from './hit-events';
 
@@ -125,14 +125,20 @@ export function HitSpark() {
     const pool = useMemo( makePool, [] );
     const inited = useRef( false );
 
+    // Park the pool AT MOUNT via a callback ref (fires during commit, before the first paint) so the MAX
+    // identity-matrix unit cubes never flash at the origin for a frame. See ExplosionField for the full note.
+    const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
+        meshRef.current = mesh;
+        if ( mesh && ! inited.current ) {
+            initPool( mesh );
+            inited.current = true;
+        }
+    }, [] );
+
     // Fully imperative: drain queued hit events → spawn a burst each, then advance sparks. No subscription.
     useFrame( ( _state, delta ) => {
         const mesh = meshRef.current;
         if ( ! mesh ) return;
-        if ( ! inited.current ) {
-            initPool( mesh );
-            inited.current = true;
-        }
         drainHits( ( e ) => spawnBurst( pool, e.x, e.y, e.z ) );
         advanceSparks( mesh, pool, delta );
     } );
@@ -141,7 +147,7 @@ export function HitSpark() {
         // frustumCulled=false: we rewrite instanceMatrix every frame but three computes the bounding sphere
         // ONCE — a stale volume would cull the whole burst as the ship flies on (same reason as ExplosionField).
         // Additive + no depth-write so overlapping sparks sum to a bright, self-glowing flash.
-        <instancedMesh ref={ meshRef } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
+        <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial
                 toneMapped={ false }

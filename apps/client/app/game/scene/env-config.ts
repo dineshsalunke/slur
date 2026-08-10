@@ -126,12 +126,15 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
         fog: { color: '#04101c', near: 80, far: 460 },
         dome: { enabled: true, top: '#02060e', bottom: '#08324a', radius: 750 },
         stars: {
+            // The field was mounted but nearly invisible: at radius 280 the fog (far 460) swallowed ~50% of
+            // it, and `fade` dimmed the rest. Pull the shell IN to ~190 (only ~30% fogged), grow the points,
+            // and add more of them so the starfield actually READS behind the dark cyan haze.
             enabled: true,
-            count: 6000,
-            radius: 280,
-            depth: 100,
-            factor: 4.5,
-            saturation: 0.1,
+            count: 8000,
+            radius: 190,
+            depth: 80,
+            factor: 6.5,
+            saturation: 0.14,
             fade: true,
             speed: 0.6,
         },

@@ -155,12 +155,13 @@ export function TrackView( { track }: { track: Track } ) {
                  flies past it (~z=120), making the floor/rails/blocks vanish. These are always on-screen. */ }
             <instancedMesh ref={ floorRef } frustumCulled={ false } args={ [ undefined, undefined, FLOOR_LIMIT ] }>
                 <boxGeometry />
-                { /* TRON retone (2026-08-10): dark-gray floor slab with a faint gray-white sheen — the
-                     ribbon reads as unlit surface; the bright neon lives on the edge-rails below. */ }
+                { /* TRON retone: a VERY dark, near-black floor slab. The earlier gray-white sheen washed the
+                     ribbon out to mid-gray under bloom; drop the emissive to a whisper so the surface reads as
+                     deep void and ALL the neon lives on the bright edge-rails below (grid-line aesthetic). */ }
                 <meshStandardMaterial
                     emissive="#c8d0d8"
-                    emissiveIntensity={ 0.6 }
-                    color="#0d0d10"
+                    emissiveIntensity={ 0.05 }
+                    color="#050507"
                     toneMapped={ false }
                 />
             </instancedMesh>
