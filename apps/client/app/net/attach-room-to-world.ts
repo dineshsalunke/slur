@@ -80,7 +80,11 @@ export function attachRoomToWorld(
     const $ = getStateCallbacks( room );
     const byId = new Map< string, Entity >();
     const projById = new Map< string, Entity >(); // bolt id → its interp-only ECS entity
-    const detach: Array< () => void > = [];
+    // Per-entity onChange detaches, keyed like the entity maps above. A bolt is added and removed many times
+    // per race, so its listener MUST come off in onRemove — a flat array drained only at teardown grows for
+    // the whole room lifetime and keeps every dead bolt's schema object reachable.
+    const perPlayer = new Map< string, () => void >();
+    const perProjectile = new Map< string, () => void >();
 
     // Mirror the run phase to the loop's module singleton (no React) so the camera/predict branch reads
     // it every frame without a subscription re-rendering this WebGL parent (acceptance gate #3).
@@ -106,10 +110,12 @@ export function attachRoomToWorld(
             if ( isLocal ) reconcileLocal( ent, p, predictor, trackRef.current );
             else pushRemote( ent, p );
         } );
-        detach.push( offChange );
+        perPlayer.set( sid, offChange );
     } );
 
     const offRemove = $( room.state ).players.onRemove( ( _p, sid ) => {
+        perPlayer.get( sid )?.();
+        perPlayer.delete( sid );
         const e = byId.get( sid );
         if ( e ) {
             e.destroy();
@@ -127,10 +133,12 @@ export function attachRoomToWorld(
             const ent = projById.get( id );
             if ( ent ) pushProjectile( ent, proj );
         } );
-        detach.push( offProjChange );
+        perProjectile.set( id, offProjChange );
     } );
 
     const offProjRemove = $( room.state ).projectiles.onRemove( ( _proj, id ) => {
+        perProjectile.get( id )?.();
+        perProjectile.delete( id );
         const e = projById.get( id );
         if ( e ) {
             e.destroy();
@@ -157,9 +165,12 @@ export function attachRoomToWorld(
         offProjAdd();
         offProjRemove();
         offHit();
-        for ( const off of detach ) off();
+        for ( const off of perPlayer.values() ) off();
+        for ( const off of perProjectile.values() ) off();
         for ( const e of byId.values() ) e.destroy();
         for ( const e of projById.values() ) e.destroy();
+        perPlayer.clear();
+        perProjectile.clear();
         byId.clear();
         projById.clear();
     };
