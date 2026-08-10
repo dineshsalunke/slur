@@ -15,6 +15,7 @@ import {
     MIN_LANE,
     mulberry32,
     passableCorridorWidth,
+    pickupLayout,
     procgenDescriptor,
     resolveTrack,
     SEG_LEN,
@@ -393,4 +394,55 @@ test( 'block count per visible window stays within the renderer instance budget 
     }
     assert.ok( worstLethal < BUDGET, `worst-case ${ worstLethal } lethal blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
     assert.ok( worstDrag < BUDGET, `worst-case ${ worstDrag } drag blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
+} );
+
+// ── ADR-002: Track.anchors is the first-class source of truth for pickups ──
+
+// track.anchors is the SOURCE OF TRUTH: pickupLayout (and every consumer) is exactly the pickup-kind filter
+// over it. Prove the helper == the read, then pin the PRE-ADR-002 id/position SCHEME so the move into the
+// provider stays a pure refactor. The scheme pins are the real regression guard (the old formula is gone):
+//   - id = the segment index string (integer ≥ START_SAFE) → RunState.pickupTaken keys need ZERO wire migration.
+//   - z  = seg·SEG_LEN + SEG_LEN/2 (segment mid-row) and x within the rails, exactly as the old layout placed them.
+test( 'ADR-002: pickupLayout is exactly track.anchors filtered to kind "pickup" (source of truth)', () => {
+    for ( const seed of SEEDS ) {
+        const anchors = makeTrack( seed ).anchors.filter( ( a ) => a.kind === 'pickup' );
+        assert.deepEqual(
+            pickupLayout( procgenDescriptor( seed ) ),
+            anchors,
+            `seed ${ seed }: helper diverged from the read`,
+        );
+    }
+} );
+
+test( 'ADR-002: pickup anchor id/position scheme is unchanged (zero wire migration + placement)', () => {
+    for ( const seed of SEEDS ) {
+        for ( const p of makeTrack( seed ).anchors.filter( ( a ) => a.kind === 'pickup' ) ) {
+            const seg = Number( p.id );
+            assert.equal( p.id, String( seg ), `seed ${ seed }: id ${ p.id } is not a segment-index string` );
+            assert.ok( seg >= START_SAFE, `seed ${ seed }: pickup ${ p.id } inside the start-safe zone` );
+            assert.equal(
+                p.z,
+                seg * SEG_LEN + SEG_LEN / 2,
+                `seed ${ seed }: pickup ${ p.id } z off the segment mid-row`,
+            );
+            assert.equal( p.y, 0, `seed ${ seed }: pickup ${ p.id } not at ground level` );
+            assert.ok( Math.abs( p.x ) <= HALF_WIDTH, `seed ${ seed }: pickup ${ p.id } outside the rails` );
+        }
+    }
+} );
+
+// kind filtering is the read model: 'pickup' is the only kind materialized today; an unmodelled kind yields
+// nothing (guards against a future kind silently leaking into the pickup pool).
+test( 'ADR-002: anchors are all kind "pickup"; filtering an unmodelled kind yields none', () => {
+    const anchors = makeTrack( 1234 ).anchors;
+    assert.ok( anchors.length > 0, 'no anchors materialized' );
+    assert.ok(
+        anchors.every( ( a ) => a.kind === 'pickup' ),
+        'a non-pickup kind was materialized (none exist yet)',
+    );
+    assert.deepEqual(
+        anchors.filter( ( a ) => a.kind === 'checkpoint' ),
+        [],
+        'an unmodelled kind matched anchors',
+    );
 } );
