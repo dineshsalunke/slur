@@ -222,3 +222,81 @@ test( 'finish segments are flat and flagged', () => {
     assert.ok( s.isFinish );
     assert.equal( s.floors[ 0 ].y, 0 );
 } );
+
+// Per-slice fairness (≥ MIN_LANE open at every z) is NOT enough on its own: consecutive openings must also be
+// laterally REACHABLE given the ship's bounded strafe (walls are un-jumpable). Otherwise the open lane can jump
+// side-to-side faster than any ship can follow → an unavoidable "L-shaped" dead-end. Forward-flood the set of
+// reachable x-intervals row by row (dilate by ±SLOPE_CAP·CELL, intersect with the open floor); assert it never
+// collapses to empty on a floored stretch. A hole resets reachability (you cross it airborne, landing anywhere).
+function openIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] > {
+    if ( isHole( seg ) ) return [];
+    const zc = seg.z0 + r * CELL + CELL / 2;
+    const walls: Array< [ number, number ] > = [];
+    for ( const b of seg.blocks ) if ( b.z0 <= zc && zc < b.z1 ) walls.push( [ b.x0, b.x1 ] );
+    walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
+    const open: Array< [ number, number ] > = [];
+    let cursor = -HALF_WIDTH;
+    for ( const [ lo, hi ] of walls ) {
+        if ( lo > cursor ) open.push( [ cursor, Math.min( lo, HALF_WIDTH ) ] );
+        cursor = Math.max( cursor, hi );
+    }
+    if ( cursor < HALF_WIDTH ) open.push( [ cursor, HALF_WIDTH ] );
+    return open.filter( ( [ a, b ] ) => b > a );
+}
+function intersectIntervals(
+    a: Array< [ number, number ] >,
+    b: Array< [ number, number ] >,
+): Array< [ number, number ] > {
+    const out: Array< [ number, number ] > = [];
+    for ( const [ a0, a1 ] of a )
+        for ( const [ b0, b1 ] of b ) {
+            const lo = Math.max( a0, b0 );
+            const hi = Math.min( a1, b1 );
+            if ( hi > lo ) out.push( [ lo, hi ] );
+        }
+    return out;
+}
+test( 'the open corridor is always laterally REACHABLE (no unavoidable L-shaped dead-ends)', () => {
+    const reachUnits = SLOPE_CAP * CELL; // how far the least-capable ship can strafe per forward row (world x)
+    const full: Array< [ number, number ] > = [ [ -HALF_WIDTH, HALF_WIDTH ] ];
+    for ( const seed of SEEDS ) {
+        const t = makeTrack( seed );
+        let reach = full;
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
+            const seg = t.segmentAt( i );
+            if ( isHole( seg ) ) {
+                reach = full;
+                continue;
+            }
+            for ( let r = 0; r < ZCELLS; r++ ) {
+                const dilated = reach.map( ( [ a, b ] ): [ number, number ] => [
+                    Math.max( -HALF_WIDTH, a - reachUnits ),
+                    Math.min( HALF_WIDTH, b + reachUnits ),
+                ] );
+                reach = intersectIntervals( dilated, openIntervalsAt( seg, r ) );
+                assert.ok(
+                    reach.length > 0,
+                    `seed ${ seed } seg ${ i } row ${ r }: reachable corridor collapsed — unavoidable dead-end`,
+                );
+            }
+        }
+    }
+} );
+
+// Renderer budget guard: the denser walls RLE-merge into wide blocks, so a visible window must stay under the
+// client's instance cap (BLOCK_LIMIT = 128 in track-view.tsx — exceeding it SILENTLY DROPS walls). Assert the
+// worst-case block count over a 49-segment window (TrackView's AHEAD+BACK) keeps margin below that cap.
+test( 'block count per visible window stays within the renderer instance budget', () => {
+    const WINDOW = Math.ceil( ( 900 + 80 ) / SEG_LEN ); // TrackView AHEAD+BACK
+    const BUDGET = 128; // must match BLOCK_LIMIT in apps/client/.../track-view.tsx
+    let worst = 0;
+    for ( const seed of SEEDS ) {
+        const t = makeTrack( seed );
+        for ( let s = START_SAFE; s < TRACK_SEGMENTS; s++ ) {
+            let n = 0;
+            for ( let i = s; i < s + WINDOW && i <= TRACK_SEGMENTS; i++ ) n += t.segmentAt( i ).blocks.length;
+            if ( n > worst ) worst = n;
+        }
+    }
+    assert.ok( worst < BUDGET, `worst-case ${ worst } blocks/window ≥ BLOCK_LIMIT ${ BUDGET } — walls would drop` );
+} );

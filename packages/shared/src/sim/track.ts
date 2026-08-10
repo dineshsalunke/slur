@@ -11,8 +11,8 @@
 // Coherence comes from hashed value-noise + smoothstep + triangle-wave (see noise.ts); every sqrt-needing
 // bound (jump-reach, the weave node period) is a ONE-TIME constant computed in constants.ts.
 //
-// ── S6 MODEL (procgen v2): carved racing-line + variable-width noise walls ──
-// Each hazard segment carves a value-noise "racing line" the player threads, and walls the space OUTSIDE a
+// ── S6 MODEL (procgen v2 + S6.1 lively carrier): carved racing-line + variable-width noise walls ──
+// Each hazard segment carves a rounded-triangle "racing line" (see weaveRaw) the player threads, and walls the space OUTSIDE a
 // corridor of ≥ MIN_LANE open lanes around it. Contiguous wall lanes are RLE-merged into ONE wide Block →
 // variable block widths (1/2/3+ cells). Fair BY CONSTRUCTION: the corridor is never walled, so ≥ MIN_LANE
 // contiguous open floor survives at EVERY z-slice regardless of wall shape (no per-width fairness proof).
@@ -29,6 +29,7 @@ import {
     D_RAMP_SEGMENTS,
     deriveNodePeriod,
     deriveWeaveCurvatureCap,
+    deriveWeavePeriod,
     deriveWeaveSlopeCap,
     GAP_P_MAX,
     GAP_P_START,
@@ -36,6 +37,8 @@ import {
     WALL_DENSITY_START,
     WALL_NOISE_FZ_LANE,
     WALL_NOISE_FZ_SEG,
+    WEAVE_CARRIER_BUDGET,
+    WEAVE_NOISE_FRAC,
 } from '../constants.js';
 import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
 import { smoothstep, tri, valueNoise1D, valueNoise2D } from './noise.js';
@@ -96,7 +99,8 @@ export const BLOCK_HEIGHT = 8; // cube top (y) = 2 cells. ABOVE double-jump reac
 export const WEAVE_AMP_LANES = LANES; // max racing-line amplitude (lanes). Actual amplitude ≤ this (shrinks with corridor width).
 export const SLOPE_CAP = deriveWeaveSlopeCap( ALL_CLASS_TUNINGS ); // [lanes/row]
 export const CURV_CAP = deriveWeaveCurvatureCap( ALL_CLASS_TUNINGS, CELL ); // [Δ(lanes/row)/row]
-export const FZ_ROWS = deriveNodePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES ); // noise node period (rows)
+export const FZ_ROWS = deriveNodePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES ); // fBm PERTURBATION node period (rows) — the small organic wander on top of the carrier
+export const WEAVE_PERIOD_ROWS = deriveWeavePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES, WEAVE_CARRIER_BUDGET ); // rounded-triangle carrier period (rows) — one full L→R→L sweep
 
 // Distinct hash salts so the racing line, the wall field, and the gap roll are uncorrelated streams.
 const SALT_LINE_A = 0x1234567 | 0;
@@ -108,15 +112,23 @@ function rowGlobal( i: number, r: number ): number {
     return i * ZCELLS + r;
 }
 
-// Racing-line center in LANES at full amplitude — a 2-octave fBm value-noise curve in [0, LANES). This is
-// the continuous line the ship threads; the corridor is carved AROUND it. Slope/curvature are bounded by
-// FZ_ROWS (derived from the caps), so the least-capable ship can always follow it. Exposed for the fairness
-// test (it asserts slope ≤ SLOPE_CAP and curvature ≤ CURV_CAP directly on this signal).
+// Per-seed phase offset (rows) so different seeds don't all start their sweep from the same wall. A constant
+// derived once from the seed; the ×period keeps it in the carrier's own units.
+function weavePhaseRows( seed: number ): number {
+    return valueNoise1D( ( seed ^ SALT_LINE_A ) | 0, 0.5 ) * WEAVE_PERIOD_ROWS;
+}
+
+// Racing-line center in LANES ∈ [0, LANES). A ROUNDED-TRIANGLE carrier (near-constant slope down each leg →
+// continuous strafing demand; smoothstep-rounded apexes → curvature-safe) plus a small fBm perturbation for
+// organic apex positions. The carrier period + the WEAVE_NOISE_FRAC split are sized so realized slope stays
+// ≤ SLOPE_CAP and curvature ≤ CURV_CAP — the least-capable ship can always follow it (asserted directly on
+// this signal by the fairness test). Trig-free (tri + smoothstep + value-noise) ⇒ byte-identical both ends.
 export function weaveRaw( seed: number, row: number ): number {
-    const f = row / FZ_ROWS;
-    const o0 = valueNoise1D( ( seed ^ SALT_LINE_A ) | 0, f ); // base octave
-    const o1 = valueNoise1D( ( seed ^ SALT_LINE_B ) | 0, f * 2 ); // half-period, half-amplitude → richness
-    return ( o0 + o1 * 0.5 ) / 1.5; // normalized to [0,1)
+    const phase = ( row + weavePhaseRows( seed ) ) / WEAVE_PERIOD_ROWS;
+    const carrier = smoothstep( ( tri( phase ) + 1 ) / 2 ); // triangle → [0,1], apexes rounded by the fade
+    const perturb = valueNoise1D( ( seed ^ SALT_LINE_B ) | 0, row / FZ_ROWS ); // gentle organic wander, [0,1)
+    const v = ( 1 - WEAVE_NOISE_FRAC ) * carrier + WEAVE_NOISE_FRAC * perturb;
+    return v < 0 ? 0 : v > 1 ? 1 : v; // guard the float edges → stays in [0,1)
 }
 export function weaveLineLanes( seed: number, row: number ): number {
     return weaveRaw( seed, row ) * WEAVE_AMP_LANES;

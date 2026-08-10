@@ -178,26 +178,44 @@ export function deriveNodePeriod( slopeCap: number, curvCap: number, amp: number
     return Math.ceil( Math.max( slopeReq, curvReq ) * NODE_PERIOD_SAFETY );
 }
 
+// ── Racing-line carrier (S6.1 challenge pass) ──────────────────────────────────────────────────────────
+// The old line was pure fBm: threadable but MOSTLY FLAT (measured: it used ~10% of its slope budget → the
+// weave read as a static maze, not a race). The new line is a ROUNDED-TRIANGLE carrier: near-constant slope
+// down each leg → you strafe continuously (that IS the challenge), with smoothstep-rounded apexes so the
+// reversal respects the curvature cap (a SHARP triangle apex would blow it). A small fBm perturbation keeps
+// apex positions organic (not metronomic). Both terms are trig-free (tri + smoothstep + value-noise).
+export const WEAVE_CARRIER_BUDGET = 0.7; // fraction of the slope/curvature caps the carrier may spend — the rest is headroom for the perturbation + the player's reaction margin.
+export const WEAVE_NOISE_FRAC = 0.15; // amplitude share of the organic perturbation (rest = the readable carrier). Kept small so the channel stays followable.
+
+// Carrier period [rows] so a smoothstep-rounded triangle stays under BOTH caps (× budget). For s(t)=smoothstep,
+// a triangle of period P has peak |slope| = 1.5·(2/P)·amp and peak |curv| = 6·(2/P)²·amp. Solve each ≤ cap·budget
+// and take the larger P (curvature usually binds). Bigger P = gentler, slower sweep. One-time (sqrt allowed).
+export function deriveWeavePeriod( slopeCap: number, curvCap: number, amp: number, budget: number ): number {
+    const pSlope = ( 3 * amp ) / ( slopeCap * budget );
+    const pCurv = Math.sqrt( ( 24 * amp ) / ( curvCap * budget ) );
+    return Math.ceil( Math.max( pSlope, pCurv ) );
+}
+
 // Corridor width curve [lanes]: wide (easy) → narrow (hard) as D:0→1. Integer lanes; never below the fairness
 // floor (2 lanes = MIN_LANE = 8u). This is THE difficulty dial for lateral pressure.
-export const CORRIDOR_W_START = 8; // open lanes at D = 0 (half of the 16-lane track — roomy).
+export const CORRIDOR_W_START = 5; // open lanes at D = 0 (was 8 — too roomy; the start played as a cakewalk). The moving carrier + this width read as a clear channel, not an open field.
 export const CORRIDOR_W_MIN = 2; // open lanes at D = 1 — the MIN_LANE floor; the generator clamps here, never lower.
 
 // Wall field: a non-corridor cell becomes a wall when coherent value-noise(lane, z) < density(D). Low
 // frequencies → contiguous runs (RLE-merged into wide blocks = the width-variety goal), not scatter.
-export const WALL_DENSITY_START = 0.35; // fill fraction of the wall zone at D = 0.
-export const WALL_DENSITY_MAX = 0.55; // …at D = 1. Capped for readability AND the renderer's BLOCK_LIMIT budget (worst-case ~49-seg window stays well under 128).
+export const WALL_DENSITY_START = 0.5; // fill fraction of the wall zone at D = 0 (was 0.35 — walls were too sparse, so the open band drifted far past the corridor; denser walls frame the channel).
+export const WALL_DENSITY_MAX = 0.72; // …at D = 1. Denser ⇒ more CONTIGUOUS ⇒ RLE-merges into FEWER, wider blocks, so the renderer's BLOCK_LIMIT budget is unaffected (verified by the block-count test).
 export const WALL_NOISE_FZ_LANE = 4.5; // value-noise period across LANES → typical wall-run width (wider = fewer, fatter blocks → renderer budget).
 export const WALL_NOISE_FZ_SEG = 2.6; // value-noise period across SEGMENTS → walls persist/flow forward, not per-seg flicker.
 
 // Difficulty D(i) ∈ [0,1]: smoothstep ease-out to a cap (Race) + a triangle-wave pacing swing (tension/release).
 // Survival's unbounded growth is DEFERRED to S7 (no `mode` field yet — parent decision Q2).
-export const D_RAMP_SEGMENTS = 90; // segments after START_SAFE to reach the ease-out cap.
+export const D_RAMP_SEGMENTS = 35; // segments after START_SAFE to reach the ease-out cap (was 90 — near-peak only ~1500u in, so the first third played easy). Faster ramp = the track bites sooner.
 export const D_EASE_CAP = 0.85; // Race tops out here (< 1 leaves headroom for S7 Survival to grow into).
 export const D_PACE_AMP = 0.15; // ± difficulty swing added by the pacing wave.
 export const D_PACE_WAVELENGTH = 24; // segments per tension→release cycle.
 
 // Gaps (jump punctuation) stay orthogonal to the weave: sparse, ≤ one segment, never two in a row, never in
 // start-safe. Probability rises slightly with D. GAP-REACH is already asserted per class in the track test.
-export const GAP_P_START = 0.05; // P(gap) at D = 0.
-export const GAP_P_MAX = 0.12; // P(gap) at D = 1.
+export const GAP_P_START = 0.08; // P(gap) at D = 0 (was 0.05 — jumps too rare to punctuate).
+export const GAP_P_MAX = 0.18; // P(gap) at D = 1.
