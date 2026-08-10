@@ -5,6 +5,7 @@ import { COLORS } from '../colors';
 import type { RunView } from '../net/use-run-view';
 import { LeaveButton } from './leave-button';
 import { Roster } from './roster';
+import { ShipCard } from './ship-card';
 
 // Lobby controls laid around the EDGES so the centred, orbiting local ship (the real scene, via
 // updateLobbyCamera — there is NO 2nd preview Canvas) shows through: roster top-left, pickers bottom-centre,
@@ -37,18 +38,16 @@ export function LobbyOverlay( { room, view }: { room: Room< RunState >; view: Ru
                         />
                     ) ) }
                 </div>
-                <div className="slur-pickrow">
+                <div className="slur-pickrow slur-shiprow">
                     <span className="slur-label">Ship</span>
                     { SHIP_ORDER.map( ( shipId ) => (
-                        <button
+                        <ShipCard
                             key={ shipId }
-                            type="button"
+                            shipId={ shipId }
+                            selected={ self?.shipId === shipId }
                             disabled={ locked }
-                            className={ self?.shipId === shipId ? 'slur-chip slur-on' : 'slur-chip' }
-                            onClick={ () => room.send( SET_CLASS_MESSAGE, shipId ) }
-                        >
-                            { shipId }
-                        </button>
+                            onPick={ () => room.send( SET_CLASS_MESSAGE, shipId ) }
+                        />
                     ) ) }
                 </div>
             </div>
