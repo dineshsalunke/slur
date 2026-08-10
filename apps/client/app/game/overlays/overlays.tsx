@@ -5,6 +5,7 @@ import { useRunView } from '../net/use-run-view';
 import './overlays.css';
 import { CountdownOverlay } from './countdown-overlay';
 import { HeldPowerChip } from './held-power-chip';
+import { LeaveButton } from './leave-button';
 import { LeaveGuard } from './leave-guard';
 import { LobbyOverlay } from './lobby-overlay';
 import { RaceHud } from './race-hud';
@@ -21,6 +22,14 @@ export function Overlays() {
     return (
         <Fragment>
             <LeaveGuard phase={ view.phase } />
+            { /* Countdown + racing have no overlay of their own that hosts Leave (lobby/results embed their
+                 own) — without this you're trapped in the run until it finishes. Corner-anchored, clear of
+                 the centre timer + right-side standings. */ }
+            { ( view.phase === PHASE.countdown || view.phase === PHASE.racing ) && (
+                <div className="slur-leave-corner">
+                    <LeaveButton />
+                </div>
+            ) }
             { view.phase === PHASE.lobby && <LobbyOverlay room={ room } view={ view } /> }
             { view.phase === PHASE.countdown && <CountdownOverlay seconds={ view.countdown } /> }
             { view.phase === PHASE.racing && <RaceHud view={ view } /> }

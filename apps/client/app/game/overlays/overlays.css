@@ -264,6 +264,14 @@
     border-color: var( --slur-magenta );
     background: rgba( 255, 43, 214, 0.12 );
 }
+/* In-race Leave — top-left, clear of the centre timer + right-side standings. Above the countdown layer
+   (z 25) so it stays clickable during the countdown too. */
+.slur-leave-corner {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 26;
+}
 .slur-wait {
     font-size: 12px;
     letter-spacing: 1px;
