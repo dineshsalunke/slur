@@ -5,8 +5,11 @@
 ## 1. Vision statement
 
 A fast, neon, quick-to-join ship racer you launch on the office LAN or a hosted web server and play in a 5-minute burst.
-Fly a ship down a track — a finite course to a **finish line**, or an **endless survival run** — grab
+Fly a ship down a **finite track to a finish line** — courses ranging from short to long — grab
 power-ups, and **mess with your friends**: dodge, boost, shoot, shield. Easy to join, hard to master, funny to lose.
+
+> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — was "a finite course to a **finish line**, or an **endless survival
+> run**." Endless Survival is dropped in favour of longer finite tracks. See § Superseded (bottom) + `docs/DECISIONS.md`.
 
 > **North star:** this is a **casual party game between colleagues**. The point is *messing with each other*,
 > not competitive balance. When a design call is close, bias toward **fun chaos over fairness**.
@@ -20,7 +23,7 @@ power-ups, and **mess with your friends**: dodge, boost, shoot, shield. Easy to 
 
 | Game | We take | We leave |
 |------|---------|----------|
-| **cuberun** | Endless neon tunnel, escalating speed, dodge-survival feel, R3F rendering approach | Single-player, no combat |
+| **cuberun** | Neon tunnel look, escalating speed, dodge feel, R3F rendering approach | Single-player, no combat, **and its *endless* format** (we are finite-tracks only — ADR-004) |
 | **SkyRoads (1993)** | Track-as-hazard (gaps, jumps, tiles), fuel/resource pressure, discrete track lanes | Puzzle-y precision, slow pace |
 | **Blur (2010)** | Pickup-based combat mid-race, offensive/defensive/utility power trinity, rubber-banding tension | Realistic cars, licensed tracks |
 
@@ -39,29 +42,26 @@ Host a room ──► players join & pick ship/colour ──► host hits GO ─
 
 ## 4. Game modes
 
-Two modes share the same flight + combat + power-up core. Given the north star, win conditions exist to give
-a round *shape*, not to be fair — pickups and combat are **sabotage tools** to mess with each other.
+> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — SLUR had two modes (Race + endless Survival). **Endless Survival is
+> dropped.** The retired mode text + per-mode join policy are relocated to § Superseded (bottom). Below is the
+> single, finite model.
 
-**A. Race (finite track) — recommended for v1.** A course with a start and a **finish line**; first across
-wins. Natural round end, obvious goal, trivially re-runnable, clear winner, no "endless balancing" to solve.
-(Blur.) *Optional round timer as a backstop.*
+**One mode: Race (finite track).** A course with a start and a **finish line**; first across wins. Given the
+north star, the win condition exists to give a round *shape*, not to be fair — pickups and combat are
+**sabotage tools** to mess with each other. Natural round end, obvious goal, trivially re-runnable, clear
+winner. (Blur.) *Optional round timer as a backstop.*
 
-**B. Survival (endless) — fast-follow.** Procedural endless track; a **chasing derezz-wall** sweeps forward
-behind the pack (camp = caught) with **distance/time as score**. Furthest/last-flying wins. (cuberun + our
-chase mechanic.) This is the home of the §5.1 forward-pressure mechanism.
+**Track length is a spectrum, not a mode.** Courses range **short → long**; a long course is the home of the
+difficulty **arc/progression** (§5.2), replacing what "endless" used to provide. No separate endless generator.
 
-**Forward pressure (resolved):** Race self-pressures via the finish line (+ optional timer). Survival uses the
-**chase-wall + distance/time** combo (your "1 & 3"). Both deliberately **light-touch** — casual, not punishing.
+**Forward pressure:** the finish line (+ optional timer) self-pressures the round — deliberately **light-touch**,
+casual, not punishing.
 
-**v1 scope:** build **Race** first — it's the shortest path to a complete, fun, self-contained session;
-Survival reuses the same systems. *Confirm this ordering (see §10).*
+**Re-entry:** rounds are short; death → quick respawn. No one sits out long.
 
-**Re-entry:** rounds are short; death → quick respawn (Race) or spectate-until-next (either). No one sits out long.
-
-**Join policy — per mode (decided S4):** **Race** locks the field at GO — joining a live race → you **spectate**
-the current round (chase-cam, cycle any racer) and race the next. **Survival** keeps **live drop-in** — a late
-joiner **spawns beside the pack** (an endless track has no start line to gate on). This is one server seam
-(`shouldSpectateOnJoin`), so the policy is a per-mode branch, not two code paths.
+**Join policy (Race-always):** the field **locks at GO** — joining a live race → you **spectate** the current
+round (chase-cam, cycle any racer) and race the next. One server seam (`shouldSpectateOnJoin`); the planned
+Survival "drop-in" branch of that seam is not built (ADR-004).
 
 ## 5. Mechanics
 
@@ -73,25 +73,55 @@ joiner **spawns beside the pack** (an endless track has no start line to gate on
 - **Boost is NOT a base mechanic** *(decided — was a Shift-held overdrive)*. It moves to a **pickup power-up** (§5.3) — grab it, spend it. This keeps the base flight model clean and makes overdrive a *contested resource* you fight over, per the north star.
 - **No fuel/energy meter** *(resolved — §10 Q2 closed)*. The energy pool existed only to gate boost; with boost gone it's cut. Pickups carry their own charge/duration.
 
-> **Forward-pressure (resolved, see §4):** Race mode self-pressures via the finish line (+ optional timer).
-> Survival mode uses a **chasing derezz-wall + distance/time scoring** — camp and the wall catches you.
-> Both light-touch, in keeping with the casual north star.
+> **Forward-pressure (resolved, see §4):** Race self-pressures via the finish line (+ optional timer) —
+> light-touch, in keeping with the casual north star.
+> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — the old second sentence ("Survival mode uses a **chasing derezz-wall +
+> distance/time scoring**") is retired with endless Survival.
 
 ### 5.2 Track & hazards
-- Procedurally generated, seeded so **all clients share the same track** (server sends seed). Deterministic generation from seed = no per-tile sync.
-- **Two track forms:** *finite* seeded **courses with a finish line** (Race), and *endless* procedural runs (Survival). Both deterministic from seed; a finite course is just an endless generator with a defined length + finish gate.
+
+> ⚠ SUPERSEDED 2026-08-10 (ADR-000/001/004) — "server sends **seed**" → server sends an opaque **descriptor**
+> (the seed is one field inside it, owned by the procgen provider); "*endless* procedural runs" → **finite
+> only**. The `Track` a room holds is **physics + gameplay anchors**, materialized locally from the descriptor;
+> **visuals are resolved separately, client-side, never synced** (ADR-002). See `docs/DECISIONS.md`.
+
+- **All clients share the same track**, materialized identically on both ends from the room's **descriptor**
+  (procgen `{seed, tier}` or authored `{levelId}`) — never a per-tile sync. The sim depends on the `Track`
+  interface, not on how it was produced.
+- **One track form:** *finite* **courses with a finish line**, length ranging **short → long**. (The old
+  "*endless* procedural run" form is dropped — ADR-004.)
+- **The `Track` is gameplay data only** — floors/walls/gaps (physics) + **anchors** (pickup/hazard/drop/checkpoint
+  placements). Pickup/hazard *layout* is a track anchor; per-anchor *availability* is thin synced state
+  (`pickupTaken` generalised); runtime-spawned things (bolts/drops/active hazards) are synced entities. Visuals
+  are a separate client-side concern (ADR-002 — the 3-layer model).
 - **Core hazard vocabulary (implemented):** *cube fields* (1×1-cell **un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump is **gaps-only**; blocks are **strafe-or-destroy** — the two never overlap. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
 - **Locked constraints (2026-08-09):** **straight ribbon** — the track *never turns/curves* (no loops/corkscrews/banked corners); **strafing is the only lateral movement** (reaffirms §5.1). **No autonomous moving geometry** (no crushers / moving cubes / conveyors) — obstacles are static; the challenge is *your* motion through them. Verticality is **impulse-only** (a launch pad pops you up; you land back on the flat ribbon — no multi-level terrain/ceilings/gravity-flip). Player-*triggered* changes (a switch) are allowed — an event, not autonomous motion.
-- **Levels will be hand-authored** (procedural gen is filler/endless — both feed the same `Track.segmentAt()`, so the sim is unchanged). **Fairness = two hard floors only:** **FIT** (a connected corridor ≥ the widest ship links entry→exit) and **GAP-REACH** (every gap ≤ the worst jumper's reach). **Weave difficulty is *uncapped*** — it self-balances via the speed dial (any ship crawls through at a time-cost). A **validator** (z-monotonic flood-fill + per-gap reach) enforces the two floors on *any* level, authored or generated. (Balance is playstyle-level, not geometry-equal — §5.5, §5.7.)
-- **Difficulty progression:** authored levels are hand-paced; the procedural source uses a difficulty scalar `D(z)` → a **trend** (linear/ease-out for finite Race so the whole field finishes; exponential for endless Survival) **+ a deterministic triangle-wave** for tension-release pacing (NOT `Math.sin` — determinism forbids it in the generator). `D` drives the knobs (`ROW_FILL`, gap probability, cube density).
+- **Procgen vs authored is now an OPEN choice** *(ADR-004 — "procgen is PRIMARY" was justified by endless
+  Survival, which is dropped; recommendation: **hybrid, ruleset grammar as the pivot**)*. Both feed the same
+  `Track` interface, so the sim is unchanged either way. **Fairness = two hard floors only:** **FIT** (a
+  connected corridor ≥ the widest ship links entry→exit) and **GAP-REACH** (every gap ≤ the worst jumper's
+  reach). **Weave difficulty is *uncapped*** — it self-balances via the speed dial. A **validator**
+  (z-monotonic flood-fill + per-gap reach) enforces the two floors on *any* track, authored or generated —
+  plus the **WYSIWYG-collision** gate (ADR-002) for authored visuals. (Balance is playstyle-level — §5.5, §5.7.)
+  > ⚠ SUPERSEDED 2026-08-10 (ADR-004) — was "**Levels will be hand-authored** (procedural gen is filler/endless)."
+- **Difficulty progression → a two-layer generator (ADR-003).** *Micro layer (built, S6):* the corridor-noise
+  weave fills geometry via a difficulty scalar `D(i)` (ease-out trend + deterministic triangle-wave pacing —
+  NOT `Math.sin`), driving corridor width / density / meander. *Macro layer (planned):* a **1-D grammar of
+  beats** (warmup · weave · jump-gauntlet · slow-slalom · fork · shrink-crescendo · set-piece) that sequences
+  the §5.7 mechanic vocabulary with legality / a difficulty budget / no-repeat / teach-before-test, and which
+  **doubles as the authored-level validator** (generate == validate). Materialize-once (finite tracks) makes
+  its stateful generation legal. Build it *after* there are ≥2–3 beat types to sequence.
+  > ⚠ SUPERSEDED 2026-08-10 (ADR-004) — the old "exponential trend for **endless Survival**" branch is gone;
+  > `D(i)` is just the finite ramp.
 - **AS-BUILT (procgen v2, S6 · 2026-08-10):** the generator is now a **carved value-noise racing-line +
   variable-width noise-walls** model (`sim/track.ts` + new `sim/noise.ts`) — a coherent line you *thread*, with
   walls RLE-merged into **variable-width blocks** OUTSIDE a `≥ MIN_LANE` corridor (fair BY CONSTRUCTION). The
   line's slope **and curvature** are capped from the least-capable class; `D(i)` = ease-out + trig-free
   triangle-wave pacing. Blocks may now span **multiple lanes** (width variety); walls are **full-segment-depth**
   (a `BLOCK_LIMIT=128` trade — no depth variety yet). **Pickups sit on the corridor line** (`corridorCenterX`).
-  Renderer + collision unchanged (`Segment`/`Block` shapes preserved). **Supersedes the IID cube-scatter above**,
-  and procedural is now the **PRIMARY** path (hand-authoring reserved for signature courses). Feel-gate pending.
+  Renderer + collision unchanged (`Segment`/`Block` shapes preserved). **Supersedes the IID cube-scatter above.**
+  Feel-gate pending. *(This is the **micro** fill layer of ADR-003's two-layer plan. The "procedural is now the
+  PRIMARY path" claim is retired — ADR-004; procgen-vs-authored is now open, see the progression bullet above.)*
 
 ### 5.3 Power-ups (Blur trinity) — starter set
 Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time.
@@ -217,7 +247,7 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | **Audio** — singleton engine, synth hum (pitch∝speed), CC0 SFX + CC-BY music, positional, event-bound | **LIVE (S6)** | `app/audio/**`; `M`=mute; `RemoteEngineAudio` not hear-verified |
 | **Front-of-house UI** — de-rounded neon landing over Grid-Void (cyan×marigold), LCARS-neon system | **LIVE (S6)** | lobby pick-UI stats + in-game env integration REMAINING |
 | Session flow (lobby→race→results, standings, restart) | **LIVE (S4)** | round lifecycle + room list + spectator + host migration |
-| Survival mode (endless + chase-wall) | **PLANNED (S7)** | Race is the v1 mode |
+| ~~Survival mode (endless + chase-wall)~~ | **DROPPED (ADR-004)** | replaced by longer finite tracks; Race is the only mode |
 
 ### 5.7 Mechanic catalog — master menu (pick one at a time) — 2026-08-09
 
@@ -313,7 +343,7 @@ through a weave) · `heavy` (↑gravity → jumps fall short) · `magnetize` (dr
 #### F) Modes & scoring
 
 Race (finite) ✓ · **Lap race** (repeat the ribbon N times — a "lap" is a length re-run, no turning) ·
-**Checkpoint race** (ordered checkpoints, BC3-trig) · **Survival** (chase derezz-wall, last alive) ·
+**Checkpoint race** (ordered checkpoints, BC3-trig) · ~~**Survival** (chase derezz-wall, last alive)~~ *(dropped — ADR-004)* ·
 **Elimination** (last place cut each interval/lap) · **Battle/arena** (no finish — pure disrupt/kill score,
 BC1) · **Team modes** (2 teams; combined race/elimination/battle scoring).
 *(Coin-grab and Tag — dropped.)*
@@ -355,6 +385,10 @@ geometry (crushers / moving cubes / conveyors).
 ## 7. Progression / meta — **out of scope for v1**
 No unlocks, no persistence. Every session is fresh. (Revisit only if it has legs.)
 
+> Note: this is **meta** progression (unlocks/persistence across sessions), still out of scope. It is
+> distinct from **in-track difficulty progression** — the beat/arc a single (longer) course walks you through
+> — which is now a live design axis (§5.2, ADR-003) and is *how* a long finite track replaces what endless used to give.
+
 ## 8. Controls (constrained model)
 Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live multiplayer).
 
@@ -379,9 +413,32 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 - Nobody asks "how do I play?" after one round.
 
 ## 10. OPEN QUESTIONS (resolve with team)
-1. ~~**v1 mode** — Race or Survival first?~~ **RESOLVED: Race-to-finish is v1** (finite, finish-line); Survival is S7. (§4, backlog.)
+1. ~~**v1 mode** — Race or Survival first?~~ **RESOLVED: Race-to-finish** (finite). ~~Survival is S7.~~ **Endless Survival DROPPED entirely — ADR-004**; the game is finite Race over short→long tracks.
+7. **Procgen vs authored** — now an OPEN choice (ADR-004 removed the endless necessity). Hybrid with the ruleset grammar as pivot? Where does the procgen/authored split land?
+8. **Descriptor shape** (ADR-001) — `RunState.seed: uint32` → a `TrackDescriptor` sub-schema `{kind, seed?/levelId?, tier?, length?}`. Exact wire fields?
+9. **Beat vocabulary + when to build the macro grammar** (ADR-003) — which BC5-family beats land first (boost/slow/launch), and how long does the difficulty arc of a "long" track run?
 2. ~~**Fuel/energy** — keep the SkyRoads resource pressure, or cut for simplicity?~~ **RESOLVED: cut.** Energy only gated boost; boost is now a pickup (§5.1, §5.3), so the meter is gone. Pickups carry their own charge.
 3. **Death penalty** — respawn into same round, wait for next round, or spectate-only until round ends?
 4. **Power-up carry** — hold 1, hold 2, or slot + queue?
 5. **Friendly targeting** — free-for-all only, or teams mode later?
 6. **Session length** — target minutes per round / per session?
+
+---
+
+## Superseded (history — do not delete; see `docs/DECISIONS.md`)
+
+### Endless Survival mode — dropped 2026-08-10 (ADR-004)
+Kept verbatim as the *why* trail. This is the retired §4 "Mode B" + its per-mode join policy:
+
+> **B. Survival (endless) — fast-follow.** Procedural endless track; a **chasing derezz-wall** sweeps forward
+> behind the pack (camp = caught) with **distance/time as score**. Furthest/last-flying wins. (cuberun + our
+> chase mechanic.) Home of the §5.1 forward-pressure mechanism.
+>
+> **Join policy — per mode (S4):** **Race** locks the field at GO — late join → **spectate** the round and race
+> the next. **Survival** keeps **live drop-in** — a late joiner **spawns beside the pack** (an endless track has
+> no start line to gate on). One server seam (`shouldSpectateOnJoin`), a per-mode branch not two code paths.
+
+**Why dropped:** playtest-informed (user, 2026-08-10). Endless was the *sole* justification for O(1)
+random-access generation ("constraint 2"); dropping it lets all tracks **materialize once at load** and reopens
+the generator design space. Replaced by **longer finite tracks** + an in-track difficulty arc (§5.2/§7). The
+Survival branch of `shouldSpectateOnJoin` and the onJoin spawn-stagger become dead-code-in-waiting.
