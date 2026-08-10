@@ -71,11 +71,9 @@ These exist so the art *stays* 60fps with 12 ships + pickups + projectiles:
 3. **Low-poly, no heavy textures.** Light does the work, not texels.
 4. **One bloom pass**, tuned — not per-object glow hacks.
 5. **Budget:** *OPEN* — set tri-count + draw-call budgets after first perf test.
-6. **WYSIWYG collision (hard rule — 2026-08-10, ADR-002).** Track *visuals* are now separate from the
-   *physics* `Track` (physics + anchors is gameplay data; the mesh is client-only). Today procgen renders the
-   exact collision AABBs, so they can't disagree. For any **authored** track mesh, the visual **must faithfully
-   cover the physics hull** — no lethal wall you can't see, no visible wall you pass through. This is a
-   content-validation gate (beside FIT / GAP-REACH), not a suggestion. See `docs/DECISIONS.md`.
+6. **WYSIWYG collision (hard rule — ADR-002).** The rendered track IS the physics hull; any authored mesh
+   must faithfully cover the collidable hull (no invisible lethal walls, no visible walls you pass through).
+   Full statement + the ADR-000 litmus live in **§12** (added by the ADR-002 implementation).
 
 ## 9. Asset pipeline — **OPEN**
 - Ships/hazards: hand-modelled (Blender) vs generated vs pure procedural geometry (boxes/extrusions in-code)?
