@@ -28,9 +28,13 @@ import { RunRoom } from './run-room.js';
 const TEST_PORT = 2568;
 
 // The room advances physics from setSimulationInterval, i.e. the wall clock. Waiting on real time would
-// cost over six seconds per run (3s countdown + 3s pickup respawn) and stay timing-flaky. Drive the same
-// fixed step the interval calls, with time we control instead. `fixedStep` is private to the room, so this
-// cast is the test seam — it is the only place this file reaches past the public surface.
+// cost over six seconds per run (3s countdown + 3s pickup respawn) and stay timing-flaky. So every test
+// STOPS that interval (see racingRoom) and drives the same fixed step by hand instead.
+//
+// Stopping it is not optional. Left running, the room keeps stepping between our calls and races the
+// assertions: a 200ms pause after firing is enough for a bolt to fly, hit, and be pruned before we look.
+// `fixedStep` is private, so this cast is the test seam — the only place this file reaches past the
+// public surface.
 interface FixedStepRoom {
     fixedStep( dt: number ): void;
 }
@@ -68,6 +72,9 @@ describe( 'RunRoom combat', () => {
     // lobby → countdown → racing, driven deterministically. The host is the first joiner (see onJoin).
     async function racingRoom( clients: number ) {
         const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
+        // Take over the clock. onCreate started a live 60Hz interval; calling setSimulationInterval with no
+        // callback clears it and installs nothing, so tick() below is the ONLY thing advancing the sim.
+        room.setSimulationInterval();
         const connections = [];
         for ( let i = 0; i < clients; i++ ) {
             connections.push( await colyseus.connectTo( room, { name: `Racer${ i }` } ) );
@@ -115,7 +122,8 @@ describe( 'RunRoom combat', () => {
         assert.equal( shooter.heldPower, HeldPower.none, 'firing empties the single held slot' );
 
         // The bolt spawns 3u ahead of the shooter and covers 2u per tick (120u/s ÷ 60). The victim's hit
-        // window is about 8u deep, so the bolt cannot tunnel past it. 0.25s carries it well beyond z=20.
+        // window is 2 x (BOLT_HALF 1.5 + halfL 1.26) = 5.52u deep — wider than one tick of travel, so the
+        // bolt cannot tunnel past it. 0.25s carries it well beyond z=20.
         tick( room, 0.25 );
 
         assert.equal( victim.stunTimer, STUN_SECONDS, 'the victim takes the full stun' );

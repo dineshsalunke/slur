@@ -15,6 +15,9 @@ catalogs:
     '@react-three/postprocessing':
       specifier: ^3.0.4
       version: 3.0.4
+    '@types/node':
+      specifier: ^22
+      version: 22.20.1
     postprocessing:
       specifier: ^6.39.4
       version: 6.39.4
@@ -91,7 +94,7 @@ importers:
         specifier: ^8.3.0
         version: 8.3.0(react-router@8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@7.0.2)(vite@8.2.1(@types/node@22.20.1)(esbuild@0.28.1)(tsx@4.23.9))
       '@types/node':
-        specifier: ^22
+        specifier: 'catalog:'
         version: 22.20.1
       '@types/react':
         specifier: ^19.2.14
@@ -131,7 +134,7 @@ importers:
         specifier: ^0.17.11
         version: 0.17.11(@colyseus/core@0.17.47)(@colyseus/sdk@0.17.43(@colyseus/core@0.17.47)(typescript@7.0.2))(@colyseus/tools@0.17.20(@colyseus/core@0.17.47)(@colyseus/ws-transport@0.17.13))
       '@types/node':
-        specifier: ^22
+        specifier: 'catalog:'
         version: 22.20.1
       tsx:
         specifier: ^4.23.9
@@ -147,7 +150,7 @@ importers:
         version: 4.0.30(typescript@7.0.2)
     devDependencies:
       '@types/node':
-        specifier: ^22
+        specifier: 'catalog:'
         version: 22.20.1
       typescript:
         specifier: 'catalog:'

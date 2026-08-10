@@ -8,7 +8,7 @@
         "build": "tsc -b",
         "typecheck": "tsc -b",
         "start": "node dist/index.js",
-        "test": "tsc -p tsconfig.test.json && node --test \"test-dist/**/*.test.js\""
+        "test": "tsc -b && rm -rf test-dist && tsc -p tsconfig.test.json && node --test \"test-dist/**/*.test.js\""
     },
     "dependencies": {
         "@colyseus/core": "^0.17.47",
@@ -19,7 +19,7 @@
     "devDependencies": {
         "@colyseus/sdk": "catalog:",
         "@colyseus/testing": "^0.17.11",
-        "@types/node": "^22",
+        "@types/node": "catalog:",
         "tsx": "^4.23.9",
         "typescript": "catalog:"
     }
