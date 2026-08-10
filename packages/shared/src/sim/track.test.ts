@@ -27,9 +27,12 @@ import {
 } from '../index.js';
 
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 0x0fffffff, 42, 99991, 0xffffffff ];
-// Widest hull in the roster. Track fairness floors to the CLASS SET (the same principle ship-classes.ts
-// states), so derive this instead of hard-coding: add a wider ship and the FIT floor starts guarding it.
-const WIDEST_HULL = 2 * Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfW ) );
+// Half-width of the widest hull in the roster. Track fairness floors to the CLASS SET (the principle
+// ship-classes.ts states), so derive it instead of hard-coding: add a wider ship and the gate guards it.
+const WIDEST_HALF_W = Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfW ) );
+// The band a hull CENTRE may occupy without clipping the outer rails.
+const CENTRE_MIN = -HALF_WIDTH + WIDEST_HALF_W;
+const CENTRE_MAX = HALF_WIDTH - WIDEST_HALF_W;
 const N = TRACK_SEGMENTS + 4; // include a couple of finish segments
 
 function segEqual( a: Segment, b: Segment ): boolean {
@@ -266,6 +269,19 @@ function openIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] >
     if ( cursor < HALF_WIDTH ) open.push( [ cursor, HALF_WIDTH ] );
     return open.filter( ( [ a, b ] ) => b > a );
 }
+// Legal CENTRE positions for the widest hull at this row: each opening eroded by halfW on both sides.
+// Eroding BEFORE the flood-fill is the whole point. The reachable set is usually several disjoint
+// intervals, and an opening too thin to hold a hull vanishes here instead of being masked by a wider
+// sibling — exactly what propagating raw openings and then measuring the widest one fails to catch.
+function centreIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] > {
+    const out: Array< [ number, number ] > = [];
+    for ( const [ a, b ] of openIntervalsAt( seg, r ) ) {
+        const lo = Math.max( a + WIDEST_HALF_W, CENTRE_MIN );
+        const hi = Math.min( b - WIDEST_HALF_W, CENTRE_MAX );
+        if ( hi > lo ) out.push( [ lo, hi ] );
+    }
+    return out;
+}
 function intersectIntervals(
     a: Array< [ number, number ] >,
     b: Array< [ number, number ] >,
@@ -279,9 +295,11 @@ function intersectIntervals(
         }
     return out;
 }
-test( 'the open corridor is always laterally REACHABLE and wide enough for the widest hull', () => {
+test( 'a widest-hull ship can always thread the corridor (REACH and FIT together)', () => {
     const reachUnits = SLOPE_CAP * CELL; // how far the least-capable ship can strafe per forward row (world x)
-    const full: Array< [ number, number ] > = [ [ -HALF_WIDTH, HALF_WIDTH ] ];
+    // Reachability is tracked over hull CENTRES, not raw openings, so "reachable" always means "a whole
+    // ship fits there" rather than "some sliver of floor is exposed there".
+    const full: Array< [ number, number ] > = [ [ CENTRE_MIN, CENTRE_MAX ] ];
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
         let reach = full;
@@ -293,23 +311,14 @@ test( 'the open corridor is always laterally REACHABLE and wide enough for the w
             }
             for ( let r = 0; r < ZCELLS; r++ ) {
                 const dilated = reach.map( ( [ a, b ] ): [ number, number ] => [
-                    Math.max( -HALF_WIDTH, a - reachUnits ),
-                    Math.min( HALF_WIDTH, b + reachUnits ),
+                    Math.max( CENTRE_MIN, a - reachUnits ),
+                    Math.min( CENTRE_MAX, b + reachUnits ),
                 ] );
-                reach = intersectIntervals( dilated, openIntervalsAt( seg, r ) );
+                reach = intersectIntervals( dilated, centreIntervalsAt( seg, r ) );
                 assert.ok(
                     reach.length > 0,
-                    `seed ${ seed } seg ${ i } row ${ r }: reachable corridor collapsed — unavoidable dead-end`,
-                );
-                // FIT, on the REACHABLE corridor specifically. Non-empty is not passable: a 0.1u sliver
-                // satisfies the check above while no hull fits through it. The per-slice MIN_LANE test does
-                // not cover this either — it measures the WIDEST corridor in a slice, which need not be the
-                // reachable one. Asserting both together is the floor neither check makes alone.
-                const widestReach = Math.max( ...reach.map( ( [ a, b ] ) => b - a ) );
-                assert.ok(
-                    widestReach >= WIDEST_HULL,
-                    `seed ${ seed } seg ${ i } row ${ r }: reachable corridor ${ widestReach.toFixed( 2 ) }u ` +
-                        `is narrower than the widest hull ${ WIDEST_HULL.toFixed( 2 ) }u`,
+                    `seed ${ seed } seg ${ i } row ${ r }: no centre line survives for a ` +
+                        `${ ( 2 * WIDEST_HALF_W ).toFixed( 2 ) }u hull — unavoidable dead-end`,
                 );
             }
         }
