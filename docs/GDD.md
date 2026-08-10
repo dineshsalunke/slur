@@ -178,8 +178,13 @@ models (Comet, Interceptor) are naturally twitchy at gaps; the long ones (Phanto
 models were assigned to *match* the intended identity, so the geometry does the balancing.
 
 **Armour / combat (S6 — LOCKED 2026-08-10):** `armour` is a per-class **stun-duration multiplier**
-(`effectiveStun = STUN_SECONDS × (1 − armour)`), living in the shared `FlightTuning` (resolved both ends so the
-predicted `stunTimer` stays byte-identical), and it is a **sidegrade, NOT a free stat**: the axis is
+(`effectiveStun = STUN_SECONDS × (1 − armour)`). **As-built 2026-08-10:** it lives on `ShipClass` **beside**
+`tuning`, not inside `FlightTuning` — `FlightTuning` is the *flight* identity, and folding a combat stat into
+it would drag `armour` through `DEFAULT_TUNING` and every `deriveJump` spread. The earlier "resolved both ends
+so the predicted `stunTimer` stays byte-identical" rationale **does not apply**: the server is the only writer
+of `stunTimer` (`run-room.ts`), and the client receives the value and only decays it in `simulate()`, so armour
+cannot desync prediction. It stays server-authoritative shared data for the real reasons — ship stats ARE data
+(non-negotiable #6), and the lobby pick-UI reads it. It is a **sidegrade, NOT a free stat**: the axis is
 **agility ⊥ armour** — agile ships (Interceptor/Comet) are **fragile** (long stun), heavy ships
 (Freighter/Phantom) are **tanky** (short stun). Agile dodges bolts easily but pays when caught; heavy eats bolts
 but shrugs them off. Armour resists *combat* disruption but **never** a fall into a gap (a large hitbox still

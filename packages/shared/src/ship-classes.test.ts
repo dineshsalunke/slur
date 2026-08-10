@@ -4,14 +4,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { STUN_SECONDS } from './combat/constants.js';
-import {
-    armourForShip,
-    classOfShip,
-    DEFAULT_SHIP,
-    SHIP_CLASSES,
-    SHIP_ORDER,
-    stunDurationForShip,
-} from './ship-classes.js';
+import { armourForShip, DEFAULT_SHIP, SHIP_CLASSES, SHIP_ORDER, stunDurationForShip } from './ship-classes.js';
 
 test( 'every class declares armour inside the 0..1 band', () => {
     for ( const c of Object.values( SHIP_CLASSES ) ) {
@@ -41,14 +34,36 @@ test( 'armour ranks as the exact inverse of strafe authority', () => {
     }
 } );
 
-test( 'stun duration is STUN_SECONDS scaled by the ship class armour', () => {
+// LITERALS, deliberately. Deriving the expected value from `armour` asserts the formula against itself and
+// cannot fail — it would pass even if every class were retuned to a meaningless spread. These are the
+// published balance numbers; changing one is a balance decision that should have to change this table too.
+test( 'each ship takes its published stun duration', () => {
+    const published: Record< string, number > = {
+        executioner: 1.2, // Interceptor · armour 0
+        bob: 1.08, // Comet · armour 0.1
+        challenger: 0.96, // Fighter · armour 0.2 (the default ship)
+        dispatcher: 0.84, // Phantom · armour 0.3
+        imperial: 0.72, // Freighter · armour 0.4
+    };
     for ( const shipId of SHIP_ORDER ) {
-        const expected = STUN_SECONDS * ( 1 - classOfShip( shipId ).armour );
+        const want = published[ shipId ];
+        assert.ok( want !== undefined, `${ shipId } has no published stun duration — add it to this table` );
         assert.ok(
-            Math.abs( stunDurationForShip( shipId ) - expected ) < 1e-9,
-            `${ shipId } stun duration does not match its armour`,
+            Math.abs( stunDurationForShip( shipId ) - want ) < 1e-9,
+            `${ shipId } stun is ${ stunDurationForShip( shipId ) }s, published ${ want }s`,
         );
     }
+} );
+
+// The ordering test above passes for armour 0 / 0.001 / 0.002 / 0.003 / 0.004 — a 4ms spread, i.e. a stat
+// that does nothing at all. Monotonic is not the same as meaningful, so pin the magnitude separately.
+test( 'the armour spread is wide enough to change how a hit feels', () => {
+    const longest = stunDurationForShip( 'executioner' ); // least armour
+    const shortest = stunDurationForShip( 'imperial' ); // most armour
+    assert.ok(
+        longest - shortest >= 0.3,
+        `armour spread is only ${ ( longest - shortest ).toFixed( 3 ) }s — too small to read in play`,
+    );
 } );
 
 // A bolt must stun the nimble ship for longer than the sluggish one — the whole point of the stat, asserted
