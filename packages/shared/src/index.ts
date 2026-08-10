@@ -14,4 +14,5 @@ export * from './sim/noise.js';
 export * from './sim/rng.js';
 export * from './sim/step.js';
 export * from './sim/track.js';
+export * from './sim/track-provider.js';
 export * from './sim/types.js';

@@ -3,12 +3,18 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HALF_WIDTH, makeTrack, START_SAFE } from '../sim/track.js';
+import { HALF_WIDTH, START_SAFE, type Track } from '../sim/track.js';
+import { procgenDescriptor, resolveTrack } from '../sim/track-provider.js';
 import { BOLT_HALF, BOLT_SPEED } from './constants.js';
 import { grabPickup, PICKUP_GRAB_RADIUS, type Pickup, pickupLayout } from './pickups.js';
 import { boltHits, type HitShip, type ProjectileState, stepProjectiles } from './projectiles.js';
 
 const DT = 1 / 60;
+
+// ADR-001: the track + pickup layout now flow from a TrackDescriptor. Thin seed→ wrappers keep the
+// seed-driven assertions below readable while proving the same geometry/layout flows through the new seam.
+const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed ) );
+const layout = ( seed: number ): Pickup[] => pickupLayout( procgenDescriptor( seed ) );
 
 // A default-live victim at the origin (Fighter footprint), override per case.
 function victim( over: Partial< HitShip > = {} ): HitShip {
@@ -58,25 +64,25 @@ test( 'grabPickup: overlap within the grab radius grants; just outside (x or z) 
     assert.equal( grabPickup( { x: 5, z: 200 + PICKUP_GRAB_RADIUS + 0.1 }, p ), false );
 } );
 
-test( 'pickupLayout is deterministic — two calls with the same seed are byte-identical', () => {
-    assert.deepEqual( pickupLayout( 12345 ), pickupLayout( 12345 ) );
+test( 'pickupLayout is deterministic — two calls with the same descriptor are byte-identical', () => {
+    assert.deepEqual( layout( 12345 ), layout( 12345 ) );
 } );
 
 test( 'pickupLayout: a different seed yields a different layout (positions AND which segments qualify)', () => {
     // Hazard-awareness makes the slot SET seed-dependent (different segments are plain per seed), so the two
     // layouts differ in count and/or lateral position — just assert they are not identical.
-    assert.notDeepEqual( pickupLayout( 1 ), pickupLayout( 2 ) );
+    assert.notDeepEqual( layout( 1 ), layout( 2 ) );
 } );
 
 test( 'pickupLayout: slots sit after the start-safe zone and inside the corridor', () => {
-    const layout = pickupLayout( 777 );
-    assert.ok( layout.length > 0, 'no pickups generated' );
+    const slots = layout( 777 );
+    assert.ok( slots.length > 0, 'no pickups generated' );
     assert.ok(
-        layout.every( ( p ) => Number( p.id ) >= START_SAFE ),
+        slots.every( ( p ) => Number( p.id ) >= START_SAFE ),
         'a pickup landed inside the start-safe zone',
     );
     assert.ok(
-        layout.every( ( p ) => Math.abs( p.x ) <= HALF_WIDTH ),
+        slots.every( ( p ) => Math.abs( p.x ) <= HALF_WIDTH ),
         'a pickup fell outside the rails',
     );
 } );
@@ -84,7 +90,7 @@ test( 'pickupLayout: slots sit after the start-safe zone and inside the corridor
 test( 'pickupLayout: every slot sits on floor and inside the open corridor — never over a hole or buried in a wall', () => {
     for ( const seed of [ 1, 2, 777, 12345, 999983 ] ) {
         const track = makeTrack( seed );
-        for ( const p of pickupLayout( seed ) ) {
+        for ( const p of layout( seed ) ) {
             const seg = track.segmentAt( Number( p.id ) );
             assert.ok( seg.floors.length > 0, `seed ${ seed }: pickup ${ p.id } placed over a hole (gap)` );
             // Only LETHAL walls "bury" a pickup — a drag (amber) block is passable, so a pickup on one is

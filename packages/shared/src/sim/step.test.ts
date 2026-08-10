@@ -25,7 +25,6 @@ function flatTrack( finishSeg: number ): Track {
         isFinish: i >= finishSeg,
     } );
     return {
-        seed: 0,
         finishZ: finishSeg * SEG_LEN,
         segmentAt: seg,
         segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),
@@ -45,7 +44,7 @@ function trackWithSeg3( seg3: ( i: number ) => Segment ): Track {
         isFinish: false,
     } );
     const seg = ( i: number ): Segment => ( i === 3 ? seg3( i ) : plain( i ) );
-    return { seed: 0, finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ) };
+    return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ) };
 }
 
 // Drive the ship forward through the track until it dies or the tick budget runs out.
@@ -139,7 +138,6 @@ test( 'generous grounded: a floor under only PART of the footprint still support
         isFinish: false,
     } );
     const track: Track = {
-        seed: 0,
         finishZ: 1e9,
         segmentAt: seg,
         segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ),
@@ -271,7 +269,6 @@ test( 'falling through a gap kills, then respawns at the last safe anchor', () =
         isFinish: false,
     } );
     const track: Track = {
-        seed: 0,
         finishZ: 1e9,
         segmentAt: seg,
         segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),
@@ -338,7 +335,6 @@ test( 'respawn wakes a derezzed ship unfrozen (stunTimer cleared)', () => {
         isFinish: false,
     } );
     const track: Track = {
-        seed: 0,
         finishZ: 1e9,
         segmentAt: seg,
         segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),

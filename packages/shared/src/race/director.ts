@@ -20,9 +20,10 @@ export function isColorId( n: unknown ): n is number {
     return typeof n === 'number' && Number.isInteger( n ) && n >= 0 && n < COLOR_COUNT;
 }
 
-// Join policy is a PER-MODE decision. Race (v1): joining once the field is locked ⇒ spectate until the next
-// round. Survival (S7) will return `false` here (drop-in-beside-pack — the onJoin spawn-stagger is kept for
-// exactly that). The mode branch lives in THIS ONE place so S7 is a one-function change, not a hunt.
+// Join policy for Race: joining once the field is locked (any phase past lobby) ⇒ spectate until the next
+// round. The onJoin spawn-stagger is kept for live drop-in. (ADR-004: the old endless-Survival branch this
+// once anticipated — a mode that returned `false` here for drop-in-beside-pack — is obsolete; Survival was
+// dropped and the game is a finite Race, so this is now the single, unconditional policy.)
 export function shouldSpectateOnJoin( phase: number ): boolean {
     return phase !== PHASE.lobby;
 }

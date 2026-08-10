@@ -3,8 +3,11 @@
 // seeded by hash2(seed, …), so it is O(1) random-access and byte-identical on client + server (this is
 // why collision — which runs inside the shared simulate() — auto-networks with no wire change).
 //
-// A finite Race is indices 0..TRACK_SEGMENTS; because segmentAt accepts any i, endless Survival (S7)
-// falls out for free — do NOT materialize an array, that would force an S7 rewrite.
+// The track is FINITE — indices 0..length (length defaults to TRACK_SEGMENTS). segmentAt(i) stays a pure
+// O(1) derivation with no stored array, which is what keeps geometry byte-identical on client + server with
+// zero tile sync — a finite track could be materialized once, but the per-segment function is the simplest
+// correct form and costs nothing. (ADR-004: the old "endless Survival falls out for free — do NOT
+// materialize an array, that would force an S7 rewrite" note is obsolete; Survival/endless was dropped.)
 //
 // DETERMINISM: integer/PRNG/`+-*/`/compare/floor ONLY. NO Math.sin/cos/tan/pow/sqrt in the per-segment
 // path — a single ULP of cross-engine drift diverges geometry → diverges deaths → the game desyncs.
@@ -81,10 +84,21 @@ export interface Segment {
 }
 
 export interface Track {
-    seed: number;
     finishZ: number; // world z of the finish line
     segmentAt( i: number ): Segment;
     segmentAtZ( z: number ): Segment;
+}
+
+// The procgen arm of TrackDescriptor (the discriminated union lives in track-provider.ts, the ADR-001 seam).
+// Defined here — not imported from the provider — so track.ts stays the leaf module and only the provider
+// depends on it, never the reverse. `seed` is the ONLY field procgen actually reads today; `tier` and
+// `length` are RESERVED + UNWIRED (ADR-003 wires the procgen rule-system): `tier` is ignored and `length`
+// falls back to TRACK_SEGMENTS so the generated geometry is byte-identical to the pre-ADR seed-only path.
+export interface ProcgenDescriptor {
+    kind: 'procgen';
+    seed: number;
+    tier: number;
+    length: number;
 }
 
 // ── Track constants — everything is sized in 4u CELLs (difficulty is a config edit) ──
@@ -167,8 +181,8 @@ function gapProb( d: number ): number {
 // Whether segment i ROLLED a gap (first draw of its local RNG < gapProb(D)). A real gap also requires the
 // PREVIOUS segment not to have rolled one (→ no two gaps in a row, and the segment after a gap is a guaranteed
 // landing pad). Pure O(1) local lookback — each probe seeds its own independent stream.
-function rolledGap( seed: number, i: number ): boolean {
-    if ( i < START_SAFE || i >= TRACK_SEGMENTS ) return false;
+function rolledGap( seed: number, i: number, length: number ): boolean {
+    if ( i < START_SAFE || i >= length ) return false;
     return mulberry32( hash2( seed, i ) )() < gapProb( difficultyAt( i ) );
 }
 
@@ -251,19 +265,20 @@ function buildWalls(
     return blocks;
 }
 
-function buildSegment( seed: number, i: number ): Segment {
+function buildSegment( seed: number, i: number, length: number ): Segment {
     const z0 = i * SEG_LEN;
     const z1 = z0 + SEG_LEN;
     const base = { index: i, z0, z1, blocks: [] as Block[], isFinish: false };
 
-    // Finish: a flat full-width pad from TRACK_SEGMENTS onward (isFinish flips `finished` on cross).
-    if ( i >= TRACK_SEGMENTS ) return { ...base, kind: 'finish', floors: fullFloor( 0 ), isFinish: true };
+    // Finish: a flat full-width pad from `length` onward (isFinish flips `finished` on cross).
+    if ( i >= length ) return { ...base, kind: 'finish', floors: fullFloor( 0 ), isFinish: true };
     // Start-safe accel zone.
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
     // Gap: rolled one AND the previous segment didn't (guarantees a landing pad after every gap, and no two
     // active gaps in a row). Falls through the whole width → cross it only airborne.
-    if ( rolledGap( seed, i ) && ! rolledGap( seed, i - 1 ) ) return { ...base, kind: 'gap', floors: [] };
+    if ( rolledGap( seed, i, length ) && ! rolledGap( seed, i - 1, length ) )
+        return { ...base, kind: 'gap', floors: [] };
 
     // Carved corridor + noise walls (extracted to corridorUnion / buildWalls to keep this simple).
     const d = difficultyAt( i );
@@ -296,13 +311,17 @@ export function segIndexForZ( z: number ): number {
     return Math.floor( z / SEG_LEN );
 }
 
-// makeTrack(seed) → the `track` handle passed into simulate(). A closure bound to the seed; both ends
-// build it from the SAME room-state seed and thus generate identical geometry.
-export function makeTrack( seed: number ): Track {
-    const segmentAt = ( i: number ): Segment => buildSegment( seed, i );
+// makeProcgenTrack(descriptor) → the `track` handle passed into simulate(). PROCGEN-INTERNAL: this is the
+// ONLY place a `seed` is read to build a track — everything outside goes through resolveTrack (track-provider,
+// the ADR-001 seam). A closure bound to the descriptor's seed; both ends build it from the SAME room-state
+// descriptor and thus generate identical geometry. `length` falls back to TRACK_SEGMENTS (RESERVED/UNWIRED —
+// see ProcgenDescriptor) so finishZ + the finish/gap end-cutoffs are byte-identical to the pre-ADR path.
+export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
+    const seed = d.seed;
+    const length = d.length || TRACK_SEGMENTS; // `|| ` (not `??`): the schema uint16 defaults to 0, and a 0-length track is meaningless — fall back so geometry stays identical
+    const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length );
     return {
-        seed,
-        finishZ: TRACK_SEGMENTS * SEG_LEN,
+        finishZ: length * SEG_LEN,
         segmentAt,
         segmentAtZ: ( z: number ) => segmentAt( segIndexForZ( z ) ),
     };
