@@ -7,15 +7,19 @@
         "dev": "tsx watch src/index.ts",
         "build": "tsc -b",
         "typecheck": "tsc -b",
-        "start": "node dist/index.js"
+        "start": "node dist/index.js",
+        "test": "tsc -p tsconfig.test.json && node --test \"test-dist/**/*.test.js\""
     },
     "dependencies": {
-        "@slur/shared": "workspace:*",
         "@colyseus/core": "^0.17.47",
         "@colyseus/ws-transport": "^0.17.13",
+        "@slur/shared": "workspace:*",
         "express": "^5.2.1"
     },
     "devDependencies": {
+        "@colyseus/sdk": "catalog:",
+        "@colyseus/testing": "^0.17.11",
+        "@types/node": "^22",
         "tsx": "^4.23.9",
         "typescript": "catalog:"
     }
