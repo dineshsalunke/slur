@@ -74,16 +74,25 @@ React Router (SPA)
 - **Fixed timestep 60 Hz** (accumulator loop) on server via `setSimulationInterval`; **`patchRate` ~20 Hz** to clients (decoupled from sim rate).
 - Client renders at display rate (60+), **interpolating** (~50–100 ms delay; linear pos / slerp rot) between authoritative snapshots for remote ships.
 - **Local player:** client-side prediction from local input + **server reconciliation** (`lastProcessedInput` seq). Shipped full in S2 (not interpolate-only) — this is what keeps web/WAN latency playable, not just a LAN nicety. See `netcode.md`.
-- **Deterministic track:** server sends a **seed** (in room state); both ends generate identical geometry from it → never sync track tile-by-tile, only seed + progression params.
+- **Deterministic track:** the room state carries a **descriptor** (opaque key — procgen `{seed,tier}` or
+  authored `{levelId}`); both ends **materialize** an identical physics-and-anchors `Track` from it → never
+  sync geometry tile-by-tile. The sim depends on the `Track` interface, not the descriptor's contents. Visuals
+  are resolved separately client-side (never synced).
+  > ⚠ SUPERSEDED 2026-08-10 (ADR-000/001) — was "server sends a **seed** … both ends generate geometry from it."
+  > The seed is now one field inside the descriptor, owned by the procgen provider. See `docs/DECISIONS.md`.
 - **(S6 — AS-BUILT 2026-08-10: `sim/noise.ts` + rewritten `sim/track.ts`) Track generator v2 — coherent weave + width variety** (plan in
   `.claude/phases/2026-08-10-procgen-weave-width-DRAFT.md`). Pickups now sit on the racing-line corridor
   (`corridorCenterX`). Deviation: walls are full-segment-depth (width variety only) — a `BLOCK_LIMIT=128` trade. Replaces the IID per-segment scatter with a
   hash-noise **carved racing-line + noise-walls** model (new trig-free `sim/noise.ts`: value-noise + smoothstep
-  + triangle-wave), keeping `segmentAt(i)` **O(1) random-access** (endless Survival stays free). Weave
+  + triangle-wave), keeping `segmentAt(i)` **O(1) random-access**. Weave
   density/challenge rise via a **derived slope AND curvature cap** (curvature = the reversal-rate the
   least-capable class can still thread — the insight the slope-only prior missed); **variable block widths**
   fall out free + **fair-by-construction** once a `≥MIN_LANE` corridor is carved. `Segment`/`Block` shapes
   unchanged → renderer + collision untouched; the fairness assert becomes per-z-slice.
+  > ⚠ NOTE 2026-08-10 (ADR-004) — the **O(1) random-access** constraint on `segmentAt(i)` existed *only* for
+  > endless Survival. Endless is dropped → all tracks **materialize once at load**, so this constraint no longer
+  > binds new generator work: stateful, rule-based materialize-time generation (a macro **beat grammar**,
+  > ADR-003) is now legal. The current O(1) generator still works and stays as the micro fill layer.
 - **Lag compensation deferred**, but server keeps a cheap per-ship position-history ring buffer so it's a drop-in later.
 
 ## 5. Networked state (Colyseus Schema) — AS-BUILT through S4 (APPEND-ONLY: declaration order = wire format)
@@ -92,7 +101,7 @@ React Router (SPA)
 RunState (room state)
   ├─ phase: uint8            // 0 lobby · 1 countdown · 2 racing · 3 finished  (@slur/shared race/director.ts PHASE)
   ├─ elapsed: float32        // RACE clock — reset at GO, advances ONLY while racing (→ finishTime/deadline are race-relative)
-  ├─ seed: uint32            // deterministic track (ONE per room for S4)
+  ├─ seed: uint32            // deterministic track (ONE per room for S4). PLANNED → TrackDescriptor sub-schema {kind, seed?/levelId?, tier?, length?} (ADR-001, append-only wire change)
   ├─ players: MapSchema<PlayerState>
   ├─ hostId: string          // sessionId; owns GO / Play-Again; reassigned on host leave
   ├─ countdown: float32      // >0 only during countdown; client renders ceil()
@@ -134,14 +143,15 @@ The fixed loop switches on `phase` (S4):
 - **(S5) — AS-BUILT:** `stepWorld` (runs after `stepRace`) advances bolts (shared `stepProjectiles`) → owner-immune
   AABB `boltHits` → victim `stunTimer` (= `STUN_SECONDS × (1 − class armour)`, S6 sidegrade) + one-shot `broadcast('hit')` → prune; pickup grab-on-overlap → `heldPower` +
   server-plain respawn timer; `USE_POWERUP` message spawns a bolt from the authoritative pose; `clearCombat` on each
-  race boundary. **(S7 Survival)** advance difficulty (speed/hazard density) by distance.
+  race boundary. ~~**(S7 Survival)** advance difficulty (speed/hazard density) by distance.~~ *(Dropped — ADR-004; no endless mode. Difficulty is baked into the finite track at materialize-time via `D(i)` + the beat grammar, not advanced live by distance.)*
 - Emit patch (`patchRate` ~20 Hz).
 
 ## 7. Shared code — `@slur/shared` (`packages/shared`)
-Client and server MUST share: `@colyseus/schema` definitions, the `simulate()` step, the deterministic track
-generator, pure game math, the **`ShipClass` stat table** (GDD §5.5), and power-up/enum constants. The
-**track generator + `simulate()` being shared and deterministic** is the linchpin that avoids syncing geometry
-and prevents client/server misprediction.
+Client and server MUST share: `@colyseus/schema` definitions, the `simulate()` step, the **`Track` provider(s)**
+(`resolveTrack(descriptor) → Track` — procgen and/or authored), pure game math, the **`ShipClass` stat table**
+(GDD §5.5), and power-up/enum constants. **`simulate()` + the `Track` provider being shared and deterministic**
+is the linchpin that avoids syncing geometry and prevents client/server misprediction. The sim depends on the
+`Track` **interface**, never on how it was produced (ADR-000/001) — so authored levels drop in with zero sim change.
 
 - **Compiled with `tsc` → `dist`** (NOT source-consumed): `@colyseus/schema@4` needs `experimentalDecorators`
   + `useDefineForClassFields:false`; JIT source-consumption makes esbuild/tsx disagree on decorator config and
