@@ -10,6 +10,12 @@ description: >-
 
 # pr-loop — find → review → comment → (approve + merge)
 
+> **External contributors cannot merge.** Merging needs write access to `dineshsalunke/slur`.
+> Check once, up front: `gh api repos/dineshsalunke/slur --jq .permissions` — `push: false`
+> means external, so this skill is **review-only**: read, verify, comment, stop. `gh pr merge`
+> will fail, and a review is not a clearance to land. An external contributor who also wants to
+> *fix* what they found must fork and open a cross-repo PR — see `/issue-loop`.
+
 One agent working the PR queue. This skill is the **body of a loop**: it reviews the open
 PRs, acts on each, and comes back. Run it under `/loop` to schedule iterations, or self-pace.
 

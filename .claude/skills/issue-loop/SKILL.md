@@ -9,6 +9,12 @@ description: >-
 
 # issue-loop — pick → lock → build → PR → monitor → merge
 
+> **External contributors must fork.** Only collaborators can push to `dineshsalunke/slur`. If
+> you are not one, pushing to the upstream fails and there is no way around it — fork the repo,
+> push branches to **your fork**, and open **cross-repo** PRs (`--head <you>:<branch>`). Check
+> once, up front: `gh api repos/dineshsalunke/slur --jq .permissions` — `push: false` means
+> external. Every step below that touches `git` or `gh` branches on this.
+
 One agent, one issue at a time, end to end. This skill is the **body of a loop**: it
 does a full issue and comes back for the next. Run it under `/loop` to schedule
 iterations, or let it self-pace (finish one issue, start the next).
