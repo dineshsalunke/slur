@@ -1,7 +1,7 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { RoomList } from '../lobby/room-list';
 import { hostRoom, joinLobby, joinRoom } from '../net/matchmaking';
 import type { Route } from './+types/home';
@@ -54,9 +54,6 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                 Host a run
             </button>
             <RoomList busy={ busy } onJoin={ ( roomId ) => enter( ( n ) => joinRoom( roomId, n ) ) } />
-            <p>
-                <Link to="/solo">Fly solo →</Link>
-            </p>
         </main>
     );
 }
