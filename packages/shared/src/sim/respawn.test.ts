@@ -7,7 +7,7 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DEFAULT_TUNING, FIXED_DT } from '../constants.js';
+import { DEFAULT_TUNING, FIXED_DT, type FlightTuning } from '../constants.js';
 import { emptyInput } from './input.js';
 import { simulate } from './step.js';
 import { makeTrack } from './track.js';
@@ -19,19 +19,22 @@ const MAX_TICKS = 3600; // 60s — ample; every seed kills a non-dodging ship fa
 
 // Drive forward without dodging until the ship dies, then keep stepping until it is back. Returns the state
 // at the death tick and at the respawn tick. A non-dodging pilot is exactly the case the issue describes.
-function deathAndRespawn( seed: number ): { death: SimShip; respawn: SimShip; nextTick: SimShip } | null {
+function deathAndRespawn(
+    seed: number,
+    tuning: FlightTuning = t,
+): { death: SimShip; respawn: SimShip; nextTick: SimShip } | null {
     const track = makeTrack( seed );
     const s = spawnShip( 0, 0 );
     let death: SimShip | null = null;
     let prevDead = false;
 
     for ( let i = 0; i < MAX_TICKS; i++ ) {
-        simulate( s, { ...emptyInput(), throttle: 1, seq: i }, FIXED_DT, t, track );
+        simulate( s, { ...emptyInput(), throttle: 1, seq: i }, FIXED_DT, tuning, track );
 
         if ( s.dead && ! prevDead ) death = { ...s };
         if ( ! s.dead && prevDead && death ) {
             const respawn = { ...s };
-            simulate( s, { ...emptyInput(), throttle: 1, seq: i + 1 }, FIXED_DT, t, track );
+            simulate( s, { ...emptyInput(), throttle: 1, seq: i + 1 }, FIXED_DT, tuning, track );
             return { death, respawn, nextTick: { ...s } };
         }
         prevDead = s.dead;
@@ -51,7 +54,7 @@ test( 'a respawned ship comes back alive, grounded, and on a floor', () => {
     }
 } );
 
-test( 'a respawn puts the ship BEHIND where it died, never past it', () => {
+test( 'a respawn puts the ship BEHIND where it died, and on its last safe lateral anchor', () => {
     for ( const seed of SEEDS ) {
         const r = deathAndRespawn( seed );
         assert.ok( r, `seed ${ seed }: no death + respawn` );
@@ -59,21 +62,40 @@ test( 'a respawn puts the ship BEHIND where it died, never past it', () => {
             r.respawn.z < r.death.z,
             `seed ${ seed }: respawned at z=${ r.respawn.z } which is not behind the death at z=${ r.death.z }`,
         );
+        assert.equal( r.respawn.x, r.death.lastSafeX, `seed ${ seed }: respawn ignored the safe lateral anchor` );
     }
 } );
 
-// The failure the issue feared: clear of the body for one tick, invuln zeroed, dead again immediately. It
-// does not happen — the setback lands the ship clear of the hazard that killed it. This is the guard that
-// keeps it that way if respawnSetback or the invuln rule is ever retuned.
-test( 'a respawned ship is not instantly killed again on the next tick', () => {
+// DIFFERENTIAL, on purpose. Comparing the respawn against `lastSafeZ - t.respawnSetback` would derive the
+// expectation from the very constant under test — it passes even with the setback cut to 2u, which is
+// exactly the kind of false confidence this suite is supposed to avoid. Doubling the knob and requiring the
+// ship to land further back proves the parameter is WIRED without pinning its VALUE, so the gate stays free
+// to retune it (issue #6 names respawnSetback as the likely lever).
+test( 'respawnSetback actually drives how far back the ship lands', () => {
+    for ( const seed of SEEDS ) {
+        const normal = deathAndRespawn( seed );
+        const doubled = deathAndRespawn( seed, { ...t, respawnSetback: t.respawnSetback * 2 } );
+        assert.ok( normal && doubled, `seed ${ seed }: no death + respawn` );
+        assert.ok(
+            doubled.respawn.z < normal.respawn.z,
+            `seed ${ seed }: doubling respawnSetback did not move the respawn back ` +
+                `(${ doubled.respawn.z } vs ${ normal.respawn.z }) — the setback is not wired`,
+        );
+    }
+} );
+
+// A respawn must not be immediately lethal — the setback places the ship clear of the hazard that killed it.
+//
+// SCOPE, stated plainly: this does NOT guard the death LOOP described on issue #6. There the ship
+// re-approaches the same wall and dies again about 25 ticks later, and at vz=20 against a 12u setback a
+// re-death one tick later is near arithmetically impossible — so this is weak on its own and only bites
+// alongside the differential setback test above. Guarding the loop would mean asserting a survival
+// DURATION, a balance expectation a legitimate retune should be free to change. That belongs to the gate.
+test( 'a respawn is not immediately lethal', () => {
     for ( const seed of SEEDS ) {
         const r = deathAndRespawn( seed );
         assert.ok( r, `seed ${ seed }: no death + respawn` );
-        assert.equal(
-            r.nextTick.dead,
-            false,
-            `seed ${ seed }: died again one tick after respawning — the death-loop regression`,
-        );
+        assert.equal( r.nextTick.dead, false, `seed ${ seed }: died again one tick after respawning` );
     }
 } );
 
