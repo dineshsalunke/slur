@@ -1,6 +1,9 @@
 # SLUR — Audio / Sound Design Document
 
-> Status: **v0 draft**. Sets the sonic target and the tech approach. Concrete asset lists follow once the look/feel is locked.
+> Status: **v0 draft** → **IMPLEMENTED (S6, 2026-08-10)**. Subsystem built: `apps/client/app/audio/**` —
+> singleton engine (context/buses/limiter/voice-pool OUTSIDE React), synthesized engine hum (pitch∝speed),
+> 15 Kenney CC0 SFX + CC-BY MacLeod / Cynic CC0 music, bound to S5 events + positional remote hum, `M`=mute.
+> Credits: `apps/client/public/audio/CREDITS.md`. `RemoteEngineAudio` built but not yet hear-verified (feel-gate).
 
 ## 1. Audio pillar
 

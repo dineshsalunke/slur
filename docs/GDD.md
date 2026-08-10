@@ -84,6 +84,14 @@ joiner **spawns beside the pack** (an endless track has no start line to gate on
 - **Locked constraints (2026-08-09):** **straight ribbon** — the track *never turns/curves* (no loops/corkscrews/banked corners); **strafing is the only lateral movement** (reaffirms §5.1). **No autonomous moving geometry** (no crushers / moving cubes / conveyors) — obstacles are static; the challenge is *your* motion through them. Verticality is **impulse-only** (a launch pad pops you up; you land back on the flat ribbon — no multi-level terrain/ceilings/gravity-flip). Player-*triggered* changes (a switch) are allowed — an event, not autonomous motion.
 - **Levels will be hand-authored** (procedural gen is filler/endless — both feed the same `Track.segmentAt()`, so the sim is unchanged). **Fairness = two hard floors only:** **FIT** (a connected corridor ≥ the widest ship links entry→exit) and **GAP-REACH** (every gap ≤ the worst jumper's reach). **Weave difficulty is *uncapped*** — it self-balances via the speed dial (any ship crawls through at a time-cost). A **validator** (z-monotonic flood-fill + per-gap reach) enforces the two floors on *any* level, authored or generated. (Balance is playstyle-level, not geometry-equal — §5.5, §5.7.)
 - **Difficulty progression:** authored levels are hand-paced; the procedural source uses a difficulty scalar `D(z)` → a **trend** (linear/ease-out for finite Race so the whole field finishes; exponential for endless Survival) **+ a deterministic triangle-wave** for tension-release pacing (NOT `Math.sin` — determinism forbids it in the generator). `D` drives the knobs (`ROW_FILL`, gap probability, cube density).
+- **AS-BUILT (procgen v2, S6 · 2026-08-10):** the generator is now a **carved value-noise racing-line +
+  variable-width noise-walls** model (`sim/track.ts` + new `sim/noise.ts`) — a coherent line you *thread*, with
+  walls RLE-merged into **variable-width blocks** OUTSIDE a `≥ MIN_LANE` corridor (fair BY CONSTRUCTION). The
+  line's slope **and curvature** are capped from the least-capable class; `D(i)` = ease-out + trig-free
+  triangle-wave pacing. Blocks may now span **multiple lanes** (width variety); walls are **full-segment-depth**
+  (a `BLOCK_LIMIT=128` trade — no depth variety yet). **Pickups sit on the corridor line** (`corridorCenterX`).
+  Renderer + collision unchanged (`Segment`/`Block` shapes preserved). **Supersedes the IID cube-scatter above**,
+  and procedural is now the **PRIMARY** path (hand-authoring reserved for signature courses). Feel-gate pending.
 
 ### 5.3 Power-ups (Blur trinity) — starter set
 Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time.
@@ -194,14 +202,16 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Throttle · brake · coast · cruise cap | **LIVE** | player-controlled speed (§5.1) |
 | Strafe (analog, drifty→snappy) + corridor walls | **LIVE** | walls stop+slide, non-lethal |
 | Jump — variable (tap/hold) + double + coyote/buffer | **LIVE** | derived from a jump-feel spec (GDC "Building a Better Jump") |
-| Track — deterministic-from-seed, **4u cell grid** (16-lane / 64u), 4 archetypes | **LIVE** | plain / block (open-scatter cube field) / gap / finish; *platform cut* |
+| Track — deterministic-from-seed, **4u cell grid** (16-lane / 64u); **procgen v2** carved-corridor + variable-width walls | **LIVE (S6)** | plain / block / gap / finish; racing-line weave (`noise.ts`); walls full-depth (`BLOCK_LIMIT` trade); feel-gate pending |
 | Hazards + collision — **AABB** (footprint = model box), swept land + swept body-kill | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable); generous grounded rule; WYSIWYG |
 | Death → shard-burst VFX → respawn (position-scoped grace) | **LIVE** | 1s derezz, setback + re-approach |
 | Netcode — authoritative, predict+reconcile, interp, drop-in | **LIVE** | inputs-not-positions, 60Hz sim / 20Hz patch |
 | **Boost** | **PLANNED (S5 fast-follow)** | *removed from base flight → pickup power-up; v1 shipped Bolt only* |
 | Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine/Shield/Boost/auto-lock = fast-follows |
-| Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); `armour` / combat stats → S5/S6 |
-| Session flow (lobby→race→results, standings, restart) | **PLANNED (S4)** | one seeded track runs today |
+| Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); `armour` (stun-multiplier sidegrade) → **S6 REMAINING** |
+| **Audio** — singleton engine, synth hum (pitch∝speed), CC0 SFX + CC-BY music, positional, event-bound | **LIVE (S6)** | `app/audio/**`; `M`=mute; `RemoteEngineAudio` not hear-verified |
+| **Front-of-house UI** — de-rounded neon landing over Grid-Void (cyan×marigold), LCARS-neon system | **LIVE (S6)** | lobby pick-UI stats + in-game env integration REMAINING |
+| Session flow (lobby→race→results, standings, restart) | **LIVE (S4)** | round lifecycle + room list + spectator + host migration |
 | Survival mode (endless + chase-wall) | **PLANNED (S7)** | Race is the v1 mode |
 
 ### 5.7 Mechanic catalog — master menu (pick one at a time) — 2026-08-09
