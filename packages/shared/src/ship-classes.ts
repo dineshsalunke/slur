@@ -12,6 +12,7 @@
 // The wire carries the shipId (a string, set once at join / on hot-swap); the sim resolves shipId → class →
 // tuning. Model/scale/visuals live CLIENT-side (apps/client .../ship-visuals.ts), keyed by the SAME id.
 
+import { STUN_SECONDS } from './combat/constants.js';
 import { DEFAULT_TUNING, deriveJump, type FlightTuning } from './constants.js';
 
 export type ShipClassId = 'interceptor' | 'fighter' | 'comet' | 'phantom' | 'freighter';
@@ -21,6 +22,11 @@ export interface ShipClass {
     id: ShipClassId;
     name: string;
     tuning: FlightTuning; // the full flight identity — stats + AABB footprint (halfW/halfL) + derived jump
+    // Combat identity, BESIDE the flight tuning rather than inside it: FlightTuning is the flight identity,
+    // and folding a combat stat in would drag it through DEFAULT_TUNING and every deriveJump spread.
+    // Sidegrade, never a free stat — armour is ranked as the exact INVERSE of strafe authority, because a
+    // bolt is dodged by weaving. Best weaver ⇒ least armour. A test pins that ordering.
+    armour: number; // 0..1 stun resistance — effectiveStun = STUN_SECONDS × (1 − armour).
 }
 
 export interface Ship {
@@ -37,6 +43,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
     interceptor: {
         id: 'interceptor',
         name: 'Interceptor',
+        armour: 0, // best weaver (strafeAccel 195) ⇒ no armour. 1.20s stun — the full duration.
         tuning: {
             ...DEFAULT_TUNING,
             maxCruise: 48, // slower top end — pays for its agility
@@ -53,12 +60,14 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
     fighter: {
         id: 'fighter',
         name: 'Fighter',
+        armour: 0.2, // the all-rounder baseline (strafeAccel 150) ⇒ 0.96s stun.
         // The baseline: DEFAULT_TUNING already carries Fighter stats + footprint (halfW 1.3 / halfL 1.26) + jump.
         tuning: DEFAULT_TUNING,
     },
     comet: {
         id: 'comet',
         name: 'Comet',
+        armour: 0.1, // 2nd-best weaver (165) ⇒ 1.08s stun. The glass rocket pays for its speed.
         tuning: {
             ...DEFAULT_TUNING,
             maxCruise: 70, // fastest — the glass rocket
@@ -75,6 +84,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
     phantom: {
         id: 'phantom',
         name: 'Phantom',
+        armour: 0.3, // clumsier weaver (135) ⇒ 0.84s stun. Tanks a hit like it tanks a gap.
         tuning: {
             ...DEFAULT_TUNING,
             maxCruise: 50,
@@ -91,6 +101,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
     freighter: {
         id: 'freighter',
         name: 'Freighter',
+        armour: 0.4, // worst weaver (105) ⇒ 0.72s stun, the shortest. Sluggish, so it eats hits instead.
         tuning: {
             ...DEFAULT_TUNING,
             maxCruise: 62, // carries momentum
@@ -143,6 +154,15 @@ export function classOfShip( id: string ): ShipClass {
 }
 export function tuningForShip( id: string ): FlightTuning {
     return classOfShip( id ).tuning;
+}
+export function armourForShip( id: string ): number {
+    return classOfShip( id ).armour;
+}
+
+// How long a bolt hit freezes THIS ship. The server is the only writer of stunTimer (run-room.ts); the
+// client receives the value and decays it in simulate(), so it never computes a duration of its own.
+export function stunDurationForShip( id: string ): number {
+    return STUN_SECONDS * ( 1 - armourForShip( id ) );
 }
 
 // Every class tuning — for track-generation fairness (hazards are floored to the LEAST-capable class so the

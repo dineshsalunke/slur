@@ -31,10 +31,10 @@ import {
     SET_COLOR_MESSAGE,
     START_MESSAGE,
     START_STAGGER,
-    STUN_SECONDS,
     shouldSpectateOnJoin,
     simulate,
     stepProjectiles,
+    stunDurationForShip,
     type Track,
     tuningForShip,
     USE_POWERUP_MESSAGE,
@@ -233,7 +233,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.state.projectiles.forEach( ( bolt, id ) => {
             for ( const victimId of boltHits( bolt, ships ) ) {
                 const v = this.state.players.get( victimId );
-                if ( v ) v.stunTimer = STUN_SECONDS; // server-owned status; the client predicts-then-reconciles it
+                // Per-class stun: armour scales the duration (@slur/shared registry, server-authoritative).
+                if ( v ) v.stunTimer = stunDurationForShip( v.shipId ); // the client reconciles, never computes it
                 this.broadcast( 'hit', { x: bolt.x, y: bolt.y, z: bolt.z, victimId } ); // cosmetic spark
                 spent.push( id );
             }
