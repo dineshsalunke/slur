@@ -25,6 +25,19 @@ Applies to **every** `.tsx` in the client, not just R3F components.
    - **Exception — React Router route modules** (`root.tsx`, `routes/*`): the framework mandates multiple
      exports in one module (default component + `Layout` / `ErrorBoundary` / `loader` / `action`). Those stay
      together — they're route slots, not free-standing components.
+3. **Componentize by subscription boundary — push every subscription DOWN to its leaf.** Split a component
+   wherever a distinct data subscription lives — a koota `useQuery`, a Colyseus `.listen`, a React Router
+   loader value, any store hook — so that when that data changes React re-renders **only that leaf, never its
+   siblings**. Concretely: a parent that wraps siblings holds **zero** reactive subscriptions (only
+   `useWorld()`/context + `useFrame`); each archetype/panel view owns its own subscription and re-renders
+   only on *its* change. **Never subscribe high and prop-drill the value down** — that re-renders the whole
+   subtree (see Anti-Patterns: "Subscribing to a store/query in a high-level component that wraps siblings").
+   Pass the *entity/id* down and let the leaf subscribe. Per-frame values are **never** a subscription —
+   mutate refs in a local `useFrame`; purely cosmetic pooled objects go fully imperative (no subscription at
+   all). This is the composition rule *behind* "The ECS owns state; R3F owns pixels" (§ top) and CLAUDE.md
+   non-negotiable #4 — components are split so each re-render boundary is as small and as low as possible,
+   not for cosmetic tidiness. The S3 track-desync (`colyseus-state-not-reactive`) and the general re-render
+   discipline (`think-rerender-subscription-impact`) are the incidents this rule distills.
 
 ## Idiomatic Patterns (concise TSX snippets)
 

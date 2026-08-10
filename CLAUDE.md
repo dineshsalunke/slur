@@ -93,6 +93,15 @@ slur/
    `<Fragment>…</Fragment>`, never `<>…</>`; **one component per file** (file name matches the component;
    helpers/hooks/constants may share). Exception: React Router route modules (`root.tsx`, `routes/*`) keep
    their framework-mandated multi-export. Full rule + rationale in `conventions/r3f.md` ("House React style").
+10. **Componentize by subscription boundary — push every subscription DOWN to its leaf** (per explicit user
+    directive, 2026-08-10). Split components wherever a distinct data subscription lives (koota `useQuery`, a
+    Colyseus `.listen`, a React Router loader value, any store hook) so a change re-renders **only that leaf,
+    never its siblings**. A parent that wraps siblings holds **zero** reactive subscriptions — only
+    `useWorld()`/context + `useFrame`. Never subscribe high and prop-drill the value down. This is the
+    composition rule *behind* non-negotiable #4: components are split so each re-render boundary is as small
+    and as low in the tree as possible — not for tidiness. Full rule + rationale in `conventions/r3f.md`
+    ("Componentize by subscription boundary"); backing incident: `colyseus-state-not-reactive` +
+    `think-rerender-subscription-impact` memories.
 
 ## Dev workflow
 
