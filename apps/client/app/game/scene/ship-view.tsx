@@ -19,7 +19,7 @@ export function ShipView( { entity }: { entity: Entity } ) {
     return (
         <primitive object={ group }>
             <Suspense fallback={ null }>
-                <ShipModel key={ shipId } shipId={ shipId } color={ color } />
+                <ShipModel key={ shipId } entity={ entity } shipId={ shipId } color={ color } />
             </Suspense>
         </primitive>
     );
