@@ -54,11 +54,23 @@ If nothing is workable, say so and stop (or, under `/loop`, wait for the next ti
 
 ## Step 2 — claim it with a lock comment
 
-Post this exact format so it interoperates with the other agent's protocol:
+Post this exact format so it interoperates with the other agent's protocol. State an
+**absolute UTC expiry**, not just a duration — a reader should not have to do arithmetic on
+the comment timestamp to know whether a lock is stale:
 
 ```
-gh issue comment <n> --body $'🔒 **Lock claimed** — `dineshsalunke` / Claude, valid 3h.\n\n<one line: the approach you will take>'
+gh issue comment <n> --body $'🔒 **Lock claimed** — `dineshsalunke` / Claude, `<now> UTC`, valid until `<now+3h> UTC`.\n\n<one line: the approach you will take>'
 ```
+
+**Then re-read the thread before you write code.** Step 1's filter and this comment are not
+atomic: both agents can list, pick the same issue, and claim it seconds apart, after which
+each believes it holds the lock. If another lock comment predates yours, **yield** — release
+yours and pick again. Cheap, and the failure it prevents is two agents building the same
+issue.
+
+The lock covers **implementing**, not talking. Posting a design proposal, a measurement, or
+a correction on an issue you do not hold is fine and encouraged — silence is the worse
+failure.
 
 Renew the lock (re-comment) roughly every 2.5h while you are still on the issue. Release it
 with a short comment if you abandon the issue.
@@ -73,6 +85,10 @@ with a short comment if you abandon the issue.
   *why*, not the *what*.
 - **Tests are required where the surface can be tested** (CONTRIBUTING §4). Shared-sim
   changes MUST have tests. A bug fix starts with a failing test that reproduces the bug.
+- **Never derive a test's expected value from the function under test.** `assert(f(x) ===
+  f(x))` passes with `f` inverted. Use literals for balance numbers, or compare two
+  configurations differentially (e.g. double a tuning knob and assert the output moved) —
+  that proves the parameter is wired without pinning a value the gate may retune.
 - Keep it **one logical change per PR**. Batch the files that belong together; do not mix
   unrelated changes.
 
@@ -89,7 +105,16 @@ Do **not** substitute `pnpm --filter @slur/shared test` — that skips the serve
 Green CI is necessary but **not sufficient**: re-read the touched `conventions/*.md` and
 check your diff against it before you open the PR. If a change has a feel or visual surface,
 drive the app (`/run` or `/verify`) and capture what you saw — a green build does not prove
-feel.
+feel. Driving the app needs the LFS assets: `git lfs install && git lfs pull` first, or the
+ship `.gltf` files load as pointer text and R3F dies with an unrelated-looking JSON error.
+
+**Prove each new test can FAIL.** A passing suite shows the code compiles, not that anything
+is being watched. For every test you added or changed, break the code it covers, confirm the
+test goes red, then revert and confirm `git diff` is empty. This is not optional diligence —
+tests that assert nothing have shipped here repeatedly: an ordering test that passed with the
+stat collapsed to a 4ms spread, a corridor floor that sat 3x below anything reachable, a
+"not instantly killed" test that passed with the mechanism it guarded removed. Each looked
+rigorous and was green.
 
 Before committing, **scan the diff** for leftover `console.*`, `TODO`, temp/debug code.
 
@@ -124,9 +149,27 @@ gh pr checks <n>
   whether their baseline sha is behind `origin/dev` before agreeing.
 - Keep the issue lock fresh while the PR is open.
 - If CI goes red, fix it before anything else.
+- **If you published a claim that turns out to be wrong, retract it loudly on the same
+  thread** — a new comment saying so, not a quiet edit. You post confident conclusions that a
+  maintainer may act on, so a stale wrong claim costs more than the embarrassment of
+  correcting it. Say what you got wrong and what still stands.
 
 When the PR is **merged**, delete the branch, drop a closing note on the issue if useful,
 and return to Step 1 for the next issue (or end the iteration under `/loop`).
+
+## Context — you are not the only agent here
+
+This repo is worked by **more than one Claude at a time** (today: the owner's, and mahendra's
+via a fork). That is why the lock protocol exists and why several steps above look paranoid:
+
+- Locks are `🔒 Lock claimed` comments with a ~3h TTL, renewed by re-commenting. They cover
+  **implementing**; commenting a design or a finding never needs one.
+- **Baselines drift fast** — `git fetch` before believing a review that says your fix is
+  missing, and before concluding someone else's is.
+- Expect **genuine pushback** on your PRs, and give it back with evidence rather than
+  complying by default. The other agent has caught real defects here, and so have you.
+- Post findings and corrections **on the thread**, so the reasoning is visible and not just
+  the outcome.
 
 ## Boundaries
 
