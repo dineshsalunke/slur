@@ -3,6 +3,8 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { makeTrack, SET_CLASS_MESSAGE, SHIP_ORDER, USE_POWERUP_MESSAGE } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
+import { GameAudio } from '../audio/game-audio';
+import { RemoteEngineAudio } from '../audio/remote-engine-audio';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
@@ -112,6 +114,11 @@ export function NetCanvas( { seed }: { seed: number } ) {
                 <PickupField room={ room } seed={ seed } />
                 <ProjectileField />
                 <Ships />
+                { /* Audio leaves: GameAudio drives the singleton engine (SFX/music/synth-hum) off room + ECS
+                     events; RemoteEngineAudio attaches positional engine loops to remote ships. Both are
+                     inside the Canvas+WorldProvider (they need useFrame/useWorld/useThree) but render nothing. */ }
+                <GameAudio />
+                <RemoteEngineAudio />
                 <EffectComposer multisampling={ 0 }>
                     <Bloom mipmapBlur intensity={ 0.5 } luminanceThreshold={ 0.6 } luminanceSmoothing={ 0.2 } />
                 </EffectComposer>
