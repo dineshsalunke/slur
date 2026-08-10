@@ -17,6 +17,11 @@ Repo: `github.com/dineshsalunke/slur`. You act as **`dineshsalunke` / Claude —
 owner and reviewer**. Reviewing, commenting, and merging are owner actions and need **no
 lock** (unlike implementing).
 
+> **Multi-agent context.** More than one Claude works this repo (mahendra's Claude is a
+> collaborator whose PRs are adversarially self-reviewed). Target every `gh` command with
+> **`-R dineshsalunke/slur`** — these skills are committed to a repo that takes fork PRs, so a
+> bare `gh pr list` can resolve to a fork instead of origin.
+
 ## Rule 0 — review against the rules, not against taste (non-negotiable)
 
 A PR is judged against the repo's written standard. Before reviewing, load the standard so
@@ -38,15 +43,15 @@ issue-loop agent. Independent review is the point.
 ## Step 1 — find open PRs
 
 ```
-gh pr list --state open --limit 20
+gh pr list -R dineshsalunke/slur --state open --limit 20
 ```
 
 For each PR, in turn (oldest-first is a fine default):
 
 ```
-gh pr view <n> --comments
-gh pr diff <n>
-gh pr checks <n>
+gh pr view <n> -R dineshsalunke/slur --comments
+gh pr diff <n> -R dineshsalunke/slur
+gh pr checks <n> -R dineshsalunke/slur
 ```
 
 ## Step 2 — review the diff
@@ -69,12 +74,29 @@ Judge the change on:
 You may run `/code-review` on the checked-out diff as a force-multiplier, but you own the
 final judgment.
 
+### Spawn an adversary — do not self-review (the important part)
+
+When this skill reviews a PR the `issue-loop` agent opened, both sides run as **the same
+identity with the same priors** — that is self-review wearing two hats, and it reliably
+misses the one class of defect you cannot see *because of how you framed the problem*. (In
+this repo, three adversarial subagents run over one agent's own six "confident, gate-passed"
+PRs found **nine real defects** — unfailable assertions, a tautological `f(x) === f(x)` fix,
+a headline conclusion drawn from a saturated/null instrument. None survived an adversarial
+pass; all had passed self-review.)
+
+So for every non-trivial PR, **spawn a subagent explicitly briefed to break it** — separate
+context, prompted to *find where this is wrong*, told that "looks good" is a **failed**
+review. Feed it the diff and the PR's own claims. Treat its findings as input to your
+judgment, not gospel. If you cannot spawn one, **state in your review comment that this was a
+self-review** so the next reader knows.
+
 ## Step 3 — verify locally (do not trust green CI alone)
 
-Check the PR out and run the full gate yourself:
+**First, guard your working tree** — `git status` must be clean before you check a PR out,
+or `gh pr checkout` fails or drags your changes across PRs. Stash or commit, then:
 
 ```
-gh pr checkout <n>
+gh pr checkout <n> -R dineshsalunke/slur
 pnpm install   # if lockfile changed
 pnpm typecheck
 pnpm lint
@@ -82,8 +104,18 @@ pnpm test
 pnpm build
 ```
 
-Do **not** substitute `pnpm --filter @slur/shared test`. If the change has a feel or visual
-surface, drive the app (`/run` or `/verify`) and look — a green build does not prove feel.
+Do **not** substitute `pnpm --filter @slur/shared test`. 
+
+**Check that the PR's tests bite.** For each new/changed test, deliberately break the code
+it covers and confirm the test goes **red**, then revert (`git diff` clean). A green suite
+proves the code compiles, not that the test watches anything — an unfailable test is the
+single most common way a confident, gate-passing PR is still wrong. Also flag any test whose
+expected value is **derived from the function under test** (`f(x) === f(x)` always passes).
+
+If the change has a feel or visual surface, drive the app (`/run` or `/verify`) and look — a
+green build does not prove feel. **Before driving the app, run `git lfs install && git lfs
+pull`**: the ship `.gltf` files are LFS pointers, and without a pull R3F dies with a cryptic
+`Unexpected token 'v', "version ht"... is not valid JSON`.
 
 Before judging "the fix isn't there", confirm your baseline is current: `git fetch` and diff
 against **current `origin/dev`**, not a stale sha. A behind-by-N baseline reads as a missing
@@ -94,7 +126,7 @@ fix when the fix is already live.
 Post your findings on the PR, most-important first, each tied to the rule or line it fails:
 
 ```
-gh pr comment <n> --body "<findings>"
+gh pr comment <n> -R dineshsalunke/slur --body "<findings>"
 ```
 
 - If there are blocking problems, **request changes** and be specific — cite the file:line and
@@ -117,9 +149,14 @@ Merge **only when every one of these is true**:
 If all six hold:
 
 ```
-gh pr review <n> --approve --body "<one-line why this is good to go>"
-gh pr merge <n> --squash --delete-branch
+gh pr review <n> -R dineshsalunke/slur --approve --body "<one-line why this is good to go>"
+gh pr merge <n> -R dineshsalunke/slur --squash --delete-branch
 ```
+
+> GitHub **blocks approving your own PR**. When the reviewer and author identity are the same
+> (a PR this same account opened), `--approve` fails — skip it and merge on the strength of
+> the six gates plus the adversary pass, noting in the merge comment that formal approval was
+> not possible.
 
 **If anything is ambiguous, borderline, or you are not confident** — a convention you are
 unsure applies, a design decision that is really a maintainer's call, a feel surface you could
@@ -134,3 +171,6 @@ After a merge, move to the next PR (or end the iteration under `/loop`).
 - Never use Python for tooling/scripts (NN-1): `jq`/`yq` → `fish`/`bash` → ecosystem-native.
 - Do not force-merge past failing checks or unresolved threads.
 - Owner review does not need a lock; do not lock issues from this skill.
+- **Retract a wrong published claim loudly** — if a review conclusion you posted turns out
+  wrong, post a visible correction on the same thread, never a quiet edit; a maintainer may
+  already be acting on the stale claim.
