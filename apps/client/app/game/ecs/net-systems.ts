@@ -26,14 +26,20 @@ function stunBlink(): boolean {
     return Math.floor( performance.now() / STUN_BLINK_MS ) % 2 === 0;
 }
 
-// Death + stun VFX (minimal for the core loop): hide the local ship while derezzed OR spectating (a mid-race
-// joiner owns a frozen local ship it must not see); while stunned (predicted Sim.stunTimer>0) strobe its
-// visibility so a hit reads on your OWN ship too. Full TRON derezz is S6. Imperative, no React state.
+// Stun/spectator VFX. The S6 TRON derezz dissolve (ship-model.tsx) now OWNS the death visual — it eases the
+// hull away over ~0.7s and dissolves it back IN on respawn — so we must NOT hard-hide the group on `dead`
+// (that hid the dissolve entirely; the ship just vanished). We still fully hide a spectator's frozen local
+// ship (a mid-race joiner must not see it), and strobe a live stunned ship's visibility so a hit reads on
+// your OWN ship. Imperative, no React state.
 export function localDeathVfxSystem( world: World ): void {
     const blink = stunBlink();
     world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ] ) => {
-        const shown = ! s.dead && ! localRole.spectating;
-        grp.visible = shown && ( s.stunTimer > 0 ? blink : true );
+        if ( localRole.spectating ) {
+            grp.visible = false;
+            return;
+        }
+        // Alive + stunned → strobe. Otherwise visible (INCLUDING dead — the dissolve shader derezzes it).
+        grp.visible = ! s.dead && s.stunTimer > 0 ? blink : true;
     } );
 }
 
@@ -100,6 +106,8 @@ export function remoteInterpSystem( world: World ): void {
         grp.position.set( x, y, z );
         grp.rotation.z = -( vx / tuningForShip( net.shipId ).strafeClamp ) * 0.5; // cosmetic bank (per-ship clamp)
         const latest = buf[ buf.length - 1 ]; // latest server truth for dead/stunned
-        grp.visible = ! latest.dead && ( latest.stunned ? blink : true ); // hide a derezzed remote; strobe a stunned one
+        // Don't hide a dead remote — the dissolve shader (ship-model.tsx) derezzes it and dissolves it back in
+        // on respawn. Strobe a live stunned remote so a hit reads. (Fully-dissolved hull discards itself.)
+        grp.visible = ! latest.dead && latest.stunned ? blink : true;
     } );
 }
