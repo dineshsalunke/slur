@@ -24,7 +24,7 @@ version pins, anti-patterns, footguns. They exist so we **don't re-derive the st
 often wrong about these exact APIs/versions — see notes below).
 
 **Before writing or changing code in a subsystem, read its `conventions/*.md` file.** Read the *one* you
-need — do not bulk-load all six every session (wasteful). This rule replaces auto-loading everything.
+need — do not bulk-load all seven every session (wasteful). This rule replaces auto-loading everything.
 
 | Touching… | Read first | Verified-this-session pins & gotchas |
 |-----------|-----------|--------------------------------------|
@@ -34,6 +34,7 @@ need — do not bulk-load all six every session (wasteful). This rule replaces a
 | Entities / systems / sim | `conventions/ecs.md` | **koota 0.6.6** (chosen over miniplex/bitECS); no-re-render bridge; `reconcile()` Colyseus→ECS |
 | Networking / prediction | `conventions/netcode.md` | Inputs-not-positions; shared 60Hz `simulate()`; `patchRate` 20Hz; server-authoritative hits |
 | Repo / builds / packages | `conventions/monorepo.md` | pnpm **11.20.0**; `packages/shared` is **`tsc`-compiled** (schema needs `experimentalDecorators`), not source-consumed |
+| 2D UI styling (HUD/lobby/landing) | `conventions/tailwind.md` | **Tailwind CSS v4** (`tailwindcss` **4.3.3** + `@tailwindcss/vite` **4.3.3**); CSS-first (`@import "tailwindcss"`, no config file); **DOM UI ONLY — never the Canvas**; no vanilla `.css`/CSS-Modules for new UI |
 
 See `conventions/README.md` for the index.
 
@@ -46,6 +47,7 @@ See `conventions/README.md` for the index.
 | Server | Colyseus 0.17 (`@colyseus/schema` 4) |
 | Client routing | React Router 8 (framework mode, SPA `ssr:false`) |
 | Rendering | React Three Fiber 9 + drei + postprocessing (three **0.185.x**) |
+| 2D UI styling | **Tailwind CSS v4** (DOM UI only — HUD/lobby/landing; never the Canvas) |
 | Simulation | **koota** ECS |
 | Repo | pnpm workspace monorepo (plain `pnpm -r`, no Turborepo yet) |
 | Build | Vite 8 (client) · tsx/Node ESM (server) · `tsc -b` (shared) |

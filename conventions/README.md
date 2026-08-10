@@ -5,7 +5,7 @@ stack. These are the **distilled research** — the point is to **not re-derive 
 is frequently wrong about these exact APIs and versions).
 
 > **Read-before-touching rule** (see `../CLAUDE.md`): before writing or changing code in a subsystem, read
-> its file below. Read the *one* you need — don't bulk-load all six.
+> its file below. Read the *one* you need — don't bulk-load all seven.
 
 All files verified against official docs + `npm view` on **2026-08-06**. Each has the same shape:
 TL;DR → Idiomatic Patterns → Best Practices → Anti-Patterns (with WHY) → Gotchas → For This Project → References.
@@ -18,6 +18,7 @@ TL;DR → Idiomatic Patterns → Best Practices → Anti-Patterns (with WHY) →
 | [ecs.md](./ecs.md) | Entities & systems | **koota** (over miniplex/bitECS); no-re-render R3F bridge; `reconcile()` from Colyseus |
 | [netcode.md](./netcode.md) | Real-time networking | Inputs-not-positions; shared 60Hz `simulate()`; 20Hz `patchRate`; server-authoritative hits; LAN baseline (defer lag-comp) |
 | [monorepo.md](./monorepo.md) | pnpm workspace, builds | 3 packages only; `shared` is `tsc`-compiled (schema decorators); catalog for version pins; no Turborepo yet |
+| [tailwind.md](./tailwind.md) | 2D UI styling (HUD/lobby/landing) | **Tailwind CSS v4** (4.3.3 + `@tailwindcss/vite`); CSS-first (`@import`, no config); **DOM only, never the Canvas**; no vanilla `.css` for new UI |
 
 ## Maintenance
 
