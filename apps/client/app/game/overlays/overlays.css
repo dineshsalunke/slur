@@ -8,6 +8,7 @@
 
 :root {
     --slur-cyan: #00e5ff;
+    --slur-amber: #ff9f1c; /* mirrors app.css --amber — the marigold half of the locked cyan x marigold palette */
     --slur-magenta: #ff2bd6;
     --slur-ink: #05060a;
     --slur-text: #e6f1ff;
