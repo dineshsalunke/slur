@@ -27,6 +27,7 @@ function flatTrack( finishSeg: number ): Track {
     return {
         finishZ: finishSeg * SEG_LEN,
         segmentAt: seg,
+        anchors: [], // ADR-002: Track requires anchors; collision mocks carry no pickups.
         segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),
     };
 }
@@ -44,7 +45,7 @@ function trackWithSeg3( seg3: ( i: number ) => Segment ): Track {
         isFinish: false,
     } );
     const seg = ( i: number ): Segment => ( i === 3 ? seg3( i ) : plain( i ) );
-    return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ) };
+    return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ), anchors: [] };
 }
 
 // Drive the ship forward through the track until it dies or the tick budget runs out.
@@ -140,6 +141,7 @@ test( 'generous grounded: a floor under only PART of the footprint still support
     const track: Track = {
         finishZ: 1e9,
         segmentAt: seg,
+        anchors: [], // ADR-002: Track requires anchors; collision mocks carry no pickups.
         segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ),
     };
     const s = spawnShip( 0, SEG_LEN * 1.5 );
@@ -271,6 +273,7 @@ test( 'falling through a gap kills, then respawns at the last safe anchor', () =
     const track: Track = {
         finishZ: 1e9,
         segmentAt: seg,
+        anchors: [], // ADR-002: Track requires anchors; collision mocks carry no pickups.
         segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),
     };
     const s = spawnShip( 0, 0 );
@@ -337,6 +340,7 @@ test( 'respawn wakes a derezzed ship unfrozen (stunTimer cleared)', () => {
     const track: Track = {
         finishZ: 1e9,
         segmentAt: seg,
+        anchors: [], // ADR-002: Track requires anchors; collision mocks carry no pickups.
         segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),
     };
     const s = spawnShip( 0, 0 );

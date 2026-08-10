@@ -141,7 +141,7 @@ export class RunState extends Schema {
 
     // ── S5 combat — APPENDED after `finishDeadline` (declaration order = wire format). ──
     @type( { map: Projectile } ) projectiles = new MapSchema< Projectile >(); // live bolts, keyed by id; server prunes on hit/expire
-    // Pickup availability, keyed by pickupLayout() slot id. Semantics: present && true = currently taken (hidden);
+    // Pickup availability, keyed by the pickup anchor id (ADR-002: track.anchors slot id = segment index). Semantics: present && true = currently taken (hidden);
     // absent (or false) = available. Only availability syncs — positions derive from the seed on both ends.
     @type( { map: 'boolean' } ) pickupTaken = new MapSchema< boolean >();
 }

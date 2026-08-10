@@ -120,7 +120,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                 <HitSpark />
                 <TrackView track={ track } />
                 <FinishGate track={ track } />
-                <PickupField room={ room } descriptor={ descriptor } />
+                <PickupField room={ room } track={ track } />
                 <ProjectileField />
                 <Ships />
                 { /* Audio leaves: GameAudio drives the singleton engine (SFX/music/synth-hum) off room + ECS

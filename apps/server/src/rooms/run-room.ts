@@ -20,7 +20,7 @@ import {
     type PlayerInput,
     PlayerState,
     Projectile,
-    pickupLayout,
+    pickupsOf,
     procgenDescriptor,
     RACE_GRACE_SECONDS,
     RESTART_MESSAGE,
@@ -91,7 +91,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         const descriptor = procgenDescriptor( ( Math.random() * 0xffffffff ) >>> 0 );
         applyDescriptor( this.state.descriptor, descriptor );
         this.track = resolveTrack( descriptor );
-        this.pickups = pickupLayout( descriptor ); // hazard-aware, deterministic — the client computes the same layout
+        this.pickups = pickupsOf( this.track ); // ADR-002: pickups are a READ of track.anchors (provider-materialized) — same list the client derives
         this.patchRate = 50; // 20Hz network flush (default) — decoupled from the 60Hz sim
         this.refreshMetadata();
 

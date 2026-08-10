@@ -83,10 +83,27 @@ export interface Segment {
     isFinish: boolean;
 }
 
+// ADR-002 — a first-class piece of gameplay data placed ON the track by the provider. Anchors are
+// MATERIALIZED, not synced: their positions derive from the descriptor (exactly like geometry), so both ends
+// compute an identical list from the same descriptor and only per-anchor *availability* (e.g.
+// RunState.pickupTaken, keyed by anchor id) ever crosses the wire. `kind` is left OPEN (a string) for future
+// hazard/drop/checkpoint kinds — but only 'pickup' is modelled today (do NOT invent kinds with no consumer).
+// Litmus for adding a kind (ADR-000): "would two clients disagreeing on this anchor desync the game?" yes →
+// it belongs here; cosmetic-only → it belongs to the (frozen) VisualTrack, never on the physics Track.
+export interface Anchor {
+    id: string; // stable slot key. For 'pickup' this is the segment index string → keys RunState.pickupTaken.
+    kind: string; // 'pickup' today; open for hazard/drop/checkpoint later.
+    x: number;
+    y: number;
+    z: number;
+    params?: unknown; // per-kind payload (unused by 'pickup'); reserved so a kind can carry data without a schema change.
+}
+
 export interface Track {
     finishZ: number; // world z of the finish line
     segmentAt( i: number ): Segment;
     segmentAtZ( z: number ): Segment;
+    anchors: Anchor[]; // ADR-002: gameplay anchors (pickups today), materialized by the provider from the descriptor.
 }
 
 // The procgen arm of TrackDescriptor (the discriminated union lives in track-provider.ts, the ADR-001 seam).
@@ -110,6 +127,7 @@ export const LANES = ( 2 * HALF_WIDTH ) / CELL; // 16 lateral cells (lanes).
 export const ZCELLS = SEG_LEN / CELL; // 5 forward cells (rows) per segment.
 export const MIN_LANE = 2 * CELL; // fairness: ≥2 contiguous open lanes (8u) guaranteed at every z-slice — even the widest class (Freighter 3.6u) threads with margin.
 export const BLOCK_HEIGHT = 8; // cube top (y) = 2 cells. ABOVE double-jump reach on purpose → UN-jumpable: strafe around, never hop.
+export const PICKUP_SPACING = 3; // ADR-002: segments between pickup anchors → a pickup roughly every PICKUP_SPACING·SEG_LEN (≈60u): dense drops. Provider-materialized here (was combat/pickups.ts pre-ADR-002).
 
 // ── Derived weave caps (computed ONCE from the ship roster, never per-segment) ──
 // The racing line is threadable by the LEAST-capable ship BY CONSTRUCTION: its slope stays under that ship's
@@ -294,7 +312,9 @@ function buildSegment( seed: number, i: number, length: number ): Segment {
 // placed here sits ON the line the player threads and is ALWAYS inside the ≥ MIN_LANE open band — never a wall.
 // Mirrors buildSegment's carve, so it stays byte-identical both ends (pickups are deterministic from the seed
 // like the track). Only meaningful for non-gap segments — a gap has no floor, so callers skip holes first.
-export function corridorCenterX( seed: number, i: number ): number {
+// ADR-002: PROVIDER-INTERNAL now (no longer exported) — pickup anchors are materialized inside
+// makeProcgenTrack, so the last outside-the-provider `seed` reach-around is gone. Consumers read track.anchors.
+function corridorCenterX( seed: number, i: number ): number {
     const wLanes = corridorWidthLanes( difficultyAt( i ) );
     const r = Math.floor( ZCELLS / 2 ); // mid row = the pickup's z
     const openStart = clamp(
@@ -324,7 +344,24 @@ export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
         finishZ: length * SEG_LEN,
         segmentAt,
         segmentAtZ: ( z: number ) => segmentAt( segIndexForZ( z ) ),
+        anchors: pickupAnchors( seed, length, segmentAt ),
     };
+}
+
+// ADR-002: materialize the pickup anchors while building the track (was combat/pickups.ts's `pickupLayout`).
+// One candidate slot per PICKUP_SPACING segments after the start-safe zone, EXCLUDING gaps (no floor to grab
+// over). Each anchor sits at the corridor centre (the racing line) at the segment's mid-row, so it is always
+// inside the ≥ MIN_LANE open band — never buried in a wall. The `id` is the segment-index string, UNCHANGED
+// from the pre-ADR-002 scheme so RunState.pickupTaken keys need ZERO wire migration. Deterministic from the
+// seed like the geometry → both ends materialize the identical list; only availability ever syncs.
+function pickupAnchors( seed: number, length: number, segmentAt: ( i: number ) => Segment ): Anchor[] {
+    const out: Anchor[] = [];
+    for ( let seg = START_SAFE; seg < length; seg += PICKUP_SPACING ) {
+        if ( isHole( segmentAt( seg ) ) ) continue; // gap → no floor to stand on / grab over
+        const z = seg * SEG_LEN + SEG_LEN / 2; // centred forward in the segment (the mid row corridorCenterX samples)
+        out.push( { id: String( seg ), kind: 'pickup', x: corridorCenterX( seed, seg ), y: 0, z } );
+    }
+    return out;
 }
 
 // ── Fairness / collision helpers (also asserted by the determinism test) ──

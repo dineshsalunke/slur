@@ -115,3 +115,20 @@ OQ3). Chosen environment prototype = **Grid Void** (`scene/environment.tsx`; vie
 Integrate into the net canvas + landing during S6 Implement; retune wall density/height + bloom at the gate.
 **AS-BUILT (2026-08-10):** landing UI shipped (de-rounded neon over Grid-Void, cyan×marigold); **REMAINING** —
 in-game net-canvas env integration, hull-colour on the ship, `COLOR_COUNT` 8→12, ship trails, dissolve derezz.
+
+## 12. Physics ⇄ visual split — **FROZEN** (ADR-002, 2026-08-10)
+
+**WYSIWYG collision stays a documented rule, not code.** The hull the player sees IS the collidable
+footprint, and the rendered track IS the physics `Segment` set — `scene/track-view.tsx` renders the shared
+sim's physics `Segment`s **directly**. There is deliberately **no** `resolveVisual` / `VisualTrack` / visual
+abstraction: introducing one before authored content or the art pass actually needs the visual to diverge from
+the hull would be speculative structure.
+
+- **Where the seam sits:** gameplay data that both clients must agree on (pickups today; hazards/checkpoints
+  later) is a first-class `Track.anchors[]`, materialized by the provider and derived from the descriptor — see
+  ADR-002 and `sim/track.ts`. Cosmetic-only data does **not** go on the `Track`.
+- **Litmus (ADR-000) for anything new:** "would two clients disagreeing on this desync the game?" **yes →** it
+  is gameplay data (a `Track` anchor / physics `Segment`); **cosmetic-only →** it would belong to the future
+  (currently unbuilt) VisualTrack, never the physics `Track`.
+- **Unfreeze when:** authored levels or the art pass require the rendered geometry to diverge from the
+  collidable hull. Until then, render output is byte-for-byte the physics track.
