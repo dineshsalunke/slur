@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
 import { Fragment, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { Interp, LocalPlayer, Sim } from '../ecs/traits';
+import { Interp, Sim } from '../ecs/traits';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 
 // Per-ship model (Quaternius CC0). useGLTF caches by URL, so each model loads once; drei <Clone>
@@ -24,8 +24,10 @@ const DISSOLVE_NOISE_SCALE = 1.8; // noise cells across the (object-space) hull 
 const DISSOLVE_EDGE_WIDTH = 0.09; // width of the glowing burn band trailing the dissolve front (noise units)
 const DISSOLVE_EDGE_INTENSITY = 2.6; // HDR add on the burn edge (post-tonemap → blows past the bloom threshold)
 
-const CYAN = new THREE.Color( '#00e5ff' ); // local ship burn-edge tint (matches explosions.tsx / beacon)
-const MAGENTA = new THREE.Color( '#ff2bd6' ); // remote ship burn-edge tint
+// Emissive strength of the team wash on the hull. The models carry their own albedo, so we tint EMISSIVE
+// rather than replace base colour — the sculpt stays readable while the ship still reads as "that green one
+// is mine" at race distance under bloom. Low enough that it does not flatten into a glowing blob.
+const HULL_TINT_INTENSITY = 0.55;
 
 interface DissolveUniforms {
     uDissolve: { value: number };
@@ -94,6 +96,16 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
     mat.needsUpdate = true; // force a recompile so onBeforeCompile runs (material was already compiled once)
 }
 
+// Wash one cloned material in the owner's team colour. Materials are per-entity clones (<Clone
+// deep="materialsOnly">), so mutating here never leaks into another ship. Non-standard materials are left
+// alone rather than guessed at.
+function tintHull( mat: THREE.Material, color: string ): void {
+    const std = mat as THREE.MeshStandardMaterial;
+    if ( ! std.isMeshStandardMaterial ) return;
+    std.emissive.set( color );
+    std.emissiveIntensity = HULL_TINT_INTENSITY;
+}
+
 // A ship's `dead`: local entities read the live Sim; remotes read the latest server snapshot (same rule as
 // explosions.tsx). Allocation-free — safe to call every frame.
 function isDead( entity: Entity ): boolean {
@@ -109,17 +121,19 @@ export function ShipModel( { entity, shipId, color }: { entity: Entity; shipId: 
     const cloneRef = useRef< THREE.Group >( null );
     const beaconRef = useRef< THREE.Mesh >( null );
     const patched = useRef( false );
-    const local = entity.has( LocalPlayer );
+    const appliedColor = useRef( '' );
     // One uniforms bundle per ship; the same value-objects flow into every patched material of this clone.
+    // The burn edge is the OWNER'S team colour — it used to be cyan-for-local / magenta-for-remote, but
+    // magenta is retired from the palette and "whose ship just derezzed" is the more useful read anyway.
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
             uNoiseScale: { value: DISSOLVE_NOISE_SCALE },
             uEdgeWidth: { value: DISSOLVE_EDGE_WIDTH },
-            uEdgeColor: { value: ( local ? CYAN : MAGENTA ).clone() },
+            uEdgeColor: { value: new THREE.Color( color ) },
             uEdgeIntensity: { value: DISSOLVE_EDGE_INTENSITY },
         } ),
-        [ local ],
+        [ color ],
     );
 
     // Leaf-imperative: on the first frame patch the cloned materials, then every frame ease uDissolve toward
@@ -135,6 +149,19 @@ export function ShipModel( { entity, shipId, color }: { entity: Entity; shipId: 
                 for ( const mat of mats ) patchDissolve( mat, uniforms );
             } );
             patched.current = true;
+        }
+        // Re-wash the hull whenever the owner picks a new colour in the lobby. Costs a string compare per
+        // frame; the traverse only runs on an actual change. Kept here rather than in an effect because the
+        // materials are three.js state, and this file already owns them imperatively.
+        if ( appliedColor.current !== color ) {
+            uniforms.uEdgeColor.value.set( color );
+            grp.traverse( ( o ) => {
+                const mesh = o as THREE.Mesh;
+                if ( ! mesh.isMesh ) return;
+                const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
+                for ( const mat of mats ) tintHull( mat, color );
+            } );
+            appliedColor.current = color;
         }
         const target = isDead( entity ) ? 1 : 0;
         const u = uniforms.uDissolve;

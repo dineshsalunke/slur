@@ -130,7 +130,10 @@ export function jumpReach( t: FlightTuning ): number {
 export const COUNTDOWN_SECONDS = 3; // "3-2-1" prep after host GO; ships + picks frozen, NO sim motion yet.
 export const RACE_GRACE_SECONDS = 20; // after the FIRST finisher, everyone else has this long before results.
 export const MAX_RACE_SECONDS = 180; // hard safety cap: a race with no finisher at all still ends (→ all DNF).
-export const COLOR_COUNT = 8; // team-colour palette size (colorId ∈ [0, COLOR_COUNT)); the hexes live client-side.
+// Team-colour palette size (colorId ∈ [0, COLOR_COUNT)); the hexes live client-side. 12 so a full room (the
+// GDD's 12-player max) can be all-distinct. colors.ts carries a compile-time guard that fails the build if
+// the client palette length ever drifts from this.
+export const COLOR_COUNT = 12;
 export const START_STAGGER = CELL; // lateral spacing (u) between racers on the start line (feel-gate tweakable).
 
 // ── S6 procgen v2 — coherent carved racing-line + variable-width noise walls ──────────────────────────
