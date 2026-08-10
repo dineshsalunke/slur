@@ -1,10 +1,11 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { RoomList } from '../lobby/room-list';
 import { hostRoom, joinLobby, joinRoom } from '../net/matchmaking';
 import type { Route } from './+types/home';
+import { LandingScene } from './home/landing-scene';
 
 const NAME_KEY = 'slur:name';
 
@@ -39,21 +40,60 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
     };
 
     return (
-        <main>
-            <h1>SLUR</h1>
-            <label>
-                Name{ ' ' }
-                <input
-                    value={ name }
-                    maxLength={ 16 }
-                    placeholder="Racer"
-                    onChange={ ( e ) => setName( e.target.value ) }
-                />
-            </label>
-            <button type="button" disabled={ busy } onClick={ () => enter( ( n ) => hostRoom( n ) ) }>
-                Host a run
-            </button>
-            <RoomList busy={ busy } onJoin={ ( roomId ) => enter( ( n ) => joinRoom( roomId, n ) ) } />
-        </main>
+        <Fragment>
+            { /* Ambient Grid-Void backdrop: a position:fixed Canvas the front-of-house UI overlays. */ }
+            <LandingScene />
+            <div className="scrim" />
+
+            <main className="stage">
+                <header className="topbar">
+                    <div className="brand">
+                        <h1 className="wordmark">SLUR</h1>
+                        <span className="tagline">LAN Ship-Racer</span>
+                    </div>
+                </header>
+
+                <section className="landing-body">
+                    <div className="lead">
+                        <h2>
+                            Race your friends. <em>Wreck</em> their run.
+                        </h2>
+                        <p>
+                            Host a room, throw the code across the office, and drop into the next round. Bolts, boosts,
+                            and a chase-wall that doesn&apos;t care whose fault it was.
+                        </p>
+                    </div>
+
+                    <div className="panel console">
+                        <div className="field-row">
+                            <div className="field">
+                                <label htmlFor="callsign">Call sign</label>
+                                <input
+                                    id="callsign"
+                                    className="callsign"
+                                    type="text"
+                                    value={ name }
+                                    maxLength={ 16 }
+                                    placeholder="Racer"
+                                    onChange={ ( e ) => setName( e.target.value ) }
+                                />
+                            </div>
+                            <div className="field field-action">
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    disabled={ busy }
+                                    onClick={ () => enter( ( n ) => hostRoom( n ) ) }
+                                >
+                                    Host a run ▸
+                                </button>
+                            </div>
+                        </div>
+
+                        <RoomList busy={ busy } onJoin={ ( roomId ) => enter( ( n ) => joinRoom( roomId, n ) ) } />
+                    </div>
+                </section>
+            </main>
+        </Fragment>
     );
 }
