@@ -12,6 +12,8 @@ import { world } from './ecs/world';
 import { attachKeyboard } from './input/keyboard';
 import { NetDebugHud } from './net-debug-hud';
 import { NetLoop } from './net-loop';
+import { GRID_VOID } from './scene/env-config';
+import { Environment } from './scene/environment';
 import { ExplosionField } from './scene/explosions';
 import { FinishGate } from './scene/finish-gate';
 import { HitSpark } from './scene/hit-spark';
@@ -101,7 +103,12 @@ export function NetCanvas( { seed }: { seed: number } ) {
     return (
         <WorldProvider world={ world }>
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
-                <color attach="background" args={ [ '#05060a' ] } />
+                { /* Grid Void atmosphere (S6, locked): composes background/fog/dome/stars + far parallax
+                     canyon-walls from one config. It OWNS the background <color> and <fog>, so the old
+                     hardcoded '#05060a' background is gone. Post-FX stays OUT of here — the single global
+                     <Bloom> below is driven by GRID_VOID.bloom. seed is the shared track seed → identical
+                     walls/scenery on every client. Kept free of reactive state: a module constant, no useState. */ }
+                <Environment config={ GRID_VOID } seed={ seed } />
                 <ambientLight intensity={ 1 } />
                 <NetLoop predictor={ predictor } track={ track } />
                 { /* After NetLoop so its useFrame (ship-position sync) runs first — the burst reads each
@@ -119,8 +126,15 @@ export function NetCanvas( { seed }: { seed: number } ) {
                      inside the Canvas+WorldProvider (they need useFrame/useWorld/useThree) but render nothing. */ }
                 <GameAudio />
                 <RemoteEngineAudio />
+                { /* THE single global post-FX pass (bloom-only — no CA/vignette). Driven by the Grid Void
+                     config instead of the old timid 0.5/0.6 so neon HDR emissive (track, walls, ships) glows. */ }
                 <EffectComposer multisampling={ 0 }>
-                    <Bloom mipmapBlur intensity={ 0.5 } luminanceThreshold={ 0.6 } luminanceSmoothing={ 0.2 } />
+                    <Bloom
+                        mipmapBlur
+                        intensity={ GRID_VOID.bloom.intensity }
+                        luminanceThreshold={ GRID_VOID.bloom.threshold }
+                        luminanceSmoothing={ GRID_VOID.bloom.smoothing }
+                    />
                 </EffectComposer>
             </Canvas>
             { import.meta.env.DEV && <NetDebugHud track={ track } /> }

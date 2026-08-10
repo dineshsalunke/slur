@@ -149,3 +149,9 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
         bloom: { intensity: 1.2, threshold: 0.42, smoothing: 0.2 },
     },
 ] as const;
+
+// The LOCKED environment for the networked in-game scene (S6 identity pass, phase note
+// 2026-08-10-s6-identity.md → "Environment pass — decisions"): variant "C · Grid Void". Resolved by NAME,
+// not a bare index, so reordering ENV_VARIANTS above can never silently repoint the shipped world. The
+// /env-lab route still cycles all three by index; only net-canvas pins this one.
+export const GRID_VOID: EnvConfig = ENV_VARIANTS.find( ( v ) => v.name.startsWith( 'C ·' ) ) ?? ENV_VARIANTS[ 2 ];
