@@ -1,0 +1,153 @@
+/* Run-phase HUD and results — held-power chip, buttons, in-race leave, countdown, standings, and the confirm
+   modal. Split from overlays.css to stay under the biome 300-line cap. overlays.tsx imports the three overlay
+   sheets in source order. Keep that order: the cascade depends on it. */
+
+/* Held power-up chip (E:[BOLT]) — bottom-centre, gold to match the pickup; shown only while armed. */
+.slur-held {
+    bottom: 16px;
+    left: 50%;
+    transform: translateX( -50% );
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-color: rgba( 255, 210, 74, 0.7 );
+    box-shadow: 0 0 16px rgba( 255, 210, 74, 0.35 );
+    font:
+        700 14px / 1 ui-monospace,
+        monospace;
+    letter-spacing: 2px;
+}
+.slur-held-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid #ffd24a;
+    color: #ffd24a;
+    font-size: 12px;
+}
+.slur-held-name {
+    color: #ffd24a;
+    text-shadow: 0 0 10px rgba( 255, 210, 74, 0.7 );
+}
+
+/* Buttons */
+.slur-btn {
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid var( --slur-cyan );
+    background: rgba( 0, 229, 255, 0.12 );
+    color: var( --slur-text );
+}
+.slur-go {
+    border-color: var( --slur-cyan );
+    box-shadow: 0 0 14px rgba( 0, 229, 255, 0.5 );
+    font-weight: 700;
+}
+.slur-go:disabled {
+    opacity: 0.4;
+    cursor: default;
+    box-shadow: none;
+}
+.slur-leave {
+    border-color: var( --slur-magenta );
+    background: rgba( 255, 43, 214, 0.12 );
+}
+/* In-race Leave — top-left, clear of the centre timer + right-side standings. Above the countdown layer
+   (z 25) so it stays clickable during the countdown too. */
+.slur-leave-corner {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 26;
+}
+.slur-wait {
+    font-size: 12px;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    text-align: center;
+}
+.slur-arrow {
+    font-size: 16px;
+    padding: 2px 10px;
+    border-radius: 4px;
+    border: 1px solid var( --slur-magenta );
+    background: rgba( 255, 43, 214, 0.12 );
+    color: var( --slur-text );
+    cursor: pointer;
+}
+.slur-target {
+    min-width: 90px;
+    text-align: center;
+    font-weight: 600;
+    color: var( --slur-magenta );
+}
+
+/* Countdown */
+.slur-countdown {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+}
+.slur-count-num {
+    font:
+        900 140px / 1 ui-monospace,
+        monospace;
+    color: var( --slur-cyan );
+    text-shadow:
+        0 0 40px rgba( 0, 229, 255, 0.8 ),
+        0 0 12px #fff;
+}
+
+/* Results */
+.slur-results {
+    top: 50%;
+    left: 50%;
+    transform: translate( -50%, -50% );
+    min-width: 360px;
+    max-width: 90vw;
+}
+.slur-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 14px;
+}
+.slur-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba( 0, 229, 255, 0.15 );
+    font-size: 14px;
+}
+.slur-time {
+    font-family: ui-monospace, monospace;
+    text-align: right;
+}
+.slur-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* Confirm modal */
+.slur-confirm {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    background: rgba( 5, 6, 10, 0.55 );
+    pointer-events: auto;
+}
+.slur-confirm-box {
+    position: static;
+    text-align: center;
+}
