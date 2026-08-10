@@ -4,7 +4,7 @@
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DEFAULT_TUNING, FIXED_DT } from '../constants.js';
+import { DEFAULT_TUNING, DRAG_SPEED_FRAC, FIXED_DT } from '../constants.js';
 import { emptyInput } from './input.js';
 import { simulate } from './step.js';
 import { BLOCK_HEIGHT, HALF_WIDTH, SEG_LEN, type Segment, type Track } from './track.js';
@@ -92,7 +92,9 @@ test( 'AABB wing-clip: a cube the ship CENTER misses but its wing overlaps still
             z1: ( i + 1 ) * SEG_LEN,
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [ { x0: 1.0, x1: 5.0, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN } ],
+            blocks: [
+                { x0: 1.0, x1: 5.0, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN, lethal: true },
+            ],
             isFinish: false,
         } ),
     );
@@ -112,7 +114,9 @@ test( 'AABB wing-clear: the same lateral offset with the cube just past the wing
             z1: ( i + 1 ) * SEG_LEN,
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [ { x0: 1.4, x1: 5.4, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN } ],
+            blocks: [
+                { x0: 1.4, x1: 5.4, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN, lethal: true },
+            ],
             isFinish: false,
         } ),
     );
@@ -160,7 +164,15 @@ test( 'ground-level ship crashes into a full-width cube wall instead of slipping
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
             blocks: [
-                { x0: -HALF_WIDTH, x1: HALF_WIDTH, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN },
+                {
+                    x0: -HALF_WIDTH,
+                    x1: HALF_WIDTH,
+                    y0: 0,
+                    y1: BLOCK_HEIGHT,
+                    z0: i * SEG_LEN,
+                    z1: ( i + 1 ) * SEG_LEN,
+                    lethal: true,
+                },
             ],
             isFinish: false,
         } ),
@@ -183,7 +195,15 @@ test( 'post-respawn invuln does not let a ship phase through a LATER hazard', ()
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
             blocks: [
-                { x0: -HALF_WIDTH, x1: HALF_WIDTH, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN },
+                {
+                    x0: -HALF_WIDTH,
+                    x1: HALF_WIDTH,
+                    y0: 0,
+                    y1: BLOCK_HEIGHT,
+                    z0: i * SEG_LEN,
+                    z1: ( i + 1 ) * SEG_LEN,
+                    lethal: true,
+                },
             ],
             isFinish: false,
         } ),
@@ -193,6 +213,50 @@ test( 'post-respawn invuln does not let a ship phase through a LATER hazard', ()
     cruiseUntilDead( s, track );
     assert.ok( s.dead, 'invuln let the ship phase through the wall' );
     assert.ok( s.z < SEG_LEN * 4, 'ship flew past the wall instead of dying at it' );
+} );
+
+test( 'a DRAG (amber) block slows the ship instead of killing it', () => {
+    // Full-width drag block in seg 3: the ship can't avoid it, so it MUST survive (passable) and its forward
+    // speed is clamped to DRAG_SPEED_FRAC · maxCruise while inside — the whole point of the non-lethal hazard.
+    const track = trackWithSeg3(
+        ( i ): Segment => ( {
+            index: i,
+            z0: i * SEG_LEN,
+            z1: ( i + 1 ) * SEG_LEN,
+            kind: 'block',
+            floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
+            blocks: [
+                {
+                    x0: -HALF_WIDTH,
+                    x1: HALF_WIDTH,
+                    y0: 0,
+                    y1: BLOCK_HEIGHT,
+                    z0: i * SEG_LEN,
+                    z1: ( i + 1 ) * SEG_LEN,
+                    lethal: false,
+                },
+            ],
+            isFinish: false,
+        } ),
+    );
+    const s = spawnShip( 0, SEG_LEN * 2.5 );
+    s.vz = t.maxCruise;
+    const inp = emptyInput();
+    inp.throttle = 1; // hold full throttle — the drag must still cap speed while inside
+    let sawInside = false;
+    for ( let i = 0; i < 160 && s.z < SEG_LEN * 4; i++ ) {
+        simulate( s, inp, FIXED_DT, t, track );
+        if ( s.z >= SEG_LEN * 3 && s.z < SEG_LEN * 4 ) {
+            sawInside = true;
+            assert.ok(
+                s.vz <= DRAG_SPEED_FRAC * t.maxCruise + 1e-6,
+                `inside drag block but vz ${ s.vz } > cap ${ DRAG_SPEED_FRAC * t.maxCruise }`,
+            );
+        }
+    }
+    assert.ok( sawInside, 'ship never entered the drag segment' );
+    assert.equal( s.dead, false, 'a drag block killed the ship — it must only slow it' );
+    assert.ok( s.z >= SEG_LEN * 4, 'ship got stuck in the drag block instead of passing through' );
 } );
 
 test( 'falling through a gap kills, then respawns at the last safe anchor', () => {

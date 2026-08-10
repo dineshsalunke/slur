@@ -2,7 +2,7 @@
 // integrate → collide. Each phase is a pure mutator so S3 can swap resolveCollisions for real
 // track collision. Framework-free — operates on the plain SimShip.
 
-import type { FlightTuning } from '../constants.js';
+import { DRAG_SPEED_FRAC, type FlightTuning } from '../constants.js';
 import type { PlayerInput } from './input.js';
 import type { Segment, Track } from './track.js';
 import type { SimShip } from './types.js';
@@ -175,9 +175,13 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
 //   • Lower SWEPT (`prevY`, not s.y): a ground-level ship nudged just under a body base by one tick of
 //     gravity still registers (came from ≥ base), while a future FLOATING body (y0 > 0) can be passed under
 //     from genuinely below.
-function hitsLethalBody( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning ): boolean {
+// Footprint overlap with a block of the given kind (lethal=true → red walls; lethal=false → amber drag). Same
+// AABB test either way; the caller decides the consequence (derezz vs slow). Split by kind so a footprint that
+// straddles both a wall and a drag patch resolves each correctly (the lethal check runs first and wins).
+function overlapsBlock( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning, lethal: boolean ): boolean {
     for ( const seg of segs ) {
         for ( const b of seg.blocks ) {
+            if ( b.lethal !== lethal ) continue;
             if (
                 s.x + t.halfW > b.x0 &&
                 s.x - t.halfW < b.x1 &&
@@ -217,7 +221,7 @@ export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: F
         return;
     }
 
-    const insideBody = hitsLethalBody( segs, s, prevY, t );
+    const insideBody = overlapsBlock( segs, s, prevY, t, true );
     // Post-respawn grace is POSITION-scoped, not just timed: it only spares the body we respawned into,
     // and ENDS the first tick we're clear of every body — otherwise a respawned ship flies straight
     // through the NEXT cube. Blind time-based invuln was exactly that bug. (Falling still kills — above.)
@@ -228,6 +232,14 @@ export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: F
         }
     } else {
         s.invulnTimer = 0;
+    }
+
+    // Drag (amber) blocks: PASSABLE but they clamp top speed while the footprint is inside — a time cost,
+    // not a death. Re-applied every tick you overlap; the moment you're clear, normal accel resumes. Fraction
+    // of the ship's own maxCruise so it's per-class fair (a fast ship loses proportionally the same speed).
+    if ( overlapsBlock( segs, s, prevY, t, false ) ) {
+        const cap = DRAG_SPEED_FRAC * t.maxCruise;
+        if ( s.vz > cap ) s.vz = cap;
     }
 
     clampToEdges( s, t );

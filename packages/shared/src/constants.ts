@@ -219,3 +219,12 @@ export const D_PACE_WAVELENGTH = 24; // segments per tension→release cycle.
 // start-safe. Probability rises slightly with D. GAP-REACH is already asserted per class in the track test.
 export const GAP_P_START = 0.08; // P(gap) at D = 0 (was 0.05 — jumps too rare to punctuate).
 export const GAP_P_MAX = 0.18; // P(gap) at D = 1.
+
+// ── Drag blocks (amber) — the non-lethal hazard. A fraction of the wall field is PASSABLE-but-slow instead
+// of lethal: fly through and your top speed is clamped while inside (a time cost, not a death). Lethal (red)
+// walls still enforce the corridor + do the S5 stun-killing; drag adds a risk/reward line choice (cut through
+// a drag patch to straighten a tight line, eat the slowdown). Drag is allowed ON the racing line; lethal is not.
+export const DRAG_FRAC = 0.3; // fraction of wall blocks that are drag (amber) rather than lethal (red).
+export const DRAG_NOISE_FZ_LANE = 3.2; // value-noise period across LANES for the lethal/drag classification (coherent runs, not per-cell speckle).
+export const DRAG_NOISE_FZ_SEG = 3.0; // …across SEGMENTS, so a drag patch persists a little forward.
+export const DRAG_SPEED_FRAC = 0.5; // while inside a drag block, vz is clamped to this × the ship's maxCruise (per-class fair). Lower = harsher slow.

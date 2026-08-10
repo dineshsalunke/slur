@@ -27,6 +27,9 @@ import {
     D_PACE_AMP,
     D_PACE_WAVELENGTH,
     D_RAMP_SEGMENTS,
+    DRAG_FRAC,
+    DRAG_NOISE_FZ_LANE,
+    DRAG_NOISE_FZ_SEG,
     deriveNodePeriod,
     deriveWeaveCurvatureCap,
     deriveWeavePeriod,
@@ -61,6 +64,7 @@ export interface Block {
     y1: number;
     z0: number;
     z1: number;
+    lethal: boolean; // true = red wall (touch → derezz + enforces the corridor); false = amber DRAG block (passable, slows you). See buildWalls / step.ts.
 }
 
 // What a segment is, for rendering + the fairness test. Collision reads floors/blocks generically.
@@ -106,6 +110,7 @@ export const WEAVE_PERIOD_ROWS = deriveWeavePeriod( SLOPE_CAP, CURV_CAP, WEAVE_A
 const SALT_LINE_A = 0x1234567 | 0;
 const SALT_LINE_B = 0x2b3c4d5 | 0;
 const SALT_WALL = 0x51ed270b | 0;
+const SALT_DRAG = 0x3c9f42a1 | 0; // lethal-vs-drag classification stream (uncorrelated from the wall field)
 
 // Global row index (5 rows/segment): the weave moves PER ROW, not per segment → a denser, threadable line.
 function rowGlobal( i: number, r: number ): number {
@@ -189,9 +194,28 @@ function corridorUnion( seed: number, i: number, wLanes: number ): { lo: number;
     return { lo, hi };
 }
 
-// Wall the non-corridor lanes where coherent value-noise clears the density threshold, RLE-merging contiguous
-// wall lanes into ONE full-depth Block (variable width). Wall-eligible only OUTSIDE [unionLo, unionHi]; the
-// wall-noise samples (lane, segment) so a run is constant over the segment's depth.
+// Lane state for the wall field: 0 = open, 1 = lethal (red), 2 = drag (amber). A lane wants a block where the
+// coherent wall-noise clears the density; a second uncorrelated noise then classifies it lethal or drag.
+// LETHAL is SUPPRESSED inside the corridor [unionLo, unionHi] (fairness: the never-walled band stays open);
+// DRAG is allowed anywhere — so a drag patch can sit ON the racing line as a passable, slowing obstacle.
+function laneState(
+    seed: number,
+    i: number,
+    lane: number,
+    unionLo: number,
+    unionHi: number,
+    density: number,
+): 0 | 1 | 2 {
+    const wall = valueNoise2D( ( seed ^ SALT_WALL ) | 0, lane / WALL_NOISE_FZ_LANE, i / WALL_NOISE_FZ_SEG ) < density;
+    if ( ! wall ) return 0;
+    const isDrag =
+        valueNoise2D( ( seed ^ SALT_DRAG ) | 0, lane / DRAG_NOISE_FZ_LANE, i / DRAG_NOISE_FZ_SEG ) < DRAG_FRAC;
+    if ( ! isDrag && lane >= unionLo && lane <= unionHi ) return 0; // lethal inside the corridor → suppress (keep it open)
+    return isDrag ? 2 : 1;
+}
+
+// Build the segment's blocks: RLE-merge contiguous SAME-STATE lanes into one full-depth Block (variable width).
+// A run break happens whenever the lane state changes (open↔lethal↔drag), so lethal and drag never merge together.
 function buildWalls(
     seed: number,
     i: number,
@@ -202,7 +226,8 @@ function buildWalls(
     z1: number,
 ): Block[] {
     const blocks: Block[] = [];
-    let runStart = -1;
+    let runStart = 0;
+    let runState: 0 | 1 | 2 = 0;
     const flush = ( endLane: number ): void => {
         blocks.push( {
             x0: -HALF_WIDTH + runStart * CELL,
@@ -211,21 +236,18 @@ function buildWalls(
             y1: BLOCK_HEIGHT,
             z0,
             z1,
+            lethal: runState === 1,
         } );
-        runStart = -1;
     };
     for ( let lane = 0; lane < LANES; lane++ ) {
-        const inCorridor = lane >= unionLo && lane <= unionHi;
-        const isWall =
-            ! inCorridor &&
-            valueNoise2D( ( seed ^ SALT_WALL ) | 0, lane / WALL_NOISE_FZ_LANE, i / WALL_NOISE_FZ_SEG ) < density;
-        if ( isWall ) {
-            if ( runStart < 0 ) runStart = lane;
-        } else if ( runStart >= 0 ) {
-            flush( lane - 1 );
+        const st = laneState( seed, i, lane, unionLo, unionHi, density );
+        if ( st !== runState ) {
+            if ( runState !== 0 ) flush( lane - 1 ); // close the previous block run
+            runState = st;
+            runStart = lane;
         }
     }
-    if ( runStart >= 0 ) flush( LANES - 1 );
+    if ( runState !== 0 ) flush( LANES - 1 );
     return blocks;
 }
 
@@ -299,6 +321,7 @@ export function isHole( seg: Segment ): boolean {
 function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Array< [ number, number ] > {
     const walls: Array< [ number, number ] > = [];
     for ( const b of seg.blocks ) {
+        if ( ! b.lethal ) continue; // drag blocks are PASSABLE — they never break the open corridor
         if ( b.z0 <= zc && zc < b.z1 ) {
             const lo = Math.max( f.x0, b.x0 );
             const hi = Math.min( f.x1, b.x1 );

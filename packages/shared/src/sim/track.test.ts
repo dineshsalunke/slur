@@ -200,6 +200,24 @@ test( 'variable-width blocks appear (walls wider than one cell)', () => {
     assert.ok( sawWide, `no multi-cell blocks emerged (max width ${ maxW })` );
 } );
 
+// Both hazard kinds must actually appear: red (lethal) walls AND amber (drag) passable blocks. A regression
+// that made every block one kind would silently gut the risk/reward mechanic without failing any other test.
+test( 'both lethal walls and passable drag blocks are generated', () => {
+    let lethal = 0;
+    let drag = 0;
+    for ( const seed of SEEDS ) {
+        const t = makeTrack( seed );
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
+            for ( const b of t.segmentAt( i ).blocks ) {
+                if ( b.lethal ) lethal++;
+                else drag++;
+            }
+        }
+    }
+    assert.ok( lethal > 0, 'no lethal walls generated' );
+    assert.ok( drag > 0, 'no drag (amber) blocks generated' );
+} );
+
 // Gaps stay orthogonal + sparse: never two active gaps in a row (the segment after a gap is a landing pad),
 // and none in the start-safe zone. (GAP-REACH per class is asserted separately above.)
 test( 'no two gaps in a row and none in start-safe', () => {
@@ -232,7 +250,9 @@ function openIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] >
     if ( isHole( seg ) ) return [];
     const zc = seg.z0 + r * CELL + CELL / 2;
     const walls: Array< [ number, number ] > = [];
-    for ( const b of seg.blocks ) if ( b.z0 <= zc && zc < b.z1 ) walls.push( [ b.x0, b.x1 ] );
+    // Only LETHAL blocks obstruct — drag (amber) blocks are passable (you fly through, just slow), so they
+    // must NOT count toward reachability or a dead-end.
+    for ( const b of seg.blocks ) if ( b.lethal && b.z0 <= zc && zc < b.z1 ) walls.push( [ b.x0, b.x1 ] );
     walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
     const open: Array< [ number, number ] > = [];
     let cursor = -HALF_WIDTH;
@@ -283,20 +303,39 @@ test( 'the open corridor is always laterally REACHABLE (no unavoidable L-shaped 
     }
 } );
 
-// Renderer budget guard: the denser walls RLE-merge into wide blocks, so a visible window must stay under the
-// client's instance cap (BLOCK_LIMIT = 128 in track-view.tsx — exceeding it SILENTLY DROPS walls). Assert the
-// worst-case block count over a 49-segment window (TrackView's AHEAD+BACK) keeps margin below that cap.
-test( 'block count per visible window stays within the renderer instance budget', () => {
-    const WINDOW = Math.ceil( ( 900 + 80 ) / SEG_LEN ); // TrackView AHEAD+BACK
-    const BUDGET = 128; // must match BLOCK_LIMIT in apps/client/.../track-view.tsx
-    let worst = 0;
-    for ( const seed of SEEDS ) {
-        const t = makeTrack( seed );
-        for ( let s = START_SAFE; s < TRACK_SEGMENTS; s++ ) {
-            let n = 0;
-            for ( let i = s; i < s + WINDOW && i <= TRACK_SEGMENTS; i++ ) n += t.segmentAt( i ).blocks.length;
-            if ( n > worst ) worst = n;
+// Worst-case [lethal, drag] block counts in any WINDOW-segment slice of one track (extracted so the budget
+// test below stays flat / under the cognitive-complexity cap).
+function worstWindowCounts( t: Track, window: number ): [ number, number ] {
+    let worstLethal = 0;
+    let worstDrag = 0;
+    for ( let s = START_SAFE; s < TRACK_SEGMENTS; s++ ) {
+        let l = 0;
+        let d = 0;
+        for ( let i = s; i < s + window && i <= TRACK_SEGMENTS; i++ ) {
+            for ( const b of t.segmentAt( i ).blocks ) {
+                if ( b.lethal ) l++;
+                else d++;
+            }
         }
+        if ( l > worstLethal ) worstLethal = l;
+        if ( d > worstDrag ) worstDrag = d;
     }
-    assert.ok( worst < BUDGET, `worst-case ${ worst } blocks/window ≥ BLOCK_LIMIT ${ BUDGET } — walls would drop` );
+    return [ worstLethal, worstDrag ];
+}
+
+// Renderer budget guard: the client renders lethal + drag blocks as TWO instanced pools (distinct emissive
+// colour), so EACH kind's worst-case count over a visible window must stay under its pool cap (BLOCK_LIMIT in
+// track-view.tsx — exceeding it SILENTLY DROPS blocks). Checked per-kind, not on the total.
+test( 'block count per visible window stays within the renderer instance budget (per kind)', () => {
+    const WINDOW = Math.ceil( ( 900 + 80 ) / SEG_LEN ); // TrackView AHEAD+BACK
+    const BUDGET = 160; // must match BLOCK_LIMIT in apps/client/.../track-view.tsx (per pool)
+    let worstLethal = 0;
+    let worstDrag = 0;
+    for ( const seed of SEEDS ) {
+        const [ l, d ] = worstWindowCounts( makeTrack( seed ), WINDOW );
+        if ( l > worstLethal ) worstLethal = l;
+        if ( d > worstDrag ) worstDrag = d;
+    }
+    assert.ok( worstLethal < BUDGET, `worst-case ${ worstLethal } lethal blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
+    assert.ok( worstDrag < BUDGET, `worst-case ${ worstDrag } drag blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
 } );

@@ -87,8 +87,12 @@ test( 'pickupLayout: every slot sits on floor and inside the open corridor — n
         for ( const p of pickupLayout( seed ) ) {
             const seg = track.segmentAt( Number( p.id ) );
             assert.ok( seg.floors.length > 0, `seed ${ seed }: pickup ${ p.id } placed over a hole (gap)` );
-            const buried = seg.blocks.some( ( b ) => p.x >= b.x0 && p.x < b.x1 && p.z >= b.z0 && p.z < b.z1 );
-            assert.ok( ! buried, `seed ${ seed }: pickup ${ p.id } buried inside a wall block` );
+            // Only LETHAL walls "bury" a pickup — a drag (amber) block is passable, so a pickup on one is
+            // still grabbable (you pass through it, slowing). The corridor is lethal-free, so this always holds.
+            const buried = seg.blocks.some(
+                ( b ) => b.lethal && p.x >= b.x0 && p.x < b.x1 && p.z >= b.z0 && p.z < b.z1,
+            );
+            assert.ok( ! buried, `seed ${ seed }: pickup ${ p.id } buried inside a lethal wall block` );
         }
     }
 } );

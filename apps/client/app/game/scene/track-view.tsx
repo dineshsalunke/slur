@@ -14,7 +14,7 @@ const BACK = 80;
 // Instance pool caps — hard buffer sizes (exceeding silently drops). The window is
 // (AHEAD+BACK)/SEG_LEN ≈ 49 segments; floors ~1/seg, blocks ~0.22/seg → these have generous margin.
 const FLOOR_LIMIT = 256;
-const BLOCK_LIMIT = 128;
+const BLOCK_LIMIT = 160; // per-KIND pool cap (lethal + drag render as two meshes). Worst-case ~108 lethal / ~63 drag per window (asserted in track.test.ts) — keep this ≥ that with margin.
 const RAIL_LIMIT = 128; // 2 edge rails per floored segment × ~49 visible ≈ 98
 const FLOOR_THICK = 0.6; // floor slab thickness; the span's `y` is the WALKABLE TOP, slab hangs below it
 const RAIL_W = 0.5; // edge-rail cross-section (x). Rails frame the track AND, by their absence, make gaps read.
@@ -54,12 +54,13 @@ function park( mesh: THREE.InstancedMesh, from: number, until: number ): void {
     for ( let k = from; k < until; k++ ) mesh.setMatrixAt( k, _hidden );
 }
 
-// Emit one segment's lethal cubes into the block pool; returns the next free slot index. Each cube is a
-// DISCRETE box — sized from its OWN [x0,x1] × [y0,y1] × [z0,z1] (a 1×1-cell footprint, 2 cells tall), NOT
-// the whole segment — so an open-scatter field reads as separate pillars you weave between. This box IS
-// the collision AABB (WYSIWYG), so what you see is exactly what the ship's footprint tests against.
-function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment ): number {
+// Emit one segment's blocks into the pool matching `lethal` (red walls vs amber drag) — the OTHER kind's
+// blocks are skipped, so each mesh only draws its own colour. Returns the next free slot index. Each box is a
+// DISCRETE AABB — sized from its OWN [x0,x1] × [y0,y1] × [z0,z1] — so what you see is exactly what the ship's
+// footprint tests against (WYSIWYG). Drag (amber) blocks are PASSABLE: you can fly through them for a speed hit.
+function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment, lethal: boolean ): number {
     for ( const b of seg.blocks ) {
+        if ( b.lethal !== lethal ) continue;
         const h = Math.max( 0.05, b.y1 - b.y0 );
         bi = put(
             mesh,
@@ -77,29 +78,33 @@ function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment ): numb
 }
 
 // Instanced track floors + hazard blocks, driven fully imperatively from a Z-window around the local
-// ship (NO React state, NO re-map per frame). Two draw calls total. Track is local-only (from the
-// synced seed) — never reconciled tile-by-tile.
+// ship (NO React state, NO re-map per frame). Four instanced draw calls (floor · lethal walls · drag blocks ·
+// rails). Track is local-only (from the synced seed) — never reconciled tile-by-tile.
 export function TrackView( { track }: { track: Track } ) {
     const world = useWorld();
     const floorRef = useRef< THREE.InstancedMesh | null >( null );
-    const blockRef = useRef< THREE.InstancedMesh | null >( null );
+    const lethalRef = useRef< THREE.InstancedMesh | null >( null );
+    const dragRef = useRef< THREE.InstancedMesh | null >( null );
     const railRef = useRef< THREE.InstancedMesh | null >( null );
     const prevFloor = useRef( 0 );
-    const prevBlock = useRef( 0 );
+    const prevLethal = useRef( 0 );
+    const prevDrag = useRef( 0 );
     const prevRail = useRef( 0 );
 
     useFrame( () => {
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
         const floors = floorRef.current;
-        const blocks = blockRef.current;
+        const lethal = lethalRef.current;
+        const drag = dragRef.current;
         const rails = railRef.current;
-        if ( ! sim || ! floors || ! blocks || ! rails ) return;
+        if ( ! sim || ! floors || ! lethal || ! drag || ! rails ) return;
 
         const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
         const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );
 
         let fi = 0;
-        let bi = 0;
+        let li = 0;
+        let di = 0;
         let ri = 0;
         for ( let i = i0; i <= i1; i++ ) {
             const seg = track.segmentAt( i );
@@ -126,16 +131,20 @@ export function TrackView( { track }: { track: Track } ) {
                     len,
                 );
             }
-            bi = emitBlocks( blocks, bi, seg );
+            li = emitBlocks( lethal, li, seg, true );
+            di = emitBlocks( drag, di, seg, false );
         }
         park( floors, fi, prevFloor.current );
-        park( blocks, bi, prevBlock.current );
+        park( lethal, li, prevLethal.current );
+        park( drag, di, prevDrag.current );
         park( rails, ri, prevRail.current );
         prevFloor.current = fi;
-        prevBlock.current = bi;
+        prevLethal.current = li;
+        prevDrag.current = di;
         prevRail.current = ri;
         floors.instanceMatrix.needsUpdate = true;
-        blocks.instanceMatrix.needsUpdate = true;
+        lethal.instanceMatrix.needsUpdate = true;
+        drag.instanceMatrix.needsUpdate = true;
         rails.instanceMatrix.needsUpdate = true;
     } );
 
@@ -155,12 +164,26 @@ export function TrackView( { track }: { track: Track } ) {
                     toneMapped={ false }
                 />
             </instancedMesh>
-            <instancedMesh ref={ blockRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
+            { /* Lethal walls — the lone RED accent (touch → derezz). Kept saturated so danger reads instantly
+                 against the gray track. */ }
+            <instancedMesh ref={ lethalRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
                 <meshStandardMaterial
                     emissive="#ff2740"
                     emissiveIntensity={ 2.2 }
                     color="#1a0206"
+                    toneMapped={ false }
+                />
+            </instancedMesh>
+            { /* Drag blocks — AMBER, visibly distinct from the red walls so you read "slow, not death" at a
+                 glance. Passable: fly through for a speed hit, or strafe around. Dimmer than the red so lethal
+                 stays the louder warning. */ }
+            <instancedMesh ref={ dragRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
+                <boxGeometry />
+                <meshStandardMaterial
+                    emissive="#ffa51f"
+                    emissiveIntensity={ 1.6 }
+                    color="#2a1600"
                     toneMapped={ false }
                 />
             </instancedMesh>
