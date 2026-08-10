@@ -1,5 +1,6 @@
 import { type Client, Room } from '@colyseus/core';
 import {
+    applyDescriptor,
     BOLT_TTL,
     boltHits,
     COLOR_COUNT,
@@ -13,20 +14,21 @@ import {
     type InputMessage,
     isColorId,
     isShipId,
-    makeTrack,
     PHASE,
     PICKUP_RESPAWN_S,
     type Pickup,
     type PlayerInput,
     PlayerState,
     Projectile,
-    pickupLayout,
+    pickupsOf,
+    procgenDescriptor,
     RACE_GRACE_SECONDS,
     RESTART_MESSAGE,
     type RunMetadata,
     RunState,
     raceShouldEnd,
     resetPlayerForRace,
+    resolveTrack,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
     START_MESSAGE,
@@ -68,13 +70,14 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     // ticks so physics is deterministic regardless of setSimulationInterval jitter.
     private advance = createFixedStep( FIXED_DT );
 
-    // Authoritative track — generated ONCE from the room seed (same seed the client builds from). ONE seed
-    // per room for S4: every round races the same track (per-round reseed is a deliberate later follow-up).
+    // Authoritative track — generated ONCE from the room's TrackDescriptor (the same descriptor the client
+    // builds from, synced via state.descriptor). ONE descriptor per room for S4: every round races the same
+    // track (per-round re-roll is a deliberate later follow-up).
     private track!: Track;
 
-    // S5 combat: deterministic pickup layout (computed once from the seed — same as the client) and the
-    // per-slot respawn countdown. The layout is server-PLAIN data (positions derive from the seed both ends,
-    // only availability syncs via state.pickupTaken); the timer Map is transient server bookkeeping.
+    // S5 combat: deterministic pickup layout (computed once from the descriptor — same as the client) and the
+    // per-slot respawn countdown. The layout is server-PLAIN data (positions derive from the descriptor both
+    // ends, only availability syncs via state.pickupTaken); the timer Map is transient server bookkeeping.
     private pickups: Pickup[] = [];
     private pickupRespawn = new Map< string, number >();
     // Monotonic id for spawned projectiles — the MapSchema key (grows per fire; never reused within a room).
@@ -82,9 +85,13 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
     onCreate(): void {
         this.state = new RunState(); // phase defaults to lobby (0)
-        this.state.seed = ( Math.random() * 0xffffffff ) >>> 0; // deterministic scenery + track seed, synced to clients
-        this.track = makeTrack( this.state.seed );
-        this.pickups = pickupLayout( this.state.seed ); // hazard-aware, deterministic — the client computes the same layout
+        // ADR-001: the room speaks a TrackDescriptor, not a bare seed. Mint a procgen descriptor, publish it
+        // into state.descriptor (synced to clients), then resolve the track + pickups from it. `seed` lives
+        // ONLY inside procgenDescriptor/the provider now.
+        const descriptor = procgenDescriptor( ( Math.random() * 0xffffffff ) >>> 0 );
+        applyDescriptor( this.state.descriptor, descriptor );
+        this.track = resolveTrack( descriptor );
+        this.pickups = pickupsOf( this.track ); // ADR-002: pickups are a READ of track.anchors (provider-materialized) — same list the client derives
         this.patchRate = 50; // 20Hz network flush (default) — decoupled from the 60Hz sim
         this.refreshMetadata();
 

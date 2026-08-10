@@ -10,17 +10,35 @@ description: >-
 
 # pr-loop — find → review → comment → (approve + merge)
 
+> **External contributors cannot merge.** Merging needs write access to `dineshsalunke/slur`.
+> Check once, up front: `gh api repos/dineshsalunke/slur --jq .permissions` — `push: false`
+> means external, so this skill is **review-only**: read, verify, comment, stop. `gh pr merge`
+> will fail, and a review is not a clearance to land. An external contributor who also wants to
+> *fix* what they found must fork and open a cross-repo PR — see `/issue-loop`.
+
 One agent working the PR queue. This skill is the **body of a loop**: it reviews the open
 PRs, acts on each, and comes back. Run it under `/loop` to schedule iterations, or self-pace.
 
-Repo: `github.com/dineshsalunke/slur`. You act as **`dineshsalunke` / Claude — the repo
-owner and reviewer**. Reviewing, commenting, and merging are owner actions and need **no
-lock** (unlike implementing).
+Repo: `github.com/dineshsalunke/slur`. Reviewing and commenting need **no lock** (unlike
+implementing) — but **what you are allowed to do at the end depends on the account running**,
+so establish that first:
 
-> **Multi-agent context.** More than one Claude works this repo (mahendra's Claude is a
-> collaborator whose PRs are adversarially self-reviewed). Target every `gh` command with
-> **`-R dineshsalunke/slur`** — these skills are committed to a repo that takes fork PRs, so a
-> bare `gh pr list` can resolve to a fork instead of origin.
+```
+gh auth status                                    # ME = the authenticated login
+gh api repos/dineshsalunke/slur --jq .permissions # push: true = can merge; false = cannot
+```
+
+- **`push: true`** → full loop, including the guarded approve + merge in Step 5.
+- **`push: false`** → **review-only.** You can still comment and submit a review (anyone can on
+  a public repo), but `gh pr merge` **will fail** — you do not have write access. Do not attempt
+  it, and do not treat a PR as "done" because you reviewed it. Post the findings and stop;
+  merging is someone else's call.
+
+Never review your own PR as though it were independent. If `.author.login == ME`, say so in the
+comment and treat the adversarial pass in Step 2 as mandatory rather than optional.
+
+Pass `-R dineshsalunke/slur` on every `gh` call — from a fork, a bare command resolves against
+your own remote and silently targets the wrong repository.
 
 ## Rule 0 — review against the rules, not against taste (non-negotiable)
 
@@ -43,15 +61,15 @@ issue-loop agent. Independent review is the point.
 ## Step 1 — find open PRs
 
 ```
-gh pr list -R dineshsalunke/slur --state open --limit 20
+gh pr list --state open --limit 20
 ```
 
 For each PR, in turn (oldest-first is a fine default):
 
 ```
-gh pr view <n> -R dineshsalunke/slur --comments
-gh pr diff <n> -R dineshsalunke/slur
-gh pr checks <n> -R dineshsalunke/slur
+gh pr view <n> --comments
+gh pr diff <n>
+gh pr checks <n>
 ```
 
 ## Step 2 — review the diff
@@ -66,7 +84,11 @@ Judge the change on:
   source-consuming `@slur/shared`; `<>` fragment shorthand; >1 component per file.
 - **Convention conformance** — the specific `conventions/*.md` for the touched subsystem.
 - **Tests** — shared-sim changes MUST have tests; a bug fix should carry a failing-then-passing
-  test. Is the surface that can be tested, tested?
+  test. Is the surface that can be tested, tested? And critically: **can the tests fail?**
+  Check for the two ways a green test asserts nothing — an expected value *derived from the
+  function under test* (`assert(f(x) === f(x))` survives inverting `f`), and a bound so loose
+  the code cannot cross it. When in doubt, break the code locally and see whether the suite
+  notices. Both have shipped here green.
 - **Scope** — one logical change; no unrelated files smuggled in.
 - **Commits/PR hygiene** — conventional commits, issue linked, **no `Co-Authored-By` trailer**,
   a stated verification.
@@ -74,29 +96,37 @@ Judge the change on:
 You may run `/code-review` on the checked-out diff as a force-multiplier, but you own the
 final judgment.
 
-### Spawn an adversary — do not self-review (the important part)
+### Spawn an adversarial reviewer — especially for `issue-loop`'s PRs
 
-When this skill reviews a PR the `issue-loop` agent opened, both sides run as **the same
-identity with the same priors** — that is self-review wearing two hats, and it reliably
-misses the one class of defect you cannot see *because of how you framed the problem*. (In
-this repo, three adversarial subagents run over one agent's own six "confident, gate-passed"
-PRs found **nine real defects** — unfailable assertions, a tautological `f(x) === f(x)` fix,
-a headline conclusion drawn from a saturated/null instrument. None survived an adversarial
-pass; all had passed self-review.)
+When this skill reviews a PR the issue-loop agent opened, both sides are **the same operator
+with the same priors**. That is self-review wearing two hats, and it is blind to exactly the
+defects that come from how the problem was framed in the first place.
 
-So for every non-trivial PR, **spawn a subagent explicitly briefed to break it** — separate
-context, prompted to *find where this is wrong*, told that "looks good" is a **failed**
-review. Feed it the diff and the PR's own claims. Treat its findings as input to your
-judgment, not gospel. If you cannot spawn one, **state in your review comment that this was a
-self-review** so the next reader knows.
+So do not rely on reading alone. Spawn a subagent over the diff, briefed to **break** it:
+
+> Find where this PR is WRONG. Do not validate it. Concluding "looks good" is a FAILED review
+> unless you genuinely tried to break it and can list what you attacked. Check every claim in
+> the PR body against the actual diff. Verify the tests can fail. Report file:line and your
+> confidence.
+
+Give it the repo context (`CLAUDE.md`, `CONTRIBUTING.md`, the relevant `conventions/*.md`) and
+have it work in a **git worktree** so it never disturbs the main tree.
+
+This is not ceremony. In the first collaboration cycle, six PRs that had passed a full
+self-review and a green gate yielded **nine real defects** the moment adversarial subagents
+looked at them — including tests that could not fail, a room test suite that was not actually
+time-controlled, and a published conclusion drawn from a saturated measurement. Every one of
+those had been reviewed and believed. Treat its findings as input to your judgment, not as a
+verdict — but do not skip it.
 
 ## Step 3 — verify locally (do not trust green CI alone)
 
-**First, guard your working tree** — `git status` must be clean before you check a PR out,
-or `gh pr checkout` fails or drags your changes across PRs. Stash or commit, then:
+Check the PR out and run the full gate yourself. **Stash or stop if the working tree is
+dirty** — `gh pr checkout` will otherwise drag your changes across PRs and you will review
+someone else's diff plus your own:
 
 ```
-gh pr checkout <n> -R dineshsalunke/slur
+gh pr checkout <n>
 pnpm install   # if lockfile changed
 pnpm typecheck
 pnpm lint
@@ -104,18 +134,16 @@ pnpm test
 pnpm build
 ```
 
-Do **not** substitute `pnpm --filter @slur/shared test`. 
+Do **not** substitute `pnpm --filter @slur/shared test`. If the change has a feel or visual
+surface, drive the app (`/run` or `/verify`) and look — a green build does not prove feel.
+Driving the app needs the LFS assets: run `git lfs install && git lfs pull` first, or the ship
+`.gltf` files load as pointer text and R3F fails with a JSON parse error that points nowhere
+near the real cause.
 
-**Check that the PR's tests bite.** For each new/changed test, deliberately break the code
-it covers and confirm the test goes **red**, then revert (`git diff` clean). A green suite
-proves the code compiles, not that the test watches anything — an unfailable test is the
-single most common way a confident, gate-passing PR is still wrong. Also flag any test whose
-expected value is **derived from the function under test** (`f(x) === f(x)` always passes).
-
-If the change has a feel or visual surface, drive the app (`/run` or `/verify`) and look — a
-green build does not prove feel. **Before driving the app, run `git lfs install && git lfs
-pull`**: the ship `.gltf` files are LFS pointers, and without a pull R3F dies with a cryptic
-`Unexpected token 'v', "version ht"... is not valid JSON`.
+Judge a **clean** checkout when the change touches build or test wiring: wipe `dist/`,
+`test-dist/` and `*.tsbuildinfo` before running. Stale incremental artefacts have masked a
+real "fails from a fresh clone" bug here — the gate was green locally and broken for everyone
+else.
 
 Before judging "the fix isn't there", confirm your baseline is current: `git fetch` and diff
 against **current `origin/dev`**, not a stale sha. A behind-by-N baseline reads as a missing
@@ -126,7 +154,7 @@ fix when the fix is already live.
 Post your findings on the PR, most-important first, each tied to the rule or line it fails:
 
 ```
-gh pr comment <n> -R dineshsalunke/slur --body "<findings>"
+gh pr comment <n> --body "<findings>"
 ```
 
 - If there are blocking problems, **request changes** and be specific — cite the file:line and
@@ -136,8 +164,13 @@ gh pr comment <n> -R dineshsalunke/slur --body "<findings>"
 
 ## Step 5 — approve and merge (guarded — this is the irreversible step)
 
+**Skip this entire step if `push: false`.** You cannot merge, `gh pr merge` will error, and a
+review-only pass ends at Step 4. Say plainly in your comment that you reviewed but cannot merge,
+so nobody assumes the PR is cleared to land.
+
 Merge **only when every one of these is true**:
 
+0. You have write access (`push: true`).
 1. All CI checks are green (`gh pr checks <n>` all pass).
 2. Your **local verify gate passed** (Step 3), on the current baseline.
 3. The diff **conforms to the conventions** you loaded in Rule 0 — no §5 anti-pattern, no
@@ -145,18 +178,22 @@ Merge **only when every one of these is true**:
 4. The PR **links its issue** and states how it was verified.
 5. There are **no unresolved review threads** you or anyone else raised.
 6. Scope is one logical change.
+7. The **adversarial pass ran** (Step 2) and every finding is either fixed or explicitly
+   dismissed with a stated reason. "It found nothing" only counts if it listed what it
+   attacked.
 
-If all six hold:
+**Give an in-flight review time to land.** Check `gh pr view <n> --comments` and
+`gh api repos/<owner>/<repo>/pulls/<n>/reviews` immediately before merging, and if another
+agent is plainly mid-review, wait a beat. This is not hypothetical — a substantive review on
+this repo landed **32 seconds after** the PR was merged, so its findings had to become a
+follow-up PR instead of a fix. Nothing was lost, but the ordering wasted a cycle.
+
+If all seven hold:
 
 ```
-gh pr review <n> -R dineshsalunke/slur --approve --body "<one-line why this is good to go>"
-gh pr merge <n> -R dineshsalunke/slur --squash --delete-branch
+gh pr review <n> --approve --body "<one-line why this is good to go>"
+gh pr merge <n> --squash --delete-branch
 ```
-
-> GitHub **blocks approving your own PR**. When the reviewer and author identity are the same
-> (a PR this same account opened), `--approve` fails — skip it and merge on the strength of
-> the six gates plus the adversary pass, noting in the merge comment that formal approval was
-> not possible.
 
 **If anything is ambiguous, borderline, or you are not confident** — a convention you are
 unsure applies, a design decision that is really a maintainer's call, a feel surface you could
@@ -166,11 +203,21 @@ queue.
 
 After a merge, move to the next PR (or end the iteration under `/loop`).
 
+## Context — you are not the only agent here
+
+This repo is worked by **more than one Claude at a time** (today: the owner's, and mahendra's
+via a fork). That shapes several things above and is worth holding in mind:
+
+- Issues carry a **lock protocol** — a `🔒 Lock claimed` comment, ~3h TTL, renewed by
+  re-commenting. Reviewing and merging need no lock; implementing does.
+- **Baselines drift fast.** `git fetch` before concluding a fix is missing.
+- A PR you did not open may still be **actively defended** — expect the author to push back
+  with evidence, and treat that as the process working.
+- Findings and retractions are posted **publicly on the thread**, so both agents (and the
+  human) can see the reasoning rather than just the outcome.
+
 ## Boundaries
 
 - Never use Python for tooling/scripts (NN-1): `jq`/`yq` → `fish`/`bash` → ecosystem-native.
 - Do not force-merge past failing checks or unresolved threads.
 - Owner review does not need a lock; do not lock issues from this skill.
-- **Retract a wrong published claim loudly** — if a review conclusion you posted turns out
-  wrong, post a visible correction on the same thread, never a quiet edit; a maintainer may
-  already be acting on the stale claim.

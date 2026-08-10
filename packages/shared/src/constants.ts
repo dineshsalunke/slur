@@ -170,7 +170,7 @@ export function deriveWeaveCurvatureCap( tunings: FlightTuning[], cell: number )
     return m * WEAVE_CURV_SAFETY;
 }
 // Noise node period [rows]: the larger of the slope- and curvature-safe periods (× safety). Bigger period =
-// gentler line. sqrt is fine — this is a ONE-TIME bound computed once at makeTrack, never per-segment (same
+// gentler line. sqrt is fine — this is a ONE-TIME bound computed once at module load, never per-segment (same
 // rule as jumpReach). `amp` = the max racing-line amplitude in lanes (see WEAVE_AMP_LANES in track.ts).
 export function deriveNodePeriod( slopeCap: number, curvCap: number, amp: number ): number {
     const slopeReq = ( amp * WEAVE_SLOPE_OCTAVE_FACTOR ) / slopeCap;

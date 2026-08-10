@@ -1,15 +1,13 @@
-// S5 pickups — track-placed power-ups whose LAYOUT is a pure function of the room seed (exactly like the
-// track: deterministic hashing, NEVER Math.random). Both ends compute identical positions, so geometry never
-// syncs; only per-slot availability (RunState.pickupTaken) does. Pure.
-//
-// S6: pickups sit ON the racing line (`corridorCenterX`) of EVERY non-gap segment, not only rare 'plain' ones.
-// Procgen v2 made plain (wall-free) segments scarce (~10%), which starved the drop rate (~6–7/track). Placing
-// each pickup in the moving corridor keeps density high AND rewards threading the line — the corridor is never
-// walled, so the drop is always inside the ≥ MIN_LANE open band (grabbable, never buried in a cube).
+// S5 pickups — grab logic. Post-ADR-002 the LAYOUT is no longer computed here: pickups are first-class
+// `track.anchors` of `kind: 'pickup'`, MATERIALIZED by the provider (sim/track.ts) directly from the
+// descriptor — same determinism guarantee (both ends compute identical positions; only per-slot availability
+// in RunState.pickupTaken ever syncs). This module now owns only the grab test + the thin anchor→pickup read.
 
-import { corridorCenterX, isHole, makeTrack, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../sim/track.js';
+import type { Anchor, Track } from '../sim/track.js';
+import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 
 // A track-placed pickup slot. `id` is the stable slot key (its segment index) → keys the pickupTaken map.
+// Structurally a subset of `Anchor` (id/x/y/z), so `track.anchors.filter(kind==='pickup')` yields these.
 export interface Pickup {
     id: string;
     x: number;
@@ -17,22 +15,19 @@ export interface Pickup {
     z: number;
 }
 
-export const PICKUP_SPACING = 3; // segments between pickup slots → a pickup roughly every PICKUP_SPACING·SEG_LEN (≈60u): dense drops.
 export const PICKUP_GRAB_RADIUS = 3; // units: fly within this in BOTH x and z to grab (grab-on-overlap).
 
-// Deterministic pickup layout: one candidate slot per PICKUP_SPACING segments after the start-safe zone,
-// emitted for EVERY segment that has floor (skip only gaps/holes — nothing to grab over). Each pickup sits at
-// the corridor centre (the racing line) at the segment's mid-row, so it is always inside the open band — no
-// bolt floating inside a lethal cube. Both ends derive the same track (makeTrack is O(1) + deterministic).
-export function pickupLayout( seed: number ): Pickup[] {
-    const track = makeTrack( seed );
-    const out: Pickup[] = [];
-    for ( let seg = START_SAFE; seg < TRACK_SEGMENTS; seg += PICKUP_SPACING ) {
-        if ( isHole( track.segmentAt( seg ) ) ) continue; // gap → no floor to stand on / grab over
-        const z = seg * SEG_LEN + SEG_LEN / 2; // centred forward in the segment (the mid row corridorCenterX samples)
-        out.push( { id: String( seg ), x: corridorCenterX( seed, seg ), y: 0, z } );
-    }
-    return out;
+// The pickup anchors on a track — the SINGLE source of truth is `track.anchors` (provider-materialized).
+// A thin filter, not a computation: kept for call-site ergonomics + the descriptor→layout test wrappers.
+export function pickupsOf( track: Track ): Anchor[] {
+    return track.anchors.filter( ( a ) => a.kind === 'pickup' );
+}
+
+// Descriptor convenience wrapper: resolve the track, then read its pickup anchors. Same result the server /
+// client get by filtering `track.anchors` directly — this just spares callers that only hold a descriptor an
+// explicit resolveTrack. (Authored descriptors throw inside resolveTrack until that provider arm is built.)
+export function pickupLayout( descriptor: TrackDescriptor ): Pickup[] {
+    return pickupsOf( resolveTrack( descriptor ) );
 }
 
 // Grab-on-overlap: the ship is within PICKUP_GRAB_RADIUS in BOTH x and z (y ignored — pickups hover at

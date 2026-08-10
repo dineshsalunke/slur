@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { makeTrack, SET_CLASS_MESSAGE, SHIP_ORDER, USE_POWERUP_MESSAGE } from '@slur/shared';
+import { resolveTrack, SET_CLASS_MESSAGE, SHIP_ORDER, type TrackDescriptor, USE_POWERUP_MESSAGE } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio';
@@ -22,16 +22,20 @@ import { ProjectileField } from './scene/projectile-field';
 import { Ships } from './scene/ship';
 import { TrackView } from './scene/track-view';
 
-export function NetCanvas( { seed }: { seed: number } ) {
+export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     const room = useRoom();
     const predictor = useMemo( createPredictor, [] );
 
-    // The track is a pure function of the seed, which the route loader ALREADY waited to decode before
-    // rendering us (run/route.tsx) — so it's a stable prop, correct from the first render, matching the
-    // server's track. We build it ONCE here: no subscription, no reactive state at this Canvas-wrapping
+    // The track is a pure function of the TrackDescriptor, which the route loader ALREADY waited to decode
+    // before rendering us (run/route.tsx) — so it's a stable prop, correct from the first render, matching the
+    // server's track. We resolve it ONCE here: no subscription, no reactive state at this Canvas-wrapping
     // parent (r3f.md: the root holds ZERO reactive subscriptions — a re-render here churns the whole
-    // scene graph). Deriving from a prop, not room.state, is what fixes the stale-seed desync.
-    const track = useMemo( () => makeTrack( seed ), [ seed ] );
+    // scene graph). Deriving from a prop, not room.state, is what fixes the stale-descriptor desync.
+    const track = useMemo( () => resolveTrack( descriptor ), [ descriptor ] );
+    // Parallax canyon-wall seed for the Environment scenery — a small procgen-visual leak (ADR-002 tidies):
+    // only the procgen arm has a seed; authored levels will drive scenery differently. Non-procgen → undefined
+    // (TubeWalls falls back to its own default), keeping the scenery signature seed-based like landing/env-lab.
+    const wallSeed = descriptor.kind === 'procgen' ? descriptor.seed : undefined;
     // Latest-track ref so the Colyseus subscription effect below can reconcile against the current
     // track WITHOUT listing it as a dependency (which would tear down + re-subscribe the room wiring).
     const trackRef = useRef( track );
@@ -105,9 +109,9 @@ export function NetCanvas( { seed }: { seed: number } ) {
                 { /* Grid Void atmosphere (S6, locked): composes background/fog/dome/stars + far parallax
                      canyon-walls from one config. It OWNS the background <color> and <fog>, so the old
                      hardcoded '#05060a' background is gone. Post-FX stays OUT of here — the single global
-                     <Bloom> below is driven by GRID_VOID.bloom. seed is the shared track seed → identical
+                     <Bloom> below is driven by GRID_VOID.bloom. wallSeed is the shared procgen seed → identical
                      walls on every client. Kept free of reactive state: a module constant, no useState. */ }
-                <Environment config={ GRID_VOID } seed={ seed } />
+                <Environment config={ GRID_VOID } seed={ wallSeed } />
                 <ambientLight intensity={ 1 } />
                 <NetLoop predictor={ predictor } track={ track } />
                 { /* After NetLoop so its useFrame (ship-position sync) runs first — the burst reads each
@@ -116,7 +120,7 @@ export function NetCanvas( { seed }: { seed: number } ) {
                 <HitSpark />
                 <TrackView track={ track } />
                 <FinishGate track={ track } />
-                <PickupField room={ room } seed={ seed } />
+                <PickupField room={ room } track={ track } />
                 <ProjectileField />
                 <Ships />
                 { /* Audio leaves: GameAudio drives the singleton engine (SFX/music/synth-hum) off room + ECS

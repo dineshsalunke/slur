@@ -1,5 +1,5 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { ROOM_NAME, type RunState } from '@slur/shared';
+import { descriptorReady, ROOM_NAME, type RunState, type TrackDescriptor, toDescriptor } from '@slur/shared';
 import { attachLobbyStore } from '../lobby/lobby-store';
 import { getClient } from './client';
 import { session } from './session';
@@ -42,16 +42,17 @@ export function leaveRoom(): void {
     session.room = null;
 }
 
-// The seed is server-authoritative (set in onCreate) but decodes AFTER the join handshake. Resolve once it's
-// a real (non-zero) value so the /game loader can hand NetCanvas a seed that MATCHES the server from the
-// first render (identical track both ends). Lives here, not a component effect — same reason as S2.
-export function waitForSeed( room: Room< RunState > ): Promise< number > {
-    if ( room.state.seed ) return Promise.resolve( room.state.seed );
+// The TrackDescriptor is server-authoritative (set in onCreate) but decodes AFTER the join handshake. Resolve
+// once it's populated (descriptorReady — procgen: a real non-zero seed) so the /game loader can hand NetCanvas
+// a descriptor that MATCHES the server from the first render (identical track both ends). Lives here, not a
+// component effect — same reason as S2. Listens on the descriptor's `seed` (the procgen sentinel field).
+export function waitForDescriptor( room: Room< RunState > ): Promise< TrackDescriptor > {
+    if ( descriptorReady( room.state.descriptor ) ) return Promise.resolve( toDescriptor( room.state.descriptor ) );
     return new Promise( ( resolve ) => {
-        const off = getStateCallbacks( room )( room.state ).listen( 'seed', ( v ) => {
-            if ( v ) {
+        const off = getStateCallbacks( room )( room.state.descriptor ).listen( 'seed', () => {
+            if ( descriptorReady( room.state.descriptor ) ) {
                 off();
-                resolve( v );
+                resolve( toDescriptor( room.state.descriptor ) );
             }
         } );
     } );

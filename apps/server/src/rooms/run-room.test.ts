@@ -20,6 +20,7 @@ import {
     ROOM_NAME,
     START_MESSAGE,
     STUN_SECONDS,
+    toDescriptor,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { RunRoom } from './run-room.js';
@@ -187,7 +188,7 @@ describe( 'RunRoom combat', () => {
         const { room, host } = await racingRoom( 1 );
         const racer = playerOf( room, host.sessionId );
 
-        const [ pickup ] = pickupLayout( room.state.seed );
+        const [ pickup ] = pickupLayout( toDescriptor( room.state.descriptor ) );
         assert.ok( pickup, 'the seeded layout places at least one pickup' );
 
         racer.heldPower = HeldPower.none;
@@ -204,7 +205,7 @@ describe( 'RunRoom combat', () => {
         const { room, host } = await racingRoom( 1 );
         const racer = playerOf( room, host.sessionId );
 
-        const [ pickup ] = pickupLayout( room.state.seed );
+        const [ pickup ] = pickupLayout( toDescriptor( room.state.descriptor ) );
         assert.ok( pickup, 'the seeded layout places at least one pickup' );
 
         racer.heldPower = HeldPower.none;

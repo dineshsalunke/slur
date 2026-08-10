@@ -3,8 +3,11 @@
 // seeded by hash2(seed, …), so it is O(1) random-access and byte-identical on client + server (this is
 // why collision — which runs inside the shared simulate() — auto-networks with no wire change).
 //
-// A finite Race is indices 0..TRACK_SEGMENTS; because segmentAt accepts any i, endless Survival (S7)
-// falls out for free — do NOT materialize an array, that would force an S7 rewrite.
+// The track is FINITE — indices 0..length (length defaults to TRACK_SEGMENTS). segmentAt(i) stays a pure
+// O(1) derivation with no stored array, which is what keeps geometry byte-identical on client + server with
+// zero tile sync — a finite track could be materialized once, but the per-segment function is the simplest
+// correct form and costs nothing. (ADR-004: the old "endless Survival falls out for free — do NOT
+// materialize an array, that would force an S7 rewrite" note is obsolete; Survival/endless was dropped.)
 //
 // DETERMINISM: integer/PRNG/`+-*/`/compare/floor ONLY. NO Math.sin/cos/tan/pow/sqrt in the per-segment
 // path — a single ULP of cross-engine drift diverges geometry → diverges deaths → the game desyncs.
@@ -80,11 +83,39 @@ export interface Segment {
     isFinish: boolean;
 }
 
+// ADR-002 — a first-class piece of gameplay data placed ON the track by the provider. Anchors are
+// MATERIALIZED, not synced: their positions derive from the descriptor (exactly like geometry), so both ends
+// compute an identical list from the same descriptor and only per-anchor *availability* (e.g.
+// RunState.pickupTaken, keyed by anchor id) ever crosses the wire. `kind` is left OPEN (a string) for future
+// hazard/drop/checkpoint kinds — but only 'pickup' is modelled today (do NOT invent kinds with no consumer).
+// Litmus for adding a kind (ADR-000): "would two clients disagreeing on this anchor desync the game?" yes →
+// it belongs here; cosmetic-only → it belongs to the (frozen) VisualTrack, never on the physics Track.
+export interface Anchor {
+    id: string; // stable slot key. For 'pickup' this is the segment index string → keys RunState.pickupTaken.
+    kind: string; // 'pickup' today; open for hazard/drop/checkpoint later.
+    x: number;
+    y: number;
+    z: number;
+    params?: unknown; // per-kind payload (unused by 'pickup'); reserved so a kind can carry data without a schema change.
+}
+
 export interface Track {
-    seed: number;
     finishZ: number; // world z of the finish line
     segmentAt( i: number ): Segment;
     segmentAtZ( z: number ): Segment;
+    anchors: Anchor[]; // ADR-002: gameplay anchors (pickups today), materialized by the provider from the descriptor.
+}
+
+// The procgen arm of TrackDescriptor (the discriminated union lives in track-provider.ts, the ADR-001 seam).
+// Defined here — not imported from the provider — so track.ts stays the leaf module and only the provider
+// depends on it, never the reverse. `seed` is the ONLY field procgen actually reads today; `tier` and
+// `length` are RESERVED + UNWIRED (ADR-003 wires the procgen rule-system): `tier` is ignored and `length`
+// falls back to TRACK_SEGMENTS so the generated geometry is byte-identical to the pre-ADR seed-only path.
+export interface ProcgenDescriptor {
+    kind: 'procgen';
+    seed: number;
+    tier: number;
+    length: number;
 }
 
 // ── Track constants — everything is sized in 4u CELLs (difficulty is a config edit) ──
@@ -96,6 +127,7 @@ export const LANES = ( 2 * HALF_WIDTH ) / CELL; // 16 lateral cells (lanes).
 export const ZCELLS = SEG_LEN / CELL; // 5 forward cells (rows) per segment.
 export const MIN_LANE = 2 * CELL; // fairness: ≥2 contiguous open lanes (8u) guaranteed at every z-slice — even the widest class (Freighter 3.6u) threads with margin.
 export const BLOCK_HEIGHT = 8; // cube top (y) = 2 cells. ABOVE double-jump reach on purpose → UN-jumpable: strafe around, never hop.
+export const PICKUP_SPACING = 3; // ADR-002: segments between pickup anchors → a pickup roughly every PICKUP_SPACING·SEG_LEN (≈60u): dense drops. Provider-materialized here (was combat/pickups.ts pre-ADR-002).
 
 // ── Derived weave caps (computed ONCE from the ship roster, never per-segment) ──
 // The racing line is threadable by the LEAST-capable ship BY CONSTRUCTION: its slope stays under that ship's
@@ -167,8 +199,8 @@ function gapProb( d: number ): number {
 // Whether segment i ROLLED a gap (first draw of its local RNG < gapProb(D)). A real gap also requires the
 // PREVIOUS segment not to have rolled one (→ no two gaps in a row, and the segment after a gap is a guaranteed
 // landing pad). Pure O(1) local lookback — each probe seeds its own independent stream.
-function rolledGap( seed: number, i: number ): boolean {
-    if ( i < START_SAFE || i >= TRACK_SEGMENTS ) return false;
+function rolledGap( seed: number, i: number, length: number ): boolean {
+    if ( i < START_SAFE || i >= length ) return false;
     return mulberry32( hash2( seed, i ) )() < gapProb( difficultyAt( i ) );
 }
 
@@ -251,19 +283,20 @@ function buildWalls(
     return blocks;
 }
 
-function buildSegment( seed: number, i: number ): Segment {
+function buildSegment( seed: number, i: number, length: number ): Segment {
     const z0 = i * SEG_LEN;
     const z1 = z0 + SEG_LEN;
     const base = { index: i, z0, z1, blocks: [] as Block[], isFinish: false };
 
-    // Finish: a flat full-width pad from TRACK_SEGMENTS onward (isFinish flips `finished` on cross).
-    if ( i >= TRACK_SEGMENTS ) return { ...base, kind: 'finish', floors: fullFloor( 0 ), isFinish: true };
+    // Finish: a flat full-width pad from `length` onward (isFinish flips `finished` on cross).
+    if ( i >= length ) return { ...base, kind: 'finish', floors: fullFloor( 0 ), isFinish: true };
     // Start-safe accel zone.
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
     // Gap: rolled one AND the previous segment didn't (guarantees a landing pad after every gap, and no two
     // active gaps in a row). Falls through the whole width → cross it only airborne.
-    if ( rolledGap( seed, i ) && ! rolledGap( seed, i - 1 ) ) return { ...base, kind: 'gap', floors: [] };
+    if ( rolledGap( seed, i, length ) && ! rolledGap( seed, i - 1, length ) )
+        return { ...base, kind: 'gap', floors: [] };
 
     // Carved corridor + noise walls (extracted to corridorUnion / buildWalls to keep this simple).
     const d = difficultyAt( i );
@@ -279,7 +312,9 @@ function buildSegment( seed: number, i: number ): Segment {
 // placed here sits ON the line the player threads and is ALWAYS inside the ≥ MIN_LANE open band — never a wall.
 // Mirrors buildSegment's carve, so it stays byte-identical both ends (pickups are deterministic from the seed
 // like the track). Only meaningful for non-gap segments — a gap has no floor, so callers skip holes first.
-export function corridorCenterX( seed: number, i: number ): number {
+// ADR-002: PROVIDER-INTERNAL now (no longer exported) — pickup anchors are materialized inside
+// makeProcgenTrack, so the last outside-the-provider `seed` reach-around is gone. Consumers read track.anchors.
+function corridorCenterX( seed: number, i: number ): number {
     const wLanes = corridorWidthLanes( difficultyAt( i ) );
     const r = Math.floor( ZCELLS / 2 ); // mid row = the pickup's z
     const openStart = clamp(
@@ -296,16 +331,37 @@ export function segIndexForZ( z: number ): number {
     return Math.floor( z / SEG_LEN );
 }
 
-// makeTrack(seed) → the `track` handle passed into simulate(). A closure bound to the seed; both ends
-// build it from the SAME room-state seed and thus generate identical geometry.
-export function makeTrack( seed: number ): Track {
-    const segmentAt = ( i: number ): Segment => buildSegment( seed, i );
+// makeProcgenTrack(descriptor) → the `track` handle passed into simulate(). PROCGEN-INTERNAL: this is the
+// ONLY place a `seed` is read to build a track — everything outside goes through resolveTrack (track-provider,
+// the ADR-001 seam). A closure bound to the descriptor's seed; both ends build it from the SAME room-state
+// descriptor and thus generate identical geometry. `length` falls back to TRACK_SEGMENTS (RESERVED/UNWIRED —
+// see ProcgenDescriptor) so finishZ + the finish/gap end-cutoffs are byte-identical to the pre-ADR path.
+export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
+    const seed = d.seed;
+    const length = d.length || TRACK_SEGMENTS; // `|| ` (not `??`): the schema uint16 defaults to 0, and a 0-length track is meaningless — fall back so geometry stays identical
+    const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length );
     return {
-        seed,
-        finishZ: TRACK_SEGMENTS * SEG_LEN,
+        finishZ: length * SEG_LEN,
         segmentAt,
         segmentAtZ: ( z: number ) => segmentAt( segIndexForZ( z ) ),
+        anchors: pickupAnchors( seed, length, segmentAt ),
     };
+}
+
+// ADR-002: materialize the pickup anchors while building the track (was combat/pickups.ts's `pickupLayout`).
+// One candidate slot per PICKUP_SPACING segments after the start-safe zone, EXCLUDING gaps (no floor to grab
+// over). Each anchor sits at the corridor centre (the racing line) at the segment's mid-row, so it is always
+// inside the ≥ MIN_LANE open band — never buried in a wall. The `id` is the segment-index string, UNCHANGED
+// from the pre-ADR-002 scheme so RunState.pickupTaken keys need ZERO wire migration. Deterministic from the
+// seed like the geometry → both ends materialize the identical list; only availability ever syncs.
+function pickupAnchors( seed: number, length: number, segmentAt: ( i: number ) => Segment ): Anchor[] {
+    const out: Anchor[] = [];
+    for ( let seg = START_SAFE; seg < length; seg += PICKUP_SPACING ) {
+        if ( isHole( segmentAt( seg ) ) ) continue; // gap → no floor to stand on / grab over
+        const z = seg * SEG_LEN + SEG_LEN / 2; // centred forward in the segment (the mid row corridorCenterX samples)
+        out.push( { id: String( seg ), kind: 'pickup', x: corridorCenterX( seed, seg ), y: 0, z } );
+    }
+    return out;
 }
 
 // ── Fairness / collision helpers (also asserted by the determinism test) ──
