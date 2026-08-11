@@ -2,8 +2,9 @@
 name: pr-loop
 description: >-
   Autonomous PR-reviewer loop for the slur repo. Find open pull requests, review
-  each against the project conventions, run the verify gate locally, comment
-  findings, and — only when everything passes — approve and merge. Triggers:
+  each against the project conventions and the GDD, run the verify gate locally
+  in an isolated git worktree, comment findings, and — only when everything
+  passes — approve and merge. Triggers:
   /pr-loop, "review the open PRs", "babysit the PR queue". Pairs with /loop for
   interval scheduling.
 ---
@@ -54,6 +55,11 @@ your findings cite it:
 3. **The `conventions/*.md` for each subsystem the PR touches** — read the ones that cover
    the changed files. **Green CI does not prove idiom-correctness** — you are the check that
    does. Convention violations are rejected even when the build is green.
+4. **`docs/GDD` (+ `TDD` / `ADD` / `AUDIO`) when the PR touches game mechanics** — movement,
+   combat, hazards/track, ship classes, pickups, modes. The GDD holds the *locked* design
+   decisions (straight-ribbon-only, no autonomous moving geometry, disruption-not-death, the
+   agility ⊥ armour dodge axis, the §0 spatial contract). A PR can satisfy the issue, the
+   conventions, and CI yet still violate one of these — you are the check that catches it.
 
 Apply the **same rigor to every PR regardless of author** — including PRs opened by the
 issue-loop agent. Independent review is the point.
@@ -83,6 +89,12 @@ Judge the change on:
   state during render; syncing positions or track geometry instead of inputs/seed;
   source-consuming `@slur/shared`; `<>` fragment shorthand; >1 component per file.
 - **Convention conformance** — the specific `conventions/*.md` for the touched subsystem.
+- **GDD conformance (game-mechanics PRs)** — does the change respect the GDD's *locked*
+  decisions (§0 spatial contract, straight-ribbon, no autonomous moving geometry,
+  disruption-not-death, agility ⊥ armour)? And if it **changes or adds design intent**, did it
+  **update the GDD in the same PR** (or cite the governing §)? Code that ships a mechanic the
+  GDD never records is a silent divergence — request the GDD update before approving. (This is
+  the reviewer mirror of the issue-loop Step 1.5 game-mechanics gate.)
 - **Tests** — shared-sim changes MUST have tests; a bug fix should carry a failing-then-passing
   test. Is the surface that can be tested, tested? And critically: **can the tests fail?**
   Check for the two ways a green test asserts nothing — an expected value *derived from the
@@ -119,35 +131,46 @@ time-controlled, and a published conclusion drawn from a saturated measurement. 
 those had been reviewed and believed. Treat its findings as input to your judgment, not as a
 verdict — but do not skip it.
 
-## Step 3 — verify locally (do not trust green CI alone)
+## Step 3 — verify locally in a worktree (do not trust green CI alone)
 
-Check the PR out and run the full gate yourself. **Stash or stop if the working tree is
-dirty** — `gh pr checkout` will otherwise drag your changes across PRs and you will review
-someone else's diff plus your own:
+**Check the PR out into a dedicated worktree, never the shared tree.** `gh pr checkout`
+switches the shared checkout and drags any uncommitted changes across PRs — in a multi-agent
+tree that corrupts both your review and another agent's WIP. Fetch the PR head and add an
+isolated worktree instead. This form works for **fork** PRs too — GitHub exposes every PR head
+under `refs/pull/<n>/head` on the base repo, so you don't need the contributor's fork remote:
 
 ```
-gh pr checkout <n>
-pnpm install   # if lockfile changed
+git fetch origin refs/pull/<n>/head
+git worktree add --detach ../slur-worktrees/pr-<n> FETCH_HEAD
+cd ../slur-worktrees/pr-<n>
+pnpm install     # fresh tree; pnpm hardlinks from the shared store. Always run if the lockfile changed.
 pnpm typecheck
 pnpm lint
 pnpm test
 pnpm build
 ```
 
-Do **not** substitute `pnpm --filter @slur/shared test`. If the change has a feel or visual
-surface, drive the app (`/run` or `/verify`) and look — a green build does not prove feel.
-Driving the app needs the LFS assets: run `git lfs install && git lfs pull` first, or the ship
-`.gltf` files load as pointer text and R3F fails with a JSON parse error that points nowhere
-near the real cause.
+Detached is right — reviewing needs no branch, and the shared checkout (dirty or not) is left
+alone. Do **not** substitute `pnpm --filter @slur/shared test`. If the change has a feel or
+visual surface, drive the app (`/run` or `/verify`) — a green build does not prove feel;
+driving needs the LFS assets (`git lfs install && git lfs pull`, or the ship `.gltf` load as
+pointer text and R3F throws a misleading JSON parse error).
 
-Judge a **clean** checkout when the change touches build or test wiring: wipe `dist/`,
-`test-dist/` and `*.tsbuildinfo` before running. Stale incremental artefacts have masked a
-real "fails from a fresh clone" bug here — the gate was green locally and broken for everyone
-else.
+Judge a **clean** checkout when the change touches build or test wiring: a fresh worktree
+starts without `dist/` / `test-dist/` / `*.tsbuildinfo`, so it already IS a fresh-clone check —
+the exact thing stale incremental artefacts have masked here before.
 
-Before judging "the fix isn't there", confirm your baseline is current: `git fetch` and diff
-against **current `origin/dev`**, not a stale sha. A behind-by-N baseline reads as a missing
-fix when the fix is already live.
+The worktree sits at the PR head; before judging "the fix isn't there", `git fetch` and diff
+against **current `origin/dev`**, not a stale sha. When the review is done, tear the worktree
+down from the main checkout:
+
+```
+cd <main checkout>
+git worktree remove ../slur-worktrees/pr-<n>   # add --force if build artefacts block it
+```
+
+Merging (Step 5) is a remote `gh` operation — do it after removing the review worktree; you
+don't need to be in any particular tree for it.
 
 ## Step 4 — comment
 

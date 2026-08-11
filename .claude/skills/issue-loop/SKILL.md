@@ -4,7 +4,8 @@ description: >-
   Autonomous issue-worker loop for the slur repo. Pick an open GitHub issue,
   vet it for acceptance criteria + design references (flag thin issues with a
   triage comment + `needs-detail`), claim it with a lock comment, build it to
-  the project bar, open a PR, then monitor that PR until it merges. Triggers:
+  the project bar in an isolated git worktree (no concurrent-agent collisions),
+  open a PR, then monitor that PR until it merges. Triggers:
   /issue-loop, "work the issues", "pick up an issue and build it". Pairs with
   /loop for interval scheduling.
 ---
@@ -149,6 +150,22 @@ or a reconciliation note there.)
    issue (Step 1). Under `/loop`, flagging + enriching one thin issue is a complete, useful
    iteration on its own.
 
+**Game-mechanics issues — also validate the GDD (mandatory extra gate).** If the issue touches
+a game mechanic (movement, combat, hazards/track, ship classes, pickups, modes — the **GDD §5**
+surface), cross-check it against the **current GDD** before it can be build-ready:
+
+- **Consistent?** If the change contradicts a *locked* decision — straight-ribbon-only, no
+  autonomous moving geometry, disruption-not-death, the agility ⊥ armour dodge axis, or the §0
+  spatial contract — that is a **design conflict**, not a build task. Post the conflict on the
+  issue and surface it to a maintainer; do not resolve it on your own authority.
+- **Captured?** If it adds or changes design intent the GDD does not yet state, the GDD must be
+  updated (design docs are living — Rule 0). Either the issue already cites the governing
+  `GDD §`, or **folding the GDD update into the same PR is part of the work.** Code that ships a
+  mechanic change the GDD never records is a silent divergence — reject it.
+
+A game-mechanics issue with no GDD reference is not build-ready: tag `needs-detail`, name the
+missing §, and — where you can — cite the § it should carry, same as any other spec gap.
+
 Only issues that clear the bar — originally, or after your enrichment closes the gap *without
 inventing design* — proceed to Step 2.
 
@@ -175,11 +192,27 @@ failure.
 Renew the lock (re-comment) roughly every 2.5h while you are still on the issue. Release it
 with a short comment if you abandon the issue.
 
-## Step 3 — build it
+## Step 3 — build it in a dedicated worktree
 
-- **Branch off `dev`** (the default branch): `git fetch origin && git switch -c
-  <type>/<issue-short-desc> origin/dev`. Branch off the **fetched** ref, not a local `dev` that
-  may be behind. Never commit straight to `dev`. If the working tree is dirty, stash or stop.
+**Never switch branches in the shared checkout.** This repo is worked by several agents at
+once; an in-place `git switch` pulls the tree out from under whoever else is in it and drags
+their uncommitted changes onto your branch. Work in an **isolated git worktree** — a separate
+working directory that shares the same `.git` object store — created off the **fetched**
+`origin/dev` (never a local `dev` that may be behind):
+
+```
+git fetch origin
+git worktree add -b <type>/<issue-short-desc> ../slur-worktrees/<issue-short-desc> origin/dev
+cd ../slur-worktrees/<issue-short-desc>
+pnpm install                     # fresh tree has no node_modules; pnpm hardlinks from the shared store → fast
+git lfs install && git lfs pull  # only if you will drive the app — else the ship .gltf load as pointer text
+```
+
+Everything below — edits, the verify gate, commits, the push — happens **inside this
+worktree**, so the shared checkout and any other agent's uncommitted WIP stay untouched. A
+dirty shared tree no longer blocks you: the worktree is independent. Never commit straight to
+`dev`.
+
 - Follow the arc where the work is non-trivial (`/arc` skill). The issue is the RFC; for a
   non-trivial change confirm the design is agreed on the issue before implementing.
 - **Match the surrounding code.** Copy its naming, comment density, idioms. Comment the
@@ -193,7 +226,7 @@ with a short comment if you abandon the issue.
 - Keep it **one logical change per PR**. Batch the files that belong together; do not mix
   unrelated changes.
 
-## Step 4 — the verify gate (all four, from the repo root)
+## Step 4 — the verify gate (all four, from the worktree root)
 
 ```
 pnpm typecheck
@@ -267,8 +300,18 @@ gh pr checks <n>
   maintainer may act on, so a stale wrong claim costs more than the embarrassment of
   correcting it. Say what you got wrong and what still stands.
 
-When the PR is **merged**, delete the branch, drop a closing note on the issue if useful,
-and return to Step 1 for the next issue (or end the iteration under `/loop`).
+When the PR is **merged**, tear the worktree down from the main checkout, delete the local
+branch, drop a closing note on the issue if useful, and return to Step 1 (or end the iteration
+under `/loop`):
+
+```
+cd <main checkout>
+git worktree remove ../slur-worktrees/<issue-short-desc>   # add --force if leftover build artefacts block it
+git branch -D <type>/<issue-short-desc>                    # remote branch auto-deletes on squash-merge
+```
+
+If you **abandon** an issue, remove its worktree the same way and release the lock — never
+leave a stale worktree or a dangling lock behind.
 
 ## Context — you are not the only agent here
 

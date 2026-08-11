@@ -193,6 +193,7 @@ Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time
 - **Server-authoritative hit detection** (never trust client for hits — see TDD / `conventions/netcode.md`).
 - Getting hit = disruption (stun, spin, brief control loss), rarely instant death — deaths should mostly come from the *track* while disrupted. Keeps it funny, not punishing.
 - **As-built (S5):** server-sim bolts (`stepWorld`) → owner-immune AABB hit → `stunTimer` (predicted `SimShip` field) freezes control while momentum coasts → you drift into a hazard and derezz. Client feedback: hit-spark + on-ship stun-flicker + threat-warning HUD. Spin/slow/reverse/blind verbs still open (BC2).
+- **Bolt feel (design target — issue #55):** the Bolt is a **near-instant fast projectile**, not literal hitscan — it snaps forward almost immediately, but a short travel window keeps it **dodgeable by weaving** (preserving the agility ⊥ armour axis, §5.5) and keeps the threat cue (threat HUD / #38) meaningful. Near-instant speed **requires swept collision** (segment-vs-AABB per tick) so a fast bolt never tunnels through a short-hulled ship (Comet/Interceptor). Visually it reads as an **elongated energy streak/tracer**, not a sphere. *(Was `BOLT_SPEED 120` u/s + a `sphereGeometry` bolt.)*
 
 ### 5.5 Ship classes (asymmetric) — **LOCKED 5-class matrix (2026-08-09)**
 You pick a class at join. Five classes trade along multiple axes so none dominates; properties are pure data
