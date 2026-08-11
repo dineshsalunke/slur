@@ -218,6 +218,11 @@ gh pr review <n> --approve --body "<one-line why this is good to go>"
 gh pr merge <n> --squash --delete-branch
 ```
 
+**GitHub blocks `--approve` on your own PR.** When `.author.login == ME` (e.g. an issue-loop
+PR opened by this same account), `gh pr review --approve` fails with *"Can not approve your
+own pull request."* Skip the `--approve` line and merge on the strength of the seven gates
+plus the adversarial pass — note in the merge that formal self-approval was not possible.
+
 **If anything is ambiguous, borderline, or you are not confident** — a convention you are
 unsure applies, a design decision that is really a maintainer's call, a feel surface you could
 not drive — **do NOT merge. Comment your concern and surface it to the user.** Merging is
