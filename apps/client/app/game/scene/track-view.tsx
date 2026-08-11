@@ -20,6 +20,15 @@ const FLOOR_THICK = 0.6; // floor slab thickness; the span's `y` is the WALKABLE
 const RAIL_W = 0.5; // edge-rail cross-section (x). Rails frame the track AND, by their absence, make gaps read.
 const RAIL_H = 0.5; // edge-rail cross-section (y), standing proud of the floor so it reads at the shallow chase angle
 
+// Drag-block "soft hazard" read: the amber slow-blocks are semi-transparent and BREATHE their opacity so they
+// read as passable energy — never mistaken for the solid, opaque lethal walls (#35). Cosmetic-only: a sine on
+// the ONE shared drag material's opacity in the existing useFrame — NO React re-render (NN#4), and NOT the
+// deterministic sim, so Math.sin is fine here. (Height is intentionally unchanged — drag stays full-height /
+// un-jumpable per ADR-006; see the issue thread.)
+const DRAG_OPACITY_MIN = 0.25;
+const DRAG_OPACITY_MAX = 0.5;
+const DRAG_PULSE_SPEED = 2.5; // rad/s → ~2.5 s breath period
+
 const _m = new THREE.Object3D(); // module-scope scratch — no per-frame allocation (r3f hot-path rule)
 const _hidden = ( () => {
     // A parked transform for unused pool slots (scaled to nothing, shoved off-screen).
@@ -91,13 +100,18 @@ export function TrackView( { track }: { track: Track } ) {
     const prevDrag = useRef( 0 );
     const prevRail = useRef( 0 );
 
-    useFrame( () => {
+    useFrame( ( { clock } ) => {
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
         const floors = floorRef.current;
         const lethal = lethalRef.current;
         const drag = dragRef.current;
         const rails = railRef.current;
         if ( ! sim || ! floors || ! lethal || ! drag || ! rails ) return;
+
+        // Breathe the drag blocks' opacity 0.25↔0.5 (one shared material → every drag instance at once).
+        ( drag.material as THREE.MeshStandardMaterial ).opacity =
+            DRAG_OPACITY_MIN +
+            ( DRAG_OPACITY_MAX - DRAG_OPACITY_MIN ) * 0.5 * ( 1 + Math.sin( clock.elapsedTime * DRAG_PULSE_SPEED ) );
 
         const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
         const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );
@@ -181,11 +195,17 @@ export function TrackView( { track }: { track: Track } ) {
                  stays the louder warning. */ }
             <instancedMesh ref={ dragRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
+                { /* Semi-transparent + opacity-pulsed (driven in useFrame above) so drag reads as PASSABLE
+                     energy vs the opaque red walls. depthWrite=false → it blends softly and never z-occludes
+                     like a solid; drag and lethal never share a lane (generator), so no cross-occlusion. */ }
                 <meshStandardMaterial
                     emissive="#ffa51f"
                     emissiveIntensity={ 1.6 }
                     color="#2a1600"
                     toneMapped={ false }
+                    transparent
+                    depthWrite={ false }
+                    opacity={ DRAG_OPACITY_MAX }
                 />
             </instancedMesh>
             <instancedMesh ref={ railRef } frustumCulled={ false } args={ [ undefined, undefined, RAIL_LIMIT ] }>
