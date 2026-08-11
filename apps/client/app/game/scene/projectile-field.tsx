@@ -10,10 +10,15 @@ import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
 const MAX_BOLTS = 64;
 
 // Sample a bolt's interpolated position ~RENDER_DELAY_MS in the past — mirrors remoteInterpSystem: find the two
-// snapshots straddling renderTime and lerp; on <2 usable samples (or past the buffer) HOLD the latest; NEVER
-// extrapolate. Returns null only for an empty buffer (a just-spawned entity before its first snapshot).
+// snapshots straddling renderTime and lerp; NEVER extrapolate. Returns null only for an empty buffer.
+// WARM-UP (renderTime before the first snapshot): hold the FIRST (spawn) pose, NOT the latest. Holding the
+// latest showed a just-fired bolt at its true, undelayed position — racing ahead for the first ~RENDER_DELAY_MS,
+// then SNAPPING BACK ~90u the instant interpolation kicked in (renderTime crossed buffer[0]). At 120u/s that
+// snap was ~12u and invisible; at near-instant speed it read as "two bolts, one vanishes." Holding buffer[0]
+// keeps the bolt at its fire point until the delayed clock reaches it, then it launches smoothly — no snap-back.
 function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
     if ( buffer.length === 0 ) return null;
+    if ( renderTime <= buffer[ 0 ].t ) return buffer[ 0 ]; // warm-up: hold at spawn, don't race to latest then snap back
     for ( let i = 0; i < buffer.length - 1; i++ ) {
         const a = buffer[ i ];
         const b = buffer[ i + 1 ];
@@ -27,7 +32,7 @@ function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | 
             };
         }
     }
-    return buffer[ buffer.length - 1 ]; // hold latest (renderTime beyond the buffer, or <2 samples)
+    return buffer[ buffer.length - 1 ]; // renderTime past the last sample → hold latest (bolt about to be pruned)
 }
 
 // The bolt archetype: ONE instanced mesh driven imperatively from the ECS (r3f.md instancing + zero React
@@ -37,6 +42,16 @@ export function ProjectileField() {
     const world = useWorld();
     const ref = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );
+
+    // Bolt shape (#55): a thin capsule laid along +z reads as a STREAK, not a drifting ball — right for the
+    // near-instant speed. CapsuleGeometry runs along Y, so rotate it onto Z ONCE and bake it into the geometry,
+    // keeping the per-frame instance writes position-only (no per-instance rotation). Bolts only travel +z, so
+    // one baked orientation fits all of them.
+    const boltGeo = useMemo( () => {
+        const g = new THREE.CapsuleGeometry( 0.055, 30, 4, 8 ); // long thin tracer — reads as a beam-streak at the near-instant speed
+        g.rotateX( Math.PI / 2 );
+        return g;
+    }, [] );
 
     // Force the draw range to 0 AT MOUNT (callback ref → fires during commit, BEFORE the first paint). The
     // buffer is created with count=MAX_BOLTS, so without this the pool draws MAX_BOLTS identity-matrix spheres
@@ -69,7 +84,7 @@ export function ProjectileField() {
 
     return (
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX_BOLTS ] }>
-            <sphereGeometry args={ [ 0.6, 10, 10 ] } />
+            <primitive object={ boltGeo } attach="geometry" />
             <meshStandardMaterial emissive="#8affff" emissiveIntensity={ 4 } toneMapped={ false } />
         </instancedMesh>
     );

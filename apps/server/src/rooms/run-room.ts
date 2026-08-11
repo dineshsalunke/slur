@@ -1,6 +1,7 @@
 import { type Client, Room } from '@colyseus/core';
 import {
     applyDescriptor,
+    BOLT_SPEED,
     BOLT_TTL,
     boltHits,
     COLOR_COUNT,
@@ -238,7 +239,9 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         // Resolve every bolt, collecting spent ids (hit OR expired) — delete AFTER the loop, never mid-iterate.
         const spent: string[] = [];
         this.state.projectiles.forEach( ( bolt, id ) => {
-            for ( const victimId of boltHits( bolt, ships ) ) {
+            // Swept: the bolt just advanced BOLT_SPEED·dt this tick — test that whole segment so a near-instant
+            // bolt can't tunnel a short hull between ticks (see boltHits + #55).
+            for ( const victimId of boltHits( bolt, ships, BOLT_SPEED * dt ) ) {
                 const v = this.state.players.get( victimId );
                 // Per-class stun: armour scales the duration (@slur/shared registry, server-authoritative).
                 if ( v ) v.stunTimer = stunDurationForShip( v.shipId ); // the client reconciles, never computes it

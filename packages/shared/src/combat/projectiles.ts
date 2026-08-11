@@ -37,18 +37,21 @@ export interface HitShip {
 }
 
 // AABB overlap of ONE bolt against a set of ships → the ids it hits this tick. Owner-immune (skips
-// ownerId), skips dead/spectating. Band test: the bolt's ±BOLT_HALF box vs each ship's footprint
-// (x±halfW, z±halfL). y is IGNORED for v1 (bolts fly at the shooter's y — a generous vertical band);
-// refine at the feel-gate if it reads wrong. Returns every victim (usually 0 or 1 on a straight ribbon).
-export function boltHits( bolt: ProjectileState, ships: readonly HitShip[] ): string[] {
+// ownerId), skips dead/spectating. Lateral (x) + vertical (y IGNORED, v1) as before; the forward (z) test is
+// SWEPT: `sweep` is how far the bolt travelled THIS tick (the caller passes BOLT_SPEED·dt right after
+// stepProjectiles), so we test the whole segment [z-sweep, z] — extended by ±BOLT_HALF — against the ship's
+// z-band, not just the post-step point. Without this a near-instant bolt (~10u/tick) tunnels a short hull
+// (Comet/Interceptor) between 60Hz ticks and the hit is silently missed. `sweep = 0` (the default) reduces to
+// the exact point test, so existing callers/tests are unchanged. Returns every victim (usually 0 or 1).
+export function boltHits( bolt: ProjectileState, ships: readonly HitShip[], sweep = 0 ): string[] {
     const victims: string[] = [];
     for ( const s of ships ) {
         if ( s.id === bolt.ownerId || s.dead || s.spectating ) continue;
         if (
             bolt.x + BOLT_HALF > s.x - s.halfW &&
             bolt.x - BOLT_HALF < s.x + s.halfW &&
-            bolt.z + BOLT_HALF > s.z - s.halfL &&
-            bolt.z - BOLT_HALF < s.z + s.halfL
+            bolt.z + BOLT_HALF > s.z - s.halfL && // front of the bolt box has reached/passed the ship's back edge
+            bolt.z - BOLT_HALF - sweep < s.z + s.halfL // back of the SWEPT box hasn't yet passed the ship's front edge
         ) {
             victims.push( s.id );
         }
