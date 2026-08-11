@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { useWorld } from 'koota/react';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RENDER_DELAY_MS } from '../ecs/net-systems';
 import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
@@ -52,6 +52,12 @@ export function ProjectileField() {
         g.rotateX( Math.PI / 2 );
         return g;
     }, [] );
+
+    // JUSTIFIED EFFECT — external resource lifetime. boltGeo is a geometry we `new`'d in useMemo and attach via
+    // <primitive object>, so R3F does NOT auto-dispose it (it only owns JSX-declared geometries) — its GPU
+    // buffers would leak once per match/scene teardown (r3f.md #7; mirrors gradient-dome.tsx). Stable deps ([])
+    // ⇒ cleanup runs only on unmount. Not render-derivation/an event/data-flow — purely bracketing a GPU resource.
+    useEffect( () => () => boltGeo.dispose(), [ boltGeo ] );
 
     // Force the draw range to 0 AT MOUNT (callback ref → fires during commit, BEFORE the first paint). The
     // buffer is created with count=MAX_BOLTS, so without this the pool draws MAX_BOLTS identity-matrix spheres
