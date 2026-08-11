@@ -20,7 +20,12 @@ Player-flown flight down a track in two modes — **Race** (finite, finish-line)
 
 ## Run it
 
+The ship models (`apps/client/public/models/ships/*.gltf`) are **Git-LFS-tracked**. Install and pull LFS
+**before** `pnpm install`, or a fresh clone gets pointer text instead of the models and the client dies on
+load with a misleading `Unexpected token 'v'` JSON error — not a "missing git-lfs" message.
+
 ```sh
+git lfs install && git lfs pull   # one-time; fetches the ship models (LFS pointers otherwise)
 pnpm install
 pnpm dev      # shared (tsc-watch) · server (:2567) · client (:5173)
 ```

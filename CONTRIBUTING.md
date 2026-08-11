@@ -122,3 +122,9 @@ in technical text, clarity wins.
 Every third-party asset must be freely licensed (CC0 preferred; CC-BY with attribution). **Record it in
 `CREDITS.md`** — and add the required attribution line for any CC-BY asset. No asset lands without its
 provenance recorded.
+
+**Binary assets are Git-LFS-tracked** (the ship `.gltf` models under `apps/client/public/models/ships/`). A
+fresh clone must run `git lfs install && git lfs pull` **before** `pnpm install` — otherwise the models clone
+as LFS pointer text and the client fails to load them with a misleading `Unexpected token 'v'` JSON error
+(R3F parsing the pointer as GLTF), not a clear "install git-lfs". Same step is needed before you drive the app
+in the verify gate. See the README's "Run it" section.
