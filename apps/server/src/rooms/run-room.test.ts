@@ -128,9 +128,11 @@ describe( 'RunRoom combat', () => {
         assert.equal( room.state.projectiles.size, 1, 'firing spawns exactly one bolt' );
         assert.equal( shooter.heldPower, HeldPower.none, 'firing empties the single held slot' );
 
-        // The bolt spawns 3u ahead of the shooter and covers 2u per tick (120u/s ÷ 60). The victim's hit
-        // window is 2 x (BOLT_HALF 1.5 + Interceptor halfL 0.92) = 4.84u deep — still wider than one tick of
-        // travel, so the bolt cannot tunnel past it. 0.25s carries it well beyond z=20.
+        // The bolt spawns 3u ahead of the shooter and sweeps ~15u per tick (900u/s ÷ 60). The victim's hit
+        // window is only 2 x (BOLT_HALF 1.5 + Interceptor halfL 0.92) = 4.84u deep — NARROWER than one tick of
+        // travel, so a plain point test could step clean past it. boltHits tests the whole SWEPT z-interval
+        // ([z-sweep, z], sweep = boltSpeed·dt), so the crossing still registers — THAT (not a static window
+        // wider than a tick) is why the bolt can't tunnel here. 0.25s carries it well beyond z=20.
         tick( room, 0.25 );
 
         assert.equal( victim.stunTimer, STUN_SECONDS, 'a zero-armour ship takes the full stun' );

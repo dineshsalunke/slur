@@ -68,7 +68,7 @@ test( 'boltHits: forward z-band — a bolt catches a ship just within halfL + it
 } );
 
 test( 'boltHits: SWEPT — a bolt that steps PAST a short hull in one tick still registers (no tunneling)', () => {
-    // Ship at z=100 (short ~Comet hull). The bolt's POST-step position is z=110 — beyond the ship's z-band —
+    // Ship at z=100 (a short hull). The bolt's POST-step position is z=110 — beyond the ship's z-band —
     // so a point test (sweep=0) misses it: that IS the tunneling bug. Having swept 20u (from z=90), it crossed
     // the ship, so the swept test must catch it. Explicit sweep keeps this decoupled from BOLT_SPEED retuning.
     const s = victim( { z: 100, halfL: 0.9 } );
