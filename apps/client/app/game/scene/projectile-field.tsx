@@ -43,7 +43,7 @@ export function ProjectileField() {
     // keeping the per-frame instance writes position-only (no per-instance rotation). Bolts only travel +z, so
     // one baked orientation fits all of them.
     const boltGeo = useMemo( () => {
-        const g = new THREE.CapsuleGeometry( 0.22, 2.6, 4, 8 );
+        const g = new THREE.CapsuleGeometry( 0.22, 7.5, 4, 8 ); // ~3× the first pass — a long tracer at the near-instant speed
         g.rotateX( Math.PI / 2 );
         return g;
     }, [] );
