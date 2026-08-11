@@ -329,6 +329,20 @@ function intersectIntervals(
         }
     return out;
 }
+// Coalesce overlapping/touching intervals → keeps the flood-fill's interval COUNT bounded (the discrete-pillar
+// geometry otherwise fragments the reachable set every row, and the un-merged O(n²) intersect blows up). Pure
+// optimization: same set of reachable x, fewer redundant interval objects.
+function mergeIntervals( iv: Array< [ number, number ] > ): Array< [ number, number ] > {
+    if ( iv.length <= 1 ) return iv;
+    const s = [ ...iv ].sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
+    const out: Array< [ number, number ] > = [ [ s[ 0 ][ 0 ], s[ 0 ][ 1 ] ] ];
+    for ( let k = 1; k < s.length; k++ ) {
+        const last = out[ out.length - 1 ];
+        if ( s[ k ][ 0 ] <= last[ 1 ] ) last[ 1 ] = Math.max( last[ 1 ], s[ k ][ 1 ] );
+        else out.push( [ s[ k ][ 0 ], s[ k ][ 1 ] ] );
+    }
+    return out;
+}
 test( 'a widest-hull ship can always thread the corridor (REACH and FIT together)', () => {
     const reachUnits = SLOPE_CAP * CELL; // how far the least-capable ship can strafe per forward row (world x)
     // Reachability is tracked over hull CENTRES, not raw openings, so "reachable" always means "a whole
@@ -344,10 +358,12 @@ test( 'a widest-hull ship can always thread the corridor (REACH and FIT together
                 continue;
             }
             for ( let r = 0; r < ZCELLS; r++ ) {
-                const dilated = reach.map( ( [ a, b ] ): [ number, number ] => [
-                    Math.max( CENTRE_MIN, a - reachUnits ),
-                    Math.min( CENTRE_MAX, b + reachUnits ),
-                ] );
+                const dilated = mergeIntervals(
+                    reach.map( ( [ a, b ] ): [ number, number ] => [
+                        Math.max( CENTRE_MIN, a - reachUnits ),
+                        Math.min( CENTRE_MAX, b + reachUnits ),
+                    ] ),
+                );
                 reach = intersectIntervals( dilated, centreIntervalsAt( seg, r ) );
                 assert.ok(
                     reach.length > 0,

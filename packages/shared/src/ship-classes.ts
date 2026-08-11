@@ -48,9 +48,9 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             ...DEFAULT_TUNING,
             maxCruise: 48, // slower top end — pays for its agility
             accel: 45,
-            strafeAccel: 195, // best weaver: snappy, high lateral authority
+            strafeAccel: 210, // best weaver: snappy, high lateral authority (raised 195→210 for crisper flicks)
             strafeClamp: 95,
-            strafeDamp: 12, // crisp, non-drifty
+            strafeDamp: 18, // crispest settle — near-instant stop for precise flicks
             halfW: 1.0, // 2.0u = 0.50 cell (executioner model)
             halfL: 0.92, // 1.84u = 0.46 cell — short ⇒ twitchy at gaps
             ...deriveJump( { height: 3.0, apexTime: 0.3, descentTime: 0.24, doubleHeight: 3.6, minHeight: 0.8 } ),
@@ -72,9 +72,9 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             ...DEFAULT_TUNING,
             maxCruise: 70, // fastest — the glass rocket
             accel: 52,
-            strafeAccel: 165,
+            strafeAccel: 180,
             strafeClamp: 85,
-            strafeDamp: 4, // drifty at speed → high skill ceiling / punishing
+            strafeDamp: 9, // still the draftiest (skill ceiling) but far less floaty than 4 — flicks now land crisply
             halfW: 1.1, // 2.2u = 0.55 cell (bob model)
             halfL: 0.59, // 1.18u = 0.29 cell — tiny ⇒ weak at gaps (offset by raw speed)
             ...deriveJump( { height: 2.8, apexTime: 0.3, descentTime: 0.24, doubleHeight: 3.3, minHeight: 0.8 } ),
@@ -89,9 +89,9 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             ...DEFAULT_TUNING,
             maxCruise: 50,
             accel: 38,
-            strafeAccel: 135, // clumsier weaver
+            strafeAccel: 150, // clumsier weaver (still 4th of 5)
             strafeClamp: 75,
-            strafeDamp: 8,
+            strafeDamp: 13, // crisper settle for clean flicks
             halfW: 1.2, // 2.4u = 0.60 cell (dispatcher model)
             halfL: 2.51, // 5.02u = 1.26 cell — long ⇒ tanks gaps
             ...deriveJump( { height: 4.2, apexTime: 0.32, descentTime: 0.26, doubleHeight: 5.0, minHeight: 0.9 } ),
@@ -106,9 +106,9 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             ...DEFAULT_TUNING,
             maxCruise: 62, // carries momentum
             accel: 30, // slow to spool up
-            strafeAccel: 105, // worst weaver: wide + sluggish
+            strafeAccel: 118, // worst weaver: still the sluggish floor (sets the weave CURV_CAP), but responsive enough to flick
             strafeClamp: 65,
-            strafeDamp: 5,
+            strafeDamp: 10, // crisper than 5 so even the heavy ship's flicks land instead of drifting
             halfW: 1.25, // 2.5u = 0.62 cell (imperial CAPPED for size — feel-gate 2026-08-09). Weave penalty is
             //             its sluggish strafe (105/65), NOT a huge hitbox, so the footprint can stay moderate.
             halfL: 3.0, // 6.0u = 1.5 cell — still the LONGEST ⇒ gap-tank, but no longer oppressively big.

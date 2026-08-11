@@ -37,3 +37,6 @@ pnpm-debug.log*
 
 # Test / coverage
 coverage/
+
+# Throwaway prototypes / inspectors (never committed; excluded from lint via biome useIgnoreFile)
+scratchpad/

@@ -113,6 +113,24 @@ Survival "drop-in" branch of that seam is not built (ADR-004).
   its stateful generation legal. Build it *after* there are ≥2–3 beat types to sequence.
   > ⚠ SUPERSEDED 2026-08-10 (ADR-004) — the old "exponential trend for **endless Survival**" branch is gone;
   > `D(i)` is just the finite ramp.
+- **DECIDED (ADR-006 · 2026-08-10) — rhythm-paced generation (in progress).** The core game is **three
+  primitives only: gaps + deadly blocks + slow blocks** (all else is feathering). Two layers: **(macro)** a
+  difficulty **arrangement envelope** — a staircase of escalating waves modelled on *Imagine Dragons
+  "Believer"* (tense verse breathers → building pre-choruses → escalating chorus **slams** → a **bridge
+  breakdown valley ~75%** → biggest **final chorus** → quick **outro** to a plain finish); the music is
+  **hidden pacing scaffolding only — the surface stays continuous, never a rhythm game.** **(micro)** the
+  **discrete slalom + flick** (AS-BUILT; the first "banks/corridor-edge" idea played as a tube and was dropped) —
+  **short discrete cube pillars** (4×8×8u, not full-depth walls) OUTSIDE a moving safe corridor, placed by
+  UNCORRELATED noise (sparse, +1-lane edge buffer → never clumped/tight), plus a **1-lane flick pillar** that
+  juts into the corridor to force a sharp sidestep; **slow blocks = grace-notes ON the line**; **gaps are varied**
+  (full-width jump + partial floor-strip). Ships tuned for crisp flicks; chase camera raised above the walls. Fairness is the **existing** derived caps, now the ceiling: weave speed ≤ `SLOPE_CAP`/`CURV_CAP`
+  ("how hard the peak gets = exactly what the Freighter can just barely thread"), corridor ≥ `MIN_LANE` (incl.
+  the chorus pinch), gaps ≤ `GAP-REACH`. **Concretizes + supersedes ADR-003's macro layer** (the "wait for BC5
+  beats" gate is void — the vocabulary is deliberately these three). Playtested in a **hosted room** (host solo → GO → race; `/solo` stays removed — redundant with the S4 room path).
+  *Supersedes the S6 value-noise difficulty model + noise-walls below.*
+  > ⚠ SUPERSEDED 2026-08-10 (ADR-006) — the S6 AS-BUILT generator below (monotonic `difficultyAt` ease-out +
+  > noise-walls + full-width gaps) is being replaced by the rhythm-paced discrete-slalom/flick model. The **weave line + derived
+  > slope/curvature/MIN_LANE fairness backbone is KEPT** and reused as the difficulty ceiling.
 - **AS-BUILT (procgen v2, S6 · 2026-08-10):** the generator is now a **carved value-noise racing-line +
   variable-width noise-walls** model (`sim/track.ts` + new `sim/noise.ts`) — a coherent line you *thread*, with
   walls RLE-merged into **variable-width blocks** OUTSIDE a `≥ MIN_LANE` corridor (fair BY CONSTRUCTION). The
