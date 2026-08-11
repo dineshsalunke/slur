@@ -78,7 +78,8 @@ spec you can build without more design agreement. Don't confuse a *labelled* iss
   (> 3h), you may reclaim it, but say so in your lock comment.
 - `gate` issues (human feel-gate — not code).
 - Pure design/RFC issues where CONTRIBUTING §2 says a maintainer must approve the design
-  first and that has not happened. Comment your design and wait; do not implement.
+  first and that has not happened. Comment your design and wait; do not implement. These
+  usually carry the **`design`** label — Step 1.5 makes that gate concrete.
 
 If nothing is workable, say so and stop (or, under `/loop`, wait for the next tick).
 
@@ -165,6 +166,19 @@ surface), cross-check it against the **current GDD** before it can be build-read
 
 A game-mechanics issue with no GDD reference is not build-ready: tag `needs-detail`, name the
 missing §, and — where you can — cite the § it should carry, same as any other spec gap.
+
+**`design`-labelled issues — require a recorded brainstorm outcome (mandatory gate).** An issue
+tagged **`design`** is a design/RFC, not a build task, and is **not build-ready** until its design
+is resolved AND **recorded**. "Recorded" means one of:
+
+- a **comment on the issue** that resolves its open questions, or
+- a **linked design doc / ADR** (`docs/DECISIONS.md`) referenced from the issue.
+
+If neither exists — the body is a proposal only — **do not build it.** The loop's job on a `design`
+issue is to **propose** (comment a design, help resolve the open questions), never to implement on
+the proposal alone. This makes the Step 1 "skip pure design/RFC" rule concrete: **`design` label +
+no resolving comment/ADR = propose-only.** An explicit gate comment on the issue (e.g. a 🚧
+"do not build yet") is **binding** — respect it even if the body looks complete.
 
 Only issues that clear the bar — originally, or after your enrichment closes the gap *without
 inventing design* — proceed to Step 2.
