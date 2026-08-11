@@ -8,9 +8,13 @@ let client: Client | null = null;
 
 export function getClient(): Client {
     if ( ! client ) {
-        // Derive the host from the page so a LAN peer hitting http://<host>:5173 talks to that same
-        // host's server on :2567 (not hard-coded localhost).
-        client = new Client( `ws://${ window.location.hostname }:2567` );
+        // Derive the host from the page so a LAN peer hitting http://<host>:<CLIENT_PORT> talks to
+        // that same host's server (not hard-coded localhost). The server port is env-driven so a
+        // second worktree can run its own stack on a distinct pair (issue #59); Vite inlines
+        // import.meta.env.VITE_SERVER_PORT at build/dev, defaulting to 2567. `||` (not `??`): an
+        // empty `VITE_SERVER_PORT=` is `""`, which `??` would keep → a portless `ws://host:` URL.
+        const serverPort = import.meta.env.VITE_SERVER_PORT || '2567';
+        client = new Client( `ws://${ window.location.hostname }:${ serverPort }` );
     }
     return client;
 }

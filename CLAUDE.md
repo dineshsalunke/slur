@@ -199,8 +199,12 @@ pnpm install          # hardlinks from the warm store (~2s); also wires the pre-
   a commit made **in the shared checkout while Claude is driving** (`CLAUDECODE` set). It never blocks a human's
   manual commit and always allows worktree commits. Rare intentional shared-tree commit: prefix
   `SLUR_ALLOW_SHARED_COMMIT=1`.
-- **Dev-server ports still collide** (`:2567`/`:5173` are not yet env-driven) — tracked separately; until fixed,
-  only one agent runs a live `pnpm dev` at a time.
+- **Dev-server ports are env-driven** (issue #59) so two worktrees can each run a live stack. Copy
+  `apps/client/.env.example` → `apps/client/.env` (gitignored) and set a distinct pair: `CLIENT_PORT`
+  (Vite dev port) + `VITE_SERVER_PORT` (the ws port the client connects to). Vite auto-loads that file;
+  the server reads `process.env.PORT` but `tsx` has no `.env` loader, so launch the stack with a matching
+  `PORT` in the shell — `PORT=2568 pnpm dev` (must equal `VITE_SERVER_PORT`). Defaults (no `.env`) stay
+  `:5173`/`:2567`, so single-agent use and office LAN play are unchanged.
 
 ---
 
