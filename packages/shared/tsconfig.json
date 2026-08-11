@@ -4,6 +4,10 @@
         "composite": true,
         "rootDir": "src",
         "outDir": "dist",
+        // Keep the incremental build cache INSIDE dist so `rm -rf dist` resets output and cache together.
+        // Default puts it at packages/shared/tsconfig.tsbuildinfo (outside dist), so wiping only dist leaves a
+        // stale cache → `tsc -b` thinks it's up-to-date and skips emit, and dist never rebuilds (#75).
+        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
         "module": "NodeNext",
         "moduleResolution": "nodenext"
     },
