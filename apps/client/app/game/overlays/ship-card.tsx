@@ -26,12 +26,20 @@ const BOUNDS = AXES.map( ( axis ) => {
     return { min: Math.min( ...values ), max: Math.max( ...values ) };
 } );
 
+// The roster-worst ship on an axis normalises to fraction 0 → an EMPTY bar, which reads as "zero stat /
+// broken ship" rather than "slowest of the five" (the Executioner is 48 vs 70 top speed — slow, not stalled).
+// So map the ranked fraction into [MIN_FILL, 1] instead of [0, 1]: the weakest reads low-but-present, the
+// best stays full, and ordering is untouched (the map is monotonic). NOT zero-based normalisation — the speed
+// range (48–70) is narrow, so anchoring at 0 would push every bar near-full and kill the visual spread.
+const MIN_FILL = 0.15;
+
 // A single-ship roster (or a flat axis) would divide by zero — fall back to a full bar rather than NaN.
 function fillPercent( index: number, value: number ): number {
     const { min, max } = BOUNDS[ index ];
     if ( max === min ) return 100;
     const fraction = ( value - min ) / ( max - min );
-    return Math.round( ( AXES[ index ].invert ? 1 - fraction : fraction ) * 100 );
+    const ranked = AXES[ index ].invert ? 1 - fraction : fraction; // 0..1, fuller = better (post-invert)
+    return Math.round( ( MIN_FILL + ranked * ( 1 - MIN_FILL ) ) * 100 );
 }
 
 export function ShipCard( {
