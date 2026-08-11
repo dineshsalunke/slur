@@ -1,15 +1,73 @@
 # SLUR — Game Design Document (GDD)
 
 > Status: **v0 draft**. Vision captured from kickoff; mechanics deliberately loose pending playtests.
+>
+> **This doc states the *current* design only** — no inline "superseded" retractions to peel back. Retired
+> design intent lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions +
+> rationale live in `docs/DECISIONS.md` (the ADR log).
+
+## 0. Spatial model & units — READ THIS FIRST (load-bearing)
+
+**The simulation is fully continuous.** Positions, velocities, floors, and hazard blocks are all real-valued
+world units (`u`). Collision is continuous float-AABB (`packages/shared/src/sim/step.ts` → `overlapsBlock`);
+**nothing in the sim reads, snaps to, or requires a grid.** Ships move continuously in `u`.
+
+**`CELL = 4u` is an AUTHORING GRID ONLY.** It is an **authoring-time snap grid** — the increment you *design*
+on, exactly like grid-snapping in a level editor. It applies to **all** track authoring: the procedural
+generator samples on it, and hand-authored levels snap to it. It is **NOT** a gameplay unit, **NOT** a
+movement snap, **NOT** a runtime concept, and **NOT** a constraint the physics knows about. At runtime
+everything is continuous `u`; the grid exists only while a track is being authored, and even then it's a
+convenience an author may leave. A hazard block may legally be **any size** — `5.5 × 5.5 × 8u`, `3.5 × 5 × 8u`,
+anything a track (generated or authored) emits. **Do NOT assume block sizes, positions, or clearances are
+multiples of `CELL`.** When you reason about space, think in `u` and in the clearance invariant below — never
+"how many cells."
+
+**Ship-size contract (DECIDED):** the **widest ship class is ≤ 1 cell (`CELL` = 4u) full width** (GDD §5.5;
+Freighter was capped at the 2026-08-09 feel-gate). Reality today: widest is the **Fighter at 2.6u = 0.65
+cell**. New ships MUST honour this — it is enforced by a module-load assertion (below), not by hand.
+
+**The ONE load-bearing spatial invariant is threadable clearance:**
+
+> At every z-slice, the widest contiguous lethal-free floor run must be **≥ `MIN_CLEAR`**, where
+> **`MIN_CLEAR = MAX_SHIP_WIDTH + CLEARANCE_MARGIN`**, `MAX_SHIP_WIDTH = CELL` (4u, the ship-size contract)
+> and `CLEARANCE_MARGIN = 3u` → **`MIN_CLEAR = 7u`**.
+
+Why a **fixed contractual ceiling**, not roster-max: a track seed must generate the **same geometry forever**.
+If clearance tracked the live roster, adding/resizing a ship would silently mutate every existing seed's track.
+The ceiling is the *contract* (`CELL`); the roster is only **asserted** to conform:
+
+> **Module-load guard (dev):** `assert 2·max(halfW over ALL_CLASS_TUNINGS) ≤ MAX_SHIP_WIDTH`.
+
+That assertion is what kills the stale-number failure mode (the historical "Freighter 3.6u" bug) — we **assert
+the roster fits the contract** instead of copying a ship's width by hand. `MAX_SHIP_WIDTH` and `MIN_CLEAR` are
+expressed in `u`; the only tunable is `CLEARANCE_MARGIN` (raise for easier, lower for tighter — never shrink the
+ceiling to make tracks harder). Any `MIN_LANE`-style constant is *derived*, **not an axiom**.
+
+**Reference dimensions — informational, NOT constraints:**
+
+| Thing | Value | Note |
+|---|---|---|
+| `CELL` | `4u` | **authoring snap grid only** (procgen + hand-authored) — not a runtime/gameplay unit |
+| Track width | `64u` (`HALF_WIDTH 32`) | 16 lanes *in the current generator*; the width, not the lane count, is what matters |
+| Segment depth | `SEG_LEN` `20u` | one segment; a gap is one segment long |
+| Deadly block height | `8u` (`BLOCK_HEIGHT`) | **above double-jump reach on purpose** — strafe around, never hop |
+| Deadly block width/depth | generator-quantized today | a *generation artifact*, **not** a rule — any size is legal |
+| `MAX_SHIP_WIDTH` | `1 cell = 4u` | the ship-size **contract**; ceiling for `MIN_CLEAR`; roster asserted ≤ this |
+| `CLEARANCE_MARGIN` | `3u` | the **only** clearance tunable (raise = easier tracks) |
+| `MIN_CLEAR` | `7u` | `MAX_SHIP_WIDTH + CLEARANCE_MARGIN`; per-slice threadable-floor floor |
+| Widest ship today | **Fighter `halfW 1.3` → 2.6u** (0.65c) | ≤ contract; must never exceed `MAX_SHIP_WIDTH` |
+
+> **Why this section exists (and is first):** repeated confusion treated `CELL = 4u` as a gameplay law and
+> hard-coded block sizes and clearances to it. It is not a law. Two stale hand-typed widths (`track.ts` claimed
+> "Freighter 3.6u"; the widest ship is actually the Fighter at 2.6u) survived precisely because numbers were
+> written by hand against the grid instead of derived. **Continuous world; cells are scaffolding; clearance is
+> the only spatial contract.**
 
 ## 1. Vision statement
 
 A fast, neon, quick-to-join ship racer you launch on the office LAN or a hosted web server and play in a 5-minute burst.
 Fly a ship down a **finite track to a finish line** — courses ranging from short to long — grab
 power-ups, and **mess with your friends**: dodge, boost, shoot, shield. Easy to join, hard to master, funny to lose.
-
-> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — was "a finite course to a **finish line**, or an **endless survival
-> run**." Endless Survival is dropped in favour of longer finite tracks. See § Superseded (bottom) + `docs/DECISIONS.md`.
 
 > **North star:** this is a **casual party game between colleagues**. The point is *messing with each other*,
 > not competitive balance. When a design call is close, bias toward **fun chaos over fairness**.
@@ -37,14 +95,10 @@ Host a room ──► players join & pick ship/colour ──► host hits GO ─
 ```
 
 - **Host-authoritative session, server-authoritative sim.** The host owns GO / Play-Again; the server owns positions, hits, standings, and the phase machine (lobby → countdown → racing → finished).
-- **Round-based (Race):** the field **locks at GO**. Everyone in the room at that instant races together; **late joiners spectate** the pack (chase-cam, cycle any racer) until the round ends, then join the next one. *(Superseded the old "spawn beside the pack" — that's now the Survival policy; see §4.)*
+- **Round-based (Race):** the field **locks at GO**. Everyone in the room at that instant races together; **late joiners spectate** the pack (chase-cam, cycle any racer) until the round ends, then join the next one.
 - **Join a room anytime**, pick ship + colour in the lobby; **once the host starts, picks lock.** The room is chosen from a **live room list** (host name · player count · phase), not a typed code.
 
 ## 4. Game modes
-
-> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — SLUR had two modes (Race + endless Survival). **Endless Survival is
-> dropped.** The retired mode text + per-mode join policy are relocated to § Superseded (bottom). Below is the
-> single, finite model.
 
 **One mode: Race (finite track).** A course with a start and a **finish line**; first across wins. Given the
 north star, the win condition exists to give a round *shape*, not to be fair — pickups and combat are
@@ -75,15 +129,12 @@ Survival "drop-in" branch of that seam is not built (ADR-004).
 
 > **Forward-pressure (resolved, see §4):** Race self-pressures via the finish line (+ optional timer) —
 > light-touch, in keeping with the casual north star.
-> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — the old second sentence ("Survival mode uses a **chasing derezz-wall +
-> distance/time scoring**") is retired with endless Survival.
 
 ### 5.2 Track & hazards
 
-> ⚠ SUPERSEDED 2026-08-10 (ADR-000/001/004) — "server sends **seed**" → server sends an opaque **descriptor**
-> (the seed is one field inside it, owned by the procgen provider); "*endless* procedural runs" → **finite
-> only**. The `Track` a room holds is **physics + gameplay anchors**, materialized locally from the descriptor;
-> **visuals are resolved separately, client-side, never synced** (ADR-002). See `docs/DECISIONS.md`.
+The `Track` a room holds is **physics + gameplay anchors**, materialized locally from an opaque **descriptor**
+(the seed is one field inside it, owned by the procgen provider — never synced tile-by-tile); **visuals are
+resolved separately, client-side, never synced** (ADR-002, the 3-layer model). See `docs/DECISIONS.md`.
 
 - **All clients share the same track**, materialized identically on both ends from the room's **descriptor**
   (procgen `{seed, tier}` or authored `{levelId}`) — never a per-tile sync. The sim depends on the `Track`
@@ -103,17 +154,7 @@ Survival "drop-in" branch of that seam is not built (ADR-004).
   reach). **Weave difficulty is *uncapped*** — it self-balances via the speed dial. A **validator**
   (z-monotonic flood-fill + per-gap reach) enforces the two floors on *any* track, authored or generated —
   plus the **WYSIWYG-collision** gate (ADR-002) for authored visuals. (Balance is playstyle-level — §5.5, §5.7.)
-  > ⚠ SUPERSEDED 2026-08-10 (ADR-004) — was "**Levels will be hand-authored** (procedural gen is filler/endless)."
-- **Difficulty progression → a two-layer generator (ADR-003).** *Micro layer (built, S6):* the corridor-noise
-  weave fills geometry via a difficulty scalar `D(i)` (ease-out trend + deterministic triangle-wave pacing —
-  NOT `Math.sin`), driving corridor width / density / meander. *Macro layer (planned):* a **1-D grammar of
-  beats** (warmup · weave · jump-gauntlet · slow-slalom · fork · shrink-crescendo · set-piece) that sequences
-  the §5.7 mechanic vocabulary with legality / a difficulty budget / no-repeat / teach-before-test, and which
-  **doubles as the authored-level validator** (generate == validate). Materialize-once (finite tracks) makes
-  its stateful generation legal. Build it *after* there are ≥2–3 beat types to sequence.
-  > ⚠ SUPERSEDED 2026-08-10 (ADR-004) — the old "exponential trend for **endless Survival**" branch is gone;
-  > `D(i)` is just the finite ramp.
-- **DECIDED (ADR-006 · 2026-08-10) — rhythm-paced generation (in progress).** The core game is **three
+- **Generation — rhythm-paced (ADR-006 · 2026-08-10, current).** The core game is **three
   primitives only: gaps + deadly blocks + slow blocks** (all else is feathering). Two layers: **(macro)** a
   difficulty **arrangement envelope** — a staircase of escalating waves modelled on *Imagine Dragons
   "Believer"* (tense verse breathers → building pre-choruses → escalating chorus **slams** → a **bridge
@@ -125,21 +166,12 @@ Survival "drop-in" branch of that seam is not built (ADR-004).
   juts into the corridor to force a sharp sidestep; **slow blocks = grace-notes ON the line**; **gaps are varied**
   (full-width jump + partial floor-strip). Ships tuned for crisp flicks; chase camera raised above the walls. Fairness is the **existing** derived caps, now the ceiling: weave speed ≤ `SLOPE_CAP`/`CURV_CAP`
   ("how hard the peak gets = exactly what the Freighter can just barely thread"), corridor ≥ `MIN_LANE` (incl.
-  the chorus pinch), gaps ≤ `GAP-REACH`. **Concretizes + supersedes ADR-003's macro layer** (the "wait for BC5
-  beats" gate is void — the vocabulary is deliberately these three). Playtested in a **hosted room** (host solo → GO → race; `/solo` stays removed — redundant with the S4 room path).
-  *Supersedes the S6 value-noise difficulty model + noise-walls below.*
-  > ⚠ SUPERSEDED 2026-08-10 (ADR-006) — the S6 AS-BUILT generator below (monotonic `difficultyAt` ease-out +
-  > noise-walls + full-width gaps) is being replaced by the rhythm-paced discrete-slalom/flick model. The **weave line + derived
-  > slope/curvature/MIN_LANE fairness backbone is KEPT** and reused as the difficulty ceiling.
-- **AS-BUILT (procgen v2, S6 · 2026-08-10):** the generator is now a **carved value-noise racing-line +
-  variable-width noise-walls** model (`sim/track.ts` + new `sim/noise.ts`) — a coherent line you *thread*, with
-  walls RLE-merged into **variable-width blocks** OUTSIDE a `≥ MIN_LANE` corridor (fair BY CONSTRUCTION). The
-  line's slope **and curvature** are capped from the least-capable class; `D(i)` = ease-out + trig-free
-  triangle-wave pacing. Blocks may now span **multiple lanes** (width variety); walls are **full-segment-depth**
-  (a `BLOCK_LIMIT=128` trade — no depth variety yet). **Pickups sit on the corridor line** (`corridorCenterX`).
-  Renderer + collision unchanged (`Segment`/`Block` shapes preserved). **Supersedes the IID cube-scatter above.**
-  Feel-gate pending. *(This is the **micro** fill layer of ADR-003's two-layer plan. The "procedural is now the
-  PRIMARY path" claim is retired — ADR-004; procgen-vs-authored is now open, see the progression bullet above.)*
+  the chorus pinch), gaps ≤ `GAP-REACH`. The vocabulary is deliberately these three primitives — there is no
+  multi-beat macro grammar to wait on. Playtested in a **hosted room** (host solo → GO → race; `/solo` stays
+  removed — redundant with the S4 room path). The `D(i)` weave-line + derived slope/curvature/`MIN_LANE`
+  fairness backbone is inherited from the earlier generator and reused as the difficulty ceiling.
+  *(Prior generators — the S6 carved value-noise line + noise-walls, and the ADR-003 two-layer beat grammar —
+  are retired to `docs/archive/superseded-design.md`.)*
 
 ### 5.3 Power-ups (Blur trinity) — starter set
 Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time.
@@ -172,11 +204,14 @@ You pick a class at join. Five classes trade along multiple axes so none dominat
 > (→ `deriveJump`) and its `halfW`/`halfL` size. **Per-ship flight is a data swap, not a code change** — the
 > "ship stats are data, server-authoritative" non-negotiable.
 
-**The world is a 4u cell grid (LOCKED 2026-08-09).** Track = **16 lanes** wide (64u, `HALF_WIDTH 32`); a segment
-is **5 z-cells** deep (`SEG_LEN 20`); an obstacle cube is **1×1 cell** (4u) and **2 cells (8u) tall** —
-**un-jumpable** (strafe around or destroy, never hop). The ship is a **~1-cell craft**. Authoring snaps to the
-grid; **movement stays continuous** (no lane-snapping) — the cuberun contract. **Jump is only for gaps; blocks
-are only strafe-or-destroy** — the two mechanics never overlap.
+**`CELL = 4u` is the AUTHORING SNAP GRID — the runtime is continuous. See §0 (the load-bearing spatial
+contract) — that section governs; this is the design-intent view.** Track = **64u** wide (`HALF_WIDTH 32`;
+16 authoring lanes); a segment is **`SEG_LEN 20u`** deep. Obstacle blocks are **`BLOCK_HEIGHT 8u` tall**
+(above double-jump → **un-jumpable**: strafe around or destroy, never hop) but of **arbitrary width/depth**
+(ADR-007 — NOT locked to `1×1 cell`; see §0). The ship is
+**≤ 1 cell** wide (the §0 `MAX_SHIP_WIDTH` contract). Authoring snaps to the grid; **movement stays
+continuous** (no lane-snapping) — the cuberun contract. **Jump is only for gaps; blocks are only
+strafe-or-destroy** — the two mechanics never overlap.
 
 **Model = hitbox (WYSIWYG, LOCKED).** Each class is one of our five CC0 models, **uniform-scaled** so its visible
 box IS its AABB collision footprint — you die exactly when the ship touches. Height is cosmetic (bodies are solid
@@ -211,10 +246,11 @@ server (the netcode "one shared `simulate()`" requirement). Model/scale live cli
 | Freighter | 62 | 30 | 105 / 65 | 5 (drifty) | 3.6 / 2 |
 
 **Two governing constraints (why the matrix stays fair):**
-1. **Widest class ≤ 1 cell** (widest is now Fighter 0.65c) and the generator **guarantees ≥ 2 contiguous open
-   lanes (8u)** at every z-slice → every ship threads with margin, and any future class ≤ 1.5c still fits.
-   (Replaces the old `MIN_CORRIDOR 6`.) NB: the Freighter's *weave* penalty comes from its sluggish strafe, not
-   a wide hitbox — so its footprint can stay moderate while it remains the longest (gap-tank).
+1. **Widest class ≤ 1 cell** (`MAX_SHIP_WIDTH`; widest is now Fighter 0.65c) and the generator **guarantees a
+   contiguous open floor ≥ `MIN_CLEAR = 7u`** (= `MAX_SHIP_WIDTH 4u + CLEARANCE_MARGIN 3u`) at every z-slice →
+   every legal ship threads with margin. See §0 for the full contract + the roster-conformance assertion.
+   (Replaces the old `MIN_CORRIDOR 6` / "≥2 lanes = 8u".) NB: the Freighter's *weave* penalty comes from its
+   sluggish strafe, not a wide hitbox — so its footprint stays ≤ contract while it remains the longest (gap-tank).
 2. **One shared server-authoritative track for all players (drop-in)**, so it is generated to the **least-capable
    class per hazard**: gaps sized for the worst gap-clearer (short Interceptor/Comet — offset by their speed),
    corridors for the widest (Freighter). **Class differences are margin & style, never pass/fail** — this caps
@@ -443,20 +479,8 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 
 ---
 
-## Superseded (history — do not delete; see `docs/DECISIONS.md`)
+## History
 
-### Endless Survival mode — dropped 2026-08-10 (ADR-004)
-Kept verbatim as the *why* trail. This is the retired §4 "Mode B" + its per-mode join policy:
-
-> **B. Survival (endless) — fast-follow.** Procedural endless track; a **chasing derezz-wall** sweeps forward
-> behind the pack (camp = caught) with **distance/time as score**. Furthest/last-flying wins. (cuberun + our
-> chase mechanic.) Home of the §5.1 forward-pressure mechanism.
->
-> **Join policy — per mode (S4):** **Race** locks the field at GO — late join → **spectate** the round and race
-> the next. **Survival** keeps **live drop-in** — a late joiner **spawns beside the pack** (an endless track has
-> no start line to gate on). One server seam (`shouldSpectateOnJoin`), a per-mode branch not two code paths.
-
-**Why dropped:** playtest-informed (user, 2026-08-10). Endless was the *sole* justification for O(1)
-random-access generation ("constraint 2"); dropping it lets all tracks **materialize once at load** and reopens
-the generator design space. Replaced by **longer finite tracks** + an in-track difficulty arc (§5.2/§7). The
-Survival branch of `shouldSpectateOnJoin` and the onJoin spawn-stagger become dead-code-in-waiting.
+Retired design intent is **not** kept inline here — it lives in **`docs/archive/superseded-design.md`**,
+forward-framed as **PRECEDED** (what it was → what it became → the ADR that moved us). Decisions + rationale:
+**`docs/DECISIONS.md`** (the ADR log).

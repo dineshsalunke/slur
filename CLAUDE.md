@@ -13,11 +13,9 @@ party game about *messing with your friends*. Player-controlled flight down a **
 race the next round** (the field locks at GO; late joiners spectate). Asymmetric ship classes
 (Fighter/Freighter/Interceptor…).
 
-> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — the old "two modes: Race + **Survival (endless, chase-wall)** … Survival
-> keeps live drop-in — spawn beside the pack" is retired. **Endless Survival is dropped** in favour of longer
-> finite tracks; join policy is Race-always. See `docs/DECISIONS.md` and the "Superseded" note at the bottom.
-
-Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we build**.
+Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we build**. Retired design intent
+lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions + rationale in
+`docs/DECISIONS.md`.
 
 ---
 
@@ -122,6 +120,17 @@ litmus: "would two clients disagreeing on this field desync the game?" (yes → 
     and as low in the tree as possible — not for tidiness. Full rule + rationale in `conventions/r3f.md`
     ("Componentize by subscription boundary"); backing incident: `colyseus-state-not-reactive` +
     `think-rerender-subscription-impact` memories.
+11. **Space is CONTINUOUS; `CELL = 4u` is an AUTHORING SNAP GRID ONLY — read GDD §0 before ANY track/geometry/
+    ship-size/collision work** (per explicit user directive, 2026-08-11 — this is core gameplay and was
+    repeatedly misunderstood). `CELL` is the design-time snap increment for **all** authoring (procgen +
+    hand-authored) — it is **NOT** a runtime unit, **NOT** a movement snap, **NOT** a block-size rule, and the
+    sim never reads it (collision is continuous float-AABB in `step.ts`). **Blocks may be any size** (`5.5×5.5×8u`,
+    …) — never assume cell multiples. The **one** load-bearing spatial invariant is threadable clearance:
+    at every z-slice the widest lethal-free floor run **≥ `MIN_CLEAR = MAX_SHIP_WIDTH (1 cell = 4u) +
+    CLEARANCE_MARGIN (3u) = 7u`**. Ceiling is the **ship-size contract** (widest class ≤ 1 cell, GDD §5.5), NOT
+    roster-max (so a seed's geometry is stable across roster edits); a module-load assertion `2·max(halfW) ≤
+    MAX_SHIP_WIDTH` enforces conformance. Never hand-type a width against the grid — that caused the stale
+    "Freighter 3.6u" bug. Full contract: **GDD §0**. Generator internals: ADR-007 (`docs/DECISIONS.md`).
 
 ## Dev workflow
 
@@ -153,17 +162,8 @@ Scaffolded and verified 2026-08-06 (**runnable blank skeletons, no game logic ye
 
 ---
 
-## Superseded (history — do not delete; see `docs/DECISIONS.md`)
+## History
 
-Baseline reset **2026-08-10**. Deprecated design intent is kept here so the *why* trail survives.
-
-- **Endless Survival mode (dropped — ADR-004).** The game had two modes: **Race** (finite) and **Survival**
-  (endless, chasing derezz-wall, distance/time score, live drop-in "spawn beside the pack"). Endless is
-  **dropped** in favour of **longer finite tracks**; there is one finite Race form (short→long courses). The
-  per-mode join policy collapses to **Race-always** (late join → spectate the round). The
-  `shouldSpectateOnJoin` seam and onJoin spawn-stagger that were "kept for Survival drop-in" are now
-  dead-code-in-waiting. The Status line above still reads "per-mode join policy (Race spectate-next / Survival
-  drop-in)" as *history* of what S4 built — the Survival half will not be built.
-- **"Deterministic track from a seed" (generalised — ADR-000/001).** The seed is no longer a first-class
-  room/track concept; it is one field inside an opaque `TrackDescriptor` owned by the procgen provider. The
-  room syncs the descriptor; each end materializes the `Track` locally. See the load-bearing contract above.
+Retired design intent is **not** kept inline here — it lives in **`docs/archive/superseded-design.md`**,
+forward-framed as **PRECEDED** (what it was → what it became → the ADR that moved us). Decisions + rationale:
+**`docs/DECISIONS.md`** (the ADR log). Baseline reset was **2026-08-10** (ADR-004 dropped endless Survival).
