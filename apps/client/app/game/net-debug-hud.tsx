@@ -71,7 +71,7 @@ export function NetDebugHud( { track }: { track: TrackHandle } ) {
             ref={ ref }
             style={ {
                 position: 'fixed',
-                top: 8,
+                bottom: 8, // bottom-left so the dev readout stops competing with the top-left race overlays (#62)
                 left: 8,
                 zIndex: 10,
                 pointerEvents: 'none',
