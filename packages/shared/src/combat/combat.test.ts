@@ -51,6 +51,28 @@ test( 'boltHits: forward z-band — a bolt catches a ship just within halfL + it
     assert.deepEqual( boltHits( bolt, [ victim( { z: 100 } ) ] ), [ 'v' ] );
 } );
 
+test( 'boltHits: SWEPT — a bolt that steps PAST a short hull in one tick still registers (no tunneling)', () => {
+    // Ship at z=100 (short ~Comet hull). The bolt's POST-step position is z=110 — beyond the ship's z-band —
+    // so a point test (sweep=0) misses it: that IS the tunneling bug. Having swept 20u (from z=90), it crossed
+    // the ship, so the swept test must catch it. Explicit sweep keeps this decoupled from BOLT_SPEED retuning.
+    const s = victim( { z: 100, halfL: 0.9 } );
+    const bolt: ProjectileState = { x: 0, y: 0, z: 110, ownerId: 's', ttl: 1 };
+    assert.deepEqual(
+        boltHits( bolt, [ s ] ),
+        [],
+        'point test (sweep=0) misses the tunneled bolt — the bug this guards',
+    );
+    assert.deepEqual( boltHits( bolt, [ s ], 20 ), [ 'v' ], 'swept test catches the bolt that crossed the ship' );
+} );
+
+test( 'boltHits: SWEPT is bounded — a sweep that stops short of the ship does NOT hit', () => {
+    // Same post-step z=110, but only 5u of travel (from z=105): the segment never reached the ship at z=100,
+    // so it must miss. Guards against an unbounded back-edge that would false-positive on any ship behind.
+    const s = victim( { z: 100, halfL: 0.9 } );
+    const bolt: ProjectileState = { x: 0, y: 0, z: 110, ownerId: 's', ttl: 1 };
+    assert.deepEqual( boltHits( bolt, [ s ], 5 ), [] );
+} );
+
 test( 'boltHits skips dead + spectating ships', () => {
     const bolt: ProjectileState = { x: 0, y: 0, z: 0, ownerId: 's', ttl: 1 };
     const ships = [ victim( { id: 'd', dead: true } ), victim( { id: 'p', spectating: true } ) ];

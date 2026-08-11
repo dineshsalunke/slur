@@ -38,6 +38,16 @@ export function ProjectileField() {
     const ref = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );
 
+    // Bolt shape (#55): a thin capsule laid along +z reads as a STREAK, not a drifting ball — right for the
+    // near-instant speed. CapsuleGeometry runs along Y, so rotate it onto Z ONCE and bake it into the geometry,
+    // keeping the per-frame instance writes position-only (no per-instance rotation). Bolts only travel +z, so
+    // one baked orientation fits all of them.
+    const boltGeo = useMemo( () => {
+        const g = new THREE.CapsuleGeometry( 0.22, 2.6, 4, 8 );
+        g.rotateX( Math.PI / 2 );
+        return g;
+    }, [] );
+
     // Force the draw range to 0 AT MOUNT (callback ref → fires during commit, BEFORE the first paint). The
     // buffer is created with count=MAX_BOLTS, so without this the pool draws MAX_BOLTS identity-matrix spheres
     // stacked at the origin for one frame — a stray flash at the spawn point (#53). useFrame parks the range,
@@ -69,7 +79,7 @@ export function ProjectileField() {
 
     return (
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX_BOLTS ] }>
-            <sphereGeometry args={ [ 0.6, 10, 10 ] } />
+            <primitive object={ boltGeo } attach="geometry" />
             <meshStandardMaterial emissive="#8affff" emissiveIntensity={ 4 } toneMapped={ false } />
         </instancedMesh>
     );

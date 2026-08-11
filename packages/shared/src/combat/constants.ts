@@ -9,8 +9,12 @@
 export const USE_POWERUP_MESSAGE = 'usePowerUp';
 
 // Bolt = a dumb forward projectile (+z). Straight ribbon ⇒ forward-fire needs no auto-lock (BC8 deferred).
-export const BOLT_SPEED = 120; // units/second forward (z+). > any maxCruise (55) so a bolt overtakes ships ahead.
-export const BOLT_TTL = 6; // seconds a bolt lives before it expires (pruned) — caps range at ~BOLT_SPEED·BOLT_TTL ≈ 720u.
+// NEAR-INSTANT (#55): a bolt crosses typical combat range in a blink but is NOT hitscan — a short travel
+// window preserves the dodge-by-weaving axis (GDD §5.5). At 60Hz this steps ~10u/tick, which WOULD tunnel a
+// short hull between ticks → `boltHits` uses SWEPT collision (the traveled z-interval, not a point). The exact
+// value is a feel-gate #11 call; retune freely (the swept test is decoupled from it).
+export const BOLT_SPEED = 600; // units/second forward (z+). Near-instant; ≫ any maxCruise so it overtakes ships ahead.
+export const BOLT_TTL = 1.2; // seconds a bolt lives before expiry — TTL lowered with the speed-up to HOLD range at ~BOLT_SPEED·BOLT_TTL ≈ 720u (unchanged reach, just far faster). Feel-gate tunable.
 export const BOLT_HALF = 1.5; // half-extent (units) of the bolt's OWN AABB in x AND z — added to the ship footprint on hit-test.
 
 export const STUN_SECONDS = 1.2; // seconds of input-freeze on a bolt hit (§5.4 disruption-not-death; the track does the killing).
