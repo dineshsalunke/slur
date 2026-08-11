@@ -149,6 +149,22 @@ or a reconciliation note there.)
    issue (Step 1). Under `/loop`, flagging + enriching one thin issue is a complete, useful
    iteration on its own.
 
+**Game-mechanics issues — also validate the GDD (mandatory extra gate).** If the issue touches
+a game mechanic (movement, combat, hazards/track, ship classes, pickups, modes — the **GDD §5**
+surface), cross-check it against the **current GDD** before it can be build-ready:
+
+- **Consistent?** If the change contradicts a *locked* decision — straight-ribbon-only, no
+  autonomous moving geometry, disruption-not-death, the agility ⊥ armour dodge axis, or the §0
+  spatial contract — that is a **design conflict**, not a build task. Post the conflict on the
+  issue and surface it to a maintainer; do not resolve it on your own authority.
+- **Captured?** If it adds or changes design intent the GDD does not yet state, the GDD must be
+  updated (design docs are living — Rule 0). Either the issue already cites the governing
+  `GDD §`, or **folding the GDD update into the same PR is part of the work.** Code that ships a
+  mechanic change the GDD never records is a silent divergence — reject it.
+
+A game-mechanics issue with no GDD reference is not build-ready: tag `needs-detail`, name the
+missing §, and — where you can — cite the § it should carry, same as any other spec gap.
+
 Only issues that clear the bar — originally, or after your enrichment closes the gap *without
 inventing design* — proceed to Step 2.
 
