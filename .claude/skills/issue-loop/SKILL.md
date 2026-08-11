@@ -2,9 +2,11 @@
 name: issue-loop
 description: >-
   Autonomous issue-worker loop for the slur repo. Pick an open GitHub issue,
-  claim it with a lock comment, build it to the project bar, open a PR, then
-  monitor that PR until it merges. Triggers: /issue-loop, "work the issues",
-  "pick up an issue and build it". Pairs with /loop for interval scheduling.
+  vet it for acceptance criteria + design references (flag thin issues with a
+  triage comment + `needs-detail`), claim it with a lock comment, build it to
+  the project bar, open a PR, then monitor that PR until it merges. Triggers:
+  /issue-loop, "work the issues", "pick up an issue and build it". Pairs with
+  /loop for interval scheduling.
 ---
 
 # issue-loop — pick → lock → build → PR → monitor → merge
@@ -65,7 +67,8 @@ gh issue list --state open --limit 40
 ```
 
 Choose the best candidate. Prefer, in order: a `priority` or `bug` label, then a clear
-spec you can build without more design agreement. **Skip**:
+spec you can build without more design agreement. Don't confuse a *labelled* issue with a
+*specified* one — **Step 1.5 vets the spec before you commit to building.** **Skip**:
 
 - Any issue already **locked by another agent** — a fresh `🔒 Lock claimed` comment (< 3h old)
   whose author is **not `ME`** (`gh issue view <n> -R dineshsalunke/slur --comments`). The hard
@@ -77,6 +80,77 @@ spec you can build without more design agreement. **Skip**:
   first and that has not happened. Comment your design and wait; do not implement.
 
 If nothing is workable, say so and stop (or, under `/loop`, wait for the next tick).
+
+## Step 1.5 — vet the issue is build-ready (triage gate)
+
+Before you lock and build, read the issue's **full body and every comment**
+(`gh issue view <n> -R dineshsalunke/slur --comments`) and check it clears the spec bar. A
+thin issue built blind produces slop and rework; vetting it — and enriching it with the
+references it should carry — is itself useful triage work, valuable even when you don't go
+on to build it. (Comments matter: a maintainer may have already dropped GDD/ADR references
+or a reconciliation note there.)
+
+**The bar — an issue is build-ready only when it has all of:**
+
+- A clear **problem / goal** — what and why.
+- **Expected behaviour** — what "working" looks like, in plain English.
+- **Acceptance criteria** (or an explicit DoD) — a checkable list a reviewer can tick off.
+- **Design references wherever the issue touches design** — the governing `GDD §`, `TDD §`,
+  `ADD`, `AUDIO`, an ADR in `docs/DECISIONS.md`, and/or the `conventions/*.md` for the
+  subsystem. (A pure tooling/infra issue may legitimately need none — judge by whether a
+  builder would have to *guess* a design decision.)
+- A **subsystem / file pointer** so the builder knows where to look.
+- The correct **domain label(s)** (`bug` / `enhancement` / `art` / `netcode` / `infra` /
+  `tech-debt` / …).
+
+**If it clears the bar** → proceed to Step 2 (lock + build).
+
+**If it does NOT clear the bar** → do not build it blind. In one pass:
+
+1. **Enrich what you can derive.** Read the docs and add the references the issue *should*
+   carry — the exact GDD/TDD/ADD § + ADR that govern it, the subsystem `conventions/*.md`,
+   the likely files. This is the high-value move: it turns a thin issue into a buildable one.
+   **Do not invent acceptance criteria that encode a design decision a maintainer owns** —
+   that is the "pure design/RFC" case (Step 1): propose, don't decide.
+2. **Post a triage comment** — plain English, checkbox format so a human *and* the next agent
+   can act on it. State exactly what's missing and paste the references you found:
+
+   ```
+   gh issue comment <n> -R dineshsalunke/slur --body "$(cat <<'EOF'
+   **Triage (issue-loop vet) — not yet build-ready.**
+
+   Missing before this can be built cleanly:
+   - [ ] Expected behaviour (what "working" looks like)
+   - [ ] Acceptance criteria / DoD (checkable list)
+   - [ ] <anything else>
+
+   Design references it should carry (found while vetting):
+   - GDD §<x> — <what it governs>
+   - <TDD/ADD/ADR/conventions ref>
+
+   Files likely involved: <paths>
+   EOF
+   )"
+   ```
+
+3. **Tag it** so the queue reflects the gap:
+
+   ```
+   gh issue edit <n> -R dineshsalunke/slur --add-label needs-detail
+   gh issue edit <n> -R dineshsalunke/slur --add-label <correct-domain-label>   # if it lacks one
+   ```
+
+   `needs-detail` is the "not build-ready" flag. Create it once if the repo lacks it:
+   `gh label create needs-detail -R dineshsalunke/slur --color D4C5F9 --description "Missing acceptance criteria / design references — not build-ready"`.
+   When a later pass (yours or a maintainer's) fills the gaps, **remove** it:
+   `--remove-label needs-detail`.
+
+4. **Move on** — an under-spec issue is not yours to build on a guess. Pick the next workable
+   issue (Step 1). Under `/loop`, flagging + enriching one thin issue is a complete, useful
+   iteration on its own.
+
+Only issues that clear the bar — originally, or after your enrichment closes the gap *without
+inventing design* — proceed to Step 2.
 
 ## Step 2 — claim it with a lock comment
 
