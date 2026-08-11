@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { useWorld } from 'koota/react';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RENDER_DELAY_MS } from '../ecs/net-systems';
 import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
@@ -38,6 +38,17 @@ export function ProjectileField() {
     const ref = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );
 
+    // Force the draw range to 0 AT MOUNT (callback ref → fires during commit, BEFORE the first paint). The
+    // buffer is created with count=MAX_BOLTS, so without this the pool draws MAX_BOLTS identity-matrix spheres
+    // stacked at the origin for one frame — a stray flash at the spawn point (#53). useFrame parks the range,
+    // but it runs AFTER the first paint, so it cannot prevent frame-1. This is the range-based analogue of the
+    // matrix-parking done in explosions.tsx / hit-spark.tsx (those pools always draw MAX, so they park slots;
+    // this pool varies count, so zeroing count hides everything). Not a mount EFFECT — just imperative init.
+    const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
+        ref.current = mesh;
+        if ( mesh ) mesh.count = 0;
+    }, [] );
+
     useFrame( () => {
         const mesh = ref.current;
         if ( ! mesh ) return;
@@ -57,7 +68,7 @@ export function ProjectileField() {
     } );
 
     return (
-        <instancedMesh ref={ ref } frustumCulled={ false } args={ [ undefined, undefined, MAX_BOLTS ] }>
+        <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX_BOLTS ] }>
             <sphereGeometry args={ [ 0.6, 10, 10 ] } />
             <meshStandardMaterial emissive="#8affff" emissiveIntensity={ 4 } toneMapped={ false } />
         </instancedMesh>
