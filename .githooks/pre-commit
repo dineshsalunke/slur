@@ -1,0 +1,40 @@
+#!/bin/sh
+# Guard: block a CLAUDE-driven commit made in the SHARED (main) checkout.
+#
+# Why: this repo is worked by more than one Claude agent at once, all sharing ONE
+# checkout. `git switch` / `git commit` in that shared tree race each other — an agent's
+# uncommitted edits ride onto whatever branch another agent just switched to, and the
+# commit lands on the WRONG branch. The fix is one `git worktree` per agent (see
+# CLAUDE.md "Concurrent agents"); this hook makes the failure mode impossible instead of
+# merely discouraged.
+#
+# Scope (deliberately narrow):
+#   * Only bites when CLAUDE is driving (CLAUDECODE is set in a Claude Code shell).
+#     A human committing from a normal terminal has no CLAUDECODE → never blocked.
+#   * Only bites in the MAIN checkout. Commits from a linked worktree always pass —
+#     that IS the sanctioned workflow.
+#   * Escape hatch: SLUR_ALLOW_SHARED_COMMIT=1 git commit ...  (for the rare
+#     intentional shared-tree commit — a human pairing with Claude, say).
+
+[ -n "$SLUR_ALLOW_SHARED_COMMIT" ] && exit 0   # explicit opt-out
+[ -n "$CLAUDECODE" ] || exit 0                  # not Claude-driven → allow (human commits untouched)
+
+# A linked worktree's git-dir lives under .git/worktrees/<name>; the main checkout's does not.
+case "$(git rev-parse --absolute-git-dir)" in
+    */worktrees/*) exit 0 ;;                     # committing from a worktree → sanctioned, allow
+esac
+
+top="$(git rev-parse --show-toplevel)"
+cat >&2 <<EOF
+✋ Blocked: a Claude commit in the SHARED checkout ($top).
+
+  Multiple agents share this tree — committing here lands on whatever branch another
+  agent switched to. Work in your OWN worktree instead:
+
+      git worktree add -B <branch> ../slur-worktrees/<branch> origin/dev
+      cd ../slur-worktrees/<branch>
+      # ...edit, commit, push from there...
+
+  (Intentional shared-tree commit? Re-run with: SLUR_ALLOW_SHARED_COMMIT=1 git commit ...)
+EOF
+exit 1

@@ -131,6 +131,19 @@ litmus: "would two clients disagreeing on this field desync the game?" (yes → 
     roster-max (so a seed's geometry is stable across roster edits); a module-load assertion `2·max(halfW) ≤
     MAX_SHIP_WIDTH` enforces conformance. Never hand-type a width against the grid — that caused the stale
     "Freighter 3.6u" bug. Full contract: **GDD §0**. Generator internals: ADR-007 (`docs/DECISIONS.md`).
+12. **One `git worktree` per agent — NEVER `git switch` or commit in the shared checkout** (per explicit user
+    directive, 2026-08-11, after a live collision). This repo is worked by more than one Claude at once, all
+    sharing ONE checkout. `git switch`/`git commit` there race: an agent's uncommitted edits ride onto whatever
+    branch another agent just switched to, and the commit lands on the **wrong branch** (this happened — a #53
+    fix committed onto a docs branch mid-task). **The shared checkout stays parked on `dev` for reads and PR
+    merges only.** To do any edit/commit work, create your own worktree off fresh `origin/dev` and work entirely
+    inside it: `git fetch origin && git worktree add -B <branch> ../slur-worktrees/<branch> origin/dev`, then
+    `cd` there. Worktrees are keyed **per-branch** (git forbids two worktrees on one branch, so this is
+    collision-proof by construction). `pnpm install` in the new worktree — deps hardlink from the warm store
+    (~2s). A committed `pre-commit` hook (`.githooks/`, wired by `pnpm install`'s `prepare`) HARD-BLOCKS a
+    Claude commit made in the shared checkout; it never touches a human's manual commits (gated on `CLAUDECODE`)
+    and always allows worktree commits. Full protocol below ("Concurrent agents"). Backing memory:
+    `shared-checkout-use-worktree`.
 
 ## Dev workflow
 
@@ -159,6 +172,35 @@ Scaffolded and verified 2026-08-06 (**runnable blank skeletons, no game logic ye
 - **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; reviewed code is documented in the phase doc as reference, then built in Implement. Phase notes in `.claude/phases/`. **Status: S1 ✓ (solo flight sim; `/solo` since removed), S2 ✓ (networked flight), S3 ✓ — obstacle redesign + AABB collision + 5-class ship system (commit `12049bd`); 18 shared tests GREEN; feel-gate playtested (Freighter/imperial capped). **S4 ✓ — complete Race: live room list · host GO → countdown → race → leader+grace results → Play Again · lobby ship/colour pick + hero-orbit preview · spectator (cycle-any-racer) · leave guard · host authority+migration (commits `fc0418f`/`d155481`/`e5eb5f9`; human gate passed 2026-08-09). Round-based, Race spectate-next join policy (Survival dropped — ADR-004). **S5 ✓ — Combat & power-ups: BC1 server-sim projectiles → **Bolt** → **stun** (the track kills), track-placed pickups (`E` = discrete `USE_POWERUP`), server-authoritative hits; client bolt/pickup instancing + `heldPower` chip + hit-spark + on-ship stun-flicker + threat HUD; room→world bridge extracted (commits `9538e0e`→`fd6bdb3`; human gate 2026-08-10). Functionality locked, visuals polish deferred; Mine/Shield/Boost/auto-lock/rearview-mirror = fast-follows. NEXT: S6 (identity: `armour`/combat stats + lobby ship-pick UI + audio + art/juice).** S4 arc+as-built: `.claude/phases/2026-08-09-s4-session-flow.md` (+ `…-s4-batch4-spec.md`); procgen redesign (post-S4, validated headlessly): `…-procgen-flow-progression.md`. S3 arc (pt.1–5) in `.claude/phases/2026-08-09-collision-aabb-jump-vfx.md`; original S3 in `.claude/phases/2026-08-08-s3-track-hazards-collision.md`. **Design captured this session (durable in GDD):** §5.5 = 5-class matrix (Class = mechanics group, Ship = cosmetic variant; per-ship `FlightTuning`+footprint resolved by networked `shipId`); §5.2/§5.7 = **straight-ribbon + no-moving-geometry** constraints, **authored/procgen levels + two-floor fairness validator** (FIT + GAP-REACH; weave uncapped, self-balances via speed), and the **mechanic master-menu** (BC1–BC8 base capabilities). Balance is **playstyle-level, not geometry-equal**. Roadmap S1–S7 in `.claude/backlog.md`. **Track-provider ADRs (2026-08-10):** ADR-001 (`seed` → `TrackDescriptor` + `resolveTrack` provider) and ADR-002 (first-class `Track.anchors`; visual seam frozen) **SHIPPED** (#46/#47/#48); ADR-005 `validateTrack` deferred last. **ADR-006 (2026-08-10/11, playtest-tuned):** rhythm-paced generator — Believer arrangement envelope (`intensityAt`) + **discrete-slalom/flick** micro (short 4×8×8u cube pillars OUTSIDE a moving corridor via uncorrelated noise + 1-lane edge buffer; a 1-lane **flick** pillar juts in to force a sharp sidestep; slow grace-notes on the line) + **varied gaps** (full-width + partial floor-strip), over 3 fixed primitives (gaps/deadly/slow); continuous NOT a rhythm game; concretizes+supersedes ADR-003. Ships tuned for crisp flicks (strafeAccel/damp↑); chase camera raised above walls; `TRACK_SEGMENTS=400` (~2.5–2.8 min). Generator-only, feel-gated in a hosted room (`/solo` stays deleted); 71/71 tests green. **Committed `8ddc9d8`.** ("banks" was tried first + dropped as a tube.) Deferred: Slice 2 = positional-gap L/C/R *forcing*. See memory `rhythm-paced-generation` + `.claude/phases/2026-08-10-rhythm-paced-generation.md`. Full decision log + build sequence in **`docs/DECISIONS.md`**.
 - **Roadmap = GitHub issues.** Actionable work lives as GitHub issues (`github.com/dineshsalunke/slur/issues`), grouped by milestone (**S6** current · **S7** next · **Backlog** deferred). `backlog.md` and the phase notes stay the design/narrative log; the issues are the task tracker. File an issue for every feature or fix before you build it (see `CONTRIBUTING.md`).
 - **Batch related file changes** into one review turn.
+
+### Concurrent agents — worktree-per-agent (non-negotiable #12)
+
+More than one Claude works this repo at once (the owner's sessions; mahendra's via a fork). They share **one
+checkout**, so branch-switching and committing in it collide. The rule is simple: **the shared checkout is
+read/merge-only on `dev`; every agent does its edit/commit work in its own `git worktree`.**
+
+Start of any build task (this is what the issue-loop / pr-loop skills do):
+
+```
+git fetch origin
+git worktree add -B <branch> ../slur-worktrees/<branch> origin/dev
+cd ../slur-worktrees/<branch>
+pnpm install          # hardlinks from the warm store (~2s); also wires the pre-commit hook
+# ...edit, run the verify gate, commit, push — all from here...
+```
+
+- **Path convention:** a **sibling** dir outside the repo — `../slur-worktrees/<branch>` — so worktrees are
+  never scanned by `biome check .` or discovered by pnpm's `apps/*`/`packages/*` globs.
+- **Keyed per-branch:** git refuses two worktrees on one branch, so one branch = one worktree = no collision.
+- **Never `git switch` the shared checkout.** If you find yourself about to, stop and make a worktree instead.
+- **Merges are server-side** (`gh pr merge`) — the shared checkout never needs to move off `dev`.
+- **Cleanup:** `git worktree remove <path>` when the branch is merged (or `git worktree prune` for stale ones).
+- **Enforcement:** `.githooks/pre-commit` (active after any `pnpm install`, via the root `prepare` script) blocks
+  a commit made **in the shared checkout while Claude is driving** (`CLAUDECODE` set). It never blocks a human's
+  manual commit and always allows worktree commits. Rare intentional shared-tree commit: prefix
+  `SLUR_ALLOW_SHARED_COMMIT=1`.
+- **Dev-server ports still collide** (`:2567`/`:5173` are not yet env-driven) — tracked separately; until fixed,
+  only one agent runs a live `pnpm dev` at a time.
 
 ---
 
