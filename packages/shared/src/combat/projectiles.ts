@@ -2,7 +2,7 @@
 // never predicts, projectiles). Framework-free: runs on the plain ProjectileState (tests) AND the
 // Projectile schema instance (server) with identical math — the SimShip/PlayerState mirror discipline.
 
-import { BOLT_HALF, BOLT_SPEED } from './constants.js';
+import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 
 // Structural projectile state — mirrors the Projectile SCHEMA (schema.ts) field-for-field, so the schema
 // instance structurally satisfies this and the functions below mutate it in place. `ttl` counts DOWN.
@@ -16,9 +16,13 @@ export interface ProjectileState {
 
 // Advance every live bolt one fixed step: forward (+z) and count ttl down. PURE mutation, no hit-test and
 // no pruning here — the server orders advance → boltHits → prune explicitly (delete from the MapSchema).
-export function stepProjectiles( projectiles: Iterable< ProjectileState >, dt: number ): void {
+export function stepProjectiles(
+    projectiles: Iterable< ProjectileState >,
+    dt: number,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+): void {
     for ( const p of projectiles ) {
-        p.z += BOLT_SPEED * dt;
+        p.z += cfg.boltSpeed * dt;
         p.ttl -= dt;
     }
 }
@@ -38,20 +42,26 @@ export interface HitShip {
 
 // AABB overlap of ONE bolt against a set of ships → the ids it hits this tick. Owner-immune (skips
 // ownerId), skips dead/spectating. Lateral (x) + vertical (y IGNORED, v1) as before; the forward (z) test is
-// SWEPT: `sweep` is how far the bolt travelled THIS tick (the caller passes BOLT_SPEED·dt right after
-// stepProjectiles), so we test the whole segment [z-sweep, z] — extended by ±BOLT_HALF — against the ship's
+// SWEPT: `sweep` is how far the bolt travelled THIS tick (the caller passes cfg.boltSpeed·dt right after
+// stepProjectiles), so we test the whole segment [z-sweep, z] — extended by ±cfg.boltHalf — against the ship's
 // z-band, not just the post-step point. Without this a near-instant bolt (~10u/tick) tunnels a short hull
 // (Comet/Interceptor) between 60Hz ticks and the hit is silently missed. `sweep = 0` (the default) reduces to
 // the exact point test, so existing callers/tests are unchanged. Returns every victim (usually 0 or 1).
-export function boltHits( bolt: ProjectileState, ships: readonly HitShip[], sweep = 0 ): string[] {
+export function boltHits(
+    bolt: ProjectileState,
+    ships: readonly HitShip[],
+    sweep = 0,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+): string[] {
     const victims: string[] = [];
+    const half = cfg.boltHalf;
     for ( const s of ships ) {
         if ( s.id === bolt.ownerId || s.dead || s.spectating ) continue;
         if (
-            bolt.x + BOLT_HALF > s.x - s.halfW &&
-            bolt.x - BOLT_HALF < s.x + s.halfW &&
-            bolt.z + BOLT_HALF > s.z - s.halfL && // front of the bolt box has reached/passed the ship's back edge
-            bolt.z - BOLT_HALF - sweep < s.z + s.halfL // back of the SWEPT box hasn't yet passed the ship's front edge
+            bolt.x + half > s.x - s.halfW &&
+            bolt.x - half < s.x + s.halfW &&
+            bolt.z + half > s.z - s.halfL && // front of the bolt box has reached/passed the ship's back edge
+            bolt.z - half - sweep < s.z + s.halfL // back of the SWEPT box hasn't yet passed the ship's front edge
         ) {
             victims.push( s.id );
         }

@@ -16,3 +16,4 @@ export * from './sim/step.js';
 export * from './sim/track.js';
 export * from './sim/track-provider.js';
 export * from './sim/types.js';
+export * from './sim-config.js';
