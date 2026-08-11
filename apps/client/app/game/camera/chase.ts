@@ -19,12 +19,14 @@ export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: num
     const maxCruise = net ? tuningForShip( net.shipId ).maxCruise : DEFAULT_TUNING.maxCruise;
 
     const k = 1 - Math.exp( -16 * dt ); // rubberband lag-follow
-    const back = 12 + ( speed / maxCruise ) * 2; // trail-stretch with speed
+    const back = 14 + ( speed / maxCruise ) * 3; // trail-stretch with speed
 
     cam.position.x += ( p.x - cam.position.x ) * k;
-    cam.position.y += ( p.y + 5 - cam.position.y ) * k;
+    // Sit ABOVE the 8u walls (BLOCK_HEIGHT) so you can SEE OVER the pillars and PLAN your line — a low chase
+    // cam hides everything behind the nearest wall. Higher vantage + look further ahead and slightly down.
+    cam.position.y += ( p.y + 9 - cam.position.y ) * k;
     cam.position.z += ( p.z - back - cam.position.z ) * k; // forward = +z, trail behind
-    cam.lookAt( p.x, p.y + 1, p.z + 8 ); // look-ahead
+    cam.lookAt( p.x, p.y + 0.5, p.z + 14 ); // look-ahead, angled down over the incoming field
 
     const fov = 70 + ( speed / maxCruise ) * 20;
     if ( Math.abs( cam.fov - fov ) > 0.1 ) {

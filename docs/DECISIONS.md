@@ -15,14 +15,17 @@ Implementation order is dependency-driven, not ADR-number order:
 
 1. **ADR-001** provider decoupling (ADR-004 comment cleanup folds in) — *the unblocker.*
 2. **ADR-002** anchors (visual seam frozen) — *depends on 001's landed provider.*
-3. *(future, gated)* **first BC5 beats** (boost/slow/launch) → unlocks **ADR-003** grammar.
-4. **ADR-005** `validateTrack()` — **LAST.** A validator validates a *settled* system; building it before its
-   real consumers (authored provider · ADR-003 grammar) means validating a moving target. Deferred until the
+3. **ADR-006** rhythm-paced generation (arrangement envelope + discrete-slalom/flick micro + varied gaps) — **concretizes +
+   supersedes ADR-003's macro layer.** The "just gaps & blocks" scope decision fixes the beat vocabulary at the
+   3 existing primitives on purpose → the macro layer builds NOW, the old "wait for BC5 beats" gate is void.
+4. *(future)* BC5+ beats (boost/slow/launch/fork…) are **feathering** layered on top later, not a prerequisite.
+5. **ADR-005** `validateTrack()` — **LAST.** A validator validates a *settled* system; building it before its
+   real consumers (authored provider · ADR-006 generator) means validating a moving target. Deferred until the
    generator stops changing shape.
 
 **SHIPPED 2026-08-10:** ADR-001 (PR #46) + ADR-002 (PR #47) merged to `dev`; docs baseline (PR #48). Verify
-gate green, **75 tests** (up from 70). **Next:** first BC5 beats (boost/slow/launch) → unlock **ADR-003**
-grammar; **ADR-005** `validateTrack()` stays last.
+gate green, **75 tests** (up from 70). **In progress:** **ADR-006** rhythm-paced generator (generator-only;
+playtested in a hosted room — `/solo` stays deleted). **Next after:** **ADR-005** `validateTrack()` stays last.
 
 ---
 
@@ -138,7 +141,10 @@ GAP-REACH).
 
 ## ADR-003 — Ruleset macro-layer; generate == validate
 
-- **Status:** Proposed · **Date:** 2026-08-10
+- **Status:** **Superseded-by ADR-006** · **Date:** 2026-08-10
+- **Superseded note:** ADR-003 proposed a beat *grammar* gated on a larger BC vocabulary. ADR-006 supersedes
+  its macro-layer design with a concrete, shipped-now form (arrangement envelope + discrete-slalom/flick + varied gaps over
+  the 3 fixed primitives). The "generate == validate" idea survives and rolls into ADR-005 (`validateTrack`).
 
 **Context:** The corridor-noise generator (`sim/track.ts`, S6) gives good moment-to-moment texture but
 has no semantics: no memory of "have I taught this mechanic," no legality between mechanics, no designed
@@ -217,3 +223,62 @@ generator stops changing shape. Today's per-slice assertion holds the line until
 
 **Affected docs:** `docs/GDD.md` §5.2 · `docs/TDD.md` §8 · `.claude/backlog.md`.
 **Why / narrative:** the phase note + ADR-002/003.
+
+---
+
+## ADR-006 — Rhythm-paced generation: arrangement envelope + discrete-slalom/flick micro + varied gaps
+
+- **Status:** Accepted · **Date:** 2026-08-10 (playtest-tuned through 2026-08-11)
+- **As-built (playtest-tuned):** the micro model evolved over ~6 rounds — the initial **"banks"** idea (below)
+  played as a claustrophobic tube and was **superseded** by **DISCRETE SLALOM + FLICK**: short cube pillars
+  (4×8×**8u**, not full-depth walls) placed OUTSIDE a moving corridor by UNCORRELATED noise (sparse, +1-lane
+  edge buffer), a 1-lane **flick** pillar that juts into the corridor to force a sharp sidestep, slow
+  grace-notes on the line, and **varied gaps** (full-width jump + partial floor-strip). Ships tuned for crisp
+  flicks; chase camera raised above the walls; `TRACK_SEGMENTS=400` (~2.5–2.8 min). Full evolution + final
+  constants: the phase note. 71/71 shared tests green.
+- **Supersedes:** the S6 value-noise **difficulty model** (monotonic `difficultyAt` ease-out-to-cap + triangle
+  pace) and the **noise-wall** hazard placement. **Concretizes + supersedes ADR-003's** macro layer (voids its
+  "wait for BC5 beats" gate). Keeps the S6 **weave line + derived `SLOPE_CAP`/`CURV_CAP`/`MIN_LANE` fairness
+  backbone**, reused as the difficulty ceiling.
+
+**Context:** The core game is exactly **three primitives — gaps + deadly blocks + slow blocks** (user, this
+session); everything else is feathering. Instrumenting the shipped S6 generator (`scratchpad/track-inspect.mjs`)
+proved it fails the core: **6/6 gaps full-width** (autopilot jumps), **peak at 30%** then stuck cranked, **80%
+blocks / no breathers**, and the weave **buried in a noise tunnel** at high difficulty. Its difficulty model has
+no arc and no pacing, and it places the primitives as **independent noise streams** so meaningful combinations
+happen only by luck.
+
+**Decision — two-layer, three sub-decisions:**
+1. **Arrangement envelope (macro).** Difficulty follows a **staircase of escalating waves** modelled on
+   *Imagine Dragons — "Believer"* (125 BPM; `intro·verses·pre-chorus·choruses·…·bridge·final-chorus·outro`):
+   tense verse breathers → building pre-choruses → escalating chorus **slams** → a **bridge breakdown valley
+   (~75%)** → the **biggest final chorus** → a quick **outro to a plain finish**. The music is **hidden pacing
+   scaffolding only** — the surface stays **continuous/organic, never a rhythm game** (no discrete notes, no
+   lane-snapping) or the fighting/wrecking essence is lost.
+2. **Micro (micro).** ⚠ *AS-BUILT superseded this to DISCRETE SLALOM + FLICK — see the As-built line above.*
+   Original idea: deadly blocks as the **corridor EDGES (banks)**. In playtest that read as a claustrophobic
+   tube; the shipped model instead places **short discrete cubes OUTSIDE** the corridor (uncorrelated → never
+   clumped, +1-lane buffer) and uses a **1-lane flick pillar** intruding into the corridor for the sharp
+   sidestep. **Slow blocks = grace-note decisions ON the line** (kept). Difficulty = block density + weave demand
+   + flicks + gaps.
+3. **Varied gaps (AS-BUILT).** `FULL_GAP_FRAC` of gaps are full-width (must JUMP); the rest are **partial** — a
+   floor strip at the weave line + a side hole (strafe across, or jump) → gaps of different widths. *Deferred
+   (Slice 2 proper):* offsetting the strip L/C/R with a lateral-reach bound to *force* pre-gap alignment
+   (today the strip sits on the already-reachable line, so it's variety + fairness, not forced strafe).
+
+**Fairness (unchanged, now load-bearing):** weave speed clamped by `SLOPE_CAP`/`CURV_CAP` (the "BPM ceiling =
+the least-capable ship's strafe reachability"); every corridor narrowing (incl. the chorus **pinch** accent)
+clamped ≥ `MIN_LANE`; gaps ≤ `GAP-REACH`, no two in a row. *"How hard can the peak get" = exactly what the
+Freighter can just barely thread.*
+
+**Consequences:** `difficultyAt` → `intensityAt` (section lookup); noise-walls → discrete cube pillars + flick + slow-grace;
+full-width gaps → positional strips; **materialize-once** (ADR-004 finite tracks) replaces the O(1) per-segment
+closure. **Renderer + collision unchanged** (span-based floors + variable-width blocks already handle it —
+verified). **Playtested in a hosted room** — `/solo` stays deleted (redundant with the complete S4 room path, which
+already materializes + renders + `simulate()`s the track; host starts solo, no min-player gate). So the slice
+is **generator-only, zero UI**. Protos: `scratchpad/track-inspect.mjs`,
+`scratchpad/rhythm-proto.mjs` (throwaway; production reuses real `hash2`/`mulberry32`, not their hash).
+
+**Affected docs:** `CLAUDE.md` (status + stale `/solo` note) · `docs/GDD.md` §5.2 · `docs/TDD.md` §5 ·
+memory `rhythm-paced-generation` (+ `procgen-primary`).
+**Why / narrative:** `.claude/phases/2026-08-10-rhythm-paced-generation.md`.

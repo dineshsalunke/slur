@@ -85,9 +85,9 @@ export const DEFAULT_TUNING: FlightTuning = {
     brakeDecel: 110,
     coastDrag: 40,
     maxCruise: 55,
-    strafeAccel: 150, // was 120 — snappier sideways response (reaches the cap in ~0.27s)
-    strafeClamp: 80, // was 200 (never actually reached) — a controllable, quickly-attained lateral top speed
-    strafeDamp: 8, // was 1 (drifty) — release now bleeds sideways momentum fast, so it stops crisply
+    strafeAccel: 165, // Fighter baseline. Raised 150→165: snappier onset so a flick reaches speed almost instantly.
+    strafeClamp: 80, // controllable lateral top speed (UNCHANGED → SLOPE_CAP unchanged, so track fairness is untouched)
+    strafeDamp: 14, // raised 8→14: release bleeds lateral momentum FAST → a tap-strafe settles crisply (the "continuous-but-discrete" flick feel), not a drift
     halfWidth: 32, // was 16 — track widened to 16 lanes (64u) on the 4u cell grid (see track.ts HALF_WIDTH).
     halfW: 1.3, // Fighter footprint (challenger model box): 2.6u wide = 0.65 cell.
     halfL: 1.26, // Fighter footprint: 2.52u long = 0.63 cell.
@@ -184,8 +184,8 @@ export function deriveNodePeriod( slopeCap: number, curvCap: number, amp: number
 // down each leg → you strafe continuously (that IS the challenge), with smoothstep-rounded apexes so the
 // reversal respects the curvature cap (a SHARP triangle apex would blow it). A small fBm perturbation keeps
 // apex positions organic (not metronomic). Both terms are trig-free (tri + smoothstep + value-noise).
-export const WEAVE_CARRIER_BUDGET = 0.7; // fraction of the slope/curvature caps the carrier may spend — the rest is headroom for the perturbation + the player's reaction margin.
-export const WEAVE_NOISE_FRAC = 0.15; // amplitude share of the organic perturbation (rest = the readable carrier). Kept small so the channel stays followable.
+export const WEAVE_CARRIER_BUDGET = 0.88; // fraction of the slope/curvature caps the carrier may spend. Higher → SHORTER period → more frequent, more EVEN L-R strafing (fewer long straights) — still < 1 so it stays under the fairness caps (which already bake in the 0.8 safety).
+export const WEAVE_NOISE_FRAC = 0.08; // amplitude share of the organic perturbation (rest = the readable carrier). Reduced 0.15→0.08 for a MORE REGULAR, predictable weave rhythm (the random wiggle was making it flat here / tight there).
 
 // Carrier period [rows] so a smoothstep-rounded triangle stays under BOTH caps (× budget). For s(t)=smoothstep,
 // a triangle of period P has peak |slope| = 1.5·(2/P)·amp and peak |curv| = 6·(2/P)²·amp. Solve each ≤ cap·budget
@@ -196,35 +196,77 @@ export function deriveWeavePeriod( slopeCap: number, curvCap: number, amp: numbe
     return Math.ceil( Math.max( pSlope, pCurv ) );
 }
 
-// Corridor width curve [lanes]: wide (easy) → narrow (hard) as D:0→1. Integer lanes; never below the fairness
-// floor (2 lanes = MIN_LANE = 8u). This is THE difficulty dial for lateral pressure.
-export const CORRIDOR_W_START = 5; // open lanes at D = 0 (was 8 — too roomy; the start played as a cakewalk). The moving carrier + this width read as a clear channel, not an open field.
-export const CORRIDOR_W_MIN = 2; // open lanes at D = 1 — the MIN_LANE floor; the generator clamps here, never lower.
+// ── ADR-006 — rhythm-paced generation: arrangement envelope + BANKS model ───────────────────────────────
+// Replaces the S6 monotonic D(i) (ease-out + triangle) with a "Believer" SECTION envelope, and the noise-wall
+// field with the BANKS model (deadly = SOLID corridor edges; slow = grace-notes INSIDE the line). Every field
+// is an intuitive, unit-carrying tuning surface ([[intuitive-tuning-surfaces]]); tune live. See
+// `.claude/phases/2026-08-10-rhythm-paced-generation.md`.
 
-// Wall field: a non-corridor cell becomes a wall when coherent value-noise(lane, z) < density(D). Low
-// frequencies → contiguous runs (RLE-merged into wide blocks = the width-variety goal), not scatter.
-export const WALL_DENSITY_START = 0.5; // fill fraction of the wall zone at D = 0 (was 0.35 — walls were too sparse, so the open band drifted far past the corridor; denser walls frame the channel).
-export const WALL_DENSITY_MAX = 0.72; // …at D = 1. Denser ⇒ more CONTIGUOUS ⇒ RLE-merges into FEWER, wider blocks, so the renderer's BLOCK_LIMIT budget is unaffected (verified by the block-count test).
-export const WALL_NOISE_FZ_LANE = 4.5; // value-noise period across LANES → typical wall-run width (wider = fewer, fatter blocks → renderer budget).
-export const WALL_NOISE_FZ_SEG = 2.6; // value-noise period across SEGMENTS → walls persist/flow forward, not per-seg flicker.
+// Corridor width curve [lanes]: the SAFE band around the weave, wide (breather) → tighter (peak) as
+// intensity 0→1. Kept ROOMY (never a claustrophobic slot) — peak difficulty comes from block DENSITY + weave
+// speed + gaps, NOT from pinching a tube. Clamped ≥ MIN_LANE.
+export const CORRIDOR_W_START = 5; // open safe lanes at intensity 0 — narrow enough that tracking the WEAVING line requires real strafing (a wide corridor let you drift straight).
+export const CORRIDOR_W_MIN = 4; // open safe lanes at intensity 1 — roomy enough that a steep weave here isn't an irritating pinch; strafing frequency (weave period) carries the peak difficulty, not a tight slot.
 
-// Difficulty D(i) ∈ [0,1]: smoothstep ease-out to a cap (Race) + a triangle-wave pacing swing (tension/release).
-// Survival's unbounded growth is DEFERRED to S7 (no `mode` field yet — parent decision Q2).
-export const D_RAMP_SEGMENTS = 35; // segments after START_SAFE to reach the ease-out cap (was 90 — near-peak only ~1500u in, so the first third played easy). Faster ramp = the track bites sooner.
-export const D_EASE_CAP = 0.85; // Race tops out here (< 1 leaves headroom for S7 Survival to grow into).
-export const D_PACE_AMP = 0.15; // ± difficulty swing added by the pacing wave.
-export const D_PACE_WAVELENGTH = 24; // segments per tension→release cycle.
+// Deadly blocks OUTSIDE the corridor are DISCRETE — a lane becomes a block where coherent value-noise(lane, z)
+// clears the density; holes between them leave dodge-space (NOT a solid bank), so you SLALOM around sparse
+// obstacles. Density rises with intensity; block width is capped so no single slab fills the view.
+export const WALL_DENSITY_START = 0.14; // P(pillar) per off-corridor lane at intensity 0 — sparse (occasional pillar to dodge).
+export const WALL_DENSITY_MAX = 0.4; // …at intensity 1 — busier, but ISOLATED pillars (never a wall). Crank up once the feel is right.
+export const WALL_NOISE_FZ_LANE = 1.0; // period across LANES = 1 → adjacent lanes UNCORRELATED → discrete 1-lane pillars (NOT clumped walls). THE anti-wall knob.
+export const WALL_NOISE_FZ_SEG = 1.5; // period across SEGMENTS → a pillar persists ~1–2 segments deep (a column you pass), not per-seg flicker.
+export const BLOCK_MAX_LANES = 3; // cap a merged block's width (lanes) so no giant wall-slab fills the view (rarely binds now that lanes are discrete).
+export const CORRIDOR_BUFFER = 1; // clear lanes kept EMPTY on each side of the safe corridor — no pillar may crowd the edge, so the threadable path always has margin (kills "frame-perfect / unreasonable" tight convergences).
 
-// Gaps (jump punctuation) stay orthogonal to the weave: sparse, ≤ one segment, never two in a row, never in
-// start-safe. Probability rises slightly with D. GAP-REACH is already asserted per class in the track test.
-export const GAP_P_START = 0.08; // P(gap) at D = 0 (was 0.05 — jumps too rare to punctuate).
-export const GAP_P_MAX = 0.18; // P(gap) at D = 1.
+// FLICK pillars: on some segments a pillar intrudes from ONE edge of the safe corridor, forcing a quick
+// SIDESTEP — the "flick". A flick is a DISCRETE dodge (NOT curvature-limited like the smooth weave), so it can
+// be sharp and frequent — this is what makes you actively strafe around blocks instead of just tracking a line.
+// It alternates sides and never fires two segments in a row (a clear segment to recover → stays reachable/fair).
+export const FLICK_RATE_START = 0.15; // P(flick) per corridor segment at intensity 0.
+export const FLICK_RATE_MAX = 0.55; // …at intensity 1 (with no-two-in-a-row ≈ every other segment).
+export const FLICK_WIDTH = 1; // lanes the flick pillar occupies inside the corridor — a 1-lane pillar = a crisp small sidestep that leaves plenty of open room (2 was pinch-y).
 
-// ── Drag blocks (amber) — the non-lethal hazard. A fraction of the wall field is PASSABLE-but-slow instead
-// of lethal: fly through and your top speed is clamped while inside (a time cost, not a death). Lethal (red)
-// walls still enforce the corridor + do the S5 stun-killing; drag adds a risk/reward line choice (cut through
-// a drag patch to straighten a tight line, eat the slowdown). Drag is allowed ON the racing line; lethal is not.
-export const DRAG_FRAC = 0.3; // fraction of wall blocks that are drag (amber) rather than lethal (red).
-export const DRAG_NOISE_FZ_LANE = 3.2; // value-noise period across LANES for the lethal/drag classification (coherent runs, not per-cell speckle).
-export const DRAG_NOISE_FZ_SEG = 3.0; // …across SEGMENTS, so a drag patch persists a little forward.
-export const DRAG_SPEED_FRAC = 0.5; // while inside a drag block, vz is clamped to this × the ship's maxCruise (per-class fair). Lower = harsher slow.
+// Slow grace-notes: inside the corridor, an occasional SMALL passable drag block — the eat-or-dodge decision
+// ON the line. Kept sparse so it reads as a note, never a wall. Rises with intensity.
+export const SLOW_GRACE_START = 0.05; // P(slow) at intensity 0.
+export const SLOW_GRACE_MAX = 0.13; // P(slow) at intensity 1.
+export const SLOW_NOISE_FZ_LANE = 3.2; // value-noise period across LANES → slow patches cluster, not per-cell speckle.
+export const SLOW_NOISE_FZ_SEG = 3.0; // …across SEGMENTS → a slow patch persists a little forward.
+
+// The difficulty ARRANGEMENT — a "Believer" (Imagine Dragons) staircase of escalating waves. Each section has
+// a relative `weight` (length, normalized across the table to the post-START_SAFE track) and an intensity ramp
+// `i0→i1` (smoothstepped within the section; i1<i0 = a decrescendo, e.g. the outro). Intensity drives corridor
+// width, weave amplitude/frequency, and slow-grace density. HIDDEN pacing scaffold — the surface stays
+// continuous, never a rhythm game. Tune the whole feel of a run by editing this table.
+export interface Section {
+    name: string;
+    weight: number;
+    i0: number;
+    i1: number;
+}
+export const SECTIONS: Section[] = [
+    { name: 'intro', weight: 5, i0: 0.5, i1: 0.55 }, // the hook — establishes, moderate
+    { name: 'verse1', weight: 7, i0: 0.26, i1: 0.32 }, // pared-back / tense breather
+    { name: 'verse2', weight: 7, i0: 0.3, i1: 0.36 },
+    { name: 'prechor1', weight: 5, i0: 0.4, i1: 0.66 }, // build → drop
+    { name: 'chorus1', weight: 7, i0: 0.8, i1: 0.82 }, // SLAM
+    { name: 'chorus2', weight: 6, i0: 0.82, i1: 0.8 },
+    { name: 'verse3', weight: 6, i0: 0.38, i1: 0.44 }, // pull back, floor risen
+    { name: 'verse4', weight: 5, i0: 0.42, i1: 0.48 },
+    { name: 'prechor2', weight: 5, i0: 0.52, i1: 0.74 },
+    { name: 'chorus3', weight: 6, i0: 0.88, i1: 0.9 }, // bigger
+    { name: 'chorus4', weight: 6, i0: 0.9, i1: 0.88 },
+    { name: 'bridge', weight: 8, i0: 0.18, i1: 0.28 }, // BREAKDOWN valley (Slice 2 makes it jump-heavy)
+    { name: 'finalcho', weight: 10, i0: 0.96, i1: 1.0 }, // biggest
+    { name: 'outro', weight: 7, i0: 0.6, i1: 0.06 }, // ease to a plain finish
+];
+
+// Gaps (jump punctuation): sparse, ≤ one segment, never two in a row, never in start-safe; probability rises
+// with intensity. FULL-WIDTH in Slice 1 (Slice 2 = positional strips + section-char density). GAP-REACH per
+// class is asserted in the track test.
+export const GAP_P_START = 0.06; // P(gap) at intensity 0.
+export const GAP_P_MAX = 0.16; // P(gap) at intensity 1.
+export const FULL_GAP_FRAC = 0.4; // fraction of gaps that are FULL-WIDTH (must jump). The rest are PARTIAL — a floor strip at the weave line + a hole to the side (strafe across, or jump) → gaps of different widths/positions.
+
+// While inside a drag (slow) block, vz is clamped to this × the ship's maxCruise (per-class fair). Lower = harsher.
+export const DRAG_SPEED_FRAC = 0.5;

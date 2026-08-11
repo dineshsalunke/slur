@@ -13,11 +13,9 @@ party game about *messing with your friends*. Player-controlled flight down a **
 race the next round** (the field locks at GO; late joiners spectate). Asymmetric ship classes
 (Fighter/Freighter/Interceptor…).
 
-> ⚠ SUPERSEDED 2026-08-10 (ADR-004) — the old "two modes: Race + **Survival (endless, chase-wall)** … Survival
-> keeps live drop-in — spawn beside the pack" is retired. **Endless Survival is dropped** in favour of longer
-> finite tracks; join policy is Race-always. See `docs/DECISIONS.md` and the "Superseded" note at the bottom.
-
-Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we build**.
+Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we build**. Retired design intent
+lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions + rationale in
+`docs/DECISIONS.md`.
 
 ---
 
@@ -122,6 +120,17 @@ litmus: "would two clients disagreeing on this field desync the game?" (yes → 
     and as low in the tree as possible — not for tidiness. Full rule + rationale in `conventions/r3f.md`
     ("Componentize by subscription boundary"); backing incident: `colyseus-state-not-reactive` +
     `think-rerender-subscription-impact` memories.
+11. **Space is CONTINUOUS; `CELL = 4u` is an AUTHORING SNAP GRID ONLY — read GDD §0 before ANY track/geometry/
+    ship-size/collision work** (per explicit user directive, 2026-08-11 — this is core gameplay and was
+    repeatedly misunderstood). `CELL` is the design-time snap increment for **all** authoring (procgen +
+    hand-authored) — it is **NOT** a runtime unit, **NOT** a movement snap, **NOT** a block-size rule, and the
+    sim never reads it (collision is continuous float-AABB in `step.ts`). **Blocks may be any size** (`5.5×5.5×8u`,
+    …) — never assume cell multiples. The **one** load-bearing spatial invariant is threadable clearance:
+    at every z-slice the widest lethal-free floor run **≥ `MIN_CLEAR = MAX_SHIP_WIDTH (1 cell = 4u) +
+    CLEARANCE_MARGIN (3u) = 7u`**. Ceiling is the **ship-size contract** (widest class ≤ 1 cell, GDD §5.5), NOT
+    roster-max (so a seed's geometry is stable across roster edits); a module-load assertion `2·max(halfW) ≤
+    MAX_SHIP_WIDTH` enforces conformance. Never hand-type a width against the grid — that caused the stale
+    "Freighter 3.6u" bug. Full contract: **GDD §0**. Generator internals: ADR-007 (`docs/DECISIONS.md`).
 
 ## Dev workflow
 
@@ -141,29 +150,20 @@ Scaffolded and verified 2026-08-06 (**runnable blank skeletons, no game logic ye
 - **0.17 client SDK is `@colyseus/sdk`**, not legacy `colyseus.js` (frozen at 0.16) — deferred until the client talks to the server.
 - **Deferred deps (implement phase):** R3F/three/drei/postprocessing/koota/`@colyseus/sdk` are NOT installed yet; client renders a blank page.
 - **`@slur/shared` now holds the S1 flight sim** — tuning/constants, input, `SimShip`, phase-split `stepShip`, fixed-step. Jump physics **derived** from `DEFAULT_JUMP` (GDC "Building a Better Jump"). Schema/networked state still land in S2.
-- **S1 flight prototype is playable:** `pnpm dev` → http://localhost:5173/**solo** — W/S throttle-brake, A/D strafe, Space jump (tap/hold/double), Shift boost. Tune feel via `DEFAULT_JUMP` + `DEFAULT_TUNING` in `packages/shared/src/constants.ts` (every field commented).
+- **`/solo` was REMOVED** (commit `52f5a04`) and stays removed — the old S1 note "`pnpm dev` → /solo" is stale. **Playtest the track in a hosted room:** the S4 `/game/:roomId` path materializes + renders + `simulate()`s the real track, and a host can **start solo** (no min-player gate on `startRace()`) → GO → race. Controls: W/S throttle-brake, A/D strafe, Space jump (tap/hold/double), Shift boost. Tune flight via `DEFAULT_JUMP` + `DEFAULT_TUNING` in `packages/shared/src/constants.ts`; tune the track via the ADR-006 arrangement-envelope + slalom/flick constants.
 - **pnpm gates:** `allowBuilds: [esbuild, msgpackr-extract]` in `pnpm-workspace.yaml`; a global `minimumReleaseAge` policy auto-records version exclusions. `packageManager` pinned to `pnpm@11.12.0`.
 
 ## Working method
 
 - **Design docs are living.** Each carries `OPEN QUESTIONS`; resolve with the team, fold the decision in, delete the question. Don't silently diverge from the docs — update them.
-- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; reviewed code is documented in the phase doc as reference, then built in Implement. Phase notes in `.claude/phases/`. **Status: S1 ✓ (`/solo`), S2 ✓ (networked flight), S3 ✓ — obstacle redesign + AABB collision + 5-class ship system (commit `12049bd`); 18 shared tests GREEN; feel-gate playtested (Freighter/imperial capped). **S4 ✓ — complete Race: live room list · host GO → countdown → race → leader+grace results → Play Again · lobby ship/colour pick + hero-orbit preview · spectator (cycle-any-racer) · leave guard · host authority+migration (commits `fc0418f`/`d155481`/`e5eb5f9`; human gate passed 2026-08-09). Round-based, per-mode join policy (Race spectate-next / Survival drop-in). **S5 ✓ — Combat & power-ups: BC1 server-sim projectiles → **Bolt** → **stun** (the track kills), track-placed pickups (`E` = discrete `USE_POWERUP`), server-authoritative hits; client bolt/pickup instancing + `heldPower` chip + hit-spark + on-ship stun-flicker + threat HUD; room→world bridge extracted (commits `9538e0e`→`fd6bdb3`; human gate 2026-08-10). Functionality locked, visuals polish deferred; Mine/Shield/Boost/auto-lock/rearview-mirror = fast-follows. NEXT: S6 (identity: `armour`/combat stats + lobby ship-pick UI + audio + art/juice).** S4 arc+as-built: `.claude/phases/2026-08-09-s4-session-flow.md` (+ `…-s4-batch4-spec.md`); procgen redesign (post-S4, validated headlessly): `…-procgen-flow-progression.md`. S3 arc (pt.1–5) in `.claude/phases/2026-08-09-collision-aabb-jump-vfx.md`; original S3 in `.claude/phases/2026-08-08-s3-track-hazards-collision.md`. **Design captured this session (durable in GDD):** §5.5 = 5-class matrix (Class = mechanics group, Ship = cosmetic variant; per-ship `FlightTuning`+footprint resolved by networked `shipId`); §5.2/§5.7 = **straight-ribbon + no-moving-geometry** constraints, **hand-authored levels + two-floor fairness validator** (FIT + GAP-REACH; weave uncapped, self-balances via speed), and the **mechanic master-menu** (BC1–BC8 base capabilities). Balance is **playstyle-level, not geometry-equal**. Roadmap S1–S7 in `.claude/backlog.md`. **Track-provider ADRs (2026-08-10):** ADR-001 (`seed` → `TrackDescriptor` + `resolveTrack` provider) and ADR-002 (first-class `Track.anchors`; visual seam frozen) **SHIPPED** (#46/#47/#48); ADR-003 grammar gated on beat-vocabulary, ADR-005 `validateTrack` deferred last. Full decision log + build sequence in **`docs/DECISIONS.md`**.
+- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; reviewed code is documented in the phase doc as reference, then built in Implement. Phase notes in `.claude/phases/`. **Status: S1 ✓ (solo flight sim; `/solo` since removed), S2 ✓ (networked flight), S3 ✓ — obstacle redesign + AABB collision + 5-class ship system (commit `12049bd`); 18 shared tests GREEN; feel-gate playtested (Freighter/imperial capped). **S4 ✓ — complete Race: live room list · host GO → countdown → race → leader+grace results → Play Again · lobby ship/colour pick + hero-orbit preview · spectator (cycle-any-racer) · leave guard · host authority+migration (commits `fc0418f`/`d155481`/`e5eb5f9`; human gate passed 2026-08-09). Round-based, Race spectate-next join policy (Survival dropped — ADR-004). **S5 ✓ — Combat & power-ups: BC1 server-sim projectiles → **Bolt** → **stun** (the track kills), track-placed pickups (`E` = discrete `USE_POWERUP`), server-authoritative hits; client bolt/pickup instancing + `heldPower` chip + hit-spark + on-ship stun-flicker + threat HUD; room→world bridge extracted (commits `9538e0e`→`fd6bdb3`; human gate 2026-08-10). Functionality locked, visuals polish deferred; Mine/Shield/Boost/auto-lock/rearview-mirror = fast-follows. NEXT: S6 (identity: `armour`/combat stats + lobby ship-pick UI + audio + art/juice).** S4 arc+as-built: `.claude/phases/2026-08-09-s4-session-flow.md` (+ `…-s4-batch4-spec.md`); procgen redesign (post-S4, validated headlessly): `…-procgen-flow-progression.md`. S3 arc (pt.1–5) in `.claude/phases/2026-08-09-collision-aabb-jump-vfx.md`; original S3 in `.claude/phases/2026-08-08-s3-track-hazards-collision.md`. **Design captured this session (durable in GDD):** §5.5 = 5-class matrix (Class = mechanics group, Ship = cosmetic variant; per-ship `FlightTuning`+footprint resolved by networked `shipId`); §5.2/§5.7 = **straight-ribbon + no-moving-geometry** constraints, **authored/procgen levels + two-floor fairness validator** (FIT + GAP-REACH; weave uncapped, self-balances via speed), and the **mechanic master-menu** (BC1–BC8 base capabilities). Balance is **playstyle-level, not geometry-equal**. Roadmap S1–S7 in `.claude/backlog.md`. **Track-provider ADRs (2026-08-10):** ADR-001 (`seed` → `TrackDescriptor` + `resolveTrack` provider) and ADR-002 (first-class `Track.anchors`; visual seam frozen) **SHIPPED** (#46/#47/#48); ADR-005 `validateTrack` deferred last. **ADR-006 (2026-08-10/11, playtest-tuned):** rhythm-paced generator — Believer arrangement envelope (`intensityAt`) + **discrete-slalom/flick** micro (short 4×8×8u cube pillars OUTSIDE a moving corridor via uncorrelated noise + 1-lane edge buffer; a 1-lane **flick** pillar juts in to force a sharp sidestep; slow grace-notes on the line) + **varied gaps** (full-width + partial floor-strip), over 3 fixed primitives (gaps/deadly/slow); continuous NOT a rhythm game; concretizes+supersedes ADR-003. Ships tuned for crisp flicks (strafeAccel/damp↑); chase camera raised above walls; `TRACK_SEGMENTS=400` (~2.5–2.8 min). Generator-only, feel-gated in a hosted room (`/solo` stays deleted); 71/71 tests green. **Committed `8ddc9d8`.** ("banks" was tried first + dropped as a tube.) Deferred: Slice 2 = positional-gap L/C/R *forcing*. See memory `rhythm-paced-generation` + `.claude/phases/2026-08-10-rhythm-paced-generation.md`. Full decision log + build sequence in **`docs/DECISIONS.md`**.
 - **Roadmap = GitHub issues.** Actionable work lives as GitHub issues (`github.com/dineshsalunke/slur/issues`), grouped by milestone (**S6** current · **S7** next · **Backlog** deferred). `backlog.md` and the phase notes stay the design/narrative log; the issues are the task tracker. File an issue for every feature or fix before you build it (see `CONTRIBUTING.md`).
 - **Batch related file changes** into one review turn.
 
 ---
 
-## Superseded (history — do not delete; see `docs/DECISIONS.md`)
+## History
 
-Baseline reset **2026-08-10**. Deprecated design intent is kept here so the *why* trail survives.
-
-- **Endless Survival mode (dropped — ADR-004).** The game had two modes: **Race** (finite) and **Survival**
-  (endless, chasing derezz-wall, distance/time score, live drop-in "spawn beside the pack"). Endless is
-  **dropped** in favour of **longer finite tracks**; there is one finite Race form (short→long courses). The
-  per-mode join policy collapses to **Race-always** (late join → spectate the round). The
-  `shouldSpectateOnJoin` seam and onJoin spawn-stagger that were "kept for Survival drop-in" are now
-  dead-code-in-waiting. The Status line above still reads "per-mode join policy (Race spectate-next / Survival
-  drop-in)" as *history* of what S4 built — the Survival half will not be built.
-- **"Deterministic track from a seed" (generalised — ADR-000/001).** The seed is no longer a first-class
-  room/track concept; it is one field inside an opaque `TrackDescriptor` owned by the procgen provider. The
-  room syncs the descriptor; each end materializes the `Track` locally. See the load-bearing contract above.
+Retired design intent is **not** kept inline here — it lives in **`docs/archive/superseded-design.md`**,
+forward-framed as **PRECEDED** (what it was → what it became → the ADR that moved us). Decisions + rationale:
+**`docs/DECISIONS.md`** (the ADR log). Baseline reset was **2026-08-10** (ADR-004 dropped endless Survival).

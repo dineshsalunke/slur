@@ -80,6 +80,17 @@ React Router (SPA)
   are resolved separately client-side (never synced).
   > ⚠ SUPERSEDED 2026-08-10 (ADR-000/001) — was "server sends a **seed** … both ends generate geometry from it."
   > The seed is now one field inside the descriptor, owned by the procgen provider. See `docs/DECISIONS.md`.
+- **(ADR-006 · 2026-08-10 — IN PROGRESS) Track generator v3 — rhythm-paced.** Core = **3 primitives** (gaps +
+  deadly + slow). **Macro:** a difficulty **arrangement envelope** (a *Believer*-style staircase of escalating
+  waves — tense verses → building pre-choruses → escalating chorus slams → bridge breakdown → final chorus →
+  outro; `difficultyAt` → `intensityAt`). **Micro (AS-BUILT — "banks" tried first, dropped as a tube):**
+  **discrete slalom + flick** — short cube pillars (4×8×**8u**, `BLOCK_DEPTH`, not full-depth walls) OUTSIDE a
+  moving corridor via UNCORRELATED noise (sparse, +1-lane buffer); a 1-lane **flick** pillar juts in to force a
+  sidestep; slow grace-notes on the line; **varied gaps** (full-width + partial floor-strip). Keeps the S6
+  weave line + derived `SLOPE_CAP`/`CURV_CAP`/`MIN_LANE` **fairness backbone** as the difficulty ceiling.
+  **Materialize-once** (finite tracks) replaces O(1). **Renderer + collision unchanged** (span-based floors +
+  variable-width blocks). Feel-gated in a **hosted room** (`/solo` stays deleted — the S4 room path already renders + `simulate()`s the track; host starts solo). Narrative:
+  `.claude/phases/2026-08-10-rhythm-paced-generation.md`. *Supersedes the S6 v2 generator below.*
 - **(S6 — AS-BUILT 2026-08-10: `sim/noise.ts` + rewritten `sim/track.ts`) Track generator v2 — coherent weave + width variety** (plan in
   `.claude/phases/2026-08-10-procgen-weave-width-DRAFT.md`). Pickups now sit on the racing-line corridor
   (`corridorCenterX`). Deviation: walls are full-segment-depth (width variety only) — a `BLOCK_LIMIT=128` trade. Replaces the IID per-segment scatter with a
