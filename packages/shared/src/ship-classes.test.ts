@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { STUN_SECONDS } from './combat/constants.js';
 import { armourForShip, DEFAULT_SHIP, SHIP_CLASSES, SHIP_ORDER, stunDurationForShip } from './ship-classes.js';
+import { DEFAULT_SIM_CONFIG } from './sim-config.js';
 
 test( 'every class declares armour inside the 0..1 band', () => {
     for ( const c of Object.values( SHIP_CLASSES ) ) {
@@ -74,6 +75,19 @@ test( 'the best weaver takes a strictly longer stun than the worst', () => {
         'the Interceptor variant must stay stunned longer than the Freighter variant',
     );
     assert.equal( stunDurationForShip( 'executioner' ), STUN_SECONDS, 'a zero-armour ship takes the full stun' );
+} );
+
+// #71 wiring: stunDurationForShip reads the base stun from the passed SimConfig, not a module global.
+// DIFFERENTIAL on a zero-armour ship (executioner) so the armour factor is 1 and only the base moves —
+// doubling cfg.stunSeconds must double the duration. Proves the param is wired without pinning a literal.
+test( 'stunDurationForShip reads stunSeconds from SimConfig — doubling it doubles the stun', () => {
+    const base = stunDurationForShip( 'executioner', DEFAULT_SIM_CONFIG );
+    const doubled = stunDurationForShip( 'executioner', {
+        ...DEFAULT_SIM_CONFIG,
+        stunSeconds: DEFAULT_SIM_CONFIG.stunSeconds * 2,
+    } );
+    assert.ok( base > 0, 'baseline stun is zero — cannot detect scaling' );
+    assert.ok( Math.abs( doubled - 2 * base ) < 1e-9, 'doubled stunSeconds did not double the stun → param not wired' );
 } );
 
 // Same fallback discipline as tuningForShip: a stale or empty wire value can never crash the sim.

@@ -2,7 +2,8 @@
 // integrate → collide. Each phase is a pure mutator so S3 can swap resolveCollisions for real
 // track collision. Framework-free — operates on the plain SimShip.
 
-import { DRAG_SPEED_FRAC, type FlightTuning } from '../constants.js';
+import type { FlightTuning } from '../constants.js';
+import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import type { Segment, Track } from './track.js';
 import type { SimShip } from './types.js';
@@ -200,7 +201,13 @@ function overlapsBlock( segs: Segment[], s: SimShip, prevY: number, t: FlightTun
 // S3 track collision, AABB (footprint = the ship's model box, halfW × halfL). Floor support (land + reset
 // jump), gap → fall → death, lethal cube overlap → death, edge walls stop, finish gate latches `finished`.
 // Replaces the S1 flat floor. Preserves the grounded/jumpsUsed reset contract (jump breaks otherwise).
-export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: FlightTuning ): void {
+export function resolveCollisions(
+    s: SimShip,
+    prevY: number,
+    track: Track,
+    t: FlightTuning,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+): void {
     const segs = footprintSegs( track, s.z, t.halfL );
 
     const floorY = landingFloor( segs, s, prevY, t );
@@ -238,7 +245,7 @@ export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: F
     // not a death. Re-applied every tick you overlap; the moment you're clear, normal accel resumes. Fraction
     // of the ship's own maxCruise so it's per-class fair (a fast ship loses proportionally the same speed).
     if ( overlapsBlock( segs, s, prevY, t, false ) ) {
-        const cap = DRAG_SPEED_FRAC * t.maxCruise;
+        const cap = cfg.dragSpeedFrac * t.maxCruise;
         if ( s.vz > cap ) s.vz = cap;
     }
 
@@ -250,7 +257,16 @@ export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: F
 // The shared authoritative step: one fixed-dt advance of a ship from its input. Imported by both
 // the client (prediction) and the server (authority) — identical math, same dt. `track` is optional:
 // with it, real S3 collision runs (networked /run); without it, the S1 flat floor (/solo, unchanged).
-export function simulate( s: SimShip, input: PlayerInput, dt: number, t: FlightTuning, track?: Track ): void {
+// `cfg` is the combat/world ruleset (SimConfig), resolved from the param EVERY step (never cached) so a
+// room can pass its own — defaults to DEFAULT_SIM_CONFIG so existing callers are unchanged (#71).
+export function simulate(
+    s: SimShip,
+    input: PlayerInput,
+    dt: number,
+    t: FlightTuning,
+    track?: Track,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+): void {
     // Dead: freeze the sim and count down to respawn (predicted locally, reconciled by the server —
     // deterministic track + inputs ⇒ both ends kill/respawn on the same tick, so no rubber-band).
     if ( s.dead ) {
@@ -274,7 +290,7 @@ export function simulate( s: SimShip, input: PlayerInput, dt: number, t: FlightT
     applyGravity( s, t, dt );
     const prevY = s.y; // pre-integrate y → swept landing (see landingFloor); catches fast-fall overshoot
     integrate( s, dt );
-    if ( track ) resolveCollisions( s, prevY, track, t );
+    if ( track ) resolveCollisions( s, prevY, track, t, cfg );
     else resolveFlatFloor( s, t );
 
     if ( s.invulnTimer > 0 ) s.invulnTimer -= dt;

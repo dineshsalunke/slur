@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { HALF_WIDTH, START_SAFE, type Track } from '../sim/track.js';
 import { procgenDescriptor, resolveTrack } from '../sim/track-provider.js';
+import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
 import { BOLT_HALF, BOLT_SPEED } from './constants.js';
 import { grabPickup, PICKUP_GRAB_RADIUS, type Pickup, pickupLayout } from './pickups.js';
 import { boltHits, type HitShip, type ProjectileState, stepProjectiles } from './projectiles.js';
@@ -28,6 +29,21 @@ test( 'stepProjectiles advances z by BOLT_SPEED·dt and counts ttl down to expir
     assert.ok( bolts[ 0 ].ttl > 0, 'ttl expired too early' );
     stepProjectiles( bolts, DT );
     assert.ok( bolts[ 0 ].ttl <= 0, 'ttl did not reach expiry (caller prunes at <= 0)' );
+} );
+
+// #71 wiring: the bolt speed is read from the passed SimConfig, not a module global. DIFFERENTIAL — compare
+// two configs (default vs doubled boltSpeed) rather than pinning a literal, so it proves the PARAM is wired
+// without re-deriving the expected value from the function under test (a retune of the default can't break it).
+test( 'stepProjectiles reads boltSpeed from SimConfig — doubling it doubles per-tick travel', () => {
+    const base: ProjectileState[] = [ { x: 0, y: 0, z: 0, ownerId: 'a', ttl: 1 } ];
+    const fast: ProjectileState[] = [ { x: 0, y: 0, z: 0, ownerId: 'a', ttl: 1 } ];
+    stepProjectiles( base, DT, DEFAULT_SIM_CONFIG );
+    stepProjectiles( fast, DT, { ...DEFAULT_SIM_CONFIG, boltSpeed: DEFAULT_SIM_CONFIG.boltSpeed * 2 } );
+    assert.ok( base[ 0 ].z > 0, 'baseline bolt did not advance' );
+    assert.ok(
+        Math.abs( fast[ 0 ].z - 2 * base[ 0 ].z ) < 1e-9,
+        'doubled boltSpeed did not double travel → param not wired',
+    );
 } );
 
 test( 'boltHits: a bolt inside the footprint band hits a non-owner victim', () => {

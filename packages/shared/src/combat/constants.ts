@@ -1,7 +1,11 @@
 // S5 combat tuning + wire messages — framework-free (NO @colyseus/schema here; the Projectile SCHEMA
-// class lives in schema.ts, the ONLY schema-importing file). Both ends import these so bolt flight, stun
-// duration, and pickup respawn are IDENTICAL on client prediction (cosmetic) and server authority.
-// Every constant is a derived, unit-carrying tuning surface (house rule: tune here, not raw physics).
+// class lives in schema.ts, the ONLY schema-importing file). Every constant is a derived, unit-carrying
+// tuning surface (house rule: tune here, not raw physics).
+//
+// NOTE (#71): the SIM no longer reads BOLT_*/STUN_SECONDS/PICKUP_RESPAWN_S directly — they SEED
+// DEFAULT_SIM_CONFIG (sim-config.ts), and the sim reads the passed `SimConfig`. Editing a value here still
+// changes the default game (DEFAULT_SIM_CONFIG sources it), but sim code must take it from `cfg`, never
+// re-import the raw const — that's what lets a room run its own ruleset (#70).
 
 // Discrete reliable client→server message: "fire my held power-up". Routed via a keydown that ignores
 // e.repeat → room.send (the keys-1–5 hot-swap pattern), NOT an input axis — an axis would machine-gun on

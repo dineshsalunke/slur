@@ -1,12 +1,11 @@
 import { type Client, Room } from '@colyseus/core';
 import {
     applyDescriptor,
-    BOLT_SPEED,
-    BOLT_TTL,
     boltHits,
     COLOR_COUNT,
     COUNTDOWN_SECONDS,
     createFixedStep,
+    DEFAULT_SIM_CONFIG,
     FIXED_DT,
     grabPickup,
     HeldPower,
@@ -16,7 +15,6 @@ import {
     isColorId,
     isShipId,
     PHASE,
-    PICKUP_RESPAWN_S,
     type Pickup,
     type PlayerInput,
     PlayerState,
@@ -32,6 +30,7 @@ import {
     resolveTrack,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
+    type SimConfig,
     START_MESSAGE,
     START_STAGGER,
     shouldSpectateOnJoin,
@@ -83,6 +82,12 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     private pickupRespawn = new Map< string, number >();
     // Monotonic id for spawned projectiles — the MapSchema key (grows per fire; never reused within a room).
     private nextProjectileId = 0;
+
+    // The combat/world RULESET this room simulates under (#71). ONE object, passed into every simulate()/
+    // combat-step call this tick — the sim depends on the SimConfig abstraction, not module globals. Fixed to
+    // DEFAULT_SIM_CONFIG today (zero behaviour change); the #70 per-room-tuning seam swaps THIS from room
+    // options, and a future mid-round tuning reassigns it between ticks — with no change to the sim or below.
+    private config: SimConfig = DEFAULT_SIM_CONFIG;
 
     onCreate(): void {
         this.state = new RunState(); // phase defaults to lobby (0)
@@ -139,7 +144,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             bolt.y = p.y;
             bolt.z = p.z + BOLT_SPAWN_AHEAD; // spawn ahead of the nose so it never self-overlaps this tick
             bolt.ownerId = client.sessionId;
-            bolt.ttl = BOLT_TTL;
+            bolt.ttl = this.config.boltTtl;
             this.state.projectiles.set( String( this.nextProjectileId++ ), bolt );
             p.heldPower = HeldPower.none; // single held slot — firing empties it
         } );
@@ -185,7 +190,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             if ( player.connected ) {
                 const input = this.queues.get( sessionId )?.shift();
                 if ( input ) {
-                    simulate( player, input, dt, tuningForShip( player.shipId ), this.track );
+                    simulate( player, input, dt, tuningForShip( player.shipId ), this.track, this.config );
                     player.lastProcessedInput = input.seq;
                 }
             }
@@ -217,7 +222,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     // 'hit' FX message → prune spent bolts → grant/respawn pickups. Every state write is a tracked delta
     // (MapSchema .set/.delete + schema fields); the one-shot spark is a broadcast, NOT state (colyseus.md).
     private stepWorld( dt: number ): void {
-        stepProjectiles( this.state.projectiles.values(), dt );
+        stepProjectiles( this.state.projectiles.values(), dt, this.config );
 
         // Hit targets = the live racers (skip spectators), footprint resolved from each ship's class tuning.
         const ships: HitShip[] = [];
@@ -239,12 +244,12 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         // Resolve every bolt, collecting spent ids (hit OR expired) — delete AFTER the loop, never mid-iterate.
         const spent: string[] = [];
         this.state.projectiles.forEach( ( bolt, id ) => {
-            // Swept: the bolt just advanced BOLT_SPEED·dt this tick — test that whole segment so a near-instant
+            // Swept: the bolt just advanced cfg.boltSpeed·dt this tick — test that whole segment so a near-instant
             // bolt can't tunnel a short hull between ticks (see boltHits + #55).
-            for ( const victimId of boltHits( bolt, ships, BOLT_SPEED * dt ) ) {
+            for ( const victimId of boltHits( bolt, ships, this.config.boltSpeed * dt, this.config ) ) {
                 const v = this.state.players.get( victimId );
                 // Per-class stun: armour scales the duration (@slur/shared registry, server-authoritative).
-                if ( v ) v.stunTimer = stunDurationForShip( v.shipId ); // the client reconciles, never computes it
+                if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config ); // the client reconciles, never computes it
                 this.broadcast( 'hit', { x: bolt.x, y: bolt.y, z: bolt.z, victimId } ); // cosmetic spark
                 spent.push( id );
             }
@@ -256,7 +261,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     }
 
     // Grab-on-overlap grants a single held bolt to an empty-handed racer; a taken slot hides (pickupTaken)
-    // and respawns after PICKUP_RESPAWN_S via a server-plain timer Map.
+    // and respawns after cfg.pickupRespawnS via a server-plain timer Map.
     private stepPickups( dt: number ): void {
         this.state.players.forEach( ( p ) => {
             if ( p.spectating || p.dead || p.heldPower !== HeldPower.none ) return;
@@ -265,7 +270,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
                 if ( grabPickup( p, pk ) ) {
                     p.heldPower = HeldPower.bolt;
                     this.state.pickupTaken.set( pk.id, true );
-                    this.pickupRespawn.set( pk.id, PICKUP_RESPAWN_S );
+                    this.pickupRespawn.set( pk.id, this.config.pickupRespawnS );
                     break; // single slot — at most one grab per racer per tick
                 }
             }

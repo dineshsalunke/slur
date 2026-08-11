@@ -12,8 +12,8 @@
 // The wire carries the shipId (a string, set once at join / on hot-swap); the sim resolves shipId → class →
 // tuning. Model/scale/visuals live CLIENT-side (apps/client .../ship-visuals.ts), keyed by the SAME id.
 
-import { STUN_SECONDS } from './combat/constants.js';
 import { DEFAULT_TUNING, deriveJump, type FlightTuning } from './constants.js';
+import { DEFAULT_SIM_CONFIG, type SimConfig } from './sim-config.js';
 
 export type ShipClassId = 'interceptor' | 'fighter' | 'comet' | 'phantom' | 'freighter';
 export type ShipId = 'executioner' | 'challenger' | 'bob' | 'dispatcher' | 'imperial';
@@ -26,7 +26,7 @@ export interface ShipClass {
     // and folding a combat stat in would drag it through DEFAULT_TUNING and every deriveJump spread.
     // Sidegrade, never a free stat — armour is ranked as the exact INVERSE of strafe authority, because a
     // bolt is dodged by weaving. Best weaver ⇒ least armour. A test pins that ordering.
-    armour: number; // 0..1 stun resistance — effectiveStun = STUN_SECONDS × (1 − armour).
+    armour: number; // 0..1 stun resistance — effectiveStun = cfg.stunSeconds × (1 − armour).
 }
 
 export interface Ship {
@@ -161,8 +161,8 @@ export function armourForShip( id: string ): number {
 
 // How long a bolt hit freezes THIS ship. The server is the only writer of stunTimer (run-room.ts); the
 // client receives the value and decays it in simulate(), so it never computes a duration of its own.
-export function stunDurationForShip( id: string ): number {
-    return STUN_SECONDS * ( 1 - armourForShip( id ) );
+export function stunDurationForShip( id: string, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
+    return cfg.stunSeconds * ( 1 - armourForShip( id ) );
 }
 
 // Every class tuning — for track-generation fairness (hazards are floored to the LEAST-capable class so the

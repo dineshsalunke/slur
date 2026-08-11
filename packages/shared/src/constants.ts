@@ -272,4 +272,5 @@ export const GAP_P_MAX = 0.16; // P(gap) at intensity 1.
 export const FULL_GAP_FRAC = 0.4; // fraction of gaps that are FULL-WIDTH (must jump). The rest are PARTIAL — a floor strip at the weave line + a hole to the side (strafe across, or jump) → gaps of different widths/positions.
 
 // While inside a drag (slow) block, vz is clamped to this × the ship's maxCruise (per-class fair). Lower = harsher.
+// Seeds DEFAULT_SIM_CONFIG.dragSpeedFrac (#71); the sim reads it from the passed SimConfig, not this const.
 export const DRAG_SPEED_FRAC = 0.5;
