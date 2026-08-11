@@ -16,7 +16,8 @@ export default defineConfig( ( { mode } ) => {
         // window.location.hostname (net/client.ts), so no endpoint config is needed here.
         server: {
             host: true,
-            port: Number( env.CLIENT_PORT ?? 5173 ),
+            // `||` (not `??`): an empty `CLIENT_PORT=` is `""`, which `??` would keep → `Number("")` = 0 = a random OS port.
+            port: Number( env.CLIENT_PORT || 5173 ),
         },
         resolve: {
             tsconfigPaths: true,
