@@ -4,6 +4,9 @@ import { Fragment, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { RoomList } from '../lobby/room-list';
 import { hostRoom, joinLobby, joinRoom } from '../net/matchmaking';
+import { Button } from '../ui/button';
+import { Panel } from '../ui/panel';
+import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { LandingScene } from './home/landing-scene';
 
@@ -43,34 +46,47 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
         <Fragment>
             { /* Ambient Grid-Void backdrop: a position:fixed Canvas the front-of-house UI overlays. */ }
             <LandingScene />
-            <div className="scrim" />
+            <Scrim />
 
-            <main className="stage">
-                <header className="topbar">
-                    <div className="brand">
-                        <h1 className="wordmark">SLUR</h1>
-                        <span className="tagline">Multiplayer Ship-Racer</span>
+            <main className="relative z-[2] grid min-h-screen grid-rows-[auto_1fr]">
+                <header className="flex items-center justify-between gap-4 px-7 py-[22px]">
+                    <div className="flex items-baseline gap-3">
+                        <h1 className="ml-[0.42em] text-[clamp(26px,3.4vw,40px)] font-extrabold tracking-[0.42em] text-[#eaf6ff] [text-shadow:0_0_18px_rgba(0,229,255,0.55),0_0_42px_rgba(0,229,255,0.28)]">
+                            SLUR
+                        </h1>
+                        <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-dim">
+                            Multiplayer Ship-Racer
+                        </span>
                     </div>
                 </header>
 
-                <section className="landing-body">
-                    <div className="lead">
-                        <h2>
-                            Race your friends. <em>Wreck</em> their run.
+                <section className="grid h-full content-end justify-start px-7 pb-11">
+                    <div className="mb-[26px] max-w-[540px]">
+                        <h2 className="mb-3 text-balance text-[clamp(28px,4vw,46px)] font-bold leading-[1.04] text-[#f3f8ff]">
+                            Race your friends.{ ' ' }
+                            <em className="not-italic text-marigold [text-shadow:0_0_22px_rgba(255,159,28,0.5)]">
+                                Wreck
+                            </em>{ ' ' }
+                            their run.
                         </h2>
-                        <p>
+                        <p className="m-0 max-w-[46ch] text-[15px] leading-[1.5] text-dim">
                             Host a room, share the code with your crew, and drop into the next round. Bolts, boosts, and
                             a chase-wall that doesn&apos;t care whose fault it was.
                         </p>
                     </div>
 
-                    <div className="panel console">
-                        <div className="field-row">
-                            <div className="field">
-                                <label htmlFor="callsign">Call sign</label>
+                    <Panel className="w-[min(560px,92vw)]">
+                        <div className="flex items-stretch gap-2.5">
+                            <div className="flex flex-1 flex-col gap-1.5">
+                                <label
+                                    htmlFor="callsign"
+                                    className="font-mono text-[10px] uppercase tracking-[0.24em] text-dim"
+                                >
+                                    Call sign
+                                </label>
                                 <input
                                     id="callsign"
-                                    className="callsign"
+                                    className="rounded-[2px] border border-line-2 bg-black/35 px-3.5 py-3 font-mono text-[15px] text-fg outline-none transition-[border-color,box-shadow] duration-[180ms] focus:border-cyan focus:shadow-[0_0_0_3px_rgba(0,229,255,0.16)]"
                                     type="text"
                                     value={ name }
                                     maxLength={ 16 }
@@ -78,20 +94,19 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                                     onChange={ ( e ) => setName( e.target.value ) }
                                 />
                             </div>
-                            <div className="field field-action">
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
+                            <div className="flex flex-none flex-col justify-end">
+                                <Button
+                                    variant="primary"
                                     disabled={ busy }
                                     onClick={ () => enter( ( n ) => hostRoom( n ) ) }
                                 >
                                     Host a run ▸
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
                         <RoomList busy={ busy } onJoin={ ( roomId ) => enter( ( n ) => joinRoom( roomId, n ) ) } />
-                    </div>
+                    </Panel>
                 </section>
             </main>
         </Fragment>

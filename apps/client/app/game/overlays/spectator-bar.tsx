@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { HudPanel } from '../../ui/hud-panel';
 import type { RunView } from '../net/use-run-view';
 import { cycleSpectatorTarget, spectatorCam } from '../spectator';
 
@@ -39,15 +40,28 @@ export function SpectatorBar( { view }: { view: RunView } ) {
     }, [] );
 
     return (
-        <div className="slur-panel slur-spectate">
-            <span className="slur-label">Spectating — you race next round</span>
-            <button type="button" className="slur-arrow" onClick={ () => cycleSpectatorTarget( racerIds, -1 ) }>
+        <HudPanel
+            accent="magenta"
+            className="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 px-3.5 py-3"
+        >
+            <span className="text-[11px] uppercase tracking-[2px] opacity-[0.75]">
+                Spectating — you race next round
+            </span>
+            <button
+                type="button"
+                className="cursor-pointer rounded-[4px] border border-magenta bg-magenta/12 px-2.5 py-0.5 text-[16px] text-hud"
+                onClick={ () => cycleSpectatorTarget( racerIds, -1 ) }
+            >
                 ◀
             </button>
-            <span className="slur-target">{ target?.name || '—' }</span>
-            <button type="button" className="slur-arrow" onClick={ () => cycleSpectatorTarget( racerIds, 1 ) }>
+            <span className="min-w-[90px] text-center font-semibold text-magenta">{ target?.name || '—' }</span>
+            <button
+                type="button"
+                className="cursor-pointer rounded-[4px] border border-magenta bg-magenta/12 px-2.5 py-0.5 text-[16px] text-hud"
+                onClick={ () => cycleSpectatorTarget( racerIds, 1 ) }
+            >
                 ▶
             </button>
-        </div>
+        </HudPanel>
     );
 }

@@ -1,4 +1,5 @@
 import { reactRouter } from '@react-router/dev/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig( ( { mode } ) => {
@@ -9,7 +10,9 @@ export default defineConfig( ( { mode } ) => {
     const env = loadEnv( mode, process.cwd(), '' );
 
     return {
-        plugins: [ reactRouter() ],
+        // Tailwind's Vite plugin ahead of reactRouter(): the official Vite guide doesn't mandate an order, so
+        // we follow tailwind.md — Tailwind first, so its CSS transform runs before RR's build hooks (SPA mode).
+        plugins: [ tailwindcss(), reactRouter() ],
         // Bind the dev server to ALL interfaces so other machines on the LAN can load
         // http://<host-ip>:5173 (office play). Vite defaults to localhost-only, which is
         // the real reason peers couldn't connect. The client reads the ws server host from

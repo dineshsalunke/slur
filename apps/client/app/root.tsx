@@ -3,16 +3,19 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 import type { Route } from './+types/root';
 import './app.css';
 
+// Base styling that used to live in app.css html/body rules is now Tailwind utilities on <html>/<body>: a
+// committed dark theme (no light mode) and a full-screen canvas app that never scrolls (overflow-hidden).
+// Preflight already resets margin + box-sizing, so only the theme/layout intent remains here.
 export function Layout( { children }: { children: React.ReactNode } ) {
     return (
-        <html lang="en">
+        <html lang="en" className="overflow-hidden [color-scheme:dark]">
             <head>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <Meta />
                 <Links />
             </head>
-            <body>
+            <body className="min-h-screen overflow-hidden bg-void font-display text-fg antialiased">
                 { children }
                 <ScrollRestoration />
                 <Scripts />

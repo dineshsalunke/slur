@@ -2,10 +2,6 @@ import { PHASE } from '@slur/shared';
 import { Fragment } from 'react';
 import { useRoom } from '../../net/room-context';
 import { useRunView } from '../net/use-run-view';
-// The three overlay sheets MUST load in this order — they were one file, and the cascade still depends on it.
-import './overlays.css';
-import './overlays-panels.css';
-import './overlays-hud.css';
 import { CountdownOverlay } from './countdown-overlay';
 import { HeldPowerChip } from './held-power-chip';
 import { LeaveButton } from './leave-button';
@@ -29,7 +25,7 @@ export function Overlays() {
                  own) — without this you're trapped in the run until it finishes. Corner-anchored, clear of
                  the centre timer + right-side standings. */ }
             { ( view.phase === PHASE.countdown || view.phase === PHASE.racing ) && (
-                <div className="slur-leave-corner">
+                <div className="fixed top-4 left-4 z-[26]">
                     <LeaveButton />
                 </div>
             ) }
