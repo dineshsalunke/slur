@@ -249,11 +249,28 @@ export function stopMusic(): void {
 
 // ── Mix control (office needs a fast mute) ───────────────────────────────────────────────────────────────
 
+// Mute subscribers. The engine is a module singleton OUTSIDE React (non-negotiable #8), so anything that
+// wants to RENDER the mute state needs a change signal. This is that signal and nothing more — the state
+// itself still lives here, not in React, and `isMuted()` stays the single read path.
+const mutedListeners = new Set< () => void >();
+
+// Subscribe to mute changes. Shaped for `useSyncExternalStore`: takes the callback, returns its unsubscribe.
+export function subscribeMuted( onChange: () => void ): () => void {
+    mutedListeners.add( onChange );
+    return () => {
+        mutedListeners.delete( onChange );
+    };
+}
+
 export function setMuted( m: boolean ): void {
     muted = m;
     persist();
     const e = engine;
     if ( e ) e.master.gain.setTargetAtTime( masterTarget(), e.ctx.currentTime, 0.02 );
+    // Notify HERE rather than in toggleMute(): this is the ONE write path — `toggleMute()` delegates to it and
+    // the `M` key calls it directly (game-audio.tsx) — so every mute change reaches subscribers, whatever
+    // triggered it. That is what keeps the button and the key in sync in both directions, for free.
+    for ( const listener of mutedListeners ) listener();
 }
 
 export function toggleMute(): boolean {

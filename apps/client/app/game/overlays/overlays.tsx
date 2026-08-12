@@ -2,6 +2,7 @@ import { PHASE } from '@slur/shared';
 import { Fragment } from 'react';
 import { useRoom } from '../../net/room-context';
 import { useRunView } from '../net/use-run-view';
+import { AudioToggle } from './audio-toggle';
 import { CountdownOverlay } from './countdown-overlay';
 import { HeldPowerChip } from './held-power-chip';
 import { LeaveButton } from './leave-button';
@@ -21,6 +22,10 @@ export function Overlays() {
     return (
         <Fragment>
             <LeaveGuard phase={ view.phase } />
+            { /* Audio toggle is phase-INDEPENDENT — a global preference, not run state — so it stays mounted
+                 through lobby/countdown/racing/results. It owns its own subscription (#10), so mounting it
+                 here costs this component nothing: a mute change never re-renders Overlays. */ }
+            <AudioToggle />
             { /* Countdown + racing have no overlay of their own that hosts Leave (lobby/results embed their
                  own) — without this you're trapped in the run until it finishes. Corner-anchored, clear of
                  the centre timer + right-side standings. */ }
