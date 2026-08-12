@@ -1,15 +1,17 @@
-import { computeStandings } from '@slur/shared';
+import type { Room } from '@colyseus/sdk';
+import { computeStandings, type RunState } from '@slur/shared';
 import { Fragment } from 'react';
 import { ColorDot } from '../../ui/color-dot';
 import { HudPanel } from '../../ui/hud-panel';
 import { Tag } from '../../ui/tag';
 import { colorHex } from '../colors';
-import type { RunView } from '../net/use-run-view';
+import { useRunView } from '../net/use-run-view';
 import { SpectatorBar } from './spectator-bar';
 
 // In-race HUD: the race clock + live standings (shared computeStandings — finishers by time, then by distance
 // with a DNF flag). Renders <SpectatorBar/> only when the SELF PlayerView is spectating (a mid-race joiner).
-export function RaceHud( { view }: { view: RunView } ) {
+export function RaceHud( { room }: { room: Room< RunState > } ) {
+    const view = useRunView( room );
     const self = view.players.find( ( p ) => p.id === view.selfId );
     const standings = computeStandings( view.players.map( ( p ) => ( { ...p } ) ) );
     return (
