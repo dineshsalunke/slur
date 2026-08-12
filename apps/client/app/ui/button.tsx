@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 // transparent edge and ghost's hairline never collide. Hover glow is gated `enabled:` (was `:not(:disabled)`).
 const VARIANT = {
     primary:
-        'h-11 border-transparent bg-cyan text-[#04222a] [filter:drop-shadow(0_0_14px_rgba(0,229,255,0.5))] enabled:hover:[filter:drop-shadow(0_0_20px_rgba(0,229,255,0.78))]',
+        'h-11 border-transparent bg-cyan text-cyan-ink [filter:drop-shadow(0_0_14px_var(--glow-cta))] enabled:hover:[filter:drop-shadow(0_0_20px_var(--glow-cta-hover))]',
     ghost: 'h-9 border-line-2 text-fg enabled:hover:border-marigold enabled:hover:text-white',
 } as const;
 

@@ -33,7 +33,7 @@ export function LobbyOverlay( { room, view }: { room: Room< RunState >; view: Ru
                             key={ hex }
                             type="button"
                             disabled={ locked }
-                            className={ `h-[22px] w-[22px] cursor-pointer rounded-full border-2 p-0 disabled:cursor-default disabled:opacity-50 ${ self?.colorId === id ? 'border-white shadow-[0_0_10px_#fff]' : 'border-transparent' }` }
+                            className={ `h-[22px] w-[22px] cursor-pointer rounded-full border-2 p-0 disabled:cursor-default disabled:opacity-50 ${ self?.colorId === id ? 'border-white shadow-swatch' : 'border-transparent' }` }
                             style={ { background: hex } }
                             aria-label={ `colour ${ id + 1 }` }
                             onClick={ () => room.send( SET_COLOR_MESSAGE, id ) }

@@ -60,7 +60,7 @@ export function ShipCard( {
         <button
             type="button"
             disabled={ disabled }
-            className={ `flex min-w-[106px] cursor-pointer flex-col gap-[3px] rounded-[4px] border px-[9px] py-[7px] text-left text-hud disabled:cursor-default disabled:opacity-50 ${ selected ? 'border-cyan bg-cyan/[0.22] shadow-[0_0_10px_rgba(0,229,255,0.4)]' : 'border-cyan/40 bg-cyan/[0.06]' }` }
+            className={ `flex min-w-[106px] cursor-pointer flex-col gap-[3px] rounded-[4px] border px-[9px] py-[7px] text-left text-hud disabled:cursor-default disabled:opacity-50 ${ selected ? 'border-cyan bg-cyan/[0.22] shadow-shipcard' : 'border-cyan/40 bg-cyan/[0.06]' }` }
             aria-pressed={ selected }
             aria-label={ `${ ship.name }, ${ shipClass.name } class` }
             onClick={ onPick }
@@ -73,7 +73,7 @@ export function ShipCard( {
                         <span className="w-6 text-[8px] tracking-[0.5px] opacity-55">{ axis.label }</span>
                         <span className="h-[3px] flex-1 overflow-hidden rounded-[2px] bg-cyan/[0.14]">
                             <span
-                                className="block h-full bg-marigold shadow-[0_0_6px_rgba(255,159,28,0.75)]"
+                                className="block h-full bg-marigold shadow-statfill"
                                 style={ { width: `${ fillPercent( i, axis.of( shipClass ) ) }%` } }
                             />
                         </span>

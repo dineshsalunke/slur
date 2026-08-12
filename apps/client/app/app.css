@@ -24,6 +24,8 @@
     --color-fg: #cdd6e0; /* body text (landing) */
     --color-hud: #e6f1ff; /* brighter HUD text (overlays) */
     --color-dim: #6b7787; /* muted labels */
+    --color-cyan-ink: #04222a; /* dark-cyan text ON the solid-cyan primary CTA */
+    --color-tag-edge: rgba( 230, 241, 255, 0.35 ); /* default (YOU) tag hairline */
     --color-line: rgba( 120, 160, 200, 0.14 ); /* hairline */
     --color-line-2: rgba( 120, 160, 200, 0.26 ); /* stronger hairline */
     --color-glass-2: rgba( 14, 20, 32, 0.72 ); /* landing panel glass */
@@ -38,6 +40,22 @@
     --shadow-hud-gold: 0 0 16px rgba( 255, 210, 74, 0.35 ); /* held-power chip */
     --shadow-go: 0 0 14px rgba( 0, 229, 255, 0.5 ); /* primary GO button */
     --shadow-dot: 0 0 8px currentColor; /* the colour dot / live dot glow — inherits the element's colour */
+    --shadow-shipcard: 0 0 10px rgba( 0, 229, 255, 0.4 ); /* selected ship card */
+    --shadow-statfill: 0 0 6px rgba( 255, 159, 28, 0.75 ); /* ship-card stat bar (marigold) */
+    --shadow-swatch: 0 0 10px #fff; /* selected colour swatch ring */
+    --shadow-focus: 0 0 0 3px rgba( 0, 229, 255, 0.16 ); /* call-sign input focus ring */
+
+    /* Text glows. text-shadow-* namespace (Tailwind 4.1+) so the same one-edit rule applies to text as to boxes. */
+    --text-shadow-timer: 0 0 10px rgba( 0, 229, 255, 0.7 ); /* race clock */
+    --text-shadow-count: 0 0 40px rgba( 0, 229, 255, 0.8 ), 0 0 12px #fff; /* countdown number */
+    --text-shadow-held: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power name (gold) */
+    --text-shadow-wordmark: 0 0 18px rgba( 0, 229, 255, 0.55 ), 0 0 42px rgba( 0, 229, 255, 0.28 ); /* SLUR wordmark */
+    --text-shadow-wreck: 0 0 22px rgba( 255, 159, 28, 0.5 ); /* landing "Wreck" emphasis */
+
+    /* CTA drop-shadow glow COLOURS. A drop-shadow() filter can't reference a shadow-* token, so the coloured
+       glow is a plain @theme var referenced via var() — keeps the brand rgba out of className (used by ui/button). */
+    --glow-cta: rgba( 0, 229, 255, 0.5 );
+    --glow-cta-hover: rgba( 0, 229, 255, 0.78 );
 }
 
 /* Chamfer motif — the de-rounded cut-corner geometry (top-left + bottom-right), the signature TRON/Trek shape.

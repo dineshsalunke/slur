@@ -7,7 +7,11 @@ import type { ReactNode } from 'react';
 export function Panel( { className = '', children }: { className?: string; children: ReactNode } ) {
     return (
         <div
-            className={ `chamfer relative bg-[linear-gradient(135deg,var(--color-cyan)_0_11px,transparent_11px),var(--color-glass-2)] p-5 shadow-[inset_0_0_0_1px_var(--color-line)] backdrop-blur-[12px] ${ className }` }
+            // background-COLOR (glass fill) + background-IMAGE (accent wedge) as SEPARATE utilities: a color and a
+            // gradient in one `bg-[…]` emits an invalid `background-image` list (a <color> is not an <image>), so
+            // the browser drops BOTH layers. The original `.panel` worked only because CSS `background:` shorthand
+            // routes its final layer to background-color. Keep them split.
+            className={ `chamfer relative bg-glass-2 bg-[linear-gradient(135deg,var(--color-cyan)_0_11px,transparent_11px)] p-5 shadow-[inset_0_0_0_1px_var(--color-line)] backdrop-blur-[12px] ${ className }` }
         >
             { children }
         </div>

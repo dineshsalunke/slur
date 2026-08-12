@@ -14,7 +14,7 @@ export function RaceHud( { view }: { view: RunView } ) {
     const standings = computeStandings( view.players.map( ( p ) => ( { ...p } ) ) );
     return (
         <Fragment>
-            <HudPanel className="fixed top-4 left-1/2 -translate-x-1/2 px-3.5 py-3 font-mono text-[26px] font-bold leading-none tracking-[2px] text-cyan [text-shadow:0_0_10px_rgba(0,229,255,0.7)]">
+            <HudPanel className="fixed top-4 left-1/2 -translate-x-1/2 px-3.5 py-3 font-mono text-[26px] font-bold leading-none tracking-[2px] text-cyan text-shadow-timer">
                 { view.elapsed.toFixed( 1 ) }s
             </HudPanel>
             <HudPanel className="fixed top-4 right-4 min-w-[220px] px-3.5 py-3">

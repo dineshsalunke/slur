@@ -15,7 +15,10 @@ export function Layout( { children }: { children: React.ReactNode } ) {
                 <Meta />
                 <Links />
             </head>
-            <body className="min-h-screen overflow-hidden bg-void font-display text-fg antialiased">
+            { /* leading-[normal] = CSS `line-height: normal` (~1.2), the metric the old app.css-less UI ran at.
+                 Tailwind preflight forces the root to 1.5, growing every text box (~+21% on the ship card); this
+                 restores parity. NOTE: the named `leading-normal` utility is 1.5 — NOT what we want here. */ }
+            <body className="min-h-screen overflow-hidden bg-void font-display text-fg leading-[normal] antialiased">
                 { children }
                 <ScrollRestoration />
                 <Scripts />
