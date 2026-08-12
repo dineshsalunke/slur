@@ -73,9 +73,13 @@ export function RemoteEngineAudio() {
     }, [ camera ] );
 
     // JUSTIFIED EFFECT — syncs the ECS remote set INTO the three.js scene graph: attach a positional loop to
-    // each newly-spawned remote ship, detach departed ones. Re-runs on spawn/despawn (`remotes`) and once the
-    // sample decodes (`ready`) — never per frame, and never on movement (three re-reads the panner from the
-    // group's world transform at render time by itself).
+    // each newly-spawned remote ship, detach departed ones. Never per frame, and never on movement (three
+    // re-reads the panner from the group's world transform at render time by itself).
+    //
+    // How OFTEN this re-runs is not the load-bearing property — `syncEmitters` is fully IDEMPOTENT. It skips
+    // any id already in the map and only detaches ids no longer present, so running it more often than
+    // strictly necessary attaches and stops nothing. That is what makes it safe to key on `remotes`, whose
+    // array identity (not the ship set) decides when the effect fires.
     //  1) render-derivation? no — `obj.add(audio)` / `removeFromParent()` are mutations of a graph React does
     //     not own; running them during render would be a side effect in render, and the Render group may not
     //     be committed yet.
@@ -84,10 +88,12 @@ export function RemoteEngineAudio() {
     //  4) ref/module singleton? the emitter map IS a ref (`active`) precisely so this never re-renders. But a
     //     ref cannot schedule anything: the diff has to run when the query result changes and AFTER commit,
     //     which is what an effect provides.
-    //  5) external sync? YES — ECS → three.js. VERDICT: keep. Deliberately has NO cleanup: this effect re-runs
-    //     on every spawn/despawn, so a cleanup here would detach and re-attach EVERY remote emitter each time
-    //     any ship joined or left — an audible stop/restart of every rival's engine. Unmount teardown is the
-    //     separate mount-scoped effect below, which is the only reason that one exists.
+    //  5) external sync? YES — ECS → three.js. VERDICT: keep. Deliberately has NO TEARDOWN cleanup — only a
+    //     teardown carries the consequence: it would run on every re-fire, detaching and re-attaching EVERY
+    //     remote emitter whenever any ship joined or left. That is audible, not just wasteful, because
+    //     `detachPositional` stops and disconnects the node and re-attaching constructs a NEW PositionalAudio
+    //     and calls play() — so every rival's engine loop would restart from zero. Unmount teardown lives in
+    //     the separate mount-scoped effect below, which is the only reason that one exists.
     useEffect( () => {
         if ( ready ) syncEmitters( remotes, active.current );
     }, [ remotes, ready ] );
