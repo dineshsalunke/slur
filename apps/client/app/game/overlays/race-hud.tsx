@@ -14,8 +14,15 @@ export function RaceHud( { view }: { view: RunView } ) {
     const standings = computeStandings( view.players.map( ( p ) => ( { ...p } ) ) );
     return (
         <Fragment>
-            <HudPanel className="fixed top-4 left-1/2 -translate-x-1/2 px-3.5 py-3 font-mono text-[26px] font-bold leading-none tracking-[2px] text-cyan text-shadow-timer">
-                { view.elapsed.toFixed( 1 ) }s
+            { /* The timer's cyan lives on the CONTENT, not on the panel. HudPanel's base sets `text-hud`, and a
+                 `text-cyan` passed through className is a competing utility of equal specificity — CSS SOURCE
+                 order decides that fight, not class order, and the base won: the readout rendered white with a
+                 cyan glow. Colouring a child always beats the panel's inherited colour. Every other caller
+                 already does it this way. */ }
+            <HudPanel className="fixed top-4 left-1/2 -translate-x-1/2 px-3.5 py-3">
+                <span className="font-mono text-[26px] font-bold leading-none tracking-[2px] text-cyan text-shadow-timer">
+                    { view.elapsed.toFixed( 1 ) }s
+                </span>
             </HudPanel>
             <HudPanel className="fixed top-4 right-4 min-w-[220px] px-3.5 py-3">
                 <ol className="m-0 flex list-none flex-col gap-1 p-0">
