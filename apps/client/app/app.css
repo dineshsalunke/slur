@@ -32,6 +32,7 @@
     --color-threat-deep: #e81c30; /* deeper red for the edge-vignette rim */
     --color-wordmark: #eaf6ff; /* landing SLUR wordmark */
     --color-headline: #f3f8ff; /* landing lead headline */
+    --color-debug: #00ff88; /* dev-only net-debug readout — terminal green, distinct from the finisher --color-fin */
 
     /* Type. display = UI sans; mono = the LCARS-ish label/readout face. */
     --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

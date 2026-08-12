@@ -81,22 +81,13 @@ export function NetDebugHud( { track }: { track: TrackHandle } ) {
             ].join( '\n' );
         } );
     }, [ room, world, track ] );
+    // bottom-LEFT, but stacked ABOVE the audio toggle (#63, `bottom-4 left-4`, ~30px tall) so the dev readout
+    // clears it — bottom-14 sits its base ~10px over the button's top. z-10 keeps it under every real overlay
+    // (panels z-20); pointer-events-none so it never intercepts a click (the button underneath still toggles).
     return (
         <div
             ref={ ref }
-            style={ {
-                position: 'fixed',
-                bottom: 8, // bottom-left so the dev readout stops competing with the top-left race overlays (#62)
-                left: 8,
-                zIndex: 10,
-                pointerEvents: 'none',
-                font: '12px monospace',
-                color: '#00ff88',
-                background: 'rgba(0,0,0,0.6)',
-                padding: '6px 8px',
-                whiteSpace: 'pre',
-                borderRadius: 4,
-            } }
+            className="pointer-events-none fixed bottom-14 left-4 z-10 whitespace-pre rounded-[4px] bg-black/60 px-2 py-1.5 font-mono text-[12px] text-debug"
         />
     );
 }
