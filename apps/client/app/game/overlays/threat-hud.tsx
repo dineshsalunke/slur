@@ -1,13 +1,20 @@
 import type { Room } from '@colyseus/sdk';
 import { addEffect } from '@react-three/fiber';
-import type { RunState } from '@slur/shared';
+import { BOLT_SPEED, type RunState } from '@slur/shared';
 import { Fragment, useEffect, useRef } from 'react';
 
-// How far BEHIND the local ship a hostile bolt registers as a threat (units). Bolts fly +z at BOLT_SPEED (120)
-// — faster than any ship — so only bolts to your REAR are closing; ahead ones outrun you. ~70u ≈ a ~0.7s warning.
-// Exported so the test derives its boundary from the constant instead of pinning the literal (a feel retune
-// shouldn't redden a test).
+// How far BEHIND the local ship a hostile bolt registers as a threat (units). Bolts fly +z at BOLT_SPEED — a
+// near-instant ~900u/s energy streak (GDD §5.4), far faster than any ship — so only bolts to your REAR are
+// closing; ahead ones outrun you almost instantly. Exported so the test derives its boundary from the constant
+// instead of pinning the literal (a feel retune shouldn't redden a test).
 export const THREAT_Z = 70;
+// The reaction window THREAT_Z actually buys, DERIVED from the sim's own bolt speed — imported, never restated:
+// a prose copy is exactly how the old "BOLT_SPEED (120) ≈ 0.7s" comment silently drifted when the bolt was made
+// near-instant (#105). Cruise (48–70 u/s) is negligible against a ~900u/s bolt, so closing speed ≈ BOLT_SPEED;
+// at the current values that is ~78ms (~5 frames @ 60Hz) — barely a ramp. Widening THREAT_Z for a longer cue is
+// a #11 feel-gate call; this short window is also why #96 samples per-frame (an old 100ms throttle was LONGER
+// than the whole window, so it could observe a bolt zero times and never fire).
+export const THREAT_WINDOW_S = THREAT_Z / BOLT_SPEED;
 // Lateral window (units): a bolt within this of your x shares your lane closely enough to matter.
 const THREAT_X = 6;
 // |dx| under this reads as "dead astern" (no side arrow); beyond it we point to the side the bolt is on.
