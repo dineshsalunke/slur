@@ -1,3 +1,5 @@
+import { ColorDot } from '../../ui/color-dot';
+import { Tag } from '../../ui/tag';
 import { colorHex } from '../colors';
 import type { PlayerView } from '../net/use-run-view';
 
@@ -5,20 +7,27 @@ import type { PlayerView } from '../net/use-run-view';
 // over the run snapshot (no subscription of its own — the parent passes players/hostId/selfId as props).
 export function Roster( { players, hostId, selfId }: { players: PlayerView[]; hostId: string; selfId: string } ) {
     return (
-        <ul className="slur-roster">
+        <ul className="m-0 flex list-none flex-col gap-1 p-0">
             { players.map( ( p ) => (
-                <li key={ p.id } className={ p.connected ? 'slur-row' : 'slur-row slur-ghost' }>
-                    <span className="slur-dot" style={ { background: colorHex( p.colorId ) } } />
-                    <span className="slur-name">{ p.name || 'Racer' }</span>
-                    { p.id === hostId && <span className="slur-tag slur-host">★</span> }
-                    { p.id === selfId && <span className="slur-tag">YOU</span> }
-                    { p.spectating && <span className="slur-tag slur-spec">SPECTATING</span> }
-                    <span className="slur-ship">{ p.shipId }</span>
+                <li
+                    key={ p.id }
+                    className={ `flex items-center gap-2 text-[13px] ${ p.connected ? '' : 'opacity-40' }` }
+                >
+                    <ColorDot hex={ colorHex( p.colorId ) } />
+                    <span className="flex-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                        { p.name || 'Racer' }
+                    </span>
+                    { p.id === hostId && <Tag variant="host">★</Tag> }
+                    { p.id === selfId && <Tag>YOU</Tag> }
+                    { p.spectating && <Tag variant="spec">SPECTATING</Tag> }
+                    <span className="text-[10px] uppercase tracking-[1px] opacity-60">{ p.shipId }</span>
                 </li>
             ) ) }
             { players.length === 0 && (
-                <li className="slur-row slur-ghost">
-                    <span className="slur-name">Waiting for racers…</span>
+                <li className="flex items-center gap-2 text-[13px] opacity-40">
+                    <span className="flex-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                        Waiting for racers…
+                    </span>
                 </li>
             ) }
         </ul>

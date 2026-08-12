@@ -1,273 +1,103 @@
-/* ── SLUR front-of-house: light-LCARS neon, committed dark theme ────────────────────────────────────────
-   A single visual world by choice — a neon arcade screen, no light mode. TRON colour × Trek/Wars geometry:
-   de-rounded (chamfered) corners, hard edges, glass panels with an accent-wedge corner + inset hairline.
-   Palette locked to cyan × marigold ("gainda") over a near-black void (magenta retired from the brand).
-   These tokens + panel/button/room classes are GLOBAL so the lobby can adopt the same system later. */
-:root {
-    color-scheme: dark;
+/* SLUR styling entry — Tailwind v4, CSS-first (issue #37). This is the ONLY hand-written stylesheet: the
+   Tailwind import + the @theme design tokens. All component styling lives in `className` utilities; repeated
+   clusters are React components under app/ui/, NOT @apply (tailwind.md).
 
-    --void: #05060a;
-    --void-2: #080b13;
-    --cyan: #00e5ff;
-    --amber: #ff9f1c;
-    --green: #46e6a0;
-    --text: #cdd6e0;
-    --dim: #6b7787;
-    --line: rgba( 120, 160, 200, 0.14 );
-    --line-2: rgba( 120, 160, 200, 0.26 );
-    --glass: rgba( 10, 15, 24, 0.55 );
-    --glass-2: rgba( 14, 20, 32, 0.72 );
+   A single visual world by choice — a neon arcade screen, no light mode. TRON colour × Trek/Wars geometry:
+   de-rounded (chamfered) corners, hard edges, glass panels. Palette locked to cyan × marigold over a
+   near-black void.
+
+   NOTE: the ~12 player HUES are NOT tokens here. They live in game/colors.ts as a data registry indexed by the
+   synced colorId (with a COLOR_COUNT compile-time guard); duplicating them into CSS would break that guard and
+   they are applied by index at runtime, not referenced by name. @theme carries the brand + semantic palette. */
+@import "tailwindcss";
+
+@theme {
+    /* Brand + surface palette. cyan × marigold ("gainda") over a near-black void. */
+    --color-void: #05060a; /* near-black backdrop */
+    --color-void-2: #080b13;
+    --color-cyan: #00e5ff; /* brand primary */
+    --color-marigold: #ff9f1c; /* brand secondary */
+    --color-gold: #ffd24a; /* held-power / pickup gold — brighter than marigold, its own accent */
+    --color-spring: #46e6a0; /* live-room pulse dot */
+    --color-fin: #00ff85; /* finisher tag */
+    --color-magenta: #ff2bd6; /* spectator / leave accent */
+    --color-fg: #cdd6e0; /* body text (landing) */
+    --color-hud: #e6f1ff; /* brighter HUD text (overlays) */
+    --color-dim: #6b7787; /* muted labels */
+    --color-line: rgba( 120, 160, 200, 0.14 ); /* hairline */
+    --color-line-2: rgba( 120, 160, 200, 0.26 ); /* stronger hairline */
+    --color-glass-2: rgba( 14, 20, 32, 0.72 ); /* landing panel glass */
+    --color-ink: #04222a; /* dark ink ON the solid cyan CTA — the only place text sits on brand cyan */
+    --color-wordmark: #eaf6ff; /* landing SLUR wordmark */
+    --color-headline: #f3f8ff; /* landing lead headline */
+
+    /* Type. display = UI sans; mono = the LCARS-ish label/readout face. */
     --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
-    --r: 2px; /* the barest edge-softening — NOT a pill */
-    --cut: 12px; /* chamfer depth — the de-rounded cut-corner motif */
+
+    /* Neon glows. EVERY glow in the app is a token here — the @theme block is the ONE place a brand colour is
+       allowed to appear literally, so re-tuning the neon (or the palette) is a single-file edit and no
+       className carries a raw rgba. Three namespaces because CSS needs three different properties:
+       --shadow-* → box-shadow, --drop-shadow-* → filter (a box-shadow is clipped by the chamfer clip-path),
+       --text-shadow-* → text-shadow. All three are stock Tailwind v4 theme namespaces (verified against the
+       installed 4.3.3 theme.css + the theme-variables docs), so each emits a same-named utility. */
+    --shadow-hud: 0 0 18px rgba( 0, 229, 255, 0.25 ), inset 0 0 12px rgba( 0, 229, 255, 0.08 ); /* cyan glass panel */
+    --shadow-hud-magenta: 0 0 18px rgba( 255, 43, 214, 0.3 ); /* spectator panel */
+    --shadow-hud-gold: 0 0 16px rgba( 255, 210, 74, 0.35 ); /* held-power chip */
+    --shadow-go: 0 0 14px rgba( 0, 229, 255, 0.5 ); /* primary GO button */
+    --shadow-dot: 0 0 8px currentColor; /* the colour dot / live dot glow — inherits the element's colour */
+    --shadow-live: 0 0 8px var( --color-spring ); /* live-room pulse dot */
+    --shadow-focus: 0 0 0 3px rgba( 0, 229, 255, 0.16 ); /* call-sign focus ring */
+    --shadow-ship-on: 0 0 10px rgba( 0, 229, 255, 0.4 ); /* selected ship card */
+    --shadow-stat: 0 0 6px rgba( 255, 159, 28, 0.75 ); /* ship-card stat-bar fill */
+    --shadow-swatch: 0 0 10px var( --color-white ); /* selected colour swatch ring */
+
+    /* Landing CTA glow — a drop-shadow FILTER, not a box-shadow: the chamfer clip-path would clip a box-shadow. */
+    --drop-shadow-cta: 0 0 14px rgba( 0, 229, 255, 0.5 );
+    --drop-shadow-cta-hover: 0 0 20px rgba( 0, 229, 255, 0.78 );
+
+    --text-shadow-wordmark: 0 0 18px rgba( 0, 229, 255, 0.55 ), 0 0 42px rgba( 0, 229, 255, 0.28 ); /* SLUR */
+    --text-shadow-marigold: 0 0 22px rgba( 255, 159, 28, 0.5 ); /* "Wreck" in the lead headline */
+    --text-shadow-timer: 0 0 10px rgba( 0, 229, 255, 0.7 ); /* race timer readout */
+    --text-shadow-count: 0 0 40px rgba( 0, 229, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
+    --text-shadow-power: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power chip label */
 }
 
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: var( --void );
-    color: var( --text );
-    font-family: var( --font-display );
-    -webkit-font-smoothing: antialiased;
-    overflow: hidden; /* full-screen canvas app — the front-of-house never scrolls */
-}
-
-/* ── ambient live-3D backdrop scrim: vignette + top/bottom fade so the UI stays legible over the scene ── */
-.scrim {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
+/* Backdrop scrim over the fixed live-3D Canvas: a centre-clear vignette + a top/bottom fade so the
+   front-of-house UI stays legible against the moving scene. A custom @utility (Tailwind's own extension
+   point — NOT @apply, NOT vanilla CSS) because five colour stops in one arbitrary `bg-[…]` value is a
+   ~400-character unreadable class; here every stop derives from --color-void, so the palette stays one edit.
+   color-mix with `transparent` is exact: premultiplied interpolation yields the same colour at the stated
+   alpha, which is also what `bg-void/55` compiles to elsewhere. */
+@utility scrim {
     background:
-        radial-gradient( 120% 90% at 50% 8%, transparent 40%, rgba( 5, 6, 10, 0.55 ) 100% ),
+        radial-gradient(
+            120% 90% at 50% 8%,
+            transparent 40%,
+            color-mix( in oklab, var( --color-void ) 55%, transparent ) 100%
+        ),
         linear-gradient(
             180deg,
-            rgba( 5, 6, 10, 0.72 ) 0%,
+            color-mix( in oklab, var( --color-void ) 72%, transparent ) 0%,
             transparent 22%,
             transparent 60%,
-            rgba( 5, 6, 10, 0.4 ) 100%
+            color-mix( in oklab, var( --color-void ) 40%, transparent ) 100%
         );
 }
 
-/* ── stage: the UI layer that overlays the fixed Canvas + scrim ── */
-.stage {
-    position: relative;
-    z-index: 2;
-    min-height: 100vh;
-    padding: 0;
-    display: grid;
-    grid-template-rows: auto 1fr;
+/* Chamfer motif — the de-rounded cut-corner geometry (top-left + bottom-right), the signature TRON/Trek shape.
+   Two depths: `chamfer` (12px, panels) and `chamfer-btn` (7px, buttons). A custom @utility (Tailwind's own
+   extension point, NOT vanilla CSS) because it's reused across the landing panel + both button variants. */
+@utility chamfer {
+    clip-path: polygon( 12px 0, 100% 0, 100% calc( 100% - 12px ), calc( 100% - 12px ) 100%, 0 100%, 0 12px );
 }
-
-/* ── top chrome: wordmark + tagline ── */
-.topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 22px 28px;
-    gap: 16px;
-}
-.brand {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-}
-.wordmark {
-    font-weight: 800;
-    font-size: clamp( 26px, 3.4vw, 40px );
-    letter-spacing: 0.42em;
-    margin: 0 0 0 0.42em; /* optical: balance the trailing letter-spacing */
-    color: #eaf6ff;
-    text-shadow:
-        0 0 18px rgba( 0, 229, 255, 0.55 ),
-        0 0 42px rgba( 0, 229, 255, 0.28 );
-}
-.tagline {
-    font-family: var( --font-mono );
-    font-size: 11px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var( --dim );
-}
-
-/* ── shared panel: a coloured corner wedge + glass block, chamfered top-left + bottom-right, NO radius ── */
-.panel {
-    position: relative;
-    background: linear-gradient( 135deg, var( --accent, var( --cyan ) ) 0 11px, transparent 11px ), var( --glass-2 );
-    backdrop-filter: blur( 12px );
-    padding: 20px;
-    box-shadow: inset 0 0 0 1px var( --line );
-    clip-path: polygon(
-        var( --cut ) 0,
-        100% 0,
-        100% calc( 100% - var( --cut ) ),
-        calc( 100% - var( --cut ) ) 100%,
-        0 100%,
-        0 var( --cut )
-    );
-}
-
-/* ── landing body: a lower-left cluster so the live scene breathes top/right ── */
-.landing-body {
-    height: 100%;
-    display: grid;
-    align-content: end;
-    justify-content: start;
-    padding: 0 28px 44px;
-}
-.lead {
-    max-width: 540px;
-    margin-bottom: 26px;
-}
-.lead h2 {
-    font-size: clamp( 28px, 4vw, 46px );
-    line-height: 1.04;
-    margin: 0 0 12px;
-    font-weight: 700;
-    text-wrap: balance;
-    color: #f3f8ff;
-}
-.lead h2 em {
-    color: var( --amber );
-    font-style: normal;
-    text-shadow: 0 0 22px rgba( 255, 159, 28, 0.5 );
-}
-.lead p {
-    margin: 0;
-    color: var( --dim );
-    font-size: 15px;
-    max-width: 46ch;
-    line-height: 1.5;
-}
-
-.console {
-    width: min( 560px, 92vw );
-    --accent: var( --cyan );
-}
-.field-row {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-}
-.field {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.field-action {
-    flex: none;
-    justify-content: flex-end;
-}
-.field label {
-    font-family: var( --font-mono );
-    font-size: 10px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var( --dim );
-}
-.callsign {
-    font-family: var( --font-mono );
-    font-size: 15px;
-    color: var( --text );
-    background: rgba( 0, 0, 0, 0.35 );
-    border: 1px solid var( --line-2 );
-    border-radius: var( --r );
-    padding: 12px 14px;
-    outline: none;
-    transition:
-        border-color 0.18s,
-        box-shadow 0.18s;
-}
-.callsign:focus {
-    border-color: var( --cyan );
-    box-shadow: 0 0 0 3px rgba( 0, 229, 255, 0.16 );
-}
-
-/* ── buttons: chamfered, glow via drop-shadow (box-shadow would be clipped by clip-path) ── */
-.btn {
-    font-family: var( --font-mono );
-    font-size: 12px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 0;
+@utility chamfer-btn {
     clip-path: polygon( 7px 0, 100% 0, 100% calc( 100% - 7px ), calc( 100% - 7px ) 100%, 0 100%, 0 7px );
-    padding: 0 22px;
-    border: 1px solid transparent;
-    transition:
-        transform 0.12s,
-        filter 0.18s,
-        background 0.18s;
-    white-space: nowrap;
-}
-.btn:active {
-    transform: translateY( 1px );
-}
-.btn:disabled {
-    cursor: not-allowed;
-    filter: grayscale( 0.5 ) brightness( 0.7 );
-}
-.btn-primary {
-    background: var( --cyan );
-    color: #04222a;
-    filter: drop-shadow( 0 0 14px rgba( 0, 229, 255, 0.5 ) );
-    height: 44px;
-}
-.btn-primary:not( :disabled ):hover {
-    filter: drop-shadow( 0 0 20px rgba( 0, 229, 255, 0.78 ) );
-}
-.btn-ghost {
-    background: transparent;
-    border-color: var( --line-2 );
-    color: var( --text );
-    height: 36px;
-}
-.btn-ghost:not( :disabled ):hover {
-    border-color: var( --amber );
-    color: #fff;
 }
 
-/* ── live room list ── */
-.rooms {
-    margin-top: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.rooms-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var( --font-mono );
-    font-size: 10px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var( --dim );
-    margin-bottom: 2px;
-}
-.live-dot {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.live-dot::before {
-    content: "";
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var( --green );
-    box-shadow: 0 0 8px var( --green );
-    animation: pulse 1.8s ease-in-out infinite;
-}
-@keyframes pulse {
+/* Live-room pulse: the breathing dot next to the online count. Honours reduced-motion. Kept as a keyframe
+   (Tailwind's animate-* utilities don't cover a custom two-stop opacity pulse without a theme keyframe). */
+@keyframes slur-pulse {
     0%,
     100% {
         opacity: 1;
@@ -276,68 +106,11 @@ body {
         opacity: 0.35;
     }
 }
-
-.rooms-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+@utility pulse-dot {
+    animation: slur-pulse 1.8s ease-in-out infinite;
 }
-.room {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
-    background: rgba( 0, 0, 0, 0.28 );
-    border: 1px solid var( --line );
-    border-radius: var( --r );
-    transition:
-        border-color 0.16s,
-        background 0.16s;
-}
-.room:hover {
-    border-color: var( --line-2 );
-    background: rgba( 0, 0, 0, 0.4 );
-}
-.room .rname {
-    font-size: 15px;
-    color: var( --text );
-}
-.room .rmeta {
-    font-family: var( --font-mono );
-    font-size: 11px;
-    color: var( --dim );
-    margin-top: 2px;
-    letter-spacing: 0.06em;
-}
-.badge {
-    font-family: var( --font-mono );
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: var( --r );
-    border: 1px solid currentColor;
-}
-.badge.race {
-    color: var( --cyan );
-}
-.badge.racing {
-    color: var( --amber );
-}
-.empty {
-    font-family: var( --font-mono );
-    font-size: 13px;
-    color: var( --dim );
-    padding: 10px 2px;
-    margin: 0;
-}
-
 @media ( prefers-reduced-motion: reduce ) {
-    .live-dot::before {
+    .pulse-dot {
         animation: none;
     }
 }

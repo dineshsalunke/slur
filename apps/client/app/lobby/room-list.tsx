@@ -1,4 +1,5 @@
 import { PHASE, ROOM_NAME } from '@slur/shared';
+import { Button } from '../ui/button';
 import { useLobbyRooms } from './lobby-store';
 
 // A run's current phase decides three things at once: the badge colour, its label, and whether a joiner
@@ -18,36 +19,41 @@ export function RoomList( { onJoin, busy }: { onJoin: ( roomId: string ) => void
     const rooms = useLobbyRooms().filter( ( r ) => r.name === ROOM_NAME );
 
     return (
-        <div className="rooms">
-            <div className="rooms-head">
+        <div className="mt-[18px] flex flex-col gap-2">
+            <div className="mb-0.5 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-dim">
                 <span>Live rooms</span>
-                <span className="live-dot">{ rooms.length } online</span>
+                <span className="inline-flex items-center gap-1.5">
+                    <span className="pulse-dot h-[7px] w-[7px] rounded-full bg-spring shadow-live" />
+                    { rooms.length } online
+                </span>
             </div>
 
             { rooms.length === 0 ? (
-                <p className="empty">No runs yet — host one.</p>
+                <p className="m-0 px-0.5 py-2.5 font-mono text-[13px] text-dim">No runs yet — host one.</p>
             ) : (
-                <ul className="rooms-list">
+                <ul className="m-0 flex list-none flex-col gap-2 p-0">
                     { rooms.map( ( r ) => {
                         const host = r.metadata?.hostName || 'someone';
                         const view = PHASE_VIEW[ r.metadata?.phase ?? PHASE.lobby ] ?? PHASE_VIEW[ PHASE.lobby ];
                         return (
-                            <li key={ r.roomId } className="room">
+                            <li
+                                key={ r.roomId }
+                                className="grid grid-cols-[1fr_auto_auto] items-center gap-3.5 rounded-[2px] border border-line bg-black/28 px-3.5 py-3 transition-[border-color,background] duration-[160ms] hover:border-line-2 hover:bg-black/40"
+                            >
                                 <div>
-                                    <div className="rname">{ host }&apos;s run</div>
-                                    <div className="rmeta">
+                                    <div className="text-[15px] text-fg">{ host }&apos;s run</div>
+                                    <div className="mt-0.5 font-mono text-[11px] tracking-[0.06em] text-dim">
                                         { r.clients } racers · #{ r.roomId }
                                     </div>
                                 </div>
-                                <span className={ `badge ${ view.racing ? 'racing' : 'race' }` }>{ view.label }</span>
-                                <button
-                                    type="button"
-                                    className="btn btn-ghost"
-                                    disabled={ busy }
-                                    onClick={ () => onJoin( r.roomId ) }
+                                <span
+                                    className={ `rounded-[2px] border border-current px-2 py-[3px] font-mono text-[9px] uppercase tracking-[0.18em] ${ view.racing ? 'text-marigold' : 'text-cyan' }` }
                                 >
+                                    { view.label }
+                                </span>
+                                <Button variant="ghost" disabled={ busy } onClick={ () => onJoin( r.roomId ) }>
                                     { view.action }
-                                </button>
+                                </Button>
                             </li>
                         );
                     } ) }

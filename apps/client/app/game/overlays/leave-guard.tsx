@@ -1,6 +1,8 @@
 import { PHASE } from '@slur/shared';
 import { useEffect } from 'react';
 import { useBlocker } from 'react-router';
+import { HudButton } from '../../ui/hud-button';
+import { HudPanel } from '../../ui/hud-panel';
 
 // Guards an accidental exit MID-RACE: useBlocker stops in-app SPA nav (back button / <Link>) and a
 // beforeunload handler covers hard tab-close/reload (useBlocker does NOT — react-router.md). Both are armed
@@ -29,18 +31,18 @@ export function LeaveGuard( { phase }: { phase: number } ) {
 
     if ( blocker.state !== 'blocked' ) return null;
     return (
-        <div className="slur-confirm">
-            <div className="slur-panel slur-confirm-box">
-                <p>Leave the race in progress?</p>
-                <div className="slur-actions">
-                    <button type="button" className="slur-btn slur-go" onClick={ () => blocker.proceed() }>
+        <div className="pointer-events-auto fixed inset-0 z-40 grid place-items-center bg-void/55">
+            <HudPanel className="px-3.5 py-3 text-center">
+                <p className="mb-4">Leave the race in progress?</p>
+                <div className="flex justify-end gap-2.5">
+                    <HudButton variant="go" onClick={ () => blocker.proceed() }>
                         Leave
-                    </button>
-                    <button type="button" className="slur-btn slur-leave" onClick={ () => blocker.reset() }>
+                    </HudButton>
+                    <HudButton variant="leave" onClick={ () => blocker.reset() }>
                         Stay
-                    </button>
+                    </HudButton>
                 </div>
-            </div>
+            </HudPanel>
         </div>
     );
 }
