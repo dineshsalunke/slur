@@ -3,9 +3,17 @@ import { THREAT_Z, threatTick, VIGNETTE_FALLOFF, VIGNETTE_MAX, VIGNETTE_RAMP_Z, 
 
 // The vignette's opacity is the ONLY gameplay-visible mapping (proximity → danger read), so it's the thing worth
 // pinning. These are differential — monotonicity, clamps, and the cap — NOT hardcoded pixels or alphas, which are
-// feel-gate tunables. Every boundary is DERIVED from the exported constants, so a pure retune (THREAT_Z 70→90,
-// VIGNETTE_MAX 0.42→0.55, a shorter ramp, a non-linear falloff) does NOT redden the suite — only a change to the
-// mapping's SHAPE does.
+// feel-gate tunables. Every boundary is DERIVED from the exported constants rather than pinned as a literal.
+//
+// Retuning splits into TWO deliberate categories — check which one you're in before reading a red as over-fitting:
+//   SILENT.  THREAT_Z (70→90) and VIGNETTE_MAX (0.42→0.55) change the cue's reach and strength without changing
+//            its shape. Every assertion derives from them, so the suite stays green. Retune freely.
+//   TRIPWIRE. VIGNETTE_RAMP_Z and VIGNETTE_FALLOFF are guarded by the `defaults` block at the bottom, and moving
+//            either WILL go red — by design, and exactly one test each. They decouple the vignette from the
+//            detection range and bend the curve, so they change how the cue *reads* rather than merely how far it
+//            reaches. The red is not "you broke the mapping", it is "this is a FEEL change — declare it". Update
+//            the `defaults` expectation in the same commit and say so in the PR body.
+// Only a change to the mapping's SHAPE reddens anything else.
 describe( 'vignetteOpacity', () => {
     it( 'is 0 when there is no threat (bestDz = +Infinity)', () => {
         expect( vignetteOpacity( Number.POSITIVE_INFINITY ) ).toBe( 0 );
