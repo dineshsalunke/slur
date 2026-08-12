@@ -4,6 +4,7 @@ import { useWorld } from 'koota/react';
 import { useRef } from 'react';
 import type { Group } from 'three';
 import { LocalPlayer, Sim } from '../../game/ecs/traits';
+import { guardLfsPointer } from '../../game/scene/gltf-lfs-guard';
 import { shipVisual } from '../../game/scene/ship-visuals';
 
 // The landing hero ship: a single Quaternius model flying just ahead of the drifting camera so the menu
@@ -11,7 +12,9 @@ import { shipVisual } from '../../game/scene/ship-visuals';
 // net, no collision. It rides the LandingRig's drift entity (the one LocalPlayer+Sim in this scene) so it
 // stays framed as the camera advances, with a gentle bob + a bank into the bob. Preloaded so it never pops.
 const HERO_SHIP = 'challenger';
-useGLTF.preload( shipVisual( HERO_SHIP ).url );
+// This is the FIRST model a fresh clone ever loads (`/` renders before any room), so the LFS guard matters
+// most here — see gltf-lfs-guard.ts.
+useGLTF.preload( shipVisual( HERO_SHIP ).url, undefined, undefined, guardLfsPointer );
 
 const AHEAD = 7; // world units in front of the drift point (LandingRig aims the camera at sim.z + 8)
 const REST_Y = 1.2; // hover height the bob oscillates around
@@ -24,7 +27,7 @@ export function LandingShip() {
     const world = useWorld();
     const ref = useRef< Group >( null );
     const v = shipVisual( HERO_SHIP );
-    const { scene } = useGLTF( v.url );
+    const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
 
     // Leaf-imperative (r3f.md): drive the transform straight into the group ref each frame, no React state.
     // Math.sin/cos here is pure client cosmetics — the deterministic-sim trig ban does NOT apply outside the sim.

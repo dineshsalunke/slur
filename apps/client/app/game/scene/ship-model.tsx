@@ -4,13 +4,18 @@ import type { Entity } from 'koota';
 import { Fragment, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Interp, Sim } from '../ecs/traits';
+import { guardLfsPointer } from './gltf-lfs-guard';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 
 // Per-ship model (Quaternius CC0). useGLTF caches by URL, so each model loads once; drei <Clone>
 // deep-clones it per entity so many ships mount independently while sharing geometry/material. The parent
 // (ShipView) keys this on shipId, so a class hot-swap remounts with the new model. scale/lift/facing come
 // from ship-visuals.ts, DERIVED so the model box == the class AABB footprint (WYSIWYG collision).
-for ( const v of Object.values( SHIP_VISUALS ) ) useGLTF.preload( v.url ); // preload all 5 → no hot-swap hitch
+// `guardLfsPointer` is the extendLoader hook — it turns an un-pulled LFS pointer file into a readable
+// "run git lfs pull" error instead of three's `Unexpected token 'v'` (see gltf-lfs-guard.ts).
+for ( const v of Object.values( SHIP_VISUALS ) ) {
+    useGLTF.preload( v.url, undefined, undefined, guardLfsPointer ); // preload all 5 → no hot-swap hitch
+}
 
 // ── S6 TRON derezz — noise-threshold DISSOLVE on the ship's GLTF meshes (phase note Q5: dissolve shader,
 // keep the shard-burst in explosions.tsx as a complementary accent). onBeforeCompile injects a value-noise
@@ -117,7 +122,7 @@ function isDead( entity: Entity ): boolean {
 
 export function ShipModel( { entity, shipId, color }: { entity: Entity; shipId: string; color: string } ) {
     const v = shipVisual( shipId );
-    const { scene } = useGLTF( v.url );
+    const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
     const beaconRef = useRef< THREE.Mesh >( null );
     const patched = useRef( false );
