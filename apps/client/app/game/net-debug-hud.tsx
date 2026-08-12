@@ -1,3 +1,4 @@
+import { addEffect } from '@react-three/fiber';
 import { SEG_LEN, type Track as TrackHandle } from '@slur/shared';
 import type { World } from 'koota';
 import { useWorld } from 'koota/react';
@@ -7,6 +8,9 @@ import { LocalPlayer, Net, Sim } from './ecs/traits';
 
 type Room = ReturnType< typeof useRoom >;
 const KIND: Record< string, string > = { plain: '·', block: 'BLOCK', gap: 'GAP', finish: 'FIN' };
+// How often the readout re-samples (ms). This is a THROTTLE on the frame loop, not a clock of its own — see
+// the effect below for why this call site keeps a cadence where the threat vignette (#96) deliberately doesn't.
+const SAMPLE_MS = 150;
 
 // One line per player: ★ marks you; shows x/z and a (gone) flag while dropped.
 function playerLines( room: Room ): string[] {
@@ -44,16 +48,28 @@ export function NetDebugHud( { track }: { track: TrackHandle } ) {
     const room = useRoom();
     const world = useWorld();
     const ref = useRef< HTMLDivElement >( null );
-    // JUSTIFIED EFFECT — syncs with external systems (Colyseus room.state + the ECS world) on a 150ms
-    // timer, writing IMPERATIVELY into a DOM ref (textContent). NO setState → it never re-renders React.
-    //  1) render-derivation? no — room.state / ECS Sim mutate OUTSIDE React and fire no re-render.
-    //  2) event handler? no discrete event — it's a periodic sample of live external state.
-    //  3) loader/action data? no — live per-frame telemetry, not navigation-time data.
-    //  4) ref/module singleton? YES for the WRITE — we push straight into a DOM ref, React uninvolved;
-    //     the effect's only job is to bracket the timer's start/stop to the HUD's mount.
-    //  5) external sync? YES — a timer polling external stores. VERDICT: keep; imperative ref write, zero re-render.
+    // JUSTIFIED EFFECT — its only job is to BRACKET the frame subscription to this HUD's mount, which is what
+    // Effects are for (subscribe/unsubscribe to an external system). The sampling itself is imperative, straight
+    // into a DOM ref (textContent). NO setState → it never re-renders React.
+    //
+    // MECHANISM — R3F `addEffect` (issue #87), a global per-frame callback that runs on R3F's EXISTING loop but
+    // OUTSIDE the Canvas. This HUD is DOM chrome, so it needs a frame signal without being scene content. The
+    // previous `setInterval` was a second clock that drifted against the 20Hz patch stream.
+    //
+    // THE 150ms CADENCE IS KEPT, unlike the threat vignette in #96 — the two call sites genuinely differ, and
+    // the cadence should follow what the callback DRIVES:
+    //   · the vignette drives a CONTINUOUS opacity, so any throttle reintroduces visible stepping — there, the
+    //     throttle was the defect, and running per-frame let its smoothing transition be deleted outright.
+    //   · this drives a TEXT readout a human reads. 60Hz buys nothing the eye can use, and sampling is not free:
+    //     each pass walks every player, reads `room.state.projectiles.size`, queries the ECS world, and calls
+    //     `track.segmentAtZ` SEVEN times. At 150ms that is ~47 segment lookups/sec; per-frame it would be ~420.
+    // So: throttle by comparing `addEffect`'s timestamp (ms since page load, NOT a delta), which keeps one clock
+    // for the whole app while sampling at a rate that suits the consumer.
     useEffect( () => {
-        const id = setInterval( () => {
+        let lastSample = 0;
+        return addEffect( ( timestamp ) => {
+            if ( timestamp - lastSample < SAMPLE_MS ) return;
+            lastSample = timestamp;
             const el = ref.current;
             if ( ! el ) return;
             const players = playerLines( room );
@@ -63,8 +79,7 @@ export function NetDebugHud( { track }: { track: TrackHandle } ) {
                 ...players,
                 ...localShipLines( world, track ),
             ].join( '\n' );
-        }, 150 );
-        return () => clearInterval( id );
+        } );
     }, [ room, world, track ] );
     return (
         <div
