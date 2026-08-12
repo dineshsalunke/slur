@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { useWorld } from 'koota/react';
-import { Fragment, useMemo, useRef } from 'react';
+import { Fragment, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
 
@@ -34,6 +34,13 @@ export function Track() {
     const a = useRef< THREE.Mesh | null >( null );
     const b = useRef< THREE.Mesh | null >( null );
     const grid = useMemo( makeGridTexture, [] );
+
+    // JUSTIFIED EFFECT — external resource lifetime (a GPU texture we `new`'d in useMemo, not created by
+    // R3F from JSX). r3f.md: manually-created resources are ours to dispose, and three does NOT release a
+    // material's textures when the material is disposed. Keyed on the texture, not `[]`, so a memo the
+    // renderer chose to recompute releases the superseded texture instead of stranding it. No
+    // render-derivation, no event, no data-flow involved — purely bracketing an external resource's lifetime.
+    useEffect( () => () => grid.dispose(), [ grid ] );
 
     useFrame( () => {
         const e = world.queryFirst( LocalPlayer, Sim );
