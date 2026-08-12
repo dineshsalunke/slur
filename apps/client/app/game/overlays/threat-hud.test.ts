@@ -1,33 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { threatTick, vignetteOpacity } from './threat-hud';
+import { THREAT_Z, threatTick, VIGNETTE_MAX, vignetteOpacity } from './threat-hud';
 
 // The vignette's opacity is the ONLY new gameplay-visible mapping (proximity → danger read), so it's the thing
 // worth pinning. These are differential — monotonicity, clamps, and a loose subtlety bound — NOT the exact peak,
-// which is a feel-gate tunable (VIGNETTE_MAX). Pinning the cap would make the test wrong the moment it's retuned.
+// which is a feel-gate tunable (VIGNETTE_MAX). Boundaries are DERIVED from the exported constants (THREAT_Z /
+// VIGNETTE_MAX), so a pure feel retune (e.g. THREAT_Z 70→90, VIGNETTE_MAX 0.42→0.55) does NOT redden the suite —
+// only a change to the mapping's shape does.
 describe( 'vignetteOpacity', () => {
     it( 'is 0 when there is no threat (bestDz = +Infinity)', () => {
         expect( vignetteOpacity( Number.POSITIVE_INFINITY ) ).toBe( 0 );
     } );
 
     it( 'is 0 once a bolt reaches the threat range edge', () => {
-        expect( vignetteOpacity( 70 ) ).toBe( 0 ); // THREAT_Z — beyond warning distance
+        expect( vignetteOpacity( THREAT_Z ) ).toBe( 0 ); // at/beyond warning distance
     } );
 
     it( 'grows strictly as the bolt closes in', () => {
-        // Closer (smaller bestDz) → stronger. Proves the proximity is actually wired, not a constant.
-        expect( vignetteOpacity( 0 ) ).toBeGreaterThan( vignetteOpacity( 35 ) );
-        expect( vignetteOpacity( 35 ) ).toBeGreaterThan( vignetteOpacity( 69 ) );
-        expect( vignetteOpacity( 69 ) ).toBeGreaterThan( 0 );
+        // Closer (smaller bestDz) → stronger. Proves the proximity is actually wired, not a constant. Sample
+        // points are fractions of THREAT_Z so they track the range rather than pinning 35 / 69.
+        expect( vignetteOpacity( 0 ) ).toBeGreaterThan( vignetteOpacity( THREAT_Z / 2 ) );
+        expect( vignetteOpacity( THREAT_Z / 2 ) ).toBeGreaterThan( vignetteOpacity( THREAT_Z - 1 ) );
+        expect( vignetteOpacity( THREAT_Z - 1 ) ).toBeGreaterThan( 0 );
     } );
 
     it( 'saturates at the peak for a level / just-overtaken bolt (clamps negatives)', () => {
         expect( vignetteOpacity( -2 ) ).toBe( vignetteOpacity( 0 ) );
     } );
 
-    it( 'stays subtle — the peak is a low cap, never a full-screen wash', () => {
-        const peak = vignetteOpacity( 0 );
-        expect( peak ).toBeGreaterThan( 0 );
-        expect( peak ).toBeLessThanOrEqual( 0.5 );
+    it( 'peaks exactly at the VIGNETTE_MAX cap, never above (stays subtle)', () => {
+        expect( vignetteOpacity( 0 ) ).toBe( VIGNETTE_MAX );
     } );
 } );
 

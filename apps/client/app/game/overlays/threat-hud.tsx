@@ -4,7 +4,8 @@ import { Fragment, useEffect, useRef } from 'react';
 
 // How far BEHIND the local ship a hostile bolt registers as a threat (units). Bolts fly +z at BOLT_SPEED (120)
 // — faster than any ship — so only bolts to your REAR are closing; ahead ones outrun you. ~70u ≈ a ~0.7s warning.
-const THREAT_Z = 70;
+// Exported so the test derives its boundary from the constant instead of pinning the literal (a feel retune shouldn't redden a test).
+export const THREAT_Z = 70;
 // Lateral window (units): a bolt within this of your x shares your lane closely enough to matter.
 const THREAT_X = 6;
 // |dx| under this reads as "dead astern" (no side arrow); beyond it we point to the side the bolt is on.
@@ -13,7 +14,8 @@ const CENTER_X = 2.5;
 const POLL_MS = 100;
 // Peak opacity of the edge vignette (kept LOW — a peripheral "danger" read, never a track-occluding wash). The
 // gradient itself only paints the outer ring, so the visible alpha is this × the gradient stops, well under this.
-const VIGNETTE_MAX = 0.42;
+// Exported so the "stays subtle" test asserts against this cap, not a hardcoded 0.5 that a cap bump would redden.
+export const VIGNETTE_MAX = 0.42;
 
 // Directional threat TICK from the nearest hostile rear bolt. world +x renders screen-LEFT (see keyboard.ts),
 // so a bolt at dx>0 sits on your screen-left → point ◀ there. Deliberately minimal — the vignette is the primary
@@ -83,7 +85,10 @@ export function ThreatHud( { room }: { room: Room< RunState > } ) {
                 style={ {
                     position: 'fixed',
                     inset: 0,
-                    zIndex: 20, // below the tick (21); a peripheral wash, never over the standings/timer
+                    // z-19: strictly BELOW the panels (.slur-panel is z-20 — timer/standings/held), so the wash
+                    // never reddens the standings on the right edge (its strongest point) while you're being shot at.
+                    // At equal z-20 the vignette would win on DOM order (ThreatHud renders after RaceHud). Below tick (21).
+                    zIndex: 19,
                     pointerEvents: 'none',
                     opacity: 0,
                     // Smooths the 100ms polling steps and fades cleanly to 0 the tick a threat clears.
