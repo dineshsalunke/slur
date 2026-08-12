@@ -28,11 +28,13 @@
     },
     "devDependencies": {
         "@react-router/dev": "^8.3.0",
+        "@react-three/test-renderer": "^9.1.1",
         "@tailwindcss/vite": "catalog:",
         "@types/node": "catalog:",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@types/three": "^0.185.0",
+        "jsdom": "^30.0.1",
         "tailwindcss": "catalog:",
         "typescript": "catalog:",
         "vite": "^8.2.1",
