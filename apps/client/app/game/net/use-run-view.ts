@@ -57,8 +57,31 @@ function readView( room: Room< RunState > ): RunView {
     };
 }
 
-// The ONE DOM subscription to run state. Lives at the <Overlays> LEAF so its re-renders (up to 20Hz, driven by
-// `elapsed`) stay in the DOM layer and NEVER reach <NetCanvas> (acceptance gate #1). Standings come from shared
+// The LOW-FREQUENCY slice: phase alone. <Overlays> subscribes to THIS and nothing else, so a phase switch is
+// the only thing that re-renders the overlay root — and therefore the only thing that re-renders the siblings
+// it wraps (LeaveGuard, LeaveButton, HeldPowerChip, ThreatHud), none of which read the clock or the roster.
+// The high-frequency fields stay inside whichever phase panel actually reads them, via useRunView below.
+// That is non-negotiable #10: push each subscription down to its leaf; never subscribe high and prop-drill.
+export function useRunPhase( room: Room< RunState > ): number {
+    const [ phase, setPhase ] = useState< number >( PHASE.lobby );
+
+    // JUSTIFIED EFFECT — same external system, same reasoning as useRunView below: Colyseus schema callbacks
+    // are not React-reactive, so the wire → React bridge has to be registered somewhere. `listen` fires
+    // immediately with the current value, so no separate initial read is needed. Cleanup only detaches the
+    // callback; it never touches the connection (the loader owns the room).
+    useEffect( () => {
+        const $ = getStateCallbacks( room );
+        return $( room.state ).listen( 'phase', ( value ) => setPhase( value ) );
+    }, [ room ] );
+
+    return phase;
+}
+
+// The FULL snapshot. Subscribed by the ONE phase panel that is mounted at a time (LobbyOverlay / RaceHud /
+// ResultsOverlay / CountdownOverlay), never by their parent — so the ~20Hz churn it carries re-renders only
+// the panel that reads it, and still NEVER reaches <NetCanvas> (acceptance gate #1). Note `players` is NOT
+// low-frequency during a race: it carries each ship's `z`, which simulate() moves every tick, so this hook
+// rebuilds at patch rate whether or not `elapsed` is in it. Standings come from shared
 // computeStandings(view.players.map(p => ({ ...p }))).
 export function useRunView( room: Room< RunState > ): RunView {
     // Seed with connection-level fields only (room.sessionId is NOT schema → safe during render). Schema fields

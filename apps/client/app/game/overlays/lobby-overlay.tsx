@@ -4,7 +4,7 @@ import { Fragment } from 'react';
 import { HudButton } from '../../ui/hud-button';
 import { HudPanel } from '../../ui/hud-panel';
 import { COLORS } from '../colors';
-import type { RunView } from '../net/use-run-view';
+import { useRunView } from '../net/use-run-view';
 import { LeaveButton } from './leave-button';
 import { Roster } from './roster';
 import { ShipCard } from './ship-card';
@@ -14,7 +14,8 @@ import { ShipCard } from './ship-card';
 // host GO + Leave bottom-right. Picking a ship/colour sends a message; the SERVER owns the change and patches
 // it back → the ECS bridge swaps the ship's model/tint live (WYSIWYG). Pick controls are belt-and-suspenders
 // disabled off-lobby (the server already gates them).
-export function LobbyOverlay( { room, view }: { room: Room< RunState >; view: RunView } ) {
+export function LobbyOverlay( { room }: { room: Room< RunState > } ) {
+    const view = useRunView( room );
     const self = view.players.find( ( p ) => p.id === view.selfId );
     const isHost = view.selfId === view.hostId;
     const locked = view.phase !== PHASE.lobby;
