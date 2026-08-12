@@ -85,6 +85,28 @@ function Ship({ entity }: { entity: Entity }) {
 </EffectComposer>
 ```
 
+**Driving out-of-Canvas / DOM-HUD work from the frame loop — `addEffect`, NEVER `setInterval`:**
+Work that lives *outside* the `<Canvas>` (a fixed DOM HUD overlay, a plain module) but must run every
+frame — or be throttled against live game state — must **not** spin its own timer. A `setInterval` is a
+*second clock* racing the render loop: visible stepping (usually then papered over with a CSS transition),
+wasted wakeups when idle, and drift from the sim clock. Hook R3F's single global render loop instead:
+```tsx
+import { addEffect } from '@react-three/fiber'
+
+// returns an unsubscribe fn; register once (module scope, or a mount-once effect)
+const stop = addEffect((timestamp) => {   // timestamp = ms from rAF, NOT delta — throttle yourself
+  // read live ECS/room state → write straight to a DOM ref / CSS var. No React state.
+})
+// teardown: stop()
+```
+Signature (verified from `@react-three/fiber` **9.7.0** source, `core/loop.ts`):
+`addEffect(cb: (timestamp: number) => void) => () => void` — a **global before-render** callback flushed
+once per frame by R3F's **single shared `requestAnimationFrame` loop** (the same loop that ticks every
+Canvas; it runs while any Canvas has `frameloop !== 'never'`). Siblings: **`addAfterEffect`** (after render),
+**`addTail`** (fires when rendering stops). Rule of thumb: **in-Canvas → `useFrame`; out-of-Canvas → `addEffect`.**
+A throttled HUD (e.g. a 10 Hz threat scan) compares `timestamp` deltas *inside* the one callback — never a
+`setInterval`. This is the exact primitive PR #85 missed.
+
 ## Performance Rules (the hot path)
 
 - **`useFrame(cb, priority?)`** signature: `(state, delta, xrFrame)`. `delta` is seconds. A **positive `priority`** hands you control of rendering — you must then call `state.gl.render(state.scene, state.camera)` yourself (needed when you have >1 composer/pass). Negative/zero priorities only order callbacks (ascending), they don't disable auto-render.
@@ -111,6 +133,7 @@ function Ship({ entity }: { entity: Entity }) {
 ## Anti-Patterns & Bad Practices (each with WHY)
 
 - **`setState` per frame** — WHY: triggers React reconciliation of the scene graph 60×/s; the framework was explicitly built to avoid this. Mutate refs.
+- **`setInterval`/`setTimeout` to poll game state or drive per-frame HUD/overlay updates** — WHY: a second clock racing the render loop → visible stepping (often masked with a CSS transition), wasted wakeups when idle, drift from the sim clock. Use `useFrame` inside the Canvas or `addEffect` outside it (both ride R3F's single loop — see "Driving out-of-Canvas / DOM-HUD work" above). A one-shot `setTimeout` for a genuine one-off delay is fine; a **recurring** timer touching live game state is the smell. (CONTRIBUTING §5; CLAUDE.md non-negotiables #4/#14.)
 - **Allocating inside `useFrame`** (`new Vector3()`, `[x,y,z]`, inline closures) — WHY: garbage per frame → GC pauses → visible jank in a fast racer. Pre-allocate and reuse.
 - **One `<mesh>` per projectile/pickup/star** — WHY: N draw calls + N reconciler nodes + N JS objects; kills both GPU and React. Instance them.
 - **`frameloop="demand"` for an action game** — WHY: you render every frame regardless, so demand mode adds `invalidate()` bookkeeping for zero benefit and can cause missed frames if you forget to invalidate. Use `"always"`.
@@ -131,6 +154,12 @@ function Ship({ entity }: { entity: Entity }) {
 - **`toneMapped={false}` everywhere** turns off ACES/tone mapping for that material — intentional for neon, wrong for realistic PBR surfaces; apply per-material, not globally.
 - **koota mutation + React:** mutating a callback-trait object does NOT notify React (that's the point). If a React component *should* react to a change, call the entity's change flag (`entity.changed(Trait)`); otherwise it stays silent — great for the render loop, surprising if you expected reactivity.
 - **Effect order matters** in `<EffectComposer>`: children run top-to-bottom. Bloom generally goes late; put tone-mapping/output considerations accordingly.
+- **DOM that must live *in* the scene graph** (anchored to a 3D point, not a fixed overlay) uses drei
+  **`<Html>`** or `createPortal` driven by a normal `useFrame` — never a `setInterval`. For a fixed
+  full-screen / edge overlay that samples live state per frame, use `addEffect` (see "Driving out-of-Canvas /
+  DOM-HUD work" above). Picking the clock is a **non-negotiable #14** decision: enumerate ≥5 options
+  (`addEffect` · `<Html>`+`useFrame` · publish a CSS var from the existing `net-loop` `useFrame` · rAF ·
+  `setInterval`) and take the purpose-built one — the timer ranks last.
 
 ## For This Project (neon runner: instancing, bloom, ECS→R3F bridge)
 

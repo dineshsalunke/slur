@@ -48,8 +48,16 @@ Pins: **tailwindcss 4.3.3**, **@tailwindcss/vite 4.3.3** — pin via the pnpm ca
   exists to kill. One system.
 - **`@apply` everywhere** — WHY: recreates vanilla CSS, loses the co-location benefit.
 - **Per-frame `className` churn from gameplay state** — WHY: toggling classes 60×/s re-renders the React tree
-  (non-negotiable #4). A fast cue (e.g. the threat vignette, #38) drives an opacity ref/inline-style
-  imperatively, never by class-toggling every frame.
+  (non-negotiable #4). A fast cue (e.g. the threat vignette, #38) keeps **all static styling in Tailwind
+  classes** and drives the ONE dynamic value through a **CSS custom property** written imperatively
+  (`el.style.setProperty('--threat', x)`; the class reads it, `opacity-[var(--threat)]`) — never a hand-rolled
+  inline `style={{}}` object, and never class-toggling every frame.
+- **A hand-rolled `style={{}}` object where Tailwind classes would do** — WHY: Tailwind v4 **is** configured;
+  an inline style object is the training-default habit, not the stack's idiom, and it re-fragments the styling
+  system this migration exists to unify. Arbitrary-value classes cover the exotic cases
+  (`bg-[radial-gradient(...)]`, `inset-0`, `z-20`, `[transition:opacity_120ms_linear]`); a lone dynamic value
+  goes through a CSS custom property (above). (non-negotiable #13, PR #85 — a HUD shipped a full inline style
+  object with Tailwind sitting right there.)
 
 ## For this project
 

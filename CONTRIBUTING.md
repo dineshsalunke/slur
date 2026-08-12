@@ -82,6 +82,17 @@ These are rejected on sight. Each one has already cost this project real time.
 - **`Math.random()` / `Date.now()` / `Math.sin` inside the deterministic sim.** They break determinism.
   Use seeded, deterministic math (e.g. a triangle wave for pacing). Client-only cosmetics may use them.
 - **Fragment shorthand `<>`** and **more than one component per file** (see house style).
+- **A reflexive `setInterval`/`setTimeout` polling live game state.** A HUD or system that spins its own timer
+  to sample `room.state`/ECS when the frame loop is the right clock (it under-samples the patch stream and
+  drifts as a second clock). Per-frame work *outside* the Canvas rides R3F **`addEffect`** (global per-frame
+  callback); DOM that belongs *in* the scene uses drei **`<Html>`**/`createPortal` driven by `useFrame`; shared
+  per-frame values flow through the existing loop, never a private timer. Enumerate ≥5 mechanisms and pick the
+  purpose-built one (non-negotiable #14). (Cost us a redundant clock in PR #85.)
+- **A hand-rolled `style={{}}` object for DOM UI when Tailwind is configured.** DOM UI is Tailwind classes;
+  arbitrary values cover the exotic cases (`bg-[radial-gradient(...)]`, `inset-0`, `z-20`). A single *dynamic*
+  value (e.g. proximity→opacity) is driven imperatively through a **CSS custom property** the classes read
+  (`el.style.setProperty('--threat', x)` + `opacity-[var(--threat)]`), never a full inline style object copied
+  from training habit (non-negotiable #13). (PR #85.)
 
 ## 6. The verify gate
 

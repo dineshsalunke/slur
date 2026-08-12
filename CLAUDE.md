@@ -144,6 +144,30 @@ litmus: "would two clients disagreeing on this field desync the game?" (yes → 
     Claude commit made in the shared checkout; it never touches a human's manual commits (gated on `CLAUDECODE`)
     and always allows worktree commits. Full protocol below ("Concurrent agents"). Backing memory:
     `shared-checkout-use-worktree`.
+13. **Write to the INSTALLED stack, not to training-default habits — verify the mechanism before you type it**
+    (per explicit user directive, 2026-08-12, after PR #85). Before writing code in a subsystem, confirm what
+    the project *actually* uses and how **that** tool wants the job done: read the subsystem `conventions/*.md`,
+    then the **official docs / typed API for the installed version** (source-precedence: official docs → project
+    repo/README/CHANGELOG/`.d.ts` → upstream source, `node_modules` implementation **last resort** → ask). A
+    stack fact that underwrites code — an API, flag, version, feature — must be **verified-this-session**, never
+    recalled. "Most code I've seen does X" is not evidence; it is usually the mediocre default, and model
+    training priors skew hard toward it. **Incident (PR #85):** a HUD hand-rolled a `style={{}}` object while
+    **Tailwind v4** was configured, and reached for `setInterval` while **R3F ships `addEffect`** (a global
+    per-frame callback, `(cb) => () => void`, that runs *outside* the Canvas) — both because a default habit was
+    written down instead of the stack being checked. Read the docs/`.d.ts` *first*; the primitive you reflexively
+    know is rarely the one the stack provides.
+14. **No reflexive primitive — enumerate ≥5 options, weigh them, then choose (and record why)** (per explicit
+    user directive, 2026-08-12, after PR #85). For any *mechanism* decision — how something runs each frame,
+    where state lives, how a resource is owned, how two systems talk — the trained defaults (`setInterval` /
+    `setTimeout`, `useEffect`, `useState`, a fresh `requestAnimationFrame` loop, prop-drilling) are the **last**
+    candidates, not the first. Understand the requirement, survey the installed stack for the **purpose-built**
+    mechanism, list **at least five** candidates, weigh each (correctness · one-clock-vs-many · re-render cost ·
+    idiom-fit · reuses-existing-loop), and commit the winner with a one-line rationale in the code or PR.
+    **Incident (PR #85):** a per-frame threat scan shipped as a *third* competing `setInterval` (then papered
+    over with a CSS transition to hide the 100 ms stepping) because no alternatives were enumerated; the real
+    option set was R3F `addEffect` · drei `<Html>`/`createPortal` driven by `useFrame` · the existing `net-loop`
+    `useFrame` publishing a `--threat` CSS var · a raw rAF — and the timer ranked **last**. A raw
+    `setInterval`/`setTimeout` polling live game state is **rejected on sight** (CONTRIBUTING §5).
 
 ## Dev workflow
 
