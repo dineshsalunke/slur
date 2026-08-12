@@ -6,9 +6,15 @@ import './app.css';
 // Base styling that used to live in app.css html/body rules is now Tailwind utilities on <html>/<body>: a
 // committed dark theme (no light mode) and a full-screen canvas app that never scrolls (overflow-hidden).
 // Preflight already resets margin + box-sizing, so only the theme/layout intent remains here.
+//
+// `leading-[normal]` keeps this migration visually null. Preflight sets `line-height: 1.5` on the root; the
+// deleted app.css never set one, so the UI ran at the UA `normal` (~1.2). Inheriting 1.5 grew EVERY surface
+// — wordmark 47→60px, ship card 94→114px, roster row 16→20px. Note this is NOT `leading-normal`: that is
+// Tailwind's own token and resolves to 1.5, the very value being undone. Moving to 1.5 may be an improvement,
+// but it is a design change across every surface and belongs to the human feel-gate, not to a refactor.
 export function Layout( { children }: { children: React.ReactNode } ) {
     return (
-        <html lang="en" className="overflow-hidden [color-scheme:dark]">
+        <html lang="en" className="overflow-hidden leading-[normal] [color-scheme:dark]">
             <head>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />

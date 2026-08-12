@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 // SPECTATING, and the finish-time tag. Border colour lives in the variant so the accent variants never collide
 // with the default hairline. `default` is the neutral YOU tag.
 const VARIANT = {
-    default: 'border-[rgba(230,241,255,0.35)]',
+    default: 'border-hud/35',
     host: 'border-cyan text-cyan',
     spec: 'border-magenta text-magenta',
     fin: 'border-fin text-fin',

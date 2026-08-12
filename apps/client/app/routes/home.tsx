@@ -51,7 +51,7 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
             <main className="relative z-[2] grid min-h-screen grid-rows-[auto_1fr]">
                 <header className="flex items-center justify-between gap-4 px-7 py-[22px]">
                     <div className="flex items-baseline gap-3">
-                        <h1 className="ml-[0.42em] text-[clamp(26px,3.4vw,40px)] font-extrabold tracking-[0.42em] text-[#eaf6ff] [text-shadow:0_0_18px_rgba(0,229,255,0.55),0_0_42px_rgba(0,229,255,0.28)]">
+                        <h1 className="ml-[0.42em] text-[clamp(26px,3.4vw,40px)] font-extrabold tracking-[0.42em] text-wordmark text-shadow-wordmark">
                             SLUR
                         </h1>
                         <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-dim">
@@ -62,11 +62,8 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
 
                 <section className="grid h-full content-end justify-start px-7 pb-11">
                     <div className="mb-[26px] max-w-[540px]">
-                        <h2 className="mb-3 text-balance text-[clamp(28px,4vw,46px)] font-bold leading-[1.04] text-[#f3f8ff]">
-                            Race your friends.{ ' ' }
-                            <em className="not-italic text-marigold [text-shadow:0_0_22px_rgba(255,159,28,0.5)]">
-                                Wreck
-                            </em>{ ' ' }
+                        <h2 className="mb-3 text-balance text-[clamp(28px,4vw,46px)] font-bold leading-[1.04] text-headline">
+                            Race your friends. <em className="not-italic text-marigold text-shadow-marigold">Wreck</em>{ ' ' }
                             their run.
                         </h2>
                         <p className="m-0 max-w-[46ch] text-[15px] leading-[1.5] text-dim">
@@ -86,7 +83,7 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                                 </label>
                                 <input
                                     id="callsign"
-                                    className="rounded-[2px] border border-line-2 bg-black/35 px-3.5 py-3 font-mono text-[15px] text-fg outline-none transition-[border-color,box-shadow] duration-[180ms] focus:border-cyan focus:shadow-[0_0_0_3px_rgba(0,229,255,0.16)]"
+                                    className="rounded-[2px] border border-line-2 bg-black/35 px-3.5 py-3 font-mono text-[15px] text-fg outline-none transition-[border-color,box-shadow] duration-[180ms] focus:border-cyan focus:shadow-focus"
                                     type="text"
                                     value={ name }
                                     maxLength={ 16 }

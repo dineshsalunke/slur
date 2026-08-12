@@ -37,12 +37,12 @@ export function HeldPowerChip( { room }: { room: Room< RunState > } ) {
     return (
         <HudPanel
             accent="gold"
-            className="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 px-3 py-1.5 font-mono text-[14px] font-bold tracking-[2px]"
+            className="fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 px-3 py-1.5 font-mono text-[14px] font-bold leading-none tracking-[2px]"
         >
             <span className="inline-flex h-5 w-5 items-center justify-center rounded-[4px] border border-gold text-[12px] text-gold">
                 E
             </span>
-            <span className="text-gold [text-shadow:0_0_10px_rgba(255,210,74,0.7)]">{ LABEL[ held ] ?? '—' }</span>
+            <span className="text-gold text-shadow-power">{ LABEL[ held ] ?? '—' }</span>
         </HudPanel>
     );
 }

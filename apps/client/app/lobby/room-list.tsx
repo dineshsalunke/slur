@@ -23,7 +23,7 @@ export function RoomList( { onJoin, busy }: { onJoin: ( roomId: string ) => void
             <div className="mb-0.5 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-dim">
                 <span>Live rooms</span>
                 <span className="inline-flex items-center gap-1.5">
-                    <span className="pulse-dot h-[7px] w-[7px] rounded-full bg-spring shadow-[0_0_8px_var(--color-spring)]" />
+                    <span className="pulse-dot h-[7px] w-[7px] rounded-full bg-spring shadow-live" />
                     { rooms.length } online
                 </span>
             </div>

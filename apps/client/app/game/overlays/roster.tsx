@@ -14,7 +14,7 @@ export function Roster( { players, hostId, selfId }: { players: PlayerView[]; ho
                     className={ `flex items-center gap-2 text-[13px] ${ p.connected ? '' : 'opacity-40' }` }
                 >
                     <ColorDot hex={ colorHex( p.colorId ) } />
-                    <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <span className="flex-auto overflow-hidden text-ellipsis whitespace-nowrap">
                         { p.name || 'Racer' }
                     </span>
                     { p.id === hostId && <Tag variant="host">★</Tag> }
@@ -25,7 +25,7 @@ export function Roster( { players, hostId, selfId }: { players: PlayerView[]; ho
             ) ) }
             { players.length === 0 && (
                 <li className="flex items-center gap-2 text-[13px] opacity-40">
-                    <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <span className="flex-auto overflow-hidden text-ellipsis whitespace-nowrap">
                         Waiting for racers…
                     </span>
                 </li>

@@ -27,17 +27,62 @@
     --color-line: rgba( 120, 160, 200, 0.14 ); /* hairline */
     --color-line-2: rgba( 120, 160, 200, 0.26 ); /* stronger hairline */
     --color-glass-2: rgba( 14, 20, 32, 0.72 ); /* landing panel glass */
+    --color-ink: #04222a; /* dark ink ON the solid cyan CTA — the only place text sits on brand cyan */
+    --color-wordmark: #eaf6ff; /* landing SLUR wordmark */
+    --color-headline: #f3f8ff; /* landing lead headline */
 
     /* Type. display = UI sans; mono = the LCARS-ish label/readout face. */
     --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
 
-    /* Neon glows (box-shadows). Referenced as shadow-* so a glow change is one edit, not N className rgbas. */
+    /* Neon glows. EVERY glow in the app is a token here — the @theme block is the ONE place a brand colour is
+       allowed to appear literally, so re-tuning the neon (or the palette) is a single-file edit and no
+       className carries a raw rgba. Three namespaces because CSS needs three different properties:
+       --shadow-* → box-shadow, --drop-shadow-* → filter (a box-shadow is clipped by the chamfer clip-path),
+       --text-shadow-* → text-shadow. All three are stock Tailwind v4 theme namespaces (verified against the
+       installed 4.3.3 theme.css + the theme-variables docs), so each emits a same-named utility. */
     --shadow-hud: 0 0 18px rgba( 0, 229, 255, 0.25 ), inset 0 0 12px rgba( 0, 229, 255, 0.08 ); /* cyan glass panel */
     --shadow-hud-magenta: 0 0 18px rgba( 255, 43, 214, 0.3 ); /* spectator panel */
     --shadow-hud-gold: 0 0 16px rgba( 255, 210, 74, 0.35 ); /* held-power chip */
     --shadow-go: 0 0 14px rgba( 0, 229, 255, 0.5 ); /* primary GO button */
     --shadow-dot: 0 0 8px currentColor; /* the colour dot / live dot glow — inherits the element's colour */
+    --shadow-live: 0 0 8px var( --color-spring ); /* live-room pulse dot */
+    --shadow-focus: 0 0 0 3px rgba( 0, 229, 255, 0.16 ); /* call-sign focus ring */
+    --shadow-ship-on: 0 0 10px rgba( 0, 229, 255, 0.4 ); /* selected ship card */
+    --shadow-stat: 0 0 6px rgba( 255, 159, 28, 0.75 ); /* ship-card stat-bar fill */
+    --shadow-swatch: 0 0 10px var( --color-white ); /* selected colour swatch ring */
+
+    /* Landing CTA glow — a drop-shadow FILTER, not a box-shadow: the chamfer clip-path would clip a box-shadow. */
+    --drop-shadow-cta: 0 0 14px rgba( 0, 229, 255, 0.5 );
+    --drop-shadow-cta-hover: 0 0 20px rgba( 0, 229, 255, 0.78 );
+
+    --text-shadow-wordmark: 0 0 18px rgba( 0, 229, 255, 0.55 ), 0 0 42px rgba( 0, 229, 255, 0.28 ); /* SLUR */
+    --text-shadow-marigold: 0 0 22px rgba( 255, 159, 28, 0.5 ); /* "Wreck" in the lead headline */
+    --text-shadow-timer: 0 0 10px rgba( 0, 229, 255, 0.7 ); /* race timer readout */
+    --text-shadow-count: 0 0 40px rgba( 0, 229, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
+    --text-shadow-power: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power chip label */
+}
+
+/* Backdrop scrim over the fixed live-3D Canvas: a centre-clear vignette + a top/bottom fade so the
+   front-of-house UI stays legible against the moving scene. A custom @utility (Tailwind's own extension
+   point — NOT @apply, NOT vanilla CSS) because five colour stops in one arbitrary `bg-[…]` value is a
+   ~400-character unreadable class; here every stop derives from --color-void, so the palette stays one edit.
+   color-mix with `transparent` is exact: premultiplied interpolation yields the same colour at the stated
+   alpha, which is also what `bg-void/55` compiles to elsewhere. */
+@utility scrim {
+    background:
+        radial-gradient(
+            120% 90% at 50% 8%,
+            transparent 40%,
+            color-mix( in oklab, var( --color-void ) 55%, transparent ) 100%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix( in oklab, var( --color-void ) 72%, transparent ) 0%,
+            transparent 22%,
+            transparent 60%,
+            color-mix( in oklab, var( --color-void ) 40%, transparent ) 100%
+        );
 }
 
 /* Chamfer motif — the de-rounded cut-corner geometry (top-left + bottom-right), the signature TRON/Trek shape.

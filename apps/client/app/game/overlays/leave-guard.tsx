@@ -31,7 +31,7 @@ export function LeaveGuard( { phase }: { phase: number } ) {
 
     if ( blocker.state !== 'blocked' ) return null;
     return (
-        <div className="pointer-events-auto fixed inset-0 z-40 grid place-items-center bg-[rgba(5,6,10,0.55)]">
+        <div className="pointer-events-auto fixed inset-0 z-40 grid place-items-center bg-void/55">
             <HudPanel className="px-3.5 py-3 text-center">
                 <p className="mb-4">Leave the race in progress?</p>
                 <div className="flex justify-end gap-2.5">
