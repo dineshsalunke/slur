@@ -56,6 +56,11 @@ export function ShipCard( {
     const ship = shipOf( shipId );
     const shipClass = classOfShip( shipId );
 
+    // The three text nodes pin an explicit leading. Preflight's `button { font: inherit }` swaps the UA button
+    // font (Arial) for the page stack (system-ui), and `line-height: normal` is FONT-METRIC dependent — so
+    // every line box grew 1px (name 14→15, class 10→11, four stat rows 9→10) and the card with it, 94→100px.
+    // Pinning the leading makes the card height independent of which font resolves, which is what a
+    // fixed-size HUD chip wants anyway.
     return (
         <button
             type="button"
@@ -65,12 +70,12 @@ export function ShipCard( {
             aria-label={ `${ ship.name }, ${ shipClass.name } class` }
             onClick={ onPick }
         >
-            <span className="text-[12px] uppercase tracking-[1.5px] text-cyan">{ ship.name }</span>
-            <span className="text-[9px] uppercase tracking-[1px] opacity-65">{ shipClass.name }</span>
+            <span className="text-[12px] leading-[14px] uppercase tracking-[1.5px] text-cyan">{ ship.name }</span>
+            <span className="text-[9px] leading-[10px] uppercase tracking-[1px] opacity-65">{ shipClass.name }</span>
             <span className="mt-[3px] flex flex-col gap-[3px]">
                 { AXES.map( ( axis, i ) => (
                     <span className="flex items-center gap-[5px]" key={ axis.label }>
-                        <span className="w-6 text-[8px] tracking-[0.5px] opacity-55">{ axis.label }</span>
+                        <span className="w-6 text-[8px] leading-[9px] tracking-[0.5px] opacity-55">{ axis.label }</span>
                         <span className="h-[3px] flex-1 overflow-hidden rounded-[2px] bg-cyan/[0.14]">
                             <span
                                 className="block h-full bg-marigold shadow-stat"
