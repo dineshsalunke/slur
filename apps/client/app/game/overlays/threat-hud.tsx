@@ -1,13 +1,26 @@
 import type { Room } from '@colyseus/sdk';
 import { addEffect } from '@react-three/fiber';
-import type { RunState } from '@slur/shared';
+import { BOLT_SPEED, type RunState } from '@slur/shared';
 import { Fragment, useEffect, useRef } from 'react';
 
-// How far BEHIND the local ship a hostile bolt registers as a threat (units). Bolts fly +z at BOLT_SPEED (120)
-// — faster than any ship — so only bolts to your REAR are closing; ahead ones outrun you. ~70u ≈ a ~0.7s warning.
+// How far BEHIND the local ship a hostile bolt registers as a threat (units). Bolts fly +z at BOLT_SPEED —
+// far faster than any ship — so only bolts to your REAR are closing; ahead ones outrun you.
 // Exported so the test derives its boundary from the constant instead of pinning the literal (a feel retune
 // shouldn't redden a test).
 export const THREAT_Z = 70;
+// How much warning THREAT_Z actually buys, in seconds — DERIVED from the imported constant, never restated.
+// This block previously said "BOLT_SPEED (120)" and "~70u ≈ a ~0.7s warning" while BOLT_SPEED was really 900,
+// so the documented warning was ~8.5x too long (issue #105). A number copied into prose cannot be
+// type-checked and drifts silently the moment the constant it copied is retuned; a derived one cannot.
+//
+// This is the FLOOR. Closing speed is BOLT_SPEED minus your own cruise, so a moving ship gets slightly more
+// than this and a stationary one gets exactly it; deriving from BOLT_SPEED alone keeps the figure independent
+// of which ship class you fly. At the shipped values that is well under a tenth of a second — only a handful
+// of frames, which is why the cue currently reads closer to a blink than a ramp.
+//
+// THREAT_Z is deliberately NOT changed here: how long the warning SHOULD be is a #11 feel call, and
+// VIGNETTE_RAMP_Z below is the knob for it.
+export const MIN_THREAT_WINDOW_S = THREAT_Z / BOLT_SPEED;
 // Lateral window (units): a bolt within this of your x shares your lane closely enough to matter.
 const THREAT_X = 6;
 // |dx| under this reads as "dead astern" (no side arrow); beyond it we point to the side the bolt is on.
