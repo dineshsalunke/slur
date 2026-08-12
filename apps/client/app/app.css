@@ -28,6 +28,8 @@
     --color-line-2: rgba( 120, 160, 200, 0.26 ); /* stronger hairline */
     --color-glass-2: rgba( 14, 20, 32, 0.72 ); /* landing panel glass */
     --color-ink: #04222a; /* dark ink ON the solid cyan CTA — the only place text sits on brand cyan */
+    --color-threat: #ff5c6e; /* incoming-bolt warning tick (issue #38) */
+    --color-threat-deep: #e81c30; /* deeper red for the edge-vignette rim */
     --color-wordmark: #eaf6ff; /* landing SLUR wordmark */
     --color-headline: #f3f8ff; /* landing lead headline */
 
@@ -61,6 +63,7 @@
     --text-shadow-timer: 0 0 10px rgba( 0, 229, 255, 0.7 ); /* race timer readout */
     --text-shadow-count: 0 0 40px rgba( 0, 229, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
     --text-shadow-power: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power chip label */
+    --text-shadow-threat: 0 0 12px rgba( 255, 92, 110, 0.85 ); /* incoming-bolt warning tick */
 }
 
 /* Backdrop scrim over the fixed live-3D Canvas: a centre-clear vignette + a top/bottom fade so the
@@ -88,6 +91,25 @@
 /* Chamfer motif — the de-rounded cut-corner geometry (top-left + bottom-right), the signature TRON/Trek shape.
    Two depths: `chamfer` (12px, panels) and `chamfer-btn` (7px, buttons). A custom @utility (Tailwind's own
    extension point, NOT vanilla CSS) because it's reused across the landing panel + both button variants. */
+/* Incoming-bolt threat vignette (issue #38): transparent centre → red rim, so the danger reads in the
+   PERIPHERY and the corridor's vanishing point is never tinted. A custom @utility for the same reason as
+   `scrim` — the stops are unreadable as a ~200-char arbitrary `bg-[…]`, and the rim colour has to derive from
+   a token rather than a raw rgba in a className.
+
+   The two feel knobs live here as NAMED vars instead of magic numbers buried in a gradient string:
+     --threat-inner  where the clear centre ends (bigger = more track stays untinted)
+     --threat-outer  where the rim reaches full strength (>100% keeps the corner falloff gentle)
+   Element opacity is driven separately, per-frame, from `--threat` (see threat-hud.tsx). */
+@utility threat-vignette {
+    --threat-inner: 40%;
+    --threat-outer: 115%;
+    background: radial-gradient(
+        ellipse at center,
+        transparent var( --threat-inner ),
+        color-mix( in oklab, var( --color-threat-deep ) 90%, transparent ) var( --threat-outer )
+    );
+}
+
 @utility chamfer {
     clip-path: polygon( 12px 0, 100% 0, 100% calc( 100% - 12px ), calc( 100% - 12px ) 100%, 0 100%, 0 12px );
 }
