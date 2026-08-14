@@ -8,7 +8,7 @@
 ## 1. Audio pillar
 
 **Driving synthwave over a sci-fi cockpit.** Music is a pulsing, propulsive electronic score (the
-TRON: Legacy / Daft Punk lineage); the UI and cockpit speak in clean Star-Trek-style computer blips.
+TRON: Legacy / Daft Punk lineage); the UI and cockpit speak in clean TRON synth-UI blips (see §2).
 Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell **speed** and give
 **instant combat feedback** — you should *hear* a bolt coming before you see it.
 
