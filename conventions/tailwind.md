@@ -63,8 +63,8 @@ Pins: **tailwindcss 4.3.3**, **@tailwindcss/vite 4.3.3** — pin via the pnpm ca
 
 - Migration surface is bounded: `app.css` + `overlays.css` + `overlays-panels.css` + `overlays-hud.css` (4
   files) — issue **#37**.
-- The **LCARS HUD restyle (#32)** must be done *in* Tailwind — it depends on / merges into #37. Don't restyle
-  vanilla CSS that's about to be deleted.
+- The **TRON HUD restyle (#32; was "LCARS HUD restyle" — LCARS dropped 2026-08-12, see #117)** must be done
+  *in* Tailwind — it depends on / merges into #37. Don't restyle vanilla CSS that's about to be deleted.
 - Pin versions via the catalog; keep this file's **verified** date current on upgrades.
 
 ## References

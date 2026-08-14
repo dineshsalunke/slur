@@ -300,7 +300,7 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine/Shield/Boost/auto-lock = fast-follows |
 | Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); `armour` (stun-multiplier sidegrade) → **S6 REMAINING** |
 | **Audio** — singleton engine, synth hum (pitch∝speed), CC0 SFX + CC-BY music, positional, event-bound | **LIVE (S6)** | `app/audio/**`; `M`=mute; `RemoteEngineAudio` not hear-verified |
-| **Front-of-house UI** — de-rounded neon landing over Grid-Void (cyan×marigold), LCARS-neon system | **LIVE (S6)** | lobby pick-UI stats + in-game env integration REMAINING |
+| **Front-of-house UI** — angular neon landing over Grid-Void (cyan×marigold), **full-TRON** system | **LIVE (S6)** | LCARS dropped → TRON (ADD §1/§7; issue #117); lobby pick-UI stats + in-game env integration REMAINING |
 | Session flow (lobby→race→results, standings, restart) | **LIVE (S4)** | round lifecycle + room list + spectator + host migration |
 | ~~Survival mode (endless + chase-wall)~~ | **DROPPED (ADR-004)** | replaced by longer finite tracks; Race is the only mode |
 
