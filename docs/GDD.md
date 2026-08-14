@@ -217,7 +217,11 @@ strafe-or-destroy** — the two mechanics never overlap.
 **Model = hitbox (WYSIWYG, LOCKED).** Each class is one of our five CC0 models, **uniform-scaled** so its visible
 box IS its AABB collision footprint — you die exactly when the ship touches. Height is cosmetic (bodies are solid
 ground-up; Y doesn't change kill logic), so all visual flair lives in the vertical/overhang budget and cannot
-affect fairness. Footprints are **derived from the measured model proportions**, not hand-set:
+affect fairness. Footprints are **derived from the measured model proportions**, not hand-set. *(Verified
+2026-08-14: each model's rendered box equals its footprint to the millimetre — no node-transform surprises. So
+how **big a ship reads on screen** is set by the **chase-camera framing** (ADD §6) and by the class's footprint
+size — never a scale bug. The Comet/`bob` reads smallest because its footprint is deliberately the tiniest; that
+is data, not an error.)*
 
 | Class | Model | Footprint W × L (cells) | W × L (u) | Weave | Gap | Fantasy |
 |---|---|:--:|:--:|:--:|:--:|---|

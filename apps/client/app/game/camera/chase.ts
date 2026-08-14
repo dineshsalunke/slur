@@ -3,6 +3,21 @@ import type { World } from 'koota';
 import type { Group, PerspectiveCamera } from 'three';
 import { LocalPlayer, Net, Remote, Render, Sim } from '../ecs/traits';
 
+// Chase-cam framing (live-tunable). The ship is small on screen when the cam is high, far back, wide-FOV,
+// AND aimed far ahead — all four compound. These knobs trade "ship reads big/centred" against "see over the
+// 8u pillars to plan your line" (ADR-006). Height stays ABOVE BLOCK_HEIGHT (8u) so the see-over vantage is
+// kept; the ship is pulled bigger via the other three levers (closer aim, tighter FOV, shorter trail).
+const CHASE = {
+    height: 9, // u above the ship — MUST stay > BLOCK_HEIGHT (8) or the nearest pillar hides the field
+    back: 11, // u behind at rest (was 14 — closer ⇒ ship bigger)
+    backStretch: 3, // extra u of trail at top speed (back += speed/maxCruise · this)
+    lookAhead: 7, // u ahead of the ship the cam aims at (was 14 — nearer aim ⇒ ship centred + larger)
+    lookAtLift: 2, // u above the ship the aim point sits (was 0.5 — lifts the horizon so the ship rides higher)
+    fov: 60, // deg at rest (was 70 — tighter ⇒ ship bigger, less fish-eye)
+    fovStretch: 15, // extra deg of FOV at top speed (speed-kick; was 20, now 60→75 instead of 70→90)
+    follow: 16, // rubberband stiffness (exp ease, frame-rate independent)
+};
+
 // Chase cam: behind + above the ship, rubberband follow (exp ease, frame-rate independent),
 // speed-based trail stretch, look-ahead, and speed-FOV. Called from the Loop (no own useFrame),
 // so R3F's auto-render stays on.
@@ -18,17 +33,15 @@ export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: num
     const net = e.get( Net );
     const maxCruise = net ? tuningForShip( net.shipId ).maxCruise : DEFAULT_TUNING.maxCruise;
 
-    const k = 1 - Math.exp( -16 * dt ); // rubberband lag-follow
-    const back = 14 + ( speed / maxCruise ) * 3; // trail-stretch with speed
+    const k = 1 - Math.exp( -CHASE.follow * dt ); // rubberband lag-follow
+    const back = CHASE.back + ( speed / maxCruise ) * CHASE.backStretch; // trail-stretch with speed
 
     cam.position.x += ( p.x - cam.position.x ) * k;
-    // Sit ABOVE the 8u walls (BLOCK_HEIGHT) so you can SEE OVER the pillars and PLAN your line — a low chase
-    // cam hides everything behind the nearest wall. Higher vantage + look further ahead and slightly down.
-    cam.position.y += ( p.y + 9 - cam.position.y ) * k;
+    cam.position.y += ( p.y + CHASE.height - cam.position.y ) * k;
     cam.position.z += ( p.z - back - cam.position.z ) * k; // forward = +z, trail behind
-    cam.lookAt( p.x, p.y + 0.5, p.z + 14 ); // look-ahead, angled down over the incoming field
+    cam.lookAt( p.x, p.y + CHASE.lookAtLift, p.z + CHASE.lookAhead ); // near-ahead aim, ship rides high in frame
 
-    const fov = 70 + ( speed / maxCruise ) * 20;
+    const fov = CHASE.fov + ( speed / maxCruise ) * CHASE.fovStretch;
     if ( Math.abs( cam.fov - fov ) > 0.1 ) {
         cam.fov = fov;
         cam.updateProjectionMatrix();
