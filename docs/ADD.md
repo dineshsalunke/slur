@@ -61,6 +61,15 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 ## 6. Camera — **third-person chase** (decided)
 - Chase cam behind + slightly above the ship, low and close for speed. First-person is rejected: it hides your ship's hue/trail (your **identity** signal) and worsens dodge awareness.
 - **Aim at a look-ahead point** *ahead* of the ship (not the ship itself) so you read incoming track early.
+- **Framing tuned to keep your ship readable (first pass, 2026-08-14 — feel-gate pending).** The
+  raised-above-walls vantage (ADR-006: height > `BLOCK_HEIGHT` = 8u so you see over the pillars and plan your
+  line) compounded with a *far* look-ahead + wide FOV made the player's own ship a tiny speck low on screen
+  (near-invisible for the short-hulled Comet/`bob`). Resolution: **keep the height** (see-over is load-bearing)
+  and pull the ship bigger + higher via the other three levers — **shorter look-ahead, tighter base FOV,
+  closer trail, lifted aim**. Knobs are named + commented in `apps/client/app/game/camera/chase.ts` (`CHASE`),
+  live-tunable. On-screen ship *size* is dominated by this framing, **not** by model scale (locked to the
+  collision footprint — GDD §5.5), so "the ship looks small" is a camera or class-size question, never a scale
+  bug. The look-ahead↔see-over trade stays a feel-gate tune.
 - **Speed cues:** FOV widens + camera pulls back on boost; subtle bank into strafes; light shake at high speed.
 - **On hit/stun: spin the *ship*, keep the *camera* stable** — disrupt without disorienting (fair, not nauseating).
 - **Comfort options (day one):** sliders to dampen shake / FOV-kick / chromatic aberration — cheap motion-sickness insurance.
