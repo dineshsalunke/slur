@@ -19,7 +19,7 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 
 ## 2. References
 - **Music:** TRON: Legacy (Daft Punk), Carpenter Brut / Mitch Murder / Kavinsky (synthwave), Blur (2010) OST energy.
-- **UI/cockpit:** Star Trek LCARS computer chirps/confirms; clean, warm, non-annoying.
+- **UI/cockpit:** TRON synth-UI — clean electronic chirps/confirms (Wendy Carlos 1982 tones ↔ Daft Punk *Legacy* palette); non-annoying. *(Was "Star Trek LCARS chirps" — replaced by the full-TRON pivot; concrete SFX set decided in issue #117.)*
 - **Combat/impact:** arcade racer punchiness (Blur, Wipeout) — short, bright, satisfying.
 - **Wipeout series** overall — the gold standard for "electronic music + antigrav racing."
 
@@ -37,13 +37,13 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 | Boost | Rising whoosh + bass drop | Physical, brief, punchy |
 | Pickup collect | Bright confirm chime, category-tinted | Ties to the pickup color-code |
 | Fire (bolt) | Zappy laser transient | Directional |
-| Incoming threat | **Warning blip** (LCARS-style) | Hear the bolt/mine before impact — telegraph! |
+| Incoming threat | **Warning blip** (TRON synth-UI) | Hear the bolt/mine before impact — telegraph! |
 | Hit / disrupted | Impact + descending "spin" whine | Sells the stun without frustration |
 | Shield | Shimmer on-up, crack on-absorb | |
 | Mine drop / trigger | Soft *clunk* → pulse → detonation | |
 | Death (derezz) | TRON-style dissolve/glitch | Matches the visual derezz |
 | Respawn | Materialize / power-up sweep | |
-| UI (nav/select/confirm/error) | LCARS chirps | Consistent set, not per-screen randoms |
+| UI (nav/select/confirm/error) | TRON synth chirps | Consistent set, not per-screen randoms |
 | Countdown / go | Rising blips → downbeat | Syncs to run-start |
 
 *As-built hooks (S5): the combat **events** to bind SFX to now exist — `USE_POWERUP` fire, the `'hit'` broadcast, `stunTimer` (disrupt), pickup grab, and a directional threat-warning HUD (pairs with the "incoming" blip + OQ5 lead-time). No audio is implemented yet — S6 binds these.*
@@ -63,7 +63,7 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 - *OPEN:* is three's audio enough, or do we want Howler.js / a small Web Audio wrapper for buses & ducking? Decide after first pass — likely three.js is enough for v1.
 
 ## 7. Non-goals (v1)
-Dynamic adaptive music engine, voice-over/announcer (maybe later — an LCARS "computer" announcer would be *chef's kiss*), per-surface footstep-style detail.
+Dynamic adaptive music engine, voice-over/announcer (maybe later — a cool TRON-style "system" announcer would be *chef's kiss*), per-surface footstep-style detail.
 
 ## 8. OPEN QUESTIONS → RESOLVED (2026-08-10)
 1. **Music sourcing** — **CC-BY accepted:** in-run = Kevin MacLeod *"Neon Laser Horizon"* (CC-BY, one credit
@@ -71,7 +71,7 @@ Dynamic adaptive music engine, voice-over/announcer (maybe later — an LCARS "c
    (Sci-Fi / Interface / Digital / Impact) + a few Freesound CC0 one-shots → the SFX layer is zero-attribution.
 2. **Layered stems vs single loop** — **single loop first** (add intensity layers later only if it feels flat).
 3. **Audio tech** — **three.js `PositionalAudio` only for v1** (no Howler); revisit only if bus/ducking needs it.
-4. **Announcer** — **SFX-only for v1** (an LCARS "computer" voice is a maybe-later, per §7 non-goals).
+4. **Announcer** — **SFX-only for v1** (a TRON-style "system" voice is a maybe-later, per §7 non-goals).
 5. **Threat telegraph timing** — still a **feel-gate** tune (start ~0.6–0.8 s lead; adjust in playtest).
 
 *Asset shortlist + exact licenses live in `.claude/phases/2026-08-10-s6-identity.md` (audio sourcing block) →

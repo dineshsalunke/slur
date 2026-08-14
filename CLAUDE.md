@@ -8,7 +8,7 @@ pitch and flavour copy keep their voice. When clarity and voice conflict in tech
 **SLUR** is a casual **multiplayer ship-racer** — play it on the office **LAN** or **hosted on the web** — a
 party game about *messing with your friends*. Player-controlled flight down a **finite track to a finish line**
 — **Race** — over courses that range from short to long. SkyRoads (1993) speed/jump × Blur (2010) pickup-combat
-× [cuberun](https://github.com/akarlsten/cuberun) neon. **TRON / Star Trek** aesthetic. Server-authoritative,
+× [cuberun](https://github.com/akarlsten/cuberun) neon. **Full TRON** aesthetic (LCARS dropped 2026-08-12 — ADD §1/§7, issue #117). Server-authoritative,
 **round-based** — the host launches a run and everyone in the room races together; **join a room anytime and
 race the next round** (the field locks at GO; late joiners spectate). Asymmetric ship classes
 (Fighter/Freighter/Interceptor…).
