@@ -123,8 +123,9 @@ space. This section **persists that research** — it is INPUT for S6, not locke
 
 *Key files an S6 art pass would touch: `net-canvas.tsx`, `scene/track-view.tsx`, `scene/scenery.tsx`, `scene/ship-model.tsx`, `colors.ts` (+ `@slur/shared` `COLOR_COUNT`), `scene/explosions.tsx`; new `scene/environment.tsx` (built — env-lab), `scene/trails.tsx`.*
 
-**S6 direction LOCKED (2026-08-10):** aesthetic = **TRON colour/material × Trek-Wars geometry, de-rounded**
-(§1/§4/§7); palette = **cyan `#00e5ff` × marigold `#ff9f1c` ("gainda")**, magenta → one player hue; world =
+**S6 direction LOCKED (2026-08-10):** aesthetic = ~~**TRON colour/material × Trek-Wars geometry, de-rounded**~~
+**→ SUPERSEDED by the 2026-08-12 full-TRON pivot below** (§1/§4/§7; the angular result is unchanged, the
+Trek/Wars borrowings are dropped); palette = **cyan `#00e5ff` × marigold `#ff9f1c` ("gainda")**, magenta → one player hue; world =
 **hybrid open ribbon + distant non-collidable tube-walls** (resolves OQ2); post = **conservative** — bloom + fog
 + starfield + gradient only, chromatic-aberration / scanline / vignette **DEFERRED** to a post-12-ship
 legibility gate (resolves OQ4); **`COLOR_COUNT` 8→12**, value-staggered / max-pairwise auto-assign (resolves
