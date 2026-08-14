@@ -3,11 +3,12 @@
 // projectile pruning, and the pickup respawn timer all live on RunRoom, not inside simulate().
 
 import assert from 'node:assert/strict';
+import type { AddressInfo } from 'node:net';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { Server } from '@colyseus/core';
 import { getStateCallbacks } from '@colyseus/sdk';
-import { boot, type ColyseusTestServer } from '@colyseus/testing';
+import { ColyseusTestServer } from '@colyseus/testing';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import {
     COUNTDOWN_SECONDS,
@@ -24,9 +25,6 @@ import {
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { RunRoom } from './run-room.js';
-
-// Not 2567 — a dev server may already hold that port, and a test run must never depend on it being free.
-const TEST_PORT = 2568;
 
 // The room advances physics from setSimulationInterval, i.e. the wall clock. Waiting on real time would
 // cost over six seconds per run (3s countdown + 3s pickup respawn) and stay timing-flaky. So every test
@@ -55,11 +53,24 @@ describe( 'RunRoom combat', () => {
     let colyseus: ColyseusTestServer;
 
     before( async () => {
-        // boot() accepts a plain @colyseus/core Server (its second overload), so this mirrors index.ts
-        // without needing @colyseus/tools. The lobby room is irrelevant to combat, so it is left out.
-        const gameServer = new Server( { transport: new WebSocketTransport() } );
+        // Bind an EPHEMERAL port (0 → the OS hands back a guaranteed-free one) so the suite can never collide
+        // with a dev stack on a fixed port — the old hardcoded 2568 just moved the collision one port over (#111).
+        //
+        // We DON'T use @colyseus/testing's boot(): its Server-instance overload ignores the port argument and
+        // always binds its own DEFAULT_TEST_PORT (2568), so boot(gameServer, 0) would still land on 2568. boot's
+        // whole job for a Server is `listen()` then `new ColyseusTestServer(server)` — we do exactly that, but on
+        // port 0. This also drops the @colyseus/tools dependency the boot() comment was avoiding.
+        const transport = new WebSocketTransport();
+        const gameServer = new Server( { transport } );
         gameServer.define( ROOM_NAME, RunRoom );
-        colyseus = await boot( gameServer, TEST_PORT );
+        await gameServer.listen( 0 );
+        // Server.listen stores the LITERAL port it was given (0), but ColyseusTestServer reads `server.port` to
+        // build the client's ws:// URL — so backfill the REAL port the OS assigned, read off the HTTP server the
+        // transport is now listening on. `port` is protected (hence the cast), the same seam boot() reaches through.
+        const address = transport.server?.address() as AddressInfo | null;
+        assert.ok( address && typeof address === 'object', 'the test server bound a TCP port' );
+        ( gameServer as unknown as { port: number } ).port = address.port;
+        colyseus = new ColyseusTestServer( gameServer );
     } );
 
     after( async () => {
