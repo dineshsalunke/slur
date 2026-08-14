@@ -4,15 +4,24 @@
 
 ## 1. Visual pillar
 
-**Neon sci-fi / vector-glow — TRON meets Star Trek.** Dark void, bright emissive lines, heavy bloom. The
-world reads as light against black — a TRON grid rushing at you, flown with the clean optimistic sheen of
-Star Trek. This is both an aesthetic and a **performance strategy**: emissive lines + bloom look expensive
-but are cheap (few materials, lots of instancing).
+**Neon sci-fi / vector-glow — full TRON.** Dark void, bright emissive lines, heavy bloom. The world reads as
+light against black — a TRON grid rushing at you. This is both an aesthetic and a **performance strategy**:
+emissive lines + bloom look expensive but are cheap (few materials, lots of instancing).
 
 **Franchise inspiration:**
-- **TRON** — the grid, light-cycle trails, glowing edges, *derezz* dissolve on death, high-contrast neon on black. This is the core visual language.
-- **Star Trek** — sleek hopeful hardware, warp/energy motifs, and **LCARS**'s *information design* (colour-coded panel blocks, confident "computer" type) as the HUD/menu language. Keeps the neon from feeling grungy — clean, not cyberpunk-dirty.
-- **Aesthetic formula (locked 2026-08-10 — user direction):** **TRON supplies colour + material** (neon-on-black, HDR emissive, glow/bloom); **Star Trek + Star Wars supply shape + geometry — but *de-rounded*.** Take Trek's clean panel logic and Wars' hard-edged industrial paneling/greebles, and **subtract the roundness**: chamfered/angular corners, trapezoidal & hex panels — **NOT** LCARS's signature curves. Net: keep LCARS's *information design*, drop its rounded silhouette.
+- **TRON — the *single* visual language** (colour, material, geometry, UI, audio). The grid, light-cycle
+  trails, glowing edges, circuit-trace line-work, *derezz* dissolve on death, high-contrast neon on black.
+- **Aesthetic formula (locked 2026-08-12 — user direction; supersedes the 2026-08-10 blend):** **pure TRON
+  everywhere.** TRON supplies colour + material (neon-on-black, HDR emissive, glow/bloom) **and** shape +
+  UI + audio. Geometry is **TRON-native angular** — hard edges, chamfered/cut corners, hex/trapezoidal
+  frames (light-cycles, recognizers, the Grid are already de-rounded); roundness is reserved for **lights**
+  (status pips, glows, colour dots), never structural panels.
+- **Dropped (was 2026-08-10):** the Star Trek / **LCARS** *information-design* borrowing and the Star Wars
+  *greeble* borrowing. The three-way blend was muddy and LCARS carried a clone-Trek risk. Full TRON coheres
+  with what the game *is* — a light-cycle racer.
+- **Which TRON is still OPEN** — 1982 minimal vector vs *TRON: Legacy* (2010) sleek circuit-UI, or a
+  deliberate blend. Reference collection + the decision live in **issue #117**; §7 UI specifics are OPEN
+  until it lands.
 
 Anchor reference: **cuberun** (the neon tunnel). Motion reference: **SkyRoads** (floating ribbon track in
 space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
@@ -40,7 +49,7 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 - **Track:** a ribbon/tube of glowing edges and lane lines; hazards are bold primitive forms (blocks, gaps, gates).
 - **Pickups:** floating platonic/geometric icons that spin — shape encodes type, color encodes category.
 - Minimal texture detail; the "detail" is light, motion, and trails.
-- **Geometry = de-rounded Trek/Wars (locked 2026-08-10):** panels, ship silhouettes, and HUD frames use **chamfered/angular corners and trapezoidal/hex forms**, not rounded LCARS curves. Hard edges + cut corners read as "spaceship console"; **roundness is reserved for *lights*** (status pips, glows, colour dots) — never structural panels. See §1 aesthetic formula.
+- **Geometry = TRON-native angular (locked 2026-08-12):** panels, ship silhouettes, and HUD frames use **chamfered/angular corners and trapezoidal/hex forms** — the language of light-cycles, recognizers, and the Grid. Hard edges + cut corners; **roundness is reserved for *lights*** (status pips, glows, colour dots) — never structural panels. *(Was "de-rounded Trek/Wars" 2026-08-10 — the Trek/Wars borrowings are dropped, but the angular result is unchanged: TRON is already hard-edged.)* See §1 aesthetic formula.
 
 ## 5. VFX (the juice)
 - **Bloom** (postprocessing EffectComposer) — the signature. Emissive materials + selective bloom on ships/pickups/track lines. See `conventions/r3f.md`.
@@ -57,12 +66,17 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 - **Comfort options (day one):** sliders to dampen shake / FOV-kick / chromatic aberration — cheap motion-sickness insurance.
 - **Death:** TRON derezz, then **spectator** follow-cam on the pack / cycle players.
 
-## 7. UI / HUD — **LCARS-flavored**
-- **LCARS-*derived*, de-rounded interface language (refined 2026-08-10):** take LCARS's *information design* — colour-coded panel blocks, confident "computer" type, instantly-readable chrome — but render it **angular, not rounded** (chamfered/cut corners, trapezoidal blocks per §4), matching the TRON×Trek/Wars formula in §1. Applied to lobby/host/join + the in-game HUD. Reads as "spaceship cockpit" without cloning Trek. *(A light-LCARS-rounded mockup was tried 2026-08-10 and rejected for being too soft — de-rounded is the call.)*
+## 7. UI / HUD — **TRON circuit-UI** *(direction OPEN — issue #117)*
+- **TRON interface language (locked-to-TRON 2026-08-12; specifics pending #117):** glowing circuit-line
+  frames, thin geometric type, animated trace-in reveals, high negative space, angular (chamfered/hex/
+  trapezoidal) panels per §4 — **not** LCARS's colour-coded panel blocks. Applied to landing/lobby/host/join
+  + the in-game HUD. The **which-TRON** call (1982 minimal vector vs *Legacy* sleek circuit-UI) and the
+  concrete frame/type/motion spec are collected + decided in **issue #117**. *(LCARS info-design was dropped
+  2026-08-12; the earlier de-rounded-LCARS mockup is retired.)*
 - HUD content: speed/fuel, held power-up, position/alive-count, mini threat indicators (incoming bolt/mine). **(S5 built:** `heldPower` chip + directional threat-warning HUD; dev stun/held/bolt readout. Speed/position/alive-count still to do.)
-- Diegetic-lite and minimal — LCARS styling, but never clutter the flight view; readable in peripheral vision at speed.
+- Diegetic-lite and minimal — never clutter the flight view; readable in peripheral vision at speed.
 - Death = **TRON derezz** dissolve; respawn = materialize-in.
-- *Caveat: LCARS is a distinctive look — evoke it, don't clone Trek assets/logos (it's an office toy, but keep it original).*
+- *Caveat: it's an office toy — evoke TRON, keep it original; don't lift film assets/logos.*
 
 ## 8. Performance-driven art constraints (hard rules)
 These exist so the art *stays* 60fps with 12 ships + pickups + projectiles:
@@ -109,8 +123,9 @@ space. This section **persists that research** — it is INPUT for S6, not locke
 
 *Key files an S6 art pass would touch: `net-canvas.tsx`, `scene/track-view.tsx`, `scene/scenery.tsx`, `scene/ship-model.tsx`, `colors.ts` (+ `@slur/shared` `COLOR_COUNT`), `scene/explosions.tsx`; new `scene/environment.tsx` (built — env-lab), `scene/trails.tsx`.*
 
-**S6 direction LOCKED (2026-08-10):** aesthetic = **TRON colour/material × Trek-Wars geometry, de-rounded**
-(§1/§4/§7); palette = **cyan `#00e5ff` × marigold `#ff9f1c` ("gainda")**, magenta → one player hue; world =
+**S6 direction LOCKED (2026-08-10):** aesthetic = ~~**TRON colour/material × Trek-Wars geometry, de-rounded**~~
+**→ SUPERSEDED by the 2026-08-12 full-TRON pivot below** (§1/§4/§7; the angular result is unchanged, the
+Trek/Wars borrowings are dropped); palette = **cyan `#00e5ff` × marigold `#ff9f1c` ("gainda")**, magenta → one player hue; world =
 **hybrid open ribbon + distant non-collidable tube-walls** (resolves OQ2); post = **conservative** — bloom + fog
 + starfield + gradient only, chromatic-aberration / scanline / vignette **DEFERRED** to a post-12-ship
 legibility gate (resolves OQ4); **`COLOR_COUNT` 8→12**, value-staggered / max-pairwise auto-assign (resolves
@@ -118,6 +133,14 @@ OQ3). Chosen environment prototype = **Grid Void** (`scene/environment.tsx`; vie
 Integrate into the net canvas + landing during S6 Implement; retune wall density/height + bloom at the gate.
 **AS-BUILT (2026-08-10):** landing UI shipped (de-rounded neon over Grid-Void, cyan×marigold); **REMAINING** —
 in-game net-canvas env integration, hull-colour on the ship, `COLOR_COUNT` 8→12, ship trails, dissolve derezz.
+
+**AESTHETIC PIVOT (2026-08-12 — user direction):** **LCARS dropped → full TRON** (see §1/§4/§7). The
+2026-08-10 TRON×Trek×Wars blend is superseded: TRON is now the *single* language for colour, material,
+geometry, UI, and audio. Angular geometry is unchanged (TRON-native); the **cyan×marigold "gainda" duo stays
+locked** (it's peak *Legacy* cyan-vs-orange — out of scope). OPEN and gated behind **issue #117**: which TRON
+era (1982 vs *Legacy*), the concrete UI/HUD frame+type+motion spec, the TRON audio-UI vocabulary (replacing
+the LCARS chirps in AUDIO.md), and a licensed TRON-appropriate typeface. #117 is a `design` issue — research +
+references + decision first, implementation spun out after.
 
 ## 12. Physics ⇄ visual split — **FROZEN** (ADR-002, 2026-08-10)
 
