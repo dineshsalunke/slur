@@ -133,7 +133,12 @@ export const START_SAFE = 6; // leading segments forced flat + full-width (spawn
 export const HALF_WIDTH = 32; // lateral half-extent → 16 lanes wide (2·HALF_WIDTH/CELL). Matches DEFAULT_TUNING.halfWidth.
 export const LANES = ( 2 * HALF_WIDTH ) / CELL; // 16 lateral cells (lanes).
 export const ZCELLS = SEG_LEN / CELL; // 5 forward cells (rows) per segment.
-export const MIN_LANE = 2 * CELL; // fairness: ≥2 contiguous open lanes (8u) guaranteed at every z-slice — even the widest class (Freighter 3.6u) threads with margin.
+// Fairness: ≥2 contiguous open lanes (8u) guaranteed at every z-slice. This is the generator's OWN floor and
+// is deliberately stricter than the GDD §0 contract (MIN_CLEAR = MAX_SHIP_WIDTH 4u + CLEARANCE_MARGIN 3u = 7u).
+// Do NOT restate a ship's width here: the previous comment claimed "Freighter 3.6u", which was stale and wrong
+// (the Freighter is 2.5u; the widest class is the Fighter at 2.6u). That hand-typed number is the exact failure
+// mode GDD §0 exists to prevent — roster conformance is enforced by the module-load assertion, never a comment.
+export const MIN_LANE = 2 * CELL;
 export const BLOCK_HEIGHT = 8; // cube top (y) = 2 cells. ABOVE double-jump reach on purpose → UN-jumpable: strafe around, never hop.
 export const BLOCK_DEPTH = 8; // z-depth (world u) of a block — a SHORT DISCRETE cube centered in the segment, NOT the full 20u segment. Short so you flick PAST obstacles instead of running beside a long wall. Tune for chunkier (↑) vs sparser/snappier (↓); same block COUNT either way (renderer-budget safe).
 export const PICKUP_SPACING = 3; // ADR-002: segments between pickup anchors → a pickup roughly every PICKUP_SPACING·SEG_LEN (≈60u): dense drops. Provider-materialized here (was combat/pickups.ts pre-ADR-002).

@@ -19,7 +19,7 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 
 ## 2. References
 - **Music:** TRON: Legacy (Daft Punk), Carpenter Brut / Mitch Murder / Kavinsky (synthwave), Blur (2010) OST energy.
-- **UI/cockpit:** TRON synth-UI — clean electronic chirps/confirms (Wendy Carlos 1982 tones ↔ Daft Punk *Legacy* palette); non-annoying. *(Was "Star Trek LCARS chirps" — replaced by the full-TRON pivot; concrete SFX set decided in issue #117.)*
+- **UI/cockpit:** clean electronic chirps/confirms — cold, sparse, functional, matching the "Cold Space. Warm Energy." visual direction; non-annoying. *(Was "Star Trek LCARS chirps", then "full-TRON synth-UI". **ADR-008** settles the aesthetic as TRON-*influenced* rather than an era pastiche and closes issue #117 as moot, so the concrete SFX set is now an ordinary open design task — not blocked on an era decision.)*
 - **Combat/impact:** arcade racer punchiness (Blur, Wipeout) — short, bright, satisfying.
 - **Wipeout series** overall — the gold standard for "electronic music + antigrav racing."
 

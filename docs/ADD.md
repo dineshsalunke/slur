@@ -238,13 +238,21 @@ Integrate into the net canvas + landing during S6 Implement; retune wall density
 **AS-BUILT (2026-08-10):** landing UI shipped (de-rounded neon over Grid-Void, cyan×marigold); **REMAINING** —
 in-game net-canvas env integration, hull-colour on the ship, `COLOR_COUNT` 8→12, ship trails, dissolve derezz.
 
-**AESTHETIC PIVOT (2026-08-12 — user direction):** **LCARS dropped → full TRON** (see §1/§4/§7). The
-2026-08-10 TRON×Trek×Wars blend is superseded: TRON is now the *single* language for colour, material,
-geometry, UI, and audio. Angular geometry is unchanged (TRON-native); the **cyan×marigold "gainda" duo stays
-locked** (it's peak *Legacy* cyan-vs-orange — out of scope). OPEN and gated behind **issue #117**: which TRON
-era (1982 vs *Legacy*), the concrete UI/HUD frame+type+motion spec, the TRON audio-UI vocabulary (replacing
-the LCARS chirps in AUDIO.md), and a licensed TRON-appropriate typeface. #117 is a `design` issue — research +
-references + decision first, implementation spun out after.
+**AESTHETIC PIVOT (2026-08-12 — user direction) — ⚠ ITSELF NOW SUPERSEDED, see ADR-008 / §1 above.**
+LCARS was dropped in favour of **full TRON** as the single language for colour, material, geometry, UI and
+audio, with the cyan×marigold "gainda" duo kept and the era question (1982 vs *Legacy*) gated behind issue
+**#117**.
+
+**What replaced it (2026-09-17, ADR-008):** the external package `docs/references/art-handoff-v1/` was
+adopted as the frozen scene/world direction. Three things changed:
+1. **Marigold `#F59A24` became primary** and the only energy colour; cyan demoted to a sparing support
+   accent. The "gainda" duo is retired as a *duo*.
+2. **TRON-influenced, not TRON-literal** — so **#117 closes as moot**. Neither era is being cloned, and the
+   UI/audio work it blocked is now ordinary open design work.
+3. The **angular geometry survives both pivots** unchanged — it was right under all three framings.
+
+*Kept here rather than deleted because this is the §11 research-and-history section; the live direction is
+§1–§4. History is forward-framed per the project's docs convention.*
 
 ## 12. Physics ⇄ visual split — **FROZEN** (ADR-002, 2026-08-10)
 

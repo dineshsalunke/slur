@@ -285,6 +285,37 @@ memory `rhythm-paced-generation` (+ `procgen-primary`).
 
 ---
 
+## ADR-007 — Obstacle blocks: fixed 8u HEIGHT, arbitrary width/depth
+
+**Date:** recorded 2026-09-17 (the decision itself predates this). **Status:** ACCEPTED.
+
+**Context.** `CLAUDE.md` and GDD §5.5 both cite "ADR-007" for the rule that blocks are *"NOT locked to
+1×1 cell"* — but **no such ADR was ever written**; the reference dangled. The rule lived only in GDD §0's
+reference table, which is easy to miss, and it *was* missed on 2026-09-17: `4 × 8 × 8u` got written into two
+documents as though it were the block spec, with art instructed to draw a 2:1 tall:wide ratio.
+
+**Decision.**
+
+| Axis | Status | Value |
+|---|---|---|
+| **Height (y)** | **FIXED — load-bearing** | **`BLOCK_HEIGHT` = 8u** |
+| Width (x) | **FREE** — any real value | 4u (`CELL`) as generated today |
+| Depth (z) | **FREE** — any real value | 8u (`BLOCK_DEPTH`) as generated today |
+
+The 8u height *is* the mechanic: it sits above double-jump reach, which is what makes blocks un-jumpable and
+forces "strafe around or destroy, never hop". Vary it and the mechanic breaks. Width and depth are a
+**generation artifact** — legal blocks include `5.5 × 5.5 × 8u` and `3.5 × 5 × 8u`.
+
+**Consequences.**
+- Art renders the family as *"8u-tall mass cut to arbitrary widths and depths"*, never a canonical cube.
+  `/art-gallery` states this per subject.
+- Any code or doc restating a block size as fixed is a bug — as is restating a *ship* width. The stale
+  `Freighter 3.6u` comment in `sim/track.ts` (wrong: Freighter is 2.5u, widest is Fighter 2.6u) is removed
+  in this same change; roster conformance is enforced by the module-load assertion, never by a comment.
+- `validateTrack` (ADR-005) must not assume cell-quantized block extents.
+
+---
+
 ## ADR-008 — Adopt `art-handoff-v1` as the frozen scene/world art direction (marigold-primary)
 
 **Date:** 2026-09-17 · **Status:** ACCEPTED · **Supersedes:** the 2026-08-12 "full TRON" pivot and the
