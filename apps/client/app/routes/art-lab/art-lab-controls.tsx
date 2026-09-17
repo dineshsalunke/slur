@@ -1,5 +1,6 @@
 import { SEG_LEN, TRACK_SEGMENTS } from '@slur/shared';
 import { Fragment, useState } from 'react';
+import { LAB_LAYER_KEYS, type LabLayerKey, type LabLayers } from './lab-layers';
 import { labCommands, labControls } from './lab-state';
 
 // Jump targets down the Believer arrangement envelope (ADR-006). Percentages, not segment indices, so they
@@ -34,6 +35,8 @@ export function ArtLabControls( {
     envNames,
     bloom,
     onBloom,
+    layers,
+    onLayer,
 }: {
     seed: number;
     onSeed: ( seed: number ) => void;
@@ -42,6 +45,8 @@ export function ArtLabControls( {
     envNames: readonly string[];
     bloom: boolean;
     onBloom: ( on: boolean ) => void;
+    layers: LabLayers;
+    onLayer: ( key: LabLayerKey ) => void;
 } ) {
     const [ paused, setPaused ] = useState( labControls.paused );
     const [ ghost, setGhost ] = useState( labControls.ghost );
@@ -78,6 +83,22 @@ export function ArtLabControls( {
                 >
                     bloom
                 </button>
+            </div>
+
+            { /* Layers are STRUCTURAL — they mount/unmount scene children — so unlike paused/ghost they are
+                 React state in the route and arrive as props. See `lab-layers.ts`. */ }
+            <div className="mb-1 text-white/40">layers</div>
+            <div className="mb-2 flex flex-wrap gap-1">
+                { LAB_LAYER_KEYS.map( ( key ) => (
+                    <button
+                        key={ key }
+                        type="button"
+                        className={ `${ BTN } ${ layers[ key ] ? BTN_ON : BTN_OFF }` }
+                        onClick={ () => onLayer( key ) }
+                    >
+                        { key }
+                    </button>
+                ) ) }
             </div>
 
             <div className="mb-1 text-white/40">environment</div>

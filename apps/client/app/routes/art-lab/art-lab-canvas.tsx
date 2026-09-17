@@ -10,6 +10,7 @@ import { FinishGate } from '../../game/scene/finish-gate';
 import { Ships } from '../../game/scene/ship';
 import { TrackView } from '../../game/scene/track-view';
 import { ArtLabRig } from './art-lab-rig';
+import type { LabLayers } from './lab-layers';
 
 /**
  * The art lab's WebGL half: the REAL materialized track, the REAL ships, the REAL chase camera and the
@@ -19,8 +20,21 @@ import { ArtLabRig } from './art-lab-rig';
  * art review against an approximation is worthless.
  *
  * Contrast with `/env-lab`, which flies the flat neon-grid `Track` and cannot show a single real hazard.
+ *
+ * `layers` mounts/unmounts the four scene halves so the lab can be stripped back to track-only (its
+ * default) for a surface review. Nothing is deleted — every layer is one click away in the controls.
  */
-export function ArtLabCanvas( { seed, env, bloom }: { seed: number; env: EnvConfig; bloom: boolean } ) {
+export function ArtLabCanvas( {
+    seed,
+    env,
+    bloom,
+    layers,
+}: {
+    seed: number;
+    env: EnvConfig;
+    bloom: boolean;
+    layers: LabLayers;
+} ) {
     // Rebuilding on seed change is the intended structural re-render — a different seed IS a different
     // track. It is a pure function, so there is nothing to tear down.
     const track = useMemo( () => resolveTrack( procgenDescriptor( seed ) ), [ seed ] );
@@ -31,10 +45,21 @@ export function ArtLabCanvas( { seed, env, bloom }: { seed: number; env: EnvConf
                 <ambientLight intensity={ 0.4 } />
                 { /* Mounted FIRST so its useFrame advances sim.z before TrackView/Environment read it. */ }
                 <ArtLabRig track={ track } />
-                <Environment config={ env } seed={ seed } />
-                <TrackView track={ track } />
-                <FinishGate track={ track } />
-                <Ships />
+                { layers.env ? (
+                    <Environment config={ env } seed={ seed } />
+                ) : (
+                    /* Env OFF still needs the void colour: without a `<color attach="background">` three
+                       clears to the renderer default and the whole review happens against an untinted
+                       black. The ambient light above stays on regardless, so an unlit track surface is
+                       still readable rather than black-on-black. Fog/dome/stars/walls are what we are
+                       actually muting. */
+                    <color attach="background" args={ [ env.background ] } />
+                ) }
+                { layers.track ? <TrackView track={ track } /> : null }
+                { layers.finish ? <FinishGate track={ track } /> : null }
+                { /* Ships OFF hides the MESH only — the rig, the shared simulate() and the chase camera
+                     keep running, so you still fly the real track at the real speed. */ }
+                { layers.ships ? <Ships /> : null }
                 { bloom ? (
                     <EffectComposer multisampling={ 0 }>
                         <Bloom
