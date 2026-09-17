@@ -8,6 +8,7 @@ import type { EnvConfig } from '../../game/scene/env-config';
 import { Environment } from '../../game/scene/environment';
 import { FinishGate } from '../../game/scene/finish-gate';
 import { Ships } from '../../game/scene/ship';
+import { TrackFloor } from '../../game/scene/track-floor';
 import { TrackView } from '../../game/scene/track-view';
 import { ArtLabRig } from './art-lab-rig';
 import type { LabLayers } from './lab-layers';
@@ -56,6 +57,8 @@ export function ArtLabCanvas( {
                     <color attach="background" args={ [ env.background ] } />
                 ) }
                 { layers.track ? <TrackView track={ track } /> : null }
+                { /* The generated slab, side-by-side comparable with TrackView's instanced floor. */ }
+                { layers.slab ? <TrackFloor track={ track } /> : null }
                 { layers.finish ? <FinishGate track={ track } /> : null }
                 { /* Ships OFF hides the MESH only — the rig, the shared simulate() and the chase camera
                      keep running, so you still fly the real track at the real speed. */ }

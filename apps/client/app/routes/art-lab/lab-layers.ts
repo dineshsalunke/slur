@@ -12,8 +12,15 @@
 // and the finish gate are visual noise while doing that. Everything is one click from coming back.
 
 export interface LabLayers {
-    /** The materialized track ribbon — floors, blocks, hazards. */
+    /** The materialized track ribbon — floors, blocks, hazards (the instanced `TrackView`). */
     track: boolean;
+    /**
+     * The NEW generated slab (`TrackFloor`) — one continuous mesh with real thickness and continuous UVs.
+     * Its own toggle rather than a replacement for `TrackView`'s floor, so the two can be compared
+     * directly: `track` off + `slab` on shows the new surface alone; both on lines them up. Nothing in the
+     * game uses `TrackFloor` yet — this is the review step before it replaces anything.
+     */
+    slab: boolean;
     /** Background void, fog, dome, stars and parallax canyon walls. */
     env: boolean;
     /** The ship meshes. The rig, sim and chase camera run regardless — only the mesh is hidden. */
@@ -26,10 +33,11 @@ export type LabLayerKey = keyof LabLayers;
 
 export const DEFAULT_LAB_LAYERS: LabLayers = {
     track: true,
+    slab: false,
     env: false,
     ships: false,
     finish: false,
 };
 
 /** Stable render order for the toggle row (object key order is not a contract worth relying on). */
-export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [ 'track', 'env', 'ships', 'finish' ];
+export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [ 'track', 'slab', 'env', 'ships', 'finish' ];
