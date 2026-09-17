@@ -282,3 +282,94 @@ is **generator-only, zero UI**. Protos: `scratchpad/track-inspect.mjs`,
 **Affected docs:** `CLAUDE.md` (status + stale `/solo` note) · `docs/GDD.md` §5.2 · `docs/TDD.md` §5 ·
 memory `rhythm-paced-generation` (+ `procgen-primary`).
 **Why / narrative:** `.claude/phases/2026-08-10-rhythm-paced-generation.md`.
+
+---
+
+## ADR-008 — Adopt `art-handoff-v1` as the frozen scene/world art direction (marigold-primary)
+
+**Date:** 2026-09-17 · **Status:** ACCEPTED · **Supersedes:** the 2026-08-12 "full TRON" pivot and the
+2026-08-10 cyan×marigold "gainda" duo.
+
+**Context.** An external art-direction package (`docs/references/art-handoff-v1/`) was produced with
+ChatGPT and delivered as frozen scene/world direction plus twelve concept boards. It is coherent,
+implementation-shaped, and correctly respects the GDD §0 continuous-space contract. It also contradicts the
+then-current ADD on colour hierarchy.
+
+**Decision.** The handoff package **is** the art direction for environment, track, obstacles, and pickups.
+`docs/ADD.md` is rewritten to match and becomes the bridge doc (consequences + costs), not the source.
+
+1. **North star:** *Cold Space. Warm Energy. Minimal forms. Readable gameplay.*
+2. **Marigold `#F59A24` is primary** and the only energy colour — boundaries, pickups, projectiles, engines,
+   seams, veins, finish, destructible internals. Environment is cold/desaturated. Ratio ≈ 70/20/8/2.
+3. **Cyan is demoted** from co-primary to a sparing support accent (`#3BD6FF`).
+4. **TRON-influenced, not TRON-literal.** **Issue #117 ("which TRON era") closes as moot.**
+5. **Player hue is deferred.** One world colour for everyone; hue-shifting reserved for distinguishing
+   opponent ships, only if a playtest demands it. `COLOR_COUNT = 12` remains palette capacity, not direction.
+6. **Gameplay outranks the boards on scale.** `docs/ART_SCALE_REFERENCE.md` is authoritative and corrects
+   boards 07 and 09, which are 4–10× undersized. Boards 03/04 are correct.
+7. **Procedural-first asset pipeline** (ADD §9). Surface/fracture detail via fBm + Worley noise in-shader,
+   not image files. Ships remain the authored CC0 models.
+
+**Consequences / costs.**
+- The old rule *"colour carries meaning"* is **retired** — under one energy colour, colour cannot
+  discriminate object classes. **Discrimination moves to silhouette and material state**, which is a
+  strictly harder readability problem and is now ADD §10 OQ7.
+- **Edge-glow is a weak navigational guide at true scale** (edges sit 32u off-centre on a 64u track). New
+  open problem — ADD §10 OQ6.
+- The handoff art-directs five unbuilt mechanics (destructible blocks, homing seeker, mine/shield/boost,
+  rear-view mirror). Treated as forward direction, **not** production work.
+- Shader-noise surfaces trade texture memory for ALU — must be measured at the 12-ship gate (issue #17).
+
+**Affected docs:** `docs/ADD.md` (rewritten §0–§4, §7, §9–§11) · `docs/ART_SCALE_REFERENCE.md` (new) ·
+`docs/GDD.md` §5.2 · `CLAUDE.md` · issue #117 (close as moot).
+
+---
+
+## ADR-009 — Merge slow blocks and destructible blocks into one *breakable block* primitive
+
+**Date:** 2026-09-17 · **Status:** **PROPOSED** — gated on the readability test below. Do not build until
+that gate passes.
+
+**Context.** ADR-006 names three core primitives: gaps + deadly blocks + **slow blocks**, with slow blocks
+as "grace-notes on the line". They are live in the generator today (`SLOW_GRACE_START/MAX`, `SALT_DRAG`).
+The handoff package deletes them (*"no slow blocks or special floors"*) and instead freezes art for
+**destructible blocks** — a §5.7 BC1 candidate that is **not built**. So the art direction removes a shipped
+primitive and dresses an unshipped one.
+
+**Decision (proposed).** Collapse both into **one block family with two material states**:
+
+| State | Art | Behaviour |
+|---|---|---|
+| **Sealed** | solid, monolithic, sparse seams | **deadly** — kills on contact (unchanged) |
+| **Fractured** | visibly cracked shell, internal marigold energy | **breakable** — shoot it to clear the path, *or* smash through and pay a speed tax |
+
+The fractured block **replaces** the separate slow-block primitive. Three primitives remain: gaps + deadly
+blocks + breakable blocks.
+
+**Why this is better than either alone.**
+- One art asset serves two mechanics — exactly the handoff's minimal-forms economy.
+- It creates a real in-the-moment decision: **spend your Bolt to keep your speed, or eat the slowdown.**
+- It gives the Bolt a **racing** use. Today the Bolt is purely anti-player; this makes it dual-purpose
+  without adding a pickup, which serves the north star (more ways to mess with the run) at zero roster cost.
+- The deadly/breakable distinction is carried by **silhouette and material**, not colour — which is required
+  anyway under ADR-008's single-energy-colour system.
+
+**Costs — none of these are free.**
+1. **New sim behaviour.** Collision today either kills or slides. "Pass through with drag" is a third
+   response in the shared `simulate()`, and must stay deterministic across both JS engines (basic ops only).
+2. **Destroyed state becomes synced.** Slow blocks are currently pure seed-derived track data with **zero**
+   sync. A destructible block is mutable shared state — if A shoots it and B doesn't see it gone, B crashes
+   into nothing. By the ADR-000 litmus that is gameplay data, so blocks gain a destroyed flag generalizing
+   `pickupTaken`. **This is the real price of the merge: it converts a free primitive into a networked one.**
+3. **It is a fairness-floor risk.** A breakable block sitting in the only ≥`MIN_CLEAR` corridor must not be
+   the thing that makes a slice unthreadable. `validateTrack` (ADR-005) must treat fractured blocks as solid
+   when checking FIT.
+
+**The gate (must pass before build).** In the art-lab, at 55 u/s on the real chase camera: **can a player
+reliably tell sealed from fractured with enough time to react?** Closing on an 8u block leaves roughly half a
+second. If silhouette alone does not carry it, this ADR fails and either (a) the distinction earns a
+support colour (`Alert Red #FF4B3E` on sealed), or (b) slow blocks come back as their own primitive with
+their own art direction.
+
+**Affected docs (once accepted):** `docs/GDD.md` §5.2/§5.7 · ADR-006 (primitive list) · `docs/ADD.md` §4 ·
+`packages/shared/src/sim/track.ts`.

@@ -145,14 +145,7 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   placements). Pickup/hazard *layout* is a track anchor; per-anchor *availability* is thin synced state
   (`pickupTaken` generalised); runtime-spawned things (bolts/drops/active hazards) are synced entities. Visuals
   are a separate client-side concern (ADR-002 — the 3-layer model).
-- **Core hazard vocabulary (implemented):** *cube fields* (**un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump is **gaps-only**; blocks are **strafe-or-destroy** — the two never overlap. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
-- **⚠ Slow blocks are under review — ADR-009 (PROPOSED, 2026-09-17).** The `art-handoff-v1` direction drops
-  slow blocks and instead freezes art for **destructible** blocks. The proposal merges both into a single
-  **breakable block** (fractured shell — shoot it to clear the path, or smash through and pay a speed tax),
-  replacing the slow primitive; three primitives remain (gaps · deadly · breakable). **Slow blocks stay live
-  in the generator until that ADR is accepted.** It is gated on a readability test (can you tell sealed from
-  fractured at 55 u/s?) and carries a real cost — it converts a free seed-derived primitive into networked
-  mutable state. See `docs/DECISIONS.md` ADR-009.
+- **Core hazard vocabulary (implemented):** *cube fields* (1×1-cell **un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump is **gaps-only**; blocks are **strafe-or-destroy** — the two never overlap. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
 - **Locked constraints (2026-08-09):** **straight ribbon** — the track *never turns/curves* (no loops/corkscrews/banked corners); **strafing is the only lateral movement** (reaffirms §5.1). **No autonomous moving geometry** (no crushers / moving cubes / conveyors) — obstacles are static; the challenge is *your* motion through them. Verticality is **impulse-only** (a launch pad pops you up; you land back on the flat ribbon — no multi-level terrain/ceilings/gravity-flip). Player-*triggered* changes (a switch) are allowed — an event, not autonomous motion.
 - **Procgen vs authored is now an OPEN choice** *(ADR-004 — "procgen is PRIMARY" was justified by endless
   Survival, which is dropped; recommendation: **hybrid, ruleset grammar as the pivot**)*. Both feed the same

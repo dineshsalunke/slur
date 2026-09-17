@@ -1,55 +1,126 @@
 # SLUR — Art Design Document (ADD)
 
-> Status: **v0 draft**. Establishes the visual target and constraints. Concrete asset specs follow once the look is locked.
+> Status: **v1**. Scene/world art direction is **FROZEN** by the external art-direction package
+> `docs/references/art-handoff-v1/` (adopted 2026-09-17, ADR-008). Ship art direction is still in progress.
+>
+> **Precedence — read this first.** Where this file and the handoff disagree, **the handoff wins** on
+> anything visual; this file records what the direction *means* for the build and what it costs. Where the
+> handoff and *gameplay* disagree (scale, mechanics, the GDD §0 spatial contract), **gameplay wins** — see
+> **`docs/ART_SCALE_REFERENCE.md`**, which overrides every scale number printed on a concept board.
+
+## 0. Where the art direction actually lives
+
+| Thing | Authority |
+|---|---|
+| Visual direction, palette, material/shape language, A→B→C | **`docs/references/art-handoff-v1/`** (frozen) |
+| Concept boards | `docs/references/art-handoff-v1/boards/` |
+| **Real dimensions of everything** | **`docs/ART_SCALE_REFERENCE.md`** (source-verified; overrides the boards) |
+| Gameplay + spatial contract | **GDD §0** (continuous sim; `CELL` is authoring-only) |
+| This file | the bridge: consequences, costs, and the open problems the handoff didn't answer |
 
 ## 1. Visual pillar
 
-**Neon sci-fi / vector-glow — full TRON.** Dark void, bright emissive lines, heavy bloom. The world reads as
-light against black — a TRON grid rushing at you. This is both an aesthetic and a **performance strategy**:
-emissive lines + bloom look expensive but are cheap (few materials, lots of instancing).
+> **Cold Space. Warm Energy. Minimal forms. Readable gameplay.**
 
-**Franchise inspiration:**
-- **TRON — the *single* visual language** (colour, material, geometry, UI, audio). The grid, light-cycle
-  trails, glowing edges, circuit-trace line-work, *derezz* dissolve on death, high-contrast neon on black.
-- **Aesthetic formula (locked 2026-08-12 — user direction; supersedes the 2026-08-10 blend):** **pure TRON
-  everywhere.** TRON supplies colour + material (neon-on-black, HDR emissive, glow/bloom) **and** shape +
-  UI + audio. Geometry is **TRON-native angular** — hard edges, chamfered/cut corners, hex/trapezoidal
-  frames (light-cycles, recognizers, the Grid are already de-rounded); roundness is reserved for **lights**
-  (status pips, glows, colour dots), never structural panels.
-- **Dropped (was 2026-08-10):** the Star Trek / **LCARS** *information-design* borrowing and the Star Wars
-  *greeble* borrowing. The three-way blend was muddy and LCARS carried a clone-Trek risk. Full TRON coheres
-  with what the game *is* — a light-cycle racer.
-- **Which TRON is still OPEN** — 1982 minimal vector vs *TRON: Legacy* (2010) sleek circuit-UI, or a
-  deliberate blend. Reference collection + the decision live in **issue #117**; §7 UI specifics are OPEN
-  until it lands.
+**A cold, desaturated universe containing warm, saturated gameplay energy.** The environment is vast,
+silent, severe, and ancient. The active game layer is fast, hot, precise, and alive. The contrast between
+those two registers *is* the art direction — everything else follows from protecting it.
 
-Anchor reference: **cuberun** (the neon tunnel). Motion reference: **SkyRoads** (floating ribbon track in
-space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
+**TRON-influenced, not TRON-literal** (adopted 2026-09-17, supersedes the 2026-08-12 "full TRON" pivot).
+The debt is to high-contrast **functional** light — light that tells you where to go and what will kill
+you — not to circuit-trace pastiche. This also retires the clone-risk that dogged both the LCARS blend and
+the pure-TRON pivot. **Issue #117's "which TRON era" question is therefore closed as moot**: the answer is
+neither, and the handoff package is the direction.
+
+This is also a **performance strategy**: a near-black world, one warm emissive family, and heavy instancing
+means few materials and few draw calls.
+
+**Minimalism rule.** Prefer large forms, clean silhouettes, broad planes, restrained seams, limited material
+families, sparse emissive accents. Avoid dense greebling, technical decals, noisy normals at gameplay
+distance, many tiny emissive marks, and ornament with no readability purpose.
+
+Anchor reference: **cuberun** (neon-on-black). Motion reference: **SkyRoads** (floating ribbon in space).
+Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 
 ## 2. Mood / one-liner
-> "Racing a light-cycle down a Daft Punk album cover."
+> "Cold Space. Warm Energy. Straight to infinity."
 
-## 3. Color
+## 3. Color — **marigold-primary** (adopted 2026-09-17, ADR-008)
 
-- **Base:** near-black background (#05060a-ish), subtle starfield/grid.
-- **Player ships:** each player gets a distinct **high-chroma emissive hue** (color-pick on join) — this is
-  the primary way you tell ships apart at speed. Reserve a palette of ~12 maximally-distinct, colorblind-aware hues.
-- **Signature duo (locked 2026-08-10):** the brand/identity pair is **cyan + marigold-amber ("gainda",
-  `#00e5ff` × `#ff9f1c`)** — cyan = local/primary, marigold = the warm co-accent — replacing the earlier
-  cyan+magenta (teal-orange reads warmer + higher-contrast). **Magenta demotes to just one of the ~12
-  player hues.** Default 2-player contrast = cyan (local) / marigold (remote).
-- **Track:** cool neutral glow (cyan/violet) so player hues pop against it.
-- **Pickups:** coded by category — Offensive (red/orange), Defensive (green/cyan), Utility (yellow), Chaos (magenta).
-- **Danger:** hazards/walls flash a consistent warning hue (hot red/white) — readability over prettiness.
+**Marigold is the signature and the only energy colour.** It carries *every* functional/energetic read:
+track boundaries, critical seams, pickups, projectiles, engines and boost, monolith seams, asteroid energy
+veins, the finish line, and destructible-block internals.
 
-*Rule: color carries meaning. Never use a player hue for a hazard, or a category hue for décor.*
+| Role | Colour | Hex |
+|---|---|---|
+| **Primary energy** | Marigold | `#F59A24` |
+| Energy — hot | Amber | `#FFB52E` |
+| Energy — glow | Energy Glow | `#FFE0A0` |
+| Energy — core | Hot White | `#FFFBE7` |
+| Environment | Deep Space | `#0A1117` |
+| Environment | Space Grey | `#162028` |
+| Environment | Blue Grey | `#303C45` |
+| Environment | Steel | `#53616B` |
+| Support (sparing) | Alert Red | `#FF4B3E` |
+| Support (sparing) | Cyan Accent | `#3BD6FF` |
+| Support (sparing) | Purple FX | `#B46BFF` |
+| Support (sparing) | Green Pickup | `#7CFF9B` |
+
+**Approximate usage ratio:** Background 70% · Environment 20% · Gameplay 8% · Highlights 2%.
+
+**Environment is cold and desaturated** — blue-grey, graphite, charcoal, cold metallic grey, deep-space
+blue/black. Backgrounds stay low-saturation so the playable layer carries the strongest colour signal.
+
+**Do not flood the world with marigold.** It is valuable because it is controlled.
+
+**This supersedes the 2026-08-10 cyan×marigold "gainda" duo.** Cyan is demoted from co-primary to a sparing
+support accent at `#3BD6FF`; the locked marigold also shifts `#ff9f1c` → `#F59A24`. The old rule *"colour
+carries meaning — never use a player hue for a hazard"* is **retired**: under a single-energy-colour system
+colour no longer discriminates between object classes, so **discrimination moves to silhouette, material
+state, and motion** (see §4).
+
+### Player colour — deliberately deferred
+
+The world is **uniformly marigold for every player** (decided 2026-09-17). Hue-shifting is reserved for one
+job only — telling *opponent* ships apart — and is deferred until a real playtest shows it is needed.
+`COLOR_COUNT = 12` already exists in `@slur/shared` as palette *capacity*; it is not a committed visual
+direction. See §10 OQ3.
 
 ## 4. Shape language
-- **Ships:** simple, low-poly, angular/arrow silhouettes — instantly distinguishable at distance by *silhouette + color*, not detail. Think readable icons, not detailed models.
-- **Track:** a ribbon/tube of glowing edges and lane lines; hazards are bold primitive forms (blocks, gaps, gates).
-- **Pickups:** floating platonic/geometric icons that spin — shape encodes type, color encodes category.
+
+Colour no longer separates object classes, so **silhouette and material state must**. This is the load-
+bearing readability contract of the marigold-primary system:
+
+| Read | Cue | Never |
+|---|---|---|
+| **Deadly block** | sealed, solid, monolithic mass; sparse functional seams | fractured |
+| **Breakable block** | visibly fractured shell, internal marigold energy through the cracks | sealed |
+| **Environment monolith** | huge (200–400u), background-scale, framing — never track-adjacent mass | mistakable for a hazard |
+| **Track boundary** | continuous marigold edge channel | matched by any decorative seam |
+| **Pickup** | floating geometric icon, rotating, distinct silhouette per type | static |
+
+- **Ships:** simple, low-poly, angular/arrow silhouettes — distinguishable at distance by **silhouette**,
+  not detail or colour. *Ship art direction is still open — see §0/§10.*
+- **Track:** dark graphite ribbon, large clean panel divisions, sparse fine seams, restrained gloss,
+  functional marigold edge channels. **No ornamental greebling.**
+- **Environment:** monoliths (Obelisk · Gate · Arch) and asteroids (Angular · Plate · Broken, varied by
+  Elongated · Shattered · Cluster) in dark stone / worn concrete. Planets and moons stay cold and
+  desaturated — **no marigold surface colour by default**.
+- **Geometry stays angular** — hard edges, chamfered corners, trapezoidal/hex forms. Roundness is reserved
+  for **lights** (status pips, glows), never structural panels.
 - Minimal texture detail; the "detail" is light, motion, and trails.
-- **Geometry = TRON-native angular (locked 2026-08-12):** panels, ship silhouettes, and HUD frames use **chamfered/angular corners and trapezoidal/hex forms** — the language of light-cycles, recognizers, and the Grid. Hard edges + cut corners; **roundness is reserved for *lights*** (status pips, glows, colour dots) — never structural panels. *(Was "de-rounded Trek/Wars" 2026-08-10 — the Trek/Wars borrowings are dropped, but the angular result is unchanged: TRON is already hard-edged.)* See §1 aesthetic formula.
+
+### A → B → C intensity
+
+One world language at three intensities — **Subtle → Balanced → Intense** — varying *density, scale,
+proximity, lighting pressure, particles, and selective warm energy*. **C is not "more saturation
+everywhere"**; gameplay contrast is invariant across all three.
+
+**A→B→C is driven by `intensityAt(z)`, not hand-authored.** The handoff's "example level flow" curve
+(calm entry → build → challenge → recovery → final stretch → finish) is the *same curve* as ADR-006's
+Believer arrangement envelope, which is already implemented. Binding the art to the existing function means
+the environment breathes with real difficulty, deterministically, with **zero new synced state** (it is
+cosmetic and client-side — ADR-002 clean). This is the single highest-leverage integration in the package.
 
 ## 5. VFX (the juice)
 - **Bloom** (postprocessing EffectComposer) — the signature. Emissive materials + selective bloom on ships/pickups/track lines. See `conventions/r3f.md`.
@@ -66,13 +137,15 @@ space). Energy reference: **Blur** (glowing pickups, punchy combat VFX).
 - **Comfort options (day one):** sliders to dampen shake / FOV-kick / chromatic aberration — cheap motion-sickness insurance.
 - **Death:** TRON derezz, then **spectator** follow-cam on the pack / cycle players.
 
-## 7. UI / HUD — **TRON circuit-UI** *(direction OPEN — issue #117)*
-- **TRON interface language (locked-to-TRON 2026-08-12; specifics pending #117):** glowing circuit-line
-  frames, thin geometric type, animated trace-in reveals, high negative space, angular (chamfered/hex/
-  trapezoidal) panels per §4 — **not** LCARS's colour-coded panel blocks. Applied to landing/lobby/host/join
-  + the in-game HUD. The **which-TRON** call (1982 minimal vector vs *Legacy* sleek circuit-UI) and the
-  concrete frame/type/motion spec are collected + decided in **issue #117**. *(LCARS info-design was dropped
-  2026-08-12; the earlier de-rounded-LCARS mockup is retired.)*
+## 7. UI / HUD — **still open, but no longer blocked on "which TRON"**
+- **Direction (2026-09-17):** minimal, functional, angular panels in the §3 palette — dark graphite frames,
+  marigold for functional/active state only, thin geometric type, high negative space. Not circuit-trace
+  pastiche (§1: TRON-influenced, not TRON-literal).
+- **Issue #117 ("which TRON era — 1982 vs Legacy") is closed as moot** — the handoff package answered the
+  aesthetic question from a different direction, and neither era is being cloned. The *remaining* open work
+  is the concrete frame/type/motion spec and a typeface, which is a normal design task, not an era decision.
+- **Explicitly NOT frozen by the handoff** (per its own `00_STATUS_AND_SCOPE.md`): final HUD/UI treatment,
+  including the rear-view mirror.
 - HUD content: speed/fuel, held power-up, position/alive-count, mini threat indicators (incoming bolt/mine). **(S5 built:** `heldPower` chip + directional threat-warning HUD; dev stun/held/bolt readout. Speed/position/alive-count still to do.)
 - Diegetic-lite and minimal — never clutter the flight view; readable in peripheral vision at speed.
 - Death = **TRON derezz** dissolve; respawn = materialize-in.
@@ -89,17 +162,48 @@ These exist so the art *stays* 60fps with 12 ships + pickups + projectiles:
    must faithfully cover the collidable hull (no invisible lethal walls, no visible walls you pass through).
    Full statement + the ADR-000 litmus live in **§12** (added by the ADR-002 implementation).
 
-## 9. Asset pipeline — **OPEN**
-- Ships/hazards: hand-modelled (Blender) vs generated vs pure procedural geometry (boxes/extrusions in-code)?
-  - Lean: **procedural/primitive geometry first** (fits the vector aesthetic, zero asset pipeline), model later only if needed.
-- A Blender MCP toolchain is available if we want authored models later.
+## 9. Asset pipeline — **procedural-first** (decided 2026-09-17)
+
+**Generate as much as possible in code; author as little as possible.** The handoff's minimal-forms language
+makes this cheap, and it keeps the zero-asset-pipeline property.
+
+| Asset | Approach | Confidence |
+|---|---|---|
+| Track, edge channels, gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
+| Obstacle blocks (both states) | procedural geometry | **~100%** |
+| Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
+| Asteroids (Angular · Plate · Broken) | procedural — convex hull over jittered points, flat-shaded | **~90%** |
+| Planets / moons | procedural — sphere + gradient/terminator shading | high |
+| Pickups | procedural — low-poly geometric icons | high |
+| **Ships** | **keep the authored Quaternius CC0 models** — already integrated, WYSIWYG-locked (GDD §5.5) | — |
+
+**Surface detail is the one real exception** — the "worn concrete / dark stone" read and the fracture
+patterns. These still do **not** need image files: **fBm noise** covers stone, and **Worley (cellular)
+noise is natively a crack generator**, which is exactly the destructible-block fracture language. Both are
+GLSL functions, so "procedural textures" rather than "texture assets".
+
+> **Honest cost:** shader noise trades texture memory for per-pixel ALU, which is in tension with §8 rule 3
+> ("light does the work, not texels"). With instanced fields and 12 ships it is usually a win, but it is a
+> real cost — **measure it at the 12-ship perf gate (§10 OQ5 / issue #17), don't assume it.**
+
+A Blender MCP toolchain remains available if an authored asset turns out to be genuinely cheaper.
 
 ## 10. OPEN QUESTIONS
-1. **Fidelity of ships** — pure procedural primitives, or authored low-poly models?
-2. **Track look** — enclosed tube (cuberun) vs open floating ribbon in space (SkyRoads)? Affects hazard design & camera.
-3. **Palette lock** — commit the 12-hue player palette + category colors.
-4. **Chromatic aberration / heavy post** — how far to push before it hurts readability?
-5. **Perf budgets** — tris/draw-calls per frame target.
+1. ~~**Fidelity of ships**~~ — **RESOLVED:** keep the authored CC0 models (§9); everything else procedural.
+2. ~~**Track look** — tube vs open ribbon~~ — **RESOLVED (2026-08-10, reaffirmed):** hybrid open ribbon with
+   distant non-collidable framing. The handoff's monolith/asteroid/celestial vocabulary *is* that framing.
+3. ~~**Palette lock**~~ — **RESOLVED (2026-09-17):** §3 marigold-primary palette. Player-hue question
+   deliberately deferred — one world colour for everyone; hue-shift opponents only if playtest demands it.
+4. **Chromatic aberration / heavy post** — still open; gate behind a comfort slider. The handoff adds a
+   constraint: *"readability should survive with bloom disabled."*
+5. **Perf budgets** — still open. Now carries the procedural-shader cost from §9. Set at the 12-ship gate.
+6. **NEW — edge-glow is a weak guide at true scale.** The handoff makes marigold track edges the primary
+   navigational read, but the track is **64u** wide, so each edge sits 32u (>12 ship-widths) off-centre. A
+   pilot threading the middle cannot use them for fine positioning. Some interior functional read likely has
+   to carry that load. See `ART_SCALE_REFERENCE.md` §0.
+7. **NEW — deadly vs breakable must read in ~0.5s.** Under one energy colour the distinction is carried by
+   *sealed vs fractured* silhouette alone, closing at 55 u/s against an 8u-tall block. This is the single
+   most important thing to validate in the art-lab, and it gates ADR-009.
 
 ## 11. As-built + art research (2026-08-10) — inputs for the S6 art pass
 
@@ -107,10 +211,10 @@ These exist so the art *stays* 60fps with 12 ships + pickups + projectiles:
 space. This section **persists that research** — it is INPUT for S6, not locked decisions.)*
 
 **As-built scene reality (the gap vs the pillar):**
-- **Two divergent scenes:** `/solo` (`game-canvas`) has **no bloom at all**; the networked race has bloom but **timid** (`intensity 0.5, threshold 0.6`). The signature look only half-exists.
+- **Bloom is timid** in the networked race (`intensity 0.5, threshold 0.6`). The signature look only half-exists. *(The `/solo` half of this note is stale — `/solo` was removed in `52f5a04`.)*
 - **No atmosphere:** flat `#05060a` void — no fog, skybox/gradient, or real starfield (cuberun, our anchor, leans on fog + a ~10k-star field + a galaxy skybox for depth).
-- **Ship identity is a beacon pip**, not the hull — at speed you read a small glowing dot, not a coloured ship (contradicts §4's "silhouette + colour").
-- **`COLOR_COUNT` is 8**, not the 12 §3 reserves. Instancing discipline is solid (few draw calls) — the art can get much richer with no perf bill.
+- **Ship identity is a beacon pip**, not the hull — at speed you read a small glowing dot, not a coloured ship. *(Re-scoped 2026-09-17: under the single-marigold world this matters less for identity and more for simple presence.)*
+- ~~**`COLOR_COUNT` is 8**~~ — **STALE. `COLOR_COUNT = 12` in source, verified 2026-09-17.** The 8→12 task is done. Instancing discipline is solid (few draw calls) — the art can get much richer with no perf bill.
 
 **Cheap, high-impact moves (S6):** unify solo/net into one scene module + push bloom (~`1.0–1.5` / threshold `~0.4`); add **atmosphere** (`fog` + drei `<Stars>` + gradient backdrop → new `scene/environment.tsx`); put the team hue **on the hull**; vignette + subtle grain; speed-ramped chromatic aberration (the core set merges into ~one full-screen pass — largely ship-count-independent).
 
