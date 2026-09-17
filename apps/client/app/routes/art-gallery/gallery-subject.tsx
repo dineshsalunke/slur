@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import type { Group } from 'three';
-import { FIGHTER_L, FIGHTER_W, type Subject } from './subjects';
+import { FIGHTER_H, FIGHTER_L, FIGHTER_W, type Subject } from './subjects';
 
 const TURN_SPEED = 0.35; // rad/s — slow enough to read a silhouette, fast enough to show every face
 
@@ -25,11 +25,19 @@ export function GallerySubject( { subject, position }: { subject: Subject; posit
         <group position={ position }>
             <group ref={ spin }>{ subject.node }</group>
 
-            { /* Fighter footprint, outlined flat on the deck. This is the collision box, not a stylised
-                 marker — footprint IS hitbox (WYSIWYG, GDD §5.5), so it is honest about scale. */ }
-            <mesh position={ [ 0, -0.02, 0 ] } rotation={ [ -Math.PI / 2, 0, 0 ] }>
-                <planeGeometry args={ [ FIGHTER_W, FIGHTER_L ] } />
-                <meshBasicMaterial color="#3BD6FF" transparent opacity={ 0.55 } toneMapped={ false } />
+            { /* Fighter footprint as a SOLID BOX set beside the subject, not a flat outline on the deck.
+                 The first build used a floor plane: edge-on it vanished, and at distance it was a cyan
+                 dash — so the one element that makes scale legible was the one you could not see. A box
+                 has height, catches light and reads as an object to compare against. These are the real
+                 collision extents (footprint IS hitbox — WYSIWYG, GDD §5.5), never a stylised marker. */ }
+            <mesh position={ [ 0, FIGHTER_H / 2, -FIGHTER_L * 3 ] }>
+                <boxGeometry args={ [ FIGHTER_W, FIGHTER_H, FIGHTER_L ] } />
+                <meshStandardMaterial
+                    color="#0d2a33"
+                    emissive="#3BD6FF"
+                    emissiveIntensity={ 0.9 }
+                    toneMapped={ false }
+                />
             </mesh>
         </group>
     );

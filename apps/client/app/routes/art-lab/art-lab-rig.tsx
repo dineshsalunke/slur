@@ -49,6 +49,41 @@ function ghostStep( world: World, dt: number ): void {
     } );
 }
 
+/**
+ * Centre of the widest lethal-free interval at world-z `z`.
+ *
+ * Deliberately lab-local rather than an export from `@slur/shared`: the sim has an equivalent private
+ * helper (`maxOpenAtSlice`), but widening the shared API to serve a dev tool would be the tail wagging
+ * the dog. This walks the PUBLIC `Segment` shape (floors + blocks) only.
+ */
+function safeXAt( track: TrackHandle, z: number ): number {
+    const seg = track.segmentAtZ( z );
+    if ( seg.floors.length === 0 ) return 0;
+    // Lethal spans that straddle this z, as [x0, x1] intervals, left to right.
+    const walls = seg.blocks
+        .filter( ( b ) => b.lethal && z >= b.z0 && z <= b.z1 )
+        .map( ( b ) => [ b.x0, b.x1 ] as const )
+        .sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
+
+    let bestWidth = 0;
+    let bestCentre = 0;
+    for ( const f of seg.floors ) {
+        let cursor = f.x0;
+        for ( const [ lo, hi ] of walls ) {
+            if ( lo > cursor && lo - cursor > bestWidth ) {
+                bestWidth = lo - cursor;
+                bestCentre = ( cursor + lo ) / 2;
+            }
+            cursor = Math.max( cursor, hi );
+        }
+        if ( f.x1 > cursor && f.x1 - cursor > bestWidth ) {
+            bestWidth = f.x1 - cursor;
+            bestCentre = ( cursor + f.x1 ) / 2;
+        }
+    }
+    return bestWidth > 0 ? bestCentre : 0;
+}
+
 // Hold the render pose exactly where it is. Used while paused — see the Prev note on labFlightStep.
 function freezePrev( world: World ): void {
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
@@ -95,16 +130,20 @@ export function ArtLabRig( { track }: { track: TrackHandle } ) {
         const jump = labCommands.jumpToZ;
         if ( jump !== null ) {
             labCommands.jumpToZ = null;
+            // Land in the widest OPEN lane, not at x=0. Dropping blind at centre lands you inside a block at
+            // any real intensity — the ship dies instantly and the chase cam renders from inside the geometry
+            // (a wall of flat colour, which looks like a broken renderer rather than a misplaced spawn).
+            const x = safeXAt( track, jump );
             world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
                 s.z = jump;
-                s.x = 0;
+                s.x = x;
                 s.y = 0;
                 s.vx = 0;
                 s.vy = 0;
                 s.vz = 0;
                 s.dead = false;
                 s.respawnTimer = 0;
-                s.lastSafeX = 0;
+                s.lastSafeX = x;
                 s.lastSafeZ = jump;
                 prev.x = s.x;
                 prev.y = s.y;
