@@ -170,7 +170,9 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 
 | Asset | Approach | Confidence |
 |---|---|---|
-| Track, edge channels, gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
+| Track slab | **BUILT** — one generated mesh from real `FloorSpan` data + procedural canvas texture | **done** |
+| Edge channels | procedural **sweep of a 2D cross-section** along z (the ribbon never turns, so a sweep is a quad strip per profile segment — no `ExtrudeGeometry`, no authored mesh). Shell and glow as **separate geometries** so the one emissive face is tunable without touching the shell | **~100%** |
+| Gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
 | Obstacle blocks (both states) | procedural geometry | **~100%** |
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
 | Asteroids (Angular · Plate · Broken) | procedural — convex hull over jittered points, flat-shaded | **~90%** |
@@ -182,6 +184,24 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 patterns. These still do **not** need image files: **fBm noise** covers stone, and **Worley (cellular)
 noise is natively a crack generator**, which is exactly the destructible-block fracture language. Both are
 GLSL functions, so "procedural textures" rather than "texture assets".
+
+> **AS-BUILT (2026-09-18) — the track slab took the canvas route, not the shader route.**
+> `scene/track-texture.ts` generates a `CanvasTexture` rather than writing GLSL. Cheaper to build, trivially
+> tunable from named constants (which is what an art pass actually needs), and it costs no per-pixel ALU.
+> The shader approach stays the plan for anything needing *world-space continuous* detail — asteroid stone
+> and destructible fractures — where a tiling canvas would visibly repeat.
+>
+> **One tile = one panel, 16 × 20u.** 16u divides the 64u ribbon into exactly 4 panels with no partial panel
+> at the edges; 20u matches `SEG_LEN` so transverse seams land on segment boundaries and agree with gap
+> edges rather than cutting across them.
+>
+> **Hard-won rule: size texture features in WORLD units, never pixels.** The first version used a ~3px seam,
+> which over a 16u tile is 0.05u — a five-centimetre line on a 64u ribbon, sub-pixel at any real distance.
+> The surface read as flat grey until this was fixed.
+
+**The one bitmap in the pipeline** is `public/textures/nebula-backdrop.jpg` — a placeholder deep-space
+backdrop until the procedural celestial layer exists. Deliberately not LFS: a missing backdrop should
+degrade, not crash.
 
 > **Honest cost:** shader noise trades texture memory for per-pixel ALU, which is in tension with §8 rule 3
 > ("light does the work, not texels"). With instanced fields and 12 ships it is usually a win, but it is a
