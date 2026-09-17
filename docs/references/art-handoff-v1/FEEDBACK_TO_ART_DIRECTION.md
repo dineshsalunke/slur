@@ -153,7 +153,10 @@ proportions change.**
 should show the ship occupying **~4% of the ribbon's width**. Affects `00`, `01` (all three A/B/C panels),
 `02`, `07` panel 1, `10` panel 1.
 
-**Priority 2 — `07` panel 8 (scale reference).** Redraw with: track 64u, block 4×8×8u, ship 2.6u. Please
+**Priority 2 — `07` panel 8 (scale reference).** Redraw with **track 64u** and **ship 2.6u**. For blocks,
+show the **8u height as the constant** and **width/depth as variable** (per §3) — please don't draw a single
+canonical block, because there isn't one. A good version of this panel would show two or three blocks of
+different widths all standing at exactly the same 8u height, with the ship beside them for reference. Please
 keep this panel — a correct version is genuinely useful.
 
 **Priority 3 — `09` (gap readability).** Gaps are **20u long** and at minimum **4u wide**. Every gap on this
@@ -252,3 +255,4 @@ fair death and an unfair one.
 | **Correct** | boards `03` and `04` — use these as your scale anchor |
 | **Need** | reshoots at true scale + your thinking on Problems A and B |
 | **The one number to remember** | **track 64u, ship 2.6u — the ship is 1/24th of the track's width** |
+| **The one rule to remember** | **blocks are always 8u tall; width and depth are free** |
