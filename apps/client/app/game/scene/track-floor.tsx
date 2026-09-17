@@ -2,6 +2,7 @@ import { CELL, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { FLOOR_SURFACE } from './track-materials';
+import { PANEL_L, PANEL_W, trackSurfaceTexture } from './track-texture';
 
 /**
  * Downward extrusion of the slab (world units). Purely an art choice — `SLAB_THICKNESS` is NOT a game
@@ -13,23 +14,20 @@ import { FLOOR_SURFACE } from './track-materials';
  */
 export const SLAB_THICKNESS = 2;
 
-/**
- * World units per texture tile. `CELL` (4u) repeats the surface texture once per authoring cell. Panels
- * come from the TEXTURE, not geometry — which is the whole reason this is one continuous mesh rather than
- * instanced tiles (a 4u tile grid repeats visibly every 4u and fights v2's "clean large panels, sparse
- * seams").
- */
-const UV_SCALE = CELL;
-
 type V3 = readonly [ number, number, number ];
 /** Which world plane a face lies in, so its UVs come from the two axes that actually vary across it. */
 type UvPlane = 'xz' | 'zy' | 'xy';
 
+/**
+ * UVs are world position divided by the PANEL size, so one texture tile = one panel. Because the mesh is
+ * continuous, panels tile seamlessly across the whole ribbon and panel size stays a texture decision.
+ * Side faces and caps use the same scale so grain density matches the top rather than stretching.
+ */
 function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     const [ x, y, z ] = p;
-    if ( plane === 'xz' ) return [ x / UV_SCALE, z / UV_SCALE ];
-    if ( plane === 'zy' ) return [ z / UV_SCALE, y / UV_SCALE ];
-    return [ x / UV_SCALE, y / UV_SCALE ];
+    if ( plane === 'xz' ) return [ x / PANEL_W, z / PANEL_L ];
+    if ( plane === 'zy' ) return [ z / PANEL_L, y / PANEL_W ];
+    return [ x / PANEL_W, y / PANEL_W ];
 }
 
 /** Two triangles for a quad. Corners must be given counter-clockwise from the front, so default winding
@@ -137,10 +135,26 @@ export function TrackFloor( { track }: { track: Track } ) {
     // there is nothing to rebuild per frame. R3F disposes a geometry passed via the `geometry` prop when
     // the mesh unmounts, so this needs no manual teardown.
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
+    const map = trackSurfaceTexture();
 
     return (
         <mesh geometry={ geo }>
-            <meshStandardMaterial { ...FLOOR_SURFACE } />
+            { /* Keeps `FLOOR_SURFACE`'s emissive whisper (shared with `TrackView`) but deliberately
+                 OVERRIDES two of its values:
+                 · `color` → white. `FLOOR_SURFACE.color` is `#050507`, and base colour MULTIPLIES the map —
+                   at that value the texture was crushed to flat black and no grain or panel was visible.
+                   The texture already carries its own near-black base, so white lets it read as authored.
+                 · `metalness` → low. A metallic surface gets its value from REFLECTIONS, and this scene has
+                   ambient light and no environment map, so high metalness just renders black. v2's
+                   "restrained gloss / warm reflections" needs the marigold edge (and probably an env map)
+                   to reflect BEFORE metalness is worth raising — until then it only removes information. */ }
+            <meshStandardMaterial
+                { ...FLOOR_SURFACE }
+                color="#ffffff"
+                map={ map }
+                roughness={ 0.62 }
+                metalness={ 0.12 }
+            />
         </mesh>
     );
 }
