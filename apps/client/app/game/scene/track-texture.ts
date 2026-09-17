@@ -22,6 +22,13 @@ export const PANEL_L = 20;
 /** Canvas resolution. 1024 over 16u is ~64px/u — enough that grain still reads at a grazing camera angle. */
 const RES = 1024;
 
+/**
+ * Panel seam width in WORLD UNITS. Everything drawn into this texture must be sized this way: the canvas
+ * is stretched over 16 × 20 metres of track, so a "few pixels" is centimetres and disappears. 0.25u is
+ * roughly a tenth of a ship's width — visible as a division, nowhere near a lane marker.
+ */
+const SEAM_U = 0.25;
+
 // Kept deliberately low-contrast. v2: "low-contrast large panel divisions ... without creating visible
 // gameplay lanes" — a panel line that reads as a lane marker is a bug, not a feature.
 const BASE = '#14181e';
@@ -72,13 +79,20 @@ function drawGrain( ctx: CanvasRenderingContext2D, rand: () => number ): void {
  * why it tiles seamlessly.
  */
 function drawPanelBorder( ctx: CanvasRenderingContext2D ): void {
-    const seam = Math.max( 2, RES / 320 );
+    // Seam width is specified in WORLD units and converted to pixels, not picked as a pixel count.
+    // The first version used `RES / 320` ≈ 3px, which over 16u works out to 0.05u — a five-centimetre
+    // line on a 64-unit ribbon, i.e. sub-pixel at any real viewing distance. That is why the surface
+    // read as flat grey. Anything meant to be seen on this track must be sized in world units first.
+    const px = RES / PANEL_W; // pixels per world unit
+    const seam = SEAM_U * px;
+    const hilite = seam * 0.5;
+
     ctx.fillStyle = PANEL_LINE;
     ctx.fillRect( 0, 0, RES, seam );
     ctx.fillRect( 0, 0, seam, RES );
     ctx.fillStyle = PANEL_HILITE;
-    ctx.fillRect( 0, seam, RES, seam * 0.6 );
-    ctx.fillRect( seam, 0, seam * 0.6, RES );
+    ctx.fillRect( 0, seam, RES, hilite );
+    ctx.fillRect( seam, 0, hilite, RES );
 }
 
 /**

@@ -12,8 +12,9 @@
 // and the finish gate are visual noise while doing that. Everything is one click from coming back.
 
 export interface LabLayers {
-    /** The materialized track ribbon — floors, blocks, hazards (the instanced `TrackView`). */
-    track: boolean;
+    /** Deadly/slow blocks and the edge rails (the instanced `TrackView`). Its own floor quads are
+     *  hidden automatically whenever `slab` is on, so the two floors never stack or z-fight. */
+    hazards: boolean;
     /**
      * The NEW generated slab (`TrackFloor`) — one continuous mesh with real thickness and continuous UVs.
      * Its own toggle rather than a replacement for `TrackView`'s floor, so the two can be compared
@@ -32,12 +33,12 @@ export interface LabLayers {
 export type LabLayerKey = keyof LabLayers;
 
 export const DEFAULT_LAB_LAYERS: LabLayers = {
-    track: true,
-    slab: false,
+    hazards: true,
+    slab: true,
     env: false,
     ships: false,
     finish: false,
 };
 
 /** Stable render order for the toggle row (object key order is not a contract worth relying on). */
-export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [ 'track', 'slab', 'env', 'ships', 'finish' ];
+export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [ 'slab', 'hazards', 'env', 'ships', 'finish' ];

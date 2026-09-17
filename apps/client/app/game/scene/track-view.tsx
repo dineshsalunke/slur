@@ -97,7 +97,12 @@ function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment, lethal
 // Instanced track floors + hazard blocks, driven fully imperatively from a Z-window around the local
 // ship (NO React state, NO re-map per frame). Four instanced draw calls (floor · lethal walls · drag blocks ·
 // rails). Track is local-only (from the synced seed) — never reconciled tile-by-tile.
-export function TrackView( { track }: { track: Track } ) {
+// `showFloor` lets a caller suppress ONLY the floor quads while keeping blocks and rails — used by
+// /art-lab so the generated `TrackFloor` can stand in without the old instanced floor stacking on top of
+// it. The instanced mesh stays mounted and keeps receiving matrices (the useFrame writes to its ref
+// unconditionally); only its visibility is off, which costs nothing and avoids a null-ref early-return
+// that would strand blocks and rails too.
+export function TrackView( { track, showFloor = true }: { track: Track; showFloor?: boolean } ) {
     const world = useWorld();
     const floorRef = useRef< THREE.InstancedMesh | null >( null );
     const lethalRef = useRef< THREE.InstancedMesh | null >( null );
@@ -175,7 +180,12 @@ export function TrackView( { track }: { track: Track } ) {
             { /* frustumCulled=false: we mutate instanceMatrix every frame but three only computes the
                  InstancedMesh bounding sphere ONCE — a stale volume culls the whole track once the ship
                  flies past it (~z=120), making the floor/rails/blocks vanish. These are always on-screen. */ }
-            <instancedMesh ref={ floorRef } frustumCulled={ false } args={ [ undefined, undefined, FLOOR_LIMIT ] }>
+            <instancedMesh
+                ref={ floorRef }
+                visible={ showFloor }
+                frustumCulled={ false }
+                args={ [ undefined, undefined, FLOOR_LIMIT ] }
+            >
                 <boxGeometry />
                 { /* TRON retone: a VERY dark, near-black floor slab. The earlier gray-white sheen washed the
                      ribbon out to mid-gray under bloom; drop the emissive to a whisper so the surface reads as

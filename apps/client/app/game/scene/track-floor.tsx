@@ -18,6 +18,14 @@ type V3 = readonly [ number, number, number ];
 /** Which world plane a face lies in, so its UVs come from the two axes that actually vary across it. */
 type UvPlane = 'xz' | 'zy' | 'xy';
 
+// Intended outward normals, one per face of the slab. Forward is +z.
+const UP: V3 = [ 0, 1, 0 ];
+const DOWN: V3 = [ 0, -1, 0 ];
+const LEFT: V3 = [ -1, 0, 0 ];
+const RIGHT: V3 = [ 1, 0, 0 ];
+const FORWARD: V3 = [ 0, 0, 1 ];
+const BACKWARD: V3 = [ 0, 0, -1 ];
+
 /**
  * UVs are world position divided by the PANEL size, so one texture tile = one panel. Because the mesh is
  * continuous, panels tile seamlessly across the whole ribbon and panel size stays a texture decision.
@@ -30,10 +38,26 @@ function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     return [ x / PANEL_W, y / PANEL_W ];
 }
 
-/** Two triangles for a quad. Corners must be given counter-clockwise from the front, so default winding
- *  yields outward normals and `computeVertexNormals` needs no correction pass. */
-function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plane: UvPlane ): void {
-    for ( const p of [ a, b, c, a, c, d ] ) {
+/**
+ * Two triangles for a quad, wound so the face points along `normal`.
+ *
+ * Winding is COMPUTED, not reasoned about. Getting it by hand means predicting how a world-space corner
+ * order projects to screen space, and the axis handedness flips depending on which way the face looks —
+ * I got the top face wrong exactly that way (the whole ribbon vanished under backface culling), then got
+ * the end caps wrong the same way a second time. Taking the cross product and flipping when it disagrees
+ * with the intended normal makes every face correct by construction.
+ */
+function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plane: UvPlane, normal: V3 ): void {
+    const ab: V3 = [ b[ 0 ] - a[ 0 ], b[ 1 ] - a[ 1 ], b[ 2 ] - a[ 2 ] ];
+    const ac: V3 = [ c[ 0 ] - a[ 0 ], c[ 1 ] - a[ 1 ], c[ 2 ] - a[ 2 ] ];
+    const cross: V3 = [
+        ab[ 1 ] * ac[ 2 ] - ab[ 2 ] * ac[ 1 ],
+        ab[ 2 ] * ac[ 0 ] - ab[ 0 ] * ac[ 2 ],
+        ab[ 0 ] * ac[ 1 ] - ab[ 1 ] * ac[ 0 ],
+    ];
+    const dot = cross[ 0 ] * normal[ 0 ] + cross[ 1 ] * normal[ 1 ] + cross[ 2 ] * normal[ 2 ];
+    const order = dot >= 0 ? [ a, b, c, a, c, d ] : [ a, d, c, a, c, b ];
+    for ( const p of order ) {
         pos.push( p[ 0 ], p[ 1 ], p[ 2 ] );
         const [ u, v ] = uvFor( p, plane );
         uv.push( u, v );
@@ -70,17 +94,20 @@ function emitSpan(
     const b = -SLAB_THICKNESS;
 
     // Top face — the surface you fly over. This IS the physics hull (ADR-002, WYSIWYG).
-    // Wound x0→z1 first: viewed from ABOVE (-y look direction) the x/z axes form a left-handed screen
-    // basis, so the "obvious" x0,x1,z1,z0 order produces a downward-facing front face and the whole
-    // ribbon vanishes under backface culling. Verified in-browser, not reasoned about.
-    pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz' );
+    pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz', UP );
 
     // Side walls — visible thickness, so a gap reads as a hole with depth rather than a flat dark patch.
-    pushQuad( pos, uv, [ x0, b, z0 ], [ x0, t, z0 ], [ x0, t, z1 ], [ x0, b, z1 ], 'zy' );
-    pushQuad( pos, uv, [ x1, t, z0 ], [ x1, b, z0 ], [ x1, b, z1 ], [ x1, t, z1 ], 'zy' );
+    pushQuad( pos, uv, [ x0, b, z0 ], [ x0, t, z0 ], [ x0, t, z1 ], [ x0, b, z1 ], 'zy', LEFT );
+    pushQuad( pos, uv, [ x1, t, z0 ], [ x1, b, z0 ], [ x1, b, z1 ], [ x1, t, z1 ], 'zy', RIGHT );
 
-    if ( capFront ) pushQuad( pos, uv, [ x0, b, z0 ], [ x1, b, z0 ], [ x1, t, z0 ], [ x0, t, z0 ], 'xy' );
-    if ( capBack ) pushQuad( pos, uv, [ x1, b, z1 ], [ x0, b, z1 ], [ x0, t, z1 ], [ x1, t, z1 ], 'xy' );
+    // End caps — the faces you look straight AT across a gap. These were invisible before the winding was
+    // computed rather than guessed, which is why gaps read as flat holes with no depth.
+    if ( capFront ) pushQuad( pos, uv, [ x0, b, z0 ], [ x1, b, z0 ], [ x1, t, z0 ], [ x0, t, z0 ], 'xy', BACKWARD );
+    if ( capBack ) pushQuad( pos, uv, [ x1, b, z1 ], [ x0, b, z1 ], [ x0, t, z1 ], [ x1, t, z1 ], 'xy', FORWARD );
+
+    // Underside — visible from below when you fall into a gap, and it closes the solid so the slab never
+    // shows a hollow interior from a low camera.
+    pushQuad( pos, uv, [ x0, b, z0 ], [ x0, b, z1 ], [ x1, b, z1 ], [ x1, b, z0 ], 'xz', DOWN );
 }
 
 /**

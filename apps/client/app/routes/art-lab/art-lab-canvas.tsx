@@ -44,6 +44,9 @@ export function ArtLabCanvas( {
         <WorldProvider world={ world }>
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 70, position: [ 0, 9, -14 ] } }>
                 <ambientLight intensity={ 0.4 } />
+                { /* A key light so the slab has a shading gradient to catch. With ambient alone every
+                     surface renders flat and the grain/panel detail has nothing to modulate. */ }
+                <directionalLight position={ [ 40, 80, -30 ] } intensity={ 1.1 } />
                 { /* Mounted FIRST so its useFrame advances sim.z before TrackView/Environment read it. */ }
                 <ArtLabRig track={ track } />
                 { layers.env ? (
@@ -56,7 +59,7 @@ export function ArtLabCanvas( {
                        actually muting. */
                     <color attach="background" args={ [ env.background ] } />
                 ) }
-                { layers.track ? <TrackView track={ track } /> : null }
+                { layers.hazards ? <TrackView track={ track } showFloor={ ! layers.slab } /> : null }
                 { /* The generated slab, side-by-side comparable with TrackView's instanced floor. */ }
                 { layers.slab ? <TrackFloor track={ track } /> : null }
                 { layers.finish ? <FinishGate track={ track } /> : null }
