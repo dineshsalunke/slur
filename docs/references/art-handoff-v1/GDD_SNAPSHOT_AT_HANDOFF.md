@@ -145,14 +145,7 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   placements). Pickup/hazard *layout* is a track anchor; per-anchor *availability* is thin synced state
   (`pickupTaken` generalised); runtime-spawned things (bolts/drops/active hazards) are synced entities. Visuals
   are a separate client-side concern (ADR-002 — the 3-layer model).
-- **Core hazard vocabulary (implemented):** *cube fields* (**un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump is **gaps-only**; blocks are **strafe-or-destroy** — the two never overlap. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
-- **⚠ Slow blocks are under review — ADR-009 (PROPOSED, 2026-09-17).** The `art-handoff-v1` direction drops
-  slow blocks and instead freezes art for **destructible** blocks. The proposal merges both into a single
-  **breakable block** (fractured shell — shoot it to clear the path, or smash through and pay a speed tax),
-  replacing the slow primitive; three primitives remain (gaps · deadly · breakable). **Slow blocks stay live
-  in the generator until that ADR is accepted.** It is gated on a readability test (can you tell sealed from
-  fractured at 55 u/s?) and carries a real cost — it converts a free seed-derived primitive into networked
-  mutable state. See `docs/DECISIONS.md` ADR-009.
+- **Core hazard vocabulary (implemented):** *cube fields* (1×1-cell **un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump is **gaps-only**; blocks are **strafe-or-destroy** — the two never overlap. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
 - **Locked constraints (2026-08-09):** **straight ribbon** — the track *never turns/curves* (no loops/corkscrews/banked corners); **strafing is the only lateral movement** (reaffirms §5.1). **No autonomous moving geometry** (no crushers / moving cubes / conveyors) — obstacles are static; the challenge is *your* motion through them. Verticality is **impulse-only** (a launch pad pops you up; you land back on the flat ribbon — no multi-level terrain/ceilings/gravity-flip). Player-*triggered* changes (a switch) are allowed — an event, not autonomous motion.
 - **Procgen vs authored is now an OPEN choice** *(ADR-004 — "procgen is PRIMARY" was justified by endless
   Survival, which is dropped; recommendation: **hybrid, ruleset grammar as the pivot**)*. Both feed the same
@@ -307,8 +300,7 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine/Shield/Boost/auto-lock = fast-follows |
 | Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); `armour` (stun-multiplier sidegrade) → **S6 REMAINING** |
 | **Audio** — singleton engine, synth hum (pitch∝speed), CC0 SFX + CC-BY music, positional, event-bound | **LIVE (S6)** | `app/audio/**`; `M`=mute; `RemoteEngineAudio` not hear-verified |
-| **Front-of-house UI** — angular neon landing over Grid-Void | **LIVE (S6), palette PENDING** | Art direction re-frozen by `art-handoff-v1` (**ADR-008**): marigold-primary, TRON-*influenced*. The shipped palette is still the old cyan×marigold retone — recolour is the next art pass. Lobby pick-UI stats + in-game env integration REMAINING |
-| **Art review instruments** — `/art-lab` (real track · real chase cam · no server) + `/art-gallery` (subjects at true scale, shared bloom) | **LIVE** | Built to check the frozen direction against what ships; both share `scene/track-materials.ts` so they cannot drift from the game |
+| **Front-of-house UI** — angular neon landing over Grid-Void (cyan×marigold), **full-TRON** system | **LIVE (S6)** | LCARS dropped → TRON (ADD §1/§7; issue #117); lobby pick-UI stats + in-game env integration REMAINING |
 | Session flow (lobby→race→results, standings, restart) | **LIVE (S4)** | round lifecycle + room list + spectator + host migration |
 | ~~Survival mode (endless + chase-wall)~~ | **DROPPED (ADR-004)** | replaced by longer finite tracks; Race is the only mode |
 

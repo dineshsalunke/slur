@@ -4,6 +4,15 @@ import { useWorld } from 'koota/react';
 import { Fragment, useRef } from 'react';
 import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
+import {
+    DRAG_OPACITY_MAX,
+    DRAG_OPACITY_MIN,
+    DRAG_PULSE_SPEED,
+    DRAG_SURFACE,
+    FLOOR_SURFACE,
+    LETHAL_SURFACE,
+    RAIL_SURFACE,
+} from './track-materials';
 
 // How far ahead / behind the ship we materialise segments. The track is generated on demand from the
 // seed (segmentAt), so this is a pure render window — cull everything outside it (LOD-friendly for a
@@ -25,9 +34,8 @@ const RAIL_H = 0.5; // edge-rail cross-section (y), standing proud of the floor 
 // the ONE shared drag material's opacity in the existing useFrame — NO React re-render (NN#4), and NOT the
 // deterministic sim, so Math.sin is fine here. (Height is intentionally unchanged — drag stays full-height /
 // un-jumpable per ADR-006; see the issue thread.)
-const DRAG_OPACITY_MIN = 0.25;
-const DRAG_OPACITY_MAX = 0.5;
-const DRAG_PULSE_SPEED = 2.5; // rad/s → ~2.5 s breath period
+// Surfaces + pulse bounds live in `track-materials.ts` so `/art-gallery` shows these EXACT materials rather
+// than a hand-copied lookalike that would drift on the next retune. See that file's header.
 
 const _m = new THREE.Object3D(); // module-scope scratch — no per-frame allocation (r3f hot-path rule)
 const _hidden = ( () => {
@@ -172,23 +180,13 @@ export function TrackView( { track }: { track: Track } ) {
                 { /* TRON retone: a VERY dark, near-black floor slab. The earlier gray-white sheen washed the
                      ribbon out to mid-gray under bloom; drop the emissive to a whisper so the surface reads as
                      deep void and ALL the neon lives on the bright edge-rails below (grid-line aesthetic). */ }
-                <meshStandardMaterial
-                    emissive="#c8d0d8"
-                    emissiveIntensity={ 0.05 }
-                    color="#050507"
-                    toneMapped={ false }
-                />
+                <meshStandardMaterial { ...FLOOR_SURFACE } />
             </instancedMesh>
             { /* Lethal walls — the lone RED accent (touch → derezz). Kept saturated so danger reads instantly
                  against the gray track. */ }
             <instancedMesh ref={ lethalRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
-                <meshStandardMaterial
-                    emissive="#ff2740"
-                    emissiveIntensity={ 2.2 }
-                    color="#1a0206"
-                    toneMapped={ false }
-                />
+                <meshStandardMaterial { ...LETHAL_SURFACE } />
             </instancedMesh>
             { /* Drag blocks — AMBER, visibly distinct from the red walls so you read "slow, not death" at a
                  glance. Passable: fly through for a speed hit, or strafe around. Dimmer than the red so lethal
@@ -198,27 +196,14 @@ export function TrackView( { track }: { track: Track } ) {
                 { /* Semi-transparent + opacity-pulsed (driven in useFrame above) so drag reads as PASSABLE
                      energy vs the opaque red walls. depthWrite=false → it blends softly and never z-occludes
                      like a solid; drag and lethal never share a lane (generator), so no cross-occlusion. */ }
-                <meshStandardMaterial
-                    emissive="#ffa51f"
-                    emissiveIntensity={ 1.6 }
-                    color="#2a1600"
-                    toneMapped={ false }
-                    transparent
-                    depthWrite={ false }
-                    opacity={ DRAG_OPACITY_MAX }
-                />
+                <meshStandardMaterial { ...DRAG_SURFACE } opacity={ DRAG_OPACITY_MAX } />
             </instancedMesh>
             <instancedMesh ref={ railRef } frustumCulled={ false } args={ [ undefined, undefined, RAIL_LIMIT ] }>
                 <boxGeometry />
                 { /* Edge-rails = the bright TRON grid lines: gray-white glow standing proud of the dark
                      floor. These carry the neon read now that the surface is gray (hazards stay the lone
                      colour accent, below). */ }
-                <meshStandardMaterial
-                    emissive="#c8d0d8"
-                    emissiveIntensity={ 2.6 }
-                    color="#15171a"
-                    toneMapped={ false }
-                />
+                <meshStandardMaterial { ...RAIL_SURFACE } />
             </instancedMesh>
         </Fragment>
     );
