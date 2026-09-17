@@ -6,6 +6,7 @@ import { ENV_VARIANTS } from '../../game/scene/env-config';
 import { ArtLabCanvas } from './art-lab-canvas';
 import { ArtLabControls } from './art-lab-controls';
 import { ArtLabReadout } from './art-lab-readout';
+import { DEFAULT_LAB_LAYERS, type LabLayerKey } from './lab-layers';
 
 export function meta() {
     return [ { title: 'SLUR — Art Lab' } ];
@@ -24,14 +25,18 @@ const ENV_NAMES = ENV_VARIANTS.map( ( v ) => v.name );
  * boards drawn at the wrong scale (see `docs/ART_SCALE_REFERENCE.md` — the track is 64u wide and the
  * boards drew it at 6–8u). This route is where those decisions get checked against the thing that ships.
  *
- * Structural knobs (seed, env, bloom) are React state HERE and flow down as props — changing them is a
- * genuine structural change that SHOULD re-render the scene. Per-frame knobs (pause, ghost) deliberately
- * do not live here; see `lab-state.ts` for why.
+ * Structural knobs (seed, env, bloom, layer visibility) are React state HERE and flow down as props —
+ * changing them is a genuine structural change that SHOULD re-render the scene. Per-frame knobs (pause,
+ * ghost) deliberately do not live here; see `lab-state.ts` for why.
  */
 export default function ArtLabRoute() {
     const [ seed, setSeed ] = useState( 1234 );
     const [ envIndex, setEnvIndex ] = useState( ENV_VARIANTS.length - 1 ); // default C · Grid Void (the locked one)
     const [ bloom, setBloom ] = useState( true );
+    // Track-only by default — see `lab-layers.ts`. Functional update so the handler never closes over a
+    // stale `layers`, which matters because the controls leaf holds this callback across re-renders.
+    const [ layers, setLayers ] = useState( DEFAULT_LAB_LAYERS );
+    const toggleLayer = ( key: LabLayerKey ) => setLayers( ( prev ) => ( { ...prev, [ key ]: ! prev[ key ] } ) );
 
     // The readout needs the same Track the canvas built. `resolveTrack` is pure and memoised on both
     // sides, so this is a cheap second call rather than shared mutable state between siblings.
@@ -47,9 +52,11 @@ export default function ArtLabRoute() {
                 envNames={ ENV_NAMES }
                 bloom={ bloom }
                 onBloom={ setBloom }
+                layers={ layers }
+                onLayer={ toggleLayer }
             />
             <ArtLabReadout track={ track } />
-            <ArtLabCanvas seed={ seed } env={ ENV_VARIANTS[ envIndex ] } bloom={ bloom } />
+            <ArtLabCanvas seed={ seed } env={ ENV_VARIANTS[ envIndex ] } bloom={ bloom } layers={ layers } />
         </WorldProvider>
     );
 }

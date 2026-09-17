@@ -1,21 +1,11 @@
-import { Grid, OrbitControls } from '@react-three/drei';
+import { Grid } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { Fragment } from 'react';
 import { GRID_VOID } from '../../game/scene/env-config';
+import { GalleryCamera } from './gallery-camera';
 import { GallerySubject } from './gallery-subject';
-import { SUBJECTS } from './subjects';
-
-// Spacing between pedestals. Generous because the track slab is 64u wide — the widest subject sets the
-// pitch, otherwise neighbours intersect.
-const PITCH = 80;
-const COLS = 3;
-
-function slot( i: number ): [ number, number, number ] {
-    const col = i % COLS;
-    const row = Math.floor( i / COLS );
-    return [ ( col - ( COLS - 1 ) / 2 ) * PITCH, 0, row * PITCH ];
-}
+import { SUBJECTS, slotFor } from './subjects';
 
 /**
  * The gallery's WebGL half: every subject laid out on a world-space grid under ONE camera and ONE
@@ -36,8 +26,10 @@ export function ArtGalleryCanvas( { bloom, showGrid }: { bloom: boolean; showGri
             <ambientLight intensity={ 0.5 } />
             <directionalLight position={ [ 30, 60, -40 ] } intensity={ 0.8 } />
 
+            <GalleryCamera />
+
             { SUBJECTS.map( ( s, i ) => (
-                <GallerySubject key={ s.id } subject={ s } position={ slot( i ) } />
+                <GallerySubject key={ s.id } subject={ s } position={ slotFor( i ) } />
             ) ) }
 
             { /* A 1-unit grid so world scale is readable at a glance: every cell is 1u, every heavy line 10u. */ }
@@ -59,7 +51,10 @@ export function ArtGalleryCanvas( { bloom, showGrid }: { bloom: boolean; showGri
                 <Fragment />
             ) }
 
-            <OrbitControls makeDefault target={ [ 0, 4, PITCH / 2 ] } maxDistance={ 600 } />
+            { /* No OrbitControls: it and GalleryCamera would both drive the camera every frame and fight.
+                 Framing is driven from the sidebar instead — click a subject to fly to it, "wide" to pull
+                 back. Deterministic framing is also what makes two screenshots comparable, which free-orbit
+                 inspection is not. */ }
 
             { /* Same bloom config the game pins (GRID_VOID), so what you judge here is what ships. Toggling it
                  off is a first-class review mode: the handoff requires readability to survive without bloom. */ }

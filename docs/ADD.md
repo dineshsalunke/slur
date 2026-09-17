@@ -12,8 +12,9 @@
 
 | Thing | Authority |
 |---|---|
-| Visual direction, palette, material/shape language, A→B→C | **`docs/references/art-handoff-v1/`** (frozen) |
-| Concept boards | `docs/references/art-handoff-v1/boards/` |
+| Visual direction, palette, material/shape language, A→B→C | **`docs/references/art-handoff-v2/`** — supersedes v1 |
+| Concept boards | `docs/references/art-handoff-v1/boards/` (unchanged in v2) + v2's board `12` |
+| The approved integrated look | **`art-handoff-v2/boards/12_approved_scene_marigold_depth.png`** |
 | **Real dimensions of everything** | **`docs/ART_SCALE_REFERENCE.md`** (source-verified; overrides the boards) |
 | Gameplay + spatial contract | **GDD §0** (continuous sim; `CELL` is authoring-only) |
 | This file | the bridge: consequences, costs, and the open problems the handoff didn't answer |
@@ -169,7 +170,9 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 
 | Asset | Approach | Confidence |
 |---|---|---|
-| Track, edge channels, gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
+| Track slab | **BUILT** — one generated mesh from real `FloorSpan` data + procedural canvas texture | **done** |
+| Edge channels | procedural **sweep of a 2D cross-section** along z (the ribbon never turns, so a sweep is a quad strip per profile segment — no `ExtrudeGeometry`, no authored mesh). Shell and glow as **separate geometries** so the one emissive face is tunable without touching the shell | **~100%** |
+| Gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
 | Obstacle blocks (both states) | procedural geometry | **~100%** |
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
 | Asteroids (Angular · Plate · Broken) | procedural — convex hull over jittered points, flat-shaded | **~90%** |
@@ -181,6 +184,24 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 patterns. These still do **not** need image files: **fBm noise** covers stone, and **Worley (cellular)
 noise is natively a crack generator**, which is exactly the destructible-block fracture language. Both are
 GLSL functions, so "procedural textures" rather than "texture assets".
+
+> **AS-BUILT (2026-09-18) — the track slab took the canvas route, not the shader route.**
+> `scene/track-texture.ts` generates a `CanvasTexture` rather than writing GLSL. Cheaper to build, trivially
+> tunable from named constants (which is what an art pass actually needs), and it costs no per-pixel ALU.
+> The shader approach stays the plan for anything needing *world-space continuous* detail — asteroid stone
+> and destructible fractures — where a tiling canvas would visibly repeat.
+>
+> **One tile = one panel, 16 × 20u.** 16u divides the 64u ribbon into exactly 4 panels with no partial panel
+> at the edges; 20u matches `SEG_LEN` so transverse seams land on segment boundaries and agree with gap
+> edges rather than cutting across them.
+>
+> **Hard-won rule: size texture features in WORLD units, never pixels.** The first version used a ~3px seam,
+> which over a 16u tile is 0.05u — a five-centimetre line on a 64u ribbon, sub-pixel at any real distance.
+> The surface read as flat grey until this was fixed.
+
+**The one bitmap in the pipeline** is `public/textures/nebula-backdrop.jpg` — a placeholder deep-space
+backdrop until the procedural celestial layer exists. Deliberately not LFS: a missing backdrop should
+degrade, not crash.
 
 > **Honest cost:** shader noise trades texture memory for per-pixel ALU, which is in tension with §8 rule 3
 > ("light does the work, not texels"). With instanced fields and 12 ships it is usually a win, but it is a
@@ -197,13 +218,30 @@ A Blender MCP toolchain remains available if an authored asset turns out to be g
 4. **Chromatic aberration / heavy post** — still open; gate behind a comfort slider. The handoff adds a
    constraint: *"readability should survive with bloom disabled."*
 5. **Perf budgets** — still open. Now carries the procedural-shader cost from §9. Set at the 12-ship gate.
-6. **NEW — edge-glow is a weak guide at true scale.** The handoff makes marigold track edges the primary
-   navigational read, but the track is **64u** wide, so each edge sits 32u (>12 ship-widths) off-centre. A
-   pilot threading the middle cannot use them for fine positioning. Some interior functional read likely has
-   to carry that load. See `ART_SCALE_REFERENCE.md` §0.
-7. **NEW — deadly vs breakable must read in ~0.5s.** Under one energy colour the distinction is carried by
-   *sealed vs fractured* silhouette alone, closing at 55 u/s against an 8u-tall block. This is the single
-   most important thing to validate in the art-lab, and it gates ADR-009.
+6. ~~**edge-glow is a weak guide at true scale**~~ — **ANSWERED by `art-handoff-v2` §5.** Confirmed: *"Track
+   edges define the ribbon boundary; they cannot supply all fine positioning across 64u."* The answer is
+   **interior cues**: low-contrast large panel divisions, occasional transverse seams, restrained
+   material/reflection differences, and clear hazard-to-floor **contact shading**.
+   **Explicitly rejected** — and this is the important half — *"no automatic racing line, safe-route glow,
+   dense emissive seam grid, or dependence on monolith spacing for steering."* That kills the guide-rail
+   failure we were worried about: cues give speed and lateral-motion feedback **without** revealing the safe
+   path. Visible on board `12`.
+7. ~~**deadly vs breakable must read in ~0.5s**~~ — **ANSWERED by `art-handoff-v2` §6.** The rule is
+   **"sealed mass = avoid; broken-contour shell = shoot to clear"**, and crucially: *"Surface crack texture
+   alone is insufficient for the approved read."* The distinction must break the **outer silhouette** —
+   visible interruptions at top/side contours — not merely decorate the faces. Interior floor cues and block
+   readability are **both** required, not alternatives.
+   **`Alert Red` as a fallback is rejected**: *"No new red hazard code is approved. Cyan is not an alternate
+   energy family."* So the single-energy-colour system holds and silhouette carries the load.
+   *Correction to our own framing:* we claimed an 8u block gives "half a second" to react. v2 rightly notes
+   *"at 55 u/s, half a second is 27.5u travel; obstacle height does not establish the detection window"* —
+   the window is set by draw distance and framing, not block height. The gate still stands, measured properly.
+8. **NEW — camera height 4–5u vs the 8u see-over-walls rule.** v2 proposes a low camera (nominal **4.5u**)
+   with **selective occlusion fade**. This collides directly with ADR-006, where the chase cam sits at **+9u**
+   *specifically* so you can see over the 8u pillars and plan a line (see `camera/chase.ts`). Fading occluders
+   is the proposed mitigation, and v2 is clear it is **a prototype, not a frozen setting**, requiring a 6–8u
+   control camera alongside. **This is a gameplay-affecting change, not an art change** — it needs an ADR and
+   a feel-gate before any of it lands. It also overlaps PR #120 (chase-cam reframe), which is still open.
 
 ## 11. As-built + art research (2026-08-10) — inputs for the S6 art pass
 

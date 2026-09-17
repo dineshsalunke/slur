@@ -32,6 +32,13 @@ export interface Subject {
 const FIGHTER = tuningForShip( 'challenger' );
 export const FIGHTER_W = FIGHTER.halfW * 2;
 export const FIGHTER_L = FIGHTER.halfL * 2;
+/**
+ * Nominal height for the scale-reference box. Unlike width and length this is NOT a sim constant —
+ * `FlightTuning` carries only `halfW`/`halfL`, because height is cosmetic: bodies are solid ground-up and
+ * Y never changes kill logic (GDD §5.5). So this is a plausible display value, not a measurement, and it
+ * must not be quoted back as a ship dimension.
+ */
+export const FIGHTER_H = 1.2;
 
 // One authoring lane wide — what today's generator emits. NOT a rule: GDD §0 is explicit that block
 // width/depth are "a generation artifact, not a rule — any size is legal". Only the 8u HEIGHT is fixed.
@@ -43,6 +50,19 @@ const BLOCK_D = 8;
 const SLAB_LEN = SEG_LEN;
 const RAIL_W = 0.6;
 const RAIL_H = 0.35;
+
+// Layout lives here rather than in the canvas so the camera rig can compute a framing position for any
+// subject without importing the scene. Pitch is set by the widest subject (the 64u slab) so neighbours
+// never intersect at true scale.
+export const PITCH = 90;
+const COLS = 3;
+
+/** World position of subject `i` on the gallery floor. */
+export function slotFor( i: number ): [ number, number, number ] {
+    const col = i % COLS;
+    const row = Math.floor( i / COLS );
+    return [ ( col - ( COLS - 1 ) / 2 ) * PITCH, 0, row * PITCH ];
+}
 
 export const SUBJECTS: readonly Subject[] = [
     {
