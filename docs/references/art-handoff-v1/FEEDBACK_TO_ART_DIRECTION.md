@@ -75,20 +75,26 @@ Everything here is read from source. **These override anything printed on a boar
 | Total track length | **8000u** | 400 segments; ≈2.5 minutes of racing |
 | Track thickness (the slab's depth) | **free choice** | *not* a game constant. Board 07's "1u" is perfectly legal. |
 
-### Obstacle blocks
+### Obstacle blocks — only the **height** is fixed
 
-| Thing | Value |
-|---|---:|
-| Width | **4u** |
-| **Height** | **8u** |
-| Depth (down-track) | **8u** |
+| Axis | Status | Value |
+|---|---|---:|
+| **Height** | **FIXED — never varies** | **8u** |
+| Width | **FREE — any size** | *4u in the current build* |
+| Depth (down-track) | **FREE — any size** | *8u in the current build* |
 
-So a standard block is **4 wide × 8 tall × 8 deep** — **twice as tall as it is wide.** Board 07 gives "~2u
-wide, ~3u tall", which is both undersized and the wrong aspect ratio.
+**This is the part most likely to be misread, so to be explicit:** blocks are **always exactly 8u tall**,
+and their width and depth can be **anything**. Legal examples straight from the design doc: `5.5 × 5.5 × 8u`,
+`3.5 × 5 × 8u`. The first two numbers vary freely; the third is always 8.
 
 > **The 8u height is load-bearing gameplay.** Blocks are deliberately taller than a player can jump — you
 > must go *around* them, never over. A block drawn short enough to look hoppable is lying about the mechanic
 > and will actively mislead players.
+
+**For the art this is good news** — it means the block family is *more* expressive than a fixed cube. Think
+of it as **"8u-tall mass, cut to arbitrary widths and depths"**: narrow posts, broad walls, deep slabs,
+shallow fins — all sharing one constant height. Vary width and depth freely for silhouette interest.
+**Never vary the height.**
 
 ### Ships
 
@@ -155,9 +161,19 @@ board is drawn far too short; they should read as genuine **chasms**, not seams.
 you chose (subtle marigold edge + inner-lip glow + darker cavity) is approved and should be preserved — it
 just needs to be applied to a correctly-proportioned hole.
 
-**Priority 4 — `10` block proportions.** Blocks should be **2:1 tall:wide**. Also please drop the "CUBE
-(1x1) / WIDE (2x1) / TALL (1x2)" and "LEFT / CENTER / RIGHT LANE" notation — it implies a 3-lane cell grid,
-and the game has 16 authoring lanes and a fully continuous simulation. Blocks can be any real-valued size.
+**Priority 4 — `10` block families.** Your instinct here was **more right than the rest of this feedback
+originally credited.** Showing a *family* of block proportions (cube / wide / grouped) is exactly correct,
+because width and depth genuinely are free. Two fixes only:
+
+- **Drop the "TALL (1x2)" variant.** It varies the one axis that must never vary. Every block is 8u tall.
+  Re-spend that slot on another *width/depth* variation instead — a deep slab, or a narrow fin.
+- **Drop the cell/lane notation** — "CUBE (1x1) / WIDE (2x1) / TALL (1x2)" and "LEFT / CENTER / RIGHT LANE".
+  It implies a 3-lane cell grid. The game has 16 authoring lanes and a fully continuous simulation, so
+  blocks sit at arbitrary real-valued positions and sizes. Label the variants descriptively instead
+  ("narrow post", "broad wall", "deep slab") with no numbers attached.
+- *Open question back to you:* your "STACK / GROUP" variant — if that reads as one **taller** mass it goes
+  beyond the 8u constant and we'd need a gameplay decision first. If it reads as several 8u blocks clustered
+  side-by-side or in depth, it's fine as-is. Which did you intend?
 
 ---
 

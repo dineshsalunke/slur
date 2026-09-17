@@ -37,19 +37,30 @@ This is the single correction that matters most. Consequences for art direction:
 | Track thickness (visual) | *free* | — | **not a sim constant.** The sim floor is a plane; thickness is pure art. Board 07's "1u" is a legal choice, not a requirement. |
 | Authoring snap grid | **4u** | `CELL` | design-time only. The sim is continuous float-AABB; **never quantize art to this at runtime** |
 
-## 2. Obstacle blocks
+## 2. Obstacle blocks — **only the height is fixed**
 
-| Thing | Value | Constant | Note |
-|---|---:|---|---|
-| Block width (x) | **4u** | `CELL` | one lane wide as generated. **Not a rule** — any real-valued width is legal |
-| Block height (y) | **8u** | `BLOCK_HEIGHT` | **deliberately above double-jump reach → un-jumpable.** Strafe around or destroy; never hop |
-| Block depth (z) | **8u** | `BLOCK_DEPTH` | a *short discrete* pillar centred in the 20u segment — **not** a full-depth wall. You flick *past* it |
+This is the most commonly misread part of the spec, including by this document's first draft. GDD §0 is
+explicit: block width/depth are *"a generation artifact, **not** a rule — any size is legal."*
 
-So a standard pillar is **4 × 8 × 8u** (W×H×D) — **taller than it is wide, by 2:1.** Board 07's scale
-panel gives "~3u height / ~2u width", which is both too small *and* the wrong aspect ratio.
+| Axis | Status | Value | Note |
+|---|---|---:|---|
+| **Height (y)** | **FIXED — load-bearing** | **8u** (`BLOCK_HEIGHT`) | **above double-jump reach on purpose → un-jumpable.** Strafe around or destroy; never hop |
+| Width (x) | **FREE** | *4u as generated today* | `CELL`-quantized by the current generator only. Any real-valued width is legal |
+| Depth (z) | **FREE** | *8u as generated today* | `BLOCK_DEPTH`; a short discrete pillar inside the 20u segment, **not** a full-depth wall |
 
-**The 8u height is load-bearing gameplay, not art.** If a block is drawn short enough to look hoppable,
-the art is lying about the mechanic.
+GDD §0's own examples of legal blocks: **`5.5 × 5.5 × 8u`**, **`3.5 × 5 × 8u`**. Note that the first two
+numbers vary freely and **the third is always 8**.
+
+**What this means for art:**
+
+- **Never vary the height.** Every block, always, is 8u tall. A block drawn short enough to look hoppable
+  is lying about the mechanic and will get players killed unfairly.
+- **Do vary width and depth freely.** A block is not a cube and not a fixed silhouette — the family should
+  read as *"a wall of 8u-tall mass, cut to arbitrary widths."*
+- The `4 × 8 × 8u` pillar is simply **what today's generator happens to emit**. Do not enshrine it.
+
+Board 07's "~2u wide / ~3u tall" is wrong on both counts — too small, and it varies the one axis that
+must not vary.
 
 ## 3. Clearance contract (the one hard spatial invariant — GDD §0)
 
@@ -139,7 +150,8 @@ opponent ships if and when that proves necessary.
 For regenerating concept art at true scale, per **one 64u-wide track**:
 
 - Fighter ship = **2.6u** → **1/24th of track width**
-- Standard pillar = **4u wide, 8u tall** → **1/16th of track width; 3× the ship's height-equivalent**
+- Block height = **8u, always** → ~3× the ship's width; **never varies**
+- Block width/depth = **free** (4u × 8u today) → vary these for silhouette interest, never the height
 - One authoring lane = **4u** → **1/16th of track width**
 - Minimum threadable corridor = **7u** → **~1/9th of track width**
 - One gap = **20u long** → **~1/3rd of track width, measured down-track**
