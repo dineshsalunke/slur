@@ -22,7 +22,10 @@ export interface LabLayers {
      * game uses `TrackFloor` yet — this is the review step before it replaces anything.
      */
     slab: boolean;
-    /** Background void, fog, dome, stars and parallax canyon walls. */
+    /** The placeholder nebula image as scene background. Independent of `env` — it is the "Cold Space"
+     *  half of the north star and worth judging the track against even with fog/stars/walls muted. */
+    backdrop: boolean;
+    /** Fog, dome, stars and parallax canyon walls. */
     env: boolean;
     /** The ship meshes. The rig, sim and chase camera run regardless — only the mesh is hidden. */
     ships: boolean;
@@ -35,10 +38,11 @@ export type LabLayerKey = keyof LabLayers;
 export const DEFAULT_LAB_LAYERS: LabLayers = {
     hazards: true,
     slab: true,
+    backdrop: true,
     env: false,
     ships: false,
     finish: false,
 };
 
 /** Stable render order for the toggle row (object key order is not a contract worth relying on). */
-export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [ 'slab', 'hazards', 'env', 'ships', 'finish' ];
+export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [ 'slab', 'hazards', 'backdrop', 'env', 'ships', 'finish' ];

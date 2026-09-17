@@ -2,11 +2,12 @@ import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { procgenDescriptor, resolveTrack } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
-import { Fragment, useMemo } from 'react';
+import { Fragment, Suspense, useMemo } from 'react';
 import { world } from '../../game/ecs/world';
 import type { EnvConfig } from '../../game/scene/env-config';
 import { Environment } from '../../game/scene/environment';
 import { FinishGate } from '../../game/scene/finish-gate';
+import { SceneBackdrop } from '../../game/scene/scene-backdrop';
 import { Ships } from '../../game/scene/ship';
 import { TrackFloor } from '../../game/scene/track-floor';
 import { TrackView } from '../../game/scene/track-view';
@@ -49,16 +50,22 @@ export function ArtLabCanvas( {
                 <directionalLight position={ [ 40, 80, -30 ] } intensity={ 1.1 } />
                 { /* Mounted FIRST so its useFrame advances sim.z before TrackView/Environment read it. */ }
                 <ArtLabRig track={ track } />
-                { layers.env ? (
-                    <Environment config={ env } seed={ seed } />
-                ) : (
-                    /* Env OFF still needs the void colour: without a `<color attach="background">` three
-                       clears to the renderer default and the whole review happens against an untinted
-                       black. The ambient light above stays on regardless, so an unlit track surface is
-                       still readable rather than black-on-black. Fog/dome/stars/walls are what we are
-                       actually muting. */
-                    <color attach="background" args={ [ env.background ] } />
-                ) }
+                { layers.env ? <Environment config={ env } seed={ seed } /> : null }
+                { /* Backdrop is its own layer, independent of `env`: the nebula is the "Cold Space" half of
+                     the north star and is worth judging the track against even with fog/stars/walls muted.
+                     Mounted AFTER Environment deliberately — Environment also attaches a background, and
+                     last attach wins, so this ordering lets the nebula override the flat void when both are
+                     on. Suspense because `useTexture` loads async; the fallback holds the void colour so
+                     there is no flash before the image arrives. */ }
+                <Suspense fallback={ <color attach="background" args={ [ env.background ] } /> }>
+                    { layers.backdrop ? (
+                        <SceneBackdrop />
+                    ) : (
+                        /* Without a background three clears to the renderer default and the whole review
+                           happens against an untinted black. */
+                        <color attach="background" args={ [ env.background ] } />
+                    ) }
+                </Suspense>
                 { layers.hazards ? <TrackView track={ track } showFloor={ ! layers.slab } /> : null }
                 { /* The generated slab, side-by-side comparable with TrackView's instanced floor. */ }
                 { layers.slab ? <TrackFloor track={ track } /> : null }
