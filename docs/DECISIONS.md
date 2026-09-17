@@ -404,3 +404,45 @@ their own art direction.
 
 **Affected docs (once accepted):** `docs/GDD.md` §5.2/§5.7 · ADR-006 (primitive list) · `docs/ADD.md` §4 ·
 `packages/shared/src/sim/track.ts`.
+
+---
+
+## ADR-010 — Adopt `art-handoff-v2`; OQ6/OQ7 answered; low-camera proposal NOT accepted
+
+**Date:** 2026-09-18 · **Status:** ACCEPTED (art direction) + **one item explicitly DEFERRED** (camera).
+**Supersedes:** ADR-008's package pointer (v1 → v2). ADR-008's decisions otherwise stand unchanged.
+
+**Context.** v2 of the external art package returned, incorporating the engineering feedback we sent. It
+accepts every dimensional correction (64u ribbon, 8u constant block height, free block width/depth, 20u
+gaps, real ship footprints) and answers both readability questions ADR-008 left open.
+
+**Decisions.**
+
+1. **v2 is the art direction.** v1 remains for its boards and as the record of what was first frozen.
+2. **ADD §10 OQ6 answered — interior cues.** Track edges cannot carry fine positioning across 64u. Low-
+   contrast panel divisions, transverse seams, material/reflection variation and hazard contact-shading
+   supply it. **A racing line, safe-route glow or emissive seam grid is explicitly rejected** — cues give
+   motion feedback without revealing the safe path, which was the exact failure mode we feared.
+3. **ADD §10 OQ7 answered — broken contour.** *"Sealed mass = avoid; broken-contour shell = shoot to
+   clear."* The distinction must break the **outer silhouette**; surface crack texture alone is
+   insufficient. **Red-as-hazard-code is rejected**, so the single-energy-colour system survives intact and
+   ADR-009's readability gate now has a concrete design to test rather than an open question.
+4. **The boards were NOT reshot** — every v2 board is byte-identical to v1 (SHA-1 verified). The
+   corrections are textual. **`docs/ART_SCALE_REFERENCE.md` therefore remains authoritative on dimensions**,
+   and boards `07`/`09` still depict the old undersized proportions. See `art-handoff-v2/PROVENANCE.md`.
+
+**DEFERRED — the low camera (v2 §8).** v2 proposes a **4–5u** camera (nominal 4.5u) with selective
+occlusion fade. **Not accepted here.** It contradicts ADR-006, where the chase cam sits at **+9u**
+deliberately so the player can see over 8u pillars and plan a line. v2 itself frames this as a prototype
+requiring a 6–8u control camera, and occlusion fade is a substantial rendering feature with collision-
+independence requirements. **This is a gameplay change wearing art clothing** — it needs its own ADR, a
+prototype in `/art-lab`, and a human feel-gate. It also overlaps the still-open PR #120. Tracking as
+ADD §10 OQ8.
+
+**Correction to our own prior claim.** Our feedback stated the passable corridor was "20u at easy,
+narrowing to 8u at peak", derived from `CORRIDOR_W_START`/`CORRIDOR_W_MIN` lane counts. **Measured in
+`/art-lab` this is wrong**: the true contiguous lethal-free run is **64u at intensity 0, 56u at 0.41, and
+24u at 1.00** (100% / 88% / 38% of the ribbon). The designated corridor is not the passable width, because
+off-corridor blocks are sparse (`WALL_DENSITY_START 0.14`). The structural point that narrowing the ribbon
+*reduces* obstacle density still holds; the percentages do not. v2's §3 does not repeat the bad figures,
+so nothing downstream inherited them.
