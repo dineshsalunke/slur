@@ -39,6 +39,15 @@ Applies to **every** `.tsx` in the client, not just R3F components.
    not for cosmetic tidiness. The S3 track-desync (`colyseus-state-not-reactive`) and the general re-render
    discipline (`think-rerender-subscription-impact`) are the incidents this rule distills.
 
+   **Enforced for route modules (issue #102).** A **route entry module** that renders a `<Canvas>` (or a
+   Canvas-wrapper component) as a sibling must call **zero React hooks** — a hook there re-renders the route
+   component and reconciles the entire scene subtree (measured in PR #98: every keystroke walked
+   `LandingScene`/`Environment` until the state moved to a leaf). This is checked in `pnpm lint` by
+   `scripts/check-canvas-isolation.mjs`, which auto-discovers the Canvas wrappers and fails the build if such a
+   route calls a `use…()`. Not `React.memo` — a memo would hide the violation; the guard makes the leaf split
+   *required*, not merely advised. (Scoped to route entry modules — their sub-components are leaves and hold
+   hooks freely.)
+
 ## Idiomatic Patterns (concise TSX snippets)
 
 **Slim, allocation-free `useFrame`** (scratch objects hoisted out of the loop):

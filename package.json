@@ -12,7 +12,7 @@
         "build": "pnpm -r run build",
         "typecheck": "pnpm -r run typecheck",
         "test": "pnpm -r run test",
-        "lint": "biome check . && ls-lint",
+        "lint": "biome check . && ls-lint && node scripts/check-canvas-isolation.mjs",
         "format": "biome format --write ."
     },
     "devDependencies": {
