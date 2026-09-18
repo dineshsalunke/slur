@@ -1,6 +1,10 @@
+import { resolve } from 'node:path';
 import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
+// Explicit `.ts` extension: Vite 8's forthcoming native config loader cannot resolve extensionless
+// relative imports in vite.config and warns on every run without it.
+import { artRefsPlugin } from './art-refs-plugin.ts';
 
 export default defineConfig( ( { mode } ) => {
     // loadEnv (not process.env) so CLIENT_PORT can live in a per-worktree apps/client/.env —
@@ -12,7 +16,15 @@ export default defineConfig( ( { mode } ) => {
     return {
         // Tailwind's Vite plugin ahead of reactRouter(): the official Vite guide doesn't mandate an order, so
         // we follow tailwind.md — Tailwind first, so its CSS transform runs before RR's build hooks (SPA mode).
-        plugins: [ tailwindcss(), reactRouter() ],
+        // `artRefsPlugin` is dev-only (apply: 'serve') and serves the frozen concept boards to the
+        // `/iso-*` isolation labs straight out of docs/references — see art-refs-plugin.ts for why it
+        // is a middleware and not 24 MB of copied PNGs. process.cwd() is apps/client (same assumption
+        // loadEnv above already makes).
+        plugins: [
+            tailwindcss(),
+            reactRouter(),
+            artRefsPlugin( { dir: resolve( process.cwd(), '../../docs/references/art-handoff-v1/boards' ) } ),
+        ],
         // Bind the dev server to ALL interfaces so other machines on the LAN can load
         // http://<host-ip>:5173 (office play). Vite defaults to localhost-only, which is
         // the real reason peers couldn't connect. The client reads the ws server host from
