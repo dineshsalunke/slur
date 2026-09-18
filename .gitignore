@@ -40,3 +40,6 @@ coverage/
 
 # Throwaway prototypes / inspectors (never committed; excluded from lint via biome useIgnoreFile)
 scratchpad/
+
+# Per-machine Claude Code state — never shared.
+.claude/settings.local.json

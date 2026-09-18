@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { setBloom, setShowGrid, useBloom, useShowGrid } from './art-gallery-store';
 import { galleryFocus } from './gallery-state';
 import { FIGHTER_L, FIGHTER_W, SUBJECTS } from './subjects';
 
@@ -18,17 +19,9 @@ function dimsLabel( dims: readonly number[] | null ): string {
  * Printing dimensions is not decoration. Every scale error in `art-handoff-v1` survived because objects
  * were judged by eye without a number attached; this panel makes the number impossible to miss.
  */
-export function ArtGallerySidebar( {
-    bloom,
-    onBloom,
-    showGrid,
-    onShowGrid,
-}: {
-    bloom: boolean;
-    onBloom: ( on: boolean ) => void;
-    showGrid: boolean;
-    onShowGrid: ( on: boolean ) => void;
-} ) {
+export function ArtGallerySidebar() {
+    const bloom = useBloom();
+    const showGrid = useShowGrid();
     // Mirrors `galleryFocus` purely so the active row can paint itself. The camera rig reads the singleton
     // per frame; this state only ever re-renders THIS sidebar leaf, never the Canvas (non-negotiable #10).
     const [ focus, setFocus ] = useState( galleryFocus.index );
@@ -45,14 +38,14 @@ export function ArtGallerySidebar( {
                 <button
                     type="button"
                     className={ `${ BTN } ${ bloom ? BTN_ON : BTN_OFF }` }
-                    onClick={ () => onBloom( ! bloom ) }
+                    onClick={ () => setBloom( ! bloom ) }
                 >
                     bloom
                 </button>
                 <button
                     type="button"
                     className={ `${ BTN } ${ showGrid ? BTN_ON : BTN_OFF }` }
-                    onClick={ () => onShowGrid( ! showGrid ) }
+                    onClick={ () => setShowGrid( ! showGrid ) }
                 >
                     grid
                 </button>

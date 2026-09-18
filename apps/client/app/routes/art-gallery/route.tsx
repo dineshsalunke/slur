@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ArtGalleryCanvas } from './art-gallery-canvas';
 import { ArtGallerySidebar } from './art-gallery-sidebar';
 
@@ -18,13 +17,10 @@ export function meta() {
  * so a route is both cheaper and more faithful than an isolated-component harness would be.
  */
 export default function ArtGalleryRoute() {
-    const [ bloom, setBloom ] = useState( true );
-    const [ showGrid, setShowGrid ] = useState( true );
-
     return (
         <main>
-            <ArtGallerySidebar bloom={ bloom } onBloom={ setBloom } showGrid={ showGrid } onShowGrid={ setShowGrid } />
-            <ArtGalleryCanvas bloom={ bloom } showGrid={ showGrid } />
+            <ArtGallerySidebar />
+            <ArtGalleryCanvas />
         </main>
     );
 }
