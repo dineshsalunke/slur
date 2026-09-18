@@ -87,6 +87,31 @@ on its own" (`iso-lab-canvas.tsx:60-63`). **A star light lights those probes jus
 therefore takes a `light` prop (default `true`); **slice 3's environment gate MUST run with `light={false}`**,
 or "roughness 0.2 looks different from 0.9" proves nothing about the bake.
 
+### 4b. Two defects the owner reported at first look — one fixed, one OPEN
+
+**(a) "No texture, just a dark circle with a rim" — FIXED in `b0f0aa0`, but NOT VISUALLY CONFIRMED.**
+Three compounding causes: mottle was applied to the lit side only (and most of the visible disc is night);
+the terminator band was far too narrow at `0.22` (the look target's cratering lives in the broad band just
+inside the rim, not on the dark face); and normalised value-noise piles up around 0.5, so feeding `fbm`
+straight into a multiplier gave a ~13% swing — invisible on a surface this dark. Now: mottle multiplies the
+whole body, `shadowColor` moved off near-black to give it headroom, `terminatorSoftness` is `0.5`, and the
+noise is stretched with `smoothstep(0.35, 0.65)` plus a second high-frequency band for grain.
+**Look at this first and confirm it actually reads.**
+
+**(b) "Flickering while orbiting" — OPEN, NOT DIAGNOSED. Do not guess at it; get a repro.**
+Ruled out this session: a one-frame lag between the camera and `SkyFollow`. drei's `OrbitControls` calls
+`controls.update()` at `useFrame` priority **−1** and `SkyFollow` runs at the default `0`, so the camera
+always moves *before* the sky copies it (verified in the installed drei 10.7.8 `core/OrbitControls.js:29-31`).
+
+**Leading untested hypothesis: MSAA.** Every `<EffectComposer>` in this repo is `multisampling={0}`, so with
+bloom ON the scene renders into a non-multisampled buffer. Slice 2 just introduced the first hard, very
+high-contrast silhouette edge in the scene — a dark limb against an HDR rim at `rimStrength 2.2` — which is
+exactly the case that crawls under camera motion without MSAA.
+**The cheap decisive test: does the flicker persist with Bloom OFF?** Bloom off renders straight to the
+canvas with the context's own MSAA. If it goes away with bloom off, it is this, and the fix is raising
+`multisampling` on the composer (weigh the cost — that is a shipped-perf change, not a lab-only one).
+If it persists with bloom off, it is NOT MSAA and needs a fresh look.
+
 ### 5. Next actions, in order
 
 1. **Eye-gate slice 2's composition** in `/iso-sky` — it is the one thing blocking. Tune
