@@ -134,6 +134,48 @@ export interface StarFieldConfig {
     twinkleSpeed: number;
 }
 
+/**
+ * The celestial body — the rim-lit limb in the upper right of `public/textures/nebula-backdrop.jpg` and of
+ * board 12.
+ *
+ * Its position is its OWN bearing, deliberately not the star's. A body sitting on the star bearing presents a
+ * fully-lit face; the crescent only exists because the light is well off to one side, putting the hemisphere
+ * we can see into shadow. On the look target the lit face is DIM and only the thin limb is bright — so the
+ * restraint lives in `litColor` being dark, not in dimming the rim.
+ */
+export interface CelestialBodyConfig {
+    enabled: boolean;
+    /** Where the body sits, in the same frame as the star bearing. */
+    bearingDeg: number;
+    elevationDeg: number;
+    /** Apparent DIAMETER, in degrees of sky. Judge it against the FOV — the same trap as the nebula's
+     *  feature size. The look target's body is cut off by the frame, i.e. wider than the shot. */
+    angularSizeDeg: number;
+    /** The sunlit surface. Cold and dark: on the look target the lit face is barely above the nebula. */
+    litColor: string;
+    /** The night side. Near-black, never pure black — a pure-black night side kills the silhouette. */
+    shadowColor: string;
+    /** The added rim term. The one thing up here allowed to be bright enough to bloom. */
+    rimColor: string;
+    /** Half-width of the terminator band as a `dot()` value. 0 = a hard clipped circle. */
+    terminatorSoftness: number;
+    /** Fresnel exponent. Higher = thinner, sharper rim. */
+    rimPower: number;
+    /** Rim multiplier. Above 1 it goes HDR and is the main thing in frame that crosses the bloom threshold. */
+    rimStrength: number;
+    /** Surface mottle, 0–1. At 0 the body is a featureless ball, which reads as a decal rather than a world. */
+    detail: number;
+    /** Mottle frequency, in noise cells across a body radius. */
+    detailScale: number;
+}
+
+/** The one real light in the scene, aimed down the authored star bearing. */
+export interface StarLightConfig {
+    intensity: number;
+    /** Cold white. The warm ramp belongs to the playable layer and never lights the far field. */
+    color: string;
+}
+
 export interface SkyConfig {
     name: string;
     /** Dome sphere radius (u). Must sit inside the camera's far plane. Purely a containment number — the sky
@@ -152,6 +194,8 @@ export interface SkyConfig {
     gradient: SkyGradientConfig;
     nebula: NebulaConfig;
     stars: StarFieldConfig;
+    body: CelestialBodyConfig;
+    starLight: StarLightConfig;
 }
 
 /** A noise cell on a unit direction sphere subtends ~1 radian, so this converts a feature size to frequency. */
@@ -254,5 +298,41 @@ export const DEEP_SPACE: SkyConfig = {
         saturation: 0,
         fade: true,
         twinkleSpeed: 0.3,
+    },
+    body: {
+        enabled: true,
+        // Upper-right of the game's forward view (bearing 0 = -Z), which is where the look target puts the limb.
+        //
+        // THE ANGLE TO THE STAR IS THE COMPOSITION. Crescent thinness is governed entirely by the separation
+        // between this bearing and `starBearingDeg`, NOT by any rim knob:
+        //   ~0°  → the star sits behind the body, every limb point is at the terminator, and the rim closes
+        //          into a full ring — which reads as atmosphere, and hides the star behind the planet;
+        //   ~90° → a half-lit gibbous, no crescent at all;
+        //   ~35° → the look target: strongly night-side with a bright arc down one limb.
+        // At 20° against a star at 55° the separation is ~35°, so the lit arc falls on the star side.
+        bearingDeg: 28,
+        elevationDeg: 15,
+        // The body's CENTRE sits near the frame edge and its radius (35°) is wider than the lab's 45° vertical
+        // FOV, so what is in frame is a LIMB arcing through the corner — the backdrop's composition — rather
+        // than a marble floating in the middle. Geometry caps this below 90°: past a 45° half-angle the sphere
+        // radius exceeds its own distance and swallows the camera.
+        // FIRST NUMBER TO TUNE, and it must be re-judged in /art-lab at the game's FOV, not settled here.
+        angularSizeDeg: 44,
+        // Luma 34 and 6 on the sRGB bytes. The lit face sits just above the nebula's mid ramp stop (69) — on
+        // the look target the body is NOT the bright thing, the 2px crescent on its edge is.
+        litColor: '#23272e',
+        shadowColor: '#050608',
+        rimColor: '#dfeaff',
+        terminatorSoftness: 0.22,
+        rimPower: 5,
+        // Above 1 on purpose: with the dome's brightest possible pixel at ~0.28 linear luma against a 0.42
+        // bloom threshold (GRID_VOID), this rim is the only thing in the far field that can legitimately bloom.
+        rimStrength: 2.2,
+        detail: 0.55,
+        detailScale: 4.5,
+    },
+    starLight: {
+        intensity: 1.6,
+        color: '#e8f0ff',
     },
 };
