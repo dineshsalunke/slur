@@ -4,7 +4,108 @@
 **Read first:** `LANE-BRIEF.md` (governing brief), then `GATE-1-FINDINGS.md` (the failed slice-1 gate and the
 histogram acceptance test). Nothing here supersedes either.
 
-## ▶ STATE AS OF 2026-09-18, SESSION 3 — read this before the older sections below
+## ▶▶ STATE AS OF 2026-09-18, SESSION 4 — read this FIRST; it supersedes the session-3 section below
+
+**Slice 1 is gated and landed. Slice 2 is landed but NOT eye-gated. The bloom blackout was never a bug.**
+
+| Commit | What |
+|---|---|
+| `c9035a4` | the owner's eye-tune — slice 1's final config |
+| `afe2af3` | **slice 2** — `celestial-body.tsx` + `star-light.tsx` |
+
+### 1. ⛔ THE BLOOM BLACKOUT IS CLOSED — NOT A BUG, DO NOT FILE AN ISSUE, DO NOT "FIX" IT
+
+Session 3 recorded it as "CONFIRMED, not suspected" and told you to file an issue. **That was wrong, and the
+evidence that looked like confirmation was an artefact of the automation.** Measured this session:
+
+- `luminanceThreshold` set to 9999, so Bloom contributes literally nothing → **still black**. Bloom was never
+  the cause.
+- After a cold load, toggling Bloom off *and back on* renders the scene fine **with bloom on**. It is a
+  FIRST-MOUNT failure, not a bloom failure.
+- The canvas was sitting at its default intrinsic **300×150**, never resized. R3F only configures and renders
+  when `containerRect.width > 0 && height > 0` (verified in the installed `@react-three/fiber` 9.7.0 dist).
+  Zero measurement → the R3F root never mounts → *nothing* is drawn, not even the clear colour. Confirmed by
+  temporarily setting the background to pure red: the canvas stayed page-background black.
+- Root cause: `document.visibilityState === "hidden"` on those loads. **The MCP/automation Chrome window sits
+  behind the user's, and a hidden tab suspends rendering and ResizeObserver delivery.** The first click or
+  window resize wakes it — and the first thing anyone clicks is the Bloom toggle, which is how bloom got blamed.
+- **The owner confirmed `/iso-sky` renders on its own, untouched, with Bloom ON, in a foreground window.**
+
+A hypothesis that Tailwind's stylesheet lands after first paint in dev was tested and **falsified** — it
+reproduced in a production `pnpm build` + `vite preview` too. Both are the same hidden-tab artefact.
+
+⚠ **Lesson for whoever drives Chrome next:** a blank canvas in an automated tab means the tab is hidden, not
+that the renderer is broken. Check `document.visibilityState` before believing a rendering bug.
+
+### 2. Bloom is subtle and only fires on the stars — this is ARITHMETIC, and it is correct
+
+The owner noticed this directly. `GRID_VOID.bloom.threshold` is `0.42` on the linear buffer
+(`env-config.ts:152`). The nebula's brightest *possible* pixel is its top ramp stop `#7d93ad` → linear
+0.205 / 0.292 / 0.418 → BT.709 luma **≈ 0.28**, about a third below the threshold — before `opacity 0.92` and
+`coreOnset 0.96` make that stop rare. **The cloud mathematically cannot bloom at the committed config.**
+drei's near-white stars are the only thing that clears 0.42.
+
+**Leave it.** A blooming sky is exactly the glow that eats obstacle silhouettes — the readability risk pass-2
+item 3 defers to the slice-4 contrast check. Slice 2's rim is now the thing designed to cross the threshold
+(`rimStrength 2.2`, above 1 on purpose). Judge bloom against the rim, never against a deliberately near-black
+cloud.
+
+### 3. Slice 2 — what landed, and what is still open
+
+`apps/client/app/game/scene/celestial-body.tsx` — camera-locked sphere, soft `dot(N,L)` terminator, mottled
+lit side, `pow(1 - dot(N,V), k)` fresnel rim **gated by the day term** so it fires only on the lit limb.
+`apps/client/app/game/scene/star-light.tsx` — the real `DirectionalLight` on the shared bearing, with its
+target rendered as a sibling inside `SkyFollow` (the default target sits at the world origin, which would
+swing the direction through a wide arc over 8000u of travel).
+
+**VERIFIED WORKING:** terminator, surface mottle and a clean curved silhouette all render in `/iso-sky`; the
+star light visibly lights the roughness probes.
+
+**NOT GATED: the composition is a first guess and is the owner's call.** Current values are
+`body { bearing 28°, elevation 15°, angularSize 44° }` against `star { 55°, 18° }`. In the last frame checked
+the limb read as a clean dark arc with **no visible rim**, because the limb in frame was the one facing AWAY
+from the star.
+
+**The governing constraint — do not re-derive it.** Crescent thinness is set by the **angular separation
+between the body's bearing and the star's**, not by any rim knob:
+- `~0°` → star sits behind the body; every limb point is at the terminator; the rim closes into a full **ring**
+  (reads as atmosphere on an airless body) and the star is occluded by the planet.
+- `~90°` → a half-lit **gibbous**, no crescent at all.
+- `~35°` → the look target: strongly night-side with a bright arc down one limb.
+- Separation must also **exceed the body's angular radius**, or the star ends up behind the planet.
+- For the lit arc to be the limb that is IN FRAME, the star must be on the **frame-centre side** of the body.
+- Geometry caps `angularSizeDeg` **below 90°**: past a 45° half-angle the sphere radius exceeds its own
+  distance and swallows the camera.
+
+Body *distance* is derived, not authored — it lands inside the star shell's inner edge (`radius - depth`) so
+drei's transparent-pass `<Stars>` cannot paint points over the opaque body. Apparent size is in degrees.
+
+### 4. ⚠ Slice 2 SPOILS slice 3's falsifiable self-test — the gate must switch the light off
+
+`/iso-sky` runs `rig={false}` precisely because "a neutral directional light makes the roughness self-test pass
+on its own" (`iso-lab-canvas.tsx:60-63`). **A star light lights those probes just as happily.** `ProceduralSky`
+therefore takes a `light` prop (default `true`); **slice 3's environment gate MUST run with `light={false}`**,
+or "roughness 0.2 looks different from 0.9" proves nothing about the bake.
+
+### 5. Next actions, in order
+
+1. **Eye-gate slice 2's composition** in `/iso-sky` — it is the one thing blocking. Tune
+   `body.bearingDeg` / `angularSizeDeg` / `rimStrength` / `rimPower` against the backdrop overlay, using the
+   separation rule in §3. **Note the lab's default camera looks along bearing ≈ −31°, so the body at 28° is
+   off-frame until you orbit.** If the composition wants the star moved instead, that is an art call on a
+   value the owner already eye-tuned for the nebula — raise it, do not change it unilaterally.
+2. **There are no `/iso-sky` panel sliders for the body yet.** Tuning is by editing `sky-config.ts`, which is
+   HMR-live. Adding body knobs to `sky-tuning.ts` / `sky-tuning-panel.tsx` / `tunable-sky.tsx` is the obvious
+   next ergonomics job if the gate turns into more than one pass.
+3. **The star itself is NOT built.** Board 12 shows a bright star with a diffraction flare; the brief mentions
+   "the dome's flare". Cheapest home is the dome fragment shader (a radial glow + streaks around `uStarDir`),
+   which costs zero extra draw calls. Deferred deliberately — slice 2's gate is the limb, not the star.
+4. **Then slice 3** (the bake) — with §4's `light={false}` requirement.
+5. **Then slice 4**, then **nebula pass 2**, both unchanged.
+
+---
+
+## STATE AS OF 2026-09-18, SESSION 3 — superseded in part by the section above
 
 **Two commits landed on `art/background`. Nothing is uncommitted.**
 
@@ -81,10 +182,10 @@ warnings) · 75 shared + 27 client + 4 server · build.
    near 0.1°, which is sub-pixel and will sparkle under camera rotation for no visible gain.
 2. **Stars read but are still modest** at 4500 / size 13. Easy to push. The headless mirror does **not** model
    stars, so any change there is screenshot-verified only, never mirror-verified.
-3. **The bloom blackout is CONFIRMED, not suspected.** `/iso-sky` rendered pure black with `Bloom` on and came
-   back the instant it was toggled off — at a canvas matching the viewport, which **rules out** the
-   EffectComposer resize/render-target hypothesis recorded further down this doc. Pre-existing in
-   `IsoLabCanvas`, out of scope for this task, **still needs its own issue filed**.
+3. ~~**The bloom blackout is CONFIRMED, not suspected.**~~ **WRONG — RETRACTED, see session 4 §1.** It is not a
+   bug at all: the automation tab was `visibilityState: "hidden"`, which suspends rendering and ResizeObserver
+   delivery, so the R3F root never mounted. Bloom was innocent; the toggle was just the first thing clicked.
+   **No issue to file.**
 4. **Then slice 2**, unchanged.
 
 ### Measurement tooling (session 3 additions)
