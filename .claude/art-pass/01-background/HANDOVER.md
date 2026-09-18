@@ -1,11 +1,99 @@
 # Task 1 — background: handover after slice 1 + the four-layer rework
 
 **Worktree:** `slur-worktrees/background`, branch `art/background`. Stack on `:5200` (client) / `:2600` (server).
-**State:** slice 1 + the four-layer rework built, verify gate green, **nothing committed yet** — awaiting the
-owner's call on the re-measured histogram (`GATE-1-FINDINGS.md` §4.2), then land as **two** commits:
-slice 1, then the layer rework.
 **Read first:** `LANE-BRIEF.md` (governing brief), then `GATE-1-FINDINGS.md` (the failed slice-1 gate and the
 histogram acceptance test). Nothing here supersedes either.
+
+## ▶ STATE AS OF 2026-09-18, SESSION 3 — read this before the older sections below
+
+**Two commits landed on `art/background`. Nothing is uncommitted.**
+
+| Commit | What |
+|---|---|
+| `439032a` | slice 1 + the four-layer rework (everything session 2 built) |
+| `275c4f4` | the scale fix: `featureSizeDeg` 10°→6°, `threshold` 0.448, stars 4500/13 |
+
+Landed as **one** commit, not the two session 2 planned: the rework had overwritten slice 1 in the working
+tree, so the intermediate state never existed in git and splitting it would have meant fabricating a commit
+that was never real.
+
+**The session-2 eye gate failed on "the blobs are too big."** Cause was NOT the missing branching hierarchy
+that the pass-2 section below predicts. With amplitude halving per octave the **base octave carries ~51% of
+the field**, so the bright structure *was* the base scale; detail octaves cannot restructure it.
+`featureSizeDeg` 10°→6° fixed it, using an existing config value and no shader change.
+
+⚠ **A ridged multifractal (Musgrave weight feedback) was built and measured FIRST and is REJECTED — do not
+rebuild it.** The theory was that it would give branching hierarchy. It does the opposite: weight feedback
+suppresses child octaves wherever the parent is weak, so it *removes* fine structure and renders chunkier
+than the baseline. Measured, not argued — see the contact sheets described under "Measurement tooling".
+This does not refute pass-2 item 1 (a second band warped BY the coarse field is still untried), but it does
+mean "multifractal" is not the way to get there.
+
+**Histogram after the change** (headless mirror, 12 angles, median):
+
+| | landed 10° | now 6° | target |
+|---|---|---|---|
+| mean | 22.8 | 22.2 | 22.4 |
+| >24 | 27.6% | 28.6% | 27.4% |
+| >48 | 9.9% | 10.0% | 9.9% |
+| >80 | 1.75% | 2.04% | 2.98% |
+| >120 | 0.76% | 0.71% | 0.75% |
+
+Closer to target on nearly every band. `>80` still deliberately short — planet limb, slice 2's job.
+
+**Verify gate green** at `275c4f4`: typecheck · lint (3 pre-existing `packages/shared/src/sim/*` file-length
+warnings) · 75 shared + 27 client + 4 server · build.
+
+### Open, in priority order
+
+1. **The large DARK cells — SWEPT, and the answer is "one lever only".** Awaiting the owner's pick between
+   `featureSizeDeg` 6 (committed) / 5 / 4.
+
+   ⚠ **Correction to an earlier claim in this doc: the dark cells are NOT the mask and dust layers.** Measured:
+   sweeping mask 80/50/35 × dust 25/14 produces six visually IDENTICAL frames. The **mask barely fires** at its
+   committed settings — its 80°/2-octave field runs p25 0.327 against a 0.18→0.34 threshold window, so the
+   smoothstep is already ~0.93 at the 25th percentile and only the darkest ~10% of sky is touched. Dust at
+   `strength 1.6` is likewise minor (2.8 changes almost nothing). The dark cells are the **emission field's own
+   voids**, intrinsic to a ridged filament network.
+
+   **Making the mask actually carve is unaffordable and should not be retried without a new plan.** At
+   `mask {40°, threshold 0.42}` the composition looks good but `>24` collapses to **12.1%** against a 27.4%
+   target, and the per-angle spread blows out to **4–30%** — some camera angles read as empty sky. Pulling
+   emission `threshold` down to 0.40 only recovers to 16.5%. This independently reproduces the session-2 note
+   that a voiding mask puts the target out of reach no matter how the emission dials move.
+
+   **Histogram cost of the affordable lever** (headless mirror, 12 angles, median):
+
+   | | >24 | >48 | mean |
+   |---|---|---|---|
+   | f6 (committed) | 28.6% | 10.0% | 22.2 |
+   | f5 | 29.4% | 10.6% | 23.9 |
+   | f4 | 28.0% | 11.1% | 23.3 |
+   | target | 27.4% | 9.9% | 22.4 |
+
+   f5 and f4 both hold the gate. **If f4 is chosen, pair it with `octaves` 6→5** — at 4° the sixth octave lands
+   near 0.1°, which is sub-pixel and will sparkle under camera rotation for no visible gain.
+2. **Stars read but are still modest** at 4500 / size 13. Easy to push. The headless mirror does **not** model
+   stars, so any change there is screenshot-verified only, never mirror-verified.
+3. **The bloom blackout is CONFIRMED, not suspected.** `/iso-sky` rendered pure black with `Bloom` on and came
+   back the instant it was toggled off — at a canvas matching the viewport, which **rules out** the
+   EffectComposer resize/render-target hypothesis recorded further down this doc. Pre-existing in
+   `IsoLabCanvas`, out of scope for this task, **still needs its own issue filed**.
+4. **Then slice 2**, unchanged.
+
+### Measurement tooling (session 3 additions)
+
+Session 2's `histo.mjs` (headless mirror of the full composite) was re-validated this session: its `f10`
+row reproduces the committed table exactly. Trust it as the search tool; a screenshot + ffprobe is still the
+authority. Session 3 added, in the scratchpad (node, NN-1 clean):
+
+- `branch.mjs` — value-distribution percentiles for the emission field; `FS=<deg>` env arg.
+- `sheet.mjs` — renders the **full composite** for several candidate configs and tiles them into a PPM
+  (→ PNG via `ffmpeg`). **Each tile's `threshold` is re-derived by PERCENTILE MATCHING against the baseline**,
+  otherwise the tiles differ by coverage and the structure comparison is worthless. This is what made the
+  multifractal rejection obvious in one look instead of three shader round-trips.
+
+Both are scratchpad-only and die with the session — reconstruct from this description if needed.
 
 ## Where the work got to (2026-09-18, session 2)
 
@@ -134,17 +222,18 @@ mask {80, 0.18, 0.16} · dust {25, 0.55, 0.2, 1.6} · lightContrast 0.5 · star 
    **The noise field is not uniform**: at a fixed threshold one camera angle can look empty and another
    crowded. Judge across several orbit angles before settling. Sliders make that cheap; `Copy config` emits a
    paste-ready `sky-config.ts` fragment.
-2. **⚠ THE COMMITTED DEFAULT IS DERIVED, NOT SEEN.** `threshold 0.52 · softness 0.34` was computed from the
-   measurement above after the review tab was closed — **nobody has looked at it rendering.** Open `/iso-sky`
-   and judge it first; it may well need another pass on the sliders.
+2. ~~**⚠ THE COMMITTED DEFAULT IS DERIVED, NOT SEEN.**~~ **RESOLVED, session 3** — it was seen, judged, and
+   failed on scale; see the session-3 section at the top. The `threshold 0.52 · softness 0.34` quoted here
+   was never landed either. Ignore this item.
 3. **⚠ Bloom blacked the whole lab out once.** With `Bloom` ON the canvas rendered pure black — stars and
    probes included, which rules out the dome shader — and **turning Bloom OFF restored everything.** No
    console errors. At the time the canvas CSS size (1728×997) did not match the viewport (1456×840), so the
    prime suspect is an **EffectComposer render-target size mismatch after a window resize**, which would be
    pre-existing and not specific to this route. **Not confirmed.** Repro: resize the window, then toggle Bloom.
    Check `/iso-monolith` too — if it blacks out the same way, the bug belongs to `IsoLabCanvas`, not here.
-4. **Slice 1 is not committed.** Commit once the gate passes. No `Co-Authored-By` trailer; do not bundle
-   `git add` and `git commit` in one Bash call.
+4. ~~**Slice 1 is not committed.**~~ **DONE, session 3** — `439032a` + `275c4f4`. The commit hygiene still
+   applies to future work: no `Co-Authored-By` trailer; do not bundle `git add` and `git commit` in one
+   Bash call.
 
 **Settled 2026-09-18 — WIDENED at the slice-1 gate, see `GATE-1-FINDINGS.md` §1:**
 `apps/client/public/textures/nebula-backdrop.jpg` — the placeholder this task retires — is the look target for
