@@ -1,9 +1,7 @@
-import { Grid } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
-import { Fragment } from 'react';
-import { GRID_VOID } from '../../game/scene/env-config';
+import { GalleryBloom } from './gallery-bloom';
 import { GalleryCamera } from './gallery-camera';
+import { GalleryGrid } from './gallery-grid';
 import { GallerySubject } from './gallery-subject';
 import { SUBJECTS, slotFor } from './subjects';
 
@@ -19,7 +17,7 @@ import { SUBJECTS, slotFor } from './subjects';
  * shared perspective — which is an acceptable trade, and arguably useful, since off-axis subjects are seen
  * at the same kind of angles they appear at in play.
  */
-export function ArtGalleryCanvas( { bloom, showGrid }: { bloom: boolean; showGrid: boolean } ) {
+export function ArtGalleryCanvas() {
     return (
         <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 50, position: [ 0, 60, -130 ] } }>
             <color attach="background" args={ [ '#05060a' ] } />
@@ -32,44 +30,14 @@ export function ArtGalleryCanvas( { bloom, showGrid }: { bloom: boolean; showGri
                 <GallerySubject key={ s.id } subject={ s } position={ slotFor( i ) } />
             ) ) }
 
-            { /* A 1-unit grid so world scale is readable at a glance: every cell is 1u, every heavy line 10u. */ }
-            { showGrid ? (
-                <Grid
-                    args={ [ 400, 400 ] }
-                    cellSize={ 1 }
-                    cellThickness={ 0.5 }
-                    cellColor="#1b2530"
-                    sectionSize={ 10 }
-                    sectionThickness={ 1 }
-                    sectionColor="#2d4256"
-                    fadeDistance={ 400 }
-                    fadeStrength={ 1 }
-                    infiniteGrid
-                    position={ [ 0, -0.05, 0 ] }
-                />
-            ) : (
-                <Fragment />
-            ) }
+            <GalleryGrid />
 
             { /* No OrbitControls: it and GalleryCamera would both drive the camera every frame and fight.
                  Framing is driven from the sidebar instead — click a subject to fly to it, "wide" to pull
                  back. Deterministic framing is also what makes two screenshots comparable, which free-orbit
                  inspection is not. */ }
 
-            { /* Same bloom config the game pins (GRID_VOID), so what you judge here is what ships. Toggling it
-                 off is a first-class review mode: the handoff requires readability to survive without bloom. */ }
-            { bloom ? (
-                <EffectComposer multisampling={ 0 }>
-                    <Bloom
-                        mipmapBlur
-                        intensity={ GRID_VOID.bloom.intensity }
-                        luminanceThreshold={ GRID_VOID.bloom.threshold }
-                        luminanceSmoothing={ GRID_VOID.bloom.smoothing }
-                    />
-                </EffectComposer>
-            ) : (
-                <Fragment />
-            ) }
+            <GalleryBloom />
         </Canvas>
     );
 }
