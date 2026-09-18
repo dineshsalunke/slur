@@ -182,15 +182,21 @@ export const DEEP_SPACE: SkyConfig = {
     starBearingDeg: 55,
     starElevationDeg: 18,
     gradient: {
-        zenith: '#04070c',
-        horizon: '#0b1119',
-        nadir: '#020406',
+        // Darkened ~55% at the session-3 eye gate. This barely moves the >24 histogram band (the base's own
+        // luma is already under 24) but it drops `mean` 23.2 → 20.3, which partly offsets the cloud coverage
+        // running hot. Deep space should be near-black; the cloud, not the backdrop, carries the brightness.
+        zenith: '#020407',
+        horizon: '#060a10',
+        nadir: '#010203',
     },
     nebula: {
         // TUNED TO THE HISTOGRAM GATE, not by eye — see GATE-1-FINDINGS.md §2 for the target and the ffprobe
         // method. Measured across 12 orbit angles (median [min-max]):
-        //     mean 22.2 [17.8-29.8] · >24 28.6% [21.3-36.6] · >48 10.0% · >80 2.04% · >120 0.71% · >160 0.01%
+        //     mean 20.3 [16.8-28.6] · >24 30.9% [24.9-40.6] · >48 10.7% · >80 1.72% · >120 0.53% · >160 0.00%
         //     target                  mean 26.5 · >24 27.4% · >48 9.9% · >80 2.90% · >120 0.72% · >160 0.20%
+        // `>24` runs ~3.5pp HOT against target and that is an accepted divergence, not an oversight: these values
+        // are the owner's live eye-tune against the backdrop overlay, and the eye outranks the mirror on the art
+        // call. Everything else is on target or deliberately under.
         // ⚠ that target mean is disputed: re-measuring nebula-backdrop.jpg with §2's own command and crop
         // gives 22.4, not 26.5. >80/>160 stay short DELIBERATELY — that tail is the planet limb, slice 2's job.
         //
@@ -201,12 +207,16 @@ export const DEEP_SPACE: SkyConfig = {
         // The previous top stop #5d7189 has luma 110, which made >120 unreachable AT ANY DENSITY — that, not
         // the thresholds, was why both earlier configs measured 0% there.
         ramp: [ '#101620', '#374757', '#7d93ad' ],
-        coreOnset: 0.95,
+        coreOnset: 0.96,
         // Measured over 40k uniform directions at 80°/2 octaves: p25 0.327 · p50 0.424 · p90 0.609. The window is
         // NARROW on purpose so the mask resolves to mostly-0 or mostly-1 rather than dimming the whole sky.
         // Threshold lowered 0.28 → 0.18 at the gate: the target wants ~27% of pixels carrying visible cloud, and
         // a mask voiding a quarter of the sky put that out of reach no matter how the emission dials moved.
-        mask: { featureSizeDeg: 80, threshold: 0.18, softness: 0.16 },
+        // 80 → 40 is the owner's live value. Measured, it is a NO-OP at `threshold 0.18`: the 80°/2-octave field
+        // runs p25 0.327 against a 0.18→0.34 window, so the mask is ~0.93 by the 25th percentile and only the
+        // darkest tenth of sky is touched — sweeping 80/50/35 gave visually identical frames. The layer only
+        // starts carving near threshold 0.42, which costs too much coverage to afford (see HANDOVER).
+        mask: { featureSizeDeg: 40, threshold: 0.18, softness: 0.16 },
         dust: { featureSizeDeg: 25, threshold: 0.55, softness: 0.2, strength: 1.6 },
         lightContrast: 0.5,
         octaves: 6,
@@ -215,22 +225,23 @@ export const DEEP_SPACE: SkyConfig = {
         // multifractal (Musgrave weight feedback) was tried first to get branching and rejected on measurement:
         // it suppresses child octaves wherever the parent is weak, which made the field chunkier, not branchier.
         featureSizeDeg: 6,
-        warp: 0.45,
+        warp: 0.55,
         ridge: 1,
         // A WIDE window on purpose. Measured at these settings the field runs p50 0.53 · p75 0.65 · p90 0.74 ·
         // p95 0.79 · p99 0.86. A narrow window here went binary — every visible pixel pinned to the top ramp
         // stop, reading as torn paper rather than as cloud.
         //
-        // 0.52 → 0.65 → 0.46 → 0.448 across three gates. 0.65 was set by eye and measured at 0.16% of pixels
-        // above luma 24 against a 27.4% target — the nebula had effectively vanished. The rest are histogram
-        // answers; 0.448 re-derives 0.46 for the 6° field. Raising coverage alone reproduces the earlier milky
-        // failure, which is why `coreOnset` moved with it: this dial sets how much sky has cloud, that one sets
-        // how rarely cloud gets hot.
-        threshold: 0.448,
-        softness: 0.42,
-        // Full coverage on purpose. Restraint lives in the ramp stops, which are already dark and narrow —
-        // dimming a second time here only pushed the cloud below the point where it could be judged at all.
-        opacity: 1,
+        // 0.52 → 0.65 → 0.46 → 0.448 → 0.38 across four gates. 0.65 was set by eye and measured at 0.16% of
+        // pixels above luma 24 against a 27.4% target — the nebula had effectively vanished. 0.46/0.448 were
+        // histogram answers. 0.38 is the owner's eye-tune and knowingly runs `>24` hot; see the block above.
+        // Raising coverage alone reproduces the earlier milky failure, which is why `coreOnset` moved with it:
+        // this dial sets how much sky has cloud, that one sets how rarely cloud gets hot.
+        threshold: 0.38,
+        softness: 0.5,
+        // Just off full. Restraint lives mainly in the ramp stops, which are already dark and narrow — an
+        // earlier attempt to dim hard here pushed the cloud below the point where it could be judged at all.
+        // 0.92 takes the faintest cloud down a touch without that collapse.
+        opacity: 0.92,
     },
     stars: {
         enabled: true,

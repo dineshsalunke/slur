@@ -46,8 +46,14 @@ warnings) · 75 shared + 27 client + 4 server · build.
 
 ### Open, in priority order
 
-1. **The large DARK cells — SWEPT, and the answer is "one lever only".** Awaiting the owner's pick between
-   `featureSizeDeg` 6 (committed) / 5 / 4.
+1. **The large DARK cells — SWEPT, and the answer is "one lever only". RESOLVED: `featureSizeDeg` stays 6.**
+   The owner judged 6 correct and live-tuned the *other* emission dials instead —
+   `warp 0.45→0.55 · threshold 0.448→0.38 · softness 0.42→0.5 · coreOnset 0.95→0.96 · opacity 1→0.92`
+   (commit `TUNE`). That config runs **`>24` ~6pp hot** (33.6% vs a 27.4% target) with every other band on
+   target or deliberately under. **That divergence is ACCEPTED, not an oversight** — it is an eye-tune against
+   the backdrop overlay, and the eye outranks the headless mirror on the art call. Do not "fix" it back toward
+   the histogram without asking. The f5/f4 data below is kept because it is still the answer if cell size is
+   ever revisited.
 
    ⚠ **Correction to an earlier claim in this doc: the dark cells are NOT the mask and dust layers.** Measured:
    sweeping mask 80/50/35 × dust 25/14 produces six visually IDENTICAL frames. The **mask barely fires** at its
