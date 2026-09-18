@@ -47,9 +47,8 @@ export function Track() {
         const sim = e?.get( Sim );
         if ( ! sim ) return;
         const z = sim.z;
-        for ( const m of [ a.current, b.current ] ) {
-            if ( m && z - m.position.z > SIZE ) m.position.z += 2 * SIZE;
-        }
+        if ( a.current && z - a.current.position.z > SIZE ) a.current.position.z += 2 * SIZE;
+        if ( b.current && z - b.current.position.z > SIZE ) b.current.position.z += 2 * SIZE;
     } );
 
     return (

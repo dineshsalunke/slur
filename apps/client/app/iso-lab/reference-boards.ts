@@ -1,6 +1,6 @@
-// The frozen `art-handoff-v1` concept boards, as an addressable list.
+// The frozen concept boards, as an addressable list.
 //
-// These are served in dev by `art-refs-plugin.ts` off `docs/references/art-handoff-v1/boards/` — nothing is
+// These are served in dev by `art-refs-plugin.ts` off `docs/art-direction/boards/` — nothing is
 // copied, so this list is a pointer, not a duplicate. Filenames are the contract between the two.
 //
 // SCALE WARNING carried in the data, not in a README nobody opens: `docs/ART_SCALE_REFERENCE.md` overrides

@@ -6,10 +6,10 @@ import { PANEL_L, PANEL_W, trackSurfaceTexture } from './track-texture';
 
 /**
  * Downward extrusion of the slab (world units). Purely an art choice — `SLAB_THICKNESS` is NOT a game
- * constant. The sim's floor is a plane at y=0 and collision never reads this (`art-handoff-v2` §3 confirms:
- * "Track slab thickness | Art/implementation choice").
+ * constant. The sim's floor is a plane at y=0 and collision never reads this (the art-direction handoff §3
+ * confirms: "Track slab thickness | Art/implementation choice").
  *
- * It IS load-bearing for readability though: v2 §5 warns that "slab thickness must not conceal the gap at
+ * It IS load-bearing for readability though: the handoff §5 warns that "slab thickness must not conceal the gap at
  * low camera height". Thicker reads more solid but hides holes from a low camera — tune against both.
  */
 export const SLAB_THICKNESS = 2;
@@ -114,7 +114,7 @@ function emitSpan(
  * Builds the whole ribbon as ONE geometry, generated from the sim's real `FloorSpan` data.
  *
  * WHY GENERATED, NOT INSTANCED TILES: tiles repeat every 4u in both axes — a visible grid, and exactly the
- * "dense seam grid" `art-handoff-v2` §5 rejects. One mesh gives continuous UVs, so panel size becomes a
+ * "dense seam grid" the art-direction handoff §5 rejects. One mesh gives continuous UVs, so panel size becomes a
  * texture decision instead of a geometry constraint.
  *
  * WHY FROM `FloorSpan` AND NOT A LANE GRID: spans happen to be 4u-aligned today

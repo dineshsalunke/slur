@@ -17,13 +17,13 @@ export default defineConfig( ( { mode } ) => {
         // Tailwind's Vite plugin ahead of reactRouter(): the official Vite guide doesn't mandate an order, so
         // we follow tailwind.md — Tailwind first, so its CSS transform runs before RR's build hooks (SPA mode).
         // `artRefsPlugin` is dev-only (apply: 'serve') and serves the frozen concept boards to the
-        // `/iso-*` isolation labs straight out of docs/references — see art-refs-plugin.ts for why it
-        // is a middleware and not 24 MB of copied PNGs. process.cwd() is apps/client (same assumption
+        // `/iso-*` isolation labs straight out of docs/art-direction — see art-refs-plugin.ts for why
+        // it is a middleware and not 24 MB of copied PNGs. process.cwd() is apps/client (same assumption
         // loadEnv above already makes).
         plugins: [
             tailwindcss(),
             reactRouter(),
-            artRefsPlugin( { dir: resolve( process.cwd(), '../../docs/references/art-handoff-v1/boards' ) } ),
+            artRefsPlugin( { dir: resolve( process.cwd(), '../../docs/art-direction/boards' ) } ),
         ],
         // Bind the dev server to ALL interfaces so other machines on the LAN can load
         // http://<host-ip>:5173 (office play). Vite defaults to localhost-only, which is
