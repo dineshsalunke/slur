@@ -12,6 +12,13 @@ export interface IsoLabProps {
     board: string;
     /** The subject itself: R3F nodes, at TRUE world scale. Never scaled by the lab. */
     children: ReactNode;
+    /**
+     * The lab's neutral object rig — an ambient + directional pair, the scale ruler and the ground grid.
+     * Default on: it is what makes an OBJECT legible with nothing else in the scene. Pass `false` for an
+     * ingredient that IS the lighting (the sky), where a neutral light would answer the question being asked.
+     * Still a toggle in the panel either way — this only sets where it starts.
+     */
+    rig?: boolean;
 }
 
 /**
@@ -38,12 +45,15 @@ export interface IsoLabProps {
  * changes on a click belongs in React; reaching for a singleton anyway would be cargo-culting the pattern
  * past the reason it exists.
  */
-export function IsoLab( { title, size, board, children }: IsoLabProps ) {
+export function IsoLab( { title, size, board, children, rig = true }: IsoLabProps ) {
     const [ mode, setMode ] = useState< OverlayMode >( 'off' );
     const [ boardId, setBoardId ] = useState( board );
     const [ t, setT ] = useState( 0.5 );
     const [ bloom, setBloom ] = useState( true );
-    const [ grid, setGrid ] = useState( true );
+    const [ rigOn, setRigOn ] = useState( rig );
+    // The grid is part of the object rig conceptually but keeps its own toggle, so it follows `rig` only as a
+    // starting value — a ground plane under a sky is noise, a ground plane under a monolith is the scale read.
+    const [ grid, setGrid ] = useState( rig );
 
     // In `split` the render gets its own pane, so the Canvas is inset from the right by (1 - t). Everything
     // else is full-bleed with the board stacked on top.
@@ -52,7 +62,7 @@ export function IsoLab( { title, size, board, children }: IsoLabProps ) {
     return (
         <main className="fixed inset-0 overflow-hidden bg-black">
             <div className="absolute inset-y-0 left-0" style={ renderPane }>
-                <IsoLabCanvas size={ size } bloom={ bloom } grid={ grid }>
+                <IsoLabCanvas size={ size } bloom={ bloom } grid={ grid } rig={ rigOn }>
                     { children }
                 </IsoLabCanvas>
             </div>
@@ -74,6 +84,8 @@ export function IsoLab( { title, size, board, children }: IsoLabProps ) {
                 onBloom={ setBloom }
                 grid={ grid }
                 onGrid={ setGrid }
+                rig={ rigOn }
+                onRig={ setRigOn }
             />
         </main>
     );

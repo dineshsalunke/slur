@@ -1,0 +1,238 @@
+// The deep-space sky's tuning surface. A plain DATA module, not a component — the displayed sky and (from
+// slice 3) the environment bake both read this one object, so the two can never drift apart.
+//
+// Every knob is derived and human-readable: angular sizes in DEGREES, colours as hex ramp stops. Nothing here
+// is a raw shader frequency or an xyz vector, because a human cannot reason about either. Vite HMR reloads
+// this module without a page refresh, so tuning is an edit-and-look loop.
+//
+// PALETTE — cold, desaturated, low-contrast, dark: blue-grey, graphite, charcoal, deep-space blue/black. The
+// warm ramp (#FFE0A0 / #FFB52E / #F59A24) belongs to the PLAYABLE layer and never appears up here. No cyan,
+// no magenta, no red (board 01 still prints superseded Alert Red / Cyan / Purple swatches — those are out).
+
+/** The base vertical ramp the nebula sits on. Three stops, sampled by view elevation. */
+export interface SkyGradientConfig {
+    /** Straight up. The darkest stop — depth reads as "less light overhead", not "more". */
+    zenith: string;
+    /** Level with the track. Carries the faint ecliptic haze, so usually the brightest of the three. */
+    horizon: string;
+    /** Straight down. Effectively void; the track occludes most of it in play. */
+    nadir: string;
+}
+
+/**
+ * The domain-warped FBM cloud. Domain warping is a SHAPE operation and is colour-neutral — Inigo Quilez's own
+ * article on it never touches colour. Saturation comes entirely from what happens downstream, which is why all
+ * three restraint levers below are downstream ones: a narrow hand-authored ramp, a subtle warp, few octaves.
+ */
+/**
+ * The large-scale field that decides WHERE there is nebula at all. It multiplies density, so it can only ever
+ * remove cloud, never add it.
+ *
+ * Without this the sky is one stationary isotropic field and is therefore statistically identical in every
+ * part of the frame — which reads as wallpaper, and is why a fixed threshold made one camera angle look empty
+ * and another crowded. Six octaves from a 10° base spans 10°→0.3°; the reference's dominant structure is
+ * 60-90° across and simply cannot appear in that band.
+ */
+export interface NebulaMaskConfig {
+    /** Angular size of the whole band/void structure. Measured: 120° is too compressed to threshold (p50 0.289,
+     *  max 0.497); 80° gives a usable p25 0.327 → p90 0.609 spread. */
+    featureSizeDeg: number;
+    /** Below this the sky is void regardless of what the emission layer says. */
+    threshold: number;
+    /** Width of the void→band falloff. Wide, or the band gets a visible hard edge across open sky. */
+    softness: number;
+}
+
+/**
+ * Dust: an independent field that SUBTRACTS light, as extinction (`exp(-k·dust)`).
+ *
+ * This is the one layer that genuinely needs a second noise rather than a retune of the first. Emission maps
+ * density to brightness monotonically, so "dense and dark" is structurally impossible there — yet opaque dark
+ * clumps silhouetted in front of brighter cloud are the most characteristic feature of the look target,
+ * `public/textures/nebula-backdrop.jpg`. Smooth, never ridged: ridging would make filaments OF the dark, which
+ * is the opposite of the reference's soft blobby clumps.
+ */
+export interface NebulaDustConfig {
+    featureSizeDeg: number;
+    /** Measured at 25°/3 octaves: p50 0.505 · p90 0.655 · p99 0.761. A 0.55 window covers ~20% of the sky. */
+    threshold: number;
+    softness: number;
+    /** Extinction coefficient. `exp(-strength)` is the transmission at a full clump — 1.6 ⇒ ~20% light left. */
+    strength: number;
+}
+
+export interface NebulaConfig {
+    /** Cold ramp indexed by density, dark → bright. Hand-authored and NARROW — never procedural hue cycling. */
+    ramp: readonly [ string, string, string ];
+    /**
+     * Density at which the ramp starts climbing toward the HOT top stop, 0-1.
+     *
+     * This is the dial that separates "how much cloud" from "how bright a core gets". It was hard-coded at 0.5,
+     * which meant a third of all cloud was already blending toward the top stop — so the histogram's >48/>80/>120
+     * bands collapsed onto each other and the field read as a milky haze instead of dark cloud with hot cores.
+     * At 0.95 a core is genuinely rare, which is the reference's character: a long bright tail over a dark field.
+     */
+    coreOnset: number;
+    mask: NebulaMaskConfig;
+    dust: NebulaDustConfig;
+    /**
+     * How strongly the cloud brightens toward the star, 0-1. `ridge` alone fakes edge-lighting ISOTROPICALLY —
+     * it brightens every crease equally regardless of where the light is. This reads the scene's one bearing
+     * instead, so the cloud and the celestial body cannot disagree about the light.
+     */
+    lightContrast: number;
+    /** FBM octaves. Low on purpose: more octaves read as grain, not cloud. 3–5 is the useful range. */
+    octaves: number;
+    /**
+     * Angular size of the largest cloud feature, in degrees of sky. Judge it against the FIELD OF VIEW, not
+     * against the whole sphere: at 80° a single wisp is wider than a 45° frame and the cloud reads as a flat
+     * gradient with no structure at all. Roughly two features per frame is what looks like a nebula.
+     */
+    featureSizeDeg: number;
+    /**
+     * Domain-warp amplitude. Deliberately far below Quilez's illustrative 4.0 — the pegwars "Rendering
+     * Nebulae" writeup found the warp "ended up needing to be very subtle, or the noise field quickly
+     * degenerates from a lovely blobby or wispy and cohesive image into a torrid mess". Keep under ~1.
+     */
+    warp: number;
+    /**
+     * Blend from smooth fBm (0) to ridged multifractal (1). Ridged folds the noise about its midpoint, turning
+     * round blobs lit at their cores into thin bright FILAMENTS on dark cloud — the structure of
+     * `public/textures/nebula-backdrop.jpg`, which is the agreed look target for the cloud itself.
+     * It also changes the value distribution, so `threshold` must be re-derived whenever this moves.
+     */
+    ridge: number;
+    /**
+     * Raw noise value below which the sky is empty. Measured over 30k uniform directions at the shipped
+     * settings: at `ridge: 1` the field runs p50 0.52 · p75 0.65 · p90 0.75 · p95 0.79 · p99 0.86 · max 0.96,
+     * whereas at `ridge: 0` it tops out near 0.86 with a much shorter tail. Filaments want a threshold up in
+     * the p80s; a smooth cloud wants the 0.40-0.55 range. Re-measure with `scratchpad/fbm2.mjs` if in doubt.
+     */
+    threshold: number;
+    /** Width of the ramp from empty sky to full cloud. Small = hard-edged clumps, large = diffuse haze. */
+    softness: number;
+    /** How strongly the cloud covers the base gradient at full density, 0–1. */
+    opacity: number;
+}
+
+/** drei `<Stars>` — one `Points` draw call. Camera-locked via `SkyFollow`, so the field has zero crawl. */
+export interface StarFieldConfig {
+    enabled: boolean;
+    /** Star count. Deep space wants sparse — a dense field starts competing with the playable layer. */
+    count: number;
+    /** Shell radius (u). Apparent point size falls off as 1/radius, so radius and `size` are tuned together. */
+    radius: number;
+    /** How far stars extend inward from `radius` (u) — gives the shell thickness, not parallax. */
+    depth: number;
+    /** Point size factor. drei's `factor`; bigger = chunkier points. */
+    size: number;
+    /** 0 = pure white. Stars are one of the few things allowed to be bright, never to be colourful. */
+    saturation: number;
+    /** Soft radial falloff on each point — the thing that stops 1px stars aliasing under motion. Keep true. */
+    fade: boolean;
+    /** Twinkle rate. drei pulses the whole field in lockstep, so keep it slow enough not to read as a throb. */
+    twinkleSpeed: number;
+}
+
+export interface SkyConfig {
+    name: string;
+    /** Dome sphere radius (u). Must sit inside the camera's far plane. Purely a containment number — the sky
+     *  is camera-locked, so radius changes nothing about how distant it reads. */
+    radius: number;
+    /**
+     * Compass bearing of the star, in degrees (0 = -Z, increasing toward +X).
+     *
+     * THE SINGLE SOURCE OF TRUTH FOR THE LIGHT'S DIRECTION. The dome's cloud lighting reads it now; slice 2's
+     * celestial body and its `DirectionalLight`, and slice 3's bake, read the same two numbers. Anything that
+     * derives a light direction independently will drift out of agreement with the sky.
+     */
+    starBearingDeg: number;
+    /** Elevation of the star above the horizon, in degrees. */
+    starElevationDeg: number;
+    gradient: SkyGradientConfig;
+    nebula: NebulaConfig;
+    stars: StarFieldConfig;
+}
+
+/** A noise cell on a unit direction sphere subtends ~1 radian, so this converts a feature size to frequency. */
+const DEGREES_PER_RADIAN = 180 / Math.PI;
+
+/** Feature size in degrees → the noise frequency the dome shader samples the view direction at. */
+export function nebulaFrequency( featureSizeDeg: number ): number {
+    return DEGREES_PER_RADIAN / featureSizeDeg;
+}
+
+/** Bearing/elevation → a unit direction, in the same frame the dome samples the view direction in. */
+export function starDirection( bearingDeg: number, elevationDeg: number ): [ number, number, number ] {
+    const bearing = bearingDeg / DEGREES_PER_RADIAN;
+    const elevation = elevationDeg / DEGREES_PER_RADIAN;
+    const horizontal = Math.cos( elevation );
+    return [ horizontal * Math.sin( bearing ), Math.sin( elevation ), -horizontal * Math.cos( bearing ) ];
+}
+
+/**
+ * The one sky, for now. Per-sector variants (board 06's six identities) are a future parameterisation of this
+ * same shape — the language is built so they are data, but authoring six of them is not this task's job.
+ */
+export const DEEP_SPACE: SkyConfig = {
+    name: 'Deep Space',
+    radius: 2000,
+    // Upper-right of a forward view, matching where the look target's rim-lit limb sits. Slice 2 places the
+    // celestial body on this bearing rather than choosing its own.
+    starBearingDeg: 55,
+    starElevationDeg: 18,
+    gradient: {
+        zenith: '#04070c',
+        horizon: '#0b1119',
+        nadir: '#020406',
+    },
+    nebula: {
+        // TUNED TO THE HISTOGRAM GATE, not by eye — see GATE-1-FINDINGS.md §2 for the target and the ffprobe
+        // method. Measured across 12 orbit angles (median [min-max]):
+        //     mean 22.5 [19.9-27.1] · >24 27.6% [20.5-33.2] · >48 10.6% · >80 1.84% · >120 0.95% · >160 0.15%
+        //     target                  mean 26.5 · >24 27.4% · >48 9.9% · >80 2.90% · >120 0.72% · >160 0.20%
+        //
+        // Ramp stop luma (BT.709 on the sRGB bytes) is what the gate's thresholds actually see:
+        //   #101620 = 20  — BELOW the >24 line on purpose, so faint cloud does not inflate the >24 band
+        //   #374757 = 69  — the bulk sits here, between the >48 and >80 lines
+        //   #7d93ad = 143 — the hot core, reachable only past `coreOnset`
+        // The previous top stop #5d7189 has luma 110, which made >120 unreachable AT ANY DENSITY — that, not
+        // the thresholds, was why both earlier configs measured 0% there.
+        ramp: [ '#101620', '#374757', '#7d93ad' ],
+        coreOnset: 0.95,
+        // Measured over 40k uniform directions at 80°/2 octaves: p25 0.327 · p50 0.424 · p90 0.609. The window is
+        // NARROW on purpose so the mask resolves to mostly-0 or mostly-1 rather than dimming the whole sky.
+        // Threshold lowered 0.28 → 0.18 at the gate: the target wants ~27% of pixels carrying visible cloud, and
+        // a mask voiding a quarter of the sky put that out of reach no matter how the emission dials moved.
+        mask: { featureSizeDeg: 80, threshold: 0.18, softness: 0.16 },
+        dust: { featureSizeDeg: 25, threshold: 0.55, softness: 0.2, strength: 1.6 },
+        lightContrast: 0.5,
+        octaves: 6,
+        featureSizeDeg: 10,
+        warp: 0.45,
+        ridge: 1,
+        // A WIDE window on purpose. Measured at these settings the field runs p50 0.54 · p75 0.65 · p90 0.74 ·
+        // p95 0.79 · p99 0.86. A narrow window here went binary — every visible pixel pinned to the top ramp
+        // stop, reading as torn paper rather than as cloud.
+        //
+        // 0.52 → 0.65 → 0.46 across two gates. 0.65 was set by eye and measured at 0.16% of pixels above luma 24
+        // against a 27.4% target — the nebula had effectively vanished. 0.46 is the histogram answer. Raising
+        // coverage alone reproduces the earlier milky failure, which is why `coreOnset` moved with it: this dial
+        // sets how much sky has cloud, that one sets how rarely cloud gets hot.
+        threshold: 0.46,
+        softness: 0.42,
+        // Full coverage on purpose. Restraint lives in the ramp stops, which are already dark and narrow —
+        // dimming a second time here only pushed the cloud below the point where it could be judged at all.
+        opacity: 1,
+    },
+    stars: {
+        enabled: true,
+        count: 2600,
+        radius: 400,
+        depth: 120,
+        size: 9,
+        saturation: 0,
+        fade: true,
+        twinkleSpeed: 0.3,
+    },
+};

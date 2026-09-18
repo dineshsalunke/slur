@@ -7,6 +7,18 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
 
 ## Pending
 
+- [~] 2026-09-18 [feature] [art] **ART PASS — the world's visual production, procedural, in six sequential tasks**
+  Tracked in **`.claude/art-pass/INDEX.md`**, not as GitHub issues: it is one continuous arc with sequential
+  composition gates worked by a single person, so the issue tracker's parallel-ticket model buys nothing.
+  Order (**background → track → lighting → monoliths → asteroids → composition**), each with its own folder,
+  brief, references and research notes. Everything procedural; each ingredient designed in isolation, then
+  composed. Spec: `docs/art-direction/` (boards + handoff); **dimensions come from `docs/ART_SCALE_REFERENCE.md`
+  and GDD §0 only — boards are for LOOK, never SIZE.**
+  **Clean slate:** the earlier four-lane parallel attempt was deliberately reset when the consolidated
+  `docs/art-direction/` package landed. Its branches are gone by intent — do not resurrect them.
+  Per-task flow: research agent → review together → align → implement in a worktree → visual gate in a shared
+  `claude-in-chrome` tab (never Playwright) → commit.
+
 - [x] 2026-08-06 → 2026-08-07 [feature] [slice] S1 — Flight feel (local, no network) — **DONE; human gate passed 2026-08-07 ("controls are good")**
   Code is source of truth (`@slur/shared/src`, `apps/client/app/game/`); spec + as-built reconcile: `.claude/phases/2026-08-06-s1-flight-feel.md`. Jump = derived (GDC "Building a Better Jump").
 - [x] 2026-08-06 → 2026-08-08 [feature] [slice] S2 — Networked flight (server-authoritative) — **DONE; human gate passed 2026-08-08 (two browser windows, both players visible + smooth)**
