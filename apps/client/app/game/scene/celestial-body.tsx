@@ -77,10 +77,21 @@ void main() {
     float lambert = dot( N, uStarDir );
     float day = smoothstep( -uTerminator, uTerminator, lambert );
 
-    // Surface mottle on the LIT side only. An unlit surface has nothing to modulate, and letting noise
-    // brighten the night side is what turns a lit sphere back into a painted ball.
-    float mottle = mix( 1.0, 0.6 + 0.8 * fbm( N * uDetailScale ), uDetail );
-    vec3 col = mix( uShadow, uLit * mottle, day );
+    // Surface mottle, across the WHOLE body rather than the lit side only.
+    //
+    // Restricting it to the lit side was wrong in practice: at this composition most of the disc facing the
+    // camera is night, so the body rendered as a flat dark circle with a rim and no surface at all. A real
+    // night side is not featureless — it carries the same terrain, just barely lit — so the shadow stop has
+    // to be modulated too, and kept a little above the sky behind it or there is nothing for the mottle to
+    // vary. Two frequencies: a broad one for continent-scale blotching, a fine one for the grain over it.
+    // The smoothstep is NOT cosmetic. Normalised value-noise piles up around 0.5 — measured on the dome's
+    // own field, p25 to p75 spans barely 0.1 — so feeding fbm straight in gives a ~13% swing that is
+    // invisible on a surface this dark. Stretching the middle of the distribution to the full 0-1 range is
+    // what turns it into terrain rather than a faint haze.
+    float broad = smoothstep( 0.35, 0.65, fbm( N * uDetailScale ) );
+    float fine = fbm( N * uDetailScale * 3.7 + vec3( 19.3, 7.1, 41.9 ) );
+    float mottle = mix( 1.0, 0.35 + 1.3 * broad + 0.35 * ( fine - 0.5 ), uDetail );
+    vec3 col = mix( uShadow, uLit, day ) * mottle;
 
     // The fresnel rim is LOAD-BEARING, not decoration: a physically-correct diffuse night side is simply
     // dark, so the bright crescent visible on boards 05/12/13 and on nebula-backdrop.jpg has to be an added
@@ -148,7 +159,13 @@ export function CelestialBody( { config, gain = 1 }: { config: SkyConfig; gain?:
             { /* Dense enough that the limb is a smooth arc: the silhouette IS the subject here, and a faceted
                  edge is the one artefact a rim term makes impossible to hide. */ }
             <sphereGeometry args={ [ 1, 96, 48 ] } />
+            { /* `key` on the shader's own length: three caches the compiled PROGRAM, so editing the shader
+                 source under HMR silently keeps rendering the old one — an edit appears to do nothing, which
+                 cost three round-trips of "why did that change nothing" before it was spotted. Keying on the
+                 source makes a text edit produce a fresh material. Same trick the dome uses for its OCTAVES
+                 #define, for the same reason. */ }
             <shaderMaterial
+                key={ FRAGMENT_SHADER.length }
                 vertexShader={ VERTEX_SHADER }
                 fragmentShader={ FRAGMENT_SHADER }
                 uniforms={ uniforms }

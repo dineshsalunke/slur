@@ -320,16 +320,26 @@ export const DEEP_SPACE: SkyConfig = {
         angularSizeDeg: 44,
         // Luma 34 and 6 on the sRGB bytes. The lit face sits just above the nebula's mid ramp stop (69) — on
         // the look target the body is NOT the bright thing, the 2px crescent on its edge is.
-        litColor: '#23272e',
-        shadowColor: '#050608',
+        // Luma 52 and 14 on the sRGB bytes. The lit face sits between the nebula's low (20) and mid (69) ramp
+        // stops — present, but never the bright thing in frame; that is the rim's job. The shadow stop is
+        // deliberately NOT near-black: at #050608 the night side had no headroom for the surface mottle to
+        // vary in and the body read as a flat cut-out disc.
+        litColor: '#32373f',
+        shadowColor: '#0c0f14',
         rimColor: '#dfeaff',
-        terminatorSoftness: 0.22,
+        // WIDE, and this is what makes the surface read at all. The mottle can only show where the body is
+        // PARTLY lit — on the deep night side there is nothing to modulate, and the look target's cratering is
+        // visible precisely in the broad band just inside the bright rim, not out on the dark face. At 0.22
+        // that band was a few pixels wide and the body rendered as a flat cut-out with a rim.
+        terminatorSoftness: 0.5,
         rimPower: 5,
         // Above 1 on purpose: with the dome's brightest possible pixel at ~0.28 linear luma against a 0.42
         // bloom threshold (GRID_VOID), this rim is the only thing in the far field that can legitimately bloom.
         rimStrength: 2.2,
-        detail: 0.55,
-        detailScale: 4.5,
+        detail: 0.7,
+        // Noise cells across a body RADIUS. Lower than it looks like it should be: the fine band inside the
+        // shader multiplies this by 3.7, so this number sets the continent scale, not the grain.
+        detailScale: 2.6,
     },
     starLight: {
         intensity: 1.6,
