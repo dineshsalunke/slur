@@ -50,7 +50,8 @@ const GROUPS: readonly { title: string; note: string; sliders: readonly Slider[]
             {
                 key: 'featureSizeDeg',
                 label: 'Feature size',
-                min: 6,
+                // Floor dropped 6→4: 6 is now the default, so the old floor left no room to tune downward.
+                min: 4,
                 max: 90,
                 step: 1,
                 hint: 'Degrees of sky per wisp. Judge against the FOV — above ~60 one wisp fills the frame and the cloud flattens to a gradient.',

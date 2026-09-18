@@ -189,8 +189,10 @@ export const DEEP_SPACE: SkyConfig = {
     nebula: {
         // TUNED TO THE HISTOGRAM GATE, not by eye — see GATE-1-FINDINGS.md §2 for the target and the ffprobe
         // method. Measured across 12 orbit angles (median [min-max]):
-        //     mean 22.5 [19.9-27.1] · >24 27.6% [20.5-33.2] · >48 10.6% · >80 1.84% · >120 0.95% · >160 0.15%
+        //     mean 22.2 [17.8-29.8] · >24 28.6% [21.3-36.6] · >48 10.0% · >80 2.04% · >120 0.71% · >160 0.01%
         //     target                  mean 26.5 · >24 27.4% · >48 9.9% · >80 2.90% · >120 0.72% · >160 0.20%
+        // ⚠ that target mean is disputed: re-measuring nebula-backdrop.jpg with §2's own command and crop
+        // gives 22.4, not 26.5. >80/>160 stay short DELIBERATELY — that tail is the planet limb, slice 2's job.
         //
         // Ramp stop luma (BT.709 on the sRGB bytes) is what the gate's thresholds actually see:
         //   #101620 = 20  — BELOW the >24 line on purpose, so faint cloud does not inflate the >24 band
@@ -208,18 +210,23 @@ export const DEEP_SPACE: SkyConfig = {
         dust: { featureSizeDeg: 25, threshold: 0.55, softness: 0.2, strength: 1.6 },
         lightContrast: 0.5,
         octaves: 6,
-        featureSizeDeg: 10,
+        // 10° → 6° at the second gate. With amplitude halving per octave the BASE octave carries ~51% of the
+        // field, so the bright structure was the base scale itself and read as fat cottony masses. A ridged
+        // multifractal (Musgrave weight feedback) was tried first to get branching and rejected on measurement:
+        // it suppresses child octaves wherever the parent is weak, which made the field chunkier, not branchier.
+        featureSizeDeg: 6,
         warp: 0.45,
         ridge: 1,
-        // A WIDE window on purpose. Measured at these settings the field runs p50 0.54 · p75 0.65 · p90 0.74 ·
+        // A WIDE window on purpose. Measured at these settings the field runs p50 0.53 · p75 0.65 · p90 0.74 ·
         // p95 0.79 · p99 0.86. A narrow window here went binary — every visible pixel pinned to the top ramp
         // stop, reading as torn paper rather than as cloud.
         //
-        // 0.52 → 0.65 → 0.46 across two gates. 0.65 was set by eye and measured at 0.16% of pixels above luma 24
-        // against a 27.4% target — the nebula had effectively vanished. 0.46 is the histogram answer. Raising
-        // coverage alone reproduces the earlier milky failure, which is why `coreOnset` moved with it: this dial
-        // sets how much sky has cloud, that one sets how rarely cloud gets hot.
-        threshold: 0.46,
+        // 0.52 → 0.65 → 0.46 → 0.448 across three gates. 0.65 was set by eye and measured at 0.16% of pixels
+        // above luma 24 against a 27.4% target — the nebula had effectively vanished. The rest are histogram
+        // answers; 0.448 re-derives 0.46 for the 6° field. Raising coverage alone reproduces the earlier milky
+        // failure, which is why `coreOnset` moved with it: this dial sets how much sky has cloud, that one sets
+        // how rarely cloud gets hot.
+        threshold: 0.448,
         softness: 0.42,
         // Full coverage on purpose. Restraint lives in the ramp stops, which are already dark and narrow —
         // dimming a second time here only pushed the cloud below the point where it could be judged at all.
@@ -227,10 +234,12 @@ export const DEEP_SPACE: SkyConfig = {
     },
     stars: {
         enabled: true,
-        count: 2600,
+        // Raised 2600→4500 / size 9→13: at the old values the field was present but did not register against
+        // the cloud. The histogram mirror does NOT model stars, so their effect is screenshot-verified only.
+        count: 4500,
         radius: 400,
         depth: 120,
-        size: 9,
+        size: 13,
         saturation: 0,
         fade: true,
         twinkleSpeed: 0.3,
