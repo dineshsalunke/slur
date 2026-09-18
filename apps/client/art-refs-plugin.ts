@@ -3,9 +3,9 @@ import { join } from 'node:path';
 import type { Plugin } from 'vite';
 
 /**
- * Serves the frozen `art-handoff-v1` concept boards to the isolation labs, in DEV ONLY.
+ * Serves the frozen concept boards to the isolation labs, in DEV ONLY.
  *
- * WHY A PLUGIN AND NOT THE OBVIOUS THING. The boards live in `docs/references/`, outside the client root,
+ * WHY A PLUGIN AND NOT THE OBVIOUS THING. The boards live in `docs/art-direction/boards/`, outside the client root,
  * and they are ~2 MB each (24 MB for the set). Five mechanisms were weighed:
  *
  *   1. Copy them into `apps/client/public/` — duplicates 24 MB of git-lfs payload into the app, and the copy

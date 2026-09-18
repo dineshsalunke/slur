@@ -4,7 +4,7 @@ import * as THREE from 'three';
 /**
  * Placeholder deep-space backdrop.
  *
- * STATUS: temporary. `art-handoff-v2` §4 calls for "a rich desaturated deep-space/nebula backdrop,
+ * STATUS: temporary. The art-direction handoff §4 calls for "a rich desaturated deep-space/nebula backdrop,
  * planetary rim light, layered distant debris" — this is a single flat image standing in until the
  * procedural celestial layer (ADD §9) exists. It is deliberately the ONLY bitmap in the track pipeline.
  *

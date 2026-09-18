@@ -321,7 +321,8 @@ forces "strafe around or destroy, never hop". Vary it and the mechanic breaks. W
 **Date:** 2026-09-17 · **Status:** ACCEPTED · **Supersedes:** the 2026-08-12 "full TRON" pivot and the
 2026-08-10 cyan×marigold "gainda" duo.
 
-**Context.** An external art-direction package (`docs/references/art-handoff-v1/`) was produced with
+**Context.** An external art-direction package (then `art-handoff-v1`, now consolidated unversioned at
+`docs/art-direction/`) was produced with
 ChatGPT and delivered as frozen scene/world direction plus twelve concept boards. It is coherent,
 implementation-shaped, and correctly respects the GDD §0 continuous-space contract. It also contradicts the
 then-current ADD on colour hierarchy.
@@ -429,7 +430,8 @@ gaps, real ship footprints) and answers both readability questions ADR-008 left 
    ADR-009's readability gate now has a concrete design to test rather than an open question.
 4. **The boards were NOT reshot** — every v2 board is byte-identical to v1 (SHA-1 verified). The
    corrections are textual. **`docs/ART_SCALE_REFERENCE.md` therefore remains authoritative on dimensions**,
-   and boards `07`/`09` still depict the old undersized proportions. See `art-handoff-v2/PROVENANCE.md`.
+   and boards `07`/`09` still depict the old undersized proportions. See `art-handoff-v2/PROVENANCE.md` (the
+package, then separate v1/v2 folders, is now consolidated unversioned at `docs/art-direction/`).
 
 **DEFERRED — the low camera (v2 §8).** v2 proposes a **4–5u** camera (nominal 4.5u) with selective
 occlusion fade. **Not accepted here.** It contradicts ADR-006, where the chase cam sits at **+9u**

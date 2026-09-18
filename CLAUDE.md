@@ -9,7 +9,7 @@ pitch and flavour copy keep their voice. When clarity and voice conflict in tech
 party game about *messing with your friends*. Player-controlled flight down a **finite track to a finish line**
 — **Race** — over courses that range from short to long. SkyRoads (1993) speed/jump × Blur (2010) pickup-combat
 × [cuberun](https://github.com/akarlsten/cuberun) neon. Aesthetic = **"Cold Space. Warm Energy."** — marigold-primary,
-TRON-*influenced* not TRON-literal; frozen by the external art package `docs/references/art-handoff-v1/`
+TRON-*influenced* not TRON-literal; frozen by the external art package `docs/art-direction/`
 (**ADR-008**, supersedes the full-TRON pivot and closes #117 as moot). **Real dimensions live in
 `docs/ART_SCALE_REFERENCE.md`** — it overrides every scale number on a concept board. Server-authoritative,
 **round-based** — the host launches a run and everyone in the room races together; **join a room anytime and

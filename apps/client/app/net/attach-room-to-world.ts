@@ -152,6 +152,7 @@ export function attachRoomToWorld(
         pushHit( { x: m.x, y: m.y, z: m.z } );
     } );
 
+    // Wall clock, not useFrame: sends must hold 30Hz when a backgrounded tab throttles rAF.
     const timer = setInterval( () => {
         const inputs = predictor.drainUnsent();
         if ( inputs.length > 0 ) room.send( INPUT_MESSAGE, { inputs } );

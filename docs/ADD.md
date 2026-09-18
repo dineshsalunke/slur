@@ -1,7 +1,7 @@
 # SLUR — Art Design Document (ADD)
 
 > Status: **v1**. Scene/world art direction is **FROZEN** by the external art-direction package
-> `docs/references/art-handoff-v1/` (adopted 2026-09-17, ADR-008). Ship art direction is still in progress.
+> `docs/art-direction/` (adopted 2026-09-17, ADR-008). Ship art direction is still in progress.
 >
 > **Precedence — read this first.** Where this file and the handoff disagree, **the handoff wins** on
 > anything visual; this file records what the direction *means* for the build and what it costs. Where the
@@ -12,9 +12,9 @@
 
 | Thing | Authority |
 |---|---|
-| Visual direction, palette, material/shape language, A→B→C | **`docs/references/art-handoff-v2/`** — supersedes v1 |
-| Concept boards | `docs/references/art-handoff-v1/boards/` (unchanged in v2) + v2's board `12` |
-| The approved integrated look | **`art-handoff-v2/boards/12_approved_scene_marigold_depth.png`** |
+| Visual direction, palette, material/shape language, A→B→C | **`docs/art-direction/handoff/`** — supersedes v1 |
+| Concept boards | `docs/art-direction/boards/` (all 14 boards, consolidated — v1's + v2's board `12`) |
+| The approved integrated look | **`docs/art-direction/boards/12_approved_scene_marigold_depth.png`** |
 | **Real dimensions of everything** | **`docs/ART_SCALE_REFERENCE.md`** (source-verified; overrides the boards) |
 | Gameplay + spatial contract | **GDD §0** (continuous sim; `CELL` is authoring-only) |
 | This file | the bridge: consequences, costs, and the open problems the handoff didn't answer |
@@ -218,7 +218,7 @@ A Blender MCP toolchain remains available if an authored asset turns out to be g
 4. **Chromatic aberration / heavy post** — still open; gate behind a comfort slider. The handoff adds a
    constraint: *"readability should survive with bloom disabled."*
 5. **Perf budgets** — still open. Now carries the procedural-shader cost from §9. Set at the 12-ship gate.
-6. ~~**edge-glow is a weak guide at true scale**~~ — **ANSWERED by `art-handoff-v2` §5.** Confirmed: *"Track
+6. ~~**edge-glow is a weak guide at true scale**~~ — **ANSWERED by the art-direction handoff (`docs/art-direction/handoff/`) §5.** Confirmed: *"Track
    edges define the ribbon boundary; they cannot supply all fine positioning across 64u."* The answer is
    **interior cues**: low-contrast large panel divisions, occasional transverse seams, restrained
    material/reflection differences, and clear hazard-to-floor **contact shading**.
@@ -226,7 +226,7 @@ A Blender MCP toolchain remains available if an authored asset turns out to be g
    dense emissive seam grid, or dependence on monolith spacing for steering."* That kills the guide-rail
    failure we were worried about: cues give speed and lateral-motion feedback **without** revealing the safe
    path. Visible on board `12`.
-7. ~~**deadly vs breakable must read in ~0.5s**~~ — **ANSWERED by `art-handoff-v2` §6.** The rule is
+7. ~~**deadly vs breakable must read in ~0.5s**~~ — **ANSWERED by the art-direction handoff (`docs/art-direction/handoff/`) §6.** The rule is
    **"sealed mass = avoid; broken-contour shell = shoot to clear"**, and crucially: *"Surface crack texture
    alone is insufficient for the approved read."* The distinction must break the **outer silhouette** —
    visible interruptions at top/side contours — not merely decorate the faces. Interior floor cues and block
@@ -281,8 +281,8 @@ LCARS was dropped in favour of **full TRON** as the single language for colour, 
 audio, with the cyan×marigold "gainda" duo kept and the era question (1982 vs *Legacy*) gated behind issue
 **#117**.
 
-**What replaced it (2026-09-17, ADR-008):** the external package `docs/references/art-handoff-v1/` was
-adopted as the frozen scene/world direction. Three things changed:
+**What replaced it (2026-09-17, ADR-008):** the external package (then `art-handoff-v1`, now consolidated
+unversioned at `docs/art-direction/`) was adopted as the frozen scene/world direction. Three things changed:
 1. **Marigold `#F59A24` became primary** and the only energy colour; cyan demoted to a sparing support
    accent. The "gainda" duo is retired as a *duo*.
 2. **TRON-influenced, not TRON-literal** — so **#117 closes as moot**. Neither era is being cloned, and the

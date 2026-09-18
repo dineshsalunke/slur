@@ -12,7 +12,7 @@
 
 **The track is 64 units wide. The widest ship is 2.6 units wide.**
 
-A ship spans **~4% of the track width** — about **1/24th**. The `art-handoff-v1` boards draw the ship at
+A ship spans **~4% of the track width** — about **1/24th**. The `docs/art-direction/boards/` boards draw the ship at
 roughly **1/8th to 1/10th** of the track, so the real track is **~2.5–3× wider, relative to the ship,**
 than every board shows.
 

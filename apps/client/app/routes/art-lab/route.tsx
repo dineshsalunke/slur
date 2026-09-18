@@ -21,7 +21,7 @@ const ENV_NAMES = ENV_VARIANTS.map( ( v ) => v.name );
  * knobs an art review actually needs: A/B/C environment, bloom on/off, seed, and jump-to-section. No
  * server, no room — `resolveTrack` is pure and `simulate()` takes the track as an argument.
  *
- * WHY THIS EXISTS: every art decision in `docs/references/art-handoff-v1/` was made against concept
+ * WHY THIS EXISTS: every art decision in `docs/art-direction/` was made against concept
  * boards drawn at the wrong scale (see `docs/ART_SCALE_REFERENCE.md` — the track is 64u wide and the
  * boards drew it at 6–8u). This route is where those decisions get checked against the thing that ships.
  *

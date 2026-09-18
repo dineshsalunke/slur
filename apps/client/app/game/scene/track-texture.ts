@@ -8,7 +8,7 @@ import * as THREE from 'three';
  * what an art pass needs — change a number, reload, look.
  *
  * ONE TILE = ONE PANEL. The tile maps to `PANEL_W × PANEL_L` world units, so the panel border drawn at the
- * tile's edge becomes the "large clean panel division" `art-handoff-v2` §4/§5 asks for. Panels are
+ * tile's edge becomes the "large clean panel division" the art-direction handoff §4/§5 asks for. Panels are
  * therefore a TEXTURE decision, which is exactly why `TrackFloor` is one continuous mesh with continuous
  * UVs rather than instanced tiles — geometry tiles would have locked panel size to 4u.
  */
