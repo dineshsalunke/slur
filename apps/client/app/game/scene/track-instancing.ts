@@ -1,8 +1,6 @@
-// Shared instanced-pool plumbing for the track's leaf views (`TrackRails`, `TrackBlocks`).
-//
-// Shared rather than duplicated so the two cannot drift: a differing render window would show blocks
-// appearing past the end of the rails. The scratch Object3D is module-scope because these run every frame
-// and must not allocate.
+// Instanced-pool plumbing for `TrackBlocks`, plus the render window the generated meshes are built to
+// cover. Shared because that window must not drift: blocks would appear past the end of the deck. The
+// scratch Object3D is module-scope because these run every frame and must not allocate.
 
 import * as THREE from 'three';
 

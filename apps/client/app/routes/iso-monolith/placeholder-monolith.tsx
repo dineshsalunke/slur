@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { RAIL_SURFACE } from '../../game/scene/track-materials';
+import { BOUNDARY_SURFACE } from '../../game/scene/track-materials';
 
 /**
  * PLACEHOLDER ONLY — two slabs at plausible monolith scale.
@@ -10,8 +10,8 @@ import { RAIL_SURFACE } from '../../game/scene/track-materials';
  * to compare against. The monolith LANE owns everything about how these should actually look; whoever picks
  * that up should delete this file outright rather than evolve it.
  *
- * Material is `RAIL_SURFACE` from `track-materials.ts` — imported, never re-declared, so the placeholder sits
- * in the same emissive register as the shipped track instead of inventing a look nobody agreed to.
+ * Material is the shipped `BOUNDARY_SURFACE`, imported rather than invented — but that is the GAMEPLAY
+ * emissive tier and a monolith is environmental, which the monolith lane owns unpicking.
  */
 const OBELISK = { w: 26, h: 300, d: 26 };
 const SLAB = { w: 60, h: 140, d: 14 };
@@ -21,12 +21,12 @@ export function PlaceholderMonolith() {
         <Fragment>
             <mesh position={ [ 0, OBELISK.h / 2, 0 ] }>
                 <boxGeometry args={ [ OBELISK.w, OBELISK.h, OBELISK.d ] } />
-                <meshStandardMaterial { ...RAIL_SURFACE } />
+                <meshStandardMaterial { ...BOUNDARY_SURFACE } />
             </mesh>
 
             <mesh position={ [ 90, SLAB.h / 2, -40 ] }>
                 <boxGeometry args={ [ SLAB.w, SLAB.h, SLAB.d ] } />
-                <meshStandardMaterial { ...RAIL_SURFACE } />
+                <meshStandardMaterial { ...BOUNDARY_SURFACE } />
             </mesh>
         </Fragment>
     );

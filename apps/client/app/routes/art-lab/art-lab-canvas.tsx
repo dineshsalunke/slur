@@ -10,8 +10,8 @@ import { Environment } from '../../game/scene/environment';
 import { FinishGate } from '../../game/scene/finish-gate';
 import { Ships } from '../../game/scene/ship';
 import { TrackBlocks } from '../../game/scene/track-blocks';
+import { TrackBoundary } from '../../game/scene/track-boundary';
 import { TrackFloor } from '../../game/scene/track-floor';
-import { TrackRails } from '../../game/scene/track-rails';
 import { TunableSky } from '../iso-sky/tunable-sky';
 import { ArtLabRig } from './art-lab-rig';
 import type { LabLayers } from './lab-layers';
@@ -57,10 +57,11 @@ export function ArtLabCanvas( {
                 <Suspense fallback={ null }>
                     <TunableSky backdrop={ layers.backdrop } />
                 </Suspense>
-                { /* Deck, rails and blocks mount independently so each can be judged without the other two
-                     in the shot. The game composes all three via TrackView. */ }
+                { /* Deck, boundary and blocks mount independently so each can be judged without the other
+                     two in the shot. The game composes all three via TrackView. Boundary OFF leaves the
+                     deck's corner unsurfaced on purpose — that is the A/B for what the strip is doing. */ }
                 { layers.floor ? <TrackFloor track={ track } /> : null }
-                { layers.rails ? <TrackRails track={ track } /> : null }
+                { layers.boundary ? <TrackBoundary track={ track } /> : null }
                 { layers.blocks ? <TrackBlocks track={ track } /> : null }
                 { layers.finish ? <FinishGate track={ track } /> : null }
                 { /* Ships OFF hides the MESH only — the rig, simulate() and the chase camera keep running,

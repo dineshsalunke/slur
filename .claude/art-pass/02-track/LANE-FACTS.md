@@ -347,3 +347,85 @@ The swap forces exactly four changes, none of them chosen. Instanced quads use `
 ### ⚠ SLICE 2 GATE HAZARD, told in advance by the supervisor
 
 - #139 adds a **comment-ratchet to `pnpm lint`** counting any line starting with `//` or `*` under apps/, packages/ and scripts/. It does NOT know it is inside a template literal, so **GLSL comments in the `onBeforeCompile` emitter shader WILL count against the file's budget.** Supervisor judged this correct rather than a bug — a shader comment is still a comment. Budget for it before writing the patch, not at the gate.
+
+## Session 3 (2026-09-20) — slice 2, the re-shape
+
+### Base
+
+- Worktree `../slur-worktrees/track-slice2`, branch `art/track-slice2`, HEAD at session start `bf26bfa`, tree clean.
+- `packages/shared/dist` did NOT exist in this worktree; `pnpm --filter @slur/shared build` was needed before any node measurement.
+
+### Authority named BEFORE the slice
+
+- Board 24 panel 02 "Boundary": carry "continuous narrow marigold emitter at the upper outer edge; dark engineered section; localized halo and reflection"; do NOT copy "apparent slab thickness; raised rails or ornamental edge machinery".
+- Board 24 "Materials and light": the outer boundary is "the clearest continuous track signal… Keep it visually distinct from intermittent interior inserts."
+- Board 24 "Scale and construction": "emitter width and slab thickness remain unapproved numerical choices. Preserve the visual relationships above rather than measuring the pixels." So `BOUNDARY_W`/`BOUNDARY_H` are a lane call, NOT a scale-reference number, and need no escalation.
+- `ART_MATERIALS.md` element map: "Track boundary / edge strip | M1 carrier + **M7**, embedded at the outer edge — never a raised rail".
+- `ART_MATERIALS.md` M7: the emitter sits "in the top outer corner of the slab, with the dark cut side-face dropping away beneath it".
+
+### Built — geometry only, NO retone
+
+- `track-rails.tsx` → `git mv` to `track-boundary.tsx`; `TrackRails` → `TrackBoundary`. `RAIL_W`/`RAIL_H`/`RAIL_LIMIT` deleted.
+- NEW `track-geometry.ts` holds the quad primitives (`pushQuad`, `uvFor`, `packGeometry`, the normal constants) that the deck and the strip now share, plus `BOUNDARY_W = 0.5`, `BOUNDARY_H = 0.5` and `isOuterEdge()`. The notch and the strip must agree; a contract shared by two files lives in neither.
+- The strip is an L-section on the slab's top outer corner: `BOUNDARY_W` across the top plane, `BOUNDARY_H` down the outer face. Nothing stands proud — highest boundary vertex is exactly `span.y`, pinned by a test.
+- The SOLID is unchanged. `emitSpan` yields FACETS, not material: at an outer edge the deck's top face stops at `±(HALF_WIDTH - BOUNDARY_W)` and its outer wall starts at `span.y - BOUNDARY_H`, and the strip fills exactly that. Disjoint, not overlaid — so there is nothing to z-fight, and the visual hull still equals the physics hull.
+- End caps stay full rectangles: the cap is the face you look AT across a gap, and the corner point `(±32, span.y)` is legitimately on it.
+- `BOUNDARY_SURFACE` is `RAIL_SURFACE` renamed, VALUES UNCHANGED (`#c8d0d8` / 2.6 / `#15171a`). The retone is held on the supervisor's instruction pending the owner's ruling on which material sheet is canonical.
+- Boundary is now BAKED over the deck's segment range (shared `segmentCount()`), not instanced from a moving Z-window. That retires the rail pool's fixed `RAIL_LIMIT = 128`, which silently dropped instances past it.
+- Lab layer `rails` → `boundary`. Boundary OFF now leaves the deck's corner unsurfaced — that is the A/B for what the strip is doing, and it is deliberate.
+- `/art-gallery`'s `rail` subject (a hand-rolled 0.6 × 0.35u box) is REPLACED by `boundary-subject.tsx`: 8u of real deck plus the real strip, built at true world X so the panel UVs land where they do in game. The old subject would have shown the excluded shape after the shape was deleted.
+- `placeholder-monolith.tsx` follows the rename only. Recorded in-file: it imports the GAMEPLAY-tier emissive for an environmental subject; the monolith lane owns unpicking that. Not touched further.
+
+### Measured — seed 1234, node against `packages/shared/dist`, same `isOuterEdge` rule as the code
+
+- Build range `last` = 445 segments (400 track + 45 run-out pad).
+- 426 floor spans · 19 zero-floor segments (full gaps).
+- 814 span edges at `±HALF_WIDTH` → **1,628 boundary quads · 9,768 vertices · 117,216 bytes** of position attribute, built once in a `useMemo`.
+- Segments carrying the strip: **406 on both edges · 2 on one edge only · 18 on neither**.
+
+### The floor-span finding (feeds escalation 2, does not resolve it)
+
+- Over the 400 track segments: 361 reach both edges, 19 have no floor, and the remaining **20 are partial spans that reach NEITHER edge** (18 of them plus the 2 one-edge cases across the full 445).
+- The generator emits MID-TRACK strips, never edge-hugging ones. So board 24's "a near-edge gap retains an intact supporting outer floor strip and a straight outer boundary" describes a case this generator does not currently produce.
+- Consequence, measured: the OLD rail keyed on `seg.floors.length !== 0` and drew at `±32` regardless, so for those 20 segments it was **floating at ±32 over empty space on both sides**.
+- Embedding makes that impossible by construction — a strip in the slab's corner cannot exist where there is no slab. This is FORCED by the shape change, not a decision taken in this lane.
+- `track-rails.tsx:34`'s full-gap break semantics are PRESERVED exactly: no floors → no spans → no strip. Escalation 2 is untouched and still open.
+
+### Pinned by test — `track-boundary.test.ts`, 5 cases
+
+- Highest boundary vertex is exactly `0` (a positive value here IS the excluded "raised rail").
+- The strip is 4 quads / 24 verts per full-width span, reaching `±HALF_WIDTH` at both `y = 0` and `y = -BOUNDARY_H` — i.e. it wraps the corner rather than lying flat on it.
+- The deck's UPWARD-facing vertices at `y = 0` span exactly `±(HALF_WIDTH - BOUNDARY_W)`: the deck stops where the strip starts. No seam, no overlap.
+- An interior span (`-24..-8`) gets ZERO strip and keeps its full un-notched top face — gap rims are board 24 panel 04, a different element.
+- Outward normal sign checked on both outer facets, because winding is computed rather than hand-ordered and an inverted facet vanishes under backface culling with every gate green.
+- First draft of the deck assertion FAILED at `±32` vs `±31.5`. The code was right; the test was measuring end-cap vertices, which legitimately sit at the corner. Hence the `facingUp` filter.
+
+### `gl.toneMapping` — CLOSED, was `[unmeasured]`
+
+- `@react-three/fiber@9.7.0` sets `gl.toneMapping = flat ? NoToneMapping : ACESFilmicToneMapping`; no `<Canvas>` in this app passes `flat`.
+- `@react-three/postprocessing@3.0.4` `<EffectComposer>` runs an effect that sets `gl.toneMapping = NoToneMapping` while mounted and restores the prior value on unmount (`dist/index.js`). It adds tone mapping to the CHAIN only if you mount its `<ToneMapping>` effect.
+- `grep -rn ToneMapping apps/client/app` (excluding `toneMapped`): **zero hits**. Nothing mounts it.
+- Therefore: **bloom OFF → ACES Filmic. Bloom ON → no tone mapping at all.** That is why `gl.toneMapping` read 0 live, and it explains the owner's "bloom washes the whole screen out" without any emissive being wrong: with no ACES rolloff every emissive above 1.0 clips hard to white, then blooms.
+- Consequence for the gate: a bloom-on/bloom-off pair currently varies bloom AND tone mapping together. D3's criterion "reads marigold in the final tone-mapped frame" is unrunnable in the bloom-ON half.
+- NOT fixed here. Mounting `<ToneMapping>` changes every frame in the game and belongs to task 3's bloom/exposure budget.
+
+### ACES probe — the retone's arithmetic, computed and ready for when the retone is unblocked
+
+- Method: three's `ACESFilmicToneMapping` transcribed from `tonemapping_pars_fragment.glsl` (exposure 1), then linear→sRGB; bloom test is postprocessing's Rec.709 luminance on the LINEAR frame against env C's `threshold 0.42`.
+- `#F59A24` (M7 primary marigold) ×1 → linear luma 0.43 (only just over threshold) → displayed rgb(231,174,59), hue 30°, sat 0.95.
+- `#F59A24` ×2 → linear luma 0.85 → rgb(249,213,111), hue 39°, sat 0.83.
+- `#F59A24` ×4 → rgb(255,235,166), hue 44°, sat 0.62. ×6 → sat 0.47.
+- `#FFE0A0` (hot core) is ALREADY desaturated at ×1: rgb(227,216,185), sat 0.37. Authoring the core colour directly gives a near-white band — consistent with M7's "does not have to be authored into every insert".
+- ACES moves hue UP with intensity (20° source → 30° at ×1 → 46° at ×6). So the failure direction is yellow-white washout, NOT the vermilion board 24 warns against.
+- Read: §3's "reference intensity 1.0" is a SCALE anchor, not `emissiveIntensity: 1.0` in three units — at ×1 the strip sits on a knife-edge of blooming at all.
+- `[unmeasured]`: all of the above is arithmetic, not pixels. No frame has been captured this session and the stack has not been launched.
+
+### Gate at the re-shape — GREEN
+
+- `pnpm format` clean · `pnpm typecheck` 0 errors · biome 3 pre-existing `noExcessiveLinesPerFile` warnings, nothing new · Canvas-isolation 8 route entry modules clean · comment ratchet "13 changed source files, none gained comment lines" · shared **75/75** · client **66/66 across 10 files** (was 61/61 across 9 — the 5 new are this slice's) · server **4/4** · `pnpm build` ✓.
+- The ratchet DID bite, exactly as forecast: first lint run flagged 3 new files over the 20% budget and 3 touched files as having gained lines. Fixed by cutting, not by suppressing.
+
+### Correction to a standing lane fact
+
+- "The commit hook rejects a `Co-Authored-By` trailer" is WRONG about the mechanism. `.githooks/` contains only `install-hooks.sh` and `pre-commit`; `pre-commit` has no author check (`grep -i author` → nothing), `.git/hooks/` holds no installed hooks in this worktree, and 15 of the last 40 commits on this history DO carry the trailer.
+- The RULE still stands and is still followed — it is project policy, `CONTRIBUTING.md:131`, not hook enforcement. Only the stated reason was wrong.

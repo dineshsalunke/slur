@@ -1,6 +1,5 @@
-// The ONE definition of what each track surface is made of — `meshStandardMaterial` props, spread onto
-// the JSX element. The game and `/art-gallery` spread the same objects so a review cannot drift from what
-// ships.
+// The ONE definition of what each track surface is made of — `meshStandardMaterial` props spread onto the
+// JSX element, so the game and `/art-gallery` cannot drift from what ships.
 //
 // NO `toneMapped: false` HERE, deliberately. Opting out made the art direction's own test — "does the rail
 // read marigold in the final tone-mapped frame" — unrunnable. These intensities are authored to survive
@@ -56,8 +55,9 @@ export const DRAG_SURFACE = {
     depthWrite: false,
 } as const;
 
-/** Edge rails — the bright grid-line read standing proud of the dark floor. */
-export const RAIL_SURFACE = {
+/** The outer boundary strip, embedded in the deck's top outer corner. Still the old rail's VALUES on
+ *  purpose — the marigold retone waits on the owner's ruling about which material sheet is canonical. */
+export const BOUNDARY_SURFACE = {
     emissive: '#c8d0d8',
     emissiveIntensity: 2.6,
     color: '#15171a',
