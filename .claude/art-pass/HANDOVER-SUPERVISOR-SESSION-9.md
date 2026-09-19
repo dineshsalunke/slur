@@ -2,193 +2,198 @@
 
 **Assume no chat history.** You are the supervisor: lanes execute; you brainstorm, write, decide and relay.
 
-**Read session 8 only for the reasoning behind decisions it records.** Everything live has been folded into
-the three `LANE-STATE.md` files, which are **committed on their branches** and are the authority for their
-lanes. If a handover and a state doc disagree, **the state doc wins.**
+Read session 8 for the reasoning behind the three lanes' existence. Everything that moved since is here.
+Where this and session 8 disagree, **this wins**.
 
 ---
 
 ## 0. State in one paragraph
 
-**Three lanes, all with committed state docs, two of them cleared and re-primed this session by new
-tooling.** The black-sphere mystery that had cost four rounds is **solved and understood** — it was the
-camera far plane, not an object. `art/frame-tap` is **pushed**; `art/block` has three commits whose push was
-classifier-blocked and is being retried; `art/track` is mid-fix on the sky radius. Two issues filed (#127,
-#128). **What still needs the owner is one sitting at `/art-lab` for the slice-0 verdict, with tilt, once
-the sky fix lands.**
+**All three lanes are parked, clean and pushed. Nothing is in flight.** `art/track` is landing the owner's
+final sky framing plus the coverage-assertion replacement, then clears. `art/block` is **parked** (not
+cleared-and-restarted) pending a question about whether its own work is actually blocked. `art/frame-tap`
+was **cleared at its seam** and its successor has a one-call measurement waiting. **A CHROME FREEZE IS IN
+FORCE** — see §4, it is the most operationally important thing in this file. The one thing blocked on the
+owner is still the **slice-0 verdict**, which has now slipped past three sessions.
 
-## 1. THE BLACK SPHERE — SOLVED. Read this; it is the session's main lesson.
+## 1. What the owner decided this session
 
-**It was never an object. It was a hole punched by the camera's far plane.**
+| | |
+|---|---|
+| Sky **tilt** | **−2**, frozen. It is `backdrop.elevationDeg` — SKY framing, not camera |
+| Sky **fov** | **~120**, revised UP from their first answer of 70 after being shown the measurements |
+| Chrome focus | Unprompted complaint: Chrome stealing focus 3× inside one sentence. **Caused by us** |
+| Block finish | Looked unprompted, confirmed the target is **dark stone / worn concrete**, said it "doesn't give the feeling" |
+| `lane-clear` | Asked for it to be wired into the `/lane` skill. **Done** — see §6 |
 
-The sky patch sits at `radius 1200`; R3F's camera far is **1000**. The patch is camera-locked, so every
-point on it is equidistant and the clip condition is `radius·cos(a) > far` — a **circular hole of half-angle
-`acos(1000/1200) = 33.6°` centred on the camera axis.**
+**The fov story is worth keeping, because it is the model for how these calls should go.** The owner first
+froze **70** — which was the slider's *floor*, so they had hit the wall rather than found a value. 70 is half
+the measured coverage need, so `art/track` measured what it actually costs: black margin **15% of frame
+width each side parked, ~21% at top speed, up to 33% on one edge under hard strafe**, and — killing the main
+argument for 70 — **the stars do NOT fill that void** (0.008% of pixels lit over a 237,160-px block). Shown
+that, the owner revised to ~120 themselves. **Pushing back with measurements, not opinions, is what moved
+it.**
 
-**That is why the owner's falsification test came out as it did.** The hole is defined by the *camera axis*,
-so it is completely independent of the sky's pan/tilt/fov. Dragging `tilt` slides the nebula behind a hole
-that does not move a pixel. *"The body stays put while the sky moves"* was the **signature of this bug**,
-not evidence of a rogue object.
+**At fov 120** (supervisor arithmetic from the lane's measured half-angles — *the lane must verify, it is
+not measured*): patch half-width 60° vs frame half-width 46.0° parked and 54.0° at top speed → **fully
+covered in both**; worst case is top speed + 13.39° strafe yaw needing 67.39°, leaving **~7% of frame width
+black on ONE edge only.**
 
-**Root cause is a confidently-wrong comment.** `sky-config.ts` picks 1200 as *"well inside three's default
-far plane of 2000"* — true about three (`three@0.185.1`, `src/cameras/PerspectiveCamera.js:33`) and **false
-about this app**: R3F builds its own camera, `new THREE.PerspectiveCamera(75, 0, 0.1, 1000)`
-(`@react-three/fiber@9.7.0`, `dist/events-156d8d12.esm.js:15771`), and `camera={{fov, position}}` overrides
-only the fields it names.
+## 2. ⚠ 120 STILL FAILS THE ASSERTION — Option C still has to land
 
-**DECIDED (mine):** lower `DEEP_SPACE.radius` below `far`, fix both comments, and **add a test** asserting it
-against R3F's real default with the source citation. Not merely minimal — *more correct*: a radius strictly
-under `far` is unclippable at every angle **by construction**, rather than being far enough away to get
-lucky. Raising `far` to 4000 buys the same result while spending depth precision against a `near` of 0.1,
-and would drag the change into the game canvas. As one shared constant, lowering the radius **fixes the game
-for free**. `track-44` is building it.
+`sky-config.test.ts:99` asserts `fovDeg > 134.297`. **This is false at 120 as well as at 70.** The fix is
+**Option C**, scoped by `track-44` and approved:
 
-**Blast radius, filed as #128:** `iso-lab-canvas.tsx` is the **only** Canvas in the client that sets `far`
-— which is exactly why the isolation lab never showed this. `net-canvas.tsx` (the game), `/art-lab`,
-`/art-gallery`, `/env-lab` and the landing scene all inherit 1000. **The shipped game has had this hole in
-its sky.** Pre-existing on `dev`; the art pass only made it visible by deleting the lab lights.
+1. The opacity floor, `fovDeg/aspect > 2*edgeFadeDeg` — always true, cheap, and what the slider floor **43**
+   encodes (derived: `makeEdgeFade`'s `du=min(v,1-v)` peaks at 0.5, so `fovV <= 2*edgeFade` can never reach
+   alpha 1 anywhere; `2*12*1.7768 = 42.64 → 43`. It moves if `edgeFadeDeg` moves).
+2. A **renamed** margin assertion that no longer claims "fills the frame", pinning the worst-case black
+   margin against a named **`ACCEPTED_EDGE_MARGIN`** carrying the owner's decision — filled with the
+   measured ~7% at fov 120.
 
-**SHIPPED: `e339381`** *"fix(sky): bring the backdrop inside R3F's far plane, not three's"* — pushed,
-`art/track` level with origin, tree clean, full gate green (client 35 tests, net +1). `radius` 1200 → **800**;
-both comments rewritten; `R3F_DEFAULT_FAR = 1000` is now a named constant in `sky-config.test.ts` carrying
-the source citation.
+**Rejected and must stay rejected:** loosening the assertion to fit the value (it would certify anything),
+and deleting it (it caught a 120° patch shipping once).
 
-> **⚠ ONE HONEST GAP, and it is the owner's first two seconds at the gate.** The lane proved the
-> **mechanism** live by toggling `far` 1000 → 5000 and back, but **has not seen `radius 800` render.** The
-> committed change is the same physics from the other side of the inequality and the test pins it, but the
-> frame is `[unverified visually]`. The hole is either gone or it is not; nothing subtle sits between.
+**The 138.5° figure in `sky-config.ts`'s header is WRONG** — it mixes rest-pose yaw (15.5°, look distance
+18) with top-speed frame width (108°), two different speeds in one number. The test is self-consistent at
+s=1: 2*(53.76+13.39) = **134.30**. *The supervisor relayed 138.5 to the lane as authoritative and the lane
+caught it.* Prose fixed in three places; `sky-tuning-panel.tsx` is the only one committed so far.
 
-> **⚠ THE EXISTING TEST WAS PART OF THE BUG.** There was already a test named *"keeps the backdrop inside
-> three's default far plane"* asserting `DEEP_SPACE.radius < 2000`. **It encoded the same wrong premise,
-> passed, and the bug shipped underneath it** — it would have gone on certifying any radius up to 1999. The
-> same premise sat in its own `chaseCamera()` helper (`far 2000`), and `project()` multiplied by 1000,
-> putting its sample point exactly **on** the far plane. The lane **replaced** it rather than adding beside
-> it, which is correct: a test built on a false premise is not a weaker guard, it is an active source of
-> false confidence. **When a bug ships under a green test, fix the test's premise, never just add another.**
+## 3. THE BLACK SPHERE IS CLOSED — the owner falsified it themselves
 
-> **⚠ I WAS WRONG ABOUT THE STARS, and the lane was right to measure rather than inherit it.** I reasoned
-> the star shell ran *inward* from `radius` (400 → 280). **drei spans it OUTWARD**: `let r = radius + depth`
-> then decrements (drei 10.7.8, `core/Stars.js:65`), so the field runs **400 → 520**. The decision stands
-> unchanged — 520 is still comfortably inside 800 — but the margin is 520-vs-800, not 400-vs-800. Now pinned
-> as its own test: `stars.radius + stars.depth < radius`. **Supervisor arithmetic offered to a lane is a
-> hypothesis, not a fact; say so, and the lane will check it.**
+The owner asked whether "tilt" was camera or sky, because dragging it *moved the background and left the
+track still.* **That is the sphere test passing.** It is the planet baked into `nebula-backdrop.jpg`,
+cropped so its lit rim sits above frame; the test was "does the dark body slide with the sky", and it did.
+**There is no rogue object. Do not re-open this.** (`/art-lab` exposes no camera controls at all — the only
+`pan`/`tilt`/`fov` sliders there write `backdrop.*`.)
 
-### The two lessons, and they are worth more than the fix
+## 4. ⚠⚠ THE CHROME FREEZE — read before instructing any lane
 
-1. **Four rounds of confident source-reading lost to one controlled experiment.** The lane eliminated the
-   texture (radial profile shows no luminance step at the limb), the alphaMap (plain feather, 255 at centre)
-   and occlusion (`depthTest=false` changes nothing) **before** naming a cause, then proved it by toggling
-   `far` 1000 → 5000 and back — four interior points returning to their correct texture values while a
-   control point outside the hole did not move. **Every confident conclusion in this arc that got overturned
-   was overturned by rendering or measuring.** This is the fourth instance.
-2. **A true, carefully-measured fact that cannot reach the question is more dangerous than a wrong one**,
-   because it feels like progress. The lane's earlier *"exactly five renderables, exactly one sphere"* was
-   **correct and reproducible and was never the answer** — enumerating objects can never find a hole. Before
-   trusting a measurement, ask what question it could possibly answer.
+**Standing order to every lane: take no frames, run no `osascript`, raise no tab. Ask the supervisor first
+and say why.**
 
-## 2. NEW TOOLING — lane context clearing, built and proven this session
+The owner was pulled out of their typing three times inside one sentence. Accounted for: `block-49` took
+**nine frames across six reloads**; `track-44` took **three `computer screenshot` calls**, two on the same
+parked frame, one of which returned byte-identical and bought nothing.
 
-The owner asked for lane clearing to stop depending on them watching the lanes. **Built, tested, and it ran
-end-to-end twice on its first day.**
+**The multiplier nobody had measured, and it is the whole story:**
 
-- **`~/.claude-personal/hooks/context-watchdog.sh`** (rewritten; `.bak` kept). Detects a lane by asking git
-  whether it is in a **linked worktree** (`--git-dir` differs from `--git-common-dir` only there —
-  project-agnostic, no hardcoded paths). In a lane it emits an instruction a lane can *execute*: take no new
-  work, commit, push, **message your supervisor with a fact dump**, and **never `/clear` yourself**. Two
-  stages: **150k warn, 250k hard**. Outside a lane the old text is unchanged. All four branches tested.
-  *The old text said "tell the user it is safe to /clear" — a lane has no user, which is why it was ignored
-  19 times in one session.*
-- **`~/.claude-personal/bin/lane-clear.sh <agent-name> <reprime-file> [--force]`**. Reads `herdr agent list`
-  for pane and status, **refuses to clear a lane that is not at a seam**, sends `/clear`, then feeds a
-  re-prime prompt.
-  - **It drives the PANE, not the agent API** — `herdr pane send-text` + `herdr pane send-keys <pane> enter`,
-    verified end-to-end on a scratch pane. `herdr agent prompt` pastes **without submitting**.
-  - **`done` is idle-equivalent and MUST be accepted** — herdr reports `done` for an agent sitting at its
-    prompt after finishing a turn, which is exactly the seam we want. Accepting only `idle` refused the
-    first real handover; fixed.
-- **The re-prime prompt must ask the lane to state, in its own words and before touching code:** HEAD and
-  push status, the next slice and why *that* one, what was retracted and why the wrong claim happened, and
-  the trap specific to its lane. **A fresh agent that has not read its docs looks exactly like one that
-  has.** `frame-tap` immediately caught that HEAD no longer matched its state doc (committing the doc moved
-  HEAD past the SHA inside it) — that catch is the protocol working.
-- **Known wart:** a state doc cannot name its own commit. Say so in the doc rather than trying.
+- **A `navigate` or `location.reload()` returns the tab to `hidden`** — so the foreground must be re-run
+  after **EVERY** reload.
+- **A module-scope material/probe SURVIVES HMR** — so a shader edit needs a **full reload**, not an HMR
+  update.
 
-**Measured:** both lanes came back at **~9% context** from 28% and 20%+. The trigger stays **supervisor
-judgement, not a fixed number** — a threshold firing mid-slice cuts the reasoning that was about to be
-written down, which is the one thing a state doc cannot recover.
+Those compound: every shader probe costs a reload, and every reload costs a focus steal. **This is why
+`art/frame-tap` matters far more than it looks** — every lane has been paying a hidden per-probe tax on the
+owner's attention.
 
-## 3. The three lanes
+**The one free mitigation, found by `track-44`, now propagated:** panel/toggle/config state is **DOM**, so
+`javascript_tool` reads it at **zero focus cost**. Only *pixels* need the window.
 
-| lane | branch | ports | state doc | pushed |
+**Lift the freeze only when `art/frame-tap` lands**, or for a single scheduled frame you explicitly grant.
+
+## 5. The three lanes
+
+| lane | branch | ports | status | herdr name / pane |
 |---|---|---|---|---|
-| track | `art/track` | 5201 / 2601 | `02-track/LANE-STATE.md` | yes, @ **`e339381`** |
-| block | `art/block` | 5202 / 2602 | `07-blocks/LANE-STATE.md` §10 | **NO — 3 commits local** |
-| frame-tap | `art/frame-tap` | 5203 / 2603 | `00-frame-tap/LANE-STATE.md` | **yes**, @ `ba7319d` |
+| track | `art/track` | 5201 / 2601 | **ALIVE**, landing fov 120 + Option C, then clear | `track` / `w2C:p1` |
+| block | `art/block` | 5202 / 2602 | **PARKED** — agent killed, not restarted | `block` / `w2D:p1` |
+| frame-tap | `art/frame-tap` | 5203 / 2603 | **CLEARED** — agent killed, needs restart | `frame-tap` / `w2E:p1` |
 
-**All three serve `/art-lab`.** Only `:5201` means anything for the sky — this caused a real "are we looking
-at the same thing" confusion with the owner. Always state the port.
+### `art/track`
+`b00c91f` pushed. **`sky-config.ts` is deliberately DIRTY** (tilt/fov + rewritten prose) — it must stay in
+the tree or the owner's sitting cannot happen. The assertion is untouched and failing **on purpose**. Far-
+plane fix **visually confirmed** (hole gone, sky continuous, planet limb legible). Next after the clear:
+**slice 1 (floor swap, D1), gated by the slice-0 verdict.**
 
-### `art/block` — the surface slice landed, unseen
+### `art/block` — PARKED, and the park is under challenge
+Everything is in **`07-blocks/SESSION-9-ADDENDUM.md`**, committed at `8c5d460`. Headline: the block renders
+**~85–90% non-diffuse**, so every albedo-only feature is diluted below JPEG noise. Proved by zeroing
+`diffuseColor.rgb` entirely and measuring a 10–15% face change. **Two retractions** in there. Option A
+(`uDetailRough`, variation only) approved; then found possibly gated on task 2; **§13 of that file challenges
+the gate and must be resolved by reading before anyone inherits it as settled.**
 
-`e7ca605`, gate green, 57 client tests (was 49). Splits + fbm + narrowed seam + crease/gamma for the
-interior corner. **Decisions B13–B20 and the as-built record are in `07-blocks/LANE-STATE.md` §10** —
-including the auditable B18 seam derivation (measured against **height**, the only fixed board dimension),
-the exact even-count phase fix, and the real per-fragment cost (**~72 hashes**, not "a few ALU" — I was
-loose about this and the lane corrected me).
+### `art/frame-tap` — cleared, with a one-call test waiting
+`96f5d94` pushed, gate green, `LANE-FACTS.md` current. The successor's **first action** is
+`document.querySelectorAll('canvas').length` on `:5203/art-lab` — **two canvases proves two R3F roots and
+settles the open hang outright**; one canvas rules *nothing* out (a root teardown can drop the DOM node
+while a module-scope listener survives). A measurement scaffold is committed and **marked REMOVE BEFORE
+PR**. Restart it with:
+```
+herdr agent start frame-tap --kind claude --pane w2E:p1 --timeout 120000 -- --permission-mode auto
+```
+**But it needs Chrome**, so it is behind the freeze and behind the owner's sitting.
 
-**`FRAME_SIZE` (B20) is reasoned from camera constants and never measured** — the lane flagged it as the
-single most likely thing to be wrong, and confirming the crop is its next task because it gates every other
-judgement. **B14 (the contact glow) is approved but NOT built.**
+## 6. `lane-clear` is wired into the `/lane` skill — and it was exercised twice, unprompted
 
-### `art/frame-tap` — works, with one open defect
+`~/.claude-personal/skills/lane/SKILL.md` now carries **"Clearing a lane — `/lane clear <name>`"**: a
+`LANE-FACTS.md` obligation (raw facts, one line each, committed *as the lane works*, never written at
+handover time), an 8-step procedure, and what `LANE-STATE.md` carries. Frontmatter triggers updated.
 
-Pulled a 3456×1926 bloomed PNG of the live track from a tab nobody focused. The A/B is evidence rather than
-a number because **alpha matches at ∞ while colour does not** (signature of a post pass) and **red diverges
-most** (what a marigold bloom predicts). Open: handler is entered but nothing happens; **StrictMode
-double-registration is the untested lead**. **DECIDED: dedupe first, move the listener out of the R3F tree
-second** — the move changes registration lifetime as a side effect, so doing it first fixes the bug without
-anyone learning which change did it.
+**The finding behind it:** detection was never missing — `context-watchdog.sh` is already lane-aware and
+two-stage (150k/250k). It was ignored **19 times in one session** because *acting* cost four supervisor
+round-trips. **The fix is to make clearing cheap, not the alarm louder.**
 
-**⚠ Its retraction is a trap with teeth:** *"a tab loaded while hidden never mounts R3F at all"* was wrong
-and was written down as measured. **Vite prunes a replaced module's custom HMR listeners and Fast Refresh
-does not re-run an effect inside R3F's reconciler**, so a probe added by editing the file looks like it
-never ran. Full reload required. Every success followed a reload; every failure an HMR-only update.
+**It worked the same day.** `frame-tap-9c` hit 151k, **declined a Chrome slot I had just freed** rather than
+bank measurements into a context about to be thrown away, and spent the turn making the measurement cheap
+for its successor instead. `block-49` and `track-44` both hit seams and stopped clean.
 
-## 4. Issues filed
+## 7. Process notes that earned their place this session
 
-- **#127** — `check-canvas-isolation.mjs`'s `strip()` removes string literals **before** comments, so a
-  possessive apostrophe in prose opens a fake string; on an **odd** apostrophe count it eats the file's own
-  `<Canvas`. `/art-lab` and every `/iso-*` route are outside the #102 guard. **The failure is silent and
-  inverted** — such a file is reported *clean*. Acceptance requires a self-test that every file containing
-  `<Canvas` raw still contains it after `strip()`.
-- **#128** — the far-plane trap (§1).
+- **Lanes reply with `SendMessage`, never plain text.** `block-49` answered a direct question in its own
+  pane; it never reached the supervisor and it looked idle for 43 minutes while the owner asked twice.
+- **An unsubmitted line can sit in a lane's input box for an hour.** `block-49` had `go ahead with option B`
+  typed into its pane, never submitted. **Third** time typing-into-panes has eaten a decision packet.
+- **A declared fallback that does not fire is worse than no fallback** — it reads as "handled" while nothing
+  moves. `block-49` wrote `IF NO ANSWER: I proceed with B`, then ended the turn without doing it.
+- **Re-test inherited blockers.** Two died this session: *"the push is blocked by the lane's classifier"*
+  (rode three handovers, never true) and the StrictMode premise on `art/frame-tap`.
+- **Check before executing a supervisor instruction.** `frame-tap-9c` was told to write two corrections into
+  the docs, found them already there verbatim, and declined to create a second copy that would drift — then
+  recorded *that it checked*.
+- **Contradictory supervisor constraints are the supervisor's error to fix, not the lane's to resolve
+  quietly.** `frame-tap-9c` raised one rather than picking.
+- **Scope a falsification when you record it.** "StrictMode double-registration is FALSE" was proved only
+  for *one instance, effect twice* — not for *two instances, once each*. Recorded under a heading reading
+  **READ THE SCOPE BEFORE CITING THIS**.
+- **Delete the term entirely rather than tuning it down.** `block-49` zeroed albedo 100% and got an
+  unarguable answer in one reading.
+- **Gate ONCE.** The owner's eye is the scarcest resource here; the 33%-margin look and the slice-0 verdict
+  were deliberately combined into one sitting.
 
-## 5. Process facts confirmed or learned this session
+## 8. Next actions, in order
 
-- **The Chrome focus escape works.** `open -a "Google Chrome"` is **not** enough (a background tab in a
-  foreground window is still hidden). Selecting that tab as the **active tab of a frontmost window via
-  `osascript`**, matching on your own port, works — verified independently by two lanes (counter 8 →
-  1263/1408 and climbing). Two tool calls. The frame tap is the better answer where available.
-- **Never route a blocked action through another session.** Two lanes had push blocked; `frame-tap` assumed
-  it was blocked, never tried, and the push then went through with no prompt. **Tell a lane to attempt and
-  report the exact wording**, rather than accepting "blocked" as a state.
-- **DIAGNOSIS belongs to the lane, even when the owner asks you directly.** I read a lane's source to form a
-  hypothesis and was correctly called on it. Routing it costs one message; doing it burns the supervisor
-  context the whole arc depends on, and hands the lane a conclusion instead of a question. **Cross-lane
-  state — ports, branches, who holds Chrome — IS mine** and no lane can supply it.
-- **Comments are a load-bearing artefact and can be confidently wrong.** #128 exists because of one.
+1. **`track-44`: land fov 120 + Option C, FULL gate, push** — then clear it (it is at ~168k).
+2. **THE OWNER'S SITTING** — still the gate for everything on task 2. The verbatim block is in §9.
+3. **Resolve `art/block` §13** — does `art/track` own the BLOCK's roughness, or only the track surfaces'?
+   By reading. If unblocked, Option A goes to the front: **the owner has personally asked for that surface
+   to read.**
+4. **Restart `art/frame-tap`**, once the freeze allows a frame. One call may close it.
+5. **The deferred `/iso-sky` sky gate**, after a real track is in frame — its roughness self-test must run
+   with **`Star light` OFF as well as `Env rig` off**.
 
-## 6. Next actions, in order
+## 9. The owner's sitting — hand this verbatim
 
-1. **The owner gates slice 0 once, with tilt**, at `:5201/art-lab` — and confirms the hole is gone, which
-   nobody has yet seen. The fix is shipped (`e339381`); everything in task 2 is behind this sitting.
-   Then **slice 1 = the floor swap (D1)**: `TrackFloor` becomes the floor, delete `TrackView`'s instanced
-   floor quads out of `TrackRibbon`, retire `showFloor` and the `slab` toggle — and **compare against the
-   instanced floor BEFORE deleting it.**
-2. **`block`'s push** — retry sent; if genuinely denied, it is the **owner's** to clear.
-3. **`block` confirms the crop** (gates all its other tuning), then splits → `DETAIL_ALBEDO` →
-   `DETAIL_NORMAL` **last and only on a grazing face**.
-4. **`frame-tap`: the StrictMode dedupe**, tested in isolation.
-5. **PRs** — `art/frame-tap` is pushed with none open.
-6. **Wire `lane-clear` into the `/lane` skill** so new lanes get the protocol automatically. Offered, not
-   done.
+> Open `http://localhost:5201/art-lab` yourself, in a window you already have in front — nothing will open
+> or raise it for you.
+>
+> It should come up as: bloom ON, slab ON, rails ON, backdrop ON; blocks, env, ships, finish all OFF; pan 0,
+> tilt −2, fov 120. That is the default state, so you should not have to set anything. If it isn't, say so
+> and stop — something drifted.
+>
+> Two things, one sitting.
+>
+> 1. **The black margin.** Hit `running`, then `fly`. Hold W until the speed readout stops climbing (~8s),
+>    then hold A for a full three seconds and let go, then D for three seconds. Watch the LEFT and RIGHT
+>    edges of the picture, not the middle. At fov 120 the nebula should reach the frame edge everywhere
+>    except while you are hard over, where a sliver of black (~7% of the width) opens on one side. The
+>    question is only whether that reads as space, or as the sky having run out. Bloom stays on.
+> 2. **Slice 0, the honest frame.** Same flight, now look at the floor and the rails, bloom ON and again
+>    with bloom OFF, and keep moving — parked tells you almost nothing. Expect it to look worse than you
+>    remember: the lab used to mount its own ambient and directional light that the game does not have, and
+>    those are gone, so shadow sides now go properly black. Honest-and-ugly and broken look similar for
+>    about two seconds; you're judging which one this is.
+
+> **The lesson session 8 recorded still holds, and earned it again twice today:** every confident,
+> well-argued conclusion built from source alone that got overturned, got overturned by **rendering or
+> measuring**. If you find yourself arguing about a frame, measure it.
