@@ -429,3 +429,38 @@ The swap forces exactly four changes, none of them chosen. Instanced quads use `
 
 - "The commit hook rejects a `Co-Authored-By` trailer" is WRONG about the mechanism. `.githooks/` contains only `install-hooks.sh` and `pre-commit`; `pre-commit` has no author check (`grep -i author` → nothing), `.git/hooks/` holds no installed hooks in this worktree, and 15 of the last 40 commits on this history DO carry the trailer.
 - The RULE still stands and is still followed — it is project policy, `CONTRIBUTING.md:131`, not hook enforcement. Only the stated reason was wrong.
+
+### Owner ruling relayed by the supervisor, 2026-09-20 — the retone's terms, NOT yet acted on
+
+Recorded before any retone code exists, because this arrived as a message and lives nowhere else on disk.
+The ruling is "reconcile, keep both" between the rev-3 sheet and the uncommitted Codex revision.
+
+- **No frozen numeric anchor.** The Codex text wins on this point: "The former blanket environmental
+  no-halo rule and numeric 0.25 intensity cap are not final art constraints… Judge environmental
+  subordination in the composed frame; no numeric light ratio is frozen." So "the boundary strip is
+  reference intensity 1.0" is DEAD as a target. The ACES probe above replaces it.
+- **M1 becomes metalness 1.0 / roughness 0.35–0.50**, replacing the shipped 0.12 / 0.62. The owner took
+  the Codex values as a STARTING POINT — that sheet also says "Numeric settings are inherited first-pass
+  tuning presets, not frozen art requirements… Tune to the final references under the real camera and
+  lighting."
+- **The M1 metalness sitting is CANCELLED. Do not render that pair.** It was going to the owner as an
+  open escalation; the ruling settles it. Known risk to watch instead: at metalness 1.0 everything the
+  specular misses goes black, because the sky measures ~linear 0.01 as an IBL source. If that bites it is
+  now a FINDING to raise with a frame, not a decision waiting on anyone.
+- **Acceptance is "judge at gameplay distance and race speed, with bloom enabled and disabled"** plus
+  "Preserve gold after tone mapping, rather than reddish spill." The ACES probe says the failure direction
+  is yellow-white washout, not vermilion — so the second clause is not the live risk; the first is.
+- **Standing assumption CONFIRMED under the winning text:** author the honest value and let the bloom-ON
+  frame show the defect. Do NOT dim the strip to hide bloom washout.
+- **Tone mapping: deferred to task 3 by owner ruling. Do NOT mount `<ToneMapping>`.** The measurement
+  above stands; whoever presents bloom-on/bloom-off frames must label them honestly, because that pair
+  currently varies bloom AND tone mapping together.
+- **Board 24 still governs the boundary under both sheets**, so nothing in the re-shape commit is at risk,
+  and `BOUNDARY_W`/`BOUNDARY_H` remain a lane call.
+
+### Still owed at this seam
+
+- The retone itself. NOT STARTED — no emissive value changed, no frame captured, stack never launched.
+- The frames: `PORT=2601 pnpm dev`, then `curl localhost:5201/__frame-tap?name=<name>`, bloom on AND off
+  at a matched camera, both labelled. `[unmeasured]` — every pixel of this slice.
+- The emitter array (step 3) has not been designed or started.
