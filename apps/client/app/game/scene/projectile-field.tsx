@@ -9,13 +9,9 @@ import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
 // (r3f.md pooling: allocate once, vary the range). 64 concurrent bolts is far beyond a 12-ship room's fire rate.
 const MAX_BOLTS = 64;
 
-// Sample a bolt's interpolated position ~RENDER_DELAY_MS in the past — mirrors remoteInterpSystem: find the two
-// snapshots straddling renderTime and lerp; NEVER extrapolate. Returns null only for an empty buffer.
-// WARM-UP (renderTime before the first snapshot): hold the FIRST (spawn) pose, NOT the latest. Holding the
-// latest showed a just-fired bolt at its true, undelayed position — racing ahead for the first ~RENDER_DELAY_MS,
-// then SNAPPING BACK ~90u the instant interpolation kicked in (renderTime crossed buffer[0]). At 120u/s that
-// snap was ~12u and invisible; at near-instant speed it read as "two bolts, one vanishes." Holding buffer[0]
-// keeps the bolt at its fire point until the delayed clock reaches it, then it launches smoothly — no snap-back.
+// Sample a bolt's interpolated position ~RENDER_DELAY_MS in the past: lerp the two snapshots straddling
+// renderTime, and NEVER extrapolate. During warm-up hold the FIRST pose, not the latest — holding the latest
+// runs the bolt at its undelayed position and then snaps it back the instant interpolation takes over.
 function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
     if ( buffer.length === 0 ) return null;
     if ( renderTime <= buffer[ 0 ].t ) return buffer[ 0 ]; // warm-up: hold at spawn, don't race to latest then snap back
@@ -35,36 +31,27 @@ function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | 
     return buffer[ buffer.length - 1 ]; // renderTime past the last sample → hold latest (bolt about to be pruned)
 }
 
-// The bolt archetype: ONE instanced mesh driven imperatively from the ECS (r3f.md instancing + zero React
-// re-renders during play). HDR-emissive + toneMapped=false so bolts bloom bright/legible. Reads interp-only
-// projectile entities (spawned by the room→world bridge); the client never predicts or hit-tests them.
+// The bolt archetype: one instanced mesh driven imperatively from the ECS. HDR-emissive with toneMapped off
+// so bolts bloom. Bolts are interp-only — the client never predicts or hit-tests them, the server does.
 export function ProjectileField() {
     const world = useWorld();
     const ref = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );
 
-    // Bolt shape (#55): a thin capsule laid along +z reads as a STREAK, not a drifting ball — right for the
-    // near-instant speed. CapsuleGeometry runs along Y, so rotate it onto Z ONCE and bake it into the geometry,
-    // keeping the per-frame instance writes position-only (no per-instance rotation). Bolts only travel +z, so
-    // one baked orientation fits all of them.
+    // A thin capsule along +z reads as a streak rather than a drifting ball. CapsuleGeometry runs along Y, so
+    // the rotation onto Z is baked in once — bolts only travel +z, and instance writes stay position-only.
     const boltGeo = useMemo( () => {
         const g = new THREE.CapsuleGeometry( 0.055, 30, 4, 8 ); // long thin tracer — reads as a beam-streak at the near-instant speed
         g.rotateX( Math.PI / 2 );
         return g;
     }, [] );
 
-    // JUSTIFIED EFFECT — external resource lifetime. boltGeo is a geometry we `new`'d in useMemo and attach via
-    // <primitive object>, so R3F does NOT auto-dispose it (it only owns JSX-declared geometries) — its GPU
-    // buffers would leak once per match/scene teardown (r3f.md #7; mirrors gradient-dome.tsx). Stable deps ([])
-    // ⇒ cleanup runs only on unmount. Not render-derivation/an event/data-flow — purely bracketing a GPU resource.
+    // Effect justified: brackets a GPU resource's lifetime. boltGeo is `new`'d in useMemo and attached via
+    // <primitive object>, so R3F never disposes it — it only owns JSX-declared geometries.
     useEffect( () => () => boltGeo.dispose(), [ boltGeo ] );
 
-    // Force the draw range to 0 AT MOUNT (callback ref → fires during commit, BEFORE the first paint). The
-    // buffer is created with count=MAX_BOLTS, so without this the pool draws MAX_BOLTS identity-matrix spheres
-    // stacked at the origin for one frame — a stray flash at the spawn point (#53). useFrame parks the range,
-    // but it runs AFTER the first paint, so it cannot prevent frame-1. This is the range-based analogue of the
-    // matrix-parking done in explosions.tsx / hit-spark.tsx (those pools always draw MAX, so they park slots;
-    // this pool varies count, so zeroing count hides everything). Not a mount EFFECT — just imperative init.
+    // Zero the draw range at mount via a callback ref, which runs during commit and so beats the first paint.
+    // useFrame would park it a frame too late, flashing MAX_BOLTS identity-matrix bolts at the origin.
     const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
         ref.current = mesh;
         if ( mesh ) mesh.count = 0;

@@ -3,9 +3,8 @@ import { Fragment } from 'react';
 import { Render } from '../ecs/traits';
 import { ShipView } from './ship-view';
 
-// Query Render → every ship (local + remote) mounts a view; re-renders ONLY on spawn/despawn, never per
-// frame. Each ShipView owns its own model + subscribes to its Net trait so a class hot-swap swaps just
-// that ship's model (the per-ship reactivity is colocated at the leaf, per r3f.md).
+// Every ship mounts a view; this level re-renders only on spawn/despawn, never per frame. The per-ship
+// Net subscription is colocated down in ShipView so a class hot-swap touches only that one ship.
 export function Ships() {
     const ships = useQuery( Render );
     return (

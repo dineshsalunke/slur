@@ -2,19 +2,17 @@ import { Fragment, useMemo } from 'react';
 import * as THREE from 'three';
 import { type SkyConfig, skyDirection } from './sky-config';
 
-/** Lever arm for the light. Only its DIRECTION is used, so this number is arbitrary — it just has to be big
- *  enough that the position reads as "out there" to anyone inspecting the scene graph. */
+/** Lever arm for the light. Only its DIRECTION is used, so the number is arbitrary — big enough that the
+ *  position reads as "out there" to anyone inspecting the scene graph. */
 const LIGHT_DISTANCE = 1000;
 
 /**
  * The scene's one real light, aimed down the sky's authored star bearing.
  *
- * WHY THE TARGET IS RENDERED EXPLICITLY: three derives a directional light's direction as
- * `light.worldPosition - light.target.worldPosition`, and the default target sits at the WORLD origin. This
- * light rides `SkyFollow`, so its world position is `camera + offset` — against a fixed origin the direction
- * would swing through a wide arc over a race's 8000u of forward travel. Rendering the target as a sibling
- * inside the same follow group makes both ends translate together, so the direction is constant by
- * construction rather than by being far enough away to hide the drift.
+ * The target is rendered explicitly because three takes the direction as `light.worldPosition -
+ * target.worldPosition` and the default target sits at the WORLD origin — while this light rides `SkyFollow`,
+ * so against a fixed origin its direction would swing over a race's 8000u of travel. As a sibling inside the
+ * follow group both ends translate together and the direction is constant by construction.
  */
 export function StarLight( { config }: { config: SkyConfig } ) {
     const target = useMemo( () => new THREE.Object3D(), [] );

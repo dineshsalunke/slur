@@ -1,12 +1,10 @@
 import { DEFAULT_SHIP, type ShipId } from '@slur/shared';
 
 // Client-only ship VISUALS, keyed by the SAME shipId the sim resolves tuning from. Each model is uniform-
-// scaled so its box == its class AABB footprint (WYSIWYG — you die exactly when the visible hull touches).
-// scale/lift are DERIVED from each model's measured native bbox (jq on the glTF POSITION accessors):
+// scaled so its box equals its class AABB footprint — you die exactly when the visible hull touches.
+// scale/lift are DERIVED from each model's measured native bbox, never hand-typed:
 //   scale = classWidthU / nativeWidthX ,  lift = −nativeMinY · scale  (rests the hull bottom at y=0)
-// (See the phase note for the measured table.) `facing` flips a nose-backward model; all five share the
-// Quaternius +Z-forward convention today — verify per model at the feel-gate and flip [0, Math.PI, 0] if a
-// nose points at the camera. The registry is the SINGLE place a new ship's visuals get added.
+// `facing` flips a nose-backward model; all five share Quaternius's +Z-forward convention today.
 export interface ShipVisual {
     url: string;
     scale: number;

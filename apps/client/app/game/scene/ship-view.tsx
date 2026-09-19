@@ -6,10 +6,9 @@ import { colorHex } from '../colors';
 import { Net, Render } from '../ecs/traits';
 import { ShipModel } from './ship-model';
 
-// One ship's view. Subscribes to its Net trait via useTrait so a guarded shipId/colorId change (NOT a
-// per-patch update) re-renders JUST this ship and remounts its model/tint. Solo ships have no Net →
-// useTrait returns undefined → the default (Fighter) model + palette colour 0. Per-frame transforms are
-// written straight into the entity's Render group by the ECS systems; React is never involved in movement.
+// One ship's view. The Net subscription lives here, at the leaf, so a shipId/colorId change re-renders just
+// this ship and not its siblings. Solo ships have no Net and fall back to the default model and colour.
+// Per-frame transforms go straight into the entity's Render group; React is never in the movement path.
 export function ShipView( { entity }: { entity: Entity } ) {
     const group = entity.get( Render );
     const net = useTrait( entity, Net );

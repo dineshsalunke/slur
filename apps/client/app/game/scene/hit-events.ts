@@ -1,6 +1,5 @@
-// One-shot hit-impact events, module-singleton queue (lives OUTSIDE React, like spectator.ts). The room→world
-// bridge pushes an entry when the server broadcasts 'hit'; the <HitSpark> field drains it each frame to spawn a
-// cosmetic burst. A queue (not React state) keeps the WebGL VFX fully imperative — zero re-render on a hit.
+// One-shot hit-impact events on a module-singleton queue, outside React. The room→world bridge pushes on a
+// server 'hit'; <HitSpark> drains each frame. A queue rather than React state keeps the VFX re-render-free.
 export interface HitEvent {
     x: number;
     y: number;
@@ -15,8 +14,8 @@ export function pushHit( e: HitEvent ): void {
     if ( queue.length > MAX_QUEUED ) queue.shift();
 }
 
-// Drain every pending hit into `sink` (called from HitSpark's useFrame), then clear. Empties on each frame so a
-// brief unmount can't accumulate stale sparks beyond one frame's worth.
+// Drain every pending hit into `sink`, then clear — so a brief unmount cannot accumulate stale sparks
+// beyond one frame's worth.
 export function drainHits( sink: ( e: HitEvent ) => void ): void {
     for ( const e of queue ) sink( e );
     queue.length = 0;

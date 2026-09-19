@@ -10,14 +10,9 @@ import { StarLight } from './star-light';
  * The deep-space sky: the reference image on a camera-locked patch, a star field, one real light, and an
  * authored lighting environment that is deliberately NOT the picture.
  *
- * ZERO PARALLAX, BY DESIGN. `SkyFollow` copies camera POSITION but not rotation, so the sky swings as the ship
- * turns and never shifts as it travels. That is not an approximation of cosmic distance, it IS cosmic distance:
- * apparent shift is baseline ÷ distance, and both baselines here are tiny — lateral strafe is capped at 64u
- * (`halfWidth: 32`) and a whole race is 8000u of forward travel (`TRACK_SEGMENTS · SEG_LEN`). Depth is the job
- * of the rock layers in front of the sky, never the sky's.
- *
- * Star-field stability falls out of the same property: camera-locked points have no sub-pixel motion at all, so
- * there is nothing to crawl or shimmer at race speed.
+ * ZERO PARALLAX, BY DESIGN — `SkyFollow` copies camera position but not rotation, so the sky swings as the
+ * ship turns and never shifts as it travels. At a 64u strafe cap against cosmic distance there is no shift to
+ * render, and camera-locked points cannot crawl. Depth is the job of the rock layers in front of the sky.
  */
 export function DeepSpaceSky( {
     config,
@@ -27,18 +22,11 @@ export function DeepSpaceSky( {
     toneMapped = true,
 }: {
     config: SkyConfig;
-    /**
-     * Mount the visible sky patch. Split from `light`/`environment` so a review mode can hide the picture
-     * without unlighting the scene — `/art-lab`'s `backdrop` toggle would otherwise mean "pitch black"
-     * now that the lab has no lights of its own.
-     */
+    /** Mount the visible sky patch. Split from `light`/`environment` so a review mode can hide the picture
+     *  without unlighting the scene, which the labs have no lights of their own to survive. */
     backdrop?: boolean;
-    /**
-     * Mount the scene's real `DirectionalLight`. On by default; OFF is what the environment gate needs.
-     * `/iso-sky` runs the lab rig off so that no neutral light can make the roughness self-test pass on its
-     * own — and a star light lights those probes just as happily as a rig light does. Whoever judges "is the
-     * environment lighting anything" has to switch this off too or the test proves nothing.
-     */
+    /** Mount the scene's real `DirectionalLight`. The roughness self-test at `/iso-sky` needs this OFF —
+     *  a star light lights those probes as happily as a rig light, so leaving it on proves nothing. */
     light?: boolean;
     /** Mount the `<Lightformer>` bake. Off is the other half of the same self-test. */
     environment?: boolean;

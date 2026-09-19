@@ -20,16 +20,14 @@ function makeGradientTexture( top: string, bottom: string ): THREE.Texture {
     return tex;
 }
 
-// A camera-locked (via SkyFollow) inner sphere painted with a vertical gradient — the "sky". BackSide so we
-// see it from inside; depthWrite off so it never occludes the world; fog off so haze doesn't eat it;
-// toneMapped off so the authored (deliberately sub-1.0) colours pass through without triggering bloom.
+// A camera-locked inner sphere painted with a vertical gradient — the "sky". BackSide to see it from
+// inside, depthWrite off so it never occludes the world, fog off so haze doesn't eat it, and toneMapped off
+// so the authored sub-1.0 colours pass through without triggering bloom.
 export function GradientDome( { config }: { config: DomeConfig } ) {
     const tex = useMemo( () => makeGradientTexture( config.top, config.bottom ), [ config.top, config.bottom ] );
 
-    // JUSTIFIED EFFECT — external resource lifetime (a GPU texture we `new`'d in useMemo, not created by
-    // R3F from JSX). r3f.md: manually-created resources are ours to dispose. Cleanup runs on unmount AND
-    // when the colours change (variant switch), releasing the superseded texture. No render-derivation,
-    // no event, no data-flow involved — purely bracketing an external resource's lifetime.
+    // Effect justified: brackets the lifetime of a GPU texture we `new`'d ourselves, which R3F does not own
+    // and will not dispose. Cleanup runs on unmount and on a colour change, releasing the superseded one.
     useEffect( () => () => tex.dispose(), [ tex ] );
 
     return (

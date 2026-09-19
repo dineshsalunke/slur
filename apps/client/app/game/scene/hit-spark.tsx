@@ -3,11 +3,9 @@ import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { drainHits } from './hit-events';
 
-// Bolt-impact spark: a sharp cosmetic flash at the (x,y,z) the server reports in its 'hit' broadcast, so a
-// landed hit READS instantly (before the victim's stun even reconciles). Fully imperative — one additive HDR
-// InstancedMesh pool drained from the hit-events queue in a single useFrame, NO React state/effect/subscription
-// (r3f.md: purely cosmetic pooled particles are leaf-imperative). Mirrors ExplosionField, tuned tighter/faster
-// (a quick pop, not debris) and a hotter cyan-white so it's unmistakable vs the ship-derezz shard burst.
+// Bolt-impact spark at the position the server reports in its 'hit' broadcast, so a landed hit reads before
+// the victim's stun even reconciles. Mirrors ExplosionField but tuned tighter and hotter — a quick pop
+// rather than debris, and unmistakable against the ship-derezz shard burst.
 
 const MAX = 200; // spark-pool buffer cap (hard — exceeding silently drops). ~8 concurrent bursts of PER_BURST.
 const PER_BURST = 22; // sparks emitted per hit
@@ -144,9 +142,7 @@ export function HitSpark() {
     } );
 
     return (
-        // frustumCulled=false: we rewrite instanceMatrix every frame but three computes the bounding sphere
-        // ONCE — a stale volume would cull the whole burst as the ship flies on (same reason as ExplosionField).
-        // Additive + no depth-write so overlapping sparks sum to a bright, self-glowing flash.
+        // frustumCulled=false and additive, for the reasons ExplosionField gives.
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial

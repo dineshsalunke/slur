@@ -1,10 +1,7 @@
-// Environment variant configs for the atmosphere lab (S6 art-pass, ADD §11).
-// NOT a component — a plain data module of intuitive, tweak-live parameter blocks. `scene/environment.tsx`
-// consumes ONE EnvConfig; the `/env-lab` route cycles the three with keys 1/2/3.
+// Environment variant configs. `scene/environment.tsx` consumes one; `/env-lab` cycles them with 1/2/3.
 //
-// House constraint: tube-walls are PURELY VISUAL parallax "canyon walls" placed FAR beyond the track
-// half-width (HALF_WIDTH = 32 in @slur/shared). Every `walls.distance` below is > 32 by a wide margin so
-// geometry can never read as an obstacle. Post-FX stays bloom-only (see BloomConfig) — no CA/vignette/noise.
+// The canyon walls are PURELY VISUAL parallax, so every `walls.distance` stays far beyond the track's
+// HALF_WIDTH of 32 and can never read as an obstacle. Post-FX stays bloom-only — no CA, vignette or noise.
 
 // Vertical gradient backdrop (a camera-locked inner sphere). Kept dim (channels < 1) so it reads as sky,
 // not a bloom source. If top/bottom look swapped when rendered, just swap the two colour strings.
@@ -15,8 +12,8 @@ export interface DomeConfig {
     radius: number; // sphere scale (u) — larger = flatter, further-feeling sky
 }
 
-// drei <Stars> — a single instanced points cloud. Follows the camera (via SkyFollow) so the field never
-// runs out as the ship travels. All fields are the raw drei props (verified against drei 10.7.8 Stars.d.ts).
+// drei <Stars> — a single instanced points cloud that follows the camera, so the field never runs out as
+// the ship travels. All fields are the raw drei props.
 export interface StarConfig {
     enabled: boolean;
     count: number; // number of stars (sparse deep-space ~1k → dense void ~6k)
@@ -49,8 +46,7 @@ export interface WallConfig {
     yBase: number; // bottom of the slabs (0 = standing on the floor plane)
 }
 
-// Single global Bloom pass params (the ONLY post-FX, per the locked constraint). Pushed to ~1.0–1.5 /
-// threshold ~0.4 (ADD §11 — the networked scene's 0.5/0.6 was too timid).
+// The single global Bloom pass — the only post-FX in the stack.
 export interface BloomConfig {
     intensity: number;
     threshold: number; // luminanceThreshold — lower = more surfaces bloom
@@ -67,11 +63,6 @@ export interface EnvConfig {
     bloom: BloomConfig;
 }
 
-// ── The three variants (same hybrid structure, different mood) ────────────────────────────────────────
-// A: Deep-Space Drift — sparse stars in a pure void (no dome), far/low blue walls, minimal loose fog.
-// B: Neon Canyon      — closer/taller magenta walls, tight magenta haze, violet dome, medium stars.
-// C: Grid Void        — dense stars, cyan-tinted haze + horizon-glow dome, mid cyan walls (leans on the
-//                       existing Track neon grid as the "ground grid").
 export const ENV_VARIANTS: readonly EnvConfig[] = [
     {
         name: 'A · Deep-Space Drift',
@@ -126,9 +117,8 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
         fog: { color: '#04101c', near: 80, far: 460 },
         dome: { enabled: true, top: '#02060e', bottom: '#08324a', radius: 750 },
         stars: {
-            // The field was mounted but nearly invisible: at radius 280 the fog (far 460) swallowed ~50% of
-            // it, and `fade` dimmed the rest. Pull the shell IN to ~190 (only ~30% fogged), grow the points,
-            // and add more of them so the starfield actually READS behind the dark cyan haze.
+            // The shell has to sit well inside fog `far` or the haze swallows the field — at radius 280
+            // against far 460 roughly half of it was gone.
             enabled: true,
             count: 8000,
             radius: 190,
@@ -153,8 +143,6 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
     },
 ] as const;
 
-// The LOCKED environment for the networked in-game scene (S6 identity pass, phase note
-// 2026-08-10-s6-identity.md → "Environment pass — decisions"): variant "C · Grid Void". Resolved by NAME,
-// not a bare index, so reordering ENV_VARIANTS above can never silently repoint the shipped world. The
-// /env-lab route still cycles all three by index; only net-canvas pins this one.
+// The environment the networked scene ships. Resolved by NAME, not by index, so reordering ENV_VARIANTS
+// can never silently repoint the shipped world; /env-lab still cycles all three by index.
 export const GRID_VOID: EnvConfig = ENV_VARIANTS.find( ( v ) => v.name.startsWith( 'C ·' ) ) ?? ENV_VARIANTS[ 2 ];
