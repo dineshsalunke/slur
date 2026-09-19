@@ -2,6 +2,24 @@
 
 Raw facts, written as the work happens. One line each.
 
+## ⛔ STOPPED BY DECISION — the remaining 109 files are DROPPED, not pending
+
+**One area of nine was swept: `apps/client/app/game/scene`, 19 files. The other 109 files in `FILES.txt`
+will not be swept, by owner decision. This is not unfinished work and nobody should restart it.**
+
+The reason: the project had been spending its time on process rather than on the art pass that is the actual
+work — a comment rule rewrite, a ratchet, a docs reorg, and this sweep. PR #139 (`d0d15c4`) now measures the
+comment rule mechanically, which prevents regression without anyone hand-auditing 109 files. That was the
+point of the exercise, and it is achieved more cheaply by the ratchet than by this lane.
+
+`FILES.txt` is kept as the record of what the set *was*. It is not a work queue.
+
+**`sky-config.ts` was deliberately excluded from the shipped PR**, reverted to its `dev` state. Its 17-line
+star-bearing derivation (threshold the jpg at luma ≥ 210, circle-fit the planet limb, polar-sweep to the
+terminator at 169°, star at 79° screen-azimuth → bearing 66°/elevation 19°) is the method by which a second
+sky image's bearing would ever be derived, and it is recorded nowhere else. Parking the sweep preserves it
+for free. The per-file notes below still describe what the sweep *did* to that file; none of it ships.
+
 ## Baseline
 
 - Measured across all 129 files in `FILES.txt` before any edit: **2,419 comment lines / 10,188 lines = 23.7%**.
