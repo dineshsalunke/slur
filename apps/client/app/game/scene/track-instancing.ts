@@ -1,14 +1,13 @@
-// Shared instanced-pool plumbing for the track's leaf views (`TrackRibbon`, `TrackBlocks`).
+// Shared instanced-pool plumbing for the track's leaf views (`TrackRails`, `TrackBlocks`).
 //
-// Extracted when those two split apart so they cannot drift: a differing render window would show blocks
-// appearing past the end of the ribbon. The scratch Object3D is module-scope because these run every frame
-// and must not allocate (r3f hot-path rule).
+// Shared rather than duplicated so the two cannot drift: a differing render window would show blocks
+// appearing past the end of the rails. The scratch Object3D is module-scope because these run every frame
+// and must not allocate.
 
 import * as THREE from 'three';
 
-// How far ahead / behind the ship we materialise segments. The track is generated on demand from the
-// seed (segmentAt), so this is a pure render window — cull everything outside it (LOD-friendly for a
-// long track). AHEAD dominates because you race forward into it.
+// The render window, ahead of and behind the ship. AHEAD dominates because you race forward into it, and
+// `TrackFloor` reuses it to build the run-out pad past the finish line.
 export const AHEAD = 900;
 export const BACK = 80;
 

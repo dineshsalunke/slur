@@ -8,13 +8,6 @@
 
 import { trackSurfaceTexture } from './track-texture';
 
-/** Near-black ribbon surface. The neon deliberately lives on the rails, not the slab. */
-export const FLOOR_SURFACE = {
-    emissive: '#c8d0d8',
-    emissiveIntensity: 0.05,
-    color: '#050507',
-} as const;
-
 /**
  * Base roughness of the track's dark metal. The block's per-fragment roughness is perturbed RELATIVELY
  * around this, so the two dark-metal languages cannot fork when it moves — import it, never copy it.
@@ -24,17 +17,18 @@ export const FLOOR_ROUGHNESS = 0.62;
 export const FLOOR_METALNESS = 0.12;
 
 /**
- * A function, not a frozen object: `trackSurfaceTexture()` needs `document` and must not run at import.
- * `color` overrides the near-black base because base colour MULTIPLIES the map — at `#050507` the texture
- * crushes to flat black.
+ * The ribbon deck. A function, not a frozen object: `trackSurfaceTexture()` needs `document` and must not
+ * run at import. `color` is white because base colour MULTIPLIES the map — the near-black the deck used
+ * before it was textured crushes the whole texture to flat black.
  */
 export function floorSurface() {
     return {
-        ...FLOOR_SURFACE,
         color: '#ffffff',
         map: trackSurfaceTexture(),
         roughness: FLOOR_ROUGHNESS,
         metalness: FLOOR_METALNESS,
+        emissive: '#c8d0d8',
+        emissiveIntensity: 0.05,
     };
 }
 
