@@ -82,13 +82,38 @@ and deleting it (it caught a 120° patch shipping once).
 s=1: 2*(53.76+13.39) = **134.30**. *The supervisor relayed 138.5 to the lane as authoritative and the lane
 caught it.* Prose fixed in three places; `sky-tuning-panel.tsx` is the only one committed so far.
 
-## 3. THE BLACK SPHERE IS CLOSED — the owner falsified it themselves
+## 3. ⚠ THIS SECTION WAS WRONG — corrected at session 10. The sphere was a FAR-PLANE HOLE.
 
-The owner asked whether "tilt" was camera or sky, because dragging it *moved the background and left the
-track still.* **That is the sphere test passing.** It is the planet baked into `nebula-backdrop.jpg`,
-cropped so its lit rim sits above frame; the test was "does the dark body slide with the sky", and it did.
-**There is no rogue object. Do not re-open this.** (`/art-lab` exposes no camera controls at all — the only
-`pan`/`tilt`/`fov` sliders there write `backdrop.*`.)
+**What this section said, and it is FALSE:** *"It is the planet baked into `nebula-backdrop.jpg`, cropped so
+its lit rim sits above frame; the test was 'does the dark body slide with the sky', and it did."*
+
+**The owner's test FALSIFIED the planet diagnosis rather than confirming it.** They dragged `Tilt` and the
+dark body **did not move with the sky** — and this section read that as the test *passing*. It was the
+opposite. The real cause, found and fixed by `track-44`:
+
+**A far-plane clipping hole.** The camera-locked backdrop patch sat at `radius` 1200 against R3F's default
+`far` **1000** (R3F builds `new THREE.PerspectiveCamera(75, 0, 0.1, 1000)`; `camera={{…}}` overrides only
+named fields and no Canvas in this app names `far`, so three's own default 2000 is never in play). Every
+point on a camera-locked patch is equidistant, so the clip carves a circular hole of half-angle
+`acos(1000/1200)` = **33.6°, centred on the CAMERA AXIS** — which is exactly why dragging tilt never moved
+it, and why it read as a sphere pinned in front of the ship.
+
+**Shipped fix:** `radius` 1200 → 800 (drei spans its star shell *outward*, `r = radius + depth`, so the field
+runs 400→520 and stays inside 800). Confirmed by toggling `far` 1000→5000 — interior sample points went
+6/6/6/6 → 14.6/12.9/28.7/9.2 while a control outside the hole read 12.4 both times — and then **visually**:
+hole gone, sky continuous, planet limb and terminator legible.
+
+**`iso-lab-canvas.tsx` is the only Canvas in the app that sets `far`** (`max(4000, dist*12)`), which is why
+`/iso-lab` never showed this. Tracked as issue **#128**.
+
+`02-track/LANE-STATE.md` §5 carries the corrected version and is the authority. The one true thing this
+section said: `/art-lab` exposes no camera controls at all — its `pan`/`tilt`/`fov` sliders write
+`backdrop.*`, so "tilt" is SKY framing, not camera.
+
+**The lesson is the one this project keeps re-earning:** a confident, measured, well-argued conclusion built
+from source alone was overturned by a render. The owner's ten-second falsification test was worth more than
+the whole argument, *and it was misread as agreement* — check which way a falsification actually pointed
+before you record it as closed.
 
 ## 4. ⚠⚠ THE CHROME FREEZE — read before instructing any lane
 
