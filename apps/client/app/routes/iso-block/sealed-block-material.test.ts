@@ -4,6 +4,7 @@ import {
     SEALED_BLOCK_FRAGMENT_EMISSIVE,
     SEALED_BLOCK_FRAGMENT_MASKS,
     SEALED_BLOCK_FRAGMENT_NORMAL,
+    SEALED_BLOCK_FRAGMENT_ROUGHNESS,
     SEALED_BLOCK_VERTEX,
     SEAM_CORE_COLOR,
     SEAM_GLOW_COLOR,
@@ -128,6 +129,31 @@ describe( 'sealed block surface finish', () => {
 
     it( 'keeps the normal perturbation tunable to zero', () => {
         expect( SEALED_BLOCK_FRAGMENT_NORMAL ).toContain( 'uDetailNormal' );
+    } );
+} );
+
+/**
+ * THE FORK GATE.
+ *
+ * The block renders ~85-90% non-diffuse, so roughness is the term that actually paints the face — which is
+ * why the finish lives here rather than in albedo alone. The risk it carries is a SECOND base value: the
+ * moment this writes an absolute roughness, this material stops following `material.roughness` and a future
+ * change to the base silently leaves the finish behind. Relative is the whole decision, so it is the thing
+ * guarded.
+ */
+describe( 'sealed block roughness finish', () => {
+    it( 'perturbs relatively and never writes an absolute roughness', () => {
+        expect( SEALED_BLOCK_FRAGMENT_ROUGHNESS ).toContain( 'roughnessFactor *=' );
+        expect( SEALED_BLOCK_FRAGMENT_ROUGHNESS ).not.toMatch( /roughnessFactor\s*=\s*[^*]/ );
+    } );
+
+    it( 'reuses the albedo field rather than evaluating a second fbm', () => {
+        expect( SEALED_BLOCK_FRAGMENT_ROUGHNESS ).toContain( 'detail' );
+        expect( SEALED_BLOCK_FRAGMENT_ROUGHNESS ).not.toMatch( /blockFbm|texture2D|texture\s*\(/ );
+    } );
+
+    it( 'stays tunable to zero, so the finish can be switched off without an edit', () => {
+        expect( SEALED_BLOCK_FRAGMENT_ROUGHNESS ).toContain( 'uDetailRough' );
     } );
 } );
 

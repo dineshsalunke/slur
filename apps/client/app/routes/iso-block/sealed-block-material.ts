@@ -22,9 +22,11 @@ import * as THREE from 'three';
  * Non-uniform instance scale does NOT break the shading: three applies the inverse-scale normal correction
  * under `USE_INSTANCING` (`ShaderChunk/defaultnormal_vertex.glsl.js`, three 0.185.1).
  *
- * PROVISIONAL — the base colour and roughness belong to the dark material family the `art/track` lane is
- * defining. Adopt its values when task 2's slice 2 lands rather than letting two dark-metal languages drift
- * apart. The seam and the bevel are this lane's and are not downstream of it.
+ * PROVISIONAL — the base COLOUR belongs to the dark material family the `art/track` lane is defining; adopt
+ * its value when task 2's slice 2 lands rather than letting two dark-metal languages drift apart.
+ * ROUGHNESS is NOT downstream of it: `game/scene/track-materials.ts` defines `FLOOR_SURFACE`,
+ * `LETHAL_SURFACE`, `DRAG_SURFACE` and `RAIL_SURFACE`, and not one carries a `roughness` key — the number
+ * below is the only one there is. The seam, the bevel and the finish are this lane's.
  */
 
 /** Warm core of the seam — the brightest point of the ramp. */
@@ -90,9 +92,20 @@ export const DETAIL_ALBEDO = 0.35;
  * Normal perturbation from the same field, tunable to ZERO. Buys the GRAZING case only — an unlit face has
  * N·L ~0 and stays there under any perturbation small enough to keep the surface intact, so that read is a
  * bounce problem for `/art-lab`. TUNE THIS ON A GRAZING FACE: tuning it against a black face drives it to
- * noisy and plastic on the lit one long before the black one lights up.
+ * noisy and plastic on the lit one long before the black one lights up. The single star means the interior
+ * vertical corner is the ONLY grazing light in this route, so that corner is the one place it can ever show
+ * — judging it anywhere else on `/iso-block` is judging a term that is not participating.
  */
 export const DETAIL_NORMAL = 0.15;
+
+/**
+ * Roughness swing, as a fraction of whatever base this material carries. THE PRIMARY FINISH TERM, not a
+ * garnish: measured, the block renders ~85-90% NON-DIFFUSE — zeroing albedo outright moved the lit face only
+ * 48-65 → 45-57 — so every albedo-only feature is diluted below JPEG noise while roughness modulates the
+ * term that actually paints the face. UNJUDGED: 0.35 matches `DETAIL_ALBEDO` so the two read as one material
+ * event at equal strength, and it is a first guess, not a tuned value.
+ */
+export const DETAIL_ROUGH = 0.35;
 
 /**
  * Declarations shared by both stages. `vBlockPos`/`vBlockSize` are the un-stretched box-local frame;
@@ -262,6 +275,20 @@ diffuseColor.rgb *= 1.0 - uSplitDarken * split;
 `;
 
 /**
+ * Finish, injected after `<roughnessmap_fragment>`. Reuses the `detail` field already evaluated above — no
+ * second fbm, no sampler, one multiply.
+ *
+ * RELATIVE, never absolute: it scales three's own `roughnessFactor`, which the chunk seeds from
+ * `material.roughness`, so there is no second copy of a base value to drift out of step. The sign couples it
+ * to the albedo term — a lighter patch is also a tighter reflection — so a blotch reads as one material event
+ * rather than two unrelated fields. three clamps the result at both ends itself
+ * (`ShaderChunk/lights_physical_fragment.glsl.js` 10-12, three 0.185.1), so no clamp belongs here.
+ */
+export const SEALED_BLOCK_FRAGMENT_ROUGHNESS = /* glsl */ `
+roughnessFactor *= 1.0 - uDetailRough * ( detail - 0.5 ) * 2.0;
+`;
+
+/**
  * Bevel, injected after `<normal_fragment_begin>`. Near an edge the normal leans toward the adjacent face, so
  * the bevel catches light like real geometry instead of being a painted line.
  *
@@ -345,6 +372,7 @@ export function createSealedBlockMaterial(): THREE.MeshStandardMaterial {
         shader.uniforms.uDetailSize = { value: DETAIL_BASE_SIZE };
         shader.uniforms.uDetailAlbedo = { value: DETAIL_ALBEDO };
         shader.uniforms.uDetailNormal = { value: DETAIL_NORMAL };
+        shader.uniforms.uDetailRough = { value: DETAIL_ROUGH };
 
         shader.vertexShader = shader.vertexShader
             .replace( 'void main() {', `${ VARYINGS }\nvoid main() {` )
@@ -366,12 +394,19 @@ uniform float uSplitDarken;
 uniform float uDetailSize;
 uniform float uDetailAlbedo;
 uniform float uDetailNormal;
+uniform float uDetailRough;
 ${ NOISE_GLSL }
 `;
 
         shader.fragmentShader = shader.fragmentShader
             .replace( 'void main() {', `${ fragmentHead }\nvoid main() {` )
             .replace( '#include <color_fragment>', `#include <color_fragment>\n${ SEALED_BLOCK_FRAGMENT_MASKS }` )
+            // `<roughnessmap_fragment>` sits after `<color_fragment>` and before `<normal_fragment_begin>`
+            // (`meshphysical.glsl.js` 172/176/178, three 0.185.1), so `detail` is already in scope here.
+            .replace(
+                '#include <roughnessmap_fragment>',
+                `#include <roughnessmap_fragment>\n${ SEALED_BLOCK_FRAGMENT_ROUGHNESS }`,
+            )
             .replace(
                 '#include <normal_fragment_begin>',
                 `#include <normal_fragment_begin>\n${ SEALED_BLOCK_FRAGMENT_NORMAL }`,
@@ -383,7 +418,7 @@ ${ NOISE_GLSL }
     };
 
     // Distinct key so three never shares a compiled program between this and a plain standard material.
-    material.customProgramCacheKey = () => 'sealed-block-v2';
+    material.customProgramCacheKey = () => 'sealed-block-v3';
 
     return material;
 }
