@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useState } from 'react';
+import { FrameTap } from '../../dev/frame-tap';
 import { world } from '../../game/ecs/world';
 import { ENV_VARIANTS } from '../../game/scene/env-config';
 import { Environment } from '../../game/scene/environment';
@@ -64,6 +65,10 @@ export function EnvLabCanvas() {
                         luminanceSmoothing={ config.bloom.smoothing }
                     />
                 </EffectComposer>
+                { /* Lets this route be photographed from a tab nobody is looking at. Never mounted on /game —
+                     it advances the sim. See app/dev/frame-tap.tsx. The DEV gate is what keeps it OUT of the
+                     production bundle, not merely inert in it. */ }
+                { import.meta.env.DEV && <FrameTap /> }
             </Canvas>
         </WorldProvider>
     );

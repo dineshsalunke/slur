@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { CELL, HALF_WIDTH } from '@slur/shared';
 import { Fragment, memo, type ReactNode } from 'react';
+import { FrameTap } from '../dev/frame-tap';
 import { GRID_VOID } from '../game/scene/env-config';
 import { ScaleReference } from './scale-reference';
 
@@ -123,6 +124,10 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
             ) : (
                 <Fragment />
             ) }
+            { /* Lets every /iso-* route be photographed from a tab nobody is looking at. Never mounted on
+                 /game — it advances the sim. See app/dev/frame-tap.tsx. The DEV gate is what keeps it OUT of
+                 the production bundle, not merely inert in it. */ }
+            { import.meta.env.DEV && <FrameTap /> }
         </Canvas>
     );
 } );

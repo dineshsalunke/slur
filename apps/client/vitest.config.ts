@@ -11,6 +11,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig( {
     test: {
         environment: 'node',
-        include: [ 'app/**/*.test.ts', 'app/**/*.test.tsx' ],
+        // The root-level glob picks up the dev-only Vite plugins (`*-plugin.test.ts`), which live beside
+        // vite.config.ts rather than under app/ because they are Node build-time code, not app code.
+        include: [ 'app/**/*.test.ts', 'app/**/*.test.tsx', '*.test.ts' ],
     },
 } );

@@ -5,6 +5,7 @@ import { defineConfig, loadEnv } from 'vite';
 // Explicit `.ts` extension: Vite 8's forthcoming native config loader cannot resolve extensionless
 // relative imports in vite.config and warns on every run without it.
 import { artRefsPlugin } from './art-refs-plugin.ts';
+import { frameTapPlugin } from './frame-tap-plugin.ts';
 
 export default defineConfig( ( { mode } ) => {
     // loadEnv (not process.env) so CLIENT_PORT can live in a per-worktree apps/client/.env —
@@ -24,6 +25,9 @@ export default defineConfig( ( { mode } ) => {
             tailwindcss(),
             reactRouter(),
             artRefsPlugin( { dir: resolve( process.cwd(), '../../docs/art-direction/boards' ) } ),
+            // Also dev-only. Writes tapped frames into the art-pass refs dir, which is already gitignored
+            // (`.claude/art-pass/.gitignore` ignores `*/refs/`) — see frame-tap-plugin.ts.
+            frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/art-pass/00-frame-tap/refs' ) } ),
         ],
         // Bind the dev server to ALL interfaces so other machines on the LAN can load
         // http://<host-ip>:5173 (office play). Vite defaults to localhost-only, which is
