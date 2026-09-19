@@ -3,8 +3,12 @@
 **For the author, with Blender open.** What to make, in numbers. The *why* is in `LANE-STATE.md` and
 `SESSION-9-ADDENDUM.md`; you do not need it to build this.
 
-Target, unchanged and not up for re-litigation: **dark stone / worn concrete — dark metal with a lot of
-cracks**, per `10_obstacle_blocks_final.png` panel 2. Cold. Same material family as track and world (panel 8).
+Target: **dark brittle stone under a worn matte coating** — the coating rubbed through at edges and high
+points to a slightly brighter, glossier substrate. Still cracked, still cold, still the same material family
+as track and world (`10_obstacle_blocks_final.png` panels 2 and 8).
+
+*(This replaces "dark stone / worn concrete", which the owner has retracted as their own mistake. The older
+lane docs still carry the old phrase; they are history and record what was true when written.)*
 
 ---
 
@@ -12,15 +16,19 @@ cracks**, per `10_obstacle_blocks_final.png` panel 2. Cold. Same material family
 
 | | Feature size (world units) | What lives here | Carried mainly by |
 |---|---|---|---|
-| **LARGE** | ~2–3u | broad weathering blotches, tonal patches — the "this is stone" read at distance | roughness + albedo |
-| **MEDIUM** | ~0.05–0.3u | **the crack-vein network** and chipped bevel edges — the board's dominant character | **normal** + roughness |
-| **SMALL** | < 0.05u | micro-grain, speckle, pitting — breaks up the specular streaks, reads only up close | roughness + faint normal |
+| **LARGE** | ~2–3u | broad patches where the coating is thin or worn — the "worn coating" read at distance | roughness + albedo |
+| **MEDIUM** | ~0.05–0.3u | **the crack-vein network**, and chips where the coating has broken through to substrate | **normal** + roughness |
+| **SMALL** | < 0.05u | micro-grain, speckle, pitting in the coating — reads only up close and at grazing angles | roughness + faint normal |
 
 Today the material has **only large**. Medium is the one the board is actually about.
 
-The board's **strong specular streaks are a ROUGHNESS feature, not a painted highlight.** Author them as
-low-roughness streaks and let the engine light them. Never paint a highlight into albedo — the shader lights
-this surface and a baked highlight will fight it from a second direction.
+**The coating story is a ROUGHNESS story.** Coating = matte, higher roughness. Substrate showing through =
+slightly brighter and glossier, lower roughness. The rub-through **at high points inside the tile** is yours
+— it is sub-5u, so it belongs in the asset. The rub-through **at the block's edges** is the shader's, because
+only the shader knows where a particular block's edges are (§6).
+
+Never paint a highlight into albedo. The shader lights this surface, and a baked highlight fights it from a
+second direction — author brightness differences as roughness, not as painted light.
 
 ---
 
@@ -103,14 +111,43 @@ Two things that make it cheap, both of which also improve the result:
 
 ---
 
-## 6. What the maps must NOT contain
+## 6. Division of labour — what is yours and what is the shader's
+
+**The texture says what the material IS. The shader says where features SIT on this particular box.**
+
+Everything **below the 5u tile** is yours, authored in world units, so one asset serves any block size.
+
+The shader keeps four things a tiling texture physically **cannot** do:
+
+- **Anything larger than the tile.** A 5u tile cannot encode a 10u feature, so block-to-block tonal variation
+  and whole-face weathering stay procedural — a low-frequency field laid over your sampled roughness.
+- **Anything at the block's edges** — bevel, crease, and the coating's rub-through — keyed to each block's
+  real extents.
+- **Per-instance uniqueness** — the marigold seam's corner, hashed per block.
+- **Extent-relative features** — the vertical panel splits, snapped to an even count across each face.
+
+**The wear story falls out of this, and it is why you only make one material.** Author a single *coated*
+surface. The shader lerps roughness toward the glossier substrate inside the edge band it already computes.
+You supply what worn-through looks like; it supplies where the coating is gone. The band is a world constant,
+so it is size-invariant for free and needs no second asset.
+
+> **Not yet built — a note for the sampling work, not a request to you.** A 5u tile across a field of blocks
+> will read as stamped. The fix is a per-instance UV offset plus a 0/90/180/270 rotation hashed from the
+> instance position — one extra hash, reusing the machinery the seam's corner already uses. **Author the tile
+> so it survives 90° rotation**: avoid a strong directional grain that only works one way up.
+
+---
+
+## 7. What the maps must NOT contain
 
 These are already procedural in the shader and would double up, or they break a contract:
 
 - **The marigold seam.** Procedural and staying that way — its corner is hashed **per instance**, and a baked
   texture is byte-identical on every block, so it cannot carry that variation.
-- **The bevel highlight and the dark crease line at the edges.** Procedural, keyed to each block's real
-  extents, constant world width at any footprint. A tiling texture cannot know where a block's edges are.
+- **The bevel highlight, the dark crease line, and the coating's rub-through at the edges.** All procedural,
+  keyed to each block's real extents, constant world width at any footprint. A tiling texture cannot know
+  where a block's edges are. Rub-through at **high points inside the tile** is yours; rub-through **at the
+  edges** is not.
 - **Any warm colour at all — no marigold, no amber, and never red.** The seam is the one feature carrying
   hazard identity at range; a second warm line anywhere on the face dilutes exactly that signal. The authored
   material is cold, dark stone/metal, full stop.
@@ -125,7 +162,7 @@ drawn on top of yours. Please say which you want; doubling them is the one outco
 
 ---
 
-## 7. Colour space, format, and one convention that fails subtly
+## 8. Colour space, format, and one convention that fails subtly
 
 | Map | Colour space | Format |
 |---|---|---|
@@ -144,7 +181,7 @@ drawn on top of yours. Please say which you want; doubling them is the one outco
 
 ---
 
-## 8. Deliverable
+## 9. Deliverable
 
 Three PNGs, 1024², tiling at 5u:
 
