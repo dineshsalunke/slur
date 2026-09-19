@@ -3,6 +3,7 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import { procgenDescriptor, resolveTrack } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, Suspense, useMemo } from 'react';
+import { FrameTap } from '../../dev/frame-tap';
 import { world } from '../../game/ecs/world';
 import type { EnvConfig } from '../../game/scene/env-config';
 import { Environment } from '../../game/scene/environment';
@@ -92,6 +93,12 @@ export function ArtLabCanvas( {
                        and that claim has never been checked. */
                     <Fragment />
                 ) }
+                { /* Lets this route be photographed from a tab nobody is looking at. Never mounted on /game —
+                     it advances the sim. See app/dev/frame-tap.tsx. The DEV gate is what keeps it OUT of the
+                     production bundle, not merely inert in it: Vite folds the flag to `false`, the binding
+                     goes unused and Rollup drops the module (verified by grepping build/ — same mechanism as
+                     NetDebugHud in net-canvas.tsx). */ }
+                { import.meta.env.DEV && <FrameTap /> }
             </Canvas>
         </WorldProvider>
     );

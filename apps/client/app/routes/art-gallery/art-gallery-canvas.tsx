@@ -1,4 +1,5 @@
 import { Canvas } from '@react-three/fiber';
+import { FrameTap } from '../../dev/frame-tap';
 import { GalleryBloom } from './gallery-bloom';
 import { GalleryCamera } from './gallery-camera';
 import { GalleryGrid } from './gallery-grid';
@@ -38,6 +39,10 @@ export function ArtGalleryCanvas() {
                  inspection is not. */ }
 
             <GalleryBloom />
+            { /* Lets this route be photographed from a tab nobody is looking at. Never mounted on /game — it
+                 advances the sim. See app/dev/frame-tap.tsx. The DEV gate is what keeps it OUT of the
+                 production bundle, not merely inert in it. */ }
+            { import.meta.env.DEV && <FrameTap /> }
         </Canvas>
     );
 }
