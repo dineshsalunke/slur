@@ -30,6 +30,26 @@ lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); d
 > Review instruments: **`/art-lab`** (fly the real track, no server) and **`/art-gallery`** (subjects at
 > true scale under the game's own bloom).
 
+> ### 🚫 `docs/art-direction/` is ChatGPT's workspace — READ-ONLY for Claude.
+> The owner runs a **ChatGPT project pointed at that folder**; it is Codex's working set, not ours.
+> **Never edit, move, rename, reformat, reflow, split, consolidate or delete anything under
+> `docs/art-direction/`** — docs, boards, `manifest.json`, all of it. That includes tidying: do not
+> "fix" a stale dimension, resolve a documented conflict in place, correct the manifest, or reshoot a
+> board. Renaming or reorganising the folder breaks the file set ChatGPT is indexed against. If a change
+> in there is genuinely needed, **ask the owner** — they make it on the ChatGPT side.
+>
+> **Division of labour:** Codex owns art design, visual review and direction; **Claude owns
+> implementation** and the engineering-side sheets. Claude's art outputs live **outside** that folder —
+> `docs/ART_SCALE_REFERENCE.md` (dimensions, overrides every board number), **`docs/ART_MATERIALS.md`**
+> (surfaces: nine material families, element→material map, marigold intensity tiers), and
+> `.claude/art-pass/` (execution).
+>
+> **How to disagree with the package:** never by editing it. Write the correction in a Claude-owned doc
+> with an explicit *decisions + departures* section that quotes the package wording it changes (see
+> `ART_MATERIALS.md` §7 for the shape), then hand it to the owner to paste into ChatGPT. A silent edit
+> inside the folder is invisible to Codex and desynchronises both sides. Boards will **not** be
+> reshot — stop asking; use them for LOOK, never for SIZE.
+
 ---
 
 ## ⚠️ Golden rule — read the conventions before touching a subsystem
