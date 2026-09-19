@@ -15,13 +15,13 @@ session `2ce938`, which has since been terminated; this session adopted the doc 
 | | |
 |---|---|
 | Branch | `art/track`, worktree `../slur-worktrees/track` |
-| HEAD | **`c937888`** — `art(track): sky framing knobs in /art-lab, with the star coupled to pan` |
+| HEAD | `git log -1` is authoritative — **this file cannot name its own commit** without being one behind, so it doesn't try. The last *code* commit is `c937888`; anything after it is docs |
 | Base | `1807bc0` (`dev` at the time task 1 merged) |
-| Commits ahead of `origin/dev` | 3 — `604bf0c` docs · `1bb5839` slice 0 · `c937888` sky knobs |
-| Working tree | clean |
-| Pushed | **yes** — `origin/art/track` at `c937888`, pushed 2026-09-19. No PR opened yet |
+| Code commits | `604bf0c` docs/brief · `1bb5839` slice 0 · `c937888` sky knobs |
+| Working tree | clean as of the last handover |
+| Pushed | **yes** — `origin/art/track`. No PR opened yet |
 | Verify gate | `pnpm typecheck && pnpm lint && pnpm --filter @slur/shared test && pnpm -r test && pnpm build` |
-| Result at HEAD | **green** — lint "Found 3 warnings" (pre-existing `noExcessiveLinesPerFile` on `step.test.ts`, `track.test.ts`, `track.ts`) + "✓ Canvas-isolation: 8 route entry modules clean"; 75 shared · 34 client · 4 server; SPA build |
+| Gate result | **green** — lint "Found 3 warnings" (pre-existing `noExcessiveLinesPerFile` on `step.test.ts`, `track.test.ts`, `track.ts`) + "✓ Canvas-isolation: 8 route entry modules clean"; 75 shared · 34 client · 4 server; SPA build |
 | Ports | client **5201**, server **2601** · stack was up at handover |
 | Review URLs | `http://localhost:5201/art-lab` (chase camera — the gate) · `http://localhost:5201/iso-sky` (free orbit) |
 
@@ -64,8 +64,9 @@ sky value changed.
 
 ## 3. What is NOT done, and must not be reported as done
 
-- **The owner has not yet looked at the slice-0 frame.** Nothing here is gated. Slice 1 does not start until
-  it is.
+- **Slice 0 is NOT gated.** The owner has now looked at the frame — but the look produced a bug, not a
+  verdict (§4). Nothing about the floor, rail, or bloom-on-vs-off read has been judged yet, because a black
+  sphere in front of the track makes the rest unjudgeable. Slice 1 does not start until slice 0 passes.
 - **The emissive re-tune that D3 forces has not happened.** Every intensity in the tree is its
   previously-committed value. The lane reverted its own `2.6 → 2.0` rail guess rather than pass an unmeasured
   number off as tuning — that was the right call and stands. Its expectation that ACES makes the frame read
