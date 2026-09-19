@@ -120,6 +120,10 @@ could not source it first-hand — it is NOT reconstructed. The supervisor write
 - Gallery box UVs would have stretched one panel tile across 64u, so the subject shares `buildSpanGeometry` instead.
 - CHECKED, not assumed: the block lane's normalised-`BoxGeometry`-UV warning does NOT apply to `TrackFloor` — `uvFor` divides WORLD position by `PANEL_W`/`PANEL_L` on a generated mesh with no instance scale.
 - Gate GREEN after commit 1: typecheck · lint (3 pre-existing warnings) · shared 75/75 · client 37/37 · server 4/4 · build.
+- Commit 1 = `c1ccb97`. Commit 2 = `f6d1351`. Both pushed; `origin/art/track...HEAD` = `0 0`.
+- Commit 2: floor now builds to `finishZ/SEG_LEN + ceil(AHEAD/SEG_LEN)` = 400 + 45 segments; `emitSpan` reads `span.y`; `continues()` takes `y`, tested within 1e-4. Both no-ops on screen today.
+- Gate GREEN after commit 2, same counts.
+- NOT DONE, deliberately: the deletion (quads out of `TrackRibbon`, `showFloor`/`slab` retired, `TrackView` composing `TrackFloor`, rename to `track-rails.tsx`). HELD until the owner's gap frames are taken — the dev server serves the working tree, so deleting the quads kills the comparison whatever the commit order.
 
 ## Chrome / instrumentation
 
