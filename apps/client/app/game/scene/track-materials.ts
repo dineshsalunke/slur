@@ -11,9 +11,9 @@ import { trackSurfaceTexture } from './track-texture';
  * Base roughness of the track's dark metal. The block's per-fragment roughness is perturbed RELATIVELY
  * around this, so the two dark-metal languages cannot fork when it moves — import it, never copy it.
  */
-export const FLOOR_ROUGHNESS = 0.62;
+export const FLOOR_ROUGHNESS = 0.42;
 
-export const FLOOR_METALNESS = 0.12;
+export const FLOOR_METALNESS = 1.0;
 
 /**
  * The ribbon deck. A function, not a frozen object: `trackSurfaceTexture()` needs `document` and must not
@@ -58,8 +58,8 @@ export const DRAG_SURFACE = {
 /** The outer boundary strip, embedded in the deck's top outer corner. Still the old rail's VALUES on
  *  purpose — the marigold retone waits on the owner's ruling about which material sheet is canonical. */
 export const BOUNDARY_SURFACE = {
-    emissive: '#c8d0d8',
-    emissiveIntensity: 2.6,
+    emissive: '#F59A24',
+    emissiveIntensity: 2.0,
     color: '#15171a',
 } as const;
 
