@@ -188,3 +188,52 @@ The worktree, branch, ports (5202/2602) and stack survive parking; only the conv
 1. The §5 fade-gate unit fix, as its own commit.
 2. The housekeeping one-liners in §10 item 3.
 3. Then A, once task 2 slice 2 has landed a base roughness — **not before**.
+
+---
+
+## 12. THE OWNER LOOKED, AND CONFIRMED THE TARGET INDEPENDENTLY (2026-09-19, session 9)
+
+The owner opened the already-open Chrome tab and reported, unprompted and without having read any of
+the above:
+
+> *"they seem to have bumps, but it still doesn't give the feeling that we are looking for … if I
+> remember it correctly we are looking for dark stone or worn concrete material treatment"*
+
+**Their recollection matches B13's board reading exactly** — B13, from board 10 panels 2/3 cross-checked
+against board 12: *"dark weathered stone at three scales (~2–3u blotches, 0.05–0.3u filament scratches,
+sub-0.05u speckle), divided by thin dark inset hairlines into full-height vertical slabs."* Dark stone /
+worn concrete is the target, it is frozen, and it has not drifted.
+
+**Two things this independently corroborates, and one thing it settles:**
+
+1. **The "bumps" they see are NOT the detail field.** §2 retraction 1 established that the soft blotches
+   survive with albedo at zero, so they are the environment reflection's own gradient. The owner is
+   describing precisely that artefact — which is the eye arriving at the same place as the measurement,
+   from the other direction, with no knowledge of it.
+2. **"Doesn't give the feeling" is the correct read and it is not a taste disagreement.** Per §1 the
+   face has never carried any authored surface detail at all. There is nothing there to feel. The
+   owner is not asking for a different look; they are noticing the absence the measurement predicts.
+3. **It confirms the target needs no re-litigation.** Do not re-open the boards for what the finish
+   should be. The question is only *how to make the existing, correct, authored detail visible.*
+
+## 13. ⚠ OPEN CHALLENGE TO §11's HOLD — resolve this BEFORE accepting the park
+
+§11 holds A because "the base roughness constant `art/track` will own does not exist". **That reasoning
+may be wrong, and it should be tested before a future session inherits it as settled** — inherited
+blockers have now been falsified twice on this project in one day (the "push is blocked" claim in §9,
+and the StrictMode premise on `art/frame-tap`).
+
+**The challenge:** `track-materials.ts` holds `FLOOR_SURFACE`, `LETHAL_SURFACE`, `DRAG_SURFACE`,
+`RAIL_SURFACE` — **the track's** surfaces. The block is a different surface with its own material. B13(d)
+parked `uDetailRough` pending task 2 because of the **dark-material language**, and the shared, forkable
+thing in that language is the **base colour** — which condition 3 already protects by forbidding any
+touch of `BLOCK_BASE_COLOR`.
+
+So the question nobody has actually asked is: **does `art/track` own the BLOCK's roughness at all, or
+only the track surfaces' roughness?** If the latter, the block's own `roughness: 0.55` is its own
+legitimate constant rather than a duplicate, condition 2 is satisfied trivially, and **A is unblocked
+today.**
+
+**Resolve it by reading, not by assuming**, and record the answer either way. If A turns out to be
+unblocked, it moves to the front of the queue — the owner has now personally asked for this surface to
+read, and §11's park was taken before they did.
