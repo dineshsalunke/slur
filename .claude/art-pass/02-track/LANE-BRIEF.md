@@ -374,6 +374,40 @@ right; the conclusion is dead, because the tap drives R3F 9.7.0's `advance()`, w
 
 ---
 
+## 6a. Comments
+
+**`CONTRIBUTING.md` §3 is the authority. Read it there, not here** — two copies of a rule is a fork with a
+delay fuse. The rule landed as commit `3d17865`.
+
+⚠ **Verified 2026-09-19: `3d17865` is NOT yet on `origin/dev`** (which is at `639a2f2`), and the §3 that
+*is* on `dev` says the opposite — *"Copy its naming, its comment density, its idioms."* Until the new §3
+merges, work to the summary below; after it merges, **delete this section** rather than maintaining it.
+
+Comment ONLY what the code cannot say — a rejected alternative, an external constraint, a non-obvious
+consequence — in **1–2 plain lines**. Everything else is deleted, not shortened. Comment density is carved
+OUT of match-the-surrounding-code, so an over-commented file is never a licence to keep writing at that
+rate. Incident history goes in the PR body. Two exceptions survive and are not to be stripped: a
+`useEffect` justification, and one line per tuning field in `constants.ts`.
+
+Do not write: a restatement of the line below it · a forward reference to a future slice (that is
+LANE-STATE's job, and it rots) · a narrative of how a bug was found · a "five mechanisms weighed" block ·
+a header that repeats the module name.
+
+**Never cite a bare decision number.** `(D7)`, `ADR-006`, `§4`, `#118` on their own are useless to a
+reader: finding out what they say costs them the context they were holding, which is worse than no
+citation at all. Inline the substance, then cite the location.
+
+### This lane's exclusive file set for the sweep
+
+`track.tsx` · `track-blocks.tsx` · `track-floor.tsx` · `track-instancing.ts` · `track-materials.ts` ·
+`track-ribbon.tsx` · `track-texture.ts` · `track-view.tsx` · `tube-walls.tsx` (all in
+`apps/client/app/game/scene/`) and every `*.ts`/`*.tsx` under `apps/client/app/routes/art-lab/`.
+
+**The `sky-*` files are NOT ours** — task 1 is closed and the sweep lane holds them. If a later slice needs
+to edit one, ask the supervisor to move it across first; do not just edit it.
+
+---
+
 ## 7. Traps already paid for — do not rediscover these
 
 **Environment**

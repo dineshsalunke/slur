@@ -7,24 +7,18 @@ import { LocalPlayer, Sim } from '../ecs/traits';
 import { AHEAD, BACK, park, put } from './track-instancing';
 import { FLOOR_SURFACE, RAIL_SURFACE } from './track-materials';
 
-// Instance pool caps — hard buffer sizes (exceeding silently drops). The window is
-// (AHEAD+BACK)/SEG_LEN ≈ 49 segments; floors ~1/seg → generous margin.
+// Hard buffer sizes — exceeding them silently drops instances. Visible window is ~49 segments.
 const FLOOR_LIMIT = 256;
-const RAIL_LIMIT = 128; // 2 edge rails per floored segment × ~49 visible ≈ 98
-const FLOOR_THICK = 0.6; // floor slab thickness; the span's `y` is the WALKABLE TOP, slab hangs below it
-const RAIL_W = 0.5; // edge-rail cross-section (x). Rails frame the track AND, by their absence, make gaps read.
-const RAIL_H = 0.5; // edge-rail cross-section (y), standing proud of the floor so it reads at the shallow chase angle
+const RAIL_LIMIT = 128;
+const FLOOR_THICK = 0.6; // the span's `y` is the WALKABLE TOP; the slab hangs below it
+const RAIL_W = 0.5;
+const RAIL_H = 0.5; // stands proud of the floor so the rail reads at the shallow chase angle
 
 /**
- * The ribbon itself: floor quads and the edge rails, driven imperatively from a Z-window around the local
- * ship (no React state, no re-map per frame).
+ * Floor quads and edge rails, driven imperatively from a Z-window around the local ship.
  *
- * SPLIT FROM THE HAZARD BLOCKS on purpose. They used to share one component, so `/art-lab` could not show
- * the rail — the subject of the whole track art pass — without also putting untextured boxes in the shot.
- *
- * `showFloor` suppresses ONLY the floor quads, so the generated `TrackFloor` can stand in without the two
- * stacking. The mesh stays mounted and keeps receiving matrices; only its visibility is off, which costs
- * nothing and avoids a null-ref early-return that would strand the rails too.
+ * Separate from the hazard blocks so `/art-lab` can show the rail without untextured boxes in the shot.
+ * `showFloor` hides the quads rather than unmounting them — an early return would strand the rails too.
  */
 export function TrackRibbon( { track, showFloor = true }: { track: Track; showFloor?: boolean } ) {
     const world = useWorld();
@@ -48,9 +42,8 @@ export function TrackRibbon( { track, showFloor = true }: { track: Track; showFl
             const seg = track.segmentAt( i );
             const cz = ( seg.z0 + seg.z1 ) / 2;
             const len = seg.z1 - seg.z0;
-            // Edge rails on floored segments only → they break over gaps, making holes read at the
-            // shallow chase angle (a flat ribbon's gaps foreshorten to nothing). Rail rides the floor
-            // height, so it also outlines raised platforms.
+            // Floored segments only, so the rail breaks over gaps — a flat ribbon's gaps foreshorten to
+            // nothing at the chase angle, and the break is what makes them read.
             if ( seg.floors.length > 0 ) {
                 const railY = seg.floors[ 0 ].y + RAIL_H / 2;
                 ri = put( rails, ri, RAIL_LIMIT, -HALF_WIDTH, railY, cz, RAIL_W, RAIL_H, len );
@@ -80,9 +73,8 @@ export function TrackRibbon( { track, showFloor = true }: { track: Track; showFl
 
     return (
         <Fragment>
-            { /* frustumCulled=false: we mutate instanceMatrix every frame but three only computes the
-                 InstancedMesh bounding sphere ONCE — a stale volume culls the whole track once the ship
-                 flies past it (~z=120), making the floor/rails vanish. These are always on-screen. */ }
+            { /* frustumCulled=false: three computes an InstancedMesh's bounding sphere once, so the stale
+                 volume culls the whole track once the ship flies past it. These are always on-screen. */ }
             <instancedMesh
                 ref={ floorRef }
                 visible={ showFloor }
@@ -94,8 +86,6 @@ export function TrackRibbon( { track, showFloor = true }: { track: Track; showFl
             </instancedMesh>
             <instancedMesh ref={ railRef } frustumCulled={ false } args={ [ undefined, undefined, RAIL_LIMIT ] }>
                 <boxGeometry />
-                { /* The bright edge-rail read standing proud of the dark floor — the track's energy lives
-                     here, not on the slab. Retoned to marigold in this task's slice 2 (D7). */ }
                 <meshStandardMaterial { ...RAIL_SURFACE } />
             </instancedMesh>
         </Fragment>

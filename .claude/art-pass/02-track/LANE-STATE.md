@@ -18,8 +18,8 @@ fixing either one.
 
 | | |
 |---|---|
-| Branch | `art/track`, worktree `../slur-worktrees/track`, base `1807bc0` (`dev` at the task-1 merge) |
-| HEAD | `888b1c9` — docs only. The last *code* commit is `441a2d9` |
+| Branch | `art/track`, worktree `../slur-worktrees/track`, base **`639a2f2`** (= `origin/dev`, re-based past the #131/#135/#136 merges; the old `1807bc0` is long superseded) |
+| HEAD | see `git log -1`. `0e48d1f` landed the slice-1 measurements; a comment-pass commit sits on top of it |
 | Tree | **clean**, pushed, `0 0` against `origin/art/track`. No PR open |
 | Verify gate | `pnpm format && pnpm typecheck && pnpm lint && pnpm --filter @slur/shared test && pnpm -r test && pnpm build` |
 | Gate result | **GREEN at `441a2d9`** — shared 75/75 · client 37/37 · server 4/4 · build; lint = 3 pre-existing `noExcessiveLinesPerFile` + "✓ Canvas-isolation: 8 route entry modules clean" |
@@ -74,8 +74,21 @@ nothing for light to catch (`LANE-FACTS.md` § "Floor material"). **The owner sa
 material treatment "is still not what we want", and this is why.** That finding transfers; spend it rather
 than rediscovering it.
 
-Subsequent slices, each stopping at the owner's eye: **2** floor material + panel language (+ the D3 emissive
-re-tune) → **3** rail + emitter array (D2) → **4** gaps, and `SceneProbe`'s deletion.
+⚠ **The slice order below was REVERSED after this file was written.** The owner's call (`02-track/README.md`
+§7, D7) is that dark metal carries no information until something warm reflects off it, so judging the
+deck's finish before the rail lights it judges it under light the finished scene will not have. The order
+is now:
+
+**1** the floor swap → **2** the rail + the emitter array → **3** floor surface *and* board 25's wear, in
+one shader → **4** gaps, and `SceneProbe`'s deletion.
+
+Board 25's wear is world-position noise inside the same `onBeforeCompile` patch the emitter array adds, not
+a second `roughnessMap` — `track-texture.ts` repeats every 16×20u and a tile cannot hold a feature larger
+than itself (`02-track/README.md` §7, D8).
+
+**`LANE-FACTS.md` ALREADY EXISTS and is ~160 lines of sky-lane evidence — APPEND to it, never write it.**
+This session opened it as a new file before noticing, and restored 162 lines from `HEAD`. It looks new
+because nothing in the read order says it is not.
 
 ## 4. Decisions in force, with the reasoning
 
