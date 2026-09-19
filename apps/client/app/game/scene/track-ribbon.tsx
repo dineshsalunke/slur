@@ -95,7 +95,7 @@ export function TrackRibbon( { track, showFloor = true }: { track: Track; showFl
             <instancedMesh ref={ railRef } frustumCulled={ false } args={ [ undefined, undefined, RAIL_LIMIT ] }>
                 <boxGeometry />
                 { /* The bright edge-rail read standing proud of the dark floor — the track's energy lives
-                     here, not on the slab. Retoned to marigold in this task's slice 3. */ }
+                     here, not on the slab. Retoned to marigold in this task's slice 2 (D7). */ }
                 <meshStandardMaterial { ...RAIL_SURFACE } />
             </instancedMesh>
         </Fragment>

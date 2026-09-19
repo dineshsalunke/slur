@@ -160,3 +160,75 @@ could not source it first-hand — it is NOT reconstructed. The supervisor write
 - Owner block for the sitting is owned by the supervisor, committed on `art/block` at `1527d19`. Do not edit it.
 - Frame tap (`art/frame-tap`) stays OUT of this branch; it reaches here through `dev` after its own PR.
 - The deferred `/iso-sky` gate is not this lane's to run; its roughness self-test needs `Star light` OFF as well as `Env rig` off.
+
+## Session 1 (2026-09-19) — slice 1 preparation
+
+### Base
+
+- Lane base SHA `639a2f2605edc77e0d54e33f9c6a757b60c92b80`, branch `art/track`, tree clean at session start.
+- Lab defaults read from `lab-layers.ts:46-54`: `rails:true slab:true blocks:false backdrop:true env:false ships:false finish:false`.
+- `/art-lab` default seed `1234` (`routes/art-lab/route.tsx:33`), default env index `ENV_VARIANTS.length-1` = `C · Grid Void`.
+
+### Track content, seed 1234 (measured, node against `packages/shared/dist`)
+
+- 400 segments: 361 full-width floor, 20 partial-floor, 19 zero-floor (full gaps). 381 floor spans total.
+- First full gap at segment 10, z=200. First partial at segment 7, z=140 (floor `-16..0` only).
+- Segment 113, z=2260 — partial, floor `-24..-8` (16u of 64u). Used as the slice-1 comparison target.
+
+### `buildFloorGeometry` cost — the D1 concern, MEASURED
+
+- Cold module, vitest/node (NOT browser), seed 1234, `TRACK_SEGMENTS=400`: **14.65 ms**.
+- Geometry: **10,704 vertices · 3,568 triangles · 128,448 bytes** of position attribute.
+- Verdict: not a visible hitch, ~7× under the 100 ms escalation threshold. **Measured, not a problem** — no NEEDS-DECISION.
+- Caveat: measured in node, not in the browser. Browser figure `[unmeasured]`.
+- Method: temporary `export` on `buildFloorGeometry` + a throwaway vitest; both reverted, nothing left in the tree.
+
+### Slice-1 forced material deltas (the baseline slice 2's metalness question is measured AGAINST)
+
+The swap forces exactly four changes, none of them chosen. Instanced quads use `FLOOR_SURFACE`; `TrackFloor` uses `floorSurface()`.
+
+- base `color` `#050507` → `#ffffff` — base colour MULTIPLIES the map; at `#050507` the texture crushes to flat black.
+- `map`: none → `trackSurfaceTexture()` (tiled canvas, 1024², one 16×20u panel).
+- `roughness` unset (three default 1.0) → `FLOOR_ROUGHNESS = 0.62`; `metalness` unset (default 0.0) → `FLOOR_METALNESS = 0.12`.
+- thickness `FLOOR_THICK = 0.6u` (`track-ribbon.tsx:14`) → `SLAB_THICKNESS = 2u` (`track-floor.tsx:15`).
+- `emissive #c8d0d8` / `emissiveIntensity 0.05` are carried over unchanged from `FLOOR_SURFACE`.
+
+### Pre-delete comparison — CAPTURED (this was the last chance)
+
+- Matched by construction: `labControls.paused=true` + `labCommands.jumpToZ=2200`, seed 1234, env C, bloom OFF, warmup 20, frames 2. Both temp edits reverted.
+- `00-frame-tap/refs/s1-before-instanced-bloomoff.png` — the floor being deleted (instanced 0.6u quads).
+- `00-frame-tap/refs/s1-before-generated-bloomoff.png` — `TrackFloor`, same camera and frame.
+- Luma (`ffprobe signalstats`, YMIN/YAVG/YMAX): instanced `0 / 31.07 / 255`; generated `0 / 39.33 / 241`.
+- Read: generated shows panel seams (faint lateral + longitudinal lines) the instanced floor has none of; generated is brighter and value-graded down the ribbon; the partial gap ahead reads with a visible lit side wall on the generated mesh vs a flat dark slot on the instanced one. No z-fighting in either.
+- Both captures taken through the frame tap, no window focus (method matters — see the retraction below).
+- Post-swap counterpart captures: `[not yet taken — slice 1 code not written]`.
+
+### Bloom — lab vs game, VERIFIED (asked for before slice 2)
+
+- Game (`net-canvas.tsx:133-139`): one `<EffectComposer multisampling={0}>` + `<Bloom mipmapBlur>` driven by `GRID_VOID.bloom`, hardcoded.
+- Lab (`art-lab-canvas.tsx`): same composer and same `<Bloom mipmapBlur>`, but driven by `env.bloom` — i.e. whichever of A/B/C is selected.
+- `GRID_VOID` resolves BY NAME (`env-config.ts:160`), not by index, so reordering `ENV_VARIANTS` cannot repoint it.
+- Values: A · Deep-Space Drift `1.0 / 0.45 / 0.2` · B · Neon Canyon `1.4 / 0.4 / 0.25` · **C · Grid Void `intensity 1.2 / threshold 0.42 / smoothing 0.2`**.
+- So at the lab's DEFAULT env (C) the lab and the game bloom identically. **On A or B they do not** — a bloom gate taken on A or B measures a pass the game never runs.
+- Owner's "bloom washes the whole screen out" reproduction: `[unmeasured]` — bloom-ON captures are blocked, see below.
+
+### Frame tap — two environment limits found this session (both first-hand)
+
+- The tap answered on a pre-existing tab, then stopped answering entirely after an HMR full-reload; a freshly navigated tab also did not answer for ~6 minutes across 8 attempts.
+- During that window the page was demonstrably alive: Vite HMR `connected`, DOM panels rendered, readout showed `z 2200 / 8000 seg 110/400`, so `useFrame` was running and the jump had applied.
+- rAF probe in that tab: **0 frames in 1837 ms**, `visibilityState: "hidden"`, `document.hasFocus() false` — the known hidden-tab state, and not the cause of the tap failing.
+- **The tap began answering the moment the lab's `bloom` toggle was clicked OFF, and stopped again when it was clicked back ON.** Reproduced twice in each direction.
+- Working hypothesis, NOT verified: with `<EffectComposer>` mounted in an occluded tab the R3F subtree stays suspended, so `FrameTap`'s `hot.on` registration (a passive effect) never runs, while `useFrame` (a layout effect) does. Consequence either way: **bloom-ON captures are currently unobtainable from an occluded tab.**
+- Chrome reports `visibilityState: "hidden"` even with the tab active in the frontmost Chrome window, because the terminal covers it (macOS occlusion). Raising Chrome did not change it.
+
+### Brief corrections landed
+
+- `LANE-BRIEF.md` §6 rewritten 2026-09-19: the "the tab must be **foreground**" instruction is **RETRACTED** (it predates PR #134). The diagnosis stands, the conclusion is dead — the tap drives R3F 9.7.0 `advance()`, which gates on none of `frameloop` / `internal.active` / `internal.frames`. Do not reinstate it from a stale copy.
+- `track-ribbon.tsx:98` said the rail is retoned "in this task's slice 3"; D7 makes it slice 2. Corrected.
+- The two comparison PNGs are GITIGNORED (`.claude/art-pass/.gitignore:3` = `*/refs/`). They exist only on disk in this worktree; they do not survive a worktree teardown.
+
+### Corrections to the "Slice 1 — the floor swap (D1)" section above (both already fixed in code at 639a2f2)
+
+- "`buildFloorGeometry` loops to 400 → no floor past the finish line" — STALE. `track-floor.tsx:157` now reads `Math.round(track.finishZ / SEG_LEN) + Math.ceil(AHEAD / SEG_LEN)`, so the run-out pad is built. Nothing rides slice 1 for it.
+- "`emitSpan` hardcodes `t = 0`, `b = -SLAB_THICKNESS`, ignoring `FloorSpan.y`" — STALE. It now reads `const t = span.y; const b = span.y - SLAB_THICKNESS`. `continues()` also compares `y` (`Math.abs(f.y - y) < 1e-4`), so a step no longer suppresses its cap.
+- Span count for seed 1234 is 381 (the 2,675 figure in that section is the total across 7 seeds, not one track).

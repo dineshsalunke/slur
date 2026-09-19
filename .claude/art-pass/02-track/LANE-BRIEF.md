@@ -349,12 +349,28 @@ pnpm typecheck && pnpm lint && pnpm --filter @slur/shared test && pnpm -r test &
 ## 6. How it is judged
 
 `/art-lab`, the **real chase camera**, at **race speed**, bloom **on and off**, against
-`refs/12_approved_scene_marigold_depth.small.jpg`. Live, in **`claude-in-chrome`**, in a **shared tab** — the
-owner and you look at the same pixels at the same time. **Not Playwright.**
+`refs/12_approved_scene_marigold_depth.small.jpg`.
 
-> ⚠ **Never gate from an automated Chrome tab.** It reports `visibilityState: "hidden"`, rAF never fires, and
-> the canvas stays black while the DOM panels render perfectly. This has cost two sessions already. The tab
-> must be **foreground**.
+**Your own iteration goes through the frame tap, and never steals focus.**
+`curl localhost:5201/__frame-tap?name=X` writes the composed frame — bloom included — to
+`.claude/art-pass/00-frame-tap/refs/X.png` with no focus and no browser automation. It is deterministic:
+same camera, same seed, every capture. That is what a before/after comparison requires and a live tab
+cannot give you. (PR #134.)
+
+**The live shared tab is for the OWNER's judgement, not your iteration.** Use it only when the owner is
+actively looking, or when something reads differently in motion than it does in a still. Never take
+window focus to get a picture.
+
+> ⚠ **A black canvas in an automated tab is `visibilityState: "hidden"` killing rAF — not a renderer bug.**
+> This cost two sessions. The answer is the frame tap, not focus. **Canvas size is not the test:** one case
+> measured 3456×1926, fully mounted, with rAF still dead. A rAF probe that HANGS the CDP evaluate *is* the
+> diagnosis.
+
+The pre-#134 instruction that the tab "must be foreground" is **retracted**. The diagnosis behind it was
+right; the conclusion is dead, because the tap drives R3F 9.7.0's `advance()`, which gates on none of
+`frameloop` / `internal.active` / `internal.frames`.
+
+**Tests never gate art.** A green run means the code is sound, not that the art is right.
 
 ---
 
