@@ -260,7 +260,10 @@ float splitPitch = splitFaceWidth / splitCount;
 float splitDist = abs( fract( splitTangent / splitPitch ) - 0.5 ) * splitPitch;
 // Top and bottom faces stay unsplit: the splits are vertical, and a groove across the top would read as a
 // seam on a surface the player never touches.
-float splitVisible = smoothstep( worldPerPixel * 1.5, worldPerPixel * 4.0, uSplitHalfWidth );
+// worldPerPixel is a FULL pixel footprint, so it is compared against the line's FULL width — the half-width
+// doubled. Comparing the half directly demanded ~8 device px before a line passed, and faded one still 5 wide.
+// (No backticks in GLSL comments: these blocks are template literals and a backtick terminates one.)
+float splitVisible = smoothstep( worldPerPixel * 1.5, worldPerPixel * 4.0, uSplitHalfWidth * 2.0 );
 float split = ( faceIsX || faceIsZ )
     ? ( 1.0 - smoothstep( 0.0, uSplitHalfWidth, splitDist ) ) * splitVisible
     : 0.0;
@@ -327,7 +330,8 @@ bent -= uDetailNormal * ( ( detailA - detail ) * tangentA + ( detailB - detail )
 // the light and brightens nothing.
 float creaseDist = min( blockEdge.x, min( blockEdge.y, blockEdge.z ) );
 float crease = ( 1.0 - smoothstep( 0.0, uCreaseHalfWidth, creaseDist ) )
-    * smoothstep( worldPerPixel * 1.5, worldPerPixel * 4.0, uCreaseHalfWidth );
+    // Full width against a full pixel footprint, as in the split gate above.
+    * smoothstep( worldPerPixel * 1.5, worldPerPixel * 4.0, uCreaseHalfWidth * 2.0 );
 diffuseColor.rgb *= 1.0 - uCreaseDarken * crease;
 
 normal = normalize( vAxisX * bent.x + vAxisY * bent.y + vAxisZ * bent.z );

@@ -49,3 +49,9 @@ Format: `YYYY-MM-DD · <fact> · <how it was established>`
   `blockFbm`'s octave gate does NOT (its `size` is a feature size, not a half-width)
 - 2026-09-19 · fixing it has **no visible effect today**, because of the 85-90% non-diffuse fact above ·
   built, served and measured by `block-49` before this session
+
+## Authoring gotchas (paid for first-hand)
+
+- 2026-09-19 · **No backticks in GLSL comments.** The shader blocks are TS template literals, so a backtick
+  inside a `// …` GLSL comment terminates the literal. Surfaces as `error TS1005: ',' expected` pointing at
+  the comment line, not as anything shader-shaped · hit while commenting the fade-gate unit fix
