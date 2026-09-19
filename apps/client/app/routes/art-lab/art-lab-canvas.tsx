@@ -1,13 +1,15 @@
 import { Canvas } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
+import { EffectComposer } from '@react-three/postprocessing';
 import { procgenDescriptor, resolveTrack } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, Suspense, useMemo } from 'react';
 import { FrameTap } from '../../dev/frame-tap';
+import { TunedBloom } from '../../dev/tuned-bloom';
 import { world } from '../../game/ecs/world';
 import type { EnvConfig } from '../../game/scene/env-config';
 import { Environment } from '../../game/scene/environment';
 import { FinishGate } from '../../game/scene/finish-gate';
+import { SceneLighting } from '../../game/scene/lighting';
 import { Ships } from '../../game/scene/ship';
 import { TrackBlocks } from '../../game/scene/track-blocks';
 import { TrackBoundary } from '../../game/scene/track-boundary';
@@ -46,6 +48,7 @@ export function ArtLabCanvas( {
                 { /* NO lab-only lights: the sky rig and the track's own emissives, nothing else. A flat
                      ambient would contradict the direction's "no fill, shadow sides go black". */ }
                 { /* Mounted FIRST so its useFrame advances sim.z before the track and Environment read it. */ }
+                <SceneLighting />
                 <ArtLabRig track={ track } />
                 { import.meta.env.DEV && <SceneProbe /> }
                 { layers.env ? <Environment config={ env } seed={ seed } /> : null }
@@ -71,14 +74,7 @@ export function ArtLabCanvas( {
                 { layers.shipBox ? <ShipBox /> : null }
                 { bloom ? (
                     <EffectComposer multisampling={ 0 }>
-                        <Bloom
-                            mipmapBlur
-                            intensity={ env.bloom.intensity }
-                            luminanceThreshold={ env.bloom.threshold }
-                            luminanceSmoothing={ env.bloom.smoothing }
-                            radius={ env.bloom.radius }
-                            levels={ env.bloom.levels }
-                        />
+                        <TunedBloom config={ env.bloom } />
                     </EffectComposer>
                 ) : (
                     /* Bloom OFF is a first-class review mode: the direction requires that "readability

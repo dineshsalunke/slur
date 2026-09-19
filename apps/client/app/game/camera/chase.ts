@@ -7,7 +7,7 @@ import { LocalPlayer, Net, Remote, Render, Sim } from '../ecs/traits';
 // AND aimed far ahead — all four compound. These knobs trade "ship reads big/centred" against "see over the
 // 8u pillars to plan your line" (ADR-006). Height stays ABOVE BLOCK_HEIGHT (8u) so the see-over vantage is
 // kept; the ship is pulled bigger via the other three levers (closer aim, tighter FOV, shorter trail).
-const CHASE = {
+export const CHASE = {
     height: 9, // u above the ship — MUST stay > BLOCK_HEIGHT (8) or the nearest pillar hides the field
     back: 11, // u behind at rest (was 14 — closer ⇒ ship bigger)
     backStretch: 3, // extra u of trail at top speed (back += speed/maxCruise · this)

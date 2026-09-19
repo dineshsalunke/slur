@@ -1,10 +1,12 @@
 import { Canvas } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
+import { EffectComposer } from '@react-three/postprocessing';
 import { resolveTrack, SET_CLASS_MESSAGE, SHIP_ORDER, type TrackDescriptor, USE_POWERUP_MESSAGE } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio';
+import { DebugPanel } from '../dev/debug-panel';
+import { TunedBloom } from '../dev/tuned-bloom';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
@@ -17,6 +19,7 @@ import { Environment } from './scene/environment';
 import { ExplosionField } from './scene/explosions';
 import { FinishGate } from './scene/finish-gate';
 import { HitSpark } from './scene/hit-spark';
+import { SceneLighting } from './scene/lighting';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
 import { Ships } from './scene/ship';
@@ -112,7 +115,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                      <Bloom> below is driven by GRID_VOID.bloom. wallSeed is the shared procgen seed → identical
                      walls on every client. Kept free of reactive state: a module constant, no useState. */ }
                 <Environment config={ GRID_VOID } seed={ wallSeed } />
-                <ambientLight intensity={ 1 } />
+                <SceneLighting />
                 <NetLoop predictor={ predictor } track={ track } />
                 { /* After NetLoop so its useFrame (ship-position sync) runs first — the burst reads each
                      ship's Render group AFTER it's positioned, spawning at the exact derezz spot. */ }
@@ -131,17 +134,11 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                 { /* THE single global post-FX pass (bloom-only — no CA/vignette). Driven by the Grid Void
                      config instead of the old timid 0.5/0.6 so neon HDR emissive (track, walls, ships) glows. */ }
                 <EffectComposer multisampling={ 0 }>
-                    <Bloom
-                        mipmapBlur
-                        intensity={ GRID_VOID.bloom.intensity }
-                        luminanceThreshold={ GRID_VOID.bloom.threshold }
-                        luminanceSmoothing={ GRID_VOID.bloom.smoothing }
-                        radius={ GRID_VOID.bloom.radius }
-                        levels={ GRID_VOID.bloom.levels }
-                    />
+                    <TunedBloom config={ GRID_VOID.bloom } />
                 </EffectComposer>
             </Canvas>
             { import.meta.env.DEV && <NetDebugHud track={ track } /> }
+            { import.meta.env.DEV && <DebugPanel /> }
         </WorldProvider>
     );
 }

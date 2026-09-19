@@ -1,6 +1,7 @@
 import { CELL, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useMemo } from 'react';
 import type * as THREE from 'three';
+import { useDebugTuning } from '../../dev/debug-tuning';
 import {
     BACKWARD,
     BOUNDARY_H,
@@ -15,7 +16,7 @@ import {
     UP,
 } from './track-geometry';
 import { AHEAD } from './track-instancing';
-import { floorSurface } from './track-materials';
+import { FLOOR_ENV_MAP_INTENSITY, floorSurface } from './track-materials';
 
 /**
  * Downward extrusion of the slab (world units). The sim never reads it — its floor is a plane at y=0.
@@ -144,10 +145,14 @@ export function TrackFloor( { track }: { track: Track } ) {
     // `resolveTrack` is pure, so a seed always yields identical geometry — built once, never per frame.
     // R3F owns a geometry passed via the `geometry` prop, so there is nothing to dispose by hand.
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
+    const tuning = useDebugTuning();
 
     return (
         <mesh geometry={ geo }>
-            <meshStandardMaterial { ...floorSurface() } />
+            <meshStandardMaterial
+                { ...floorSurface() }
+                envMapIntensity={ import.meta.env.DEV ? tuning.floorEnvMapIntensity : FLOOR_ENV_MAP_INTENSITY }
+            />
         </mesh>
     );
 }

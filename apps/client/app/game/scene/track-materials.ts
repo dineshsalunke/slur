@@ -20,6 +20,8 @@ export const FLOOR_METALNESS = 1.0;
  * run at import. `color` is white because base colour MULTIPLIES the map — the near-black the deck used
  * before it was textured crushes the whole texture to flat black.
  */
+export const FLOOR_ENV_MAP_INTENSITY = 1;
+
 export function floorSurface() {
     return {
         color: '#ffffff',
