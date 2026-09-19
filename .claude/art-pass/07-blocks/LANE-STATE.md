@@ -376,3 +376,84 @@ sessions instructing one lane at once, because a `--fork-session --resume` kept 
 window closed. **Both times the lane was the only party that could see both voices, and escalating rather
 than picking is what caught it.** If a second voice appears, say so and keep following this one until told
 otherwise in writing.
+
+---
+
+## 10. AS BUILT — `e7ca605`, *the B13/B17-B20 surface slice*. NOTHING IN IT HAS BEEN SEEN.
+
+**Branch `art/block` at `e7ca605`, tree clean. THREE commits unpushed** (`7232bf6` citation fix, `5cd5ebe`
+supervisor handovers 7+8, `e7ca605` this) — `origin/art/block` is still at `84d7968`. **The push is blocked
+by the lane session's classifier and is the OWNER's to clear**; it is not a peer's to route around.
+
+Gate green: typecheck clean · lint 175 files / 3 pre-existing warnings / 1 info + canvas-isolation clean ·
+**75 shared · 57 client (was 49) · 4 server** · SPA build. Run `pnpm format` before `pnpm lint`.
+
+**⚠ The gate proves the code sound and proves nothing about the art. Every number below is a first guess
+derived from board measurements, not a tuned value.**
+
+### Constants — all exported and tunable. Cache key bumped to `sealed-block-v2`.
+
+`SEAM_WIDTH_PER_HEIGHT` 0.025 → `SEAM_TROUGH_HALF_WIDTH` 0.1 → `SEAM_HALF_WIDTH` 0.0333 (was a flat 0.06) ·
+`CHAMFER_GAMMA` 2.2 · `CREASE_HALF_WIDTH` 0.035, `CREASE_DARKEN` 0.6 · `SPLIT_PITCH` 1.6,
+`SPLIT_HALF_WIDTH` 0.035, `SPLIT_DARKEN` 0.55 · `DETAIL_BASE_SIZE` 2.5, `DETAIL_OCTAVES` 3,
+`DETAIL_ALBEDO` 0.35, `DETAIL_NORMAL` 0.15. `BLOCK_HEIGHT` is imported from `@slur/shared`, so the seam
+cannot drift from the sim.
+
+### B18 — the seam derivation, auditable rather than magic
+
+Board 10 hero seam core ~4px against a face ~160px tall for 8u → ~0.2u visible → **2.5% of height**. Half
+of that is the trough half-width; core is a third of the trough, preserving the existing 3× relationship.
+**Everything lands in world units by construction**, per B9.
+
+### B17 — the interior corner: crease + gamma, and why the others lost
+
+Enumerated: amplitude · a dark crease · a gamma on the lean · an AO-style edge darkening · a
+light-direction-dependent lean · defer to floor bounce. **Chose crease + gamma together.**
+
+- **Amplitude alone cannot work**: the failure is lean **DIRECTION**, not size, so a wider band is still a
+  band that brightens only where it turns toward the star.
+- **A light-dependent lean was rejected**: the material has no knowledge of the light.
+- **The crease is a darkening**, therefore **direction-agnostic** — which is the property the failure
+  demanded. The gamma is separate and addresses the measured ~6-8px against a nominal ~15px.
+
+### The phase fix (B13 condition 1) — exact, not approximate
+
+`splitCount = max(2, 2*floor(faceWidth/(2*pitch) + 0.5))`, then pitch is recomputed as
+`faceWidth/splitCount` and splits sit at half-integer multiples. **An even count makes each face edge land
+mid-panel**, so the outermost split is exactly half a pitch inside the edge **at every width in the
+continuous range** — not approximately, exactly. Tested.
+
+### The real per-fragment cost — do NOT let this be recorded as "a few ALU"
+
+**3 fbm evaluations per fragment** (the normal perturbation needs two extra samples for the slope) ×
+3 octaves × 8 hashes = **~72 hashes per fragment**. Zero samplers, zero draw calls, one `InstancedMesh`.
+The fbm hash is deliberately **sin-free** (`fract`-multiply): nothing here feeds the sim so determinism is
+not at stake, but `sin`-based hashes are transcendental and precision-varying across drivers, and the cheap
+one is faster anyway.
+
+### ⚠ B20 IS DONE BUT UNCONFIRMED — the single most likely thing to be wrong in the commit
+
+`FRAME_SIZE` went from `span/2` to `span*0.65` (span 19u, so 9.5 → 12.35). The old derivation compared the
+row's raw span against the visible width, **assuming it sits perpendicular to the camera. It does not**:
+`<IsoLab>` looks from `[d*0.6, d*0.45, d]`, so the X-axis row runs ~50% **along** the view axis — the near
+end magnifies and the far end is pushed left behind the control panel, which covers the first ~260px. The
+new value is **reasoned from the camera constants and never measured**; it is marked NEEDS A FRAME TO
+CONFIRM in the file.
+
+### Also done, and two things deliberately left
+
+- **The dead bevel rationale is struck in the CODE**, not only in this doc — the comment claiming "the rig
+  is soft and low-contrast, so a painted line would not respond" is replaced with the measured version.
+- **NOT built: the contact glow (B14).** Approved, out of budget, and unjudgeable here anyway (B2).
+- **Nothing touches `track-view.tsx`.**
+
+### Tuning order for whoever picks this up
+
+**Confirm the crop first — it gates everything else.** Then whether the splits read at all. Then
+`DETAIL_ALBEDO`. Then `DETAIL_NORMAL` **last and only on a grazing face** (B19 — tuning it against an
+unlit face is how a dark surface turns noisy and plastic; the warning is now in the constant's doc comment
+so it survives a clear).
+
+**Capture with the frame tap, not Chrome focus.** `art/frame-tap` has landed
+`curl 'http://localhost:<port>/__frame-tap?name=x'` plus the simpler
+`window.dispatchEvent(new Event('resize'))`; both beat the osascript trick and neither steals a peer's tab.
