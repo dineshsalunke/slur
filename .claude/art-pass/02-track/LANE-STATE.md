@@ -86,6 +86,13 @@ Board 25's wear is world-position noise inside the same `onBeforeCompile` patch 
 a second `roughnessMap` — `track-texture.ts` repeats every 16×20u and a tile cannot hold a feature larger
 than itself (`02-track/README.md` §7, D8).
 
+**The comment sweep: 4 files done, 12 owed — and sweep each one WHILE you are already in it.** Done:
+`track-floor.tsx`, `track-ribbon.tsx`, `track-materials.ts`, `track-view.tsx`. Owed: `track.tsx`,
+`track-blocks.tsx`, `track-instancing.ts`, `track-texture.ts`, `tube-walls.tsx`, and all 7 of
+`routes/art-lab/`. Writing the swap means reading most of those anyway, and sweeping a file you are already
+deep in is nearly free — whereas sweeping one cold is how a comment that was load-bearing gets deleted.
+Do them as you touch them, not as a separate pass. Bar: `CONTRIBUTING.md` §3 (`59805a1`).
+
 **`LANE-FACTS.md` ALREADY EXISTS and is ~160 lines of sky-lane evidence — APPEND to it, never write it.**
 This session opened it as a new file before noticing, and restored 162 lines from `HEAD`. It looks new
 because nothing in the read order says it is not.

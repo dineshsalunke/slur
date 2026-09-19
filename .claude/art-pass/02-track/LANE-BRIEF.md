@@ -377,25 +377,10 @@ right; the conclusion is dead, because the tap drives R3F 9.7.0's `advance()`, w
 ## 6a. Comments
 
 **`CONTRIBUTING.md` §3 is the authority. Read it there, not here** — two copies of a rule is a fork with a
-delay fuse. The rule landed as commit `3d17865`.
+delay fuse. It is on `dev` as `59805a1` (#137), verified 2026-09-19.
 
-⚠ **Verified 2026-09-19: `3d17865` is NOT yet on `origin/dev`** (which is at `639a2f2`), and the §3 that
-*is* on `dev` says the opposite — *"Copy its naming, its comment density, its idioms."* Until the new §3
-merges, work to the summary below; after it merges, **delete this section** rather than maintaining it.
-
-Comment ONLY what the code cannot say — a rejected alternative, an external constraint, a non-obvious
-consequence — in **1–2 plain lines**. Everything else is deleted, not shortened. Comment density is carved
-OUT of match-the-surrounding-code, so an over-commented file is never a licence to keep writing at that
-rate. Incident history goes in the PR body. Two exceptions survive and are not to be stripped: a
-`useEffect` justification, and one line per tuning field in `constants.ts`.
-
-Do not write: a restatement of the line below it · a forward reference to a future slice (that is
-LANE-STATE's job, and it rots) · a narrative of how a bug was found · a "five mechanisms weighed" block ·
-a header that repeats the module name.
-
-**Never cite a bare decision number.** `(D7)`, `ADR-006`, `§4`, `#118` on their own are useless to a
-reader: finding out what they say costs them the context they were holding, which is worse than no
-citation at all. Inline the substance, then cite the location.
+An interim summary lived here while that rule was still unmerged and `dev`'s §3 said the opposite. It has
+been deleted now the real one has landed, which is what it was written to do.
 
 ### This lane's exclusive file set for the sweep
 
