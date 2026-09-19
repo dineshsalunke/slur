@@ -76,7 +76,80 @@ obstacle blocks · finish gate · pickups · final lighting balance (task 3).
 
 ## 7. Decision / As-built
 
-*(filled in at review and after implementation)*
+**Status: DECIDED, NOT YET BUILT** (2026-09-19). Three decisions are of-record below. No task-2 code exists.
+
+**⚠ The dependency in this file's header is INVERTED on purpose.** It reads *"Depends on: task 1 (judged
+under the real sky and its environment light)"*. The owner reversed that: task 1's `/iso-sky` gate is
+**deferred until a track is in frame**, because the two roughness probes are not enough scene to judge
+composition against — tone mapping, patch FOV and tilt are all whole-frame calls. Deferred, **not skipped and
+not failed**. See `01-background/HANDOVER-SESSION-5.md`.
+
+### D1 — `TrackFloor` becomes the game's floor; `TrackView`'s instanced floor quads are deleted
+
+Two floors exist today. `TrackView` renders the game's floor as instanced **0.6u-thick untextured boxes**;
+`TrackFloor` is a **single generated continuous mesh**, 2u thick, textured, with computed end caps — and it is
+mounted **only** behind `/art-lab`'s `slab` toggle. Nothing in the game uses it.
+
+`TrackFloor` wins for two reasons, neither aesthetic:
+1. **Gap treatment is geometry.** The frozen three-part gap read (marigold edge definition · inner-lip glow ·
+   darker inner cavity, §2) needs a continuous mesh with real caps. Instanced boxes cannot express an inner lip.
+2. **Instanced boxes repeat every 4u**, which is exactly the *"dense emissive seam grid"* §2 forbids.
+   One continuous mesh makes panel size a **texture** decision instead of a geometry constraint.
+
+Blocks and rails stay in `TrackView`. Only the floor quads go.
+
+### D2 — the emitter array comes FORWARD from task 3 into task 2
+
+Build the patched-material emitter light now: **`MeshStandardMaterial` patched through `onBeforeCompile`, fed
+by a FIXED-SIZE uniform array of the K nearest emitters**, with the **edge rails as the only emitters** in this
+task. Mechanism and its ≥5-option enumeration: `03-lighting/research/2026-09-18-emissive-as-light.md`.
+
+**`onBeforeCompile` is the idiom, not a hack** — it is what drei's own `MeshReflectorMaterial` does, and it is
+already precedented in this repo by `ship-model.tsx`'s dissolve shader.
+
+**FIXED-SIZE IS LOAD-BEARING AND MUST BE SAID IN THE CODE.** A varying light count **recompiles the shader
+mid-race**; a fixed-size array has no count to churn, so it cannot. That is the entire reason the research
+chose this shape over a real-light rig. Do not "tidy" it into a dynamic array.
+
+*Why this moves earlier:* §2 requires *"broad warm reflection carrying the rail's energy across the surface"*,
+and §8 already resolved that to **grazing-angle specular streaks, not mirrors** — so `MeshReflectorMaterial`
+and its extra scene render stay unused. Without this, task 2 delivers a dark grey ribbon with a marigold
+stripe: not the spec, and no more judgeable than the two probe spheres, which defeats the reason the track was
+reordered ahead of the sky gate. `03-lighting/README.md` §1a agrees — the rig is *"downstream of the **track**
+(task 2), not a free-standing thing"*, because the warm half of "Cold Space, Warm Energy" is carried **entirely
+by gameplay emissives acting as light sources**.
+
+Task 3 then **balances and extends** this to engines, pickups, projectiles and monolith seams rather than
+inventing it.
+
+**Rides along:** the isotropic-vs-anisotropic sub-question (§8) decides whether the patched material is
+`MeshStandardMaterial` or `MeshPhysicalMaterial`. Settle it **by rendering**. Footgun already paid for: the
+`anisotropy` setter recompiles when the value crosses zero (`this._anisotropy > 0 !== value > 0` → `version++`),
+so never animate or toggle it through 0 mid-race.
+
+### D3 — `toneMapped: false` contradicts the done-criterion; it becomes a panel switch
+
+Every surface in `track-materials.ts` sets `toneMapped: false`. But §4's criterion is *"rail reads marigold
+(not red-orange) **in the final tone-mapped frame**"* — which those pixels opt out of **by construction**. As
+written the test cannot be run.
+
+This is the **same decision** as task 1's deferred `Tone map` switch, so it is settled **once, for the whole
+frame**, on one panel, with the track in shot.
+
+### Noted, technically out of scope, but it will poison the read
+
+Lethal blocks are saturated red `#ff2740` (`LETHAL_SURFACE`), and **red is explicitly excluded** from the
+widened palette (`INDEX.md` §2: *"No cyan, no magenta, no red. A red hazard colour code is explicitly
+excluded."*). Block design belongs to a later task, but those blocks are in **every frame** the floor material
+would be judged in. Retone them to the warm ramp as part of task 2's **review setup**, or every material read
+is taken against a colour the direction forbids.
+
+### Process deviation, deliberate
+
+`INDEX.md` §3 opens each task with a ≥5-option research agent. **Skipped for task 2, with the owner's
+agreement** — that enumeration is already paid for by the 743-line
+`03-lighting/research/2026-09-18-emissive-as-light.md`, and §8 settled the reflection question against the
+boards. Straight to align.
 
 ## 8. The floor-reflection question — RESOLVED by board evidence (2026-09-18)
 

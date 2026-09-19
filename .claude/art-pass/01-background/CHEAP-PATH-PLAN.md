@@ -34,18 +34,25 @@ decisions for the owner are marked **[DECIDE]**; everything else is settled by t
 > pinned by a test that projects through a real three `PerspectiveCamera` rather than re-asserting the algebra
 > that produced it.
 >
-> The *value* is genuinely contested and only the owner's eye can settle it:
+> **The VALUE is 66°, and it is RESOLVED — not an open eye-call.** An earlier revision of this record framed
+> it as "66° vs 35°, settle it at the gate". That framing was wrong and is struck.
 >
-> | | new-frame bearing | basis |
-> |---|---|---|
-> | owner's packet | **35°** (given as 215° in the old frame) | eyeball read; nebula's upper-left wisps corroborate |
-> | as-built | **66°** | limb circle-fit, centre (1679,622) r719px, **rms 4.2px**; polar sweep → terminator at 169° → star 79° screen-azimuth from the planet |
+> - **66° stands on the only actual evidence** anyone has produced about the jpg's baked-in lighting: threshold
+>   the image at luma ≥ 210, take the brightest pixel per row in the upper-right quadrant, Kasa-fit a circle →
+>   planet limb centre **(1679, 622) r 719 px**, residual **rms 4.2 px**. A polar sweep of that circle puts the
+>   lit arc from the frame edge at 120° to a hard terminator at **169°** (luma 211 → 81 → 34 over six degrees).
+>   A crescent's lit limb spans 180° centred on the sub-stellar azimuth ⇒ star at **79° screen-azimuth from the
+>   planet centre**, essentially straight above it ⇒ **bearing 66°, elevation 19°**. *Re-run this rather than
+>   re-litigating it.*
+> - **35° is struck** — an eyeball read, superseded by measurement.
+> - **The "55 vs 27°" conflict dissolves; it was never a contradiction.** The two claims are about **different
+>   objects**. "Old-frame `starDirection(55)` = (0.819, ·, −0.574), and forward is +Z, so the light came from
+>   behind-right" is arithmetic about the **DirectionalLight's world direction**. "55 put the star 27° to the
+>   planet's right" is about where the **rendered body landed on screen**. That those two disagreed *is* the
+>   frame bug — the one already fixed by re-basing to `0 = +Z`. Neither is evidence about the image.
 >
-> Both put the star right of forward, so the real question is narrow: **left-of-the-planet (35°) or
-> straight-above-it (66°)** — 31° apart. Measurement outranks eyeball, so **66° ships as the default**, but
-> the packet's "215 = 55 + 180, and that coincidence is the tell" is a different account of history than the
-> as-built "55 put the star 27° to the planet's *right*, the mirror of the image" — and both cannot be true.
-> It is a slider. **Settle it at the gate.**
+> **There is no 31° coin-flip.** What *is* still the owner's eye, and is a different question entirely:
+> whether the lit result **looks** right once a track is in frame.
 >
 > **Knock-ons, both already satisfied:** `celestial-body.tsx` is deleted and `bearingDeg: 28` was not carried
 > forward; and the `<Lightformer>` rig and the `DirectionalLight` read **one** source — `star-light.tsx:21`

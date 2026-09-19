@@ -20,8 +20,8 @@ export function TunableSky() {
 
     const display = useMemo(
         tunedSkyConfig,
-        // biome-ignore lint/correctness/useExhaustiveDependencies: the memo reads the singleton, so the deps
-        // ARE the knobs that must invalidate it — a whole-config dep would defeat the split this exists for.
+        // The memo reads the singleton, so the deps ARE the knobs that must invalidate it — a whole-config
+        // dep would defeat the split this exists for.
         [
             t.backdropBearingDeg,
             t.backdropElevationDeg,
@@ -38,7 +38,7 @@ export function TunableSky() {
 
     const lighting = useMemo(
         tunedSkyConfig,
-        // biome-ignore lint/correctness/useExhaustiveDependencies: as above — only the rig's own knobs.
+        // As above — only the rig's own knobs.
         [
             t.starBearingDeg,
             t.starElevationDeg,
