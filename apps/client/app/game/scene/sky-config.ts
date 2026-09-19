@@ -118,7 +118,8 @@ export interface SkyEnvironmentConfig {
 export interface SkyConfig {
     name: string;
     /** Backdrop patch radius (u). Camera-locked, so this says nothing about how distant the sky READS — it is
-     *  pure containment, and must stay inside the camera's far plane (three's default far is 2000). */
+     *  pure containment, and MUST stay under the camera's far plane. That plane is R3F's 1000, not three's
+     *  2000: `<Canvas camera={{ … }}>` overrides only the fields it names, and no Canvas here names `far`. */
     radius: number;
     /**
      * Where the star is, in `skyDirection`'s frame. THE SINGLE SOURCE OF TRUTH FOR THE LIGHT'S DIRECTION —
@@ -151,9 +152,9 @@ export interface SkyConfig {
  */
 export const DEEP_SPACE: SkyConfig = {
     name: 'Deep Space',
-    // Well inside three's default far plane of 2000. The retired dome sat AT 2000 and was one `far` tweak away
-    // from clipping; nothing is gained by the extra distance when the sky is camera-locked.
-    radius: 1200,
+    // Under R3F's far plane (1000), not three's 2000 — see sky-config.test.ts. A camera-locked patch is
+    // equidistant, so the far plane clips on DEPTH: radius > far punches a hole in frame centre. 1200 did.
+    radius: 800,
     starBearingDeg: 66,
     starElevationDeg: 19,
     backdrop: {

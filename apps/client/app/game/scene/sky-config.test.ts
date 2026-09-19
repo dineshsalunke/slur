@@ -8,8 +8,16 @@ import { DEEP_SPACE, skyDirection } from './sky-config';
  * SCREEN-right is world −X when you fly toward +Z — is exactly the kind of thing that is easy to reason
  * confidently and wrongly about. Asking three where a point lands on screen cannot be reasoned wrongly.
  */
+/**
+ * R3F does NOT use three's camera defaults. `<Canvas>` builds its own —
+ * `new THREE.PerspectiveCamera( 75, 0, 0.1, 1000 )`, @react-three/fiber@9.7.0 dist/events-156d8d12.esm.js:15771
+ * — and a `camera={{ … }}` prop overrides only the fields it names. No Canvas in this app names `far`, so
+ * three's 2000 is not in play anywhere; believing it was is what put the sky beyond the far plane.
+ */
+const R3F_DEFAULT_FAR = 1000;
+
 function chaseCamera(): THREE.PerspectiveCamera {
-    const cam = new THREE.PerspectiveCamera( 60, 16 / 9, 0.1, 2000 );
+    const cam = new THREE.PerspectiveCamera( 60, 16 / 9, 0.1, R3F_DEFAULT_FAR );
     cam.position.set( 0, 9, -11 );
     cam.lookAt( 0, 2, 7 );
     cam.updateMatrixWorld( true );
@@ -19,7 +27,8 @@ function chaseCamera(): THREE.PerspectiveCamera {
 /** Where a sky bearing/elevation lands in normalised device coords: x>0 is right of frame, y>0 is up. */
 function project( bearingDeg: number, elevationDeg: number ): THREE.Vector3 {
     const [ x, y, z ] = skyDirection( bearingDeg, elevationDeg );
-    return new THREE.Vector3( x, y, z ).multiplyScalar( 1000 ).project( chaseCamera() );
+    // At the patch's own radius, which is inside the far plane — 1000 sat exactly ON it.
+    return new THREE.Vector3( x, y, z ).multiplyScalar( DEEP_SPACE.radius ).project( chaseCamera() );
 }
 
 describe( 'skyDirection', () => {
@@ -68,8 +77,17 @@ describe( 'DEEP_SPACE', () => {
         expect( star.y ).toBeGreaterThan( 0 );
     } );
 
-    it( 'keeps the backdrop inside three’s default far plane', () => {
-        expect( DEEP_SPACE.radius ).toBeLessThan( 2000 );
+    // Every point of a camera-locked patch is equidistant, so the far plane clips on view-space DEPTH:
+    // radius·cos(angle off axis) > far. At angle 0 that reduces to radius > far, so a radius under `far` is
+    // unclippable at every angle by construction. radius 1200 against far 1000 punched an
+    // acos( 1000 / 1200 ) = 33.6° hole through the middle of every frame — in the game, not just the labs.
+    it( 'keeps the backdrop inside the far plane R3F actually builds', () => {
+        expect( DEEP_SPACE.radius ).toBeLessThan( R3F_DEFAULT_FAR );
+    } );
+
+    it( 'keeps the star shell inside the backdrop patch', () => {
+        // drei spans the shell OUTWARD from `radius`: `let r = radius + depth` (drei 10.7.8, core/Stars.js:65).
+        expect( DEEP_SPACE.stars.radius + DEEP_SPACE.stars.depth ).toBeLessThan( DEEP_SPACE.radius );
     } );
 
     it( 'hangs the backdrop wide enough to cover the top-speed frame', () => {
