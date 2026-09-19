@@ -14,6 +14,7 @@ import { TrackRibbon } from '../../game/scene/track-ribbon';
 import { TunableSky } from '../iso-sky/tunable-sky';
 import { ArtLabRig } from './art-lab-rig';
 import type { LabLayers } from './lab-layers';
+import { SceneProbe } from './scene-probe';
 
 /**
  * The art lab's WebGL half: the REAL materialized track, the REAL ships, the REAL chase camera and the
@@ -50,6 +51,7 @@ export function ArtLabCanvas( {
                      shadow sides go black". A review under lighting the game does not have is worthless. */ }
                 { /* Mounted FIRST so its useFrame advances sim.z before TrackView/Environment read it. */ }
                 <ArtLabRig track={ track } />
+                { import.meta.env.DEV && <SceneProbe /> }
                 { layers.env ? <Environment config={ env } seed={ seed } /> : null }
                 { /* Backdrop is its own layer, independent of `env`: the nebula is the "Cold Space" half of
                      the north star and is worth judging the track against even with fog/stars/walls muted.
