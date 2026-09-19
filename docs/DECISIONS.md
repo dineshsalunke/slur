@@ -476,7 +476,10 @@ ship out of frame.
 | `fov` | 60 | **70** |
 
 Framing at these values: pitch **3.50°**, ship **23.06°** below axis against a **35°** half-FOV —
-**11.9° of margin**, widening to 15.5° as `back` stretches at speed.
+**11.9° of margin at rest**, widening to **23.0°** at top speed. Both speed terms help and they
+compound: `backStretch 3` trails the cam to `back 18` (ship 19.5° below axis) while `fovStretch 15`
+opens the lens to `fov 85` (half-FOV 42.5°). The frame is at its tightest parked, which is the safe
+direction — margin only grows as the player goes faster.
 
 **How it was decided.** The owner dialled it live on the `/art-lab` tuning panel shipped in `4305a4d`,
 which exposes the five constants with a derived in-frame/off-edge readout. That is deliberately two of
