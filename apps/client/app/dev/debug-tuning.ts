@@ -42,7 +42,6 @@ export const DEBUG_TUNING: DebugTuning = committed();
 
 const listeners = new Set< () => void >();
 let version = 0;
-let pending = false;
 
 export function subscribeDebugTuning( fn: () => void ): () => void {
     listeners.add( fn );
@@ -51,16 +50,12 @@ export function subscribeDebugTuning( fn: () => void ): () => void {
 
 export const debugTuningVersion = () => version;
 
-// Coalesced to one frame: a pointer drag fires far faster than the leaves need to repaint, and an
-// un-batched notify would put a React render on every pointermove.
+// Synchronous on purpose. Deferring through rAF made the panel dead in any hidden tab (no rAF) and
+// unable to drive a frame-tap capture (advance() does not flush rAF). React already batches per
+// event, so a pointermove burst costs one render either way — the coalescing bought nothing.
 function notify(): void {
-    if ( pending ) return;
-    pending = true;
-    requestAnimationFrame( () => {
-        pending = false;
-        version++;
-        for ( const fn of listeners ) fn();
-    } );
+    version++;
+    for ( const fn of listeners ) fn();
 }
 
 function applyCamera(): void {
