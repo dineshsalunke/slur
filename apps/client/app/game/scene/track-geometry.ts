@@ -17,10 +17,10 @@ export const RIGHT: V3 = [ 1, 0, 0 ];
 export const FORWARD: V3 = [ 0, 0, 1 ];
 export const BACKWARD: V3 = [ 0, 0, -1 ];
 
-export const BOUNDARY_W = 0.5;
+export const BOUNDARY_W = 1.0;
 /** Wrap down the outer face, so the strip turns the corner instead of lying flat and foreshortening
  *  away at the chase angle. */
-export const BOUNDARY_H = 0.5;
+export const BOUNDARY_H = 1.0;
 
 /** True at the track's own outer edge, where the boundary lives. Interior span edges are gap rims —
  *  board 24 panel 04 treats those as a separate element. */
