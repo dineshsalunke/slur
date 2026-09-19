@@ -99,30 +99,42 @@ lurch.
 one instead of trusting that it settled. A settled capture is sub-millisecond, because the pump runs its frames
 back-to-back in one synchronous turn.
 
-## The one thing that still needs a visible tab, once
+## ⚠ Known intermittent failure — a tap can 504 with the page right there
 
-**A tab loaded while hidden never mounts R3F at all**, so there is nothing to pump and the tap answers 504.
+**Status: not solved.** The instrument works — the frames below are real — but a tap sometimes answers 504
+with a healthy, loaded page. Do not read a 504 as proof nothing is open until you have reloaded the page.
 
-This is the same root cause as the rAF problem, one level deeper, and it was found by measuring rather than
-reasoning: R3F's `<Canvas>` gates its mount on a non-zero size measurement from `react-use-measure`, which is
-delivered by **ResizeObserver — and ResizeObserver delivery is part of the rendering steps a hidden tab
-skips**. Measured in such a tab: the canvas sits at its unmeasured `300x150` default, `__r3f` is absent, and
-the component tree inside `<Canvas>` (including `<FrameTap/>`) has never rendered.
+**Reload the tab and tap again.** That clears it in every case seen so far.
 
-**So: open the route once while the tab is visible.** After that it can be hidden forever and tapped
-indefinitely — which is the actual workflow, since the owner opens a lab route and then switches desktop.
+What the probes established, in order, each replacing a plausible guess with a measurement:
 
-If you are stuck with a tab that was loaded hidden, one line from a browser evaluate forces the measure
-without focusing it, and the tap works immediately afterwards:
+1. **The HMR channel is fine.** A probe logged the request arriving in the page, by id, on a tap that then
+   timed out. Delivery is not the problem, and `server.hot` is already the `environments.client.hot` alias.
+2. **The component mounts fine — and this corrects an earlier claim in this very file.** `<FrameTap/>`'s effect
+   runs in a hidden tab **even with the canvas still at its unmeasured `300x150`**. The earlier note here said
+   "a tab loaded while hidden never mounts R3F at all"; that was wrong, inferred from a missing log that had a
+   different cause (see 3). The canvas not being *sized* and the React tree not being *mounted* are separate
+   things, and only the first was ever observed.
+3. **HMR updates to `frame-tap.tsx` do not re-register the listener.** Vite prunes a replaced module's custom
+   listeners, and React Fast Refresh does **not** re-run the effect inside R3F's reconciler to re-register
+   them. So after any edit to this file, taps silently stop working until a **full page reload** — and a probe
+   added by an edit appears "never to run", which is exactly the false signal that produced the wrong claim in
+   2. **Anyone debugging this must reload, not rely on HMR.**
+4. **The remaining failure is downstream of the handler being called.** In the last failing run the request was
+   received (twice — StrictMode double-registers the listener) and then nothing: no upload, and no error
+   either, so the code neither threw nor rejected. Something between `pumpAndCapture` and the upload is
+   hanging or being dropped. The StrictMode double-registration is the strongest untested lead.
+
+The measure gate below is still real and worth knowing, it is just not the cause of the 504s:
 
 ```js
 window.dispatchEvent( new Event( 'resize' ) )
 ```
 
-That also corrects a note in this lane's brief: `computer screenshot` was believed to "force a canvas measure"
-by some mystery. It is the same resize path, and the canvas going `300x150` → `3456x1926` with **rAF still
-dead** is what proves sizing and rendering are two independent gates. Canvas size tells you nothing about
-whether anything is rendering.
+That takes the canvas `300x150` → `3456x1926` **with rAF still dead**, without focusing the tab — which is
+also what corrects the brief's note that `computer screenshot` "forces a canvas measure" by some mystery. Same
+resize path. And a correctly sized canvas with rAF dead proves **sizing and rendering are independent gates**,
+so canvas size tells you nothing about whether anything is rendering.
 
 ## Parameters
 

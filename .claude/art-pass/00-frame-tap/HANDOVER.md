@@ -33,7 +33,41 @@ both.
 
 ---
 
-## The one thing left open — READ THIS BEFORE TOUCHING ANYTHING
+## ⚠ UPDATE — the probe was run; this supersedes the section below
+
+The supervisor asked for the five-line probe before any fix. Done. It moved the boundary twice and **falsified
+one of my own claims**, so read this before the next section, which is now partly wrong and kept only for the
+reasoning trail.
+
+**What the probe established:**
+
+1. **The effect runs.** `<FrameTap/>` mounts and registers its listener in a hidden tab — **even with the
+   canvas still unmeasured at `300x150`**. So "a tab loaded while hidden never mounts R3F at all" (asserted
+   below, and originally in the README) is **WRONG**. The canvas not being *sized* and the tree not being
+   *mounted* are independent; only the first was ever measured. README is corrected.
+2. **The request is received.** Logged by id on a tap that then timed out — so delivery, `import.meta.hot`,
+   and the channel are all fine, as already suspected.
+3. **The failure is downstream of the handler being entered**, and it neither throws nor rejects: no upload
+   reaches the server and no error event is sent. Something between `pumpAndCapture` and the upload hangs or
+   is dropped.
+4. **StrictMode double-registers the listener** — the request was logged as received *twice* for one tap. This
+   is the strongest untested lead: two listeners means two concurrent pumps and two uploads racing on one id.
+
+**The workflow gotcha that caused most of the confusion, and will cause it again:** HMR updates to
+`frame-tap.tsx` do **not** re-register the listener. Vite prunes a replaced module's custom listeners and Fast
+Refresh does not re-run the effect inside R3F's reconciler. So a probe added by an edit looks like it "never
+runs" — which is precisely the false signal that produced the wrong claim in 1. **Always full-reload the page
+between edits.** Every successful tap in this lane happened immediately after a reload; the failures followed
+HMR-only updates.
+
+**Proposed next step (not built, per instruction):** dedupe the listener registration so StrictMode cannot
+attach two — and only then, if it still fails, move the listener out of the R3F tree. Doing the move first
+would likely "fix" it by accidentally changing the registration lifetime, which is the fix-by-accident the
+supervisor warned about.
+
+**Practical impact meanwhile:** reload the tab and tap again; that has cleared it every time.
+
+## The reasoning trail (superseded in part — see the update above)
 
 **`<FrameTap/>` does not reliably mount in a hidden tab, and I did not finish characterising when it does.**
 
