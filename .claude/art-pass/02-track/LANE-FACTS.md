@@ -315,3 +315,12 @@ The swap forces exactly four changes, none of them chosen. Instanced quads use `
 - `[unmeasured]`: the bloom-OFF half of the pair at this camera. The `&ab=1` tap returned "nobody answered" — rewriting `route.tsx` triggered an HMR full reload and killed the tab's socket, the same failure the predecessor recorded. The bloom-ON/OFF pair the supervisor asked for is still owed and needs a live tab.
 - `[unmeasured]`: whether the washout is uniform or concentrated in the VFX that still set `toneMapped: false`. One capture cannot answer it; the hypothesis is neither confirmed nor killed.
 - NOT DONE and deliberately: no bloom knob touched, no track emissive compensated. Rev 3 §3 makes the boundary strip the reference intensity 1.0 the whole scene's scale is later built from.
+
+### Comment ratio on slice 1's NEW/rewritten files — caught by the owner, fixed
+
+- The sweep fixed the READ path; writing `art-lab-shell.tsx` fresh at 13 comment lines on 50 re-opened it on the WRITE path. A new file written at a high ratio instructs the next agent to match it, which is the exact loop the rule was rewritten to break.
+- `art-lab-shell.tsx` 50→43 lines, 13→6 comment lines (26% → 13.9%). Kept: the `length - 1` = C · Grid Void inline, the one-line `resolveTrack` purity note, the lab-state boundary rule. Cut: the JSDoc paragraph restating the four useStates below it, the env-lab/art-gallery precedent argument (it is PR-body material, same category as the re-render caveat), and the functional-update note naming the pattern it sits on.
+- `track-rails.tsx` 59→54 lines, 11→6 comment lines (11.1%). Cut the "instanced while the floor is one baked mesh" paragraph — a design argument, and partly invented at the rename rather than carried across.
+- `route.tsx` 29→21 lines, 14→6 comment lines (48.2% → 28.5%). Not named in the review but in the same diff: removing the hooks left all the prose behind. Kept the wrong-scale reason the instrument exists and the hook-free boundary rule; cut the rest.
+- Tree average at the time of the review was 22.6% and falling.
+- Gate GREEN after the trim: format · typecheck · biome 3 pre-existing warnings · Canvas-isolation 8 clean · shared 75/75 · client 61/61 · server 4/4 · build.

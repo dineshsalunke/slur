@@ -12,12 +12,7 @@ const RAIL_LIMIT = 128;
 const RAIL_W = 0.5;
 const RAIL_H = 0.5; // stands proud of the floor so the rail reads at the shallow chase angle
 
-/**
- * The two edge rails, driven imperatively from a Z-window around the local ship.
- *
- * Instanced while the floor is one baked mesh: a rail is a uniform box with no gap geometry to express,
- * so a streamed window costs less than 8000u of it in a buffer.
- */
+/** The two edge rails, driven imperatively from a Z-window around the local ship. */
 export function TrackRails( { track }: { track: Track } ) {
     const world = useWorld();
     const railRef = useRef< THREE.InstancedMesh | null >( null );

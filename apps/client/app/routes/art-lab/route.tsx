@@ -7,18 +7,10 @@ export function meta() {
 }
 
 /**
- * `/art-lab` — the art review instrument.
+ * `/art-lab` — fly the real track at true scale, to check art decisions that were made against boards
+ * drawn at the wrong one (`docs/ART_SCALE_REFERENCE.md` §0: 64u wide, drawn at 6–8u).
  *
- * Fly the REAL generated track with the REAL chase camera and REAL collision, at true scale, with the
- * knobs an art review actually needs. No server, no room — `resolveTrack` is pure and `simulate()` takes
- * the track as an argument.
- *
- * WHY THIS EXISTS: the art direction was drawn against concept boards at the wrong scale — the track is
- * 64u wide and the boards drew it at 6–8u (`docs/ART_SCALE_REFERENCE.md` §0). This route is where those
- * decisions get checked against the thing that ships.
- *
- * Hook-free on purpose: every knob lives in `ArtLabShell` below, so a route-level re-render cannot
- * reconcile the scene subtree.
+ * Keep this hook-free — every knob belongs in `ArtLabShell`.
  */
 export default function ArtLabRoute() {
     return (
