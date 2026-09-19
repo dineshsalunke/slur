@@ -119,9 +119,7 @@ export const DEEP_SPACE: SkyConfig = {
         bearingDeg: 0,
         elevationDeg: -2,
         // Owner framing. Full coverage needs 134.3°; 120 leaves ~11.6% of frame width black on the leading
-        // edge under sustained max strafe only, pinned as ACCEPTED_EDGE_MARGIN in sky-config.test.ts. 70 was
-        // rejected — it cannot reach the frame edge in ANY condition — and widening the star field instead
-        // cannot fill the margin, since drei <Stars> lights 0.008% of its pixels.
+        // edge under sustained max strafe only, pinned as ACCEPTED_EDGE_MARGIN in sky-config.test.ts.
         fovDeg: 120,
         edgeFadeDeg: 12,
         gain: 1,

@@ -84,8 +84,12 @@ Three Effects in this area, all three kept a justification:
 - `sky-config.ts:3` — the **`art/procedural-bg` branch pointer**. I read it as history. It is a live external
   constraint: that branch is deliberately kept while other stale art branches are slated for deletion, and
   this comment is the only thing in the tree saying why. Restored with "do not prune it" made explicit.
-- `sky-config.ts` `fovDeg` — **"70 was rejected, it cannot reach the frame edge in ANY condition"**, carried
-  in one clause. A rejected alternative is the canonical keeper; only its five-line form was the problem.
+- `sky-config.ts` `fovDeg` — the 70 rejection was restored, then **reverted back out**. It now stands at two
+  lines: the accepted margin and the `ACCEPTED_EDGE_MARGIN` pointer. The 70 rejection and the drei `<Stars>`
+  0.008% detail live in the PR body instead. "Canonical keeper" means a rejected alternative survives the
+  cut, **not** that it earns a length exemption — four lines on one numeric field is the thing the rule
+  exists to stop. For the record, I had flagged this block myself as one line over the bound before it grew,
+  and should have held that rather than taking the exemption when it was offered.
 
 **Lesson for the remaining areas:** a rule about what may NOT enter a file reads like prose and dies in a
 sweep, because there is no code under it to check it against. Treat "never do X here" as a keeper on sight.
@@ -141,8 +145,15 @@ serve exactly that purpose, so their per-field lines stay intact. Reading the ex
 file path would be the literal-minded answer that defeats the rule. **Per-field tuning lines in any
 tune-live data block stay.**
 
-**3. The `fovDeg` comment stays at four lines.** Both rejected alternatives (70, and widening the star field)
-are worth their clauses. Do not trim it.
+**3. A restoration is an addition, and pays the same 1–2 line bar as anything else.** Putting a line back
+does not exempt it from the standard the sweep is applying, and "it was there before" is not a length
+permit. A comment that grows during a comment sweep is the sweep quietly turning into a rewrite — check the
+direction of the line count on every file you touch, restorations included. The `fovDeg` block reached four
+lines by exactly this route and is back to two.
+
+**4. Direction check, per area.** Net comment lines must go DOWN in every file touched. If a file gains
+lines, that is a finding to report, not a result to ship. Measured for `game/scene`: −189 across 20 files,
+and no individual file gained.
 
 ### The lesson worth carrying past this lane
 
