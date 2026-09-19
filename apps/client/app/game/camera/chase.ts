@@ -15,10 +15,10 @@ const CHASE = {
     lookAtLift: 2, // u above the ship the aim point sits (was 0.5 — lifts the horizon so the ship rides higher)
     fov: 60, // deg at rest (was 70 — tighter ⇒ ship bigger, less fish-eye)
     fovStretch: 15, // extra deg of FOV at top speed (speed-kick; was 20, now 60→75 instead of 70→90)
-    follow: 16, // rubberband stiffness (exp ease, frame-rate independent)
+    follow: 16, // rubberband stiffness for DEPTH + HEIGHT only (exp ease, frame-rate independent)
 };
 
-// Chase cam: behind + above the ship, rubberband follow (exp ease, frame-rate independent),
+// Chase cam: behind + above the ship, rigid laterally, rubberband follow on depth/height,
 // speed-based trail stretch, look-ahead, and speed-FOV. Called from the Loop (no own useFrame),
 // so R3F's auto-render stays on.
 export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: number ): void {
@@ -36,7 +36,10 @@ export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: num
     const k = 1 - Math.exp( -CHASE.follow * dt ); // rubberband lag-follow
     const back = CHASE.back + ( speed / maxCruise ) * CHASE.backStretch; // trail-stretch with speed
 
-    cam.position.x += ( p.x - cam.position.x ) * k;
+    // Lateral is RIGID. Easing x lagged the ship on a strafe and — since lookAt aims at the ship's real x —
+    // swung the whole world in yaw while it caught up. Depth/height keep the ease: z IS the speed cue, and
+    // an eased y stops a jump yanking the frame.
+    cam.position.x = p.x;
     cam.position.y += ( p.y + CHASE.height - cam.position.y ) * k;
     cam.position.z += ( p.z - back - cam.position.z ) * k; // forward = +z, trail behind
     cam.lookAt( p.x, p.y + CHASE.lookAtLift, p.z + CHASE.lookAhead ); // near-ahead aim, ship rides high in frame
