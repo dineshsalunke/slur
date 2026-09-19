@@ -1,3 +1,4 @@
+import { BLOCK_HEIGHT } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import {
     SEALED_BLOCK_FRAGMENT_EMISSIVE,
@@ -6,6 +7,8 @@ import {
     SEALED_BLOCK_VERTEX,
     SEAM_CORE_COLOR,
     SEAM_GLOW_COLOR,
+    SEAM_HALF_WIDTH,
+    SEAM_TROUGH_HALF_WIDTH,
 } from './sealed-block-material';
 
 /**
@@ -76,5 +79,63 @@ describe( 'sealed block bevel', () => {
 
     it( "never leans along the fragment's own face axis", () => {
         expect( SEALED_BLOCK_FRAGMENT_NORMAL ).toContain( 'lean *= 1.0 - abs( objNormal );' );
+    } );
+} );
+
+/**
+ * THE PALETTE GATE FOR SPLITS.
+ *
+ * Panel splits are a darkening of the albedo and nothing else. Marigold is the seam's identity and the one
+ * feature that still carries hazard at range once the fbm octaves have faded out; a second warm line on the
+ * same face would dilute exactly that. Emissive is the thing to guard, because it is the only way a split
+ * could become warm.
+ */
+describe( 'sealed block panel splits', () => {
+    it( 'darkens albedo and never writes emissive', () => {
+        expect( SEALED_BLOCK_FRAGMENT_MASKS ).toContain( 'uSplitDarken * split' );
+        expect( SEALED_BLOCK_FRAGMENT_MASKS ).not.toMatch( /totalEmissiveRadiance/ );
+    } );
+
+    it( 'carries no marigold uniform into the split term', () => {
+        const splitLines = SEALED_BLOCK_FRAGMENT_MASKS.split( '\n' ).filter( ( l ) => l.includes( 'split' ) );
+        for ( const line of splitLines ) {
+            expect( line ).not.toMatch( /uSeamCore|uSeamGlow/ );
+        }
+    } );
+
+    it( 'spans an EVEN panel count so no split lands against a face edge', () => {
+        // Odd counts put a split exactly on the corner, where it reads as a chipped edge rather than a
+        // panel line. The family is a continuous width range, so this is reached, not hypothetical.
+        expect( SEALED_BLOCK_FRAGMENT_MASKS ).toContain( '2.0 * floor( splitFaceWidth' );
+    } );
+
+    it( 'is vertical only — never on the top or bottom face', () => {
+        expect( SEALED_BLOCK_FRAGMENT_MASKS ).toContain( '( faceIsX || faceIsZ )' );
+    } );
+} );
+
+describe( 'sealed block surface finish', () => {
+    it( 'samples no texture — the field is procedural in box-local world units', () => {
+        expect( SEALED_BLOCK_FRAGMENT_MASKS ).not.toMatch( /texture2D|texture\s*\(/ );
+        expect( SEALED_BLOCK_FRAGMENT_MASKS ).toContain( 'blockFbm( vBlockPos' );
+    } );
+
+    it( 'fades an octave out as its feature size approaches a pixel', () => {
+        // Procedural noise has no mip chain. Without this an approaching block shimmers instead of
+        // resolving away, and board 10 shows mid-distance blocks carrying only the seam.
+        expect( SEALED_BLOCK_FRAGMENT_MASKS ).toContain( 'fwidth( vBlockPos' );
+    } );
+
+    it( 'keeps the normal perturbation tunable to zero', () => {
+        expect( SEALED_BLOCK_FRAGMENT_NORMAL ).toContain( 'uDetailNormal' );
+    } );
+} );
+
+describe( 'sealed block seam width', () => {
+    it( 'is derived from the 8u HEIGHT, not from a free width', () => {
+        // Height is the only dimension ART_SCALE_REFERENCE §2 fixes, and a width-proportional seam would
+        // contradict the instancing evidence: CUBE and WIDE carry the SAME thickness on board 10.
+        expect( SEAM_TROUGH_HALF_WIDTH ).toBeCloseTo( ( BLOCK_HEIGHT * 0.025 ) / 2 );
+        expect( SEAM_HALF_WIDTH ).toBeCloseTo( SEAM_TROUGH_HALF_WIDTH / 3 );
     } );
 } );

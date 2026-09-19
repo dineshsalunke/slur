@@ -10,12 +10,15 @@ export function meta() {
 }
 
 /**
- * Frames the whole row rather than one block. `<IsoLab>` puts the camera at `dist = max( 12, size * 1.9 )`
- * on a 45° fov, so the visible width is about `1.49 * dist` at 16:9; wanting ~40% margin around the row
- * gives `size ≈ span / 2`. Passing the raw span would frame the row at a third of the height and waste the
- * gate. (Note `size` is inert for subjects below ~6.3u, where the `max( 12, … )` floor binds instead.)
+ * Frames the whole row rather than one block.
+ *
+ * `span / 2` under-framed it — only two of three footprints were on screen. That assumed the row sits
+ * perpendicular to the camera, but `<IsoLab>` looks from `[ d * 0.6, d * 0.45, d ]`, so the X-axis row runs
+ * ~50% ALONG the view axis: the near end magnifies and the far end hides behind the control panel.
+ *
+ * NEEDS A FRAME TO CONFIRM — reasoned from the camera constants, not yet measured.
  */
-const FRAME_SIZE = BLOCK_FAMILY.span / 2;
+const FRAME_SIZE = BLOCK_FAMILY.span * 0.65;
 
 /**
  * `/iso-block` — the sealed deadly block in isolation. Art-pass task 7.

@@ -175,6 +175,53 @@ unseamed and cold**). CUBE and WIDE carry **visibly the same seam thickness** �
 for an instance-invariant world-unit feature, which killed "accept the stretch" on its own terms. Crops are
 in `07-blocks/refs/` (gitignored).
 
+**B13 — Surface finish: analytic vertical panel splits + box-local fbm, ALBEDO ONLY, zero samplers.**
+Approved 2026-09-19 on the lane's genuine first read of board 10. The board's material is dark weathered
+stone at three scales (~2–3u blotches, 0.05–0.3u filament scratches, sub-0.05u speckle), divided by thin
+dark inset hairlines into full-height vertical slabs. **The pitch is in WORLD units**: panel 3's WIDE has
+*more* splits than CUBE at the same spacing, not wider ones — the art specifying instance-invariance a
+second time, exactly as it did for seam thickness. Vertical only; board 12's horizontal grid is a
+**monolith**, and a horizontal groove on an 8u block is the ledge read B11 rejected. Mechanism is the
+seam/bevel trick a third time (world-unit features in box-local space), so it inherits their
+instance-invariance proof and adds no capability. Conditions: **(a)** phase the pitch off each face's own
+extent so a face never ends in a sliver that reads as a chipped corner (B12 — continuous width range);
+**(b)** splits are dark inset hairlines carrying **no marigold ever**, test-guarded like the NO-RED seam
+test — marigold is the seam's identity and a second warm line on the same face dilutes the only signal
+that survives at range; **(c)** the `fwidth` octave fade is **in scope, not a second pass**, and the board
+gives its acceptance: panel 1 keeps blotches near, drops splits, and reduces mid-distance blocks to flat
+silhouettes carrying only the seam — so the pass condition is *at gameplay distance only the seam
+survives, and nothing shimmers on approach*; **(d)** `uDetailRough` lands at 0 and base colour stays
+PROVISIONAL — roughness for the dark family is task 2 slice 2's, and forking it here is the
+two-dark-metal-languages failure. No normal map this slice.
+Principle 9 ("no unnecessary surface detail") is **not** an objection: the board prints that rule over a
+rich stone mottle, and `04_OBSTACLES.md` prohibits chips, decals, greebles and decorative damage *by name*.
+Finish is not in that category.
+
+**B14 — Contact glow is RECEIVED light, not emission.** A warm up-gradient over the lower ~1.5u plus a
+contact darkening in the last ~0.3u, keyed to `(blockHalf.y + vBlockPos.y)` — already un-stretched by
+instance scale, same guarantee as the seam. Two load-bearing arguments: **(1)** on both boards the block
+darkens to near-black at contact and the warm light is on the **floor** (spill + a vertical specular
+streak under the seam on board 10; on board 12 a floor edge-light that continues *past* the slab in both
+directions); **(2)** its failure mode over a gap is "slightly too warm at the bottom" rather than "a lit
+strip glowing over a hole", and ADR-006 emits full-width *and* partial floor-strip gaps, so that case is
+real. Identical cost and instance-invariance to the emissive version; no second material path.
+**The discriminator is NOT "emits vs doesn't"** — the sealed block already emits a marigold seam at
+intensity 6. It is **contour-emission vs body-emission**: ADR-009's fractured block is *"visibly cracked
+shell, **internal marigold energy**"*, energy leaking from the **body** of the mass, and its gate is
+whether a player tells sealed from fractured in ~half a second at 55 u/s. A marigold band across the base
+is body-emission and poaches that signature. Contour-emission is the sealed block's; body-emission is not.
+
+**B15 — `isGrounded` per-instance attribute: NOT taken.** It would need a new `InstancedBufferAttribute` in
+`track-view.tsx`, which `art/track` owns. Graceful degradation is the build; spending a cross-lane
+coordination to pre-empt a failure mode nobody has looked at yet is backwards. If the over-gap warmth reads
+wrong at the `/art-lab` gate, that is when it earns the attribute. The lane escalating rather than touching
+the file was correct.
+
+**B16 — Where each half gates.** The surface is judgeable at `/iso-block` and gates there. The contact read
+is **not** — B2 stands: two-ingredient composition read in `/art-lab` after `art/track` merges. **Do not
+fake a floor.** The supervisor carries to the owner, at that gate, that the glow is received-not-emitted
+and why, with emissive named as the one-uniform fallback if their eye disagrees.
+
 ## 7. THE OWNER'S GATE FINDINGS — this is the next slice
 
 The owner looked at `/iso-block` and reported: **it reads good, but it is UNTEXTURED** — no surface detail,
@@ -226,16 +273,76 @@ treatment, surface detail and finish**, cross-checked against board 12.
 it needs is a look at `/iso-block` with the three footprints in frame, and specifically **whether the bevel
 reads at all** — the single element most likely to need tuning.
 
-Two readings are recorded from an agent whose conversation has since been cleared, so they are **second-hand
-and unre-measured**; re-take them rather than citing them:
+**⚠ RE-TAKEN 2026-09-19 FROM LIVE FRAMES — BOTH PRIOR READINGS WERE WRONG. The struck text below is kept
+only so a reader recognises it and stops citing it.** Both came from a cleared conversation; both were
+overturned by a real frame at `:5202` with a live rAF counter confirmed climbing.
 
-- *The `<Lightformer>` rig's reach on a small dark object is **generous, not marginal*** — the box read as a
-  clearly-lit mid blue-grey, the opposite of swallowed. **A previous supervisor's stated pass condition,
-  "sparse and dark is the PASS", was WRONG for this route** and the lane's evidence overturned it. Do not
-  reintroduce it.
-- *The rig is very **flat*** — the two visible side faces sat at nearly the same value, almost no directional
-  definition. This is what earned the bevel its complexity on evidence rather than taste: a painted edge line
-  would not respond to a rig like that; a normal lean does.
+- ~~*The rig's reach is generous, not marginal* — the box read as a clearly-lit mid blue-grey, the opposite
+  of swallowed.~~ **FALSE.** The lighting is violently **ONE-SIDED**: faces turned to the star read a clear
+  mid blue-grey, faces away are **effectively pure black**, with no fill of any kind between them. The old
+  reading described the lit half and generalised it to the object. *(The lane's inference, not measured: the
+  original was probably taken on `placeholder-block.tsx`, which had a different albedo and was deleted in
+  `5c601d3` — which would explain the contradiction without either party being careless.)*
+  **A previous supervisor's "sparse and dark is the PASS" condition remains wrong for this route.**
+- ~~*The rig is very flat* — the two visible side faces sat at nearly the same value.~~ **FALSE between
+  faces, TRUE within them.** Faces sit at **opposite ends of the range** — mid-grey against black — so
+  directional definition is extreme. The flatness that matters is **intra-face**: every face is a
+  mathematically uniform value with no gradient across it. §7's finding is confirmed in a frame, but at the
+  intra-face scale.
+  **Consequence: the bevel's recorded justification is DEAD.** It was earned on *"a painted edge line would
+  not respond to a rig like that"* — but the rig is strongly directional, so that argument does not hold.
+  See B17 for what it is earned on instead.
+
+**Terminology fix — "the rig" was ambiguous in the two readings above.** `<DeepSpaceSky>` mounts the shipped
+star `DirectionalLight` plus the `<Lightformer>` bake (`deep-space-sky.tsx` 45 and 58). The **lab's** toggle
+is a separate `ambientLight 0.5` + `directionalLight 0.8` pair (`iso-lab-canvas.tsx` 64-70). They are not
+the same thing; both were read.
+
+**The lab rig toggle is a NULL CONTROL on this block** — rig on vs rig off is visually indistinguishable.
+Not a bug: `BLOCK_BASE_COLOR #0B0C0F` is ~0.004 linear, `ambient 0.5` lifts it ~0.002, and ACES returns that
+to black. **No neutral rig can lift this albedo**, so never again reach for the lab rig to diagnose this
+surface.
+
+**B17 — The bevel reads on the SILHOUETTE, not at the interior corner. Measured, 2.3× zoom.** On the outer
+silhouette edges (left vertical, top, bottom) it reads clearly as a thin lighter rim band — **B7's
+prediction confirmed in a real frame, and this is what the bevel is now earned on.** At the **interior
+vertical corner**, where the lit face meets the black face, it produces **nothing**: a hard step from
+mid-grey to black with no intermediate facet. That is the corner most visible head-on at race speed and
+exactly where board 10's chamfer reads strongest. Mechanism: the lean tilts normals outward, brightening an
+edge only where the tilt turns *toward* the star; at the interior corner the lit side leans away and the
+dark side stays dark. Also the band renders **~6-8px against a nominal ~15px** at this framing — roughly
+half its authored width. **Open, not yet assigned:** whether the fix is amplitude, a two-sided treatment
+(light band → dark line → face, so the chamfer reads as a facet without fill), or deferral to `/art-lab`
+where a floor bounces. Enumerate before choosing.
+
+**B18 — The seam is ~3× too wide and must be narrowed.** Board hero seam ≈ **2.4%** of face width; ours ≈
+**8%**. Measured with **bloom OFF**, so this is core width, not halo. Cause named: the emissive term adds
+`0.25*seamTrough` across the full ~0.18u trough. **Measure the target against the block's HEIGHT, never its
+width** — `ART_SCALE_REFERENCE.md` §2 fixes height at 8u and leaves width/depth free, so height is the only
+board dimension that converts reliably to world units. A width-ratio target would also contradict B9: panel
+3 shows CUBE and WIDE carrying *the same* seam thickness, i.e. a world-constant, not a proportion.
+
+**B19 — Normal perturbation APPROVED (Option B), scoped to grazing light, NOT to unlit faces.** The fbm may
+perturb the normal at low amplitude alongside albedo. B13 condition 4's purpose was to avoid forking a
+second dark-metal language before `art/track` defines roughness and base colour; a normal perturbation
+touches neither, so it is inside the spirit. **But the justification is narrower than the request:** on a
+face pointing fully away from the single star, N·L ≈ 0 and perturbing N slightly still yields ~0 — B does
+**not** rescue a fully-unlit face. It pays off where light is **grazing**, which is precisely the interior
+corner B17 measures as failing. **Tune amplitude on the grazing face and never on the away-face**;
+over-cranking to chase an unlit face is how a dark surface turns noisy and plastic. The fully-unlit read is
+a **bounce** problem and belongs to the `/art-lab` gate with a floor. Perturbation stays a uniform tunable
+to zero.
+
+**B20 — `FRAME_SIZE` crops the family; fix it.** Only two of three footprints are on screen and both are cut
+off. That is the instrument, not the art — repair it so the family is judgeable.
+
+**Chrome focus — the escape hatch, verified 2026-09-19.** `open -a "Google Chrome"` is **NOT** enough: it
+raises the app and the tab stays `hidden` with rAF frozen (counter stuck at 8). A background tab in a
+foreground window is still hidden. What works is selecting that specific tab as the **active tab of a
+frontmost window via `osascript`**, matching on your own port — something the page cannot do to itself. Same
+tab, before/after: `hidden` + `hasFocus false` + counter 8 → `visible` + `hasFocus true` + counter 1263 and
+climbing. **Two tool calls, not a session.** This is a workaround, not a replacement for `art/frame-tap`,
+which removes the focus dependency entirely and lets any desktop pull a frame.
 
 ## 9. Open
 
