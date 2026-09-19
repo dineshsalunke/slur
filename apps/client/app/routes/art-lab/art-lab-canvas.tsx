@@ -4,11 +4,12 @@ import { procgenDescriptor, resolveTrack } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, Suspense, useMemo } from 'react';
 import { world } from '../../game/ecs/world';
+import { DeepSpaceSky } from '../../game/scene/deep-space-sky';
 import type { EnvConfig } from '../../game/scene/env-config';
 import { Environment } from '../../game/scene/environment';
 import { FinishGate } from '../../game/scene/finish-gate';
-import { SceneBackdrop } from '../../game/scene/scene-backdrop';
 import { Ships } from '../../game/scene/ship';
+import { DEEP_SPACE } from '../../game/scene/sky-config';
 import { TrackFloor } from '../../game/scene/track-floor';
 import { TrackView } from '../../game/scene/track-view';
 import { ArtLabRig } from './art-lab-rig';
@@ -53,18 +54,12 @@ export function ArtLabCanvas( {
                 { layers.env ? <Environment config={ env } seed={ seed } /> : null }
                 { /* Backdrop is its own layer, independent of `env`: the nebula is the "Cold Space" half of
                      the north star and is worth judging the track against even with fog/stars/walls muted.
-                     Mounted AFTER Environment deliberately — Environment also attaches a background, and
-                     last attach wins, so this ordering lets the nebula override the flat void when both are
-                     on. Suspense because `useTexture` loads async; the fallback holds the void colour so
-                     there is no flash before the image arrives. */ }
-                <Suspense fallback={ <color attach="background" args={ [ env.background ] } /> }>
-                    { layers.backdrop ? (
-                        <SceneBackdrop />
-                    ) : (
-                        /* Without a background three clears to the renderer default and the whole review
-                           happens against an untinted black. */
-                        <color attach="background" args={ [ env.background ] } />
-                    ) }
+                     The void colour is now UNCONDITIONAL — the sky used to be `scene.background` and the two
+                     fought over which attached last, whereas `DeepSpaceSky` is geometry on a camera-locked
+                     patch and simply sits in front of the void. Suspense because `useTexture` loads async. */ }
+                <color attach="background" args={ [ env.background ] } />
+                <Suspense fallback={ null }>
+                    { layers.backdrop ? <DeepSpaceSky config={ DEEP_SPACE } /> : null }
                 </Suspense>
                 { layers.hazards ? <TrackView track={ track } showFloor={ ! layers.slab } /> : null }
                 { /* The generated slab, side-by-side comparable with TrackView's instanced floor. */ }

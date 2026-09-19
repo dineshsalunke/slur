@@ -1,6 +1,6 @@
 import { Fragment, useMemo } from 'react';
 import * as THREE from 'three';
-import { type SkyConfig, starDirection } from './sky-config';
+import { type SkyConfig, skyDirection } from './sky-config';
 
 /** Lever arm for the light. Only its DIRECTION is used, so this number is arbitrary — it just has to be big
  *  enough that the position reads as "out there" to anyone inspecting the scene graph. */
@@ -18,7 +18,7 @@ const LIGHT_DISTANCE = 1000;
  */
 export function StarLight( { config }: { config: SkyConfig } ) {
     const target = useMemo( () => new THREE.Object3D(), [] );
-    const [ x, y, z ] = starDirection( config.starBearingDeg, config.starElevationDeg );
+    const [ x, y, z ] = skyDirection( config.starBearingDeg, config.starElevationDeg );
 
     return (
         <Fragment>
