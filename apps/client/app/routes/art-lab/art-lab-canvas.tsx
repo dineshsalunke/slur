@@ -16,6 +16,7 @@ import { TunableSky } from '../iso-sky/tunable-sky';
 import { ArtLabRig } from './art-lab-rig';
 import type { LabLayers } from './lab-layers';
 import { SceneProbe } from './scene-probe';
+import { ShipBox } from './ship-box';
 
 /**
  * The art lab's WebGL half: the shipped track, ships, chase camera and post stack, with no room, no
@@ -67,6 +68,7 @@ export function ArtLabCanvas( {
                 { /* Ships OFF hides the MESH only — the rig, simulate() and the chase camera keep running,
                      so you still fly the real track at the real speed. */ }
                 { layers.ships ? <Ships /> : null }
+                { layers.shipBox ? <ShipBox /> : null }
                 { bloom ? (
                     <EffectComposer multisampling={ 0 }>
                         <Bloom

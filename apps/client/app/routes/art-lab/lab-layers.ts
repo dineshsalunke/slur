@@ -13,6 +13,7 @@ export interface LabLayers {
     env: boolean;
     // Hides the ship MESH only — the rig, sim and chase camera keep running.
     ships: boolean;
+    shipBox: boolean;
     finish: boolean;
 }
 
@@ -25,6 +26,7 @@ export const DEFAULT_LAB_LAYERS: LabLayers = {
     backdrop: true,
     env: false,
     ships: false,
+    shipBox: true,
     finish: false,
 };
 
@@ -36,5 +38,6 @@ export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [
     'backdrop',
     'env',
     'ships',
+    'shipBox',
     'finish',
 ];
