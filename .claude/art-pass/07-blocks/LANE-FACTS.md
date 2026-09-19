@@ -68,3 +68,9 @@ Format: `YYYY-MM-DD · <fact> · <how it was established>`
 - 2026-09-19 · the per-face 2D UV basis a texture would need ALREADY EXISTS in
   `SEALED_BLOCK_FRAGMENT_NORMAL`: `tangentA = faceIsX ? Y : X`, `tangentB = faceIsZ ? Y : Z` yields (y,z) on
   an X face, (x,y) on a Z face, (x,z) on a Y face — correct for all three face classes · read from the shader
+- 2026-09-19 · three's `aoMap` is NOT diffuse-only: under `USE_ENVMAP && STANDARD` it also does
+  `reflectedLight.indirectSpecular *= computeSpecularOcclusion( dotNV, ambientOcclusion, material.roughness )`
+  · `ShaderChunk/aomap_fragment.glsl.js` · consequence: at 85-90% non-diffuse AO is a LIVE lever on this
+  block, not a wasted map — this REVERSES the lane's prior inference that AO would be nearly inert here
+- 2026-09-19 · `aoMap` reads channel **R** and `roughnessMap` reads channel **G** (both chunks say so in
+  their own comments) — so R=AO / G=roughness / B=metalness is three's NATIVE packing, not a convention
