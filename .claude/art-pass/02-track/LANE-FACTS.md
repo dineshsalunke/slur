@@ -324,3 +324,26 @@ The swap forces exactly four changes, none of them chosen. Instanced quads use `
 - `route.tsx` 29→21 lines, 14→6 comment lines (48.2% → 28.5%). Not named in the review but in the same diff: removing the hooks left all the prose behind. Kept the wrong-scale reason the instrument exists and the hook-free boundary rule; cut the rest.
 - Tree average at the time of the review was 22.6% and falling.
 - Gate GREEN after the trim: format · typecheck · biome 3 pre-existing warnings · Canvas-isolation 8 clean · shared 75/75 · client 61/61 · server 4/4 · build.
+
+### `lab-layers.ts` — swept once, still above bar, trimmed again
+
+- After the session-2 sweep it still measured **42.8%** (24 comment lines on 56) — the second-worst file in the routed set, and inside the PR whose own subject is comment discipline.
+- Cause: the sweep rewrote the header but KEPT an 8-line MECHANISM block enumerating the rejected alternatives (koota trait, context, URL search param). That is the "five mechanisms weighed" shape the rule names; it belongs in the PR body.
+- Now **40 lines, 8 comment, 20.0%**. Kept: the one-line "re-render IS the effect / per-frame knobs live in lab-state" boundary, the blocks-OFF-by-default reason with its one-click caveat, backdrop being independent of `env`, ships hiding the MESH only, and the key-order note on `LAB_LAYER_KEYS`. Cut: the mechanism block, the DEFAULTS paragraph (the object states them), and the one-line restatements of `floor`/`rails`/`env`/`finish`.
+- LESSON, worth more than the number: a file can be swept and still be above bar. "Swept" is not a state; the ratio is. Measure after, not just before.
+
+### Routed sweep set is 13, not 12 — my earlier concession was wrong
+
+- `routes/art-lab/` holds **8** sweepable files, not 7: art-lab-canvas, art-lab-controls, art-lab-readout, art-lab-rig, art-lab-sky-controls, lab-layers, lab-state, route. (Excluded: `scene-probe.tsx`, temp, deleted at slice 4; `art-lab-shell.tsx`, new this slice.)
+- 5 scene files + 8 = **13**. The supervisor's first message said 13 and enumerated 12; I resolved it to 12 and resolved it the wrong way. Accepted back to 13.
+- DONE (5, all in #140): track-blocks 13.9% · track-instancing 21.7% · art-lab-canvas 19.1% · lab-layers 20.0% · route 28.5%. Not in the 13 but in the PR: track-rails 11.1% · art-lab-shell 13.9%.
+- PENDING (8): track.tsx 11.5% · track-texture.ts 35.0% · tube-walls.tsx 12.3% · art-lab-controls.tsx 8.9% · art-lab-readout.tsx 23.9% · art-lab-rig.tsx 22.4% · art-lab-sky-controls.tsx 25.8% · lab-state.ts **72.2%** (worst in the set).
+
+### Branch history — the rebase was the SUPERVISOR's
+
+- Commits `ace1b5a`/`8c46e23` on base `3284fed` became `da0855a`/`4e06524` on base `80f2778`. Supervisor confirmed they rebased it at 23:55:33 and had not told me; three agents exist (supervisor, this lane, comment-sweep) and no rogue session. PR #139 and the `chore/comment-ratchet` branch are also theirs.
+- Raising it was correct even though content survived. Content surviving is not a reason to absorb an unexplained rewrite.
+
+### ⚠ SLICE 2 GATE HAZARD, told in advance by the supervisor
+
+- #139 adds a **comment-ratchet to `pnpm lint`** counting any line starting with `//` or `*` under apps/, packages/ and scripts/. It does NOT know it is inside a template literal, so **GLSL comments in the `onBeforeCompile` emitter shader WILL count against the file's budget.** Supervisor judged this correct rather than a bug — a shader comment is still a comment. Budget for it before writing the patch, not at the gate.
