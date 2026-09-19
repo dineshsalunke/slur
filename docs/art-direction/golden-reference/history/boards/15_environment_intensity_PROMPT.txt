@@ -1,0 +1,43 @@
+Create a professional detailed SLUR ENVIRONMENT INTENSITY art-direction board based on reference image 1, the NEW APPROVED GOLDEN SCENE with borderless HUD. Reference image 2 is OLD intensity board for INFORMATION STRUCTURE ONLY, not for old ship size, old palette or old materials. New scene identity and material treatment must follow image 1. Landscape high resolution 3:2 board, meticulously aligned editorial layout on deep graphite blue-black background, clean ivory readable typography, restrained marigold section accents. No giant decorative logo, no illegible tiny paragraphs. Board is a production proposal, not a HUD screen.
+
+TITLE exactly 'SLUR / ENVIRONMENT INTENSITY'
+Subtitle 'Cold space. Warm energy. One world, three intensities.'
+
+Top 60 percent: THREE equally sized tall comparison scene panels side by side, SAME camera, SAME 64u broad straight track and small ship proportions, SAME stepped openings and gameplay obstacle positions. Reference 1 materials: graphite satin metal rectangular tiles, sparse irregular interior golden seam inserts, continuous bright outer edges, coated-metal sealed and broken-contour blocks, physical Bolt/Boost pickups, matte immense stone monoliths with visible sparse marigold seam glow. No exact measurement text or scale claims. Remove HUD and active boost blur equally in all three panels for fair scene comparison. Small plain cruise exhaust. No motion blur or fog obscuring gaps. Monolith seams subordinate to gameplay light.
+
+A panel title 'A / SUBTLE'
+Caption 'Open space · Distant forms · Quiet energy'
+Environment: sparse smaller apparent asteroids, fewer farther monoliths, more open cold nebula and negative space, distant desaturated planet, cool rim lighting. Track and hazards remain crisp and golden boundary remains functional, not dimmed to invisibility. Same level of material realism as B/C, not a cheap low-detail version.
+
+B panel title 'B / BALANCED'
+Caption 'Layered depth · Monumental framing · Controlled glow'
+Environment: the approved scene's general vocabulary with moderate debris, mixed distances, prominent cold planet and substantial but spaced stone monoliths. Enough negative space over route. Visible localized marigold glow and broad satin reflections. Use reference image1 as fidelity anchor while somewhat opening its very dense peripheral rock field.
+
+C panel title 'C / INTENSE'
+Caption 'Closer masses · Tighter framing · Preserved clarity'
+Environment: larger closer peripheral asteroids and monoliths, denser layered distant debris, looming desaturated celestial limb, stronger cold contrast and rare subtle energy veins. Drama from scale/proximity and composition, not orange fog, global saturation or brighter every surface. Gameplay corridor and openings remain readable. Environment must not become a wall hiding track. Same metal/stone finish as A/B. Not a boost frame.
+
+Below comparison panels, a clear section 'WHAT CHANGES / WHAT STAYS'
+A compact two-column readable text block:
+'CHANGES'
+'Density · Proximity · Apparent scale'
+'Celestial framing · Distant atmosphere'
+'Selective environmental energy'
+'STAYS'
+'Track geometry · Hazard silhouettes'
+'Material families · Golden energy palette'
+'Gap clarity · Gameplay contrast'
+
+Next a row of THREE detailed material closeup swatches, each with short accurate caption:
+'SATIN GRAPHITE / Broad soft reflections'
+'COATED METAL / Clean faces, crisp bevels'
+'MATTE STONE / Cold rims, sparse glowing seams'
+Show clear distinct believable surfaces, same light rig, no polished wet floor or noisy greebles.
+
+Bottom band titled 'PROGRESSION HAS BREATHING ROOM'
+Draw a simple coherent connected progression curve with exactly six labelled points:
+'A / ENTRY' then 'B / BUILD' then 'C / PEAK' then 'A / RECOVERY' then 'C / CLIMAX' then 'B / FINISH'.
+It is an illustrative environmental rhythm, not track geometry.
+Footer exactly 'Boost is temporary. Environmental intensity is independent. Keep the route readable.'
+Small corner status 'PROPOSAL / REVIEW REQUIRED'.
+No invented numerical material values, no HUD layouts, no lane counts or gameplay changes. Prioritize large high-quality comparison pictures and readable accurate short labels.
