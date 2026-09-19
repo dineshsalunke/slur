@@ -3,18 +3,17 @@ import type { World } from 'koota';
 import type { Group, PerspectiveCamera } from 'three';
 import { LocalPlayer, Net, Remote, Render, Sim } from '../ecs/traits';
 
-// Chase-cam framing (live-tunable). The ship is small on screen when the cam is high, far back, wide-FOV,
-// AND aimed far ahead — all four compound. These knobs trade "ship reads big/centred" against "see over the
-// 8u pillars to plan your line" (ADR-006). Height stays ABOVE BLOCK_HEIGHT (8u) so the see-over vantage is
-// kept; the ship is pulled bigger via the other three levers (closer aim, tighter FOV, shorter trail).
+// Chase-cam framing (live-tunable). Dialled by the owner on the live panel in /art-lab; these are the
+// values he landed on, committed verbatim. The ship is small on screen when the cam is high, far back,
+// wide-FOV AND aimed far ahead — all four compound.
 export const CHASE = {
-    height: 9, // u above the ship — MUST stay > BLOCK_HEIGHT (8) or the nearest pillar hides the field
-    back: 11, // u behind at rest (was 14 — closer ⇒ ship bigger)
+    height: 7.5, // u above the ship — BELOW the 8u pillar height, so the see-over vantage is given up
+    back: 15, // u behind at rest
     backStretch: 3, // extra u of trail at top speed (back += speed/maxCruise · this)
-    lookAhead: 14, // u ahead of the ship the cam aims at
-    lookAtLift: 5, // u above the ship the aim point sits
-    fov: 60, // deg at rest (was 70 — tighter ⇒ ship bigger, less fish-eye)
-    fovStretch: 15, // extra deg of FOV at top speed (speed-kick; was 20, now 60→75 instead of 70→90)
+    lookAhead: 9.5, // u ahead of the ship the cam aims at
+    lookAtLift: 6, // u above the ship the aim point sits
+    fov: 70, // deg at rest
+    fovStretch: 15, // extra deg of FOV at top speed (speed-kick; 70→85)
     follow: 16, // rubberband stiffness for DEPTH + HEIGHT only (exp ease, frame-rate independent)
 };
 
