@@ -63,6 +63,8 @@ export function EnvLabCanvas() {
                         intensity={ config.bloom.intensity }
                         luminanceThreshold={ config.bloom.threshold }
                         luminanceSmoothing={ config.bloom.smoothing }
+                        radius={ config.bloom.radius }
+                        levels={ config.bloom.levels }
                     />
                 </EffectComposer>
                 { /* Lets this route be photographed from a tab nobody is looking at. Never mounted on /game —

@@ -55,6 +55,8 @@ export function LandingScene() {
                         intensity={ GRID_VOID.bloom.intensity }
                         luminanceThreshold={ GRID_VOID.bloom.threshold }
                         luminanceSmoothing={ GRID_VOID.bloom.smoothing }
+                        radius={ GRID_VOID.bloom.radius }
+                        levels={ GRID_VOID.bloom.levels }
                     />
                 </EffectComposer>
             </Canvas>

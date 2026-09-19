@@ -74,6 +74,8 @@ export function ArtLabCanvas( {
                             intensity={ env.bloom.intensity }
                             luminanceThreshold={ env.bloom.threshold }
                             luminanceSmoothing={ env.bloom.smoothing }
+                            radius={ env.bloom.radius }
+                            levels={ env.bloom.levels }
                         />
                     </EffectComposer>
                 ) : (
