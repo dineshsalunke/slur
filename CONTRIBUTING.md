@@ -42,10 +42,20 @@ implementation during the thinking phases.** Trivial changes (a typo, a one-line
 ## 3. Coding standards
 
 - **TypeScript, strict, ESM everywhere.** No `any` escapes without a written reason. No CommonJS.
-- **Match the surrounding code.** Copy its naming, its comment density, its idioms. New code must read like
-  it was always there.
-- **Comment the *why*, not the *what*.** The code says what. The comment says why this way and not the
-  obvious other way.
+- **Match the surrounding code.** Copy its naming and its idioms. New code must read like it was always
+  there. **Comment density is the exception — never copy it upward.** A file already over-commented is not a
+  licence to keep writing at that rate; leave it lighter than you found it.
+- **Comment only what the code cannot say**, in **1–2 plain lines**: a rejected alternative, an external
+  constraint, a non-obvious consequence. Everything else is deleted, not shortened. "Why, not what" is not a
+  length permit — a seven-line account of how a bug was found is a *why*, and it still does not belong in the
+  file. That history goes in the PR body, where someone reading the change wants it, instead of the file,
+  where everyone reading the function pays for it forever. Two standing exceptions, both still required: a
+  `useEffect` justification saying what outside-React system it synchronizes with and why no idiomatic
+  mechanism fits (an uncommented Effect is a review failure — "Anti-patterns" below), and a tuning field in
+  `constants.ts`, which carries one line so the value can be tuned without reading the sim.
+- **Never cite a bare number.** `(D7)`, `ADR-006`, `§4`, `#118` alone are useless to a reader — looking one
+  up costs them the context they were holding, which is worse than no citation at all. Inline the substance,
+  then cite the location.
 - **Follow the house React style** (`conventions/r3f.md`): `<Fragment>`, never `<>`; one component per file
   (React Router route modules are the only exception).
 - **Respect the project non-negotiables** in `CLAUDE.md` — server-authoritative, inputs-not-positions, one
