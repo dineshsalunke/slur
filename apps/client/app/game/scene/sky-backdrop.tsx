@@ -3,8 +3,7 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { SkyBackdropConfig } from './sky-config';
 
-/** Where the reference image lives. The boards were composed over this file, which is the whole reason it is
- *  the display sky rather than an approximation of one. */
+/** The concept boards were composed over this image, so shipping it matches them by construction. */
 export const BACKDROP_URL = '/textures/nebula-backdrop.jpg';
 
 const DEGREES_PER_RADIAN = 180 / Math.PI;
@@ -12,13 +11,9 @@ const DEGREES_PER_RADIAN = 180 / Math.PI;
 const FADE_TEXELS = 128;
 
 /**
- * The border fade, as an `alphaMap` rather than a shader.
- *
- * `meshBasicMaterial` has no edge-falloff of its own, and the three ways to add one were: patch the stock
- * material via `onBeforeCompile`, write a `ShaderMaterial` (which is the thing this whole pivot deleted), or
- * hand the stock material a generated alpha texture. The third keeps the material stock and the shader count
- * at zero, which is the point. Fade widths differ per axis because they are authored in DEGREES and the patch
- * is wider than it is tall.
+ * The border fade as a generated `alphaMap`, which keeps `meshBasicMaterial` stock and the shader count at
+ * zero — the alternatives were `onBeforeCompile` or a `ShaderMaterial`. Fade widths differ per axis because
+ * they are authored in DEGREES and the patch is wider than it is tall.
  */
 function makeEdgeFade( fadeU: number, fadeV: number ): THREE.DataTexture {
     const data = new Uint8Array( FADE_TEXELS * FADE_TEXELS * 4 );
@@ -45,23 +40,13 @@ function smoothstep( t: number ): number {
 
 /**
  * `nebula-backdrop.jpg` hung on a spherical PATCH of authored angular size — the display half of the sky.
+ * `sphereGeometry`'s `phiLength`/`thetaLength` cut out the cone a framed image actually covers, with UVs
+ * already 0–1 across it; `scene.background` cannot yaw with the camera and a stock sphere's equirectangular
+ * UVs smear the planet across the poles. Vertical extent follows the image's aspect and is never authored.
  *
- * WHY A PATCH AND NOT THE OBVIOUS THINGS. `scene.background = texture` is a static fullscreen fill that does
- * not rotate when the camera yaws, so the "infinitely distant" sky would slide with the ship's heading; that
- * is what `scene-backdrop.tsx` did and why it is retired. A stock sphere is worse than it looks: a sphere's
- * DEFAULT UVs are equirectangular, so mapping a 16:9 framed composition onto one wraps it 360°×180° and smears
- * the planet across the poles. A framed image covers a CONE, and `sphereGeometry`'s `phiLength`/`thetaLength`
- * cut exactly that cone out of the sphere with UVs already running 0–1 across it.
- *
- * ⚠ `phiLength` IS NEGATIVE, on purpose. three sweeps `x = -cos(phi)`, so phi ascending runs the image's left
- * edge toward world −X — and world −X is SCREEN-right for a camera aimed down +Z (see `skyDirection`). Running
- * phi backwards puts image-left on screen-left. That reverses the face winding, which is why the material is
- * `DoubleSide`: the alternative is reasoning about which way the normals ended up pointing, and on this repo
- * that reasoning has been wrong before (`concave-outline-normals-from-winding`). A one-patch unlit backdrop
- * does not care.
- *
- * Vertical extent is NOT authored — it follows from the image's own aspect ratio. Stretching a framed
- * composition to fill a taller patch is the distortion the patch exists to avoid.
+ * ⚠ `phiLength` IS NEGATIVE on purpose: three sweeps `x = -cos(phi)`, so ascending phi runs image-left toward
+ * world −X, which is SCREEN-right. Running it backwards puts image-left on screen-left. That reverses the
+ * face winding, hence `DoubleSide` — cheaper than reasoning about which way the normals ended up pointing.
  */
 export function SkyBackdrop( {
     config,
@@ -70,19 +55,18 @@ export function SkyBackdrop( {
 }: {
     config: SkyBackdropConfig;
     radius: number;
-    /** Exposed because it is a genuine eye call: `false` shows the reference ungraded (and the definition of
-     *  done is "it IS the reference"), `true` puts it in the same tonal world as everything else in frame. */
+    /** A genuine eye call: `false` shows the reference ungraded, `true` puts it in the same tonal world as
+     *  everything else in frame. */
     toneMapped?: boolean;
 } ) {
     const map = useTexture( BACKDROP_URL );
     map.colorSpace = THREE.SRGBColorSpace;
-    // The patch never tiles, and the default RepeatWrapping makes the edge texels bleed across to the far side
-    // once the alpha fade starts sampling outside 0–1.
+    // The patch never tiles, and the default RepeatWrapping bleeds edge texels across to the far side once
+    // the alpha fade samples outside 0–1.
     map.wrapS = map.wrapT = THREE.ClampToEdgeWrapping;
 
-    // `Texture.image` is untyped in three — it holds whatever the loader produced. `useTexture` suspends until
-    // the load resolves, so for a jpg it is an ImageBitmap and the dimensions are there; the fallback is for
-    // the type system, not for a case that happens.
+    // `Texture.image` is untyped in three. `useTexture` suspends until the load resolves, so the dimensions
+    // are always there and the fallback is for the type system, not for a case that happens.
     const image = map.image as { width?: number; height?: number } | undefined;
     const aspect = ( image?.width ?? 16 ) / ( image?.height ?? 9 );
     const fovVDeg = config.fovDeg / aspect;

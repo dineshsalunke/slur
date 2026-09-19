@@ -5,11 +5,8 @@ import { GradientDome } from './gradient-dome';
 import { SkyFollow } from './sky-follow';
 import { TubeWalls } from './tube-walls';
 
-// The parameterised atmosphere for the neon runner (ADD §11 art pass): background void + linear fog +
-// optional gradient sky + drei star field + parallax neon canyon-walls, all driven by one EnvConfig.
-// Post-FX is intentionally NOT here — the single global <Bloom> lives at the Canvas root (net-canvas /
-// the env-lab route own it), driven by `config.bloom`. This composes the WORLD only, so it drops into the
-// existing scene as one child without touching the track, ships, or the bloom pass.
+// The parameterised atmosphere, all driven by one EnvConfig. Post-FX is deliberately NOT here — the single
+// global <Bloom> lives at the Canvas root, so this composes the world only and drops in as one child.
 export function Environment( { config, seed }: { config: EnvConfig; seed?: number } ) {
     return (
         <Fragment>

@@ -1,28 +1,12 @@
-// The deep-space sky's tuning surface. A plain DATA module, not a component — the displayed sky and the
-// lighting environment both read this one object, so the two can never drift apart.
-//
-// ⚠ THE DISPLAY AND THE LIGHT ARE DELIBERATELY TWO DIFFERENT SOURCES (CHEAP-PATH-BRIEF.md). What you SEE is
-// `nebula-backdrop.jpg` — the image the concept boards were composed over, so it matches the boards by
-// construction rather than by tuning. What LIGHTS is a small authored `<Lightformer>` rig. The old procedural
-// dome tried to be both and is preserved on branch `art/procedural-bg`.
-//
-// PALETTE — cold, desaturated, low-contrast, dark. The warm ramp (#FFE0A0 / #FFB52E / #F59A24) belongs to the
-// PLAYABLE layer and never appears up here.
+// The deep-space sky's tuning surface. What you SEE and what LIGHTS are deliberately two different sources:
+// `nebula-backdrop.jpg` is the image the concept boards were composed over, and a small authored
+// `<Lightformer>` rig does the lighting. Both read this one object, so they cannot drift apart.
 
-/** A noise cell on a unit direction sphere subtends ~1 radian, so this converts a feature size to frequency. */
 const DEGREES_PER_RADIAN = 180 / Math.PI;
 
 /**
- * Bearing/elevation → a unit world direction.
- *
- * **Bearing 0 is the way the ship flies (+Z) and bearing grows toward SCREEN-RIGHT, which is world −X.**
- * That sign is not a typo and is the one thing here you cannot reason your way to: a camera looks down its own
- * −Z, so a chase cam aiming at world +Z has back = −Z, and right = up × back = (0,1,0) × (0,0,−1) = (−1,0,0).
- * Pinned by `sky-config.test.ts`.
- *
- * The previous convention was "0 = −Z", i.e. bearing 0 pointed BEHIND the player, which is why the retired
- * dome's `starBearingDeg: 55` sat behind-right of the camera while its comment claimed "upper-right of the
- * game's forward view". Both numbers were eye-tuned in a free-orbit lab where forward had no meaning.
+ * Bearing/elevation → a unit world direction. Bearing 0 is the way the ship flies (+Z) and grows toward
+ * SCREEN-right, which is world −X: right = up × back = (0,1,0) × (0,0,−1). Pinned by `sky-config.test.ts`.
  */
 export function skyDirection( bearingDeg: number, elevationDeg: number ): [ number, number, number ] {
     const bearing = bearingDeg / DEGREES_PER_RADIAN;
@@ -34,40 +18,18 @@ export function skyDirection( bearingDeg: number, elevationDeg: number ): [ numb
 /**
  * Where the backdrop image is pinned on the sky, and how wide it is hung.
  *
- * A 16:9 framed composition covers a CONE, not a sphere. Putting the jpg on a stock sphere would use the
- * sphere's DEFAULT equirectangular UVs — wrapping it 360°×180° and smearing the planet across the poles — so
- * the image rides a spherical PATCH whose angular size is authored here.
- *
- * MEASURED CAMERA COVERAGE (`camera/chase.ts`, this session): the chase cam sits 9u up and 11–14u back aiming
- * 7u ahead and 2u up, i.e. pitched **18–21° DOWN**, with vFOV 60→75 under `fovStretch`. At 16:9 that is a
- * horizontal half-angle of 46–54°, so the frame spans ~108° horizontally at top speed. The sky above the
- * track horizon is only the top ~10–20° of it; the rest of the image sits below the horizon behind the rock
- * field.
- *
- * CAMERA YAW IS PART OF THE COVERAGE BUDGET — this was missed once and shipped a 120° patch. `SkyFollow`
- * copies camera POSITION only, never rotation, so the patch is world-fixed and the camera yaws inside it.
- * Under sustained max strafe the rubberband lags by `strafeClamp / follow` = 80/16 = 5u. The yaw that buys
- * is speed-dependent and so is the frame, and they pull opposite ways: at REST the look distance is 18u
- * (yaw 15.5°) but the frame is only 91.5° wide; at TOP SPEED the look distance stretches to 21u (yaw 13.4°)
- * while the frame opens to 107.5°. Worst case is top speed — 107.5 + 2·13.4 = **134.3°** — swept over the
- * whole speed range, not assumed. An earlier ≈138.5° here took the rest-pose yaw and the top-speed frame,
- * i.e. two different speeds in one number; `sky-config.test.ts` always computed 134.3 and the prose was what
- * was wrong.
- *
- * ⚠ 134.3° IS NOT THE SHIPPED FRAMING. `fovDeg` is 120 by owner decision, which covers the frame in every
- * condition EXCEPT sustained max strafe, where ~11.6% of frame width goes black on the ONE leading edge.
- * That sliver is accepted; `sky-config.test.ts` pins it as `ACCEPTED_EDGE_MARGIN` so it cannot grow unnoticed.
+ * A 16:9 framed composition covers a CONE, so the image rides an authored spherical PATCH — on a stock
+ * sphere the default equirectangular UVs wrap it 360°×180° and smear the planet across the poles.
+ * `sky-config.test.ts` derives the camera coverage this has to span, including yaw.
  */
 export interface SkyBackdropConfig {
     /** Which way the image's CENTRE points. */
     bearingDeg: number;
     elevationDeg: number;
-    /** Angular WIDTH of the image, in degrees of sky. Height follows from the image's own aspect — stretching
-     *  a framed composition to fill a taller patch is the distortion this whole patch exists to avoid. */
+    /** Angular WIDTH in degrees of sky; height follows from the image's own aspect, never stretched. */
     fovDeg: number;
-    /** Width of the alpha fade at the patch border, in degrees. The patch has a hard edge and the void behind
-     *  it is near-black; a fade reads as "the nebula ends" rather than as a clipping bug. In game the edge sits
-     *  outside the frame — this is for `/iso-sky`, which orbits freely by design. */
+    /** Alpha fade at the patch border, in degrees, so the hard edge reads as "the nebula ends" rather than
+     *  as a clipping bug. In game it sits outside the frame — this is for `/iso-sky`, which orbits freely. */
     edgeFadeDeg: number;
     /** Multiplies the sampled texture. 1 = the reference, untouched, which is the point of shipping it. */
     gain: number;
@@ -101,11 +63,8 @@ export interface StarLightConfig {
 
 /**
  * The authored lighting environment — three `<Lightformer>`s baked to a cubemap by drei `<Environment>`.
- *
- * This is what makes the roughness self-test at `/iso-sky` pass, and it is the acceptance test for the whole
- * task: a `roughness 0.2` probe beside a `roughness 0.9` probe must look DIFFERENT with the lab rig off. The
- * retired procedural dome never managed it — a sky dark enough to look right was too dark to light anything.
- * Decoupling the two sources is precisely what buys it.
+ * Its acceptance test is the roughness probe at `/iso-sky`: a `roughness 0.2` probe beside a `0.9` probe
+ * must look DIFFERENT with the lab rig off. A sky dark enough to look right cannot itself light anything.
  */
 export interface SkyEnvironmentConfig {
     /** Cubemap face size. Small on purpose: this is three soft blobs, and PMREM convolves detail away anyway. */
@@ -125,26 +84,17 @@ export interface SkyEnvironmentConfig {
 
 export interface SkyConfig {
     name: string;
-    /** Backdrop patch radius (u). Camera-locked, so this says nothing about how distant the sky READS — it is
-     *  pure containment, and MUST stay under the camera's far plane. That plane is R3F's 1000, not three's
-     *  2000: `<Canvas camera={{ … }}>` overrides only the fields it names, and no Canvas here names `far`. */
+    /** Backdrop patch radius (u). Camera-locked, so this is pure containment and says nothing about how
+     *  distant the sky reads. Must stay under R3F's far plane of 1000, not three's 2000 — `<Canvas
+     *  camera={{ … }}>` overrides only the fields it names, and no Canvas here names `far`. */
     radius: number;
     /**
-     * Where the star is, in `skyDirection`'s frame. THE SINGLE SOURCE OF TRUTH FOR THE LIGHT'S DIRECTION —
+     * Where the star is, in `skyDirection`'s frame. The single source of truth for the light's direction —
      * the `DirectionalLight` and the `<Lightformer>` key both read it, so they cannot drift apart.
      *
-     * DERIVED FROM THE IMAGE, not chosen (brief §3.2 makes agreeing with the baked-in lighting a hard
-     * requirement — otherwise the rock field is rim-lit from one side while the sky implies another).
-     * Method, reproducible: threshold `nebula-backdrop.jpg` at luma ≥ 210, take the brightest pixel per row in
-     * the upper-right quadrant, and Kasa-fit a circle to them → planet limb at centre (1679, 622) r 719 px,
-     * residual rms 4.2 px. A polar sweep of that circle shows the lit arc running from the frame edge at 120°
-     * to a hard terminator at **169°** (luma 211 → 81 → 34 over six degrees). A crescent's lit limb spans 180°
-     * centred on the sub-stellar azimuth, so the star sits at **79° screen-azimuth** from the planet centre —
-     * essentially straight above it. Mapped through `backdrop` below, that is bearing ~66°, elevation ~19°.
-     *
-     * The separation from the planet is a COMPOSITION choice, not a measurement: the crescent's thickness
-     * implies a phase angle that is geometrically inconsistent with the planet's apparent size, which is
-     * expected of an AI render and is not worth honouring. Only the azimuth is load-bearing.
+     * MEASURED from the backdrop image's terminator, not chosen: the lit limb puts the star at 79°
+     * screen-azimuth from the planet centre, which maps through `backdrop` to bearing 66°, elevation 19°.
+     * The light has to agree with the image or the rock field is rim-lit from a direction the sky denies.
      */
     starBearingDeg: number;
     starElevationDeg: number;
@@ -154,35 +104,27 @@ export interface SkyConfig {
     environment: SkyEnvironmentConfig;
 }
 
-/**
- * The one sky, for now. Per-sector variants (board 06's six identities) are a future parameterisation of this
- * same shape — and on this path they are six bitmaps, which is a legitimate answer to it.
- */
 export const DEEP_SPACE: SkyConfig = {
     name: 'Deep Space',
-    // Under R3F's far plane (1000), not three's 2000 — see sky-config.test.ts. A camera-locked patch is
-    // equidistant, so the far plane clips on DEPTH: radius > far punches a hole in frame centre. 1200 did.
+    // A camera-locked patch is equidistant, so the far plane clips on DEPTH — radius above it punches a
+    // hole in frame centre, as 1200 did.
     radius: 800,
     starBearingDeg: 66,
     starElevationDeg: 19,
     backdrop: {
         bearingDeg: 0,
         elevationDeg: -2,
-        // Owner framing. Full coverage needs 134.3° (header); 120 buys everything except the extreme —
-        // covered parked (14° spare) and at top speed straight (6° spare), with ~11.6% of frame width black
-        // on the leading edge only under sustained max strafe. Pinned as ACCEPTED_EDGE_MARGIN.
-        // 70 was tried first and rejected: it cannot reach the frame edge in ANY condition, leaving ~15% of
-        // width black each side even parked, ~33% hard over. What made 70 survivable at all is that the
-        // nebula's own border content is already near-void, so the patch EDGE never reads as a line — but
-        // the margin itself is flat black, NOT starfield: drei <Stars> lights 0.008% of its pixels.
+        // Owner framing. Full coverage needs 134.3°; 120 leaves ~11.6% of frame width black on the leading
+        // edge under sustained max strafe only, pinned as ACCEPTED_EDGE_MARGIN in sky-config.test.ts.
+        // Widening the star field cannot fill that margin — drei <Stars> lights 0.008% of its pixels.
         fovDeg: 120,
         edgeFadeDeg: 12,
         gain: 1,
     },
     stars: {
         enabled: true,
-        // The jpg has its own stars baked in. These add parallax-free sparkle in the void the patch does not
-        // cover; if they read as a second, disagreeing star field at the gate, turn them off.
+        // The jpg has its own stars baked in; these only fill the void the patch does not cover. Turn them
+        // off if they read as a second, disagreeing star field.
         count: 2200,
         radius: 400,
         depth: 120,

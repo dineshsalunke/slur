@@ -5,10 +5,8 @@ import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Interp, LocalPlayer, Render, Sim } from '../ecs/traits';
 
-// Death VFX: a neon shard-burst at the spot a ship derezzes, so a kill READS (the ship also hides, but a
-// silent vanish felt like a bug). Fully imperative — one InstancedMesh pool driven in a single useFrame,
-// NO React state / effect / subscription (r3f.md: purely cosmetic pooled particles are leaf-imperative).
-// This is the quick playtest-legibility pass; the full TRON derezz is S6.
+// Death VFX: a neon shard-burst where a ship derezzes, so a kill reads — a silent vanish looks like a bug.
+// One InstancedMesh pool driven in a single useFrame, with no React state, effect or subscription.
 
 const MAX = 240; // shard-pool buffer cap (hard — exceeding silently drops). ~6 concurrent bursts of PER_BURST.
 const PER_BURST = 40; // shards emitted per death
@@ -24,7 +22,7 @@ const BRIGHT = 2.6; // HDR multiplier on the tint so shards blow past the bloom 
 // Module-scope scratch — reused every frame, zero per-frame allocation (r3f hot-path rule).
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
-const CYAN = new THREE.Color( '#00e5ff' ); // local ship tint (matches ship.tsx beacon)
+const CYAN = new THREE.Color( '#00e5ff' ); // local ship tint
 const MAGENTA = new THREE.Color( '#ff2bd6' ); // remote ship tint
 
 interface Shard {
@@ -99,8 +97,8 @@ function initPool( mesh: THREE.InstancedMesh ): void {
     }
 }
 
-// A ship's `dead` rising-edge → spawn a burst at its (already-synced) Render position. Local ships read
-// Sim.dead; remotes read the latest server snapshot. `wasDead` holds last frame's state per entity id.
+// A ship's `dead` rising edge spawns a burst at its Render position. Local ships read Sim.dead; remotes
+// read the latest server snapshot.
 function detectDeaths( world: World, pool: Shard[], wasDead: Map< number, boolean > ): void {
     for ( const e of world.query( Render ) ) {
         const grp = e.get( Render );
@@ -155,10 +153,8 @@ export function ExplosionField() {
     const wasDead = useMemo( () => new Map< number, boolean >(), [] ); // entity id → dead last frame (edge detect)
     const inited = useRef( false );
 
-    // Park every pool slot AT MOUNT (callback ref → fires during commit, BEFORE the first paint). Doing this
-    // in the first useFrame instead left MAX identity-matrix unit cubes drawn at the origin for one frame — a
-    // stray bright cube at the spawn point. A ref callback runs earlier than useFrame, so the pool is hidden
-    // before anything is shown. Not a mount EFFECT — no subscription/teardown, just imperative init.
+    // Park every slot at mount via a callback ref, which runs during commit and so beats the first paint.
+    // Parking in the first useFrame instead flashes MAX identity-matrix cubes at the origin for a frame.
     const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
         meshRef.current = mesh;
         if ( mesh && ! inited.current ) {
@@ -176,9 +172,9 @@ export function ExplosionField() {
     } );
 
     return (
-        // frustumCulled=false: we rewrite instanceMatrix every frame but three computes the bounding
-        // sphere ONCE — a stale volume would cull the whole burst as the ship flies on (same reason as
-        // TrackView). Additive + no depth-write so overlapping shards sum to a bright, self-glowing flash.
+        // frustumCulled=false: three computes an InstancedMesh's bounding sphere once, so the stale volume
+        // culls the whole burst as the ship flies on. Additive and no depth-write, so overlapping shards
+        // sum to a bright, self-glowing flash.
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial

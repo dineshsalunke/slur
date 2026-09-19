@@ -1,9 +1,8 @@
 import { HALF_WIDTH, type Track } from '@slur/shared';
 import * as THREE from 'three';
 
-// Static neon finish arch at track.finishZ — two pillars, a top bar, and a translucent curtain across
-// the corridor. Purely presentational (the sim latches `finished` on z-cross); re-renders only if
-// finishZ changes, which it never does for a room.
+// Static neon finish arch at track.finishZ. Purely presentational — the sim latches `finished` on the
+// z-cross, so nothing here is in the gameplay path.
 const H = 14; // arch height (units)
 const W = HALF_WIDTH * 2 + 4; // spans the full corridor plus a little overhang
 
