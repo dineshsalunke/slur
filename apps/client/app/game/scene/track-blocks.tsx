@@ -7,14 +7,11 @@ import { LocalPlayer, Sim } from '../ecs/traits';
 import { AHEAD, BACK, park, put } from './track-instancing';
 import { DRAG_OPACITY_MAX, DRAG_OPACITY_MIN, DRAG_PULSE_SPEED, DRAG_SURFACE, LETHAL_SURFACE } from './track-materials';
 
-// per-KIND pool cap (lethal + drag render as two meshes). Worst-case ~108 lethal / ~63 drag per window
-// (asserted in track.test.ts) — keep this ≥ that with margin.
+// per-KIND pool cap (lethal + drag render as two meshes). Worst case is ~108 lethal / ~63 drag per window,
+// asserted in track.test.ts — keep this above that with margin, because overflow drops instances silently.
 const BLOCK_LIMIT = 160;
 
-// Emit one segment's blocks into the pool matching `lethal` (red walls vs amber drag) — the OTHER kind's
-// blocks are skipped, so each mesh only draws its own colour. Returns the next free slot index. Each box is a
-// DISCRETE AABB — sized from its OWN [x0,x1] × [y0,y1] × [z0,z1] — so what you see is exactly what the ship's
-// footprint tests against (WYSIWYG). Drag (amber) blocks are PASSABLE: you can fly through them for a speed hit.
+// Each box is sized from its OWN AABB, so what you see is exactly what the ship's footprint tests against.
 function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment, lethal: boolean ): number {
     for ( const b of seg.blocks ) {
         if ( b.lethal !== lethal ) continue;
@@ -37,9 +34,8 @@ function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment, lethal
 /**
  * The hazard blocks — lethal walls and passable drag blocks — as their own mountable leaf.
  *
- * SPLIT FROM THE RIBBON on purpose: these are untextured boxes awaiting their own design task, and while
- * they shared a component with the edge rails, `/art-lab` could not judge the rail or the floor without
- * looking past them. They stay one click away because "hazard-to-floor contact shading" is a real check.
+ * Split from the rails so `/art-lab` can judge the deck and rail without these untextured placeholder
+ * boxes in the shot, while keeping them one click away for the hazard-to-floor contact check.
  */
 export function TrackBlocks( { track }: { track: Track } ) {
     const world = useWorld();
@@ -54,9 +50,8 @@ export function TrackBlocks( { track }: { track: Track } ) {
         const drag = dragRef.current;
         if ( ! sim || ! lethal || ! drag ) return;
 
-        // Breathe the drag blocks' opacity 0.25↔0.5 (one shared material → every drag instance at once) so
-        // they read as passable energy, never as the solid lethal walls. Cosmetic-only: not the
-        // deterministic sim, so Math.sin is fine, and no React re-render (non-negotiable #4).
+        // Breathing the drag blocks' opacity is what makes them read passable rather than lethal. Cosmetic
+        // only — outside the deterministic sim, so Math.sin is fine here.
         ( drag.material as THREE.MeshStandardMaterial ).opacity =
             DRAG_OPACITY_MIN +
             ( DRAG_OPACITY_MAX - DRAG_OPACITY_MIN ) * 0.5 * ( 1 + Math.sin( clock.elapsedTime * DRAG_PULSE_SPEED ) );
@@ -81,18 +76,14 @@ export function TrackBlocks( { track }: { track: Track } ) {
 
     return (
         <Fragment>
-            { /* frustumCulled=false for the same reason as the ribbon: three computes an InstancedMesh's
+            { /* frustumCulled=false for the same reason as the rails: three computes an InstancedMesh's
                  bounding sphere once, and a stale volume culls the lot once the ship flies past it. */ }
-            { /* Lethal walls — the lone RED accent (touch → derezz). Kept saturated so danger reads instantly
-                 against the gray track. */ }
             <instancedMesh ref={ lethalRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
                 <meshStandardMaterial { ...LETHAL_SURFACE } />
             </instancedMesh>
-            { /* Drag blocks — AMBER, visibly distinct from the red walls so you read "slow, not death" at a
-                 glance. Passable: fly through for a speed hit, or strafe around. Dimmer than the red so lethal
-                 stays the louder warning. depthWrite=false → blends softly and never z-occludes like a solid;
-                 drag and lethal never share a lane (generator), so no cross-occlusion. */ }
+            { /* Drag blocks are passable — fly through for a speed hit. depthWrite=false so they never
+                 z-occlude like a solid; the generator never puts drag and lethal in one lane. */ }
             <instancedMesh ref={ dragRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
                 <meshStandardMaterial { ...DRAG_SURFACE } opacity={ DRAG_OPACITY_MAX } />

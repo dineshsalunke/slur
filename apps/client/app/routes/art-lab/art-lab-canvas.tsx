@@ -11,23 +11,18 @@ import { FinishGate } from '../../game/scene/finish-gate';
 import { Ships } from '../../game/scene/ship';
 import { TrackBlocks } from '../../game/scene/track-blocks';
 import { TrackFloor } from '../../game/scene/track-floor';
-import { TrackRibbon } from '../../game/scene/track-ribbon';
+import { TrackRails } from '../../game/scene/track-rails';
 import { TunableSky } from '../iso-sky/tunable-sky';
 import { ArtLabRig } from './art-lab-rig';
 import type { LabLayers } from './lab-layers';
 import { SceneProbe } from './scene-probe';
 
 /**
- * The art lab's WebGL half: the REAL materialized track, the REAL ships, the REAL chase camera and the
- * REAL post stack — with no room, no server and no networking in the path. `resolveTrack` is a pure
- * function of the seed, and `simulate()` takes the track as an argument, so the whole gameplay-visual
- * surface is reachable offline. Nothing here is a lab-only approximation; that is the point, because an
- * art review against an approximation is worthless.
+ * The art lab's WebGL half: the shipped track, ships, chase camera and post stack, with no room, no
+ * server and no networking in the path.
  *
- * Contrast with `/env-lab`, which flies the flat neon-grid `Track` and cannot show a single real hazard.
- *
- * `layers` mounts/unmounts the four scene halves so the lab can be stripped back to track-only (its
- * default) for a surface review. Nothing is deleted — every layer is one click away in the controls.
+ * Nothing here is a lab-only approximation — an art review against an approximation is worthless, which
+ * is also why `/env-lab`'s flat neon-grid track is no substitute for this one.
  */
 export function ArtLabCanvas( {
     seed,
@@ -47,36 +42,29 @@ export function ArtLabCanvas( {
     return (
         <WorldProvider world={ world }>
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 70, position: [ 0, 9, -14 ] } }>
-                { /* NO lab-only lights. The lab is lit by the shipped sky rig and the track's own emissives,
-                     and by nothing else — a flat ambient would also contradict the direction's "no fill,
-                     shadow sides go black". A review under lighting the game does not have is worthless. */ }
-                { /* Mounted FIRST so its useFrame advances sim.z before TrackView/Environment read it. */ }
+                { /* NO lab-only lights: the sky rig and the track's own emissives, nothing else. A flat
+                     ambient would contradict the direction's "no fill, shadow sides go black". */ }
+                { /* Mounted FIRST so its useFrame advances sim.z before the track and Environment read it. */ }
                 <ArtLabRig track={ track } />
                 { import.meta.env.DEV && <SceneProbe /> }
                 { layers.env ? <Environment config={ env } seed={ seed } /> : null }
-                { /* Backdrop is its own layer, independent of `env`: the nebula is the "Cold Space" half of
-                     the north star and is worth judging the track against even with fog/stars/walls muted.
-                     The void colour is now UNCONDITIONAL — the sky used to be `scene.background` and the two
-                     fought over which attached last, whereas `DeepSpaceSky` is geometry on a camera-locked
-                     patch and simply sits in front of the void. Suspense because `useTexture` loads async.
-                     The RIG is unconditional too: `backdrop` hides only the visible patch, because with no
-                     lab lights left, unmounting the whole sky would make the toggle mean "pitch black". */ }
+                { /* The void colour and the sky's LIGHT rig both stay unconditional: with no lab lights
+                     left, unmounting the sky with the toggle would make `backdrop` mean "pitch black". It
+                     hides only the visible patch. Suspense because `useTexture` loads async. */ }
                 <color attach="background" args={ [ env.background ] } />
-                { /* TunableSky, not the frozen DEEP_SPACE: framing (pan/tilt/fov) is a chase-camera
-                     judgement with a track in frame, which /iso-sky's free orbit cannot make. It reads the
-                     same SKY_TUNING singleton, so the two labs cannot disagree about what ships. */ }
+                { /* TunableSky, not the frozen DEEP_SPACE: it reads the same SKY_TUNING singleton /iso-sky
+                     writes, so the two labs cannot disagree about what ships. */ }
                 <Suspense fallback={ null }>
                     <TunableSky backdrop={ layers.backdrop } />
                 </Suspense>
-                { /* Ribbon and blocks mount independently — the rail is this task's subject and must be
-                     judgeable without untextured boxes in the shot. The game composes both via TrackView. */ }
-                { layers.rails ? <TrackRibbon track={ track } showFloor={ ! layers.slab } /> : null }
+                { /* Deck, rails and blocks mount independently so each can be judged without the other two
+                     in the shot. The game composes all three via TrackView. */ }
+                { layers.floor ? <TrackFloor track={ track } /> : null }
+                { layers.rails ? <TrackRails track={ track } /> : null }
                 { layers.blocks ? <TrackBlocks track={ track } /> : null }
-                { /* The generated slab, side-by-side comparable with the instanced floor quads. */ }
-                { layers.slab ? <TrackFloor track={ track } /> : null }
                 { layers.finish ? <FinishGate track={ track } /> : null }
-                { /* Ships OFF hides the MESH only — the rig, the shared simulate() and the chase camera
-                     keep running, so you still fly the real track at the real speed. */ }
+                { /* Ships OFF hides the MESH only — the rig, simulate() and the chase camera keep running,
+                     so you still fly the real track at the real speed. */ }
                 { layers.ships ? <Ships /> : null }
                 { bloom ? (
                     <EffectComposer multisampling={ 0 }>
@@ -88,16 +76,12 @@ export function ArtLabCanvas( {
                         />
                     </EffectComposer>
                 ) : (
-                    /* Bloom OFF is a first-class review mode, not a debug afterthought: the handoff's
-                       implementation notes require that "readability should survive with bloom disabled",
-                       and that claim has never been checked. */
+                    /* Bloom OFF is a first-class review mode: the direction requires that "readability
+                       should survive with bloom disabled". */
                     <Fragment />
                 ) }
-                { /* Lets this route be photographed from a tab nobody is looking at. Never mounted on /game —
-                     it advances the sim. See app/dev/frame-tap.tsx. The DEV gate is what keeps it OUT of the
-                     production bundle, not merely inert in it: Vite folds the flag to `false`, the binding
-                     goes unused and Rollup drops the module (verified by grepping build/ — same mechanism as
-                     NetDebugHud in net-canvas.tsx). */ }
+                { /* Photographs this route from a tab nobody is looking at. Never on /game — it advances
+                     the sim. The DEV gate keeps it OUT of the bundle, not merely inert in it. */ }
                 { import.meta.env.DEV && <FrameTap /> }
             </Canvas>
         </WorldProvider>

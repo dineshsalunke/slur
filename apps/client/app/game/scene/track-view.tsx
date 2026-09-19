@@ -1,19 +1,19 @@
 import type { Track } from '@slur/shared';
 import { Fragment } from 'react';
 import { TrackBlocks } from './track-blocks';
-import { TrackRibbon } from './track-ribbon';
+import { TrackFloor } from './track-floor';
+import { TrackRails } from './track-rails';
 
 /**
- * The whole track as the game shows it: ribbon plus hazard blocks.
+ * The whole track as the game shows it: deck, edge rails and hazard blocks, and nothing but a composer.
  *
- * It is only a composer. The two halves are separately mountable leaves because `/art-lab` needs the rail
- * WITHOUT the blocks — they used to be one component, which is why untextured boxes sat in every art review
- * frame. Track is local-only (materialized from the synced descriptor), never reconciled tile-by-tile.
+ * Three leaves rather than one because `/art-lab` mounts each on its own to judge it in isolation.
  */
 export function TrackView( { track }: { track: Track } ) {
     return (
         <Fragment>
-            <TrackRibbon track={ track } />
+            <TrackFloor track={ track } />
+            <TrackRails track={ track } />
             <TrackBlocks track={ track } />
         </Fragment>
     );

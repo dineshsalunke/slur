@@ -160,3 +160,190 @@ could not source it first-hand — it is NOT reconstructed. The supervisor write
 - Owner block for the sitting is owned by the supervisor, committed on `art/block` at `1527d19`. Do not edit it.
 - Frame tap (`art/frame-tap`) stays OUT of this branch; it reaches here through `dev` after its own PR.
 - The deferred `/iso-sky` gate is not this lane's to run; its roughness self-test needs `Star light` OFF as well as `Env rig` off.
+
+## Session 1 (2026-09-19) — slice 1 preparation
+
+### Base
+
+- Lane base SHA `639a2f2605edc77e0d54e33f9c6a757b60c92b80`, branch `art/track`, tree clean at session start.
+- Lab defaults read from `lab-layers.ts:46-54`: `rails:true slab:true blocks:false backdrop:true env:false ships:false finish:false`.
+- `/art-lab` default seed `1234` (`routes/art-lab/route.tsx:33`), default env index `ENV_VARIANTS.length-1` = `C · Grid Void`.
+
+### Track content, seed 1234 (measured, node against `packages/shared/dist`)
+
+- 400 segments: 361 full-width floor, 20 partial-floor, 19 zero-floor (full gaps). 381 floor spans total.
+- First full gap at segment 10, z=200. First partial at segment 7, z=140 (floor `-16..0` only).
+- Segment 113, z=2260 — partial, floor `-24..-8` (16u of 64u). Used as the slice-1 comparison target.
+
+### `buildFloorGeometry` cost — the D1 concern, MEASURED
+
+- Cold module, vitest/node (NOT browser), seed 1234, `TRACK_SEGMENTS=400`: **14.65 ms**.
+- Geometry: **10,704 vertices · 3,568 triangles · 128,448 bytes** of position attribute.
+- Verdict: not a visible hitch, ~7× under the 100 ms escalation threshold. **Measured, not a problem** — no NEEDS-DECISION.
+- Caveat: measured in node, not in the browser. Browser figure `[unmeasured]`.
+- Method: temporary `export` on `buildFloorGeometry` + a throwaway vitest; both reverted, nothing left in the tree.
+
+### Slice-1 forced material deltas (the baseline slice 2's metalness question is measured AGAINST)
+
+The swap forces exactly four changes, none of them chosen. Instanced quads use `FLOOR_SURFACE`; `TrackFloor` uses `floorSurface()`.
+
+- base `color` `#050507` → `#ffffff` — base colour MULTIPLIES the map; at `#050507` the texture crushes to flat black.
+- `map`: none → `trackSurfaceTexture()` (tiled canvas, 1024², one 16×20u panel).
+- `roughness` unset (three default 1.0) → `FLOOR_ROUGHNESS = 0.62`; `metalness` unset (default 0.0) → `FLOOR_METALNESS = 0.12`.
+- thickness `FLOOR_THICK = 0.6u` (`track-ribbon.tsx:14`) → `SLAB_THICKNESS = 2u` (`track-floor.tsx:15`).
+- `emissive #c8d0d8` / `emissiveIntensity 0.05` are carried over unchanged from `FLOOR_SURFACE`.
+
+### Pre-delete comparison — CAPTURED (this was the last chance)
+
+- Matched by construction: `labControls.paused=true` + `labCommands.jumpToZ=2200`, seed 1234, env C, bloom OFF, warmup 20, frames 2. Both temp edits reverted.
+- `00-frame-tap/refs/s1-before-instanced-bloomoff.png` — the floor being deleted (instanced 0.6u quads).
+- `00-frame-tap/refs/s1-before-generated-bloomoff.png` — `TrackFloor`, same camera and frame.
+- Luma (`ffprobe signalstats`, YMIN/YAVG/YMAX): instanced `0 / 31.07 / 255`; generated `0 / 39.33 / 241`.
+- Read: generated shows panel seams (faint lateral + longitudinal lines) the instanced floor has none of; generated is brighter and value-graded down the ribbon; the partial gap ahead reads with a visible lit side wall on the generated mesh vs a flat dark slot on the instanced one. No z-fighting in either.
+- Both captures taken through the frame tap, no window focus (method matters — see the retraction below).
+- Post-swap counterpart captures: `[not yet taken — slice 1 code not written]`.
+
+### Bloom — lab vs game, VERIFIED (asked for before slice 2)
+
+- Game (`net-canvas.tsx:133-139`): one `<EffectComposer multisampling={0}>` + `<Bloom mipmapBlur>` driven by `GRID_VOID.bloom`, hardcoded.
+- Lab (`art-lab-canvas.tsx`): same composer and same `<Bloom mipmapBlur>`, but driven by `env.bloom` — i.e. whichever of A/B/C is selected.
+- `GRID_VOID` resolves BY NAME (`env-config.ts:160`), not by index, so reordering `ENV_VARIANTS` cannot repoint it.
+- Values: A · Deep-Space Drift `1.0 / 0.45 / 0.2` · B · Neon Canyon `1.4 / 0.4 / 0.25` · **C · Grid Void `intensity 1.2 / threshold 0.42 / smoothing 0.2`**.
+- So at the lab's DEFAULT env (C) the lab and the game bloom identically. **On A or B they do not** — a bloom gate taken on A or B measures a pass the game never runs.
+- Owner's "bloom washes the whole screen out" reproduction: `[unmeasured]` — bloom-ON captures are blocked, see below.
+
+### Frame tap — two environment limits found this session (both first-hand)
+
+- The tap answered on a pre-existing tab, then stopped answering entirely after an HMR full-reload; a freshly navigated tab also did not answer for ~6 minutes across 8 attempts.
+- During that window the page was demonstrably alive: Vite HMR `connected`, DOM panels rendered, readout showed `z 2200 / 8000 seg 110/400`, so `useFrame` was running and the jump had applied.
+- rAF probe in that tab: **0 frames in 1837 ms**, `visibilityState: "hidden"`, `document.hasFocus() false` — the known hidden-tab state, and not the cause of the tap failing.
+- **The tap began answering the moment the lab's `bloom` toggle was clicked OFF, and stopped again when it was clicked back ON.** Reproduced twice in each direction.
+- Working hypothesis, NOT verified: with `<EffectComposer>` mounted in an occluded tab the R3F subtree stays suspended, so `FrameTap`'s `hot.on` registration (a passive effect) never runs, while `useFrame` (a layout effect) does. Consequence either way: **bloom-ON captures are currently unobtainable from an occluded tab.**
+- Chrome reports `visibilityState: "hidden"` even with the tab active in the frontmost Chrome window, because the terminal covers it (macOS occlusion). Raising Chrome did not change it.
+
+### Brief corrections landed
+
+- `LANE-BRIEF.md` §6 rewritten 2026-09-19: the "the tab must be **foreground**" instruction is **RETRACTED** (it predates PR #134). The diagnosis stands, the conclusion is dead — the tap drives R3F 9.7.0 `advance()`, which gates on none of `frameloop` / `internal.active` / `internal.frames`. Do not reinstate it from a stale copy.
+- `track-ribbon.tsx:98` said the rail is retoned "in this task's slice 3"; D7 makes it slice 2. Corrected.
+- The two comparison PNGs are GITIGNORED (`.claude/art-pass/.gitignore:3` = `*/refs/`). They exist only on disk in this worktree; they do not survive a worktree teardown.
+
+### Corrections to the "Slice 1 — the floor swap (D1)" section above (both already fixed in code at 639a2f2)
+
+- "`buildFloorGeometry` loops to 400 → no floor past the finish line" — STALE. `track-floor.tsx:157` now reads `Math.round(track.finishZ / SEG_LEN) + Math.ceil(AHEAD / SEG_LEN)`, so the run-out pad is built. Nothing rides slice 1 for it.
+- "`emitSpan` hardcodes `t = 0`, `b = -SLAB_THICKNESS`, ignoring `FloorSpan.y`" — STALE. It now reads `const t = span.y; const b = span.y - SLAB_THICKNESS`. `continues()` also compares `y` (`Math.abs(f.y - y) < 1e-4`), so a step no longer suppresses its cap.
+- Span count for seed 1234 is 381 (the 2,675 figure in that section is the total across 7 seeds, not one track).
+- Evidence made durable: full-res PNGs live only in the gitignored `00-frame-tap/refs/`; tracked copies are `02-track/evidence/s1-before-{instanced,generated}-bloomoff.jpg` (q=2 JPEG, 285 KB + 291 KB, 3456×1926). Committed as plain blobs — `.gitattributes` routes only `apps/client/public/models/**` and `docs/art-direction/**` PNGs through LFS, and adding a third LFS pattern for two files was not worth the risk.
+- `CONTRIBUTING.md` §3 comment rule (commit `3d17865`) is NOT on `origin/dev` as of 2026-09-19 — `origin/dev` is `639a2f2`, and the §3 that IS there says the opposite: "Copy its naming, its comment density, its idioms."
+- Comment pass done on 5 of this lane's 17 files: `track-floor.tsx` 212→183 lines (79→52 comment lines, 37%→28%), `track-ribbon.tsx` 103→93, `track-materials.ts` 92→76, `track-view.tsx`, and the deleted rail comment. Verified comment-only: `git diff` filtered for non-comment lines shows no logic change.
+- NOT yet swept, still owed: `track.tsx` · `track-blocks.tsx` · `track-instancing.ts` · `track-texture.ts` · `tube-walls.tsx` · all of `routes/art-lab/` (7 files). None of them read yet this session.
+- Gate GREEN after the comment pass: typecheck 0 errors · lint 3 pre-existing warnings · shared 75/75 · client 9 files passed · server 4/4 · build ✓.
+- CORRECTION: the comment rule IS on `origin/dev` as `59805a1` (#137), verified 2026-09-19 — §3 now reads "Comment only what the code cannot say, in 1–2 plain lines". The earlier `3d17865` was a pre-merge branch commit; the PR squash-merged, so that SHA is not reachable from `dev` and never will be. LANE-BRIEF's interim summary has been deleted accordingly.
+
+## Session 2 (2026-09-19) — slice 1, the floor swap
+
+### Authority named BEFORE the slice (standing obligation, supervisor session 2)
+
+- Governing: board 24 panel 04 "Gap lip" — "actual missing deck; thin warm lip; visible dark cut wall and open space underneath"; its do-not-copy column excludes "apparent slab thickness". `ART_MATERIALS.md` §5 maps gap side walls/underside to M8 and the rim/inner lip to M7.
+- Governing: `ART_SCALE_REFERENCE.md` §1 — track thickness is "not a sim constant. The sim floor is a plane; thickness is pure art." §6 — a gap is 20u down-track and "should look like a genuine chasm, not a seam".
+- Supervisor RULING on the apparent conflict: a board never constrains a VALUE, only an APPEARANCE. The scale reference governs the number (2u is legal, no escalation); board 24 governs whether the edge READS chunky from the chase camera. Where they genuinely collide on the same thing, the scale reference wins on dimensions and it escalates.
+- What the slice must therefore buy: the inner lip and the visible cut wall at a gap, which live in the end caps and side faces. Continuous-and-not-z-fighting is NOT sufficient — if gaps still read as flat slots the slice has not succeeded.
+
+### Built
+
+- `track-ribbon.tsx` → `git mv` to `track-rails.tsx`; `TrackRibbon` → `TrackRails`, rails only. Floor quads, `FLOOR_LIMIT`, `FLOOR_THICK`, `showFloor`, `floorRef`/`prevFloor` and the `FLOOR_SURFACE` import all deleted.
+- `TrackView` now composes `TrackFloor` + `TrackRails` + `TrackBlocks`. `net-canvas.tsx` unchanged — it renders `TrackView`, so the game picks the generated deck up through the composer.
+- `lab-layers.ts`: `slab` → `floor`, now a peer of `rails`/`blocks`, all three independent. Defaults floor ON, rails ON, blocks OFF — unchanged in effect.
+- `art-lab-canvas.tsx` mounts the three independently; `showFloor` is gone from the call site.
+- `FLOOR_SURFACE` folded into `floorSurface()` — after the swap nothing consumed the near-black base, and an exported constant the game never ships is a lie, not a spare part. `FLOOR_ROUGHNESS` / `FLOOR_METALNESS` untouched (the block lane imports them).
+- Rail geometry unchanged: `railY = seg.floors[0].y + RAIL_H/2`, and `TrackFloor`'s top face is also at `span.y`, so the rail sits on the new deck exactly as it sat on the quads. No new coplanar pair.
+
+### Comment sweep — 4 more files, swept while inside them for the swap
+
+- Done this session: `art-lab-canvas.tsx`, `lab-layers.ts`, `track-blocks.tsx`, `track-instancing.ts`. Plus `track-rails.tsx` carried its swept comments across the rename, minus the floor ones.
+- Still owed: `track.tsx` · `track-texture.ts` · `tube-walls.tsx` · and 6 of `routes/art-lab/` (`art-lab-controls.tsx`, `art-lab-readout.tsx`, `art-lab-rig.tsx`, `art-lab-sky-controls.tsx`, `lab-state.ts`, `route.tsx`).
+- Supervisor confirmed the owed count is 12, not 13; their 13 was a miscount and LANE-STATE was right.
+
+### The Canvas-isolation guard has a FALSE NEGATIVE — measured, not reasoned
+
+- `pnpm lint` went red on a file I did not touch: "apps/client/app/routes/art-lab/route.tsx renders <ArtLabCanvas> and calls: useState, useMemo".
+- Cause: `scripts/check-canvas-isolation.mjs` `strip()` removes strings BEFORE comments, and its template-literal regex pairs backticks ACROSS comment boundaries. A collapsed pair can swallow the `*/` between two comments, after which the block-comment stripper eats an arbitrary span of real code.
+- Measured at HEAD `3284fed`: running the guard's own `strip()` over `art-lab-canvas.tsx` leaves NO `<Canvas` and ZERO exported function names — the whole file vanishes. So `ArtLabCanvas` was never in the wrapper set and `/art-lab`'s route was never checked, while the guard printed "✓ 8 route entry modules clean".
+- Trigger for the flip: my comment sweep cut that file 22 backticks → 6, changing the parity. A comment-only edit is sufficient to change what this guard checks.
+- STILL EXEMPT in my tree, same mechanism: `apps/client/app/iso-lab/iso-lab.tsx` and `apps/client/app/iso-lab/iso-lab-canvas.tsx` — both contain a literal `<Canvas` that `strip()` eats.
+- The underlying violation is REAL and pre-existing: `routes/art-lab/route.tsx` holds `useState` ×4 plus a `useMemo` directly above `<ArtLabCanvas>`.
+- In-repo precedent for the fix: `routes/env-lab/route.tsx` is 3 lines returning `<EnvLabCanvas />` with its state inside the canvas; `routes/art-gallery/route.tsx` returns sidebar + canvas with zero hooks.
+- Escalated as NEEDS-DECISION (options: extract an `ArtLabShell` leaf / exempt the route in the guard / both). NOT resolved by me, NOT papered over. Restoring backticks to re-hide it was considered and rejected on sight.
+
+### Gate at the slice-1 code, before the guard question is settled
+
+- `pnpm format` clean · `pnpm typecheck` 0 errors · biome 3 pre-existing `noExcessiveLinesPerFile` warnings and nothing new · shared **75/75** · client **61/61 across 9 files** · server **4/4** · `pnpm build` ✓.
+- Client test count is 61 now, not the 37 LANE-STATE records — the difference came in from `dev`, not from this change. All pass.
+- `pnpm lint` exits 1 ONLY on the Canvas-isolation guard, for the reason above. No commit taken with it red.
+
+### Frames — NOT taken, blocked on a tab
+
+- Stack IS up: 5201 (vite, pid 73609) and 2601 (server, pid 73608) both listening; `GET /art-lab` → 200.
+- `curl "localhost:5201/__frame-tap?name=…&warmup=20&frames=2"` answers: "frame-tap: nobody answered. Is a lab route open on this dev server, in ANY Chrome window?" — no lab tab with a live HMR socket exists in this session.
+- So the tap needs a tab OPENED, which the Chrome freeze reserves to a supervisor-granted slot. Requested. `[unmeasured]`: every post-swap frame, including the z=2200 counterpart to `evidence/s1-before-{instanced,generated}-bloomoff.jpg`.
+- To match the predecessor's comparison camera the capture needs the same temp edits: `labControls.paused = true` and `labCommands.jumpToZ = 2200`, seed 1234, env C, bloom OFF, warmup 20, frames 2 — reverted after, as they were last time.
+
+### Noted for SLICE 2, not acted on
+
+- `TrackRails` still breaks the rail over full gaps (`if (seg.floors.length === 0) continue`). Board 24 wants the outer boundary "continuous" and "straight", and `ART_MATERIALS.md` M7 separates boundary from inserts by the boundary being "unbroken and predictable". The existing in-code justification is that the break is what makes a gap read at the shallow chase angle. These conflict, the rail is slice 2's subject, and the call is not slice 1's. Left exactly as it was.
+
+### Option A landed — the `ArtLabShell` extraction (supervisor ruling C)
+
+- New `routes/art-lab/art-lab-shell.tsx` holds the four `useState`s, `toggleLayer` and the track `useMemo`; `route.tsx` is now hook-free, returning `<WorldProvider><ArtLabShell /></WorldProvider>`.
+- Justification is the in-repo precedent, not the ruling: `env-lab/route.tsx` is 3 lines with its state inside the canvas; `art-gallery/route.tsx` holds zero hooks.
+- WHAT THIS DOES NOT DO, recorded so a later session does not misread the commit: the same re-render still walks the Canvas subtree, one level down. It has MOVED, not gone. What it buys is that a React Router loader or navigation re-render of the route entry no longer reconciles the scene — the specific thing non-negotiable #10's rule addresses.
+- Side effect worth having: the guard now DISCOVERS `ArtLabCanvas` as a wrapper (`✓ Canvas-isolation: 8 route entry modules clean (wrappers: Canvas, NetCanvas, ArtGalleryCanvas, ArtLabCanvas, EnvLabCanvas, LandingScene)`) — `/art-lab` is checked for the first time, and passes.
+- `scripts/check-canvas-isolation.mjs` NOT touched. Issue **#138** owns it. Supervisor reproduced the defect independently on `dev` at `59805a1`: strip() leaves `iso-lab.tsx` at 19%, `iso-lab-canvas.tsx` at 39%, `art-lab-canvas.tsx` at 27% — blind to all three since #115.
+
+### Owner's "I can only see the rails, no floor" — DIAGNOSED, and it is NOT a mounting fault
+
+- Frame tap answered at `http://localhost:5201/art-lab`, bloom ON, composed, 22 frames pumped → `00-frame-tap/refs/s1-after-swap.png`, 3456×1994.
+- The deck IS mounted and IS rendering. It fills the frame. This is not a wiring fault, not an unmounted layer, and not a black material.
+- Whole frame: YMIN 6 · YAVG 61.33 · YMAX 255 · SATAVG 4.41.
+- Deck block 1000×1000 at x1400,y300: YMIN **55** · YAVG **65.34** · YMAX **81** · SATAVG 3.47.
+- Deck block 1000×560 at x1400,y150 (further up-frame): YMIN 61 · YAVG 69.99 · YMAX 104 · SATAVG 3.98.
+- Sky band 1000×60 at x1400,y200: YMIN 19 · YAVG 58.15 · YMAX 255 · SATAVG 9.27.
+- **⚠ I RETRACT MY OWN FIRST READ.** Eyeballing the downscaled frame I called the deck "near-white"; the measurement says mid-grey, YMAX 81 over the deck block — nowhere near clipping. That is the identical error already retracted in LANE-STATE §5 ("near-white, clipped slab and rails — WRONG, a bloom-ON eyeball read of a thumbnail"). Measure the frame; do not read it.
+- The real cause of the "no floor" read: the deck is a **near-uniform mid-grey field with no visible panel structure** — 26 luma values of spread across a 1000×1000 block, saturation ~3.5, no seams legible. There is nothing for the eye to identify as a surface, so it reads as absence.
+- Consistent with what `LANE-FACTS` already recorded for `FLOOR_SURFACE`: "no map, no roughness, no procedural term: mathematically uniform, nothing for light to catch". The map IS bound now via `floorSurface()`, but at bloom ON its contrast does not survive.
+- Consistent too with the predecessor's bloom-OFF capture, which showed the seams as "faint lateral + longitudinal lines". Faint survives bloom OFF and does not survive bloom ON.
+- **The deck's finish is SLICE 3's subject**, so this is the expected starting state, not a slice-1 defect. Slice 1 is the swap, and the swap works.
+- `[unmeasured]`: the bloom-OFF half of the pair at this camera. The `&ab=1` tap returned "nobody answered" — rewriting `route.tsx` triggered an HMR full reload and killed the tab's socket, the same failure the predecessor recorded. The bloom-ON/OFF pair the supervisor asked for is still owed and needs a live tab.
+- `[unmeasured]`: whether the washout is uniform or concentrated in the VFX that still set `toneMapped: false`. One capture cannot answer it; the hypothesis is neither confirmed nor killed.
+- NOT DONE and deliberately: no bloom knob touched, no track emissive compensated. Rev 3 §3 makes the boundary strip the reference intensity 1.0 the whole scene's scale is later built from.
+
+### Comment ratio on slice 1's NEW/rewritten files — caught by the owner, fixed
+
+- The sweep fixed the READ path; writing `art-lab-shell.tsx` fresh at 13 comment lines on 50 re-opened it on the WRITE path. A new file written at a high ratio instructs the next agent to match it, which is the exact loop the rule was rewritten to break.
+- `art-lab-shell.tsx` 50→43 lines, 13→6 comment lines (26% → 13.9%). Kept: the `length - 1` = C · Grid Void inline, the one-line `resolveTrack` purity note, the lab-state boundary rule. Cut: the JSDoc paragraph restating the four useStates below it, the env-lab/art-gallery precedent argument (it is PR-body material, same category as the re-render caveat), and the functional-update note naming the pattern it sits on.
+- `track-rails.tsx` 59→54 lines, 11→6 comment lines (11.1%). Cut the "instanced while the floor is one baked mesh" paragraph — a design argument, and partly invented at the rename rather than carried across.
+- `route.tsx` 29→21 lines, 14→6 comment lines (48.2% → 28.5%). Not named in the review but in the same diff: removing the hooks left all the prose behind. Kept the wrong-scale reason the instrument exists and the hook-free boundary rule; cut the rest.
+- Tree average at the time of the review was 22.6% and falling.
+- Gate GREEN after the trim: format · typecheck · biome 3 pre-existing warnings · Canvas-isolation 8 clean · shared 75/75 · client 61/61 · server 4/4 · build.
+
+### `lab-layers.ts` — swept once, still above bar, trimmed again
+
+- After the session-2 sweep it still measured **42.8%** (24 comment lines on 56) — the second-worst file in the routed set, and inside the PR whose own subject is comment discipline.
+- Cause: the sweep rewrote the header but KEPT an 8-line MECHANISM block enumerating the rejected alternatives (koota trait, context, URL search param). That is the "five mechanisms weighed" shape the rule names; it belongs in the PR body.
+- Now **40 lines, 8 comment, 20.0%**. Kept: the one-line "re-render IS the effect / per-frame knobs live in lab-state" boundary, the blocks-OFF-by-default reason with its one-click caveat, backdrop being independent of `env`, ships hiding the MESH only, and the key-order note on `LAB_LAYER_KEYS`. Cut: the mechanism block, the DEFAULTS paragraph (the object states them), and the one-line restatements of `floor`/`rails`/`env`/`finish`.
+- LESSON, worth more than the number: a file can be swept and still be above bar. "Swept" is not a state; the ratio is. Measure after, not just before.
+
+### Routed sweep set is 13, not 12 — my earlier concession was wrong
+
+- `routes/art-lab/` holds **8** sweepable files, not 7: art-lab-canvas, art-lab-controls, art-lab-readout, art-lab-rig, art-lab-sky-controls, lab-layers, lab-state, route. (Excluded: `scene-probe.tsx`, temp, deleted at slice 4; `art-lab-shell.tsx`, new this slice.)
+- 5 scene files + 8 = **13**. The supervisor's first message said 13 and enumerated 12; I resolved it to 12 and resolved it the wrong way. Accepted back to 13.
+- DONE (5, all in #140): track-blocks 13.9% · track-instancing 21.7% · art-lab-canvas 19.1% · lab-layers 20.0% · route 28.5%. Not in the 13 but in the PR: track-rails 11.1% · art-lab-shell 13.9%.
+- PENDING (8): track.tsx 11.5% · track-texture.ts 35.0% · tube-walls.tsx 12.3% · art-lab-controls.tsx 8.9% · art-lab-readout.tsx 23.9% · art-lab-rig.tsx 22.4% · art-lab-sky-controls.tsx 25.8% · lab-state.ts **72.2%** (worst in the set).
+
+### Branch history — the rebase was the SUPERVISOR's
+
+- Commits `ace1b5a`/`8c46e23` on base `3284fed` became `da0855a`/`4e06524` on base `80f2778`. Supervisor confirmed they rebased it at 23:55:33 and had not told me; three agents exist (supervisor, this lane, comment-sweep) and no rogue session. PR #139 and the `chore/comment-ratchet` branch are also theirs.
+- Raising it was correct even though content survived. Content surviving is not a reason to absorb an unexplained rewrite.
+
+### ⚠ SLICE 2 GATE HAZARD, told in advance by the supervisor
+
+- #139 adds a **comment-ratchet to `pnpm lint`** counting any line starting with `//` or `*` under apps/, packages/ and scripts/. It does NOT know it is inside a template literal, so **GLSL comments in the `onBeforeCompile` emitter shader WILL count against the file's budget.** Supervisor judged this correct rather than a bug — a shader comment is still a comment. Budget for it before writing the patch, not at the gate.

@@ -6,12 +6,9 @@ import { floorSurface } from './track-materials';
 import { PANEL_L, PANEL_W } from './track-texture';
 
 /**
- * Downward extrusion of the slab (world units). Purely an art choice — `SLAB_THICKNESS` is NOT a game
- * constant. The sim's floor is a plane at y=0 and collision never reads this (the art-direction handoff §3
- * confirms: "Track slab thickness | Art/implementation choice").
- *
- * It IS load-bearing for readability though: the handoff §5 warns that "slab thickness must not conceal the gap at
- * low camera height". Thicker reads more solid but hides holes from a low camera — tune against both.
+ * Downward extrusion of the slab (world units). The sim never reads it — its floor is a plane at y=0.
+ * Constrained from one side only: thickness must not conceal a gap from a low camera, so thicker reads
+ * more solid but hides holes ("slab thickness must not conceal the gap at low camera height", handoff §5).
  */
 export const SLAB_THICKNESS = 2;
 
@@ -28,9 +25,8 @@ const FORWARD: V3 = [ 0, 0, 1 ];
 const BACKWARD: V3 = [ 0, 0, -1 ];
 
 /**
- * UVs are world position divided by the PANEL size, so one texture tile = one panel. Because the mesh is
- * continuous, panels tile seamlessly across the whole ribbon and panel size stays a texture decision.
- * Side faces and caps use the same scale so grain density matches the top rather than stretching.
+ * World position over PANEL size, so one tile = one panel and panel size stays a texture decision.
+ * Sides and caps use the same scale, so their grain matches the top instead of stretching.
  */
 function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     const [ x, y, z ] = p;
@@ -42,11 +38,8 @@ function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
 /**
  * Two triangles for a quad, wound so the face points along `normal`.
  *
- * Winding is COMPUTED, not reasoned about. Getting it by hand means predicting how a world-space corner
- * order projects to screen space, and the axis handedness flips depending on which way the face looks —
- * I got the top face wrong exactly that way (the whole ribbon vanished under backface culling), then got
- * the end caps wrong the same way a second time. Taking the cross product and flipping when it disagrees
- * with the intended normal makes every face correct by construction.
+ * Winding is computed from the intended normal, never hand-ordered: hand-ordering silently inverts faces,
+ * and an inverted face disappears under backface culling with every gate still green.
  */
 function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plane: UvPlane, normal: V3 ): void {
     const ab: V3 = [ b[ 0 ] - a[ 0 ], b[ 1 ] - a[ 1 ], b[ 2 ] - a[ 2 ] ];
@@ -66,9 +59,8 @@ function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plan
 }
 
 /**
- * True when `other` has a floor span covering [x0,x1] at the SAME height — the slab continues, so no end
- * cap is needed. Height is part of the test: two spans at different `y` are a step, not a continuation,
- * and treating them as one would swallow the cap that makes the step visible.
+ * True when `other` covers [x0,x1] at the SAME height, so the slab continues and needs no end cap.
+ * Height is part of the test: two spans at different `y` are a step, and merging them eats its cap.
  */
 function continues( other: Segment | null, x0: number, x1: number, y: number ): boolean {
     return other
@@ -82,10 +74,8 @@ const isOffGrid = ( v: number ) => {
 };
 
 /**
- * One floor span: top face, both side walls, and end caps only where the slab genuinely ends.
- *
- * Caps are conditional rather than unconditional because two adjacent segments with the same span would
- * otherwise bury coplanar back-to-back faces inside the solid and z-fight.
+ * One floor span: top face, both side walls, and end caps only where the slab genuinely ends —
+ * unconditional caps would bury coplanar back-to-back faces between adjacent spans and z-fight.
  */
 function emitSpan(
     pos: number[],
@@ -97,25 +87,23 @@ function emitSpan(
     capBack: boolean,
 ): void {
     const { x0, x1 } = span;
-    // The span's own height, not 0. Every span the generator emits today sits at y=0 (checked across 7
-    // seeds, 2675 spans), but `FloorSpan.y` is what the instanced floor honoured and what the rails ride.
+    // The span's own height, not 0. Every span the generator emits today sits at y=0, but `FloorSpan.y`
+    // is what the rails ride, so honouring it keeps a future raised platform correct by construction.
     const t = span.y;
     const b = span.y - SLAB_THICKNESS;
 
-    // Top face — the surface you fly over. This IS the physics hull (ADR-002, WYSIWYG).
+    // Top face — the surface you fly over, and the physics hull itself: what you see is what you hit.
     pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz', UP );
 
-    // Side walls — visible thickness, so a gap reads as a hole with depth rather than a flat dark patch.
+    // Side walls — visible thickness, so a gap reads as a hole with depth, not a flat dark patch.
     pushQuad( pos, uv, [ x0, b, z0 ], [ x0, t, z0 ], [ x0, t, z1 ], [ x0, b, z1 ], 'zy', LEFT );
     pushQuad( pos, uv, [ x1, t, z0 ], [ x1, b, z0 ], [ x1, b, z1 ], [ x1, t, z1 ], 'zy', RIGHT );
 
-    // End caps — the faces you look straight AT across a gap. These were invisible before the winding was
-    // computed rather than guessed, which is why gaps read as flat holes with no depth.
+    // End caps — the faces you look straight AT across a gap, and what gives it depth.
     if ( capFront ) pushQuad( pos, uv, [ x0, b, z0 ], [ x1, b, z0 ], [ x1, t, z0 ], [ x0, t, z0 ], 'xy', BACKWARD );
     if ( capBack ) pushQuad( pos, uv, [ x1, b, z1 ], [ x0, b, z1 ], [ x0, t, z1 ], [ x1, t, z1 ], 'xy', FORWARD );
 
-    // Underside — visible from below when you fall into a gap, and it closes the solid so the slab never
-    // shows a hollow interior from a low camera.
+    // Underside — seen when you fall into a gap, and it closes the solid against a low camera.
     pushQuad( pos, uv, [ x0, b, z0 ], [ x0, b, z1 ], [ x1, b, z1 ], [ x1, b, z0 ], 'xz', DOWN );
 }
 
@@ -130,9 +118,8 @@ function packGeometry( pos: number[], uv: number[] ): THREE.BufferGeometry {
 /**
  * One capped slab span, for showing a slice of ribbon outside the game (the gallery).
  *
- * Exported rather than reproduced with a `boxGeometry`: box UVs are normalised 0..1 per face, so the panel
- * texture would stretch one tile across the whole 64u width and the gallery would show a finish the game
- * never renders.
+ * Not a `boxGeometry`: box UVs are normalised per face, which would stretch one tile across the whole
+ * 64u width and show the gallery a finish the game never renders.
  */
 export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: number ): THREE.BufferGeometry {
     const pos: number[] = [];
@@ -142,24 +129,17 @@ export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: numbe
 }
 
 /**
- * Builds the whole ribbon as ONE geometry, generated from the sim's real `FloorSpan` data.
+ * The whole ribbon as ONE geometry, from the sim's own `FloorSpan` data.
  *
- * WHY GENERATED, NOT INSTANCED TILES: tiles repeat every 4u in both axes — a visible grid, and exactly the
- * "dense seam grid" the art-direction handoff §5 rejects. One mesh gives continuous UVs, so panel size becomes a
- * texture decision instead of a geometry constraint.
- *
- * WHY FROM `FloorSpan` AND NOT A LANE GRID: spans happen to be 4u-aligned today
- * (`x0 = -HALF_WIDTH + n*CELL`), so a lane grid would match — but GDD §0 is explicit that this is a
- * generation artifact, not a rule. Reading spans directly keeps WYSIWYG true whatever the generator does
- * later; the dev warning below makes a future divergence loud rather than silent.
+ * One mesh rather than instanced tiles: tiles repeat every 4u, which is the dense seam grid the art
+ * direction rejects. Spans rather than a lane grid: their 4u alignment is a generator artifact and not a
+ * rule (GDD §0), so reading spans keeps the visual hull equal to the physics hull whatever it does later.
  */
 function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
-    // Build PAST the finish line. `segmentAt` keeps returning a full-width `finish` pad beyond
-    // `finishZ / SEG_LEN`, and the race does not stop at the line — the leader-grace window is flown over
-    // that pad. Bounding the mesh at the line (as this did) left the run-out floorless. One render window
-    // past the end covers everything that can be on screen when the line is crossed.
+    // Past the finish line, not up to it: the leader-grace window is flown over the run-out pad, so
+    // bounding the mesh at the line leaves it floorless. One render window covers the crossing.
     const last = Math.round( track.finishZ / SEG_LEN ) + Math.ceil( AHEAD / SEG_LEN );
 
     for ( let i = 0; i < last; i++ ) {
@@ -169,9 +149,8 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
 
         for ( const f of seg.floors ) {
             if ( import.meta.env.DEV && ( isOffGrid( f.x0 ) || isOffGrid( f.x1 ) ) ) {
-                // Not an error — a non-aligned span still renders correctly. But the ART is authored to a 4u
-                // rhythm (panel texture, edge-piece placement), so a generator change that breaks alignment
-                // needs to be noticed rather than quietly absorbed.
+                // Not an error — it still renders. But the art is authored to a 4u rhythm, so a generator
+                // change that breaks alignment must be noticed rather than quietly absorbed.
                 console.warn( `[track-floor] seg ${ i } span not CELL-aligned: ${ f.x0 }..${ f.x1 }` );
             }
             emitSpan(
@@ -189,23 +168,15 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
     return packGeometry( pos, uv );
 }
 
-/**
- * The ribbon surface as a single generated mesh, with real thickness.
- *
- * Scope: the FLOOR only. Blocks and edge rails still come from `TrackView`. Nothing in the game uses this
- * yet — it is mounted behind the `slab` toggle in `/art-lab` so it can be compared against the current
- * instanced floor before replacing it.
- */
+/** The ribbon surface as a single generated mesh, with real thickness. Floor only — blocks and rails
+ *  come from `TrackView`. */
 export function TrackFloor( { track }: { track: Track } ) {
-    // Built once per track. `resolveTrack` is pure, so a given seed always yields identical geometry and
-    // there is nothing to rebuild per frame. R3F disposes a geometry passed via the `geometry` prop when
-    // the mesh unmounts, so this needs no manual teardown.
+    // `resolveTrack` is pure, so a seed always yields identical geometry — built once, never per frame.
+    // R3F owns a geometry passed via the `geometry` prop, so there is nothing to dispose by hand.
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
 
     return (
         <mesh geometry={ geo }>
-            { /* The material lives in `track-materials.ts`, not here. These values ARE the game's floor now,
-                 so a gallery spreading something else would misrepresent what ships. */ }
             <meshStandardMaterial { ...floorSurface() } />
         </mesh>
     );
