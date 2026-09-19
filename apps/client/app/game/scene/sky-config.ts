@@ -40,10 +40,15 @@ export function skyDirection( bearingDeg: number, elevationDeg: number ): [ numb
  *
  * MEASURED CAMERA COVERAGE (`camera/chase.ts`, this session): the chase cam sits 9u up and 11–14u back aiming
  * 7u ahead and 2u up, i.e. pitched **18–21° DOWN**, with vFOV 60→75 under `fovStretch`. At 16:9 that is a
- * horizontal half-angle of 46–54°, and rubberband `follow: 16` keeps residual strafe yaw under ~4°. So the
- * frame spans ~108° horizontally at top speed, and the sky above the track horizon is only the top ~10–20°
- * of it. `fovDeg` is sized from that with margin; the rest of the image sits below the horizon behind the
- * rock field.
+ * horizontal half-angle of 46–54°, so the frame spans ~108° horizontally at top speed. The sky above the
+ * track horizon is only the top ~10–20° of it; the rest of the image sits below the horizon behind the rock
+ * field.
+ *
+ * CAMERA YAW IS PART OF THE COVERAGE BUDGET — this was missed once and shipped a 120° patch. `SkyFollow`
+ * copies camera POSITION only, never rotation, so the patch is world-fixed and the camera yaws inside it.
+ * Under sustained max strafe the rubberband lags by `strafeClamp / follow` = 80/16 = 5u at a look distance
+ * of `back + lookAhead` = 18–21u, i.e. ~15.5° of yaw — not the ~4° a previous version of this comment
+ * claimed. Coverage need is therefore 108 + 2·15.5 ≈ 138.5°, which `sky-config.test.ts` now asserts.
  */
 export interface SkyBackdropConfig {
     /** Which way the image's CENTRE points. */
@@ -154,9 +159,10 @@ export const DEEP_SPACE: SkyConfig = {
     backdrop: {
         bearingDeg: 0,
         elevationDeg: 0,
-        // Covers the measured 108° top-speed frame with ~6° of margin each side. Wider zooms the composition
-        // out; narrower shows void at the frame edge under `fovStretch`. Frame it at the gate, not here.
-        fovDeg: 120,
+        // The FLOOR, not the answer: 138.5° is the measured need (108° frame + 2·15.5° of strafe yaw, see
+        // the header). Wider zooms the composition out and drifts the planet limb cornerward; narrower shows
+        // void at the frame edge during a hard strafe. Frame it at the gate, not here.
+        fovDeg: 140,
         edgeFadeDeg: 12,
         gain: 1,
     },

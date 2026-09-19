@@ -56,6 +56,11 @@ describe( 'skyDirection', () => {
     } );
 } );
 
+// Worst-case chase-cam yaw, from camera/chase.ts + constants.ts. Sustained max strafe lags the rubberband
+// by strafeClamp/follow = 80/16 units, at a look distance of back(→14 at speed) + lookAhead(7).
+const STRAFE_LAG_U = 80 / 16;
+const LOOK_DISTANCE_U = 14 + 7;
+
 describe( 'DEEP_SPACE', () => {
     it( 'puts the star up and to the right, where the reference image implies it', () => {
         const star = project( DEEP_SPACE.starBearingDeg, DEEP_SPACE.starElevationDeg );
@@ -70,6 +75,9 @@ describe( 'DEEP_SPACE', () => {
     it( 'hangs the backdrop wide enough to cover the top-speed frame', () => {
         // vFOV 75 (60 + fovStretch 15) at 16:9 → a horizontal half-angle of atan(tan(37.5°)·16/9).
         const halfDeg = ( Math.atan( Math.tan( ( 37.5 * Math.PI ) / 180 ) * ( 16 / 9 ) ) * 180 ) / Math.PI;
-        expect( DEEP_SPACE.backdrop.fovDeg ).toBeGreaterThan( 2 * halfDeg );
+        // Plus camera yaw: SkyFollow copies position but NOT rotation, so the camera turns inside a
+        // world-fixed patch. Omitting this term is what let a too-narrow 120° default ship.
+        const yawDeg = ( Math.atan( STRAFE_LAG_U / LOOK_DISTANCE_U ) * 180 ) / Math.PI;
+        expect( DEEP_SPACE.backdrop.fovDeg ).toBeGreaterThan( 2 * halfDeg + 2 * yawDeg );
     } );
 } );

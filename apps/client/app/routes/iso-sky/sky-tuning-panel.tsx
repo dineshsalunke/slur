@@ -33,7 +33,7 @@ const GROUPS: readonly { title: string; note: string; sliders: readonly Slider[]
                 min: 70,
                 max: 200,
                 step: 1,
-                hint: 'Angular WIDTH of the image. The chase cam frame spans ~108° at top speed (vFOV 60→75 at 16:9), so below ~110 the void shows at the frame edge and above ~130 the composition zooms out and the planet limb drifts off-frame. Height follows the image aspect and is not authored.',
+                hint: 'Angular WIDTH of the image. The chase cam frame spans ~108° at top speed, plus ~15.5° of strafe yaw on each side (the patch is world-fixed; the camera turns inside it) — so below ~140 the void can reach the frame edge during a hard strafe. Going much higher zooms the composition out and drifts the planet limb cornerward. Height follows the image aspect and is not authored.',
             },
             {
                 key: 'backdropBearingDeg',

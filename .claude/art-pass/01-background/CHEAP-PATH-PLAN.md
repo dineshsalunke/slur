@@ -3,6 +3,54 @@
 Written 2026-09-19, against `CHEAP-PATH-BRIEF.md`. **Plan only — no code written yet.** Three open
 decisions for the owner are marked **[DECIDE]**; everything else is settled by the brief.
 
+> ## ⚠ ALL FOUR DECISIONS ARE CLOSED — 2026-09-19. Read this before the plan below.
+>
+> The owner answered the three `[DECIDE]` items, and the build that followed found a fourth. **The `[DECIDE]`
+> blocks in §1, §2 and §3 are historical** — the answers are here, and the as-built detail is in
+> `HANDOVER-CHEAP-PATH.md`. Code is committed at `643af5a` (+ the fov fix below).
+>
+> **1 — Mapping: option A, the sphere PATCH.** Approved as recommended, on the ground the plan gave: it
+> deletes a shader rather than trading one for another, and the fidelity error lands in soft cloud. The catch
+> was load-bearing — a stock sphere's default UVs *are* equirectangular, so "texture instead of noise" would
+> have silently shipped the mapping the brief rejects. **Built.**
+>
+> **2 — Cone size: author the horizontal, DERIVE the vertical from the image's real aspect.** A patch runs
+> UV 0–1 across `phiLength × thetaLength`, so any authored pair that drifts from 1672:941 renders the planet
+> oval. `sky-backdrop.tsx` computes `fovVDeg = fovDeg / (image.width / image.height)`. **Built.**
+>
+> **2b — the fourth decision, which neither the plan nor the owner's first pass caught: `fovDeg: 120` was
+> UNDER-SPEC.** Both derivations omitted camera yaw. `SkyFollow` copies camera *position* only, never
+> rotation, so the patch is world-fixed and the camera yaws inside it. Sustained max strafe lags the
+> rubberband by `strafeClamp / follow` = 80/16 = **5u** at a look distance of `back + lookAhead` = 18–21u →
+> **~15.5°** of yaw, against the "~4°" the code comment claimed. Coverage need is `108 + 2·15.5` ≈ **138.5°**.
+> **Raised to 140°** — the owner's packet proposed 160, but 138.5 is the floor and 160 pays 14% more
+> composition zoom-out than the geometry demands for a *transient* excursion that the edge fade degrades to
+> dark, not to hard void. Final value is still an eye call at the gate; 140 is the floor, not the answer.
+> `sky-config.test.ts` now carries the yaw term, so the number cannot silently drift back.
+>
+> **3 — Star bearing: the FRAME BUG is real and is fixed; the VALUE is deferred to the gate.** Bearing 0 did
+> point *behind* the player (`0 = −Z`) while its own comment claimed "the game's forward view", so the scene's
+> one real light was aimed backwards. Now `skyDirection`, `0 = +Z`, growing toward screen-right (world −X),
+> pinned by a test that projects through a real three `PerspectiveCamera` rather than re-asserting the algebra
+> that produced it.
+>
+> The *value* is genuinely contested and only the owner's eye can settle it:
+>
+> | | new-frame bearing | basis |
+> |---|---|---|
+> | owner's packet | **35°** (given as 215° in the old frame) | eyeball read; nebula's upper-left wisps corroborate |
+> | as-built | **66°** | limb circle-fit, centre (1679,622) r719px, **rms 4.2px**; polar sweep → terminator at 169° → star 79° screen-azimuth from the planet |
+>
+> Both put the star right of forward, so the real question is narrow: **left-of-the-planet (35°) or
+> straight-above-it (66°)** — 31° apart. Measurement outranks eyeball, so **66° ships as the default**, but
+> the packet's "215 = 55 + 180, and that coincidence is the tell" is a different account of history than the
+> as-built "55 put the star 27° to the planet's *right*, the mirror of the image" — and both cannot be true.
+> It is a slider. **Settle it at the gate.**
+>
+> **Knock-ons, both already satisfied:** `celestial-body.tsx` is deleted and `bearingDeg: 28` was not carried
+> forward; and the `<Lightformer>` rig and the `DirectionalLight` read **one** source — `star-light.tsx:21`
+> and `sky-environment.tsx:49` both call `skyDirection( config.starBearingDeg, … )` — so they cannot drift.
+
 Facts established while planning (this session):
 - `origin/art/procedural-bg` is pushed at `6d52029`, identical to `art/background` HEAD. The procedural work
   is safe; nothing below risks it.
