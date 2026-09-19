@@ -30,6 +30,18 @@ everything else.
 | 4 | **Monoliths** — isolation → placement (track-flanking + scene filler) | [`04-monoliths/`](04-monoliths/README.md) | not started |
 | 5 | **Asteroids** — isolation → placement | [`05-asteroids/`](05-asteroids/README.md) | not started |
 | 6 | **Composition** — everything together, one final art validation | [`06-composition/`](06-composition/README.md) | not started |
+| 7 | **Sealed deadly block** — silhouette + material (ADDED 2026-09-19, runs **parallel** to task 2) | [`07-blocks/`](07-blocks/LANE-BRIEF.md) | **BRIEFED, not started.** Sealed/deadly **only** — the fractured state stays gated on ADR-009's unrun readability test |
+
+**Why blocks were added as a seventh task, out of the original six.** Blocks were never in the arc; the
+agreed order ran track → asteroids → monoliths → environment → blocks, with blocks last because they compose
+against everything else. The owner pulled the **sealed** block forward on 2026-09-19 for two reasons that
+hold up: it is genuinely cheap (ADR-009 leaves the sealed/deadly state *"unchanged"*, so building it bets on
+nothing), and **it helps task 2's own gates** — the track spec requires *"clear hazard-to-floor contact
+shading"*, which is unjudgeable with no object making contact. It is the same "what is this element teaching
+me?" test that removed the placeholder boxes in task 2's D5, returning the opposite answer now that the
+object is worth looking at. The **fractured/breakable** half stays out: ADR-009 is `PROPOSED` and says *"do
+not build until that gate passes"*, and it drags a sim change, a synced destroyed flag and a
+fairness-validator change behind it.
 
 **Why background first.** It inverts the earlier attempt's order, on purpose. Lighting flows *from* the
 environment, so any silhouette or material judged under a placeholder sky has to be re-judged the moment the
@@ -474,11 +486,22 @@ stated "depends on task 1" header on purpose — `02-track/README.md` §7 says s
    you.)*
    The brief cuts the work into five gated slices (honest frame → floor swap → panel language → rail + emitter
    array → gaps) and names the ports (`5201`/`2601`) so it cannot collide with the background lane.
-   **Next action: launch the `art/track` lane off fresh `origin/dev` with that brief.**
+   **State 2026-09-19:** the lane is **running** (`art/track` off `1807bc0`, worktree
+   `../slur-worktrees/track`, ports `5201`/`2601`, peer name `track-6c`). **Slice 0 is committed**
+   (`1bb5839 art(track): slice 0 — an honest review frame`). **Next action: the owner's eye on slice 0**
+   in a foreground `/art-lab` tab — the frame should be *honest* (only lighting the game has) and
+   *uncluttered* (no obstacle boxes), and it is expected to look worse than before, because it was
+   flattering itself. Slice 1 does not start until that gate passes.
 3. **Then the deferred `/iso-sky` + `/art-lab` gate**, bloom on **and** off, in a **foreground** tab. `Tone
    map` is no longer one of the knobs — **D3 forecloses it: ON**. Two remain awaiting the eye: `Field of view`
    (**140** — the floor, not the answer) and `Tilt` (**0°**, the most likely to move, judgeable only in
    `/art-lab`).
+   > ⚠ **Run the environment self-test with `Star light` OFF as well as `Env rig` off** (owner, 2026-09-19).
+   > `DeepSpaceSky`'s `light` prop mounts `StarLight`, and a star light lights the roughness probes exactly
+   > as a neutral rig light does — which is the whole reason `/iso-sky` drops the lab rig at all. With the
+   > star still on, "the probes differentiate at `roughness 0.2` vs `0.9`" proves nothing about the
+   > `<Lightformer>` bake. Both switches are already in the panel (`Star light`, `Env rig`) and the prop is
+   > already documented on `DeepSpaceSky` — this is gate procedure, not code to write.
    > ⚠ **Never gate from an automated Chrome tab** — it reports `visibilityState: "hidden"`, rAF never fires,
    > and the canvas stays black while the DOM panels render fine. Already paid for twice.
 

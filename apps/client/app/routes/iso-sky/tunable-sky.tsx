@@ -14,7 +14,7 @@ import { SKY_TUNING, skyTuningVersion, subscribeSkyTuning, tunedSkyConfig } from
  * `environment={false}` for the same reason — the `<SkyEnvironment>` below IS the shipped one, just hoisted
  * out of the re-rendering half.
  */
-export function TunableSky() {
+export function TunableSky( { backdrop = true }: { backdrop?: boolean } ) {
     useSyncExternalStore( subscribeSkyTuning, skyTuningVersion, skyTuningVersion );
     const t = SKY_TUNING;
 
@@ -54,7 +54,13 @@ export function TunableSky() {
 
     return (
         <Fragment>
-            <DeepSpaceSky config={ display } light={ t.lightOn } environment={ false } toneMapped={ t.toneMapped } />
+            <DeepSpaceSky
+                config={ display }
+                backdrop={ backdrop }
+                light={ t.lightOn }
+                environment={ false }
+                toneMapped={ t.toneMapped }
+            />
             { t.envOn ? <SkyEnvironment config={ lighting } /> : null }
         </Fragment>
     );

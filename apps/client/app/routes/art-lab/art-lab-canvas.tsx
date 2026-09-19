@@ -4,15 +4,14 @@ import { procgenDescriptor, resolveTrack } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, Suspense, useMemo } from 'react';
 import { world } from '../../game/ecs/world';
-import { DeepSpaceSky } from '../../game/scene/deep-space-sky';
 import type { EnvConfig } from '../../game/scene/env-config';
 import { Environment } from '../../game/scene/environment';
 import { FinishGate } from '../../game/scene/finish-gate';
 import { Ships } from '../../game/scene/ship';
-import { DEEP_SPACE } from '../../game/scene/sky-config';
 import { TrackBlocks } from '../../game/scene/track-blocks';
 import { TrackFloor } from '../../game/scene/track-floor';
 import { TrackRibbon } from '../../game/scene/track-ribbon';
+import { TunableSky } from '../iso-sky/tunable-sky';
 import { ArtLabRig } from './art-lab-rig';
 import type { LabLayers } from './lab-layers';
 
@@ -60,8 +59,11 @@ export function ArtLabCanvas( {
                      The RIG is unconditional too: `backdrop` hides only the visible patch, because with no
                      lab lights left, unmounting the whole sky would make the toggle mean "pitch black". */ }
                 <color attach="background" args={ [ env.background ] } />
+                { /* TunableSky, not the frozen DEEP_SPACE: framing (pan/tilt/fov) is a chase-camera
+                     judgement with a track in frame, which /iso-sky's free orbit cannot make. It reads the
+                     same SKY_TUNING singleton, so the two labs cannot disagree about what ships. */ }
                 <Suspense fallback={ null }>
-                    <DeepSpaceSky config={ DEEP_SPACE } backdrop={ layers.backdrop } />
+                    <TunableSky backdrop={ layers.backdrop } />
                 </Suspense>
                 { /* Ribbon and blocks mount independently — the rail is this task's subject and must be
                      judgeable without untextured boxes in the shot. The game composes both via TrackView. */ }
