@@ -1,284 +1,201 @@
 # `art/track` — LANE STATE
 
-**Replaces itself.** This file says where the work *is*; `LANE-BRIEF.md` says what the work *is* and does
-not change. Read the brief first, then this. Written by the supervisor from the lane's first-hand reports
-plus facts verified directly in the tree — so do not re-derive what is here; if what you find contradicts
-it, stop and say so rather than quietly fixing either one.
+**Written by the supervisor from `LANE-FACTS.md` plus the tree, at the session-10 clear. Replaces the
+previous state doc wholesale** — a log is not a state doc.
 
-Last written: 2026-09-19, supervisor session **`supervisor`**, at the second context handover.
+Read order for a fresh agent: `LANE-BRIEF.md` (intent, immutable) → **this file** (where the work is) →
+`LANE-FACTS.md` (evidence, one line each, and the authority for every number).
+
+**Numbers are deliberately NOT duplicated here.** They live in `LANE-FACTS.md`. A number copied into two
+files is a fork with a delay fuse. Cite the fact line; do not restate it.
+
+Do not re-derive what is here. If what you find contradicts it, **stop and say so** rather than quietly
+fixing either one.
 
 ---
 
-## 1. Where the branch is
+## 1. Position
 
 | | |
 |---|---|
-| Branch | `art/track`, worktree `../slur-worktrees/track` |
-| HEAD | `git log -1` is authoritative — **this file cannot name its own commit** without being one behind, so it doesn't try. The last *code* commit is the scene probe; before it, the sky knobs |
-| Base | `1807bc0` (`dev` when task 1 merged) |
-| Code commits | `604bf0c` docs/brief · `1bb5839` slice 0 · `c937888` sky knobs · `eedd49e` scene probe |
-| Working tree | clean |
-| Pushed | **yes** — `origin/art/track`, verified `rev-list --left-right --count` = `0 0`. No PR open |
-| Verify gate | `pnpm typecheck && pnpm lint && pnpm --filter @slur/shared test && pnpm -r test && pnpm build` |
-| Gate result | **green** — lint 3 pre-existing `noExcessiveLinesPerFile` warnings + "✓ Canvas-isolation: 8 route entry modules clean"; 75 shared · 34 client · 4 server; SPA build |
-| Ports | client **5201**, server **2601** · stack up |
-| Review URL | `http://localhost:5201/art-lab` (chase camera — the gate) |
+| Branch | `art/track`, worktree `../slur-worktrees/track`, base `1807bc0` (`dev` at the task-1 merge) |
+| HEAD | `888b1c9` — docs only. The last *code* commit is `441a2d9` |
+| Tree | **clean**, pushed, `0 0` against `origin/art/track`. No PR open |
+| Verify gate | `pnpm format && pnpm typecheck && pnpm lint && pnpm --filter @slur/shared test && pnpm -r test && pnpm build` |
+| Gate result | **GREEN at `441a2d9`** — shared 75/75 · client 37/37 · server 4/4 · build; lint = 3 pre-existing `noExcessiveLinesPerFile` + "✓ Canvas-isolation: 8 route entry modules clean" |
+| Ports | client **5201**, server **2601** · stack up at the clear |
+| Review URL | `http://localhost:5201/art-lab` — chase camera, which IS the gate |
 
-**Who pushed:** the *supervisor* pushed this branch twice, at the docs commits and again at the probe, because
-three commits living only inside one worktree is one disk failure from gone. Nothing rewritten, nothing
-forced. It should have told the lane; an unexplained push into your own branch is a reasonable alarm and you
-were right to raise it.
+**The supervisor has pushed this branch.** Nothing rewritten, nothing forced — commits living only inside one
+worktree are one disk failure from gone. An unexplained push into your own branch is a reasonable alarm and
+raising it is correct; this is the explanation.
 
 ## 2. What is built
 
-**Slice 0 — the honest review frame (`1bb5839`).** All three decisions landed:
+**Slice 0 — the honest review frame (`1bb5839`) — BUILT, NOT YET GATED.** All three decisions landed:
 
 - **D3, tone mapping ON.** `toneMapped: false` came off the track surfaces, `tube-walls.tsx` and `track.tsx`.
   Deliberately *not* the other eleven files that still set it — finish gate, pickups, bolts, sparks,
-  explosions, ship engines are VFX whose values trade against the bloom and exposure budget **task 3 owns**.
-  No panel switch exists and none is to be built.
+  explosions and ship engines are VFX whose values trade against the bloom and exposure budget **task 3
+  owns**. No panel switch exists and none is to be built.
 - **D4, the lab lost its own lights.** `/art-lab`'s `ambientLight` and `directionalLight` are gone; the
   `DeepSpaceSky` rig mounts **unconditionally** and `backdrop` hides only the visible patch.
 - **D5, placeholder boxes out of frame.** `TrackView`'s welded `hazards` toggle is split into independent
   `layers.rails` / `layers.blocks`, blocks default OFF. Structural, not a flag: `track-view.tsx` is a 19-line
   composer over `track-ribbon.tsx` (floor quads + rails), `track-blocks.tsx` and `track-instancing.ts`
-  (shared `put`/`park`, `AHEAD = 900` / `BACK = 80`). **Slice 1 deletes the floor quads out of `TrackRibbon`.**
+  (shared `put`/`park`, `AHEAD = 900` / `BACK = 80`).
 
-**Sky framing knobs (`c937888`)** — `art-lab-canvas.tsx` mounts `<TunableSky>` instead of the frozen
-`DEEP_SPACE`, reading the same `SKY_TUNING` singleton `/iso-sky` writes, so the two labs cannot disagree
-about what ships. `TunableSky`'s two-`useMemo` split is preserved, so a pan drag does not re-bake the
-`<Environment>` cubemap. **The star is coupled to pan inside `writeSkyTuning`** (`sky-tuning.ts:101`) because
-`starBearingDeg: 66` was measured *through* the backdrop mapping and names a point in the **image**, not the
-world. This is the INSTRUMENT, not the answer — no committed sky value changed.
+**Sky framing (`c937888`, `e339381`, `b00c91f`, `441a2d9`) — BUILT.** The knobs, the far-plane fix, the fov
+slider floor, the owner's frozen framing (tilt −2 / fov 120) and the three assertions that pin what that
+framing accepts. `art-lab-canvas.tsx` mounts `<TunableSky>` reading the same `SKY_TUNING` singleton
+`/iso-sky` writes, so the two labs cannot disagree about what ships; `TunableSky`'s two-`useMemo` split is
+preserved so a pan drag does not re-bake the `<Environment>` cubemap.
 
 **The scene probe (`eedd49e`).** `art-lab/scene-probe.tsx`, DEV-only, header *"TEMPORARY DEBUG INSTRUMENT —
-DELETE, DO NOT EVOLVE"*, publishing `{scene, camera, gl}` on `window.__ART_LAB` via `useThree`. Mounted as
-one line in `art-lab-canvas.tsx`. Committed **alone** so it reverts alone. Nothing in the lab reads it.
+DELETE, DO NOT EVOLVE"*, publishing `{scene, camera, gl}` on `window.__ART_LAB` via `useThree`. Committed
+**alone** so it reverts alone. Nothing in the lab reads it.
 
-## 3. THE SPHERE IS RESOLVED — it is the planet, and the remaining move is the owner's
+## 3. Next: slice 1 — the floor swap (D1)
 
-The owner reported *"a black sphere in front of the track"*, camera-pinned. It is **not a bug**: it is the
-planet baked into `nebula-backdrop.jpg`, cropped so its lit rim falls above the top of the frame.
+`TrackFloor` becomes the floor; **delete `TrackView`'s instanced floor quads out of `TrackRibbon`**; retire
+`showFloor` and the `slab` toggle. **Compare against the instanced floor BEFORE deleting it.**
 
-**Read live off the running scene** — exactly **five** renderables, exactly **one** sphere:
+**Slice 1 is NO LONGER GATED on the slice-0 verdict — supervisor decision, session 10.** Slice 0 is
+*framing* (sky tilt/fov over the existing flat surfaces); slice 1 *replaces the floor surface*. Building
+slice 1 cannot invalidate a framing verdict. Holding it only converted the owner's eye — the scarcest
+resource in this arc — into one verdict per sitting instead of two, and the slice-0 verdict has now slipped
+past **three** sittings. **The next sitting gates both.**
 
-1. The backdrop patch — `SphereGeometry` r=1200, phiStart 160°, phiLength −140°, thetaStart 50.6°,
-   thetaLength 78.8°, `MeshBasicMaterial` #ffffff, transparent, `depthWrite=false`, `renderOrder=−1`,
-   DoubleSide. Exactly as authored.
-2. drei `<Stars>` — Points/ShaderMaterial, bsR 523.5.
-3. `TrackRibbon`'s floor quads — instanced Box #050507, **`visible=false`**, correctly suppressed by
-   `showFloor={!layers.slab}`.
-4. The rails — instanced Box #15171a, visible.
-5. `TrackFloor` — BufferGeometry / MeshStandardMaterial #ffffff, bsR 4000.1.
+**Read `07-blocks/SESSION-9-ADDENDUM.md` §1 before designing D1, and do not re-derive it.** The `art/block`
+lane measured that the block renders **~85–90% non-diffuse**, so every albedo-only feature dilutes below JPEG
+noise, and that **roughness variation is the lever that actually paints a face**. `FLOOR_SURFACE` has the
+same shape of problem — no map, no roughness, no procedural term: a mathematically uniform surface with
+nothing for light to catch (`LANE-FACTS.md` § "Floor material"). **The owner said this week that the track's
+material treatment "is still not what we want", and this is why.** That finding transfers; spend it rather
+than rediscovering it.
 
-**No unexplained object exists.** An earlier report read that absence backwards — *"this object should not
-exist, therefore something untraced mounts it"* — when "no rogue object exists" was evidence **for** the
-planet reading.
+Subsequent slices, each stopping at the owner's eye: **2** floor material + panel language (+ the D3 emissive
+re-tune) → **3** rail + emitter array (D2) → **4** gaps, and `SceneProbe`'s deletion.
 
-**Why it reads featureless.** Visible image window at the chase camera ≈ source x 278..1394, y 367..941;
-frame centre maps to source (836, 724). The planet's lit terminator runs (1311,0) → (984,440), so only its
-bottom tip is in frame and the entire bright rim sits above the top edge. Frame centre to planet centre
-(1709,642) is 877 px against a fitted radius of 755, so the limb passes ~10° up-and-right of centre and the
-body fills the upper right. Camera-pinned because the sky is camera-locked. **This is the same observation
-as the earlier "the planet reads centre".**
+## 4. Decisions in force, with the reasoning
 
-**The knob is `Tilt`** (`backdrop.elevationDeg`, currently `0`). Verified by the supervisor: `sky-config.ts`
-is **byte-identical between `origin/dev` and this branch**, so nothing framing-related has moved and the
-owner still sees the sphere — which is the expected state, not a contradiction. Lowering tilt should bring
-the terminator into frame. **Nobody has touched it; it is the owner's framing call, not this lane's.**
+- **`SceneProbe` STAYS through slices 1–4.** Deleting it is an **acceptance item on slice 4** and the PR body
+  must name it. It is the instrument that turned two confident wrong inferences into measurements; the
+  manual-render path is the standing condition, not the exception.
+- **The D3 emissive re-tune rides slice 2, not before slice 1.** Tuning emissive against the white
+  placeholder slab is tuning against a surface about to be replaced. It must **not** be used to fix the
+  bloom blow-out — see §6.
+- **Isotropic vs anisotropic (slice 3) stays settled by rendering**, not by argument.
+- **The owner block for the sitting is the SUPERVISOR's**, committed on `art/block` at `1527d19`. Do not
+  edit it; it was corrected at session 10 for fov 120.
+- **A test built on a false premise is an ACTIVE source of false confidence, and gets REPLACED, not added
+  beside.** `radius < 2000` passed while the far-plane bug shipped underneath it. Option C replaced the
+  coverage assertion on the same principle, and its `ACCEPTED_EDGE_MARGIN` comment records that raising the
+  budget is an **art decision, not a fix**.
 
-**Eliminated — confirmed LIVE:** no rogue object; the backdrop cannot depth-clip (`depthWrite=false`,
-`renderOrder=−1` read off the live material); the sky mapping is **not** mirrored (brightest sky pixel, luma
-204, unprojects to source (357,399), the nebula's left-hand wisps — so `sky-backdrop.tsx`'s negative-
-`phiLength` reasoning holds); all sky content belongs to the patch (rotating it +25° about Y translated
-everything, then restored).
-**Eliminated — from SOURCE only, not confirmed live:** drei 10.7.8 portals `<Environment>` children into
-their own `new Scene()` so `<Lightformer>`s never reach the main scene; drei `<Stars>` is `AdditiveBlending`
-and can only add light.
+## 5. Retracted — loudly. Do not cite the originals.
 
-> **⚠ RETRACTED: the "near-white, clipped slab and rails" finding.** That was a bloom-ON eyeball read of a
-> thumbnail. **Bloom-OFF point samples: slab RGB (60,64,70) · rail (91,98,109) · upper sky (4,6,12)** against
-> void `#02030a` = (2,3,10). Mid-dark grey, **not clipped**. The sharper finding: the blow-out is a
-> **BLOOM-BUDGET** problem, which **task 3 owns**, not an emissive-value problem here. **Slice 2 is NOT
-> enlarged by it** — an earlier "slice 2 is a bigger job than pick a value" is withdrawn by the lane that
-> said it. And it does **not** settle the ACES question either way: that stays **[unmeasured]**.
+- **"A rogue object mounts the black sphere" — WRONG.** Exactly five renderables, one sphere; nothing
+  unexplained existed.
+- **⚠ "The black sphere is the baked planet in `nebula-backdrop.jpg`, cropped" — WRONG, and it was measured,
+  argued and confident.** The owner's own falsification test killed it: they dragged `Tilt` and **the dark
+  body did not move with the sky**. The real cause was a **far-plane clipping hole** — a camera-locked patch
+  at `radius` 1200 against R3F's default `far` 1000 clips a circular hole centred on the **camera axis**,
+  which is exactly why tilt never moved it. Shipped fix: `radius` 1200 → 800, confirmed by a far 1000→5000
+  toggle and then **visually** (hole gone, sky continuous, planet limb and terminator legible).
+  **⚠ `HANDOVER-SUPERVISOR-SESSION-9.md` §3 and the PREVIOUS version of this file both state the opposite and
+  are WRONG** — they read the owner's report as the planet diagnosis *passing*. Corrected at session 10. If
+  you meet an older copy, **this file wins**.
+- **"Near-white, clipped slab and rails" — WRONG.** A bloom-ON eyeball read of a thumbnail. Point samples
+  retracted it: the surfaces are mid-dark grey, not clipped.
+- **"Planet at top right of the parked frame" — WRONG.** Patch-visible/hidden differencing proved that
+  region is void.
+- **"Zero stars in the void" — a 1-px scanline sampling artefact**, caught before it was reported and
+  re-measured as a 2D block. A scanline cannot census sparse points.
+- **Coverage need ≈138.5° — WRONG**, and the supervisor relayed it as authoritative. It mixed rest-pose yaw
+  with top-speed frame width — two speeds in one number. The test always computed 134.297.
+- **fov-120 margin ≈7% — WRONG**, supervisor again, and **wrong in the unsafe direction**: angle-to-screen-
+  width grows as `sec²θ`, the tangent-correct figure is **11.6%**, and 0.07 would have set
+  `ACCEPTED_EDGE_MARGIN` *below the very thing it exists to permit*.
 
-## 4. Measured numbers — do not re-derive these
+> **Every reversal in this lane was settled by rendering or measuring, never by reasoning** — including the
+> confident, well-argued retractions that were themselves built from source alone. **If you find yourself
+> arguing about a frame, measure it.**
 
-- Source jpg `nebula-backdrop.jpg` is **1672×941**. Hung at `fovDeg 140` ⇒ **0.0837 °/px**, isotropic
-  (vertical derived from texture aspect, not authored).
-- Planet limb fit (Kasa): centre **(1709.5, 642.3)**, r **755.1**, rms 1.02 px over 211 points, clean arc
-  y 0–420. **Corroborates** the recorded (1679, 622) r 719 — that earlier number stands.
-- Source-region luma means: planet body deep **32.7** · body near terminator **44.4** · nebula bright
-  upper-left **42.1** (max 243) · nebula mid **65.0** · void lower-left **10.0** · **terminator arc 224.6**.
-- Live camera at the readings: position **(0, 9, −11)**, fov 60, ≈**21.3° pitch down**. `chase.ts` gives
-  fov 60→75 and back 11→14 at top speed.
-- Clean-run baseline: zero console errors, zero 404s, one pre-existing `THREE.Clock is deprecated` ×2.
+## 6. Caveated right now — re-check before relying on these
 
-## 5. Methods that unblocked this — use them, don't rediscover them
+- **The fov-120 numbers are calibrated arithmetic, NOT pixels**, labelled as such in the test comment and the
+  commit body. The model is calibrated against this lane's fov-70 *pixel* measurements and runs 1–2% of frame
+  width **conservative** — the safe direction. `[unmeasured]`: fov 120's actual patch span in pixels, which
+  rides free at the owner's sitting.
+- **The bloom blow-out is a BLOOM-BUDGET problem and task 3 owns it** — not an emissive-value problem here.
+  **Slice 2 is not enlarged by it**; the earlier "slice 2 is a bigger job than pick a value" is withdrawn by
+  the lane that said it. The ACES prediction remains `[unmeasured]` either way.
+- **`[unmeasured]`: WHERE tone mapping happens.** `gl.toneMapping` reads `NoToneMapping` live while R3F's
+  source sets ACESFilmic absent `flat`; most likely the postprocessing `EffectComposer` takes it into the
+  chain. **Confirm this before judging the rail's hue at slice 3's gate.** Every luminance number in
+  `LANE-FACTS.md` comes from `gl.render()`, which bypasses the composer — pre-bloom, pre-tone-map.
+- **`[unmeasured]`: `starBearingDeg 66` is conditional on pan never having moved** during the owner's sitting.
+  `writeSkyTuning` couples `starBearingDeg` to `backdropBearingDeg` (`sky-tuning.ts:101`) because 66 was
+  measured *through* the backdrop mapping and names a point in the **image**, not the world — so pan-only
+  edits must go through `writeSkyTuning`, and a value hand-typed into `DEEP_SPACE` carries no coupling.
+- **`SKY_TUNING` is an in-memory module singleton and nothing persists it.** Run `skyConfigSnippet()` before
+  any reload if a sitting's values matter.
 
-- **`gl.render(scene, camera)` + `readPixels` WORKS WITH rAF DEAD.** The whole diagnosis above came from a
-  hidden tab. It also **bypasses EffectComposer**, so it doubles as a bloom-off read for free.
-- **Read a whole SCANLINE per `readPixels` call** and sample columns from the buffer. Per-pixel calls are a
-  GPU stall each.
-- **MAX-POOL each cell** when building a luminance map. Point-sampling hid the terminator entirely and nearly
-  produced a second wrong conclusion.
-- **`useThree` beats `__THREE_DEVTOOLS__`** — no pre-renderer install, works in a dead-rAF tab. A React-fiber
-  walk from the canvas does **not** reach the R3F store (`createRoot` keeps it in a closure). Secondary
-  gotcha: zustand's store is a **function**, so a `typeof v === 'object'` guard rejects it.
-- **Both of this lane's reversals were settled by rendering or measuring, never by reasoning** — including a
-  confident, well-argued retraction built from source alone. If you find yourself arguing about the frame,
-  measure it.
+## 7. Standing operational constraints
 
-## 6. Supervisor decisions taken at this handover
+- **⚠ THE CHROME FREEZE IS ON.** Take no frames, run no `osascript`, raise no tab — **ask the supervisor for
+  a frame slot and say why.** `computer screenshot` forces a canvas measure *and* forces the window forward;
+  that is the focus steal, and it pulled the owner out of their typing three times inside one sentence.
+  Three of those calls were this lane's, two on the same parked frame, one of which bought nothing.
+- **`javascript_tool` reads DOM — panel toggles, slider values, config — at ZERO focus cost. Only *pixels*
+  need the window.** Use it first, always.
+- **`visibilityState` is the only reliable hidden-tab test.** Canvas size proves nothing: 3456×1926, mounted,
+  rAF dead.
+- **Tab groups are PER-SESSION.** You cannot adopt your predecessor's tab. Record URLs, never tab ids.
+- **Never `await` a frame through `javascript_tool`** — it hangs the CDP evaluate to its 45 s timeout, and the
+  hang *is* the diagnosis. Use a free-running counter read on a LATER call.
+- **Composed screenshots cannot be posed** — a forced render re-runs the Loop and `updateChaseCamera` resets
+  the camera.
+- **`gl.render(scene, camera)` + `readPixels` works with rAF dead** and bypasses the composer, which is a free
+  bloom-off read. Read a whole **scanline** per call; per-pixel calls are a GPU stall each.
+- **`pnpm format` before `pnpm lint`** (biome treats formatting as a lint error), and `pnpm -r test` silently
+  skips `@slur/shared` — the explicit `--filter @slur/shared` is **not** redundant.
+- **The commit hook rejects a `Co-Authored-By` trailer**, and do not bundle `git add` and `git commit` into
+  one Bash call — a hook rejection kills the whole call.
+- **`art/frame-tap` stays OUT of this branch.** It reaches here through `dev` after its own PR, and it is
+  what eventually lifts the freeze.
+- **Maintain `LANE-FACTS.md` continuously**, committed with the code it describes — never written at handover
+  time, because by then the conversation that knew the facts is the thing being thrown away. `[unmeasured]`
+  is a legitimate entry; **refusing to reconstruct a reading you cannot source first-hand is correct** and is
+  worth more than the reading would have been.
 
-- **`SceneProbe` STAYS through slices 1–4; deleting it is an acceptance item on slice 4** and the PR body
-  names it. It is the instrument that turned two wrong inferences into measurements, and the manual-render
-  path is the *standing* condition — the lane got one live frame in an entire session. Keeping a temp
-  instrument risks it becoming permanent; the mitigation is that its deletion is written into the last
-  slice's done-criteria and it reverts alone either way.
-- **Slice 0 gates ONCE, with tilt dialled in the same sitting — not twice.** The owner's eye is the scarcest
-  resource in this arc and the only thing between them and a verdict is a frame they can read. The pan/tilt/
-  fov sliders write the same singleton that ships, so the value frozen at that gate is the value that ships.
-- **The D3 emissive re-tune rides slice 2, not before slice 1.** Tuning emissive values against the white
-  placeholder slab means tuning against a surface about to be replaced. It must **not** be used to fix the
-  blow-out — that is the bloom budget, task 3.
-- **Isotropic vs anisotropic (slice 3) stays settled by rendering.** Unchanged.
+## 8. Open
 
-## 7. Open, waiting on the owner's eye
+- **Slice 0 is UNGATED — no owner verdict, three sittings running.** Judged **moving**, chase camera, bloom
+  ON *and* OFF. Panel: slab ON, rails ON, blocks OFF, backdrop ON, env/ships/finish OFF.
+- **No open escalations from this lane.**
+- The deferred `/iso-sky` gate is not this lane's to run; its roughness self-test needs **`Star light` OFF as
+  well as `Env rig` off** — a star light lights the probes exactly as a neutral rig light does, which is the
+  whole reason `/iso-sky` drops the lab rig.
+- `iso-lab-canvas.tsx` is the only Canvas in the app that sets `far` (`max(4000, dist*12)`) — which is why
+  `/iso-lab` never showed the far-plane hole. Tracked as issue **#128**.
 
-1. **The `Tilt` call + the real slice-0 verdict, in one sitting.** Panel state: **slab ON, rails ON, blocks
-   OFF, backdrop ON**, env/ships/finish off; top row is running / fly / **bloom** (`useState(true)` at
-   `route.tsx:35`, so bloom starts ON). Judge it **moving**, from the chase camera, bloom on **and** off.
-   Expect it to look **worse** than before — D4 removed the lights it was flattering itself with, and telling
-   honest-and-ugly apart from broken is part of the job.
-   When a sky value is frozen it goes into `DEEP_SPACE` in `sky-config.ts` — and `starBearingDeg` follows
-   **only** while the change goes through `writeSkyTuning`, so freeze **both** numbers as the panel reports
-   them.
-2. Then slices, each stopping at the owner's eye: **1** floor swap (D1) → **2** floor material + panel
-   language (+ the D3 re-tune) → **3** rail + emitter array (D2) → **4** gaps, and the probe's deletion.
+## 9. Escalation contract
 
-The deferred `/iso-sky` sky gate runs **after** a real track is in frame and is still not this lane's to run.
-Procedure note from the owner: its roughness self-test must run with **`Star light` OFF as well as `Env rig`
-off**, because a star light lights the probes exactly as a neutral rig light does — the whole reason
-`/iso-sky` drops the lab rig.
+Escalate to the **supervisor**, never to the owner, in this shape:
 
-## 8. The hidden-tab trap, and the lane that is about to remove it
+```
+NEEDS-DECISION: <one line, specific, answerable>
+CONTEXT: <2-4 lines: what you are doing, why this fork exists>
+OPTION A — <label>: <what it means> / consequence: <what it costs or commits us to>
+OPTION B — <label>: <...>
+RECOMMENDATION: <which, and why — a recommendation without a defence is a preference>
+IF NO ANSWER: <what you do meanwhile, or that you are genuinely blocked>
+```
 
-A third lane, **`art/frame-tap`** (ports 5203/2603), is building an instrument that makes all of this moot:
-R3F's exported `advance(timestamp, …)` driven over Vite's HMR channel, so a frame can be pumped and written
-to a PNG on disk by an HTTP request — no Chrome focus, no CDP. Verified from installed source: `advance()`
-checks neither `frameloop` nor `internal.active` nor `internal.frames`, and R3F suppresses its own render
-exactly when a priority>0 `useFrame` exists, which is when `EffectComposer` is mounted — **so a pumped frame
-is the post-processed frame, bloom included.** If it lands before you need a frame, use it. Ask the
-supervisor rather than assuming it is ready.
-
-Until then:
-
-- **`visibilityState` is the ONLY reliable test.** Canvas size proves nothing: this lane measured **3456×1926**,
-  fully mounted, rAF dead. And `computer screenshot` **forces** a measure — it resized a 300×150 canvas to
-  3456×1882 in a still-hidden, rAF-dead tab, which is where the large-canvas presentation comes from.
-- **Never `await` a frame** through `javascript_tool` — it hangs the CDP evaluate to its 45 s timeout, and
-  **that hang is the diagnosis**. Install a free-running counter and read it on a **later** call instead.
-- **Tab groups are PER-SESSION.** A restarted agent cannot adopt its predecessor's tab —
-  `tabs_context_mcp` returns *"No tab group exists for this session"*. **Never record a tab id here**; record
-  the URL. Create your own, pass its `tabId` on every call, and match on **your own port (5201)** — never
-  touch `:5202` or `:5203`, which belong to the other two lanes.
-- **Never gate from a tab you opened yourself.** Ask the owner to look in their own foreground window.
-
-## 9. Traps paid for in this lane
-
-- **`pnpm format` BEFORE `pnpm lint`** — biome treats formatting as a lint *error*; this failed the gate twice
-  on nothing.
-- **The commit hook rejects a `Co-Authored-By` trailer**, though the session's own instructions tell you to
-  add one. Commit without it, and don't bundle `git add` and `git commit` in one call.
-- **`pnpm -r test` silently skips `@slur/shared`** and its 75 tests — the explicit `--filter` in the gate is
-  not redundant.
-- **HMR does not survive a layer-key rename** — after `hazards` → `rails`/`blocks` the page held stale state
-  and needed a full reload.
-- **The cold-start `ERR_MODULE_NOT_FOUND` race was NOT observed here** — the stack was never restarted, so it
-  stays unverified by this lane rather than confirmed.
-
-## 10. Housekeeping
-
-`INDEX.md`, the supervisor handovers and `07-blocks/` were untracked in the shared checkout and reach `dev`
-only through a lane PR; they are committed on this branch. If the supervisor refreshes them in the worktree,
-fold them into the next commit.
-
-**One supervisor, and it is the session named `supervisor`.** Twice now two supervisor sessions have been
-instructing this lane at once, because a `--fork-session --resume` kept running detached after its window
-closed. Both times **the lane was the only party that could see both voices, and flagging it rather than
-guessing is what caught it.** The forked session has handed over and stood down. If a second voice appears
-again, say so and keep following this one until told otherwise in writing.
-
----
-
-## THE FAR-PLANE FIX — `e339381`, shipped and pushed (2026-09-19)
-
-**The "black sphere" was never an object. It was a hole punched by the camera's far plane.** The sky patch
-sat at `radius 1200`; R3F's camera far is **1000**. The patch is camera-locked, so every point on it is
-equidistant and the clip condition is `radius·cos(a) > far` — a circular hole of half-angle
-`acos(1000/1200) = 33.6°` **centred on the camera axis**. Camera corner half-angle 50.4°, vertical 30°,
-horizontal 46.7° at aspect 1.836, fov 60 — so the corners kept their sky while the centre was punched out.
-
-**The hole is defined by the camera axis, so it is independent of the sky's pan/tilt/fov.** That is why the
-owner's falsification test came out as it did: dragging `tilt` slides the nebula behind a hole that does not
-move a pixel. *"The body stays put while the sky moves"* was the signature of this bug.
-
-**Root cause: a confidently-wrong comment.** `sky-config.ts` picked 1200 as *"well inside three's default
-far plane of 2000"* — true about three (`three@0.185.1`, `src/cameras/PerspectiveCamera.js:33`), false about
-this app. R3F builds its own camera: `new THREE.PerspectiveCamera(75, 0, 0.1, 1000)`
-(`@react-three/fiber@9.7.0`, `dist/events-156d8d12.esm.js:15771`), and `camera={{ … }}` overrides only the
-fields it names.
-
-**Shipped:** `radius` 1200 → **800**; both comments rewritten; `R3F_DEFAULT_FAR = 1000` a named constant in
-`sky-config.test.ts` carrying the citation. Branch level with origin, tree clean, gate green (client 35
-tests, net +1).
-
-### ⚠ The existing test was PART of the bug
-
-A test named *"keeps the backdrop inside three's default far plane"* asserted `DEEP_SPACE.radius < 2000`.
-**It encoded the same wrong premise, passed, and the bug shipped underneath it** — it would have certified
-any radius up to 1999. The same premise sat in its `chaseCamera()` helper (`far 2000`), and `project()`
-multiplied by 1000, putting its sample point exactly **on** the far plane. It was **replaced**, not added
-beside. A test built on a false premise is not a weaker guard; it is an active source of false confidence.
-
-### ⚠ UNVERIFIED VISUALLY — the owner's first two seconds at the gate
-
-The **mechanism** was proved live by toggling `far` 1000 → 5000 and back: four interior points went
-6/6/6/6 → 14.6/12.9/28.7/9.2 (their correct texture values) while a control point outside the hole stayed
-12.4 both times. **But nobody has seen `radius 800` render.** The hole is either gone or it is not.
-
-### The stars margin — supervisor arithmetic was backwards
-
-drei spans the star shell **OUTWARD** from `radius`: `let r = radius + depth` then decrements (drei 10.7.8,
-`core/Stars.js:65`). The field runs **400 → 520**, not 400 → 280. Decision unchanged (520 is inside 800) but
-the margin is 520-vs-800. Pinned as its own test: `stars.radius + stars.depth < radius`.
-
-### Blast radius — issue #128
-
-**`iso-lab-canvas.tsx` is the only Canvas in the client that sets `far`** (`max(4000, dist*12)`) — which is
-exactly why `/iso-lab` never showed this. `net-canvas.tsx` (**the game**), `/art-lab`, `/art-gallery`,
-`/env-lab` and the landing scene all inherit 1000. **The shipped game had this hole too**; the one shared
-constant fixes it without touching the game canvas. Worth confirming the game's sky at some point — not this
-lane's gate.
-
-### Open QUESTION, not a finding — tone mapping
-
-`gl.toneMapping` reads **0 (NoToneMapping)** live, while R3F's source sets ACESFilmic unless `flat` is
-passed (same file, line 15903). Most likely the postprocessing `EffectComposer` deliberately takes tone
-mapping out of the renderer and does it in the chain — normal, not broken. **Confirm WHERE the transform
-happens before judging the rail's hue at slice 3's gate.** Note every luminance number above comes from
-`gl.render()`, which bypasses the composer — pre-bloom and pre-tone-mapping.
-
-### State left behind
-
-`SceneProbe` (`window.__ART_LAB`) still mounted, still a slice-4 acceptance item to delete. Chrome released,
-tab closed, nothing held. Panel at slab ON / rails ON / blocks OFF / backdrop ON; `camera.far`, material
-`depthTest` and all visibility restored after probing. Stack up on 5201/2601.
-
-### NEXT: slice 1 — the floor swap (D1)
-
-`TrackFloor` becomes the floor; delete `TrackView`'s instanced floor quads out of `TrackRibbon`; retire
-`showFloor` and the `slab` toggle. **Compare against the instanced floor BEFORE deleting it.** Gated by the
-owner's slice-0 verdict first.
+Escalate art/taste calls, anything reopening a frozen decision or ADR, anything touching gameplay, anything
+costly to undo, and **your design recommendation before you implement it**. Do **not** escalate naming, file
+layout, code structure, anything the docs already answer, or anything settleable by verifying. **Verify,
+don't ask.** Never treat silence as approval, and a declared fallback that does not fire is worse than no
+fallback — it reads as handled while nothing moves.
