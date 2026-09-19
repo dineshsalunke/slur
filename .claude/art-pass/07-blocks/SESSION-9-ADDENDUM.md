@@ -156,3 +156,35 @@ zero focus cost.** Only *pixels* need the window.
    it can be read: the only grazing light is the interior corner, so that is the one place it can ever
    show.
 4. Then a frame, **when the supervisor schedules one.**
+
+---
+
+## 11. ⚠ CORRECTION TO §4 — **A IS GATED ON TASK 2, NOT BUILDABLE NEXT SESSION**
+
+Found by `block-49` after the seam, by grep, before standing down. **Read this before opening any file
+expecting to build A.**
+
+§4 condition 2 says read the base roughness from the single constant `art/track` will own. **That
+constant does not exist on this branch.** `apps/client/app/game/scene/track-materials.ts` is present but
+is the **shipped TRON retone**: `FLOOR_SURFACE`, `LETHAL_SURFACE`, `DRAG_SURFACE`, `RAIL_SURFACE` carry
+only `emissive`, `emissiveIntensity`, `color`, `toneMapped`. **There is no `roughness` key on any of
+them** — grep for `roughness` in that file returns nothing. Its own header says the values are *"the
+SHIPPED TRON retone"*, *"NOT yet the art-handoff-v1 palette"*, and *"Do not 'fix' them piecemeal here"*.
+
+So the only roughness number in reach is the block's own flat `roughness: 0.55`, and perturbing around
+**that** is precisely the duplicated-constant-with-a-delay-fuse condition 2 forbids. **A is therefore
+gated on task 2 slice 2 landing a base roughness — the same gate B13(d) named all along.**
+
+**SUPERVISOR DECISION: HOLD A.** Do not build it against a lane-local PROVISIONAL constant. The entire
+purpose of conditions 1 and 2 was that the fork risk lives in the base value; inventing a local base to
+get unblocked re-creates exactly the fork, and adds a deletion nobody will remember to make. The lane's
+own lean — hold — is correct and is adopted.
+
+**This lane is PARKED**, not cleared-and-restarted, until `art/track` slice 2 lands a base roughness.
+The worktree, branch, ports (5202/2602) and stack survive parking; only the conversation is gone.
+
+**What is unblocked and should be done when the lane is next picked up**, in order:
+
+1. The §5 fade-gate unit fix, as its own commit.
+2. The housekeeping one-liners in §10 item 3.
+3. Then A, once task 2 slice 2 has landed a base roughness — **not before**.
