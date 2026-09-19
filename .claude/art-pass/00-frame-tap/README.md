@@ -99,15 +99,40 @@ lurch.
 one instead of trusting that it settled. A settled capture is sub-millisecond, because the pump runs its frames
 back-to-back in one synchronous turn.
 
+## The one thing that still needs a visible tab, once
+
+**A tab loaded while hidden never mounts R3F at all**, so there is nothing to pump and the tap answers 504.
+
+This is the same root cause as the rAF problem, one level deeper, and it was found by measuring rather than
+reasoning: R3F's `<Canvas>` gates its mount on a non-zero size measurement from `react-use-measure`, which is
+delivered by **ResizeObserver — and ResizeObserver delivery is part of the rendering steps a hidden tab
+skips**. Measured in such a tab: the canvas sits at its unmeasured `300x150` default, `__r3f` is absent, and
+the component tree inside `<Canvas>` (including `<FrameTap/>`) has never rendered.
+
+**So: open the route once while the tab is visible.** After that it can be hidden forever and tapped
+indefinitely — which is the actual workflow, since the owner opens a lab route and then switches desktop.
+
+If you are stuck with a tab that was loaded hidden, one line from a browser evaluate forces the measure
+without focusing it, and the tap works immediately afterwards:
+
+```js
+window.dispatchEvent( new Event( 'resize' ) )
+```
+
+That also corrects a note in this lane's brief: `computer screenshot` was believed to "force a canvas measure"
+by some mystery. It is the same resize path, and the canvas going `300x150` → `3456x1926` with **rAF still
+dead** is what proves sizing and rendering are two independent gates. Canvas size tells you nothing about
+whether anything is rendering.
+
 ## Parameters
 
 | Query | Default | Meaning |
 |---|---|---|
 | `name` | `frame` | Output basename. `/^[a-z0-9][a-z0-9-]{0,63}$/i` — one segment, no dots or separators, so traversal is impossible by construction. Re-tapping a name overwrites it. |
-| `warmup` | `8` | Frames pumped and discarded first. |
-| `frames` | `8` | Further frames pumped; the last one is captured. |
+| `warmup` | `6` | Frames pumped and discarded first. |
+| `frames` | `2` | Further frames pumped; the last one is captured. |
 | `ab` | off | `ab=1` also writes `<name>.bloom-off.png` via a composer-bypassing `gl.render`. |
-| `timeout` | `8000` | Milliseconds to wait for a page to answer. |
+| `timeout` | `45000` | Milliseconds to wait for a page to answer. A hidden tab's GPU work is throttled; an 8 s budget failed every time and reported it as "nobody answered". |
 
 Files land in `.claude/art-pass/00-frame-tap/refs/`, already gitignored via `.claude/art-pass/.gitignore`
 (`*/refs/`).
@@ -124,6 +149,27 @@ would be worse than no instrument — every downstream art judgement would inher
   one, tap again.
 - **502, the page failed to tap.** The page raised mid-pump and said so, rather than leaving you to read its
   silence as "no tab open".
+
+## Proof it works, and that the frames have bloom
+
+Demonstrated 2026-09-19 on `:5203/art-lab`, in a tab that was **never focused**:
+
+- `document.visibilityState` — `"hidden"`. rAF counter installed, then read on a **later** call: `__rafN === 1`,
+  i.e. rAF had fired **zero** times since. (Never `await` a frame — the hang is the diagnosis.)
+- Tap returned `200` and wrote a `3456x1926`, 4.3 MB PNG. `firstDeltaSeconds: 9.17` — nine seconds since the
+  last frame from any source, the rAF-liveness reading behaving exactly as predicted.
+- The image shows the real materialized track from the real chase camera, blooming.
+- `ab=1` wrote both images. They **disagree**, numerically, as they must:
+
+  | metric | value | identical images would be |
+  |---|---|---|
+  | SSIM (all) | **0.8648** | 1.0 |
+  | PSNR (avg) | **23.6 dB** | ∞ |
+  | PSNR (alpha) | ∞ | ∞ |
+
+  Alpha matching exactly while colour does not is the signature of a post-processing pass rather than a
+  different scene. And the **red channel diverges most** (SSIM R 0.795 vs B 0.926), which is what a
+  marigold-primary bloom predicts — the disagreement is bloom, not noise.
 
 ## Where it is mounted, and where it must never be
 

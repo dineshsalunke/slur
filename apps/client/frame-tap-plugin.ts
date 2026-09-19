@@ -56,7 +56,11 @@ const NAME = /^[a-z0-9][a-z0-9-]{0,63}$/i;
 
 // Wall-clock budget for a page to answer at all, and the window kept open AFTER the first answer to catch a
 // second responder. The settle window is what turns "several tabs answered" from a race into a detection.
-const DEFAULT_TIMEOUT_MS = 8_000;
+// 45s, not the 8s this started at. MEASURED, not guessed: a hidden tab's GPU work is throttled, and 16 pumped
+// frames at 3456x1926 plus a `toDataURL` of a 4 MB PNG blew an 8s budget every time — which surfaced as the
+// 504 "nobody answered", pointing at the wrong half of the system entirely. A tap is a deliberate act with no
+// human waiting on a spinner, so a generous budget costs nothing and a tight one lies.
+const DEFAULT_TIMEOUT_MS = 45_000;
 const SETTLE_MS = 400;
 
 // A 4 MP PNG is a few MB; 64 is headroom, not a target. Guards against a runaway body on a localhost socket.
@@ -238,8 +242,10 @@ export function frameTapPlugin( { dir, route = '/__frame-tap' }: { dir: string; 
                 // pumped frame carries a ~40 s delta. The shared `createFixedStep` caps that at 5 sim steps
                 // and drops the backlog, so the ship does not teleport, but the chase camera damps against the
                 // raw delta and snaps. Warm-up absorbs that lurch; the captured frame is a settled one.
-                const warmup = Math.round( num( 'warmup', 8 ) );
-                const frames = Math.max( 1, Math.round( num( 'frames', 8 ) ) );
+                // 6 + 2 rather than 8 + 8: a throttled hidden tab renders these at a few hundred ms each, and
+                // the warm-up is what buys a settled frame — extra KEPT frames buy nothing once it has settled.
+                const warmup = Math.round( num( 'warmup', 6 ) );
+                const frames = Math.max( 1, Math.round( num( 'frames', 2 ) ) );
                 const ab = url.searchParams.get( 'ab' ) === '1';
                 const timeoutMs = Math.max( 250, num( 'timeout', DEFAULT_TIMEOUT_MS ) );
 

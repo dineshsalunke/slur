@@ -38,6 +38,16 @@ export function FrameTap() {
         const hot = import.meta.hot;
         if ( ! hot ) return;
 
+        const report = ( id: string, err: unknown ): void => {
+            // Never fail silently: a page that cannot tap is otherwise indistinguishable from no page at all,
+            // and the caller would read "nobody answered" and go looking for the wrong problem.
+            hot.send( 'slur:frame-tap:error', {
+                id,
+                href: location.href,
+                message: err instanceof Error ? `${ err.name }: ${ err.message }` : String( err ),
+            } );
+        };
+
         const onRequest = ( data: {
             id: string;
             warmup: number;
@@ -51,7 +61,7 @@ export function FrameTap() {
                 meta: { firstDelta: number; capturedDelta: number; pumped: number },
             ): Promise< void > => {
                 const png = await fetch( dataUrl ).then( ( r ) => r.blob() );
-                await fetch( `${ data.route }/upload?id=${ encodeURIComponent( data.id ) }`, {
+                const res = await fetch( `${ data.route }/upload?id=${ encodeURIComponent( data.id ) }`, {
                     method: 'POST',
                     body: png,
                     headers: {
@@ -63,6 +73,9 @@ export function FrameTap() {
                         'x-frame-tap-pumped': String( meta.pumped ),
                     },
                 } );
+                // A non-2xx upload is a FAILED tap, not a delivered one: without this the caller waits out
+                // its timeout and reads "nobody answered", which points at the wrong half of the system.
+                if ( ! res.ok ) throw new Error( `upload rejected: HTTP ${ res.status } ${ await res.text() }` );
             };
 
             try {
@@ -80,16 +93,15 @@ export function FrameTap() {
                     capturedDelta: result.capturedDelta,
                     pumped: result.pumped,
                 };
-                void post( 'composed', result.composed, meta );
-                if ( result.bloomOff ) void post( 'bloom-off', result.bloomOff, meta );
+                // The uploads are async, so `void post(…)` would drop their failures into an unhandled
+                // rejection and the caller would time out against a page that had already given up. The
+                // catch below covers the synchronous pump ONLY; these need their own.
+                post( 'composed', result.composed, meta ).catch( ( err ) => report( data.id, err ) );
+                if ( result.bloomOff ) {
+                    post( 'bloom-off', result.bloomOff, meta ).catch( ( err ) => report( data.id, err ) );
+                }
             } catch ( err ) {
-                // Never fail silently: a page that cannot tap is otherwise indistinguishable from no page at
-                // all, and the caller would read "nobody answered" and go looking for the wrong problem.
-                hot.send( 'slur:frame-tap:error', {
-                    id: data.id,
-                    href: location.href,
-                    message: err instanceof Error ? err.message : String( err ),
-                } );
+                report( data.id, err );
             }
         };
 
