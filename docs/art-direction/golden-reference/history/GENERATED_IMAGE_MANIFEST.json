@@ -5,7 +5,8 @@
     {
       "original": "exec-0933de74-0701-4447-91e3-9c0cd65170de.png",
       "sha256": "1804db793002c352a07cfbe0f41e005e4496d98798d39cea044a890155b59f88",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-02.png"
       ]
     },
@@ -13,35 +14,41 @@
       "original": "exec-0a26dea8-3ad2-44d6-8a9b-bed440343ef3.png",
       "sha256": "e521de2e7d11ea45a061bbf405510468f8dbaed1d14dad7e81874eee3665239a",
       "repositoryCopies": [
-        "golden-reference/17_golden_reference_FINAL.png",
+        "golden-reference/17_golden_reference_FINAL.png"
+      ],
+      "removedRepositoryCopies": [
         "golden-reference/history/boards/17_golden_reference_cold_undertone_DRAFT.png"
       ]
     },
     {
       "original": "exec-0bba0ab6-beca-4e07-9aff-e1e6ad85f9a5.png",
       "sha256": "ed4545d425b75d60173400f561236f25adc06d9f97970411f9da105483ea4c2c",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/boards/15_environment_intensity_proposal.png"
       ]
     },
     {
       "original": "exec-1c9a03c6-09c6-4c9d-b82f-7f905633ea16.png",
       "sha256": "c50e6606c4e13aeecddaa7600ccdef8788c1c9d137fb57067dec582e3d30f846",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-03-glow.png"
       ]
     },
     {
       "original": "exec-212fa0b9-028a-483c-8770-e5b280b98cae.png",
       "sha256": "793ec2cee41e12599714ad395eeca4c49765591af8d28ee1186f51e7332e441a",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-01.png"
       ]
     },
     {
       "original": "exec-4d8e792a-a5b1-49c0-be46-8c8bedbd68b3.png",
       "sha256": "54d9f52ef17002e69f8ec3e34773896c73d1d086774d1705b2b7c910b9c003e9",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/boards/14_golden_reference_borderless_hud.png",
         "golden-reference/history/nebula-candidate-12-borderless-hud.png"
       ]
@@ -49,65 +56,76 @@
     {
       "original": "exec-564f2112-3e4f-4aec-a7a6-4333ff995747.png",
       "sha256": "6ea7a8dd092c7ad17ab15256134d2e446954258057cb8b23c884dfd0b8e471ec",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-11-hud.png"
       ]
     },
     {
       "original": "exec-5c5be997-2871-4954-b949-f1eee034e829.png",
       "sha256": "1d265ed5231f4cb3d948856ed8f01e76f07b96d8f372a96c3db6a16ef6e313ce",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/boards/16_golden_reference_desaturated_DRAFT.png"
       ]
     },
     {
       "original": "exec-64a09e3f-20bd-4bd2-b97c-0b66748352ee.png",
       "sha256": "cfe6588e4598aec815931102529ff86301e5be4eb37267d098145814bddae64e",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-09-boost-motion-blur.png"
       ]
     },
     {
       "original": "exec-7bd9c27b-47c3-4e32-b3a6-521c43dd6b42.png",
       "sha256": "7a63f66835af935c5cd2b3b555270a7982095781539b7829e43a46e80a4fcc25",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-06-action.png"
       ]
     },
     {
       "original": "exec-8684a351-51b4-41b5-9595-788cd78f2589.png",
       "sha256": "3ed68bbd7e522a93a0dd8b79aaafb55905e206c09485a87b22a4b8e9472795cc",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-05-irregular-seams.png"
       ]
     },
     {
       "original": "exec-8e73aff5-5d3d-4b54-b081-62d2f87e0282.png",
       "sha256": "053fa1497336a56aa6b5b7a1c3d7f4635830b8fbcecacbafcd50c05e0345e635",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-10-reduced-blur.png"
       ]
     },
     {
       "original": "exec-a9275412-a200-458c-b37a-bdbe872a6ea3.png",
       "sha256": "c384300ae66099222595c473c85fb17794a8901f71b2522fe1a122fefca72fcd",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-07-stepped-gaps.png"
       ]
     },
     {
       "original": "exec-b00bbabf-6266-470d-9b6f-8ef6ea04ca92.png",
       "sha256": "7d5206ac7c8ecc674edfa1bb548ead601d0e73e8f1f365a732b95a30cbced882",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-08-boost-exhaust.png"
       ]
     },
     {
       "original": "exec-df40ee15-de64-4cbc-b909-c738a04fb33d.png",
       "sha256": "37c1f2d0fd344d4120c147a7f10b8428ca9f752259397d10ec4912c4064afa70",
-      "repositoryCopies": [
+      "repositoryCopies": [],
+      "removedRepositoryCopies": [
         "golden-reference/history/nebula-candidate-04-tiles.png"
       ]
     }
-  ]
+  ],
+  "cleanupDate": "2026-09-19",
+  "retention": "Final artwork retained; superseded generated images removed at owner request. Original hashes and prompts retained as provenance."
 }

@@ -1,5 +1,7 @@
 # Board 19 — spatial progression draft
 
+> Historical study, not current guidance. Use the final subject README one directory above.
+
 Status: pending user review. Generated with the built-in image tool. No development changes or promotion of the progression hypothesis to canonical rules.
 
 References: final board 17 for appearance; user-supplied older triptych for composition only. Exact prompt saved alongside the image.

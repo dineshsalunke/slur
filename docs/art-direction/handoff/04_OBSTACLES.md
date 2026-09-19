@@ -1,21 +1,21 @@
 # 04 — Obstacle Blocks
 
-> **V2:** Read `UPDATED_HANDOVER.md` first. Its dimension contract, approved corrections and validation status supersede conflicting legacy wording or image annotations.
+> Read the [current handoff](HANDOVER.md) and [final subject folders](../README.md). Final subject briefs govern their assets; generated annotations never override gameplay dimensions.
 
 Obstacle blocks are immediate gameplay hazards and must read differently from environmental monoliths.
 
-Golden reference: `10_obstacle_blocks_final.png`
+Final standard-block reference: [board 28 and specification](../desctructible-block/README.md). Board 10 retains destructible-family context only.
 
 ## Standard deadly block
 
 Visual language:
 
-- clean
+- clean or broadly worn coating
 - solid
 - monolithic
 - simple silhouette
-- dark material family shared with track/world
-- sparse marigold seams
+- near-black coated metal, distinct from stone scenery
+- sparse strictly vertical marigold seams, variable positions and multiple seams permitted
 
 Read at a glance as:
 

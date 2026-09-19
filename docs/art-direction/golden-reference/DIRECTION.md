@@ -4,17 +4,7 @@
 
 **Current canonical image: [17_golden_reference_FINAL.png](17_golden_reference_FINAL.png).** The user explicitly approved draft 17 as final. This exact image supersedes boards 14 and 16 as the integrated appearance target. Preserve dark high-contrast surfaces, faint desaturated slate-blue light, localized golden marigold, the established composition and borderless HUD. Do not return to saturated blue skies or completely neutral-grey surroundings.
 
-Full image/prompt lineage and source attachments are indexed in [the session archive](history/README.md). Historical draft/review status below describes the sequence before this final approval. Approval of visual intent does not certify exact generated tile widths, numeric geometry, mirror orientation or every asset topology; the documented technical constraints still govern those details.
-
-## Colour and contrast correction — latest session
-
-Follow-up refinement: the user found draft 16 too neutral-grey. Preserve deep charcoal shadows but retain a **faint desaturated slate-blue undertone** in lit nebula, planet rim and stone edges. Desaturated does not mean entirely achromatic. [Draft 17](history/boards/17_golden_reference_cold_undertone_DRAFT.png) applies this correction and redraws tile joints; exact grid geometry remains unverified and the draft awaits approval.
-
-The user identified that board 14 itself drifted into a saturated blue environment and lifted shadows. Its composition/HUD approval remains; **its environmental saturation and bright material values are rejected as the target**. The written requirement wins: desaturated slate/charcoal scenery, deep near-black stone and graphite, selective cold rims and localized golden energy. A/B/C must not progressively lift exposure or blue saturation.
-
-[Board 16](history/boards/16_golden_reference_desaturated_DRAFT.png) is the corrected draft pending user approval. See its [visual audit](history/boards/16_golden_reference_REVIEW.md) for retained decisions and unresolved generated details. Do not build further boards from board 14's erroneous colour grade or board 15's blue sky.
-
-Approved by the user in this session: candidate 12, now preserved as [14_golden_reference_borderless_hud.png](history/boards/14_golden_reference_borderless_hud.png).
+Earlier images and prompts are [history](history/README.md), not competing targets. Final approval does not certify generated geometry, dimensions, mirror orientation or every asset topology.
 
 ## Authority and scope
 
@@ -47,17 +37,17 @@ Small, borderless floating text/icons, no opaque panel backgrounds, box outlines
 - Bottom right: one held item and use prompt; separate active-effect indicator. Active boost is not a second inventory slot.
 - No invented fuel/health/ammo/lap UI. Names, speed, timer and progress in image are illustrative. Font choice, responsive layout, alert behavior and contrast in moving scenes still need validation.
 
-## Material document reconciliation
+## Material and block direction
 
-Later non-destructible block refinement: the user selected clean and broadly worn coated-metal variants (A/C from board 27), with more prominent wear allowed when needed. Use variable strictly vertical marigold seams, including multiple seams, and preserve sealed silhouettes. Closed fissures were not selected. Prefer procedural model/material variation with minimal per-instance authoring. [Board 28 specification](../blocks/28_non_destructible_blocks_SPEC.md) records this family direction; its new image is a final draft, not yet individually approved.
+Later non-destructible block refinement: the user selected clean and broadly worn coated-metal variants (A/C from board 27), with more prominent wear allowed when needed. Use variable strictly vertical marigold seams, including multiple seams, and preserve sealed silhouettes. Closed fissures were not selected. Prefer procedural model/material variation with minimal per-instance authoring. [Board 28 specification](../desctructible-block/28_non_destructible_blocks_SPEC.md) records this family direction; its collected board and specification are final under the owner's 2026-09-19 reconciliation. The historical filename does not indicate pending approval.
 
-Use ART_MATERIALS.md revision 2 for the bare-metal deck, coated-metal blocks/shells, matte stone/concrete/rock distinctions and initial test presets. Two later session decisions explicitly supersede its conflicting restrictions: interior seams may have sparse irregular emissive inserts; environmental monolith seams may produce a visible localized halo. Its blanket environmental no-halo rule must not erase this approval. Numeric intensity/roughness presets are not measured acceptance targets and should be tuned to the visual hierarchy.
+Use [material guidance](../../ART_MATERIALS.md) for bare-metal deck, coated-metal blocks/shells and matte stone/concrete/rock distinctions. Sparse irregular interior seam inserts and visible localized monolith halos are approved. Numeric intensity and roughness presets are not acceptance targets.
 
 ## Scale limits that must survive future boards
 
 Track 64u; ruler tile 4u; gameplay blocks 8u high with variable width/depth. Recorded gap baseline is 20u down-track, minimum 4u width; compound examples need engineering validation. Executioner/Interceptor is 2u wide, Comet 2.2u wide: 50–55% of a 4u tile, not 75%. Recorded Comet length is 1.18u, so its footprint is wider than long. Current generic ship art is provisional, not a frozen Comet design.
 
-The remaining generated errors—tile count/perspective, exact gap widths, mirror orientation, Mine silhouette and Seeker fin visibility—are not newly approved specifications. Use measured technical sheets for scale, this image for atmosphere and integrated appearance.
+Generated tile count/perspective, exact gap widths, mirror orientation, Mine silhouette and Seeker fin visibility are illustrative, not specifications. Use measured technical sheets for scale, this image for atmosphere and integrated appearance.
 
 ## Progression
 

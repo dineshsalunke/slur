@@ -1,6 +1,6 @@
 # Calm / Balanced / Intense — widescreen versions
 
-The user accepted board 20's direction and requested individual 16:9 versions. These three derivatives retain its spatial and localized prop-lighting progression; their individual generated details remain subject to review.
+The user accepted board 20's direction and requested individual 16:9 versions. The owner subsequently confirmed the collected subject-folder deliverables as final. These three views retain the spatial and localized prop-lighting progression; incidental generated details are not technical specifications.
 
 - 21_calm_16x9.png
 - 22_balanced_16x9.png

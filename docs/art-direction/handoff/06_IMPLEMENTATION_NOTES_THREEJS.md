@@ -1,6 +1,6 @@
 # 06 — Three.js / R3F Production Notes
 
-> **V2:** Read `UPDATED_HANDOVER.md` first. Its dimension contract, approved corrections and validation status supersede conflicting legacy wording or image annotations.
+> Read the [current handoff](HANDOVER.md) and [final subject folders](../README.md). Final subject briefs govern their assets; generated annotations never override gameplay dimensions.
 
 These are implementation suggestions, not frozen engine requirements. Preserve the visual result while choosing the simplest performant technique.
 
@@ -44,7 +44,7 @@ Use actual missing floor geometry for gameplay gaps.
 For tiny-gap readability:
 
 - thin emissive rim/edge geometry or emissive mask
-- darker cavity / side wall material
+- dark cut slab sides consistent with the deck; the void has no material
 - subtle inner lip illumination
 
 Do not add floating icons or warning decals unless later gameplay testing proves geometry cues are insufficient.
@@ -119,6 +119,6 @@ If using bloom:
 
 - keep the environment mostly below bloom threshold
 - prioritize track edges, engines, pickups, projectiles, and functional energy
-- avoid turning every marigold seam into a large halo
+- preserve selective visible monolith halos; keep them localized and subordinate to gameplay
 
 Motion effects should reinforce speed without hiding obstacles or gap edges.

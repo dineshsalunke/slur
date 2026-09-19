@@ -1,10 +1,10 @@
 # 08 — Claude Start Here
 
-> **V2:** Read `UPDATED_HANDOVER.md` first. Its dimension contract, approved corrections and validation status supersede conflicting legacy wording or image annotations.
+> Read the [current handoff](HANDOVER.md) and [final subject folders](../README.md). Final subject briefs govern their assets; generated annotations never override gameplay dimensions.
 
 You are helping implement and create content for **SLUR**, a fast multiplayer sci-fi ship racer.
 
-The scene/world art direction is frozen in this package. Treat the markdown files and `GOLDEN_REFERENCES/` as the art specification.
+The scene/world art direction is frozen in this package. Use the [final subject index](../README.md) and the relevant brief as the art specification.
 
 ## Core instruction
 
@@ -18,9 +18,9 @@ Do not embellish the art direction. Fewer stronger details are preferred over ma
 - Environment/background is cold blue-grey/graphite and desaturated.
 - Gameplay remains more saturated/readable than background.
 - A→B→C changes environment intensity through density, scale, proximity, lighting, and atmosphere—not through arbitrary extra colors.
-- Track is dark graphite with large clean panels, restrained reflection, and functional marigold boundaries.
-- No slow blocks or special floors.
-- Narrow gaps use subtle edge glow + inner lip glow + darker cavity.
+- Track is dark graphite with finalized procedural wear, broad warm reflections, continuous marigold boundaries and sparse irregular seam inserts.
+- Slow blocks and special floors are outside final art scope; do not remove existing mechanics based on this omission.
+- Gaps use thin edge glow, slight inner-lip illumination, dark slab cut edges and open void.
 - Monoliths are minimal Obelisk/Gate/Arch environmental forms.
 - Asteroids use Angular/Plate/Broken families with Elongated/Shattered/Cluster variation. No holed asteroid family.
 - Standard obstacle blocks are sealed/solid; destructible blocks are visibly fractured with internal marigold energy.

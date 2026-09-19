@@ -1,8 +1,10 @@
 # Track — material and edge study
 
-Status: **historical proposal audit; visual direction accepted by the user on 2026-09-19**. The user requested the final artboard and brief. [Final brief](24_track_BRIEF.md) now governs this track handoff, with the limitations below retained. Art direction only; no development changes.
+> Historical study, not current guidance. Use the final subject README one directory above.
 
-Visual authority: [approved golden reference 17](../golden-reference/17_golden_reference_FINAL.png). This sheet isolates its track vocabulary rather than inheriting board 15's rejected saturation and material treatment.
+Status: **historical proposal audit; visual direction accepted by the user on 2026-09-19**. The user requested the final artboard and brief. [Final brief](../24_track_BRIEF.md) now governs this track handoff, with the limitations below retained. Art direction only; no development changes.
+
+Visual authority: [approved golden reference 17](../../golden-reference/17_golden_reference_FINAL.png). This sheet isolates its track vocabulary rather than inheriting board 15's rejected saturation and material treatment.
 
 ## Review intent
 
@@ -26,7 +28,7 @@ The latest golden-reference decisions permit sparse irregular interior emissive 
 
 ## Visual audit of generated proposal
 
-[Board 24](24_track_material_edge_PROPOSAL.png) preserves a deep graphite deck, muted cold surroundings, broad warm reflections and predominantly dark joints. The closeups isolate the requested surface and light behavior clearly.
+Board 24 (superseded image removed) preserves a deep graphite deck, muted cold surroundings, broad warm reflections and predominantly dark joints. The closeups isolate the requested surface and light behavior clearly.
 
 Remaining visual defects: the gap's vertical walls acquire a masonry-like small-panel texture, which is not the intended metal section; their apparent depth is also exaggerated and must not establish slab thickness. Some interior inserts share longitudinal alignments, so distribution still needs review against the no-lanes rule. The closeup's fine surface scratches should not become required texture detail at gameplay distance. These details are not approved specifications.
 

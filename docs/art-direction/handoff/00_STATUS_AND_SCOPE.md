@@ -1,6 +1,6 @@
 # 00 — Status & Scope
 
-> **V2:** Read `UPDATED_HANDOVER.md` first. Its dimension contract, approved corrections and validation status supersede conflicting legacy wording or image annotations.
+> Read the [current handoff](HANDOVER.md) and [final subject folders](../README.md). Final subject briefs govern their assets; generated annotations never override gameplay dimensions.
 
 ## Frozen and safe to implement
 
@@ -23,7 +23,7 @@ The following are frozen for scene/world production:
 
 - Final ship designs and ship orthographic model sheets
 - Ship-specific VFX polish beyond the general warm-energy language
-- Final HUD/UI implementation details, including the rear-view mirror treatment
+- HUD typography, responsive sizing, interaction states and rear-camera implementation; compact borderless styling and content placement are finalized
 - Exact production mesh topology / texture budgets / shader implementation
 
 Ship art direction will continue independently and should **not block environment production**.
@@ -32,7 +32,7 @@ Ship art direction will continue independently and should **not block environmen
 
 A visual decision can be frozen while implementation remains flexible.
 
-Example: destructible blocks must *read as fractured and breakable*. This does **not** require runtime mesh fracturing. A performant pre-fractured mesh, mesh swap, fracture mask, emissive crack shader, or other implementation is acceptable.
+Example: destructible blocks must *read as fractured and breakable*. This does **not** require runtime mesh fracturing. A pre-fractured mesh, mesh swap or procedural form may be used. A crack mask or emissive shader alone cannot replace the required broken outer contours.
 
 ## Do not infer from concept art
 

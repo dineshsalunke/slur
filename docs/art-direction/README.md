@@ -1,29 +1,31 @@
-# SLUR — Art direction workspace
+# SLUR — final art direction
 
-**Finalized scene backgrounds:** [scene-background/](scene-background/README.md) contains the approved Deep Space / Nebula environment board, specification and prompt, with superseded work in history and the unapproved panoramic texture in experiments.
+**Cold Space. Warm Energy. Minimal forms. Readable gameplay.**
 
-**Finalized scene and archive:** [golden-reference/](golden-reference/README.md) contains the approved image, direction record and complete image/prompt history. Environment progression boards, widescreen versions, prompts and notes live in [progression/](progression/README.md). Other asset boards remain under `boards/`.
+Start with the subject folders below. The owner confirmed their collected deliverables as final on 2026-09-19. Codex owns art design and direction; Claude owns implementation.
 
-This folder holds Codex's art design and direction work for SLUR: concepts, visual reviews, asset design, and handoffs. Claude handles project implementation.
+| Subject | Final source |
+|---|---|
+| Integrated appearance and borderless HUD | [golden-reference](golden-reference/README.md) |
+| Track, edge language and procedural wear | [track](track/README.md) |
+| Planet-led Deep Space and nebula-led Nebula | [scene-background](scene-background/README.md) |
+| Calm / Balanced / Intense composition | [progression](progression/README.md) |
+| Non-destructible blocks | [desctructible-block](desctructible-block/README.md) |
+| Other retained asset families | [boards](boards/README.md) |
 
-**Finalized track:** [track/](track/README.md) contains the frozen wear artboard, approved clean baseline, production art briefs and supporting prompts/review history.
+## Authority
 
-**Blocks:** [blocks/](blocks/) holds the non-destructible block boards 25–28 — proposals, drafts, wear-at-distance review and the current final draft with its specification. (Folder added by engineering: it was `desctructible-block/`, holding only board 28 while boards 25–27 sat loose in `boards/`.)
+1. Current gameplay contracts and the [scale reference](../ART_SCALE_REFERENCE.md) govern dimensions and collision. Art approval does not change gameplay.
+2. The final subject brief governs its own asset. Track 25 governs wear; track 24 retains construction and edge constraints. Scene-background 25 governs celestial hierarchy; progression governs environmental intensity.
+3. [Golden reference 17](golden-reference/DIRECTION.md) governs integrated colour, contrast, lighting hierarchy and HUD direction.
+4. Retained family sheets govern silhouettes where no newer subject brief replaces them. [Material guidance](../ART_MATERIALS.md) supports the final appearance; numeric presets are not frozen values.
 
-## Current handoff
+Generated labels and incidental image details do not override written constraints. Final art approval is distinct from production validation.
 
-**FINAL reference: [17_golden_reference_FINAL.png](golden-reference/17_golden_reference_FINAL.png).** User approved the cold-undertone revision after colour/contrast correction. Use [GOLDEN_REFERENCE.md](golden-reference/DIRECTION.md) for the complete decision record and [the session archive](golden-reference/history/README.md) for every generated image, exact successful prompt, reviews and source attachments. Older board-14 pointers below are historical.
+## Handoff
 
-**Start with [GOLDEN_REFERENCE.md](golden-reference/DIRECTION.md).** It records the newly approved scene and borderless HUD, including later corrections to interior seam lighting, monolith glow and gap treatment. [Board 14](golden-reference/history/boards/14_golden_reference_borderless_hud.png) is the current integrated visual target. [BOARD_REBUILD_PLAN.md](BOARD_REBUILD_PLAN.md) defines the detailed replacement-board series.
+- [Current status](CURRENT_STATUS.md): final deliverables at a glance.
+- [Implementation handoff](handoff/HANDOVER.md): production constraints and links.
+- [Production validation](PRODUCTION_VALIDATION.md): engineering checks and design details outside these approvals.
 
-Read [CURRENT_STATUS.md](CURRENT_STATUS.md) for the reviewed art status, production progress, and open decisions as of 2026-09-18.
-
-The v2 package's written direction and source documents are in [handoff/](handoff/README.md); its reference images are in [boards/](boards/README.md).
-
-Start with [HANDOVER.md](handoff/HANDOVER.md). It defines the current art decisions and supersedes conflicting v1 guidance. Follow the [reference index](boards/README.md) when using the images.
-
-Keep the extracted package intact. Add future art explorations, reviews, and handoffs alongside it in this workspace.
-
-## Earlier references
-
-The v1 handoff is no longer a separate folder — it was consolidated into this workspace's `boards/` and `handoff/`. Its history is preserved in git.
+History, source attachments, old prompts and experiments are provenance only. Do not load them as current instructions or restart completed board work from an old plan.

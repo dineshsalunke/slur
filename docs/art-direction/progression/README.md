@@ -1,34 +1,20 @@
-# SLUR — environment progression
+# SLUR — final environment progression
 
-Calm → Balanced → Intense. Art direction only; Claude handles development.
+Calm → Balanced → Intense. Final art direction, confirmed through the owner's subject-folder reconciliation on 2026-09-19. Claude handles implementation.
 
-## Current direction
+| Deliverable | Purpose |
+|---|---|
+| [Board 20](20_environment_prop_lighting_DRAFT.png) | Accepted spatial and localized prop-lighting progression |
+| [Calm — 21](21_calm_16x9.png) | Open space, fewer/farther framing masses, restrained warm accents |
+| [Balanced — 22](22_balanced_16x9.png) | Layered depth, moderate enclosure and selective prop lighting |
+| [Intense — 23](23_intense_16x9.png) | Larger/closer masses, overhead enclosure and more distributed warm accents |
 
-The user accepted [board 20's spatial and prop-lighting progression](20_environment_prop_lighting_DRAFT.png). Its original draft filename is retained. This acceptance does not certify generated geometry, HUD errors or the individual widescreen derivatives.
+The historical `DRAFT` filename on board 20 no longer indicates pending approval. The three widescreen deliverables are 1920 × 1080 adaptations, not measured camera-matched comparisons.
 
-| 16:9 version | Size |
-| --- | --- |
-| [Calm](21_calm_16x9.png) | 1920 × 1080 |
-| [Balanced](22_balanced_16x9.png) | 1920 × 1080 |
-| [Intense](23_intense_16x9.png) | 1920 × 1080 |
+Vary density, proximity, scale, framing and selective energy. Preserve deep materials, faint cold undertones and gameplay contrast. Intense does not mean brighter blue skies, globally lifted exposure or permanent boost blur. Recovery beats are valid.
 
-[Widescreen prompts](21_23_widescreen_PROMPTS.txt) · [Review and generation details](21_23_widescreen_REVIEW.md).
+[Golden reference 17](../golden-reference/DIRECTION.md) governs integrated appearance and the five-row borderless HUD. [Scene-background 25](../scene-background/README.md) governs planet-led Deep Space versus nebula-led Nebula.
 
-## Development of the direction
+[Generation notes](21_23_widescreen_REVIEW.md) · [Widescreen prompts](21_23_widescreen_PROMPTS.txt) · [Board 20 notes](20_environment_prop_lighting_REVIEW.md) · [Board 20 prompt](20_environment_prop_lighting_PROMPT.txt).
 
-| Stage | Image | Notes | Prompt |
-| --- | --- | --- | --- |
-| Initial comparison | [Board 18](18_environment_progression_PROPOSAL.png) | [Specification](18_environment_progression_SPEC.md) | [Prompt](18_environment_progression_PROMPT.txt) |
-| Stronger spatial progression | [Board 19](19_environment_progression_DRAFT.png) | [Review](19_environment_progression_REVIEW.md) | [Prompt](19_environment_progression_PROMPT.txt) |
-| Localized prop lighting — accepted direction | [Board 20](20_environment_prop_lighting_DRAFT.png) | [Review](20_environment_prop_lighting_REVIEW.md) | [Prompt](20_environment_prop_lighting_PROMPT.txt) |
-
-[Working hypothesis](ENVIRONMENT_PROGRESSION_HYPOTHESIS.md) records the observations that drove these drafts. Historical status text in individual notes describes the state at their creation; the acceptance recorded above is later.
-
-## References
-
-- [User-supplied earlier progression proposal](references/earlier_progression_proposal.png): composition reference for open sky, proximity, overlapping depth and overhead enclosure; not the colour/material target.
-- [Approved golden reference 17](../golden-reference/17_golden_reference_FINAL.png) and [direction record](../golden-reference/DIRECTION.md): appearance authority.
-- [Original intensity board 02](../boards/02_environment_intensity_A_B_C.png): retained in the original handoff set.
-- [Unapproved board 15](../golden-reference/history/boards/15_environment_intensity_proposal.png), [specification](../golden-reference/history/boards/15_environment_intensity_SPEC.md) and [prompt](../golden-reference/history/boards/15_environment_intensity_PROMPT.txt): retained in the golden-reference archive; incorrect saturation/material treatment.
-
-All work produced in this progression session is collected here. Earlier shared references remain in their existing archives and are linked above. Exact generation prompts are historical records and are not rewritten when input files move.
+Earlier proposals and the working hypothesis are [history](history/README.md). Generated geometry, text and small silhouettes are illustrative; final art does not certify production readiness.

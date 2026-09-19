@@ -4,7 +4,7 @@
 
 - [Final approved image](17_golden_reference_FINAL.png)
 - [Direction and approval record](DIRECTION.md)
-- [Complete development history](history/README.md): all 15 generated outputs, exact prompts, review notes and source attachments.
+- [Text development history](history/README.md): exact prompts, review notes, generation hashes and source attachments. Superseded generated images have been removed.
 
 The final reference establishes the integrated visual direction: deep dark materials, faint desaturated cold light, localized marigold energy and compact borderless HUD. Generated dimensional or topology inaccuracies do not override the written gameplay contracts.
 
@@ -12,9 +12,9 @@ The final reference establishes the integrated visual direction: deep dark mater
 
 - `17_golden_reference_FINAL.png` — canonical approved image.
 - `DIRECTION.md` — decisions, authority and known limitations.
-- `history/` — chronological iterations, prompts, briefs, reviews and source inputs.
-- `history/boards/` — prior promoted scene, unapproved intensity study and colour-correction drafts with their prompts/reviews.
+- `history/` — text lineage, prompts, briefs, reviews and source inputs.
+- `history/boards/` — prompts and reviews for retired scene/intensity drafts; draft images removed.
 
 The original extracted art boards and newer asset/progression work remain in [the broader boards folder](../boards/README.md). Future board work follows [the rebuild plan](../BOARD_REBUILD_PLAN.md).
 
-Historical prompts are preserved verbatim, so their original input paths may predate this reorganization. Current images and lineage are linked in the history index; the JSON manifest maps original generated filenames to current repository locations. Checksums use paths relative to `docs/art-direction`.
+Historical prompts are preserved verbatim, so their original input paths may predate this reorganization. The final image and text lineage are linked in the history index; the JSON manifest distinguishes retained copies from removed draft paths. Checksums use paths relative to `docs/art-direction`.

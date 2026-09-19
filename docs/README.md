@@ -1,9 +1,9 @@
 # SLUR — Design Docs
 
 > Working title: **SLUR**. Casual multiplayer ship-racer — play it on the office **LAN** or **hosted on the web** — a party game about *messing with your friends*.
-> Player-flown, two modes (Race-to-finish / endless Survival). SkyRoads (1993) speed/jump × Blur (2010) pickup-combat × [cuberun](https://github.com/akarlsten/cuberun) neon.
+> Player-flown, finite Race-to-finish. SkyRoads (1993) speed/jump × Blur (2010) pickup-combat × [cuberun](https://github.com/akarlsten/cuberun) neon.
 
-These are **living documents**. Each starts as a v0 draft and carries an `OPEN QUESTIONS` section — resolve those with the team, then fold the decision into the body and delete the question.
+For current art, start with the [final subject folders](art-direction/README.md). Their final briefs govern appearance. Gameplay and technical documents describe their own contracts; historical proposals and open questions do not override finalized art.
 
 ## The documents
 

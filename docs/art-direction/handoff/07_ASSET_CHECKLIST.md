@@ -1,8 +1,8 @@
 # 07 — Initial Production Asset Checklist
 
-> **V2:** Read `UPDATED_HANDOVER.md` first. Its dimension contract, approved corrections and validation status supersede conflicting legacy wording or image annotations.
+> Read the [current handoff](HANDOVER.md) and [final subject folders](../README.md). Final subject briefs govern their assets; generated annotations never override gameplay dimensions.
 
-This is a practical first-pass content list. Exact counts can be adjusted during implementation.
+This lists production requirements, not implementation status. Unchecked boxes do not mean the art direction is unapproved. Engineering owns delivery tracking.
 
 ## Shared materials / shaders
 
@@ -11,7 +11,7 @@ This is a practical first-pass content list. Exact counts can be adjusted during
 - [ ] Worn concrete variant
 - [ ] Asteroid rock material
 - [ ] Marigold emissive material / mask system
-- [ ] Dark cavity material for gaps
+- [ ] Dark slab cut-edge treatment; open gap void with no cavity material
 - [ ] Shared pickup/weapon shell material
 - [ ] Optional fracture-emissive material variant
 

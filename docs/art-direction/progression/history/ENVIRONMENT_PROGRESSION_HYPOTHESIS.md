@@ -1,5 +1,7 @@
 # Environment progression — working hypothesis
 
+> Historical study, not current guidance. Use the final subject README one directory above.
+
 Status: observations and draft criteria, not approved art-direction rules. Promote to documentation only after new drafts reproduce the strong progression and the user accepts the result.
 
 Scope: art direction only. Claude handles development.

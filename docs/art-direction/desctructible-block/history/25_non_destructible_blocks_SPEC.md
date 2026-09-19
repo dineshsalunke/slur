@@ -1,8 +1,10 @@
 # 25 — Non-destructible blocks
 
+> Historical study, not current guidance. Use the final subject README one directory above.
+
 Status: art proposal, awaiting user review. Art direction only; no development changes.
 
-[Board](25_non_destructible_blocks_PROPOSAL.png) · [Exact generation prompt](25_non_destructible_blocks_PROMPT.txt)
+Board (superseded image removed) · [Exact generation prompt](25_non_destructible_blocks_PROMPT.txt)
 
 Generated with the built-in image-generation tool using only approved board 17 as the image reference. Board 15 was not used.
 

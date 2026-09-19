@@ -1,8 +1,8 @@
 # 28 — Non-destructible blocks: clean + worn coating
 
-Status: final draft image. The user selected clean A and worn coating C from board 27; the newly generated image has not itself been approved. This is the current non-destructible block art direction, superseding conflicting proposals in boards 25–27. Art only; Claude handles development.
+Status: final art direction. The user selected clean A and worn coating C from board 27 and confirmed the collected subject-folder deliverables as final during reconciliation on 2026-09-19. This is the current non-destructible block art direction, superseding conflicting proposals in boards 25–27. Art only; Claude handles development.
 
-[Final draft board](28_non_destructible_blocks_FINAL_DRAFT.png) · [Exact prompt](28_non_destructible_blocks_PROMPT.txt)
+[Final collected board](28_non_destructible_blocks_FINAL_DRAFT.png) · [Exact prompt](28_non_destructible_blocks_PROMPT.txt)
 
 ## Selected direction
 
@@ -25,4 +25,4 @@ The board consolidates clean/worn treatments, an optional stronger-wear comparis
 
 Illustrative proportions, apparent height and camera matching are not measured evidence. A checked dimension sheet and race-distance/motion review remain required before production-readiness claims. If stronger wear is needed, enlarge patches or increase restrained material contrast while preserving dark bodies; do not automatically add small details.
 
-Generated with the built-in image tool using board 27 as the reference, selecting only A and C. Original boards remain unchanged for history.
+Generated with the built-in image tool using board 27 as the reference, selecting only A and C. Earlier boards are preserved in history. The FINAL_DRAFT filename is retained for stable references; the final status above governs.

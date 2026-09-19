@@ -1,13 +1,13 @@
 # 03 — Track Visual Language
 
-> **V2:** Read `UPDATED_HANDOVER.md` first. Its dimension contract, approved corrections and validation status supersede conflicting legacy wording or image annotations.
+> Read the [current handoff](HANDOVER.md) and [final subject folders](../README.md). Final subject briefs govern their assets; generated annotations never override gameplay dimensions.
 
 ## Core track direction
 
 The track is intentionally minimal:
 
 - dark graphite / black metallic surface
-- large clean panel divisions
+- large panel divisions with approved broad procedural finish wear, shallow scuffs and sparse edge rub
 - sparse fine seams
 - restrained gloss / reflection
 - functional marigold edge and energy channels
@@ -15,15 +15,15 @@ The track is intentionally minimal:
 
 There are **no slow blocks and no special floor types** in the frozen art direction.
 
-Golden reference: `07_track_visual_language_final.png`
+Final references: [track 24 baseline and track 25 procedural wear](../track/README.md). Board 07 retains the finish-line concept only.
 
 ## Track boundaries
 
-Track edges should read clearly at speed through a continuous or near-continuous marigold energy treatment.
+Track edges should read clearly at speed through a continuous marigold energy treatment.
 
 The boundary glow is functional: it defines the playable ribbon and helps reinforce perspective and speed.
 
-Avoid making every panel seam equally emissive. Edges define the boundary; subtle non-emissive interior panel cues and hazard contact shading supply fine positioning across the 64u ribbon.
+Avoid making every panel seam equally emissive. Edges define the boundary; mostly dark panel joints, sparse irregular emissive inserts and hazard contact shading supply fine positioning across the 64u ribbon.
 
 ## Reflection
 
@@ -57,7 +57,7 @@ Narrow 4 × 20u gaps can lose readability because of perspective and track thick
 
 1. **Subtle marigold edge definition** around the opening
 2. **Slight inner-lip glow** to reveal the cut
-3. **Darker inner cavity** to strengthen depth contrast
+3. **Dark slab cut edges and open void** to strengthen depth contrast; no cavity material or black floor
 
 Avoid decorative warning brackets, large icons, or unrelated warning colors.
 

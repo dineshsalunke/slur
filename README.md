@@ -6,7 +6,7 @@
   <img src="./slur.png" alt="SLUR — the main-menu landing: a ship banking through a neon Grid-Void channel of glowing walls, over the tagline &ldquo;Race your friends. Wreck their run.&rdquo;" width="100%">
 </p>
 
-Player-flown flight down a track in two modes — **Race** (finite, finish-line) and **Survival** (endless, chase-wall). SkyRoads (1993) speed/jump × Blur (2010) pickup-combat × [cuberun](https://github.com/akarlsten/cuberun) neon, in a TRON / Star Trek key. Server-authoritative and **round-based**: the host launches a run and the whole room races together — join a room anytime and race the next round.
+Player-flown flight down a finite track to the finish — **Race**. SkyRoads (1993) speed/jump × Blur (2010) pickup-combat × [cuberun](https://github.com/akarlsten/cuberun) neon. Art direction: **Cold Space. Warm Energy.** See the [final art folders](docs/art-direction/README.md). Server-authoritative and **round-based**: the host launches a run and the whole room races together — join a room anytime and race the next round.
 
 ## Stack
 

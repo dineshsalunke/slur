@@ -20,7 +20,14 @@ Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we 
 lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions + rationale in
 `docs/DECISIONS.md`.
 
-> ### ▶ Picking up the ART work? Read the index FIRST.
+> ### Final art authority
+> Read **`docs/art-direction/README.md`** and the relevant finalized subject brief first. The owner
+> confirmed these folders as final on 2026-09-19. **Golden reference 17** governs integrated appearance
+> and the borderless HUD; subject briefs govern track wear, celestial hierarchy, progression and blocks.
+> Engineering lane notes record execution history, not competing art direction. Material presets are
+> tunable; sparse emissive interior inserts and visible localized monolith halos are approved.
+>
+> ### ▶ Picking up the ART implementation? Read the execution index.
 > **`.claude/art-pass/INDEX.md`** — the six-task procedural art arc (background → track → lighting →
 > monoliths → asteroids → composition), its authority order, how each task runs, and the gotchas already
 > paid for. Written to be read cold. All dimensions come from **`docs/ART_SCALE_REFERENCE.md`**, which
@@ -45,8 +52,8 @@ lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); d
 > `.claude/art-pass/` (execution).
 >
 > **How to disagree with the package:** never by editing it. Write the correction in a Claude-owned doc
-> with an explicit *decisions + departures* section that quotes the package wording it changes (see
-> `ART_MATERIALS.md` §7 for the shape), then hand it to the owner to paste into ChatGPT. A silent edit
+> with an explicit *decisions + departures* section that quotes the package wording it changes,
+> then hand it to the owner to paste into ChatGPT. A silent edit
 > inside the folder is invisible to Codex and desynchronises both sides. Boards will **not** be
 > reshot — stop asking; use them for LOOK, never for SIZE.
 

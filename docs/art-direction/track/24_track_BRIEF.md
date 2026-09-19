@@ -7,7 +7,7 @@
 **Wear update — frozen 2026-09-19:** [Board 25](25_track_procedural_wear_FINAL.png) and its [procedural wear brief](25_track_procedural_wear_BRIEF.md) supersede this board's clean surface treatment. Follow the accepted visible wear strength; retain this brief's underlying material, geometry, boundary, gap and scale constraints.
 
 - [Final track artboard](24_track_material_edge_FINAL.png): track overview and four detail studies.
-- [Accepted original artwork](24_track_material_edge_PROPOSAL.png): preserved unchanged; the final edition updates its status caption.
+- Accepted original artwork (superseded image removed): preserved unchanged; the final edition updates its status caption.
 - [Golden reference 17](../golden-reference/17_golden_reference_FINAL.png): overall atmosphere, integrated visual hierarchy and compact borderless HUD remain authoritative.
 
 Board 24 supersedes board 07 for deck finish, boundary treatment and interior seam language. It does not replace the finish-line concept, establish a new gap family or alter gameplay. Board 15's saturated surroundings and lifted material treatment remain rejected.
@@ -69,4 +69,4 @@ Finish-line silhouette, deterministically measured plan/section sheets, exact sl
 
 ## Provenance
 
-Artwork created with the built-in image-generation tool from golden reference 17. [Original prompt](24_track_material_edge_PROMPT.txt) and [final caption-edit prompt](24_track_material_edge_FINAL_PROMPT.txt) are retained. The original [proposal audit](24_track_material_edge_SPEC.md) records the visual limitations that this brief carries forward.
+Artwork created with the built-in image-generation tool from golden reference 17. [Original prompt](24_track_material_edge_PROMPT.txt) and [final caption-edit prompt](24_track_material_edge_FINAL_PROMPT.txt) are retained. The original [proposal audit](history/24_track_material_edge_SPEC.md) records the visual limitations that this brief carries forward.

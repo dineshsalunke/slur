@@ -16,7 +16,7 @@ Board 25 supersedes the clean surface treatment. Board 24 retains material, boun
 
 ## Supporting provenance
 
-- [Board 24 original proposal](24_track_material_edge_PROPOSAL.png), [audit](24_track_material_edge_SPEC.md), [generation prompt](24_track_material_edge_PROMPT.txt) and [final caption prompt](24_track_material_edge_FINAL_PROMPT.txt).
-- [Board 25 reviewed trial](25_track_procedural_wear_TRIAL.png) and [generation prompt](25_track_procedural_wear_PROMPT.txt). The final image is an identical copy of this accepted trial.
+- Board 24 original proposal (superseded image removed), [audit](history/24_track_material_edge_SPEC.md), [generation prompt](24_track_material_edge_PROMPT.txt) and [final caption prompt](24_track_material_edge_FINAL_PROMPT.txt).
+- Board 25 reviewed trial (superseded image removed) and [generation prompt](25_track_procedural_wear_PROMPT.txt). The final preserves the accepted trial’s exact pixels; the duplicate trial file has been removed.
 
 These historical files support the finalized handoff; they are not competing targets. Measured construction sheets, finish-line design and moving gameplay validation remain outstanding.

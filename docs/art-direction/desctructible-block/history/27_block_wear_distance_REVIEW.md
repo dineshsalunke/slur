@@ -1,8 +1,10 @@
 # 27 — Block wear at distance
 
+> Historical study, not current guidance. Use the final subject README one directory above.
+
 Draft, awaiting user review. Art direction only. Built-in image generation using board 26 as reference; no development changes.
 
-[Image](27_block_wear_distance_DRAFT.png) · [Exact prompt](27_block_wear_distance_PROMPT.txt)
+Image (superseded image removed) · [Exact prompt](27_block_wear_distance_PROMPT.txt)
 
 The user found fine dark scratches unlikely to be visible during racing and requested larger features to justify authoring and rendering effort. This comparison explores A: clean coating; B: broad closed non-emissive fissures; C: large worn coating patches. Similar camera, form, seam and lighting isolate treatment approximately, not as a deterministic render test. Constant 8u height remains the written requirement, not a measurement certified by this image.
 

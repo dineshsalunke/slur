@@ -10,7 +10,7 @@ The artboard was approved on 2026-09-19. Its filename now says FINAL; its pixels
 
 ## Supporting work
 
-- [Superseded board 24](history/24_environment_space_nebula_PROPOSAL.png) and [specification](history/24_environment_space_nebula_SPEC.md): the repeated dominant planet was superseded by the approved hierarchy.
+- Superseded board 24 (superseded image removed) and [specification](history/24_environment_space_nebula_SPEC.md): the repeated dominant planet was superseded by the approved hierarchy.
 - [Nebula panorama experiment](experiments/2026-09-19-nebula-panorama/README.md): unapproved 2:1 source candidate, not a validated seamless cubemap. Includes image, prompt and conversion handoff notes.
 
 ## Related authorities

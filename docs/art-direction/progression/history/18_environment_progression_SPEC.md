@@ -1,8 +1,10 @@
 # SLUR — environment progression
 
+> Historical study, not current guidance. Use the final subject README one directory above.
+
 Status: proposal for review, not approved. Art direction only; no gameplay or development changes.
 
-Appearance authority: [user-approved final reference](../golden-reference/17_golden_reference_FINAL.png). Board 15 is unapproved and is not a colour or material reference.
+Appearance authority: [user-approved final reference](../../golden-reference/17_golden_reference_FINAL.png). Board 15 is unapproved and is not a colour or material reference.
 
 ## Three steps
 

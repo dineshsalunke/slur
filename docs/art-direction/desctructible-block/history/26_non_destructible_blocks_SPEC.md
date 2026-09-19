@@ -1,8 +1,10 @@
 # 26 — Non-destructible blocks: procedural variation draft
 
+> Historical study, not current guidance. Use the final subject README one directory above.
+
 Status: draft for visual review. Art direction only; Claude owns development.
 
-[View draft board](26_non_destructible_blocks_DRAFT.png)
+View draft board (superseded image removed)
 
 ## Accepted direction from this conversation
 
