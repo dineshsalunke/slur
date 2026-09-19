@@ -60,11 +60,9 @@ Three Effects in this area, all three kept a justification:
 
 - `sky-config.ts:112` (`starBearingDeg`) — I cut a 17-line Kasa-fit derivation (threshold the jpg at luma ≥ 210,
   circle-fit the planet limb, polar-sweep to the terminator at 169°) down to the conclusion: measured from the
-  terminator, star at 79° screen-azimuth, mapping to bearing 66°/elevation 19°. **The full method is not
-  recorded anywhere else** — `01-background/CHEAP-PATH-BRIEF.md` has the decision (display and light are
-  separate sources; the Lightformer must match the image's implied direction) but not the measurement. If a
-  second sky image is ever authored, that procedure is how its bearing gets derived. Worth moving into the
-  background brief rather than losing; not my file to edit.
+  terminator, star at 79° screen-azimuth, mapping to bearing 66°/elevation 19°. **RESOLVED — not outstanding.**
+  The supervisor owns this and is writing the method into `01-background/CHEAP-PATH-BRIEF.md` directly.
+  Recorded here only so a later reader knows the file's conclusion has a derivation living in that doc.
 - `sky-config.ts:139` (`fovDeg`) — kept 3 lines, one over the bound. 120 is an owner framing decision against a
   computed 134.3°, and the third line records why widening the star field is not an alternative (drei `<Stars>`
   lights 0.008% of its pixels, so the margin reads flat black, not starfield). Two rejected alternatives on one
@@ -75,6 +73,7 @@ Three Effects in this area, all three kept a justification:
   This file is a tuning surface in the same sense `constants.ts` is, even though the brief only names
   `constants.ts`. Same call made for the `DISSOLVE_*` constants in `ship-model.tsx:27-30` and the
   `MAX`/`SPEED`/`DRAG`/`GRAV`/`BRIGHT` blocks in `explosions.tsx` and `hit-spark.tsx`.
+  **Ruled on and upheld** — see ruling 2 below. This is now the standing rule, not a judgement call.
 
 ### Restored after supervisor review of `e95e3a2` (three over-cuts, all mine)
 
@@ -91,15 +90,66 @@ Three Effects in this area, all three kept a justification:
 **Lesson for the remaining areas:** a rule about what may NOT enter a file reads like prose and dies in a
 sweep, because there is no code under it to check it against. Treat "never do X here" as a keeper on sight.
 
-### Stale comments corrected (comment-only; no code changed)
+### Stale comments corrected — REVIEW THESE FIRST
 
-- `ship-model.tsx:186` — said the beacon keeps `local=cyan vs remote=magenta` legible. The code washes the
-  beacon in the **owner's team colour**, and a sibling comment in the same file said magenta had been retired
-  from the palette. Rewritten to describe the team-colour beacon; the pointLight-perf reason kept.
-- `explosions.tsx:27` — `CYAN` was annotated "matches ship.tsx beacon". Two errors: the beacon is in
-  `ship-model.tsx`, not `ship.tsx`, and it no longer uses this constant. Trimmed to "local ship tint".
-- `sky-follow.tsx:5` — named its children as "the gradient dome + the drei star field"; it now carries the
-  backdrop patch. Rewritten without the enumeration so it cannot rot the same way again.
+**These are the part of the sweep that a diff cannot review.** A deletion is self-evidently safe; a
+correction is a fresh claim about what the code does, and if the claim is wrong nothing catches it. Both
+readings are given so the new one can be checked against the code without reconstructing the old one.
+
+**`ship-model.tsx:182`** — the beacon.
+- Was: *"team-colour beacon (emissive, blooms) so local=cyan vs remote=magenta stays legible — an unlit mesh,
+  NOT a pointLight, to avoid the many-dynamic-lights perf cliff."*
+- Now: *"Team-colour beacon, emissive so it blooms and stays legible at race distance. An unlit mesh, NOT a
+  pointLight, to avoid the many-dynamic-lights perf cliff."*
+- Why: the mesh takes `emissive={ color }`, the owner's team colour, with no local/remote branch anywhere in
+  the file. A sibling comment in the same file also recorded magenta as retired from the palette. **The new
+  line asserts the beacon is per-owner, not per-locality — check that claim.**
+
+**`explosions.tsx:25`** — the `CYAN` shard tint.
+- Was: *"local ship tint (matches ship.tsx beacon)"*
+- Now: *"local ship tint"*
+- Why: two errors in the parenthetical. The beacon is in `ship-model.tsx`, not `ship.tsx`, and it no longer
+  uses this constant. The surviving half ("local ship tint") is true — `CYAN`/`MAGENTA` do still branch on
+  locality here, which is why only the cross-reference was cut and not the whole line.
+- **Related art finding, not acted on:** `MAGENTA = '#ff2bd6'` is still a live shard tint while the palette
+  has retired magenta. That is a colour decision, not a comment one — routing it, not fixing it.
+
+**`sky-follow.tsx:5`** — the follow group's children.
+- Was: *"…its children (the gradient dome + the drei star field) stay centred on the viewer… parallax comes
+  from their radius, not from tracking angle."*
+- Now: *"A group that rides the camera each frame, so its children stay centred on the viewer and the sky
+  never runs out as the ship travels. Position only, not rotation, so the sky still swings as the ship turns."*
+- Why: it enumerated children it no longer has — the backdrop patch is what rides it now. Rewritten without
+  the enumeration so it cannot rot the same way twice.
+
+### Rulings from the supervisor — standing, apply to all remaining areas
+
+**1. Rotted-into-false comments: correct, don't delete — but only when the corrected line would pass the
+keeper bar on its own.** A comment that has rotted into a falsehood is strictly worse than no comment, so it
+can never survive as written; that part is not a judgement call. What is a judgement call is what replaces
+it. The test: *would I write this line today, on a fresh file, knowing what the code says?* Yes → correct it.
+No → delete it, because the reason it was written has evaporated and you would be preserving a sentence for
+its own sake.
+
+**Obligation attached:** every corrected comment gets called out in this file with `file:line` and **both
+readings**, as above. In a diff a correction is indistinguishable from a sweep, and it is really a claim
+about behaviour. The deletions are safe to review at a glance; the corrections are not.
+
+**2. The `constants.ts` tuning exception extends by purpose, not by file path.** It exists so the owner can
+tune live without reading the sim. `env-config.ts`, the `DISSOLVE_*` block, and the explosion/spark constants
+serve exactly that purpose, so their per-field lines stay intact. Reading the exception as being about one
+file path would be the literal-minded answer that defeats the rule. **Per-field tuning lines in any
+tune-live data block stay.**
+
+**3. The `fovDeg` comment stays at four lines.** Both rejected alternatives (70, and widening the star field)
+are worth their clauses. Do not trim it.
+
+### The lesson worth carrying past this lane
+
+**A rule about what may not enter a file has no code under it to check it against, so it reads as prose and
+dies in a sweep.** That is why prohibitions need a checkable artefact attached — the hex triple in
+`sky-config.ts`'s palette line is what makes "the warm ramp never appears up here" verifiable instead of
+merely stated. Treat "never do X here" as a keeper on sight.
 
 ### Forward references deleted
 
