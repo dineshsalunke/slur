@@ -8,26 +8,62 @@
 //
 // These are `meshStandardMaterial` props, spread directly onto the JSX element.
 //
-// NOTE — as-built vs the frozen direction: these values are the SHIPPED TRON retone (red lethal, grey-white
-// rails, amber drag). They are NOT yet the `art-handoff-v1` palette, which makes marigold `#F59A24` the
-// single energy colour and puts the track edges on it (ADD §3, ADR-008). Bringing them in line is the art
-// pass; seeing the gap clearly is exactly what the gallery is for. Do not "fix" them piecemeal here —
-// that change belongs in one deliberate pass with the readability gates (ADD §10 OQ6/OQ7) attached.
+// NO `toneMapped: false` HERE. Every surface used to opt out of the tone map, which made the art
+// direction's own test — "does the rail read marigold in the final tone-mapped frame" — unrunnable by
+// construction. The renderer default stands (r3f's `<Canvas>` sets ACES Filmic unless `flat` is passed,
+// which nothing does), so these intensities are authored to survive that transform rather than bypass it.
+
+import { trackSurfaceTexture } from './track-texture';
 
 /** Near-black ribbon surface. The neon deliberately lives on the rails, not the slab. */
 export const FLOOR_SURFACE = {
     emissive: '#c8d0d8',
     emissiveIntensity: 0.05,
     color: '#050507',
-    toneMapped: false,
 } as const;
 
-/** Lethal blocks — the lone red accent. Touch → derezz, so danger must read instantly. */
+/**
+ * Base roughness of the track's dark metal. THE constant the finish is defined by: `art/block` perturbs
+ * its per-fragment roughness RELATIVELY around this, so the two dark-metal languages cannot fork when it
+ * moves. Import it; never copy the number.
+ */
+export const FLOOR_ROUGHNESS = 0.62;
+
+/**
+ * Low, pending slice 2. The original reason ("no environment map in this scene") is FALSE since the lab
+ * lost its own lights and the shipped sky rig brought `SkyEnvironment`.
+ */
+export const FLOOR_METALNESS = 0.12;
+
+/**
+ * The game floor's real material — the ONE definition, spread by both `TrackFloor` and the gallery so a
+ * review cannot drift from what ships. A function, not a frozen object: `trackSurfaceTexture()` needs
+ * `document` and must not run at import time.
+ *
+ * `color` overrides FLOOR_SURFACE's near-black because base colour MULTIPLIES the map — at `#050507` the
+ * texture crushes to flat black.
+ */
+export function floorSurface() {
+    return {
+        ...FLOOR_SURFACE,
+        color: '#ffffff',
+        map: trackSurfaceTexture(),
+        roughness: FLOOR_ROUGHNESS,
+        metalness: FLOOR_METALNESS,
+    };
+}
+
+/**
+ * Lethal blocks — the lone red accent. Touch → derezz, so danger must read instantly.
+ *
+ * STILL RED, DELIBERATELY. The palette excludes red and these will change — but that is the block-design
+ * task's call, judged when someone is judging blocks. Task 2 took the blocks out of the art-lab's default
+ * frame instead (`TrackBlocks` is its own layer), so there is no forbidden colour in shot to hold-retone.
+ */
 export const LETHAL_SURFACE = {
     emissive: '#ff2740',
     emissiveIntensity: 2.2,
     color: '#1a0206',
-    toneMapped: false,
 } as const;
 
 /**
@@ -38,7 +74,6 @@ export const DRAG_SURFACE = {
     emissive: '#ffa51f',
     emissiveIntensity: 1.6,
     color: '#2a1600',
-    toneMapped: false,
     transparent: true,
     depthWrite: false,
 } as const;
@@ -48,10 +83,9 @@ export const RAIL_SURFACE = {
     emissive: '#c8d0d8',
     emissiveIntensity: 2.6,
     color: '#15171a',
-    toneMapped: false,
 } as const;
 
-/** Drag-block opacity pulse bounds (breathed in TrackView's useFrame; the gallery holds it at MAX). */
+/** Drag-block opacity pulse bounds (breathed in TrackBlocks' useFrame; the gallery holds it at MAX). */
 export const DRAG_OPACITY_MIN = 0.25;
 export const DRAG_OPACITY_MAX = 0.5;
 /** Radians/sec of the drag pulse → ~2.5 s breath period. */

@@ -67,12 +67,7 @@ export function TubeWalls( { config, seed = 9999 }: { config: WallConfig; seed?:
         >
             <boxGeometry />
             { /* black base + HDR emissive = pure neon slab that the single global Bloom catches. */ }
-            <meshStandardMaterial
-                color="#000000"
-                emissive={ config.color }
-                emissiveIntensity={ config.intensity }
-                toneMapped={ false }
-            />
+            <meshStandardMaterial color="#000000" emissive={ config.color } emissiveIntensity={ config.intensity } />
         </instancedMesh>
     );
 }

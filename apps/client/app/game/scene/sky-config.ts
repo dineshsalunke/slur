@@ -46,9 +46,17 @@ export function skyDirection( bearingDeg: number, elevationDeg: number ): [ numb
  *
  * CAMERA YAW IS PART OF THE COVERAGE BUDGET — this was missed once and shipped a 120° patch. `SkyFollow`
  * copies camera POSITION only, never rotation, so the patch is world-fixed and the camera yaws inside it.
- * Under sustained max strafe the rubberband lags by `strafeClamp / follow` = 80/16 = 5u at a look distance
- * of `back + lookAhead` = 18–21u, i.e. ~15.5° of yaw — not the ~4° a previous version of this comment
- * claimed. Coverage need is therefore 108 + 2·15.5 ≈ 138.5°, which `sky-config.test.ts` now asserts.
+ * Under sustained max strafe the rubberband lags by `strafeClamp / follow` = 80/16 = 5u. The yaw that buys
+ * is speed-dependent and so is the frame, and they pull opposite ways: at REST the look distance is 18u
+ * (yaw 15.5°) but the frame is only 91.5° wide; at TOP SPEED the look distance stretches to 21u (yaw 13.4°)
+ * while the frame opens to 107.5°. Worst case is top speed — 107.5 + 2·13.4 = **134.3°** — swept over the
+ * whole speed range, not assumed. An earlier ≈138.5° here took the rest-pose yaw and the top-speed frame,
+ * i.e. two different speeds in one number; `sky-config.test.ts` always computed 134.3 and the prose was what
+ * was wrong.
+ *
+ * ⚠ 134.3° IS NOT THE SHIPPED FRAMING. `fovDeg` is 120 by owner decision, which covers the frame in every
+ * condition EXCEPT sustained max strafe, where ~11.6% of frame width goes black on the ONE leading edge.
+ * That sliver is accepted; `sky-config.test.ts` pins it as `ACCEPTED_EDGE_MARGIN` so it cannot grow unnoticed.
  */
 export interface SkyBackdropConfig {
     /** Which way the image's CENTRE points. */
@@ -118,7 +126,8 @@ export interface SkyEnvironmentConfig {
 export interface SkyConfig {
     name: string;
     /** Backdrop patch radius (u). Camera-locked, so this says nothing about how distant the sky READS — it is
-     *  pure containment, and must stay inside the camera's far plane (three's default far is 2000). */
+     *  pure containment, and MUST stay under the camera's far plane. That plane is R3F's 1000, not three's
+     *  2000: `<Canvas camera={{ … }}>` overrides only the fields it names, and no Canvas here names `far`. */
     radius: number;
     /**
      * Where the star is, in `skyDirection`'s frame. THE SINGLE SOURCE OF TRUTH FOR THE LIGHT'S DIRECTION —
@@ -151,18 +160,22 @@ export interface SkyConfig {
  */
 export const DEEP_SPACE: SkyConfig = {
     name: 'Deep Space',
-    // Well inside three's default far plane of 2000. The retired dome sat AT 2000 and was one `far` tweak away
-    // from clipping; nothing is gained by the extra distance when the sky is camera-locked.
-    radius: 1200,
+    // Under R3F's far plane (1000), not three's 2000 — see sky-config.test.ts. A camera-locked patch is
+    // equidistant, so the far plane clips on DEPTH: radius > far punches a hole in frame centre. 1200 did.
+    radius: 800,
     starBearingDeg: 66,
     starElevationDeg: 19,
     backdrop: {
         bearingDeg: 0,
-        elevationDeg: 0,
-        // The FLOOR, not the answer: 138.5° is the measured need (108° frame + 2·15.5° of strafe yaw, see
-        // the header). Wider zooms the composition out and drifts the planet limb cornerward; narrower shows
-        // void at the frame edge during a hard strafe. Frame it at the gate, not here.
-        fovDeg: 140,
+        elevationDeg: -2,
+        // Owner framing. Full coverage needs 134.3° (header); 120 buys everything except the extreme —
+        // covered parked (14° spare) and at top speed straight (6° spare), with ~11.6% of frame width black
+        // on the leading edge only under sustained max strafe. Pinned as ACCEPTED_EDGE_MARGIN.
+        // 70 was tried first and rejected: it cannot reach the frame edge in ANY condition, leaving ~15% of
+        // width black each side even parked, ~33% hard over. What made 70 survivable at all is that the
+        // nebula's own border content is already near-void, so the patch EDGE never reads as a line — but
+        // the margin itself is flat black, NOT starfield: drei <Stars> lights 0.008% of its pixels.
+        fovDeg: 120,
         edgeFadeDeg: 12,
         gain: 1,
     },

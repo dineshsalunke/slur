@@ -25,11 +25,23 @@ everything else.
 | # | Task | Folder | Status |
 |---|------|--------|--------|
 | 1 | **Background** — deep space + nebula, and its contribution to scene lighting | [`01-background/`](01-background/README.md) | **BUILT + GATE GREEN 2026-09-19** (cheap path) — `nebula-backdrop.jpg` on a camera-locked sphere **patch**; lit by a `<Lightformer>` rig + one `DirectionalLight`. **Visual gate DEFERRED** until a track is in frame (§ below), not skipped and not failed. Read [`01-background/HANDOVER-SESSION-5.md`](01-background/HANDOVER-SESSION-5.md) **first** — it lists four things a cold context will try to "fix" back. Procedural work preserved on `art/procedural-bg` @ `6d52029` |
-| 2 | **Track** — floor material, glowing edge rail, gaps, gap rims | [`02-track/`](02-track/README.md) | not started |
+| 2 | **Track** — floor material, glowing edge rail, gaps, gap rims | [`02-track/`](02-track/README.md) | **DECIDED + BRIEFED, not started.** Five decisions of-record in [`02-track/README.md` §7](02-track/README.md) (D3 resolved and D4/D5 added by the owner 2026-09-19); lane brief written at [`02-track/LANE-BRIEF.md`](02-track/LANE-BRIEF.md). Lane not yet launched |
 | 3 | **Scene lighting** — key/rim/fill/env, exposure, bloom budget | [`03-lighting/`](03-lighting/README.md) | not started |
 | 4 | **Monoliths** — isolation → placement (track-flanking + scene filler) | [`04-monoliths/`](04-monoliths/README.md) | not started |
 | 5 | **Asteroids** — isolation → placement | [`05-asteroids/`](05-asteroids/README.md) | not started |
 | 6 | **Composition** — everything together, one final art validation | [`06-composition/`](06-composition/README.md) | not started |
+| 7 | **Sealed deadly block** — silhouette + material (ADDED 2026-09-19, runs **parallel** to task 2) | [`07-blocks/`](07-blocks/LANE-BRIEF.md) | **BRIEFED, not started.** Sealed/deadly **only** — the fractured state stays gated on ADR-009's unrun readability test |
+
+**Why blocks were added as a seventh task, out of the original six.** Blocks were never in the arc; the
+agreed order ran track → asteroids → monoliths → environment → blocks, with blocks last because they compose
+against everything else. The owner pulled the **sealed** block forward on 2026-09-19 for two reasons that
+hold up: it is genuinely cheap (ADR-009 leaves the sealed/deadly state *"unchanged"*, so building it bets on
+nothing), and **it helps task 2's own gates** — the track spec requires *"clear hazard-to-floor contact
+shading"*, which is unjudgeable with no object making contact. It is the same "what is this element teaching
+me?" test that removed the placeholder boxes in task 2's D5, returning the opposite answer now that the
+object is worth looking at. The **fractured/breakable** half stays out: ADR-009 is `PROPOSED` and says *"do
+not build until that gate passes"*, and it drags a sim change, a synced destroyed flag and a
+fairness-validator change behind it.
 
 **Why background first.** It inverts the earlier attempt's order, on purpose. Lighting flows *from* the
 environment, so any silhouette or material judged under a placeholder sky has to be re-judged the moment the
@@ -422,8 +434,11 @@ Everything else in the plan approved as written — dropping `celestial-body.tsx
 
 ### ▶ NEXT — state as of 2026-09-19, read this first
 
-**Task 1 is done and the lane is stopped.** `art/background` @ `903be08`, verify gate green (typecheck · lint
-· 75 shared + 34 client + 4 server · build). **Read
+**Task 1 is done, merged, and the lane is stopped.** `art/background` @ `3f8458a` → **squash-merged to `dev`
+as `1807bc0` (PR #126) on 2026-09-19**, verify gate re-run green at the merged SHA (typecheck · lint · 75
+shared + 34 client + 4 server · build) and the PR head checked against the gated SHA before merging. `dev`
+therefore now carries the sky **and** all the art-pass tracking docs, which were previously untracked in the
+shared checkout. Task 2 branches off fresh `origin/dev`. **Read
 [`01-background/HANDOVER-SESSION-5.md`](01-background/HANDOVER-SESSION-5.md) before touching the sky or
 starting task 2** — it is self-contained and assumes no chat history.
 
@@ -449,17 +464,44 @@ stated "depends on task 1" header on purpose — `02-track/README.md` §7 says s
    **On relaunch:** confirm with `/list-agents` (alias `/peers`) that the lane is reachable, and prefer it
    over `herdr agent prompt`. Verify delivery either way — never filter the ack down to a grep that turns a
    failure into an empty string, which is how the dropped packet hid.
-2. **Task 2 (track).** Decided, **not** started — D1/D2/D3 of-record with full reasoning in
-   `02-track/README.md` §7. Headlines: `TrackFloor` (one generated continuous mesh) replaces `TrackView`'s
-   instanced floor quads; task 3's **emitter array comes forward** (patched `MeshStandardMaterial`,
-   **fixed-size** uniform array of the K nearest emitters — a varying light count recompiles the shader
-   mid-race); `toneMapped: false` becomes a panel switch settled once for the whole frame. Also flagged there:
-   lethal blocks are saturated red `#ff2740` while **red is excluded from the palette** — retone them as part
-   of the review setup, or every material read is taken against a forbidden colour.
-   **The supervisor writes that lane brief** — see "Division of labour" below.
-3. **Then the deferred `/iso-sky` + `/art-lab` gate**, bloom on **and** off, in a **foreground** tab. Three
-   knobs sit at defensible defaults awaiting the eye: `Tone map` (ON), `Field of view` (**140** — the floor,
-   not the answer), `Tilt` (**0°**, the most likely to move, judgeable only in `/art-lab`).
+2. **Task 2 (track).** Decided and **briefed**, not started — **five** decisions of-record with full reasoning
+   in `02-track/README.md` §7, and the supervisor-written lane brief at `02-track/LANE-BRIEF.md`. Headlines:
+   **D1** `TrackFloor` (one generated continuous mesh) replaces `TrackView`'s instanced floor quads; **D2**
+   task 3's **emitter array comes forward** (patched `MeshStandardMaterial`, **fixed-size** uniform array of
+   the K nearest emitters — a varying light count recompiles the shader mid-race); **D3 RESOLVED by the owner
+   2026-09-19** — tone mapping is **ON at the renderer default everywhere**, `toneMapped: false` comes off the
+   track surfaces and no panel switch is built (verified: r3f 9.7.0's `<Canvas>` sets ACES Filmic unless
+   `flat`, which nothing passes — so every emissive value in `track-materials.ts` needs re-tuning, and that is
+   the work, not a regression); **D4 NEW, owner 2026-09-19** — `/art-lab`'s own `ambientLight` +
+   `directionalLight` are **deleted** and the lab is lit by the shipped `DeepSpaceSky` rig alone, with
+   `StarLight`/`SkyEnvironment` mounted regardless of the `backdrop` toggle so "backdrop off" does not mean
+   "pitch black"; **D5 REPLACED by the owner 2026-09-19** — the obstacle blocks come **out of the review
+   frame** instead of being retoned. They are untextured boxes that block the view and teach nothing about the
+   floor; they default ON only because `/art-lab` welds them to the **edge rail** in one `hazards` toggle
+   (`TrackView` draws floor + lethal + drag + rails together). Split them: **rails and blocks become
+   independent layers, blocks default OFF**, one click away for the hazard-to-floor contact-shading check.
+   `LETHAL_SURFACE`'s forbidden red is then **not touched at all** in task 2 — no blocks in frame, nothing to
+   retone; it belongs to the later block-design task. *(The scrapped earlier art attempt made the same mistake
+   — blocks in the lab for the same non-reason. Twice is a pattern: ask what each thing in frame is teaching
+   you.)*
+   The brief cuts the work into five gated slices (honest frame → floor swap → panel language → rail + emitter
+   array → gaps) and names the ports (`5201`/`2601`) so it cannot collide with the background lane.
+   **State 2026-09-19:** the lane is **running** (`art/track` off `1807bc0`, worktree
+   `../slur-worktrees/track`, ports `5201`/`2601`, peer name `track-6c`). **Slice 0 is committed**
+   (`1bb5839 art(track): slice 0 — an honest review frame`). **Next action: the owner's eye on slice 0**
+   in a foreground `/art-lab` tab — the frame should be *honest* (only lighting the game has) and
+   *uncluttered* (no obstacle boxes), and it is expected to look worse than before, because it was
+   flattering itself. Slice 1 does not start until that gate passes.
+3. **Then the deferred `/iso-sky` + `/art-lab` gate**, bloom on **and** off, in a **foreground** tab. `Tone
+   map` is no longer one of the knobs — **D3 forecloses it: ON**. Two remain awaiting the eye: `Field of view`
+   (**140** — the floor, not the answer) and `Tilt` (**0°**, the most likely to move, judgeable only in
+   `/art-lab`).
+   > ⚠ **Run the environment self-test with `Star light` OFF as well as `Env rig` off** (owner, 2026-09-19).
+   > `DeepSpaceSky`'s `light` prop mounts `StarLight`, and a star light lights the roughness probes exactly
+   > as a neutral rig light does — which is the whole reason `/iso-sky` drops the lab rig at all. With the
+   > star still on, "the probes differentiate at `roughness 0.2` vs `0.9`" proves nothing about the
+   > `<Lightformer>` bake. Both switches are already in the panel (`Star light`, `Env rig`) and the prop is
+   > already documented on `DeepSpaceSky` — this is gate procedure, not code to write.
    > ⚠ **Never gate from an automated Chrome tab** — it reports `visibilityState: "hidden"`, rAF never fires,
    > and the canvas stays black while the DOM panels render fine. Already paid for twice.
 

@@ -8,13 +8,21 @@
 // a koota trait (these own no entity), context (same re-render cost as props, more indirection), and a
 // URL search param (survives reload, but adds a router round-trip to a button press in a dev instrument).
 //
-// DEFAULTS: track ONLY. The lab's primary job is judging the track surface itself, and environment, ships
-// and the finish gate are visual noise while doing that. Everything is one click from coming back.
+// DEFAULTS: the track SURFACE only — slab and rails. The lab's primary job is judging that surface, and
+// environment, ships, the finish gate and the hazard blocks are all visual noise while doing it.
+// Everything is one click from coming back.
 
 export interface LabLayers {
-    /** Deadly/slow blocks and the edge rails (the instanced `TrackView`). Its own floor quads are
-     *  hidden automatically whenever `slab` is on, so the two floors never stack or z-fight. */
-    hazards: boolean;
+    /** The ribbon: edge rails plus the instanced floor quads (`TrackRibbon`). The quads are hidden
+     *  automatically whenever `slab` is on, so the two floors never stack or z-fight. */
+    rails: boolean;
+    /**
+     * The hazard blocks (`TrackBlocks`). OFF by default: they are untextured boxes awaiting their own
+     * design task, and they obscure the floor, rail and gaps that this lab exists to judge. They used to
+     * ride the rails' toggle, which is the only reason they were ever in the default frame. One click
+     * away because "hazard-to-floor contact shading" is a real check that needs a block present.
+     */
+    blocks: boolean;
     /**
      * The NEW generated slab (`TrackFloor`) — one continuous mesh with real thickness and continuous UVs.
      * Its own toggle rather than a replacement for `TrackView`'s floor, so the two can be compared
@@ -36,7 +44,8 @@ export interface LabLayers {
 export type LabLayerKey = keyof LabLayers;
 
 export const DEFAULT_LAB_LAYERS: LabLayers = {
-    hazards: true,
+    rails: true,
+    blocks: false,
     slab: true,
     backdrop: true,
     env: false,
@@ -45,4 +54,12 @@ export const DEFAULT_LAB_LAYERS: LabLayers = {
 };
 
 /** Stable render order for the toggle row (object key order is not a contract worth relying on). */
-export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [ 'slab', 'hazards', 'backdrop', 'env', 'ships', 'finish' ];
+export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [
+    'slab',
+    'rails',
+    'blocks',
+    'backdrop',
+    'env',
+    'ships',
+    'finish',
+];

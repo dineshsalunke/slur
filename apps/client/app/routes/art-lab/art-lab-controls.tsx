@@ -1,5 +1,6 @@
 import { SEG_LEN, TRACK_SEGMENTS } from '@slur/shared';
 import { Fragment, useState } from 'react';
+import { ArtLabSkyControls } from './art-lab-sky-controls';
 import { LAB_LAYER_KEYS, type LabLayerKey, type LabLayers } from './lab-layers';
 import { labCommands, labControls } from './lab-state';
 
@@ -100,6 +101,10 @@ export function ArtLabControls( {
                     </button>
                 ) ) }
             </div>
+
+            { /* Sky framing. Its own leaf so a slider drag re-renders only itself, never this panel. */ }
+            <div className="mb-1 text-white/40">sky framing</div>
+            <ArtLabSkyControls />
 
             <div className="mb-1 text-white/40">environment</div>
             <div className="mb-2 flex gap-1">

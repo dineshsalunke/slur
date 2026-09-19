@@ -1,8 +1,9 @@
 import { CELL, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { FLOOR_SURFACE } from './track-materials';
-import { PANEL_L, PANEL_W, trackSurfaceTexture } from './track-texture';
+import { AHEAD } from './track-instancing';
+import { floorSurface } from './track-materials';
+import { PANEL_L, PANEL_W } from './track-texture';
 
 /**
  * Downward extrusion of the slab (world units). Purely an art choice — `SLAB_THICKNESS` is NOT a game
@@ -64,9 +65,15 @@ function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plan
     }
 }
 
-/** True when `other` has a floor span covering [x0,x1] — the slab continues, so no end cap is needed. */
-function continues( other: Segment | null, x0: number, x1: number ): boolean {
-    return other ? other.floors.some( ( f ) => f.x0 <= x0 + 1e-4 && f.x1 >= x1 - 1e-4 ) : false;
+/**
+ * True when `other` has a floor span covering [x0,x1] at the SAME height — the slab continues, so no end
+ * cap is needed. Height is part of the test: two spans at different `y` are a step, not a continuation,
+ * and treating them as one would swallow the cap that makes the step visible.
+ */
+function continues( other: Segment | null, x0: number, x1: number, y: number ): boolean {
+    return other
+        ? other.floors.some( ( f ) => f.x0 <= x0 + 1e-4 && f.x1 >= x1 - 1e-4 && Math.abs( f.y - y ) < 1e-4 )
+        : false;
 }
 
 const isOffGrid = ( v: number ) => {
@@ -83,15 +90,17 @@ const isOffGrid = ( v: number ) => {
 function emitSpan(
     pos: number[],
     uv: number[],
-    span: { x0: number; x1: number },
+    span: { x0: number; x1: number; y: number },
     z0: number,
     z1: number,
     capFront: boolean,
     capBack: boolean,
 ): void {
     const { x0, x1 } = span;
-    const t = 0;
-    const b = -SLAB_THICKNESS;
+    // The span's own height, not 0. Every span the generator emits today sits at y=0 (checked across 7
+    // seeds, 2675 spans), but `FloorSpan.y` is what the instanced floor honoured and what the rails ride.
+    const t = span.y;
+    const b = span.y - SLAB_THICKNESS;
 
     // Top face — the surface you fly over. This IS the physics hull (ADR-002, WYSIWYG).
     pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz', UP );
@@ -110,6 +119,28 @@ function emitSpan(
     pushQuad( pos, uv, [ x0, b, z0 ], [ x0, b, z1 ], [ x1, b, z1 ], [ x1, b, z0 ], 'xz', DOWN );
 }
 
+function packGeometry( pos: number[], uv: number[] ): THREE.BufferGeometry {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute( 'position', new THREE.Float32BufferAttribute( pos, 3 ) );
+    geo.setAttribute( 'uv', new THREE.Float32BufferAttribute( uv, 2 ) );
+    geo.computeVertexNormals();
+    return geo;
+}
+
+/**
+ * One capped slab span, for showing a slice of ribbon outside the game (the gallery).
+ *
+ * Exported rather than reproduced with a `boxGeometry`: box UVs are normalised 0..1 per face, so the panel
+ * texture would stretch one tile across the whole 64u width and the gallery would show a finish the game
+ * never renders.
+ */
+export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: number ): THREE.BufferGeometry {
+    const pos: number[] = [];
+    const uv: number[] = [];
+    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true );
+    return packGeometry( pos, uv );
+}
+
 /**
  * Builds the whole ribbon as ONE geometry, generated from the sim's real `FloorSpan` data.
  *
@@ -125,12 +156,16 @@ function emitSpan(
 function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
-    const length = Math.round( track.finishZ / SEG_LEN );
+    // Build PAST the finish line. `segmentAt` keeps returning a full-width `finish` pad beyond
+    // `finishZ / SEG_LEN`, and the race does not stop at the line — the leader-grace window is flown over
+    // that pad. Bounding the mesh at the line (as this did) left the run-out floorless. One render window
+    // past the end covers everything that can be on screen when the line is crossed.
+    const last = Math.round( track.finishZ / SEG_LEN ) + Math.ceil( AHEAD / SEG_LEN );
 
-    for ( let i = 0; i < length; i++ ) {
+    for ( let i = 0; i < last; i++ ) {
         const seg = track.segmentAt( i );
         const prev = i > 0 ? track.segmentAt( i - 1 ) : null;
-        const next = i < length - 1 ? track.segmentAt( i + 1 ) : null;
+        const next = i < last - 1 ? track.segmentAt( i + 1 ) : null;
 
         for ( const f of seg.floors ) {
             if ( import.meta.env.DEV && ( isOffGrid( f.x0 ) || isOffGrid( f.x1 ) ) ) {
@@ -139,15 +174,19 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
                 // needs to be noticed rather than quietly absorbed.
                 console.warn( `[track-floor] seg ${ i } span not CELL-aligned: ${ f.x0 }..${ f.x1 }` );
             }
-            emitSpan( pos, uv, f, seg.z0, seg.z1, ! continues( prev, f.x0, f.x1 ), ! continues( next, f.x0, f.x1 ) );
+            emitSpan(
+                pos,
+                uv,
+                f,
+                seg.z0,
+                seg.z1,
+                ! continues( prev, f.x0, f.x1, f.y ),
+                ! continues( next, f.x0, f.x1, f.y ),
+            );
         }
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute( 'position', new THREE.Float32BufferAttribute( pos, 3 ) );
-    geo.setAttribute( 'uv', new THREE.Float32BufferAttribute( uv, 2 ) );
-    geo.computeVertexNormals();
-    return geo;
+    return packGeometry( pos, uv );
 }
 
 /**
@@ -162,26 +201,12 @@ export function TrackFloor( { track }: { track: Track } ) {
     // there is nothing to rebuild per frame. R3F disposes a geometry passed via the `geometry` prop when
     // the mesh unmounts, so this needs no manual teardown.
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
-    const map = trackSurfaceTexture();
 
     return (
         <mesh geometry={ geo }>
-            { /* Keeps `FLOOR_SURFACE`'s emissive whisper (shared with `TrackView`) but deliberately
-                 OVERRIDES two of its values:
-                 · `color` → white. `FLOOR_SURFACE.color` is `#050507`, and base colour MULTIPLIES the map —
-                   at that value the texture was crushed to flat black and no grain or panel was visible.
-                   The texture already carries its own near-black base, so white lets it read as authored.
-                 · `metalness` → low. A metallic surface gets its value from REFLECTIONS, and this scene has
-                   ambient light and no environment map, so high metalness just renders black. v2's
-                   "restrained gloss / warm reflections" needs the marigold edge (and probably an env map)
-                   to reflect BEFORE metalness is worth raising — until then it only removes information. */ }
-            <meshStandardMaterial
-                { ...FLOOR_SURFACE }
-                color="#ffffff"
-                map={ map }
-                roughness={ 0.62 }
-                metalness={ 0.12 }
-            />
+            { /* The material lives in `track-materials.ts`, not here. These values ARE the game's floor now,
+                 so a gallery spreading something else would misrepresent what ships. */ }
+            <meshStandardMaterial { ...floorSurface() } />
         </mesh>
     );
 }

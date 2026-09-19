@@ -98,6 +98,14 @@ export function skyTuningVersion(): number {
 /** The only write path. Bumping the version here rather than at each call site is what stops a new knob from
  *  silently not updating the scene. */
 export function writeSkyTuning< K extends keyof SkyTuning >( key: K, value: SkyTuning[ K ] ): void {
+    if ( key === 'backdropBearingDeg' ) {
+        // PAN CARRIES THE STAR WITH IT. `starBearingDeg` was measured THROUGH this mapping (limb fit →
+        // terminator → 79° screen-azimuth → bearing 66°), so it names a point in the image, not in the world.
+        // Pan the image without it and the DirectionalLight plus the rig key keep aiming where the star used
+        // to be — rocks rim-lit from one side while the picture implies another. Kept here, in the one write
+        // path, because a panel is free to forget and this is not.
+        SKY_TUNING.starBearingDeg += ( value as number ) - SKY_TUNING.backdropBearingDeg;
+    }
     SKY_TUNING[ key ] = value;
     version++;
     for ( const fn of listeners ) fn();
