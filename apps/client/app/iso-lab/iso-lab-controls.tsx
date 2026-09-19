@@ -21,6 +21,8 @@ export interface IsoLabControlsProps {
     onBloom: ( v: boolean ) => void;
     grid: boolean;
     onGrid: ( v: boolean ) => void;
+    rig: boolean;
+    onRig: ( v: boolean ) => void;
     size: number;
 }
 
@@ -59,8 +61,10 @@ export function IsoLabControls( props: IsoLabControlsProps ) {
             </div>
 
             <p className="text-[11px] text-slate-400">
-                Subject framed at <span className="text-slate-200">{ props.size }u</span> · ruler rung = 64u = one track
-                width · cyan box = Fighter footprint (2.6u)
+                Subject framed at <span className="text-slate-200">{ props.size }u</span>
+                { props.rig
+                    ? ' · ruler rung = 64u = one track width · cyan box = Fighter footprint (2.6u)'
+                    : ' · rig off — the subject is lit only by itself' }
             </p>
 
             <div>
@@ -141,6 +145,14 @@ export function IsoLabControls( props: IsoLabControlsProps ) {
                     className={ `${ BTN } ${ props.grid ? 'bg-[#F59A24] text-slate-950' : 'bg-slate-800' }` }
                 >
                     Grid
+                </button>
+                <button
+                    type="button"
+                    title="Neutral ambient + directional rig and the scale ruler. Off = the subject lights itself."
+                    onClick={ () => props.onRig( ! props.rig ) }
+                    className={ `${ BTN } ${ props.rig ? 'bg-[#F59A24] text-slate-950' : 'bg-slate-800' }` }
+                >
+                    Rig
                 </button>
             </div>
         </div>

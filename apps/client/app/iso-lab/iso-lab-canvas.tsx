@@ -29,12 +29,15 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
     size,
     bloom,
     grid,
+    rig,
 }: {
     children: ReactNode;
     /** The subject's largest world dimension — drives camera distance and ruler height. Nothing is scaled. */
     size: number;
     bloom: boolean;
     grid: boolean;
+    /** The neutral ambient+directional pair and the scale ruler. Off for an ingredient that IS the lighting. */
+    rig: boolean;
 } ) {
     const dist = Math.max( 12, size * FRAMING );
 
@@ -52,13 +55,24 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
 
             { /* Deliberately NOT the game's fog: at 300u a monolith would sit inside GRID_VOID's 460u far
                  plane and be judged half-dissolved. Atmosphere is `/art-lab`'s question; this route answers
-                 "what is this object". Lighting stays neutral and matches `/art-gallery` so the two agree. */ }
-            <ambientLight intensity={ 0.5 } />
-            <directionalLight position={ [ dist, dist * 1.6, -dist ] } intensity={ 0.8 } />
+                 "what is this object". Lighting stays neutral and matches `/art-gallery` so the two agree.
+
+                 Suppressible via `rig`, because ONE ingredient — the sky — is itself the lighting, and a
+                 neutral directional light there would light a roughness probe all on its own and quietly make
+                 the environment self-test pass whether or not the environment works. The ruler goes with it:
+                 it is an emissive cyan bar, which is exactly what a cold sky must not be judged against. */ }
+            { rig ? (
+                <Fragment>
+                    <ambientLight intensity={ 0.5 } />
+                    <directionalLight position={ [ dist, dist * 1.6, -dist ] } intensity={ 0.8 } />
+                </Fragment>
+            ) : (
+                <Fragment />
+            ) }
 
             { children }
 
-            <ScaleReference height={ size } offsetX={ -size * REF_OFFSET } />
+            { rig ? <ScaleReference height={ size } offsetX={ -size * REF_OFFSET } /> : <Fragment /> }
 
             { /* True-scale ground grid: one cell = CELL (4u, the AUTHORING snap grid — never a runtime unit,
                  GDD §0), one heavy section = 64u = ONE FULL TRACK WIDTH. So "how many heavy squares wide is

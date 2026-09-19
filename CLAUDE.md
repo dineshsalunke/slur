@@ -20,11 +20,12 @@ Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we 
 lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions + rationale in
 `docs/DECISIONS.md`.
 
-> ### ▶ Picking up the ART work? Read the handover FIRST.
-> **`.claude/phases/2026-09-18-track-art-pass.md`** — current state, which branch, how to run the labs,
-> the next task (the **edge rail**), what is deliberately NOT decided, and the gotchas already paid for.
-> Written to be read cold. All dimensions come from **`docs/ART_SCALE_REFERENCE.md`**, which overrides
-> every number printed on a concept board.
+> ### ▶ Picking up the ART work? Read the index FIRST.
+> **`.claude/art-pass/INDEX.md`** — the six-task procedural art arc (background → track → lighting →
+> monoliths → asteroids → composition), its authority order, how each task runs, and the gotchas already
+> paid for. Written to be read cold. All dimensions come from **`docs/ART_SCALE_REFERENCE.md`**, which
+> overrides every number printed on a concept board. The earlier parallel-lane attempt
+> (`.claude/phases/2026-09-18-*`) was deliberately reset — those notes are history, not instructions.
 >
 > Review instruments: **`/art-lab`** (fly the real track, no server) and **`/art-gallery`** (subjects at
 > true scale under the game's own bloom).

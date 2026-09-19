@@ -11,5 +11,6 @@ export default [
     // `/iso-*` — ingredient isolation labs. Adding one is TWO steps: a `routes/iso-<thing>/route.tsx` that
     // renders `<IsoLab>`, and one line here. Nothing in `app/iso-lab/` changes. See `app/iso-lab/iso-lab.tsx`.
     route( 'iso-monolith', 'routes/iso-monolith/route.tsx' ), // exemplar — PLACEHOLDER subject, real instrument
+    route( 'iso-sky', 'routes/iso-sky/route.tsx' ), // art-pass task 1 — procedural deep-space sky + roughness probes
     route( 'game/:roomId', 'routes/game/route.tsx' ),
 ] satisfies RouteConfig;
