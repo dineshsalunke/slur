@@ -43,7 +43,7 @@ camera height in particular is deferred by ADR-010 and is **not** yours to chang
 | **A** | **Floor** | Dark graphite/black metal, large clean panel divisions, sparse fine seams, **restrained** gloss, carrying the rail's warmth across the surface as streaks |
 | **B** | **Edge rail** | Continuous **marigold** energy defining the ribbon — functional (perspective + speed), not decorative |
 | **C** | **Gaps** | Real missing geometry with the frozen three-part read: marigold edge definition · inner-lip glow · darker inner cavity |
-| **S1** | Review setup | Tone mapping ON everywhere · `/art-lab`'s own lights deleted · lethal blocks retoned off red |
+| **S1** | Review setup | Tone mapping ON everywhere · `/art-lab`'s own lights deleted · obstacle blocks split off the rails and defaulted OFF |
 | **S2** | Floor swap | `TrackFloor` becomes the game's floor; `TrackView`'s instanced floor quads are deleted |
 
 ---
@@ -130,17 +130,29 @@ yours to choose, the behaviour is not.
 Judge the result from the **real chase camera** in `/art-lab`, never the `/art-gallery` orbit camera, where a
 side-facing glow is edge-on and reads as unlit even when it is correct.
 
-### D5 — retone the lethal blocks as review setup
+### D5 — the obstacle blocks come OUT of the review frame, and are NOT retoned
 
-Lethal blocks are saturated red `#ff2740` (`LETHAL_SURFACE`) while **red is explicitly excluded** from the
-widened palette — INDEX.md §2: *"No cyan, no magenta, no red. A red hazard colour code is explicitly
-excluded."* Block design belongs to a later task, but those blocks are in **every frame** the floor material
-would be judged in, so every material read would be taken against a colour the direction forbids.
+An earlier draft of this brief told you to retone the red `#ff2740` lethal blocks to the warm ramp, because
+red is excluded from the palette and the blocks are in every frame the floor would be judged in. The owner
+struck that: the blocks *"are just plain box, they don't really help in any way and also block the view."*
+Retoning was treating a symptom of leaving them in the shot at all.
 
-**Retone them to the warm ramp** (`#FFE0A0` warm core → `#FFB52E` hot amber → `#F59A24` marigold falloff) as
-part of review setup. This is a **holding retone, not the block design** — do not spend the slice on it, and
-do not redesign the drag/lethal distinction while you are in there. The one thing that must survive: lethal
-and drag still read as *different things* at a glance.
+**The cause:** `/art-lab` bundles blocks and rails into one toggle — `art-lab-canvas.tsx` mounts
+`layers.hazards ? <TrackView …>`, and `TrackView` draws floor quads **plus** lethal blocks **plus** drag
+blocks **plus the edge rails** together. `hazards` defaults ON only because switching it off would also
+delete the **marigold edge rail, which is the subject of this task**.
+
+**What you build:** split them. **Rails and blocks become independent layers, and blocks default OFF.**
+Mechanism is yours — a `showBlocks` prop mirroring the existing `showFloor`, or splitting `TrackView` into
+two leaf components (the latter fits non-negotiable #10 better, and D1 is already reshaping this component
+anyway). Behaviour is not yours: judging the floor, rail and gaps must never require looking past plain boxes.
+
+Keep blocks **one click away** — §2 asks for *"clear hazard-to-floor contact shading"*, and that read needs a
+block present. It is a deliberate check, not the default frame.
+
+**Do not touch `LETHAL_SURFACE` or `DRAG_SURFACE` colours.** The retone is cancelled, not deferred: no blocks
+in frame means no forbidden red in frame means nothing to retone. Those colours belong to the later
+block-design task, judged when someone is actually judging blocks.
 
 ### Riding along — isotropic vs anisotropic, settled by rendering
 
@@ -166,12 +178,13 @@ each variable is judged alone, and a slice built on an un-gated slice cannot be 
 
 ### Slice 0 — honest frame (D3 + D4 + D5)
 
-Tone mapping on at the default · lab lights deleted and the sky rig unconditional · lethal blocks retoned.
-No new art. Re-tune the existing emissives so the frame is not blown out — this is where the `toneMapped:
-false` removal gets paid for.
+Tone mapping on at the default · lab lights deleted and the sky rig mounted unconditionally · blocks split
+off the rails into their own layer, defaulting OFF. No new art. Re-tune the existing emissives so the frame
+is not blown out — this is where the `toneMapped: false` removal gets paid for.
 
-**Gate:** the frame is *honest* — what you see is what the game shows, lit only by things the game has.
-Expect it to look worse than before. That is the point; it was flattering itself.
+**Gate:** the frame is *honest* and *uncluttered* — what you see is what the game shows, lit only by things
+the game has, with nothing in shot that is not the task's subject. Expect it to look worse than before. That
+is the point; it was flattering itself.
 
 ### Slice 1 — `TrackFloor` becomes the floor (D1)
 
@@ -323,7 +336,8 @@ streaks — the research names that one explicitly as an art call, not a technic
 
 ## 10. Out of scope — do not build these
 
-Camera height · obstacle block **design** (D5's retone is a holding action only) · the finish gate · pickups ·
+Camera height · obstacle block **design and colours** (D5: you split their toggle, you do not restyle them) ·
+the finish gate · pickups ·
 final lighting balance (task 3 — you build the emitter *mechanism*, task 3 balances it) · monoliths ·
 asteroids · anything in `01-background/` (the sky is done; HANDOVER-SESSION-5 §1 lists what not to "fix").
 

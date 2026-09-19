@@ -167,16 +167,35 @@ a legitimate review mode. The rig (`StarLight` + `SkyEnvironment`) stays mounted
 `backdrop` hides only the visible patch. `DeepSpaceSky` already takes `light` and `environment` props for
 exactly this split (`/iso-sky` uses them for its self-test) — mechanism is the lane's call, behaviour is not.
 
-### D5 — retone the lethal blocks as review setup (was "noted, out of scope")
+### D5 — REPLACED (owner, 2026-09-19): the blocks come OUT of the review frame; they are not retoned
 
-Lethal blocks are saturated red `#ff2740` (`LETHAL_SURFACE`), and **red is explicitly excluded** from the
-widened palette (`INDEX.md` §2: *"No cyan, no magenta, no red. A red hazard colour code is explicitly
-excluded."*). Block design belongs to a later task, but those blocks are in **every frame** the floor material
-would be judged in. Retone them to the warm ramp as part of task 2's **review setup**, or every material read
-is taken against a colour the direction forbids.
+**What D5 said first, and why it was wrong.** It read: *retone the red `#ff2740` lethal blocks to the warm
+ramp as review setup, because red is excluded from the palette and those blocks are in every frame the floor
+would be judged in.* True premise, wrong remedy. The owner challenged it directly — *"these obstacles are
+just plain box, they don't really help in any way and also block the view. do you really think we need
+them?"* — and noted the scrapped earlier art attempt had the same blocks in the same lab for the same
+non-reason. **They are right.** Retoning was treating a symptom of leaving them in frame at all.
 
-**A holding retone, not the block design.** The one property that must survive it: lethal and drag still read
-as *different things* at a glance.
+**The actual cause, verified in the code.** `/art-lab`'s layers bundle blocks and rails into one toggle:
+`art-lab-canvas.tsx` mounts `layers.hazards ? <TrackView …>`, and `TrackView` draws floor quads **plus**
+lethal blocks **plus** drag blocks **plus the edge rails** in a single component. So `hazards` defaults ON
+not because anyone wanted untextured boxes in the shot, but because switching them off also deletes the
+**marigold edge rail — the subject of task 2**. `lab-layers.ts` already states the principle the blocks
+escaped: *"DEFAULTS: track ONLY. The lab's primary job is judging the track surface itself, and environment,
+ships and the finish gate are visual noise while doing that."*
+
+**The decision.** Split the toggle: **rails and blocks become independent layers, and blocks default OFF in
+the lab.** Mechanism is the lane's call (a `showBlocks` prop mirroring the existing `showFloor`, or splitting
+`TrackView` into two leaves — the latter fits non-negotiable #10 better, and D1 is already reshaping this
+component). Behaviour is not: judging the floor, rail and gaps must not require looking past plain boxes.
+
+Blocks stay **one click away**, because §2 does ask for *"clear hazard-to-floor contact shading"* and that
+read needs a block present. It is a check you switch on deliberately, not the default frame.
+
+**The retone is therefore cancelled, not deferred-with-a-workaround.** No blocks in frame → no forbidden red
+in frame → nothing to hold-retone. `LETHAL_SURFACE`'s `#ff2740` is left exactly as it is and belongs to the
+later block-design task, judged when someone is actually judging blocks. **Do not touch
+`track-materials.ts`'s lethal or drag colours in task 2.**
 
 ### Process deviation, deliberate
 

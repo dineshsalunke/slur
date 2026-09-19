@@ -21,11 +21,18 @@ import { StarLight } from './star-light';
  */
 export function DeepSpaceSky( {
     config,
+    backdrop = true,
     light = true,
     environment = true,
     toneMapped = true,
 }: {
     config: SkyConfig;
+    /**
+     * Mount the visible sky patch. Split from `light`/`environment` so a review mode can hide the picture
+     * without unlighting the scene — `/art-lab`'s `backdrop` toggle would otherwise mean "pitch black"
+     * now that the lab has no lights of its own.
+     */
+    backdrop?: boolean;
     /**
      * Mount the scene's real `DirectionalLight`. On by default; OFF is what the environment gate needs.
      * `/iso-sky` runs the lab rig off so that no neutral light can make the roughness self-test pass on its
@@ -41,7 +48,9 @@ export function DeepSpaceSky( {
     return (
         <Fragment>
             <SkyFollow>
-                <SkyBackdrop config={ config.backdrop } radius={ config.radius } toneMapped={ toneMapped } />
+                { backdrop ? (
+                    <SkyBackdrop config={ config.backdrop } radius={ config.radius } toneMapped={ toneMapped } />
+                ) : null }
                 { light ? <StarLight config={ config } /> : null }
                 { config.stars.enabled ? (
                     <Stars

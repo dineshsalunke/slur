@@ -463,8 +463,15 @@ stated "depends on task 1" header on purpose — `02-track/README.md` §7 says s
    the work, not a regression); **D4 NEW, owner 2026-09-19** — `/art-lab`'s own `ambientLight` +
    `directionalLight` are **deleted** and the lab is lit by the shipped `DeepSpaceSky` rig alone, with
    `StarLight`/`SkyEnvironment` mounted regardless of the `backdrop` toggle so "backdrop off" does not mean
-   "pitch black"; **D5** the red `#ff2740` lethal blocks get a holding retone to the warm ramp as review setup,
-   since **red is excluded from the palette** and those blocks are in every frame the floor is judged in.
+   "pitch black"; **D5 REPLACED by the owner 2026-09-19** — the obstacle blocks come **out of the review
+   frame** instead of being retoned. They are untextured boxes that block the view and teach nothing about the
+   floor; they default ON only because `/art-lab` welds them to the **edge rail** in one `hazards` toggle
+   (`TrackView` draws floor + lethal + drag + rails together). Split them: **rails and blocks become
+   independent layers, blocks default OFF**, one click away for the hazard-to-floor contact-shading check.
+   `LETHAL_SURFACE`'s forbidden red is then **not touched at all** in task 2 — no blocks in frame, nothing to
+   retone; it belongs to the later block-design task. *(The scrapped earlier art attempt made the same mistake
+   — blocks in the lab for the same non-reason. Twice is a pattern: ask what each thing in frame is teaching
+   you.)*
    The brief cuts the work into five gated slices (honest frame → floor swap → panel language → rail + emitter
    array → gaps) and names the ports (`5201`/`2601`) so it cannot collide with the background lane.
    **Next action: launch the `art/track` lane off fresh `origin/dev` with that brief.**

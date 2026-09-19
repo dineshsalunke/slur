@@ -61,7 +61,6 @@ export function Track() {
                         emissive="#0a2540"
                         emissiveMap={ grid }
                         emissiveIntensity={ 1.4 }
-                        toneMapped={ false }
                     />
                 </mesh>
             ) ) }
