@@ -24,6 +24,12 @@ In this order. Do not skim past the first two — the whole task is downstream o
 5. **`conventions/r3f.md`** — the installed-stack idioms. Non-negotiable, not advisory.
 6. **`.claude/art-pass/01-background/HANDOVER-SESSION-5.md`** §1 — four things a cold context tries to "fix"
    back in the sky. You will be working next to that code. Leave it alone.
+7. **`docs/ART_MATERIALS.md`** — **revision 3, landed as #135 and CURRENT.** M1 (track graphite), M7
+   (marigold emissive — read the boundary-vs-inserts paragraph twice), M8 (gap slab edges), §3 (the two
+   marigold tiers). Any older warning you find that "M1 is partly stale" predates rev 3 and is itself stale.
+8. **`docs/art-direction/track/24_track_BRIEF.md`** and **`25_track_procedural_wear_BRIEF.md`** — the art
+   package's own words for the material, boundary, seam and gap language, and the **frozen** wear target.
+   Board 25 is frozen by explicit owner approval; its exclusion list binds.
 
 **The look target is `docs/art-direction/boards/12_approved_scene_marigold_depth.png`** (crops in
 `02-track/refs/`, regenerate with `./make-refs.sh`). What we match is the **gestalt** — mood, depth, palette,
@@ -35,23 +41,25 @@ legitimate answer, often the right one; the boards are AI renders and tell you t
 
 ## 1. What you are building
 
-Three art ingredients and two setup items. Nothing else — §5 of the README lists what is out of scope, and
-camera height in particular is deferred by ADR-010 and is **not** yours to change.
+Four art ingredients and one setup item still open. Nothing else — §5 of the README lists what is out of
+scope, and camera height in particular is deferred by ADR-010 and is **not** yours to change.
 
 | # | Thing | One-line shape |
 |---|---|---|
 | **A** | **Floor** | Dark graphite/black metal, large clean panel divisions, sparse fine seams, **restrained** gloss, carrying the rail's warmth across the surface as streaks |
-| **B** | **Edge rail** | Continuous **marigold** energy defining the ribbon — functional (perspective + speed), not decorative |
+| **B** | **Edge rail** | Continuous **marigold** energy defining the ribbon — functional (perspective + speed), not decorative. An embedded edge strip, never a raised bar |
 | **C** | **Gaps** | Real missing geometry with the frozen three-part read: marigold edge definition · inner-lip glow · darker inner cavity |
-| **S1** | Review setup | Tone mapping ON everywhere · `/art-lab`'s own lights deleted · obstacle blocks split off the rails and defaulted OFF |
-| **S2** | Floor swap | `TrackFloor` becomes the game's floor; `TrackView`'s instanced floor quads are deleted |
+| **D** | **Wear** | Board 25's frozen three layers — broad finish patches · elongated scuff clusters · sparse joint-edge rub. **World-space in the shader, not a second texture** |
+| ~~**S1**~~ | ~~Review setup~~ | **DONE — merged as #131.** Tone mapping ON · lab lights deleted · blocks split off the rails and defaulted OFF |
+| **S2** | Floor swap | `TrackFloor` becomes the game's floor; `TrackRibbon`'s instanced floor quads are deleted |
 
 ---
 
 ## 2. The decisions already taken — build to these, do not re-open them
 
-D1–D3 are of-record in `02-track/README.md` §7 with full reasoning. D3 is **resolved** and D4/D5 are new,
-both owner calls taken 2026-09-19. Read §7 for the *why*; this is the operative summary.
+D1–D8 are of-record in `02-track/README.md` §7 with full reasoning. **D6, D7 and D8 were taken after #131
+landed and they re-shape what remains** — D7 in particular reverses the slice order in §3. Read §7 for the
+*why*; this is the operative summary.
 
 ### D1 — `TrackFloor` is the floor; the instanced floor quads go
 
@@ -154,6 +162,36 @@ block present. It is a deliberate check, not the default frame.
 in frame means no forbidden red in frame means nothing to retone. Those colours belong to the later
 block-design task, judged when someone is actually judging blocks.
 
+### D6 — the track boards govern seam density; board 17 is atmosphere only
+
+**Owner decision, 2026-09-19.** Board 17 (the golden reference) shows continuous full-length glowing lines
+in a regular lateral rhythm, which reads as lane markings. The written direction forbids exactly that.
+**The track boards win.** Board 24 specifies *"sparse short emissive segments of varied lengths and
+irregular spacing among mostly dark joints"* and excludes *"repeated lane-like cadence, full glowing grid or
+a highlighted safe route"*. Build the restrained version; treat board 17 as mood.
+
+**Do not separate the boundary from the inserts by dimming the inserts.** Both are gameplay tier; rev 3's M7
+is explicit that what separates them is that the boundary is **unbroken and predictable** while inserts are
+**short, varied and irregular** — *"making inserts regular or continuous destroys that separation… which is
+the failure mode, not dimness."*
+
+### D7 — the emitter array is built BEFORE the floor's finish is judged
+
+**Owner decision, 2026-09-19.** §3's slice order is now **swap → light → surface → gaps**. Dark metal carries
+no information until something warm reflects off it, so judging the deck's finish before the rail lights it
+judges it under light the finished scene will not have — the same rule that put the background first in the
+arc. The deck keeps its current material through the rail slice and is refined **once**, afterwards, under
+final light.
+
+### D8 — board 25's wear lives in the D2 shader patch, in world space
+
+**Owner decision, 2026-09-19.** Board 25 froze the wear treatment after this brief was first written. It is
+built as **world-position-driven noise inside the same `onBeforeCompile` patch D2 adds**, *not* as a second
+`roughnessMap` on the tiled canvas pipeline: `track-texture.ts` repeats every 16 × 20u, a tile cannot hold a
+feature larger than itself, and board 25 wants broad patches that *"avoid identical stamps on adjacent tiles
+or obvious repeating bands"*. World space has no period by construction. The tiled canvas is **kept** for
+fine grain below ~1u. Full layer list, the controls to expose, and the exclusion list: §3 slice 3.
+
 ### Riding along — isotropic vs anisotropic, settled by rendering
 
 §8 resolved the floor-reflection question: **grazing-angle specular streaks, not mirrors** — so
@@ -171,45 +209,100 @@ or toggle it through 0 mid-race.
 
 ---
 
-## 3. Build it in five slices, and stop at each gate
+## 3. Build it in four remaining slices, and stop at each gate
 
 Isolation first, composition second. **Do not build ahead of a gate** — the whole point of the order is that
 each variable is judged alone, and a slice built on an un-gated slice cannot be judged at all.
 
-### Slice 0 — honest frame (D3 + D4 + D5)
+> **⚠ THE SLICE ORDER CHANGED — D7.** The original plan put the floor's finish before the rail that lights
+> it. It is now **swap → light → surface → gaps**, and the old slice 0 is **already merged as #131**. The
+> numbering below is the current one; ignore any older reference to "slice 2 = floor material".
 
-Tone mapping on at the default · lab lights deleted and the sky rig mounted unconditionally · blocks split
-off the rails into their own layer, defaulting OFF. No new art. Re-tune the existing emissives so the frame
-is not blown out — this is where the `toneMapped: false` removal gets paid for.
+### ~~Slice 0~~ — honest frame (D3 + D4 + D5) — **DONE, merged as #131**
 
-**Gate:** the frame is *honest* and *uncluttered* — what you see is what the game shows, lit only by things
-the game has, with nothing in shot that is not the task's subject. Expect it to look worse than before. That
-is the point; it was flattering itself.
+Tone mapping on at the ACES default · `/art-lab`'s own `ambientLight` + `directionalLight` deleted with the
+sky rig mounted unconditionally · `TrackView` split into `TrackRibbon` + `TrackBlocks`, blocks defaulting
+OFF. **Do not redo any of it, and do not "fix" the lab's lights back.**
+
+Note what it did **not** do, despite the PR title saying "floor material": `TrackFloor` and
+`track-texture.ts` exist but are mounted **only** behind `/art-lab`'s `slab` toggle. `showFloor` is intact
+and the game's floor is still instanced 0.6u boxes. Your first slice is the swap.
 
 ### Slice 1 — `TrackFloor` becomes the floor (D1)
 
-Swap it in, delete `TrackView`'s floor quads, retire `showFloor` and the `slab` layer toggle. No material
+Swap it in, delete `TrackRibbon`'s floor quads, retire `showFloor` and the `slab` layer toggle. No material
 change in this slice beyond what the swap forces.
 
 **Gate:** the ribbon is continuous, gaps still read as holes with depth, nothing z-fights, frame time has not
 regressed. Compare against the instanced floor *before* you delete it — that comparison is the last chance.
 
-### Slice 2 — floor material and panel language (A)
-
-Procedural panel divisions, sparse seams, transverse seams, the interior cues that give lateral position
-across 64u. **Non-emissive** — only edges emit. No racing line, no safe-route glow, no seam grid, no lanes.
-
-**Gate:** floor repetition is not visible at speed (a tiling period the eye locks onto is a failure), and the
-surface reads as dark metal rather than grey plastic.
-
-### Slice 3 — the rail, and the emitter array (B + D2)
+### Slice 2 — the rail, and the emitter array (B + D2) — **moved ahead of the floor's finish**
 
 Retone the rail to marigold, then patch the material and feed it the K nearest rail emitters. Isotropic
 first; anisotropic only if a render demands it.
 
+**This is now the second slice, not the fourth, and the reason is load-bearing (D7):** dark metal carries no
+information until something warm reflects off it, so the deck's finish cannot be judged before the rail
+lights it. Light first, then the surfaces it lights. The deck keeps its current material through this slice.
+
+**The rail is an edge, not a rail.** `ART_MATERIALS.md` M7 puts the emitter *"in the top outer corner of the
+slab"* as a narrow embedded strip with a small bright core and a controlled local halo — board 24's own
+do-not-copy column excludes *"raised rails or ornamental edge machinery"*. It stays **continuous even where
+the deck beside it is not**: a near-edge gap keeps *"an intact supporting outer floor strip and a straight
+outer boundary"*.
+
 **Gate:** the rail reads **golden marigold, never vermilion or red-orange, in the final tone-mapped frame** —
 judge displayed pixels, not the input hex — and the floor carries its warmth as **streaks elongated along the
 view direction**, bright-only, never inverting. Bloom on **and** off.
+
+**Expect metalness to be the argument here.** M1 specifies bare conductor — **metalness 1.0, roughness
+0.35–0.50** — against the shipped `0.12 / 0.62`. Metalness 1.0 removes diffuse entirely and the sky measures
+**~linear 0.01** as an IBL source, so everything the rail's specular does not reach goes **pure black**. That
+may be exactly the direction (*"there is no fill; shadow sides go black"*) or it may read as a void with a
+stripe. **Render both and bring the pair to the gate.** Do not settle it from the sheet.
+
+### Slice 3 — floor finish: panel language **and** board-25 wear, in one shader (A + D8)
+
+Two things that used to be separate slices, because D8 makes them one mechanism.
+
+**Panels and seams.** Procedural panel divisions and transverse seams giving lateral position across 64u.
+Joints are **dark by default**. Interior emissive inserts are permitted and are **sparse, short, of varied
+length, irregularly spaced** (D6) — never a regular cadence, a glowing grid, a racing line or a safe-route
+glow. Rev 3's M7 names the failure mode precisely: *"making inserts regular or continuous destroys that
+separation and produces the lane read the direction forbids — which is the failure mode, not dimness."*
+So do **not** try to separate the boundary from the inserts by making the inserts dimmer; both are gameplay
+tier and both may be equally hot. Continuity is the separator.
+
+**Wear — world-space, inside the D2 patch, NOT a second texture (D8).** `track-texture.ts` is one 1024²
+canvas over a 16 × 20u panel: it repeats 4× across the ribbon and ~400× down it. A tile cannot hold a feature
+larger than itself, and a `roughnessMap` bolted onto that pipeline inherits the identical period — which
+fails §4's *"a tiling period the eye can lock onto is a failure"* by construction. So wear is
+**world-position-driven noise in the same `onBeforeCompile` patch the emitter array already adds**. The tiled
+canvas is **kept**, demoted to fine grain below ~1u where a repeat is invisible at any real viewing distance.
+
+Board 25's three frozen layers, in priority order:
+1. **Finish wear (primary)** — sparse, broad, softly-bounded roughness patches that interrupt the warm
+   reflections; some areas subtly *smoother*, not only duller; **substantial untouched areas retained**.
+2. **Shallow scuffs (secondary)** — occasional elongated rub clusters, varied length, **weak** down-track
+   bias that must never become a highlighted route.
+3. **Joint-edge rub (tertiary)** — small intermittent worn portions near *selected* joint ends and bevels.
+   Sparse selection, **never a bright outline around every tile**.
+
+**Expose these as live uniforms** — board 25 asks for them by name: overall amount **including zero as the
+clean baseline** · broad-patch coverage and characteristic size · the dulled-vs-smoother delta · scuff
+density, length variation and directional bias · edge-rub amount · **a stable seed**, so two screenshots of
+the same section are comparable.
+
+**Excluded, from board 25's own list:** rust · flaking paint · muddy grime · skid/tyre marks · bright silver
+scratches · dents · craters · broken floor · debris · **all-over fine noise** · lane-like wear bands · fully
+outlined tile edges. And no brighter or bluer base values to make the wear visible.
+
+**Gate — judge the OVERVIEW first, the closeup second.** Board 25 is explicit: *"wear should break
+reflections without competing with hazards, pickups or gap edges. Closeups explain the material but must not
+force tiny details into the gameplay render."* Compare against board 25 with **matched lighting and camera**;
+board 24 is the clean baseline. Then: floor repetition is not visible at speed, the surface reads as dark
+metal rather than grey plastic, and the wear is **stationary on the track** as the camera moves — no shimmer,
+no swimming, no obvious repeating band.
 
 ### Slice 4 — gaps (C)
 
@@ -224,7 +317,7 @@ panel seams *and* from reflected light, at race speed, **moving, not parked**. A
 
 ## 4. Definition of done
 
-Straight from `02-track/README.md` §4. All six, or the task is not done:
+Straight from `02-track/README.md` §4, plus the two the wear freeze adds. All eight, or the task is not done:
 
 - **Procedural** — no bitmap textures in the track pipeline.
 - **Gap edges distinguishable** from panel seams and from reflected light, verified moving.
@@ -232,6 +325,10 @@ Straight from `02-track/README.md` §4. All six, or the task is not done:
 - **Floor repetition not visible** — a tiling period the eye can lock onto is a failure.
 - **Reads correctly with bloom on and off.**
 - **A 4 × 20u gap is legible at 55u/s** from the production camera.
+- **Wear matches board 25's character and strength** judged on the **overview**, and it breaks the warm
+  reflections without competing with gap edges. Board 24 is the clean baseline.
+- **Wear is stationary on the track and stable in motion** — no shimmer, no swimming, no repeating band,
+  and every control board 25 names is exposed, including **zero wear as the clean baseline**.
 
 ---
 

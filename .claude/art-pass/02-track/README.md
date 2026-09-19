@@ -1,6 +1,6 @@
 # Task 2 — Track: floor material, edge rail, gaps
 
-**Status:** not started
+**Status:** in progress — the review frame is honest (#131); the art itself is not built.
 **Depends on:** task 1 (judged under the real sky and its environment light).
 **Blocks:** task 3 (lighting balances against a real track), and every composition gate after it.
 
@@ -76,7 +76,15 @@ obstacle blocks · finish gate · pickups · final lighting balance (task 3).
 
 ## 7. Decision / As-built
 
-**Status: DECIDED, NOT YET BUILT** (2026-09-19). Three decisions are of-record below. No task-2 code exists.
+**Status: the review frame is built; the art is not** (2026-09-19). Eight decisions are of-record below.
+D1–D5 predate any code; **D6–D8 were taken after #131 landed** and they re-shape what remains.
+
+**What #131 actually landed** — slice 0 only, and it is worth being precise because the PR title says
+"floor material": tone mapping ON at the ACES default, `/art-lab`'s own `ambientLight` + `directionalLight`
+deleted with the sky rig mounted unconditionally, and `TrackView` split into `TrackRibbon` + `TrackBlocks`
+with blocks defaulting OFF. `TrackFloor` and `track-texture.ts` exist but are still mounted **only** behind
+`/art-lab`'s `slab` toggle — `showFloor` is intact and the game's floor is still instanced 0.6u boxes.
+**D1 is not done.** Everything from the floor swap onward is open.
 
 **⚠ The dependency in this file's header is INVERTED on purpose.** It reads *"Depends on: task 1 (judged
 under the real sky and its environment light)"*. The owner reversed that: task 1's `/iso-sky` gate is
@@ -196,6 +204,79 @@ read needs a block present. It is a check you switch on deliberately, not the de
 in frame → nothing to hold-retone. `LETHAL_SURFACE`'s `#ff2740` is left exactly as it is and belongs to the
 later block-design task, judged when someone is actually judging blocks. **Do not touch
 `track-materials.ts`'s lethal or drag colours in task 2.**
+
+### D6 — NEW (owner, 2026-09-19): the track boards govern seam density; board 17 is atmosphere only
+
+Board 17's deck shows **continuous glowing lines running the full length of the deck in a regular lateral
+rhythm** — which reads as lane markings, the one thing the written direction forbids outright. Board 25's
+overview is the restrained version: short segments, irregular spacing, mostly dark joints. Since board 17 is
+the *golden reference*, this had to be settled before a seam existed, or the seam system gets built twice.
+
+**The track boards win. Board 17 is a mood frame, not a seam specification.** The evidence is inside the
+track package itself, and it is newer: board 24's panel table specifies *"sparse short emissive segments of
+varied lengths and irregular spacing among mostly dark joints"* and puts *"repeated lane-like cadence, full
+glowing grid or a highlighted safe route"* in its own do-not-copy column
+(`docs/art-direction/track/24_track_BRIEF.md`). `ART_MATERIALS.md` M7 then gives the reason it matters:
+*"boundary and interior inserts are separated by continuity, not by intensity… making inserts regular or
+continuous destroys that separation and produces the lane read the direction forbids — which is the failure
+mode, not dimness."*
+
+So the interior is **sparse, short, varied in length, irregularly spaced, on joints that are mostly dark.**
+The boundary is the only continuous marigold signal in the frame. Dimness is **not** the separator and must
+not be used as one — both are gameplay tier and both may be equally hot.
+
+### D7 — NEW (owner, 2026-09-19): the emitter array is built BEFORE the floor's finish is judged
+
+The lane brief ordered floor material at slice 2 and the rail + emitter array at slice 3. **That order is
+reversed.** It contradicted D2's own justification for pulling the emitter array forward at all — that
+without it the task delivers *"a dark grey ribbon with a marigold stripe… no more judgeable than the two
+probe spheres"*. That argument applies hardest to the **floor** slice, whose gate is *"the surface reads as
+dark metal rather than grey plastic"*: dark metal carries no information until something warm is reflecting
+off it, so judging the deck's finish before the rail lights it is judging it under light the finished scene
+will not have.
+
+This is the same rule that put the background first in the arc — *lighting flows from the environment, so
+anything judged under placeholder light must be re-judged the moment the real light lands*. **Light first,
+then the surfaces it lights.** The deck keeps its current material through the rail slice; it is refined
+afterwards, once, under final light.
+
+### D8 — NEW (owner, 2026-09-19): board 25's wear lives in the D2 shader patch, in world space
+
+Board 25 froze the wear treatment *after* the lane brief was written, so the brief has no slice for it. It
+gets one — and not the obvious one.
+
+**The obvious mechanism fails its own gate.** `track-texture.ts` is a single 1024² canvas mapped to one
+16 × 20u panel, so it repeats 4× across the ribbon and ~400× down it. §4 requires *"floor repetition is not
+visible — a tiling period the eye can lock onto is a failure"*, and board 25 demands *"sparse, broad, softly
+bounded patches"* with *"large readable features"* that *"avoid identical stamps on adjacent tiles or obvious
+repeating bands"*. **A tile cannot contain a feature larger than itself**, and a second `roughnessMap`
+inherits the identical period. Adding a wear map to this pipeline builds the failure in.
+
+**What is built instead: wear is world-position-driven noise inside the same `onBeforeCompile` patch D2
+already adds for the emitter array.** No UVs, no tile, no period — by construction rather than by tuning.
+Broad patches may be any size because nothing bounds them; the wear is stationary on the track because it is
+keyed to world position; and every control board 25 asks us to expose — overall amount *including zero*,
+broad-patch coverage and characteristic size, the dulled-vs-smoother delta, scuff density / length variation
+/ directional bias, sparse edge-rub amount, and a stable seed — becomes a **live uniform** rather than a
+canvas rebake. Wear and light become one shader instead of two systems that must be kept in agreement.
+
+The existing tiled canvas is **kept**, demoted to what it is genuinely good at: fine grain below ~1u, where
+a repeat period is invisible at any real viewing distance. Board 25's exclusion list still binds — no rust,
+no skid marks, no bright silver scratches, no dents, no all-over fine noise, no lane-like wear bands, no
+fully outlined tile edges.
+
+### Flagged, not decided — metalness is the likeliest blow-up
+
+`ART_MATERIALS.md` M1 specifies bare conductor: **metalness 1.0, roughness 0.35–0.50**. The code ships
+`FLOOR_METALNESS = 0.12` and `FLOOR_ROUGHNESS = 0.62`, with a comment correctly noting that its original
+reason ("no environment map in this scene") died when the lab lost its own lights and the shipped sky rig
+brought `SkyEnvironment`.
+
+But metalness 1.0 removes diffuse entirely, and `INDEX.md` §4 records that the sky measures **~linear 0.01**
+as an IBL source. At 1.0, every part of the deck the rail's specular does not reach goes **pure black**. That
+may be exactly right — *"there is no fill; shadow sides go black"* is the stated direction — or it may read
+as a void with a stripe through it. **This is not settleable on paper. Render both and look.** It is the
+single most likely thing to fail at the rail gate.
 
 ### Process deviation, deliberate
 
