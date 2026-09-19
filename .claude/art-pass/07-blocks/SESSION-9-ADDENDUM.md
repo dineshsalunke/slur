@@ -237,3 +237,37 @@ today.**
 **Resolve it by reading, not by assuming**, and record the answer either way. If A turns out to be
 unblocked, it moves to the front of the queue — the owner has now personally asked for this surface to
 read, and §11's park was taken before they did.
+
+## 14. ✅ §13 RESOLVED BY READING — A IS UNBLOCKED. §11's HOLD IS VOID.
+
+**Answer: `art/track` owns the TRACK SURFACES' roughness, not the BLOCK's. It does not own the block's
+roughness at all, and in the current design it owns no roughness whatsoever.**
+
+Read first-hand from `art/track`'s tree (`apps/client/app/game/scene/track-materials.ts`, HEAD `441a2d9`):
+it defines exactly four surfaces — `FLOOR_SURFACE`, `LETHAL_SURFACE`, `DRAG_SURFACE`, `RAIL_SURFACE` — and
+**not one of them carries a `roughness` key.** They are `emissive` / `emissiveIntensity` / `color` only.
+
+Its own header hands the block's look away in writing: *"STILL RED, DELIBERATELY. The palette excludes red
+and these will change — but that is the block-design task's call, judged when someone is judging blocks."*
+
+**What this changes:**
+
+- **§4 condition 2 — "read the base from the single constant `art/track` will own" — was unsatisfiable as
+  written**, exactly as B13(d)'s `uDetailRough` was. There is no such constant. `sealed-block-material.ts`'s
+  own `roughness: 0.55` (line 326) **IS** the single owning constant for the block. Perturb relatively
+  around **that**, and condition 2 is satisfied.
+- **§4 conditions 1, 3 and 4 stand unchanged.** Relative never absolute; do not touch `BLOCK_BASE_COLOR`;
+  keep the albedo-only terms. What B13(d) protects is two dark-material languages forking, and that risk
+  lives in the base **value** — a *colour* question, still task 2's. Roughness was never the fork risk.
+- **§11's hold is VOID. Option A is the front of the queue.**
+
+**Flag for integration, not for now:** the in-game blocks render through `LETHAL_SURFACE`/`DRAG_SURFACE`,
+which specify no roughness → three.js default **1.0**, while the sealed block is **0.55**. Whoever merges
+task 7 into `track-blocks.tsx` replaces those constants and must carry the roughness across. Recorded here
+so it is not later discovered as a "regression".
+
+**The process lesson, and it is the supervisor's failure:** §11 parked a lane for a session on a question
+five minutes of reading answers — on the one surface the owner had *personally* asked for (§12). Inherited
+blockers have now been falsified **three** times in two days on this project ("the push is blocked by the
+classifier", the StrictMode premise, and this). **Re-test an inherited blocker before budgeting a session
+around it.**

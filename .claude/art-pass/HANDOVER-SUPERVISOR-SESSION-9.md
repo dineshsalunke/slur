@@ -34,12 +34,27 @@ argument for 70 — **the stars do NOT fill that void** (0.008% of pixels lit ov
 that, the owner revised to ~120 themselves. **Pushing back with measurements, not opinions, is what moved
 it.**
 
-**At fov 120** (supervisor arithmetic from the lane's measured half-angles — *the lane must verify, it is
-not measured*): patch half-width 60° vs frame half-width 46.0° parked and 54.0° at top speed → **fully
-covered in both**; worst case is top speed + 13.39° strafe yaw needing 67.39°, leaving **~7% of frame width
-black on ONE edge only.**
+**At fov 120** (supervisor arithmetic from the lane's measured half-angles, since **verified and corrected
+by `track-44`**): patch half-width 60° vs frame half-width 46.01° parked (14° spare) and 54.01° at top speed
+(6° spare) → **fully covered in both**; worst case is top speed + 13.39° strafe yaw needing 67.39°, leaving
+**11.6% of frame width black on ONE edge only.**
 
-## 2. ⚠ 120 STILL FAILS THE ASSERTION — Option C still has to land
+> ⚠ **The supervisor's original figure here was ~7% and it was WRONG, in the unsafe direction.** The last
+> step divided the 7.4° shortfall by the 107.5° frame linearly. Angle-to-screen-width is **not** linear —
+> width per degree grows as `sec²θ`, so a shortfall at the frame **edge** buys more width than the same
+> angle at centre. 7.4/107.5 reads 6.9%; the tangent-correct figure is **11.6%**. Had `ACCEPTED_EDGE_MARGIN`
+> been set to 0.07 it would have been **below the thing it exists to permit**, and the new test would have
+> failed the moment it was written. Every other step of that arithmetic held exactly.
+>
+> The 120 numbers are **calibrated arithmetic, not fresh pixels**, and are labelled as such in the test
+> comment and the commit body. The model was calibrated against `track-44`'s fov-70 *pixel* measurements —
+> predicted 0.162 / 0.246 / 0.356 vs measured 0.154 / ~0.21 / 0.333, i.e. it runs **1–2% of width
+> conservative**, the safe direction. At fov 70 the pixel differencing agreed with the projection algebra
+> to that same 1–2%: what was wrong that day was the **eyeball**, not the algebra.
+> `[unmeasured]` fov 120's actual patch span in pixels — it rides free at the owner's sitting, which is
+> item 1 of the block in §9.
+
+## 2. ✅ OPTION C HAS LANDED — this section is now history, kept for the reasoning
 
 `sky-config.test.ts:99` asserts `fovDeg > 134.297`. **This is false at 120 as well as at 70.** The fix is
 **Option C**, scoped by `track-44` and approved:
@@ -48,8 +63,16 @@ black on ONE edge only.**
    encodes (derived: `makeEdgeFade`'s `du=min(v,1-v)` peaks at 0.5, so `fovV <= 2*edgeFade` can never reach
    alpha 1 anywhere; `2*12*1.7768 = 42.64 → 43`. It moves if `edgeFadeDeg` moves).
 2. A **renamed** margin assertion that no longer claims "fills the frame", pinning the worst-case black
-   margin against a named **`ACCEPTED_EDGE_MARGIN`** carrying the owner's decision — filled with the
-   measured ~7% at fov 120.
+   margin against a named **`ACCEPTED_EDGE_MARGIN`** carrying the owner's decision.
+
+**As landed** (`441a2d9`, pushed, full gate green — typecheck · lint · shared 75/75 · client 37/37 · server
+4/4 · build): `ACCEPTED_EDGE_MARGIN = 0.12` against a computed **0.1159**, so it passes thin and trips on any
+drift, with a comment recording that raising it is an **art decision, not a fix**. **Three** assertions
+replaced the one: the opacity floor; the margin budget computed from fov + chase constants + canvas aspect;
+and a third pinning that the margin is a **strafe artefact and nothing else** — so if black ever appears
+parked or running straight, the framing has drifted and the budget no longer describes what ships. All three
+fail loudly on a `chase.ts`, aspect or fov change. The comment records why the old assertion **went** rather
+than got loosened, citing the far-plane test that asserted `radius < 2000` and let the bug ship underneath it.
 
 **Rejected and must stay rejected:** loosening the assertion to fit the value (it would certify anything),
 and deleting it (it caught a 120° patch shipping once).
@@ -101,10 +124,15 @@ owner's attention.
 | frame-tap | `art/frame-tap` | 5203 / 2603 | **CLEARED** — agent killed, needs restart | `frame-tap` / `w2E:p1` |
 
 ### `art/track`
-`b00c91f` pushed. **`sky-config.ts` is deliberately DIRTY** (tilt/fov + rewritten prose) — it must stay in
-the tree or the owner's sitting cannot happen. The assertion is untouched and failing **on purpose**. Far-
-plane fix **visually confirmed** (hole gone, sky continuous, planet limb legible). Next after the clear:
-**slice 1 (floor swap, D1), gated by the slice-0 verdict.**
+**HEAD `441a2d9`, tree CLEAN, pushed, 0/0 against `origin/art/track`, full gate GREEN.** Both `b00c91f` (fov
+slider floor + the corrected coverage number) and `441a2d9` (tilt −2 / fov 120 + Option C) are in. The
+"deliberately dirty `sky-config.ts`" note is **spent** — the framing is committed, not held in the tree.
+Far-plane fix **visually confirmed** (hole gone, sky continuous, planet limb legible).
+
+**Slice 1 (floor swap, D1) is NO LONGER GATED on the slice-0 verdict** — supervisor decision, session 10,
+§14. Slice 0 is *framing* (sky tilt/fov + the existing flat surfaces); slice 1 *replaces the floor surface*.
+Building slice 1 cannot invalidate a framing verdict, so holding it only converted the owner's scarcest
+resource into one verdict per sitting instead of two. The next sitting gates **both**.
 
 ### `art/block` — PARKED, and the park is under challenge
 Everything is in **`07-blocks/SESSION-9-ADDENDUM.md`**, committed at `8c5d460`. Headline: the block renders
@@ -185,9 +213,12 @@ for its successor instead. `block-49` and `track-44` both hit seams and stopped 
 >
 > 1. **The black margin.** Hit `running`, then `fly`. Hold W until the speed readout stops climbing (~8s),
 >    then hold A for a full three seconds and let go, then D for three seconds. Watch the LEFT and RIGHT
->    edges of the picture, not the middle. At fov 120 the nebula should reach the frame edge everywhere
->    except while you are hard over, where a sliver of black (~7% of the width) opens on one side. The
->    question is only whether that reads as space, or as the sky having run out. Bloom stays on.
+>    edges of the picture, not the middle. At fov 120 the nebula should reach the frame edge **everywhere**
+>    — parked and running straight are both fully covered, with room to spare. The only place black should
+>    open is while you are **hard over**, and then on **one edge only**: the side you are strafing *away*
+>    from. Expect roughly a ninth of the width (~12%). The question is only whether that sliver reads as
+>    space, or as the sky having run out. Bloom stays on. If you see black parked, or running straight, or
+>    on *both* edges at once, say so and stop — that is not the margin, that is the framing having drifted.
 > 2. **Slice 0, the honest frame.** Same flight, now look at the floor and the rails, bloom ON and again
 >    with bloom OFF, and keep moving — parked tells you almost nothing. Expect it to look worse than you
 >    remember: the lab used to mount its own ambient and directional light that the game does not have, and
@@ -197,3 +228,50 @@ for its successor instead. `block-49` and `track-44` both hit seams and stopped 
 > **The lesson session 8 recorded still holds, and earned it again twice today:** every confident,
 > well-argued conclusion built from source alone that got overturned, got overturned by **rendering or
 > measuring**. If you find yourself arguing about a frame, measure it.
+
+---
+
+## 14. SESSION 10 — §13 RESOLVED BY READING. THE BLOCK WAS NEVER BLOCKED.
+
+**`art/block`'s Option A is unblocked and was unblocked the whole time.** §13 asked the right question —
+*does `art/track` own the BLOCK's roughness, or only the track surfaces'?* — and the answer, read from the
+file rather than assumed:
+
+`art/track`'s `apps/client/app/game/scene/track-materials.ts` defines exactly four surfaces —
+`FLOOR_SURFACE`, `LETHAL_SURFACE`, `DRAG_SURFACE`, `RAIL_SURFACE` — and **not one of them carries a
+`roughness` key at all.** They are `emissive` / `emissiveIntensity` / `color` only. There is no base
+roughness constant on task 2 for the block to read, today or in the current design.
+
+Its own header goes further and hands the block's look away in writing: *"STILL RED, DELIBERATELY. The
+palette excludes red and these will change — but that is the block-design task's call, judged when someone
+is judging blocks."*
+
+**Consequences, all of which unstick work:**
+
+1. **§4's condition 2 — "read the base from the single constant `art/track` will own" — was unsatisfiable
+   as written**, in exactly the same way B13(d)'s `uDetailRough` was. The block's own
+   `sealed-block-material.ts:326` `roughness: 0.55` **is** the single owning constant for the block. The
+   condition is satisfied by perturbing relatively around it.
+2. **§4's conditions 1, 3 and 4 stand unchanged.** Perturb relatively, never absolutely; do not touch
+   `BLOCK_BASE_COLOR`; keep the albedo-only terms. Those protect against two dark-material languages
+   forking, and that risk lives in the base **value** — which is a *colour* question, still task 2's.
+3. **§11's hold is void. Option A goes to the front of the queue.**
+4. **A real divergence to flag at integration, not now:** the in-game blocks render through
+   `LETHAL_SURFACE`/`DRAG_SURFACE` (no roughness → three.js default **1.0**), while the sealed block is
+   **0.55**. Whoever merges task 7 into `track-blocks.tsx` replaces those constants and must carry the
+   roughness across. Recording it so it is not discovered as a "regression".
+
+**The process failure worth naming, and it is the supervisor's:** the park in §11 was taken on a question
+that five minutes of reading answers, and it cost a full session on the one surface the owner had
+*personally* asked for (§12). *Inherited blockers have now been falsified **three** times on this project in
+two days* — "the push is blocked by the classifier", the StrictMode premise, and now this. **Re-test an
+inherited blocker before you budget a session around it.**
+
+### Decisions taken this session
+
+- **§13 resolved in the lane's favour; `art/block` restarts on Option A immediately.**
+- **Slice 1 is ungated** (see §5) — the next owner sitting gates slice 0 *and* slice 1 together.
+- **The §9 owner block is corrected** for fov 120: parked and straight are fully covered; the margin is a
+  ~12% sliver on the leading edge under hard strafe only. The ~7% that stood here was a linear division of
+  an angle that grows as `sec²θ`, and it was wrong in the unsafe direction (§1).
+- **`track-44` clears at its seam** (~177k, tree clean, nothing in flight). Its successor takes slice 1.
