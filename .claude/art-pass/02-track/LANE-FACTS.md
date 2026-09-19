@@ -96,6 +96,31 @@ could not source it first-hand — it is NOT reconstructed. The supervisor write
 - No map, no roughness, no procedural term: mathematically uniform, nothing for light to catch.
 - `art/block` measured the same failure on the block: albedo features dilute below JPEG noise at ~85–90% non-diffuse; roughness variation is the lever that shows. Read `07-blocks/SESSION-9-ADDENDUM.md` §1 before designing D1 — do not re-derive.
 
+## Slice 1 — the floor swap (D1)
+
+- `buildFloorGeometry` loops `i < Math.round(track.finishZ / SEG_LEN)` = 400; `TrackRibbon`'s window is `sim.z + AHEAD` (900u), unbounded.
+- `segmentAt(400)` and `segmentAt(420)` both return `kind:'finish'`, `floors:[{x0:-32,x1:32,y:0}]` — the run-out pad continues past the line.
+- So swapping as-is leaves NO floor past the finish line for the whole leader-grace window. Fix rides slice 1.
+- `emitSpan` hardcodes `t = 0`, `b = -SLAB_THICKNESS` — it ignores `FloorSpan.y`. `TrackRibbon` honours it (`f.y - FLOOR_THICK/2`); rails ride `seg.floors[0].y`.
+- Latent, not live: seeds 1/2/3/7/42/1337/99991, 2,675 spans, distinct `f.y` set = `[0]`, every track 400 segments.
+- `continues()` compares x-range only — two spans at different `y` would read as continuous and suppress the cap between them.
+- Seed 1: 382 spans, 18 holes, 20 partial-width spans → ≤2,292 quads ≈ 13.7k verts for the WHOLE track, built once in a `useMemo`.
+- Instanced path does a 49-segment window walk + 2 `instanceMatrix` uploads every frame; expect the swap to IMPROVE frame time. `[unmeasured]` — no frame-time number taken.
+- Thickness changes 0.6u (instanced) → 2u (`SLAB_THICKNESS`) at the swap. That trade is what the owner's gap frames judge.
+
+## Floor material ownership (commit 1)
+
+- `/art-gallery`'s slab subject hand-rolled `<boxGeometry [64,0.5,20]>` + raw `FLOOR_SURFACE`; it does NOT consume `TrackRibbon`, so the deletion would not break it — it would make it LIE.
+- `TrackFloor` overrode `FLOOR_SURFACE` inline: `color` white, `roughness 0.62`, `metalness 0.12`. Nothing could import those.
+- Now `track-materials.ts` owns them: `FLOOR_ROUGHNESS = 0.62`, `FLOOR_METALNESS = 0.12`, `floorSurface()` (lazy — `trackSurfaceTexture()` needs `document`).
+- `FLOOR_ROUGHNESS` is the constant `art/block`'s §4 condition 2 binds them to import rather than copy. It did not exist before this commit.
+- `floorSurface()` must NOT be called at module scope: `SUBJECTS` is imported by `gallery-camera.tsx` and `art-gallery-sidebar.tsx` for metadata. Hence `TrackSlabSubject` is a component.
+- No client test imports `subjects.tsx`; `apps/client/vitest.config.ts` is `environment: 'node'` with per-file jsdom docblocks.
+- `track.test.tsx` tests the env-lab `Track` (flat grid), NOT `TrackRibbon`/`TrackView` — the rename does not touch it.
+- Gallery box UVs would have stretched one panel tile across 64u, so the subject shares `buildSpanGeometry` instead.
+- CHECKED, not assumed: the block lane's normalised-`BoxGeometry`-UV warning does NOT apply to `TrackFloor` — `uvFor` divides WORLD position by `PANEL_W`/`PANEL_L` on a generated mesh with no instance scale.
+- Gate GREEN after commit 1: typecheck · lint (3 pre-existing warnings) · shared 75/75 · client 37/37 · server 4/4 · build.
+
 ## Chrome / instrumentation
 
 - `visibilityState` is the ONLY reliable hidden-tab test. Canvas size proves nothing — measured 3456×1926, mounted, rAF dead.

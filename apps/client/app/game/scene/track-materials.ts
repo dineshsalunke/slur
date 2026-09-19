@@ -13,12 +13,45 @@
 // construction. The renderer default stands (r3f's `<Canvas>` sets ACES Filmic unless `flat` is passed,
 // which nothing does), so these intensities are authored to survive that transform rather than bypass it.
 
+import { trackSurfaceTexture } from './track-texture';
+
 /** Near-black ribbon surface. The neon deliberately lives on the rails, not the slab. */
 export const FLOOR_SURFACE = {
     emissive: '#c8d0d8',
     emissiveIntensity: 0.05,
     color: '#050507',
 } as const;
+
+/**
+ * Base roughness of the track's dark metal. THE constant the finish is defined by: `art/block` perturbs
+ * its per-fragment roughness RELATIVELY around this, so the two dark-metal languages cannot fork when it
+ * moves. Import it; never copy the number.
+ */
+export const FLOOR_ROUGHNESS = 0.62;
+
+/**
+ * Low, pending slice 2. The original reason ("no environment map in this scene") is FALSE since the lab
+ * lost its own lights and the shipped sky rig brought `SkyEnvironment`.
+ */
+export const FLOOR_METALNESS = 0.12;
+
+/**
+ * The game floor's real material — the ONE definition, spread by both `TrackFloor` and the gallery so a
+ * review cannot drift from what ships. A function, not a frozen object: `trackSurfaceTexture()` needs
+ * `document` and must not run at import time.
+ *
+ * `color` overrides FLOOR_SURFACE's near-black because base colour MULTIPLIES the map — at `#050507` the
+ * texture crushes to flat black.
+ */
+export function floorSurface() {
+    return {
+        ...FLOOR_SURFACE,
+        color: '#ffffff',
+        map: trackSurfaceTexture(),
+        roughness: FLOOR_ROUGHNESS,
+        metalness: FLOOR_METALNESS,
+    };
+}
 
 /**
  * Lethal blocks — the lone red accent. Touch → derezz, so danger must read instantly.

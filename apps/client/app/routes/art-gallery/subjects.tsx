@@ -1,12 +1,8 @@
 import { BLOCK_HEIGHT, CELL, HALF_WIDTH, SEG_LEN, tuningForShip } from '@slur/shared';
 import type { ReactNode } from 'react';
-import {
-    DRAG_OPACITY_MAX,
-    DRAG_SURFACE,
-    FLOOR_SURFACE,
-    LETHAL_SURFACE,
-    RAIL_SURFACE,
-} from '../../game/scene/track-materials';
+import { SLAB_THICKNESS } from '../../game/scene/track-floor';
+import { DRAG_OPACITY_MAX, DRAG_SURFACE, LETHAL_SURFACE, RAIL_SURFACE } from '../../game/scene/track-materials';
+import { TrackSlabSubject } from './track-slab-subject';
 
 /**
  * A gallery subject: one piece of art, isolated, at TRUE scale.
@@ -69,14 +65,9 @@ export const SUBJECTS: readonly Subject[] = [
         id: 'floor',
         name: 'Track slab',
         group: 'track',
-        dims: [ 2 * HALF_WIDTH, 0.5, SLAB_LEN ],
-        note: 'Full 64u width, one 20u segment deep. The ship is 2.6u — about 1/24th of this. Near-black by design: the neon lives on the rails, not the surface.',
-        node: (
-            <mesh>
-                <boxGeometry args={ [ 2 * HALF_WIDTH, 0.5, SLAB_LEN ] } />
-                <meshStandardMaterial { ...FLOOR_SURFACE } />
-            </mesh>
-        ),
+        dims: [ 2 * HALF_WIDTH, SLAB_THICKNESS, SLAB_LEN ],
+        note: 'Full 64u width, one 20u segment deep, at the real slab thickness. The ship is 2.6u — about 1/24th of this. Near-black by design: the neon lives on the rails, not the surface.',
+        node: <TrackSlabSubject />,
     },
     {
         id: 'rail',

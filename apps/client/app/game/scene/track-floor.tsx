@@ -1,8 +1,8 @@
 import { CELL, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { FLOOR_SURFACE } from './track-materials';
-import { PANEL_L, PANEL_W, trackSurfaceTexture } from './track-texture';
+import { floorSurface } from './track-materials';
+import { PANEL_L, PANEL_W } from './track-texture';
 
 /**
  * Downward extrusion of the slab (world units). Purely an art choice — `SLAB_THICKNESS` is NOT a game
@@ -110,6 +110,28 @@ function emitSpan(
     pushQuad( pos, uv, [ x0, b, z0 ], [ x0, b, z1 ], [ x1, b, z1 ], [ x1, b, z0 ], 'xz', DOWN );
 }
 
+function packGeometry( pos: number[], uv: number[] ): THREE.BufferGeometry {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute( 'position', new THREE.Float32BufferAttribute( pos, 3 ) );
+    geo.setAttribute( 'uv', new THREE.Float32BufferAttribute( uv, 2 ) );
+    geo.computeVertexNormals();
+    return geo;
+}
+
+/**
+ * One capped slab span, for showing a slice of ribbon outside the game (the gallery).
+ *
+ * Exported rather than reproduced with a `boxGeometry`: box UVs are normalised 0..1 per face, so the panel
+ * texture would stretch one tile across the whole 64u width and the gallery would show a finish the game
+ * never renders.
+ */
+export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: number ): THREE.BufferGeometry {
+    const pos: number[] = [];
+    const uv: number[] = [];
+    emitSpan( pos, uv, { x0, x1 }, z0, z1, true, true );
+    return packGeometry( pos, uv );
+}
+
 /**
  * Builds the whole ribbon as ONE geometry, generated from the sim's real `FloorSpan` data.
  *
@@ -143,11 +165,7 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
         }
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute( 'position', new THREE.Float32BufferAttribute( pos, 3 ) );
-    geo.setAttribute( 'uv', new THREE.Float32BufferAttribute( uv, 2 ) );
-    geo.computeVertexNormals();
-    return geo;
+    return packGeometry( pos, uv );
 }
 
 /**
@@ -162,26 +180,12 @@ export function TrackFloor( { track }: { track: Track } ) {
     // there is nothing to rebuild per frame. R3F disposes a geometry passed via the `geometry` prop when
     // the mesh unmounts, so this needs no manual teardown.
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
-    const map = trackSurfaceTexture();
 
     return (
         <mesh geometry={ geo }>
-            { /* Keeps `FLOOR_SURFACE`'s emissive whisper (shared with `TrackView`) but deliberately
-                 OVERRIDES two of its values:
-                 · `color` → white. `FLOOR_SURFACE.color` is `#050507`, and base colour MULTIPLIES the map —
-                   at that value the texture was crushed to flat black and no grain or panel was visible.
-                   The texture already carries its own near-black base, so white lets it read as authored.
-                 · `metalness` → low. A metallic surface gets its value from REFLECTIONS, and this scene has
-                   ambient light and no environment map, so high metalness just renders black. v2's
-                   "restrained gloss / warm reflections" needs the marigold edge (and probably an env map)
-                   to reflect BEFORE metalness is worth raising — until then it only removes information. */ }
-            <meshStandardMaterial
-                { ...FLOOR_SURFACE }
-                color="#ffffff"
-                map={ map }
-                roughness={ 0.62 }
-                metalness={ 0.12 }
-            />
+            { /* The material lives in `track-materials.ts`, not here. These values ARE the game's floor now,
+                 so a gallery spreading something else would misrepresent what ships. */ }
+            <meshStandardMaterial { ...floorSurface() } />
         </mesh>
     );
 }
