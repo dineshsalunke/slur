@@ -8,6 +8,12 @@
 
 ## 1. What this task delivers
 
+> **⚠ Amended 2026-09-19 — "fully procedural" no longer holds.** The display sky ships as
+> `nebula-backdrop.jpg` (the image the boards were composed over) on a camera-locked dome; only the
+> **lighting** environment is authored, via `<Lightformer>`s. See `CHEAP-PATH-BRIEF.md`. The two bullets
+> below still describe the two *jobs* correctly — what changed is that they are now served by **two separate
+> sources**, which is the point.
+
 A **fully procedural** far-field environment (no bitmaps) that is simultaneously:
 
 - **the thing you see** — deep-space gradient, stars, nebula, and a large cold celestial body; and
@@ -150,6 +156,33 @@ acceptance criterion has to be **measured off board 12**, not quoted from prose.
    live shader parallaxes for free but needs a separate lighting path.
 
 ## 8. Decision
+
+> ## ⚠ SUPERSEDED 2026-09-19 — read `CHEAP-PATH-BRIEF.md` first
+>
+> **Everything in §8 below describes the PROCEDURAL approach, which was built, measured and then dropped.**
+> It is kept as the record of what was tried and why, not as instructions.
+>
+> **The live decision:** ship `nebula-backdrop.jpg` as the display sky on the camera-locked dome
+> (`SkyFollow`), and light the scene from a **separately-authored** environment — drei `<Environment>` +
+> `<Lightformer>` children plus one real `DirectionalLight`.
+>
+> **Why:** the boards were *composed over* that jpg (§3), so the procedural dome's acceptance test was
+> "match this JPEG" — and we ship that JPEG. We were approximating an asset we already own. Add that the
+> background is ~55–65% occluded and, per `03-lighting/README.md` §1a, lights only the far rock field while
+> the track lights itself from its own emissives, and the multi-slice procedural build stopped paying.
+>
+> **This also dissolves §2's "central tension"** — "art wants a dark sky, but a dark sky is a dark light
+> source" is only a problem if the light is derived *from the picture*. Two sources, no tension. The
+> roughness probes therefore matter **more**, not less: they are how the `<Lightformer>` rig is proven to
+> actually light, which the procedural path never achieved.
+>
+> **Still true from §8 below:** the star is a **real `DirectionalLight`, not baked** (PMREM's roughness
+> convolution cannot preserve a small hard highlight), and **no parallax** (§"No parallax" — apparent shift
+> ≈ baseline ÷ distance, and both baselines are tiny, so camera-locking *is* infinite distance).
+>
+> **Now likely redundant:** the procedural celestial body — the jpg already contains the rim-lit planet limb.
+>
+> **Preserved:** branch `art/procedural-bg` @ `6d52029`, pushed.
 
 **Settled 2026-09-18** at the research review (owner + Claude), against `research/2026-09-18-procedural-sky.md`.
 

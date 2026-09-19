@@ -13,12 +13,18 @@ continuous art arc with sequential composition gates, not a set of independently
 ## 1. The order, and why it is this order
 
 Everything is built **procedurally** (no DCC-authored meshes, no bitmaps) and **in isolation first**, then
-composed. Isolation is where a variable is judged alone; composition is where it is judged against
+composed.
+
+> **⚠ "Procedural" is a DEFAULT, not a law — amended 2026-09-19.** It must earn its place per task against a
+> player-visible outcome. Task 1 pivoted to shipping a bitmap precisely because procedural could not: the
+> acceptance target *was* a bitmap we already own, so the procedural build was approximating our own asset.
+> Ask before committing to procedural: *what does this buy that the authored asset does not?* If the honest
+> answer is "purity", ship the asset. (Isolation-first is unaffected and still holds.) Isolation is where a variable is judged alone; composition is where it is judged against
 everything else.
 
 | # | Task | Folder | Status |
 |---|------|--------|--------|
-| 1 | **Background** — deep space + nebula, and its contribution to scene lighting | [`01-background/`](01-background/README.md) | **DECIDED 2026-09-18 — implementing** |
+| 1 | **Background** — deep space + nebula, and its contribution to scene lighting | [`01-background/`](01-background/README.md) | **PIVOTED 2026-09-19 to the CHEAP PATH** — ship `nebula-backdrop.jpg` on the camera-locked dome; light from a separate `<Lightformer>` env + one `DirectionalLight`. Brief: `01-background/CHEAP-PATH-BRIEF.md`. Procedural work preserved on `art/procedural-bg` @ `6d52029` |
 | 2 | **Track** — floor material, glowing edge rail, gaps, gap rims | [`02-track/`](02-track/README.md) | not started |
 | 3 | **Scene lighting** — key/rim/fill/env, exposure, bloom budget | [`03-lighting/`](03-lighting/README.md) | not started |
 | 4 | **Monoliths** — isolation → placement (track-flanking + scene filler) | [`04-monoliths/`](04-monoliths/README.md) | not started |
@@ -249,7 +255,8 @@ because the lab's default ambient+directional would have made the `roughness 0.2
 or not the sky lit anything — it would have been a decorative gate. It also added boards 12 and 13 to
 `REFERENCE_BOARDS`, which were on disk but unreachable from the picker.
 
-**Next:** look at slice 1 and gate it. Then slices 2 (celestial body + the `DirectionalLight`), 3 (the bake —
+**~~Next~~ — SUPERSEDED by the 2026-09-19 pivot entry below; the slice plan named here no longer applies.**
+*(Historical: )* look at slice 1 and gate it. Then slices 2 (celestial body + the `DirectionalLight`), 3 (the bake —
 carries the falsifiable roughness test), 4 (swap in, retire `nebula-backdrop.jpg`). A request to add live
 sliders for warp/threshold/ramp is pending — the lane deliberately did not guess the knob set before the
 first look.
@@ -315,6 +322,89 @@ are now measured (`ffprobe` + `signalstats` + `lut`, no Python) before they are 
 light · dust) — the large-scale mask being exactly the missing large-scale composition — added a `ridge`
 knob for edge-lit filaments, and resolved the Bloom blackout as **pre-existing in `IsoLabCanvas`** (repros on
 `/iso-monolith`), out of scope here. It has the findings and is re-tuning.
+
+### 2026-09-19 — task 1 PIVOTED to the cheap path (owner decision)
+
+**Ship `nebula-backdrop.jpg` as the display sky; light the scene from a separately-authored environment.**
+Self-contained brief: [`01-background/CHEAP-PATH-BRIEF.md`](01-background/CHEAP-PATH-BRIEF.md).
+
+**Why — the target was circular.** The boards were *composed over* that jpg, so the acceptance test for the
+procedural dome was "match this JPEG", and we ship that JPEG. We were building an approximation of an asset
+we already own, then measuring it against the original and finding it short. The failed slice-1 gate was a
+symptom of that, not a setback inside it.
+
+Reinforced by two facts already recorded here and ignored anyway: the "background first, because lighting
+flows from the environment" rationale was **already falsified** (§ the 2026-09-18 entry — the sky lights only
+the far rock field; the track lights itself from its own emissives), and the research measured **~55–65% of
+the upper frame as rock**. A mostly-occluded element that does not light what the player stares at does not
+justify a multi-slice procedural build.
+
+**Only one pro-procedural argument survived scrutiny** — per-sector variation (board 06's six sectors). It is
+speculative today, and six bitmaps answers it. "No bitmaps" was a *method* rule in §1 above, never traced to
+a player-visible outcome; 368 KB is not a budget problem. **§1's "everything is built procedurally" is
+therefore no longer absolute** — it is a default that must earn its place per task, not a law.
+
+**The approach.** Texture on the camera-locked dome the lane already built (`SkyFollow`) — **not**
+`scene.background = texture`, which is a static fullscreen fill that does not rotate on yaw, and **not**
+equirect, which would distort a framed composition. Lighting comes from drei `<Environment>` +
+`<Lightformer>` children plus one real `DirectionalLight`. *Verified-this-session* against drei **10.7.8**:
+`Lightformer` (`form` circle/ring/rect/plane/box, `intensity`, `color`, `scale`, `target`) and `Environment`
+(`children`, `frames`, `resolution`, separate `backgroundIntensity`/`environmentIntensity`/
+`environmentRotation`). `preset=` stays forbidden — CDN.
+
+**This dissolves the central tension** in `01-background/README.md` §2 ("art wants a dark sky, but a dark sky
+is a dark light source"). It is only a tension if the light is derived *from the picture*. Decouple the two
+sources and it evaporates — which is also why the **roughness probes matter more now, not less**: they are
+how the `<Lightformer>` rig is proven to actually light, something the procedural path never achieved.
+
+**Two constraints easy to miss:** the jpg **already contains** the rim-lit planet limb, so it comes free and
+a second procedural body would double it (default: drop `celestial-body.tsx`); and the jpg has **lighting
+baked in**, so the `DirectionalLight` bearing must agree with the direction the image implies or the rock
+field is lit from one side while the sky implies another.
+
+**Preserved, not deleted:** branch **`art/procedural-bg`** @ **`6d52029`**, pushed — all 8 commits
+(four-layer dome, tuning, celestial body, the real light). Revisit if per-sector variation becomes real.
+**Do not delete that branch.**
+
+### ▶ NEXT — state as of 2026-09-19, read this first
+
+**The cheap path is BUILT and the gate is green — but nothing has been seen by a human eye yet.** Lane
+`background` (worktree `../slur-worktrees/background`, branch `art/background`, client `:5200` / server
+`:2600`), code commit `643af5a`. Full handover:
+[`01-background/HANDOVER-CHEAP-PATH.md`](01-background/HANDOVER-CHEAP-PATH.md).
+
+**Your next action — the gate.** `PORT=2600 pnpm dev` from that worktree, then `http://localhost:5200/iso-sky`
+**in a FOREGROUND tab**, bloom on **and** off, then `/art-lab` at race speed.
+
+> ⚠ **Not an automated Chrome tab.** The lane tried: the tab reports `visibilityState: "hidden"`, so rAF never
+> fires and the canvas stays black while the DOM panels render fine. That is the already-twice-paid
+> `hidden-tab-blank-canvas` trap, not a render bug.
+
+The acceptance test is the **roughness probes differentiating**, and the panel now carries the switches to run
+it properly: `Star light` OFF + `Env rig` OFF must go **flat** (or something else is lighting them and the
+test proves nothing), then `Env rig` ON alone must make `0.2` and `0.9` **visibly differ** — which the
+procedural path never achieved. The display sky needs no histogram tuning: it *is* the reference.
+
+**Verified without an eye:** typecheck · lint · 75 shared + 34 client + 4 server tests · build; `/iso-sky`
+mounts with no console errors; and **zero external requests across 62** — the drei `<Environment>` *children*
+path fetches no CDN HDR, so the office-LAN requirement holds.
+
+**Two things the plan could not have known, both now fixed and documented:** the bearing convention had
+`0 = −Z`, i.e. bearing 0 pointed **behind** the player while its comment claimed "the game's forward view" —
+now `skyDirection`, `0 = +Z`, pinned by a test that projects through a real three camera. And the star bearing
+is now **derived from the image** (limb circle fit + a polar sweep finding the terminator at 169° → the star
+at 79° screen-azimuth from the planet, i.e. straight above it → bearing 66 / elevation 19); the old `55/28`
+put it 27° to the planet's *right*, the mirror of what the jpg shows.
+
+**Then:** task 2 (track). Its floor-reflection question is already **resolved** — grazing-angle specular
+streaks, not mirrors (`02-track/README.md` §8), so `MeshReflectorMaterial` and its extra scene render are
+very likely never needed. The one open sub-question there is isotropic vs **anisotropic** specular aligned
+down-track, which changes whether the patched material is `MeshStandardMaterial` or `MeshPhysicalMaterial`.
+Settle it by rendering, not by reading boards.
+
+**Uncommitted in the shared checkout:** `.claude/art-pass/**` (untracked), `CLAUDE.md`, `.claude/backlog.md`,
+`.claude/phases/2026-09-18-art-lanes-supervisor.md`. These must ride into the lane's PR — the pre-commit hook
+blocks Claude committing in the shared checkout. They are already copied into the worktree and kept in sync.
 
 ### Still open
 
