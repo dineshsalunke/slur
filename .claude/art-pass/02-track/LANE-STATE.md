@@ -210,3 +210,75 @@ instructing this lane at once, because a `--fork-session --resume` kept running 
 closed. Both times **the lane was the only party that could see both voices, and flagging it rather than
 guessing is what caught it.** The forked session has handed over and stood down. If a second voice appears
 again, say so and keep following this one until told otherwise in writing.
+
+---
+
+## THE FAR-PLANE FIX — `e339381`, shipped and pushed (2026-09-19)
+
+**The "black sphere" was never an object. It was a hole punched by the camera's far plane.** The sky patch
+sat at `radius 1200`; R3F's camera far is **1000**. The patch is camera-locked, so every point on it is
+equidistant and the clip condition is `radius·cos(a) > far` — a circular hole of half-angle
+`acos(1000/1200) = 33.6°` **centred on the camera axis**. Camera corner half-angle 50.4°, vertical 30°,
+horizontal 46.7° at aspect 1.836, fov 60 — so the corners kept their sky while the centre was punched out.
+
+**The hole is defined by the camera axis, so it is independent of the sky's pan/tilt/fov.** That is why the
+owner's falsification test came out as it did: dragging `tilt` slides the nebula behind a hole that does not
+move a pixel. *"The body stays put while the sky moves"* was the signature of this bug.
+
+**Root cause: a confidently-wrong comment.** `sky-config.ts` picked 1200 as *"well inside three's default
+far plane of 2000"* — true about three (`three@0.185.1`, `src/cameras/PerspectiveCamera.js:33`), false about
+this app. R3F builds its own camera: `new THREE.PerspectiveCamera(75, 0, 0.1, 1000)`
+(`@react-three/fiber@9.7.0`, `dist/events-156d8d12.esm.js:15771`), and `camera={{ … }}` overrides only the
+fields it names.
+
+**Shipped:** `radius` 1200 → **800**; both comments rewritten; `R3F_DEFAULT_FAR = 1000` a named constant in
+`sky-config.test.ts` carrying the citation. Branch level with origin, tree clean, gate green (client 35
+tests, net +1).
+
+### ⚠ The existing test was PART of the bug
+
+A test named *"keeps the backdrop inside three's default far plane"* asserted `DEEP_SPACE.radius < 2000`.
+**It encoded the same wrong premise, passed, and the bug shipped underneath it** — it would have certified
+any radius up to 1999. The same premise sat in its `chaseCamera()` helper (`far 2000`), and `project()`
+multiplied by 1000, putting its sample point exactly **on** the far plane. It was **replaced**, not added
+beside. A test built on a false premise is not a weaker guard; it is an active source of false confidence.
+
+### ⚠ UNVERIFIED VISUALLY — the owner's first two seconds at the gate
+
+The **mechanism** was proved live by toggling `far` 1000 → 5000 and back: four interior points went
+6/6/6/6 → 14.6/12.9/28.7/9.2 (their correct texture values) while a control point outside the hole stayed
+12.4 both times. **But nobody has seen `radius 800` render.** The hole is either gone or it is not.
+
+### The stars margin — supervisor arithmetic was backwards
+
+drei spans the star shell **OUTWARD** from `radius`: `let r = radius + depth` then decrements (drei 10.7.8,
+`core/Stars.js:65`). The field runs **400 → 520**, not 400 → 280. Decision unchanged (520 is inside 800) but
+the margin is 520-vs-800. Pinned as its own test: `stars.radius + stars.depth < radius`.
+
+### Blast radius — issue #128
+
+**`iso-lab-canvas.tsx` is the only Canvas in the client that sets `far`** (`max(4000, dist*12)`) — which is
+exactly why `/iso-lab` never showed this. `net-canvas.tsx` (**the game**), `/art-lab`, `/art-gallery`,
+`/env-lab` and the landing scene all inherit 1000. **The shipped game had this hole too**; the one shared
+constant fixes it without touching the game canvas. Worth confirming the game's sky at some point — not this
+lane's gate.
+
+### Open QUESTION, not a finding — tone mapping
+
+`gl.toneMapping` reads **0 (NoToneMapping)** live, while R3F's source sets ACESFilmic unless `flat` is
+passed (same file, line 15903). Most likely the postprocessing `EffectComposer` deliberately takes tone
+mapping out of the renderer and does it in the chain — normal, not broken. **Confirm WHERE the transform
+happens before judging the rail's hue at slice 3's gate.** Note every luminance number above comes from
+`gl.render()`, which bypasses the composer — pre-bloom and pre-tone-mapping.
+
+### State left behind
+
+`SceneProbe` (`window.__ART_LAB`) still mounted, still a slice-4 acceptance item to delete. Chrome released,
+tab closed, nothing held. Panel at slab ON / rails ON / blocks OFF / backdrop ON; `camera.far`, material
+`depthTest` and all visibility restored after probing. Stack up on 5201/2601.
+
+### NEXT: slice 1 — the floor swap (D1)
+
+`TrackFloor` becomes the floor; delete `TrackView`'s instanced floor quads out of `TrackRibbon`; retire
+`showFloor` and the `slab` toggle. **Compare against the instanced floor BEFORE deleting it.** Gated by the
+owner's slice-0 verdict first.
