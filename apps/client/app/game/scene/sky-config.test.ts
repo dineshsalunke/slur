@@ -70,6 +70,18 @@ describe( 'skyDirection', () => {
 const STRAFE_LAG_U = 80 / 16;
 const LOOK_DISTANCE_U = 14 + 7;
 
+/** The backdrop jpg is 1672×941; the patch's vertical extent follows from it rather than being authored. */
+const IMAGE_ASPECT = 1672 / 941;
+/** The live canvas measured 3456×1926 in `/art-lab`, which is what the margin was calibrated against. */
+const CANVAS_ASPECT = 3456 / 1926;
+
+const toRad = ( d: number ): number => ( d * Math.PI ) / 180;
+
+/** Horizontal half-angle of the frame for a given vertical fov. */
+function frameHalfWidthDeg( vFovDeg: number ): number {
+    return ( Math.atan( Math.tan( toRad( vFovDeg / 2 ) ) * CANVAS_ASPECT ) * 180 ) / Math.PI;
+}
+
 describe( 'DEEP_SPACE', () => {
     it( 'puts the star up and to the right, where the reference image implies it', () => {
         const star = project( DEEP_SPACE.starBearingDeg, DEEP_SPACE.starElevationDeg );
@@ -90,12 +102,46 @@ describe( 'DEEP_SPACE', () => {
         expect( DEEP_SPACE.stars.radius + DEEP_SPACE.stars.depth ).toBeLessThan( DEEP_SPACE.radius );
     } );
 
-    it( 'hangs the backdrop wide enough to cover the top-speed frame', () => {
-        // vFOV 75 (60 + fovStretch 15) at 16:9 → a horizontal half-angle of atan(tan(37.5°)·16/9).
-        const halfDeg = ( Math.atan( Math.tan( ( 37.5 * Math.PI ) / 180 ) * ( 16 / 9 ) ) * 180 ) / Math.PI;
-        // Plus camera yaw: SkyFollow copies position but NOT rotation, so the camera turns inside a
-        // world-fixed patch. Omitting this term is what let a too-narrow 120° default ship.
+    // The patch deliberately does NOT cover the frame — it is a framed feature, and under sustained max
+    // strafe a sliver of the leading edge goes black. This is the budget for that sliver, as a fraction of
+    // frame WIDTH. Raising it is an art decision, not a fix.
+    const ACCEPTED_EDGE_MARGIN = 0.12;
+
+    it( 'keeps the patch able to reach full opacity', () => {
+        // makeEdgeFade's vertical fade fraction is edgeFadeDeg/fovVDeg and its du=min(v,1-v) peaks at 0.5,
+        // so once fovV ≤ 2·edgeFadeDeg every texel is part-transparent and the image never reads at full
+        // strength anywhere. Both fov sliders floor at 43 for this reason.
+        const fovVDeg = DEEP_SPACE.backdrop.fovDeg / IMAGE_ASPECT;
+        expect( fovVDeg ).toBeGreaterThan( 2 * DEEP_SPACE.backdrop.edgeFadeDeg );
+    } );
+
+    it( 'keeps the worst-case black margin inside the accepted budget', () => {
+        // REPLACES an assertion that read `fovDeg > 2·halfDeg + 2·yawDeg` — "the patch must fill the frame".
+        // That premise is now false by owner decision, and an assertion built on a false premise is an
+        // active source of false confidence, not a weak guard (the far-plane test proved that the hard way).
+        // So this pins what is actually true: the margin exists, and it is THIS big.
+        //
+        // Angle → screen width is NOT linear: width per degree grows as sec²θ, so a shortfall at the frame
+        // EDGE buys more width than the same angle at centre. Dividing the uncovered angle by the frame
+        // angle under-reports it (7.4°/107.5° reads as 7%; the real answer is 11.6%).
+        //
+        // Calibrated against pixels at fovDeg 70 (patch-visible differenced against patch-hidden, live):
+        // predicted 0.162/0.246/0.356 against measured 0.154/~0.21/0.333. The model runs 1–2% of width
+        // CONSERVATIVE, which is the safe direction.
+        const halfDeg = frameHalfWidthDeg( 75 ); // top speed: fov 60 + fovStretch 15
         const yawDeg = ( Math.atan( STRAFE_LAG_U / LOOK_DISTANCE_U ) * 180 ) / Math.PI;
-        expect( DEEP_SPACE.backdrop.fovDeg ).toBeGreaterThan( 2 * halfDeg + 2 * yawDeg );
+        // Patch edge on the leading side, as an angle off the camera axis once the rubberband has lagged.
+        const edgeOffAxisDeg = DEEP_SPACE.backdrop.fovDeg / 2 - yawDeg;
+        const uncovered =
+            edgeOffAxisDeg >= halfDeg
+                ? 0
+                : 0.5 - 0.5 * ( Math.tan( toRad( edgeOffAxisDeg ) ) / Math.tan( toRad( halfDeg ) ) );
+        expect( uncovered ).toBeLessThanOrEqual( ACCEPTED_EDGE_MARGIN );
+    } );
+
+    it( 'covers the frame completely when the camera is not strafing', () => {
+        // The margin is a STRAFE artefact and nothing else. If it ever appears parked or running straight,
+        // the framing has drifted and the accepted budget above no longer describes what ships.
+        expect( DEEP_SPACE.backdrop.fovDeg / 2 ).toBeGreaterThan( frameHalfWidthDeg( 75 ) );
     } );
 } );
