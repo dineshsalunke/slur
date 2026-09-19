@@ -11,8 +11,8 @@ const CHASE = {
     height: 9, // u above the ship — MUST stay > BLOCK_HEIGHT (8) or the nearest pillar hides the field
     back: 11, // u behind at rest (was 14 — closer ⇒ ship bigger)
     backStretch: 3, // extra u of trail at top speed (back += speed/maxCruise · this)
-    lookAhead: 7, // u ahead of the ship the cam aims at (was 14 — nearer aim ⇒ ship centred + larger)
-    lookAtLift: 2, // u above the ship the aim point sits (was 0.5 — lifts the horizon so the ship rides higher)
+    lookAhead: 14, // u ahead of the ship the cam aims at
+    lookAtLift: 5, // u above the ship the aim point sits
     fov: 60, // deg at rest (was 70 — tighter ⇒ ship bigger, less fish-eye)
     fovStretch: 15, // extra deg of FOV at top speed (speed-kick; was 20, now 60→75 instead of 70→90)
     follow: 16, // rubberband stiffness for DEPTH + HEIGHT only (exp ease, frame-rate independent)
