@@ -1,199 +1,146 @@
-# `art/track-slice2` — LANE STATE
+# LANE STATE — art/track-slice2, after the seam at `4305a4d`
 
-**Written by the supervisor at the session-16→17 clear, from `LANE-FACTS.md` plus the tree. Replaces the
-previous state doc wholesale** — a log is not a state doc. Everything in §1 and §2 was verified against
-this worktree, not recalled.
+Written by the supervisor from the lane's own first-hand facts. **This file plus your next action is
+everything you need. Do NOT read `LANE-BRIEF.md`, `SWEEP-BRIEF.md`, the task README, the research docs
+or the boards** — a cold context that walks that graph hits the hard stop having touched no code. It
+has happened twice.
 
-Read order: `SLICE-2-BRIEF.md` (intent, immutable) → **this file** (where the work is) → `LANE-FACTS.md`
-(evidence, one line each, and the authority for every number).
+You execute. **No docs, no handovers, no code comments.** Report facts in a short message; the
+supervisor writes the prose.
 
-**Numbers are deliberately NOT duplicated here.** They live in `LANE-FACTS.md`. A number copied into two
-files is a fork with a delay fuse. Cite the fact line; do not restate it.
+## Where the branch is
 
-If what you find contradicts this file, **stop and tell the supervisor** rather than quietly fixing either.
+`art/track-slice2` @ **`4305a4d`**, pushed, tracking `origin/art/track-slice2`, tree clean, nothing
+unpushed. No PR yet. Gate green at that SHA: typecheck · lint 3 pre-existing warnings · shared 75/75 ·
+client 66/66 · server 4/4 · build · comment ratchet · canvas-isolation.
+
+| SHA | What |
+|---|---|
+| `a50cb3f` | camera — `lookAhead` 7→14, `lookAtLift` 2→5; height 9 / back 11 / fov 60 untouched |
+| `57589dc` | bloom — `radius`/`levels` added to `BloomConfig`, threaded to every call site |
+| `b5c0823` | rail — `BOUNDARY_W`/`BOUNDARY_H` 0.5 → 1.0 |
+| `a37059b` | ~3u placeholder box — `shipBox` layer key, lab-only |
+| `4305a4d` | live tuning panel + ambient unification |
 
 ---
 
-## 1. Position
+# YOUR NEXT TWO UNITS, IN ORDER
 
-| | |
-|---|---|
-| Branch | `art/track-slice2`, worktree `../slur-worktrees/track-slice2` |
-| Base | **`47c3dab`** (= `origin/dev`). The supervisor rebased this branch onto it before you started — docs-only, zero conflicts. 2-dot and 3-dot diffs match, so the `#118` stale-base trap is clear |
-| HEAD | the brief commit + this state commit — **docs only. No code has been written for slice 2** |
-| Tree | clean |
-| Ports | client **5201**, server **2601** (`apps/client/.env` present and correct) |
-| Stack | **down.** Launch with `PORT=2601 pnpm dev` — `tsx` has no `.env` loader, so `PORT` must be passed in the shell and must equal `VITE_SERVER_PORT` |
-| Review URL | `http://localhost:5201/art-lab` — chase camera, which IS the gate |
-| Gate | `pnpm lint && pnpm typecheck && pnpm -r test && pnpm build`. **There is NO CI on this repo** — `gh pr checks` reports nothing on any branch, so your local run is the only gate that exists |
-| Last green | `47c3dab` on `dev`, full gate re-run by the supervisor: lint (3 pre-existing `noExcessiveLinesPerFile`), typecheck, 75/75 shared + 61/61 client + 4/4 server, build |
+## 1. Land the camera values the owner dialled — ACCEPTED, commit them
 
-**`art/track` is deleted** — branch, remote and worktree. It was squash-merged, so its tip is not an
-ancestor of `dev`, `git branch -r --merged` will not list it, and a 3-dot diff hides the stale base.
-Never reuse it. Always check with `git diff origin/dev HEAD` (2-dot).
-
-**Source lives in `apps/client/app/`, not `apps/client/src/`** — React Router 8 framework mode. The
-supervisor lost a round-trip to that assumption at this clear; do not repeat it.
-
-## 2. What is built — and the facts slice 2 starts from
-
-Slices 0 and 1 are **merged** (`deadf9f`): the honest review frame (tone mapping on, lab rig lights gone,
-placeholder blocks out of frame) and the generated deck as the game's floor. `FLOOR_SURFACE` has no
-remaining consumer; no `TrackRibbon` / `showFloor` / `track-ribbon` reference survives; `net-canvas.tsx`
-still mounts `TrackView`, so the **game** picked the deck up through the composer, not just the lab.
-
-Verified in this worktree at the clear, so you need not re-check:
-
-- **`track-rails.tsx:12-13`** — `RAIL_W = 0.5`, `RAIL_H = 0.5`, and line 13's own comment states the
-  justification: *"stands proud of the floor so the rail reads at the shallow chase angle"*. That proud box
-  **is the shape board 24 panel 02 excludes**. This is the thing slice 2 re-shapes.
-- **`track-rails.tsx:34`** — `if ( seg.floors.length === 0 ) continue;` is the rail break over full gaps.
-  That is escalation 2 below. **Do not change it on your own judgement.**
-- **`SceneProbe` is still live** (`art-lab/scene-probe.tsx`, mounted by `art-lab-canvas.tsx`). Its deletion
-  is an acceptance item on **slice 4** and the PR body must name it. It stays through slice 2.
-- **15 files still reference `toneMapped`** — the VFX whose values trade against the bloom and exposure
-  budget **task 3 owns**. Slice 1 deliberately took it off the track surfaces only. Do not widen that.
-
-## 3. Next — slice 2, in this order
-
-**Re-shape → retone → emitter array.** The brief carries the authority for each step; the short form:
-
-1. Embed the boundary into the slab's **top outer corner** as a narrow strip (`ART_MATERIALS.md` rev 3 M7,
-   board 24 panel 02), replacing the proud box.
-2. Retone to marigold. Rev 3 §3 makes this strip the scene's **reference intensity 1.0**, so it must
-   **not** be compensated for bloom washout — task 3 has to inherit an honest value.
-3. The emitter array — fixed-size K-nearest via `onBeforeCompile`. Isotropic first; `Physical` only if a
-   render *proves* isotropic cannot stretch the streaks.
-
-Split the shader patch into its own module if `#139`'s comment ratchet would otherwise push the file over.
-**Do not delete a load-bearing note to satisfy a counter** — the fixed-size-array warning especially.
-
-## 4. Decisions in force
-
-- **ONE LANE, track only.** The owner declined a second art lane (blocks / lighting) this session. Do not
-  propose spinning one up.
-- **The comment sweep is STOPPED by decision.** The 109 remaining files and this lane's own 8 pending files
-  are dropped; `#139`'s ratchet prevents regression mechanically, which was the point. Fix a comment only
-  inside a file you are already in for real work. **Never open a file to sweep it. Do not report ratios.**
-- **`explosions.tsx:26` `MAGENTA #ff2bd6` stays**, recorded as a known divergence beside the red
-  `LETHAL_SURFACE`. Retone when someone is judging that subject, not opportunistically. Neither is in a
-  default review frame.
-- **A test built on a false premise is REPLACED, not added beside** — `radius < 2000` passed while the
-  far-plane bug shipped underneath it.
-- Isotropic vs anisotropic stays **settled by rendering**, not by argument.
-
-## 5. Retracted — do not cite the originals
-
-`LANE-FACTS.md` § *"Things that were wrong"* holds the full list and it still stands: the black sphere as a
-rogue object, the black sphere as the baked planet (it was a **far-plane clipping hole**; the owner's
-tilt-drag falsified the planet theory), "near-white clipped slab and rails", the planet at top right, "zero
-stars in the void", coverage ≈138.5°, and the fov-120 margin ≈7% — that last one wrong **in the unsafe
-direction**, since angle-to-screen-width grows as `sec²θ` and the correct figure is 11.6%.
-
-**Two retractions are NEW at this clear, and both were live claims the previous handover made:**
-
-- **`s1-after-swap.png` is NOT lost.** All three frame-tap captures were copied out before the old
-  worktree's teardown and are at `.claude/art-pass/00-frame-tap/refs/` in the **shared checkout** —
-  `s1-after-swap.png`, `s1-before-generated-bloomoff.png`, `s1-before-instanced-bloomoff.png`. No retake is
-  owed. The luma numbers also survive in `LANE-FACTS.md`.
-- **Text CAN be delivered to a lane's pane.** The standing claim was that `herdr agent send-keys` takes key
-  names only and `herdr agent prompt` pastes without submitting — both true, but **`herdr pane send-text`
-  and `herdr pane run <pane-id> <command>` exist** and work. That is how this pane was moved out of the
-  deleted `../slur-worktrees/track` and restarted without the owner pressing a key.
-
-> **Every reversal in this lane was settled by rendering or measuring, never by reasoning** — including the
-> confident, well-argued retractions built from source alone. **If you find yourself arguing about a frame,
-> measure it.**
-
-## 6. Caveated / `[unmeasured]` — do NOT inherit either as fact
-
-- **The bloom-OFF half of the pair at matched camera.** Unmeasured.
-- **Whether the bloom washout is uniform, or concentrated in the VFX still setting `toneMapped: false`.**
-  Unmeasured. One bloom-ON capture answers neither.
-- **`[unmeasured]`: WHERE tone mapping happens.** `gl.toneMapping` read `NoToneMapping` live while R3F's
-  source sets ACESFilmic absent `flat`; most likely the postprocessing `EffectComposer` takes it into the
-  chain. **Confirm before judging the strip's hue.** Every luminance number in `LANE-FACTS.md` comes from
-  `gl.render()`, which bypasses the composer — pre-bloom, pre-tone-map.
-- **`SKY_TUNING` is an in-memory module singleton and nothing persists it.** Run `skyConfigSnippet()`
-  before any reload if a sitting's values matter.
-- **The boundary may not be doing its navigational job at all.** `ART_SCALE_REFERENCE.md` §0: each edge
-  sits **32u off-centre**, over 12 ship-widths from a pilot threading the middle, and the sheet itself
-  flags marigold edge-glow as *"a weak guide at true scale"* and calls it an open art problem. If you find
-  that, it is **a finding to raise — not a licence to quietly over-brighten**.
-
-## 7. Instrumentation — the Chrome freeze is LIFTED for bloom-OFF
-
-`curl localhost:5201/__frame-tap?name=X` writes a composed frame (with bloom) to
-`.claude/art-pass/00-frame-tap/refs/X.png` with **no focus and no browser automation** (PR #134). That
-retires the old focused-tab constraint.
-
-**The one surviving limit:** the tap stops answering while the lab's `bloom` toggle is ON in an occluded
-tab, and answers the moment it is off — reproduced twice each way. So **bloom-ON captures still need a
-foreground tab, which needs the owner.** One such capture of `/art-lab` is owed; ask the supervisor for a
-slot and say why.
-
-Still true, and cheap to forget:
-
-- `javascript_tool` reads DOM — toggles, slider values, config — at **zero** focus cost. Only *pixels* need
-  the window. Use it first.
-- `visibilityState` is the only reliable hidden-tab test. Canvas size proves nothing: 3456×1926, mounted,
-  rAF dead.
-- Tab groups are **per-session**. You cannot adopt a predecessor's tab. Record URLs, never tab ids.
-- Never `await` a frame through `javascript_tool` — it hangs the CDP evaluate to its 45s timeout, and the
-  hang *is* the diagnosis. Read a free-running counter on a LATER call.
-- `gl.render(scene, camera)` + `readPixels` works with rAF dead and bypasses the composer — a free
-  bloom-off read. Read a whole **scanline** per call; per-pixel calls are a GPU stall each.
-
-## 8. Open escalations — awaiting the owner, as ONE sitting
-
-Render both, decide neither. Neither is a lane call, and neither is settleable on paper.
-
-1. **The M1 metalness pair** — metalness 1.0 / roughness 0.35–0.50 against the shipped 0.12 / 0.62. The sky
-   measures ~linear 0.01 as an IBL source, so at 1.0 everything the specular misses goes black. That may be
-   the intended *"no fill, shadow sides go black"*, or may read as a void with a stripe. **Only a render
-   says which.**
-2. **Rail breaks over full gaps** — board 24 wants the outer boundary continuous, and M7 separates boundary
-   from inserts *by the boundary being unbroken*; the in-code justification (`track-rails.tsx:34`) is that
-   the break is what makes a gap read at the shallow chase angle. Both defensible.
-
-## 9. The gate, and the obligation before you build
-
-The **owner's eye** in `/art-lab` at race speed, env C, **bloom on and off**, judging displayed
-tone-mapped pixels — never input hex. **Before you build, state which board or doc section governs what you
-are about to do and what it requires; at the gate, state how the build answers it. If you cannot name the
-authority, you are inventing direction — stop and ask.**
-
-Boards are a **look** target — mood, depth, palette, contrast, speed, scale. Never a pixel match, never
-evidence about optics. Unphysical detail in an AI render is expected. **Never resolve a physics-vs-board
-conflict unilaterally.** `docs/art-direction/` is **READ-ONLY** — ChatGPT's indexed workspace. Disagree in
-a Claude-owned doc, never by editing it.
-
-## 10. Housekeeping that has bitten before
-
-- `pnpm format` before `pnpm lint` (biome treats formatting as a lint error).
-- `pnpm -r test` silently skips `@slur/shared` — an explicit `--filter @slur/shared` is **not** redundant.
-- The commit hook **rejects a `Co-Authored-By` trailer**.
-- Do **not** bundle `git add` and `git commit` into one Bash call — a hook rejection kills the whole call.
-- **Maintain `LANE-FACTS.md` continuously**, committed with the code it describes — never at handover time,
-  because by then the conversation that knew the facts is the thing being thrown away. `[unmeasured]` is a
-  legitimate entry; refusing to reconstruct a reading you cannot source first-hand is **correct**.
-- **"Swept" is not a state — a measurement is.** Track measurements, never checkmarks.
-
-## 11. Escalation contract
-
-Escalate to the **supervisor**, never to the owner:
+He drove the panel and landed on these. **Accept the camera block ONLY.** He explicitly rejected the
+other four lines the copy-values dump produced — they came back unchanged because the knobs do not
+work (unit 2), not because he chose them. Do not commit them.
 
 ```
-NEEDS-DECISION: <one line, specific, answerable>
-CONTEXT: <2-4 lines: what you are doing, why this fork exists>
-OPTION A — <label>: <what it means> / consequence: <what it costs or commits us to>
-OPTION B — <label>: <...>
-RECOMMENDATION: <which, and why — a recommendation without a defence is a preference>
-IF NO ANSWER: <what you do meanwhile, or that you are genuinely blocked>
+// game/camera/chase.ts — CHASE
+height: 7.5,
+back: 15,
+lookAhead: 9.5,
+lookAtLift: 6,
+fov: 70,
 ```
 
-Escalate art/taste calls, anything reopening a frozen decision or ADR, anything touching gameplay, anything
-costly to undo, and **your design recommendation before you implement it**. Do **not** escalate naming, file
-layout, code structure, anything the docs already answer, or anything settleable by verifying. **Verify,
-don't ask.** Never treat silence as approval, and a declared fallback that does not fire is worse than no
-fallback — it reads as handled while nothing moves.
+Supervisor-verified arithmetic at these values: pitch **3.50°**, `shipBelowAxis` **23.06°** against a
+**35°** half-FOV → **margin 11.9°**, improving to 15.5° as `back` stretches at speed. The committed
+`a50cb3f` was −0.20°, i.e. off the bottom edge. The regression is closed.
+
+**⚠ FLAG IT IN THE PR — `height` 9 → 7.5 crosses an ADR line.** `ADR-010` deferred the art package's
+4–5u camera because "+9u [is] deliberately so the player can see over 8u pillars and plan a line", and
+called a low camera "a gameplay change wearing art clothing" needing its own ADR, an `/art-lab`
+prototype and a human feel-gate. 7.5u is not the 4.5u that was refused, **but it is below the 8u pillar
+height**, so the camera eye now sits under a pillar top and pillars can occlude. The owner gated it
+live so it stands — but it must be flown **with pillars and `fly` ON**, never judged parked, and the PR
+body must say plainly that it lowers the camera below pillar height and why. Do not bury it in a diff.
+
+## 2. The other knobs do not work — diagnose and fix
+
+Owner's report, first-hand: changing bloom, `envMapIntensity` and ambient on the panel **affects
+nothing**. Only the camera responds.
+
+**Supervisor's hypothesis — treat as a lead, verify it, do not assume it.** The one knob that works is
+the one that never touches React: `updateChaseCamera` reads the `CHASE` singleton every frame directly.
+All four dead knobs go through the `useSyncExternalStore` subscribe path. One broken path explains all
+four at once, which is likelier than four coincidental bugs. Candidates worth ruling in or out:
+a `getSnapshot` returning a fresh object each call; the rAF-coalesced notify never firing or firing
+before the store is written; a material whose `envMapIntensity` is set at construction and never
+flagged `needsUpdate`; `SceneLighting` reading the `AMBIENT_INTENSITY` constant rather than the store;
+`<TunedBloom>` receiving a config prop that shadows the store value.
+
+**Prove the fix by observation, not by reading the code.** A knob that "should now work" is not fixed.
+You need the tab for this one — the owner is done driving; take it, and say so when you do.
+
+---
+
+## THE STANDING CAVEAT — attach it to every sweep result
+
+`/game` mounts **no authored lighting rig at all**. Its complete light list is one
+`<ambientLight intensity={1}>`. `<Environment>` mounts `<color>` background, linear `<fog>`,
+`<GradientDome>`, drei `<Stars>`, `<TubeWalls>` — all unlit or emissive-driven, **none of them a
+light**. `DeepSpaceSky`/`SkyEnvironment`/`StarLight` are imported only by `deep-space-sky.tsx` and
+`iso-sky/tunable-sky.tsx`; `TunableSky` mounts only in `/iso-sky` and `/art-lab`.
+
+So a value dialled on `/art-lab` is judged against the **full authored rig** while `/game` runs
+ambient-only. **A number that reads right in the lab is not proven right in the game.** Say so in
+every result. Where a knob's judgement depends on which rig is mounted, flag it rather than picking a
+number — **`envMapIntensity` is the clear case**: it scales the cubemap `/game` does not mount, so its
+lab reading may be meaningless for the game.
+
+**Owner ruling: do NOT mount the sky rig in `/game` on this branch.** It visibly changes the shipped
+game, which makes it 03-lighting's subject, not track art's. `SKY_TUNING` is seeded from the frozen
+`DEEP_SPACE` via `committed()`, so when 03-lighting takes it the values are already agreed — the work
+is mounting, not tuning. Do not re-litigate; do not do it "while you're in there".
+
+## Settled — do not re-litigate or revert
+
+- **`FLOOR_METALNESS` stays 1.0.** The sweep refuted its own premise: deck-crop mean luma went
+  89.7 → 100.5 as metalness fell 1.0 → 0.15, i.e. *lowering* it brightens the deck — grazing Fresnel
+  stays pinned near 1.0 and dropping metalness only adds the diffuse term back.
+- **Rail stays at 1.0u.** Standing owner decision. If a later pass wants it thinner, stop and ask.
+- **No key light on the track, ever.** `03-lighting/README.md` §1a: "NOT a three-point rig"; the star
+  "barely touches the track". Every fix here is subtractive.
+- **The envmap is NOT the nebula jpg** — it is drei `<Environment frames={1} resolution={128}>` baking
+  three `<Lightformer>`s in `sky-environment.tsx`. Question closed.
+- **`SceneLighting` stays mounted in both canvases** at `AMBIENT_INTENSITY = 1`, so the lab matches the
+  game exactly and the ambient sweep no longer needs a hosted room.
+
+## What shipped in `4305a4d`
+
+- `dev/debug-tuning.ts` — module singleton + `useSyncExternalStore`, notifies coalesced to one rAF.
+  Seeds from `GRID_VOID.bloom`, `FLOOR_ENV_MAP_INTENSITY`, `AMBIENT_INTENSITY`, `CHASE`. Exports
+  `shipBelowAxisDeg`/`pitchDeg` and `debugTuningSource` (the copy-values dump, labelled per file).
+- `dev/debug-panel.tsx`, `dev/debug-slider.tsx`, `dev/tuned-bloom.tsx`.
+- `game/scene/lighting.tsx` — new; `AMBIENT_INTENSITY = 1` + `<SceneLighting>`, in both canvases.
+- `game/camera/chase.ts` — `CHASE` now exported; no camera value moved.
+- `game/scene/track-materials.ts` — `FLOOR_ENV_MAP_INTENSITY = 1` added; `floorSurface()` untouched.
+- `game/scene/track-floor.tsx` — material now takes `envMapIntensity`; DEV reads the panel, prod reads
+  the constant.
+- `routes/art-lab/ship-box.tsx` + `shipBox` layer key, default ON, unlit `#404040` so it sits under the
+  0.42 bloom threshold and contaminates neither sweep.
+- Both canvases render `<TunedBloom>` in place of an inline `<Bloom>`.
+
+Dev gate is `import.meta.env.DEV` (Vite dead-code-eliminates it), verified: zero panel strings in
+`apps/client/build`.
+
+## Open and unmeasured
+
+- **The panel's non-camera knobs are BROKEN** — see unit 2. That supersedes the earlier "panel shipped,
+  ready to sweep" framing: nothing can be swept until they respond.
+- The camera readout is **derived arithmetic, not a measurement of the rendered frame**. It agreed with
+  the owner's eye at the dialled values, which is weak corroboration, not verification.
+- Untested by eye: panel layout at the lab's window size; whether the `radius`/`levels` key-remount
+  flashes.
+- The bloom spread at `57589dc` (`levels 4` / `radius 0.6`) is **still never captured or judged**.
+
+## Gotchas already paid for
+
+- Stack: `PORT=2601 pnpm dev`, client `:5201`, `/art-lab`. **Check whether one is already up before
+  starting another.** You own your stack — background it to a log, don't stream it into context.
+- **Frame-tap is dead** — "nobody answered", focused and unfocused. Use Chrome screenshots; don't debug it.
+- **Backdrop takes 30–45s after every reload.** Before it lands the deck renders dark and the sky black —
+  a loading state, not your change.
+- **HMR does not rebuild an already-mounted material.** Every sweep frame needs a full reload.
+- The tab must be the **focused** Chrome window or `visibilityState` goes hidden, rAF stops, canvas black.
+  Chrome tabs are per-session — make your own; you cannot adopt a predecessor's.
+- Blank Canvas: stale Vite cache (`rm -rf apps/client/node_modules/.vite`, restart) or unsmudged LFS
+  models (`git lfs pull`).
