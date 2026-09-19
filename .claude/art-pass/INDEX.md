@@ -24,7 +24,7 @@ everything else.
 
 | # | Task | Folder | Status |
 |---|------|--------|--------|
-| 1 | **Background** — deep space + nebula, and its contribution to scene lighting | [`01-background/`](01-background/README.md) | **PIVOTED 2026-09-19 to the CHEAP PATH** — ship `nebula-backdrop.jpg` on the camera-locked dome; light from a separate `<Lightformer>` env + one `DirectionalLight`. Brief: `01-background/CHEAP-PATH-BRIEF.md`. Procedural work preserved on `art/procedural-bg` @ `6d52029` |
+| 1 | **Background** — deep space + nebula, and its contribution to scene lighting | [`01-background/`](01-background/README.md) | **BUILT + GATE GREEN 2026-09-19** (cheap path) — `nebula-backdrop.jpg` on a camera-locked sphere **patch**; lit by a `<Lightformer>` rig + one `DirectionalLight`. **Visual gate DEFERRED** until a track is in frame (§ below), not skipped and not failed. Read [`01-background/HANDOVER-SESSION-5.md`](01-background/HANDOVER-SESSION-5.md) **first** — it lists four things a cold context will try to "fix" back. Procedural work preserved on `art/procedural-bg` @ `6d52029` |
 | 2 | **Track** — floor material, glowing edge rail, gaps, gap rims | [`02-track/`](02-track/README.md) | not started |
 | 3 | **Scene lighting** — key/rim/fill/env, exposure, bloom budget | [`03-lighting/`](03-lighting/README.md) | not started |
 | 4 | **Monoliths** — isolation → placement (track-flanking + scene filler) | [`04-monoliths/`](04-monoliths/README.md) | not started |
@@ -366,35 +366,115 @@ field is lit from one side while the sky implies another.
 (four-layer dome, tuning, celestial body, the real light). Revisit if per-sector variation becomes real.
 **Do not delete that branch.**
 
+### 2026-09-19 (later) — the lane's plan reviewed, three decisions relayed
+
+The lane stopped before writing code and committed `01-background/CHEAP-PATH-PLAN.md` (`90910d6`) with three
+`[DECIDE]` items. All three were verified against the code rather than adjudicated from the plan's own prose,
+and relayed back with the reasoning attached (per `lane.json`'s escalation protocol).
+
+1. **Mapping — option A (sphere patch), as recommended.** Its catch was load-bearing: a stock sphere's default
+   UVs *are* equirectangular, so "texture instead of noise" would have silently shipped the very mapping the
+   brief rejects. A 16:9 composition covers a **cone**, not a sphere.
+2. **Cone size — `160° × 90°`, not the proposed `150° × 100°`.** Measured from `chase.ts:37-44`: sustained
+   max-strafe camera lag = `strafeClamp / follow` = 80/16 = **5u** over an 18–21u look distance → peak yaw
+   **±15°** (transient; `strafeDamp: 14`); `CHASE.fov` is three's **vertical** fov, 60→75°, which at 16:9 is a
+   **~107° horizontal** fov; pitch is constant at ~20° down, so the patch centres on the *view axis*, not the
+   horizon. Need ≈ **138° × 80°**. The proposal covered that — its defect was **aspect**, not coverage:
+   150:100 = 1.50 against the jpg's 1672×941 = **1.78**, which stretches the image ~19% vertically and renders
+   the planet **oval**. 160×90 is exactly 1.78. Told to derive `thetaLength` from the texture's real aspect
+   rather than hardcode two numbers that can drift apart.
+   > **SUPERSEDED same day — the value is `140`, and half this entry rested on a false premise.** The aspect
+   > risk **never existed**: `sky-backdrop.tsx:87-88` already authored *only* the horizontal and derived the
+   > vertical (`fovVDeg = fovDeg / aspect`), so there was never a second number to drift — hardcoding a
+   > `160 × 90` pair would have *reintroduced* the drift. The yaw argument was sound and found a real bug (the
+   > patch was at **120°**, under-spec, because *both* prior derivations omitted the camera's own yaw), but
+   > **140** is right, not 160: 138.5° is the derived floor, and 160 pays ~14% more composition zoom-out than
+   > the geometry demands for a **transient** excursion the edge fade degrades to dark rather than hard void.
+   > The durable artifact is the **test**, not the constant — `sky-config.test.ts` asserted `fovDeg > 2·halfDeg`
+   > with **no yaw term**, which is exactly what let 120 pass; it now derives that term from the same
+   > `chase.ts` constants.
+3. **Star bearing — a frame bug, not a mistuned value.** The lane correctly read the jpg (crescent on the
+   planet's **left** limb while the planet sits frame **right** ⇒ star is inboard/left; the brightest nebula
+   wisps are upper-left, corroborating). But `sky-config.ts:185` defines *"bearing 0 = -Z, increasing toward
+   +X"* while `chase.ts:41-42` makes **gameplay forward `+Z`**, and `sky-follow.tsx` copies position only —
+   explicitly not rotation — so nothing compensates. `starBearingDeg: 55` therefore aims the scene's one real
+   light **behind-and-right**, and the comment at `sky-config.ts:304` calling it "upper-right of the game's
+   forward view" is wrong about the frame, not the intent. The jpg implies ≈ **215° / +20°** in that same
+   frame — and `215 = 55 + 180` is the tell: the right *look*, written in a flipped frame, which is exactly
+   why it survived an eye-tune. Comments to be fixed alongside the value; `<Lightformer>` rig and the
+   `DirectionalLight` to read **one shared bearing** so they cannot drift.
+   > **SUPERSEDED same day — the bearing is `66° / 19°`, and `215°`/`35°` is STRUCK.** The frame bug was real
+   > and the lane had already fixed it, more cleanly: rather than keep `0 = −Z` and move the value, it re-based
+   > the convention itself to **`0 = +Z`** — "bearing 0 is where you are flying" — checkable at a glance
+   > against `chase.ts`, and pinned by a test that projects through a real `PerspectiveCamera` instead of
+   > re-asserting the algebra. On the *value*, the lane measured and the supervisor eyeballed: threshold at
+   > luma ≥210, Kasa circle-fit of the planet limb → centre (1679, 622) r 719px at **rms 4.2px**, polar sweep
+   > to a hard terminator at 169° ⇒ star at 79° screen-azimuth ⇒ **66° / 19°**. That is the **only** evidence
+   > anyone produced about the jpg's baked-in lighting. **Measurement outranks eyeball.**
+   > **And the "215 = 55 + 180" conflict dissolves rather than splits:** that claim was about the
+   > `DirectionalLight`'s *world direction*, the handover's "55 put the star 27° right" was about where the
+   > *rendered body* landed on screen. Both true; their disagreement **is** the frame bug. Neither is evidence
+   > about the image, so there was never a 31° coin-flip to put to the owner's eye. Still genuinely open, and a
+   > different question: whether the lit result **looks** right with a track in frame.
+
+Everything else in the plan approved as written — dropping `celestial-body.tsx`, the keep/retire lists, the
+5-commit sequence, the definition of done.
+
 ### ▶ NEXT — state as of 2026-09-19, read this first
 
-**The cheap path is BUILT and the gate is green — but nothing has been seen by a human eye yet.** Lane
-`background` (worktree `../slur-worktrees/background`, branch `art/background`, client `:5200` / server
-`:2600`), code commit `643af5a`. Full handover:
-[`01-background/HANDOVER-CHEAP-PATH.md`](01-background/HANDOVER-CHEAP-PATH.md).
+**Task 1 is done and the lane is stopped.** `art/background` @ `903be08`, verify gate green (typecheck · lint
+· 75 shared + 34 client + 4 server · build). **Read
+[`01-background/HANDOVER-SESSION-5.md`](01-background/HANDOVER-SESSION-5.md) before touching the sky or
+starting task 2** — it is self-contained and assumes no chat history.
 
-**Your next action — the gate.** `PORT=2600 pnpm dev` from that worktree, then `http://localhost:5200/iso-sky`
-**in a FOREGROUND tab**, bloom on **and** off, then `/art-lab` at race speed.
+**Verified without an eye:** `/iso-sky` mounts with no console errors, and there were **zero external requests
+across 62** — so the drei `<Environment>` **children** path fetches no CDN HDR and the offline / office-LAN
+requirement holds. (`preset="…"` remains forbidden.)
 
-> ⚠ **Not an automated Chrome tab.** The lane tried: the tab reports `visibilityState: "hidden"`, so rAF never
-> fires and the canvas stays black while the DOM panels render fine. That is the already-twice-paid
-> `hidden-tab-blank-canvas` trap, not a render bug.
+**The `/iso-sky` gate is DEFERRED, by decision, not pending.** Two roughness probes are not enough scene to
+judge lighting against: tone mapping, patch FOV and tilt are whole-frame composition calls, and tilt is
+outright unjudgeable in a free orbit (the chase cam pitches 18–21° down, so only the top ~10–20% of the frame
+is sky). **The track lands first, then the gate runs with a real track in frame.** This inverts task 2's
+stated "depends on task 1" header on purpose — `02-track/README.md` §7 says so; do not "correct" it back.
 
-The acceptance test is the **roughness probes differentiating**, and the panel now carries the switches to run
-it properly: `Star light` OFF + `Env rig` OFF must go **flat** (or something else is lighting them and the
-test proves nothing), then `Env rig` ON alone must make `0.2` and `0.9` **visibly differ** — which the
-procedural path never achieved. The display sky needs no histogram tuning: it *is* the reference.
+**Next, in order:**
 
-**Verified without an eye:** typecheck · lint · 75 shared + 34 client + 4 server tests · build; `/iso-sky`
-mounts with no console errors; and **zero external requests across 62** — the drei `<Environment>` *children*
-path fetches no CDN HDR, so the office-LAN requirement holds.
+1. ~~**Upgrade Claude Code**~~ **DONE 2026-09-19 — `2.1.212` → `2.1.267`** (Homebrew **cask**:
+   `brew upgrade --cask claude-code`; *not* `claude update`, which would fight the package manager).
+   **Both sessions must be relaunched to pick it up.** This unlocks **cross-session messaging** (needs
+   2.1.224+), which replaces the `herdr agent prompt` relay with direct peer messaging over a local Unix
+   socket — motivated concretely: that relay **silently dropped a whole decision packet** this session, and
+   the failure looked exactly like success. Also unlocked: `@mention` addressing (2.1.232+), idle-notification
+   subscriptions (2.1.236+), and `maxTurns` for the context-watchdog hook (2.1.246+).
+   **On relaunch:** confirm with `/list-agents` (alias `/peers`) that the lane is reachable, and prefer it
+   over `herdr agent prompt`. Verify delivery either way — never filter the ack down to a grep that turns a
+   failure into an empty string, which is how the dropped packet hid.
+2. **Task 2 (track).** Decided, **not** started — D1/D2/D3 of-record with full reasoning in
+   `02-track/README.md` §7. Headlines: `TrackFloor` (one generated continuous mesh) replaces `TrackView`'s
+   instanced floor quads; task 3's **emitter array comes forward** (patched `MeshStandardMaterial`,
+   **fixed-size** uniform array of the K nearest emitters — a varying light count recompiles the shader
+   mid-race); `toneMapped: false` becomes a panel switch settled once for the whole frame. Also flagged there:
+   lethal blocks are saturated red `#ff2740` while **red is excluded from the palette** — retone them as part
+   of the review setup, or every material read is taken against a forbidden colour.
+   **The supervisor writes that lane brief** — see "Division of labour" below.
+3. **Then the deferred `/iso-sky` + `/art-lab` gate**, bloom on **and** off, in a **foreground** tab. Three
+   knobs sit at defensible defaults awaiting the eye: `Tone map` (ON), `Field of view` (**140** — the floor,
+   not the answer), `Tilt` (**0°**, the most likely to move, judgeable only in `/art-lab`).
+   > ⚠ **Never gate from an automated Chrome tab** — it reports `visibilityState: "hidden"`, rAF never fires,
+   > and the canvas stays black while the DOM panels render fine. Already paid for twice.
 
-**Two things the plan could not have known, both now fixed and documented:** the bearing convention had
-`0 = −Z`, i.e. bearing 0 pointed **behind** the player while its comment claimed "the game's forward view" —
-now `skyDirection`, `0 = +Z`, pinned by a test that projects through a real three camera. And the star bearing
-is now **derived from the image** (limb circle fit + a polar sweep finding the terminator at 169° → the star
-at 79° screen-azimuth from the planet, i.e. straight above it → bearing 66 / elevation 19); the old `55/28`
-put it 27° to the planet's *right*, the mirror of what the jpg shows.
+### Division of labour (owner directive, 2026-09-19)
+
+**Lanes execute; the supervisor brainstorms, writes and delegates.** A lane reports **first-hand facts** —
+what it built, measured, broke — and never curates. **Briefs, decision records, handovers, this INDEX and the
+arc narrative are the supervisor's to write.** The supervisor takes the **majority** of decisions and relays
+them to lanes directly, escalating to the owner (via `AskUserQuestion`) only **gameplay · artistic ·
+technical · project-wide** calls — then relaying the **reasoning**, not just the verdict.
+
+*Recorded because it was violated here:* this session the supervisor told the lane to write the decision
+records and its own handover. Two of those documents are the record of a **disagreement between supervisor and
+lane**, which made the lane the author of the account of who was right. A lane's context is also the scarce,
+perishable thing — spending it on prose while the supervisor waits idle inverts the cost.
 
 **Then:** task 2 (track). Its floor-reflection question is already **resolved** — grazing-angle specular
 streaks, not mirrors (`02-track/README.md` §8), so `MeshReflectorMaterial` and its extra scene render are
