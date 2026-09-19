@@ -11,8 +11,8 @@ import * as THREE from 'three';
  * and geometry cannot without stretching per instance.
  *
  * WHY BOX-LOCAL WORLD UNITS AND NOT TRIPLANAR: blocks are instanced by position and non-uniform scale and
- * are NEVER rotated (`track-instancing.ts`'s `put()` sets only `.position` and `.scale`). Object space is
- * therefore world space up to an axis-aligned scale, so the instance matrix alone yields un-stretched
+ * are NEVER rotated (`put()` in `game/scene/track-view.tsx` sets only `.position` and `.scale`). Object
+ * space is therefore world space up to an axis-aligned scale, so the instance matrix alone yields un-stretched
  * world-unit coordinates — `length(instanceMatrix[i].xyz)` IS that instance's extent on axis i. Triplanar
  * exists to handle arbitrary rotation we do not have; it would pay three samples and a blend per fragment,
  * forever, for a property we get from six vertex ALU ops and zero texture samples. Feature sizes below are
