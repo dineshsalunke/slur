@@ -55,3 +55,16 @@ Format: `YYYY-MM-DD · <fact> · <how it was established>`
 - 2026-09-19 · **No backticks in GLSL comments.** The shader blocks are TS template literals, so a backtick
   inside a `// …` GLSL comment terminates the literal. Surfaces as `error TS1005: ',' expected` pointing at
   the comment line, not as anything shader-shaped · hit while commenting the fade-gate unit fix
+
+## Facts bearing on a possible texture swap (2026-09-19, read from source)
+
+- 2026-09-19 · `BoxGeometry` builds each of the six faces as its OWN vertex plane (per-side `buildPlane`,
+  `numberOfVertices` offset per side) — vertices are NOT shared between faces, so a per-face vertex attribute
+  is expressible · `three/src/geometries/BoxGeometry.js` 71-188
+- 2026-09-19 · `BoxGeometry`'s uv attribute is `ix/gridX`, `1 - iy/gridY` — **normalized 0..1 PER FACE**, so
+  it stretches with non-uniform instance scale · `BoxGeometry.js` 139-140 · consequence: three's built-in
+  `map`/`roughnessMap`/`normalMap` slots sample at `vMapUv` derived from that attribute and would therefore
+  STRETCH per instance, which is the exact property this lane's box-local `vBlockPos` mapping exists to avoid
+- 2026-09-19 · the per-face 2D UV basis a texture would need ALREADY EXISTS in
+  `SEALED_BLOCK_FRAGMENT_NORMAL`: `tangentA = faceIsX ? Y : X`, `tangentB = faceIsZ ? Y : Z` yields (y,z) on
+  an X face, (x,y) on a Z face, (x,z) on a Y face — correct for all three face classes · read from the shader
