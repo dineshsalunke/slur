@@ -76,6 +76,21 @@ Three Effects in this area, all three kept a justification:
   `constants.ts`. Same call made for the `DISSOLVE_*` constants in `ship-model.tsx:27-30` and the
   `MAX`/`SPEED`/`DRAG`/`GRAV`/`BRIGHT` blocks in `explosions.tsx` and `hit-spark.tsx`.
 
+### Restored after supervisor review of `e95e3a2` (three over-cuts, all mine)
+
+- `sky-config.ts:1` — the **palette exclusion** ("cold, desaturated, low-contrast, dark; the warm ramp
+  #FFE0A0 / #FFB52E / #F59A24 belongs to the PLAYABLE layer and never appears up here"). I cut it believing
+  `starLight.color` carried it. It does not: that line governs the *light's* colour, not a rule about what may
+  enter the file, and it has no hex triple. Nothing lets the next agent infer marigold is forbidden up here.
+- `sky-config.ts:3` — the **`art/procedural-bg` branch pointer**. I read it as history. It is a live external
+  constraint: that branch is deliberately kept while other stale art branches are slated for deletion, and
+  this comment is the only thing in the tree saying why. Restored with "do not prune it" made explicit.
+- `sky-config.ts` `fovDeg` — **"70 was rejected, it cannot reach the frame edge in ANY condition"**, carried
+  in one clause. A rejected alternative is the canonical keeper; only its five-line form was the problem.
+
+**Lesson for the remaining areas:** a rule about what may NOT enter a file reads like prose and dies in a
+sweep, because there is no code under it to check it against. Treat "never do X here" as a keeper on sight.
+
 ### Stale comments corrected (comment-only; no code changed)
 
 - `ship-model.tsx:186` — said the beacon keeps `local=cyan vs remote=magenta` legible. The code washes the

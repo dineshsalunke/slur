@@ -1,6 +1,10 @@
 // The deep-space sky's tuning surface. What you SEE and what LIGHTS are deliberately two different sources:
 // `nebula-backdrop.jpg` is the image the concept boards were composed over, and a small authored
-// `<Lightformer>` rig does the lighting. Both read this one object, so they cannot drift apart.
+// `<Lightformer>` rig does the lighting. Both read this one object, so they cannot drift apart. The retired
+// procedural dome tried to be both and is kept on branch `art/procedural-bg` — do not prune it.
+//
+// PALETTE — cold, desaturated, low-contrast, dark. The warm ramp (#FFE0A0 / #FFB52E / #F59A24) belongs to
+// the PLAYABLE layer and never appears up here.
 
 const DEGREES_PER_RADIAN = 180 / Math.PI;
 
@@ -115,8 +119,9 @@ export const DEEP_SPACE: SkyConfig = {
         bearingDeg: 0,
         elevationDeg: -2,
         // Owner framing. Full coverage needs 134.3°; 120 leaves ~11.6% of frame width black on the leading
-        // edge under sustained max strafe only, pinned as ACCEPTED_EDGE_MARGIN in sky-config.test.ts.
-        // Widening the star field cannot fill that margin — drei <Stars> lights 0.008% of its pixels.
+        // edge under sustained max strafe only, pinned as ACCEPTED_EDGE_MARGIN in sky-config.test.ts. 70 was
+        // rejected — it cannot reach the frame edge in ANY condition — and widening the star field instead
+        // cannot fill the margin, since drei <Stars> lights 0.008% of its pixels.
         fovDeg: 120,
         edgeFadeDeg: 12,
         gain: 1,
