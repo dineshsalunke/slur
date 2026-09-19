@@ -53,6 +53,10 @@ implementation during the thinking phases.** Trivial changes (a typo, a one-line
   `useEffect` justification saying what outside-React system it synchronizes with and why no idiomatic
   mechanism fits (an uncommented Effect is a review failure — "Anti-patterns" below), and a tuning field in
   `constants.ts`, which carries one line so the value can be tuned without reading the sim.
+  **`pnpm lint` measures this.** A file you touch may not come out with more comment lines than it went
+  in with, and a new file may not exceed 20% comments. The bar was written down twice and lost anyway; a
+  count in the gate is what stopped it. To add a comment to a file at its limit, delete two that were not
+  earning their place.
 - **Never cite a bare number.** `(D7)`, `ADR-006`, `§4`, `#118` alone are useless to a reader — looking one
   up costs them the context they were holding, which is worse than no citation at all. Inline the substance,
   then cite the location.
