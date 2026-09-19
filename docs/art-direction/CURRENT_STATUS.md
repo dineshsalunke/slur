@@ -1,5 +1,29 @@
 # SLUR — Current art direction status
 
+## Track wear frozen — 2026-09-19
+
+The user explicitly approved and froze [board 25](track/25_track_procedural_wear_FINAL.png). Its [procedural wear brief](track/25_track_procedural_wear_BRIEF.md) governs the accepted worn surface, superseding board 24's clean finish and the earlier suggestion to reduce mottling. Preserve the exact shown wear character using procedural materials, with minimal hand-authored work. Board 24 retains geometry, edge and scale constraints; board 17 retains integrated atmosphere and HUD authority. Development and moving-render validation remain Claude's work.
+
+## Environment board approved — 2026-09-19
+
+The user approved [board 25](scene-background/25_environment_celestial_hierarchy_FINAL.png): planet-led Deep Space with subtle nebula, and nebula-led surroundings with small subordinate planets, each across Calm / Balanced / Intense. This replaces board 24's repeated dominant planet and resolves the environment-intensity rebuild for art direction. The image's PROPOSAL label predates approval. [Companion specification](scene-background/25_environment_celestial_hierarchy_SPEC.md) records scope and limitations. Board 17 FINAL remains the integrated material, colour and HUD authority; board 15 remains unapproved. No development changes.
+
+## Track handoff — 2026-09-19
+
+The user accepted board 24's track direction and requested final delivery. [Final track artboard](track/24_track_material_edge_FINAL.png) and [art brief](track/24_track_BRIEF.md) establish satin graphite, continuous marigold boundaries, sparse irregular interior inserts and thin gap lips. Generated gap-wall texture and apparent slab depth are not construction specifications. Exact dimensions and moving readability remain to be validated. This is art direction only; Claude retains development ownership. Later sections below are historical where superseded by this handoff.
+
+## Final approval — latest session
+
+The user approved [17_golden_reference_FINAL.png](golden-reference/17_golden_reference_FINAL.png) as the final golden reference. This supersedes the earlier draft/board-14 status below. The final direction combines deep dark materials, faint desaturated cold light, localized marigold and the compact borderless HUD. [Archive and lineage](golden-reference/history/README.md) preserve all 15 generated outputs, their successful prompts, source attachments and decision notes. Environment-intensity board 15 remains an unapproved earlier proposal and must be corrected from the final source before approval. Remaining detailed boards are still future work.
+
+## Latest session update — approved new golden reference
+
+**Subsequent correction:** board 14's saturated environment and lifted shadows were identified as drift. Its composition/HUD remain approved; colour/contrast must follow the dark desaturated written direction. [Board 16](golden-reference/history/boards/16_golden_reference_desaturated_DRAFT.png) is the corrective draft pending review. [GOLDEN_REFERENCE.md](golden-reference/DIRECTION.md) records the distinction.
+
+The user approved [board 14](golden-reference/history/boards/14_golden_reference_borderless_hud.png): integrated scene, irregular interior tile-seam lights, visible monolith glow, stepped gap intent, combat/boost illustration and small borderless HUD. Read [GOLDEN_REFERENCE.md](golden-reference/DIRECTION.md) for precedence, exact scope and remaining generated inaccuracies. It supersedes conflicting statements in the historical review below, including final HUD direction being wholly open. Detailed replacement boards are being developed according to [BOARD_REBUILD_PLAN.md](BOARD_REBUILD_PLAN.md); their approval is separate.
+
+## Historical production review — 2026-09-18
+
 Reviewed 2026-09-18. Codex owns art design, visual review, and handoff work in this workspace. Claude owns implementation.
 
 ## Overall status
