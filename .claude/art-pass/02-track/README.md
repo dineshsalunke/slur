@@ -127,22 +127,56 @@ inventing it.
 `anisotropy` setter recompiles when the value crosses zero (`this._anisotropy > 0 !== value > 0` → `version++`),
 so never animate or toggle it through 0 mid-race.
 
-### D3 — `toneMapped: false` contradicts the done-criterion; it becomes a panel switch
+### D3 — RESOLVED (owner, 2026-09-19): tone mapping is ON, at the renderer default, everywhere
 
 Every surface in `track-materials.ts` sets `toneMapped: false`. But §4's criterion is *"rail reads marigold
 (not red-orange) **in the final tone-mapped frame**"* — which those pixels opt out of **by construction**. As
 written the test cannot be run.
 
-This is the **same decision** as task 1's deferred `Tone map` switch, so it is settled **once, for the whole
-frame**, on one panel, with the track in shot.
+**It does not become a panel switch.** The owner settled it directly: *"since we will be having everything
+tone mapped … lets keep the tone mapping on default."* `toneMapped: false` comes **off** the track surfaces
+and the renderer default stands. One less knob, and the frame becomes internally consistent instead of half
+the pixels living outside the transform the other half go through.
 
-### Noted, technically out of scope, but it will poison the read
+*Verified-this-session* (installed `@react-three/fiber@9.7.0`, `dist/events-*.esm.js`): `<Canvas>` sets
+`gl.toneMapping = ACESFilmicToneMapping` unless the `flat` prop is passed, which it is not anywhere in this
+app. So the default here is **ACES Filmic**, and that is load-bearing for the gate: ACES desaturates and
+rolls hot saturated warms toward yellow-white, so "does the rail still read marigold" becomes a **real** test
+rather than a tautology about the input hex.
+
+**Consequence, expected and not a regression:** every emissive value in `track-materials.ts` was chosen to
+*bypass* tone mapping and will not survive being put through it — the rail's `emissiveIntensity: 2.6` first.
+Re-tuning them is the work of task 2's first slice.
+
+This also forecloses task 1's deferred `Tone map` knob: ON.
+
+### D4 — NEW (owner, 2026-09-19): `/art-lab` loses its own lights; the shipped sky rig lights it
+
+`art-lab-canvas.tsx` mounts `ambientLight intensity={0.4}` plus `directionalLight intensity={1.1}` **on top
+of** `DeepSpaceSky`, which already brings the shipped `StarLight` + `SkyEnvironment` rig. The track would
+therefore be judged under two lab-only lights the game does not have — and a flat ambient specifically
+contradicts the standing fact that **there is no fill; shadow sides go black** (`INDEX.md` §4). A review
+conducted under lighting the game does not ship is worthless, which is the same class of error as judging a
+silhouette against a placeholder sky — the deadlock that reset the earlier art attempt.
+
+**Both lab lights are deleted.** The lab is lit by `DeepSpaceSky` and the track's own emissives, nothing else.
+
+**Consequence that must be handled in the same change:** the sky's light and environment currently ride the
+`backdrop` layer toggle, so deleting the lab lights would make "backdrop off" mean "pitch black" and destroy
+a legitimate review mode. The rig (`StarLight` + `SkyEnvironment`) stays mounted regardless of that toggle;
+`backdrop` hides only the visible patch. `DeepSpaceSky` already takes `light` and `environment` props for
+exactly this split (`/iso-sky` uses them for its self-test) — mechanism is the lane's call, behaviour is not.
+
+### D5 — retone the lethal blocks as review setup (was "noted, out of scope")
 
 Lethal blocks are saturated red `#ff2740` (`LETHAL_SURFACE`), and **red is explicitly excluded** from the
 widened palette (`INDEX.md` §2: *"No cyan, no magenta, no red. A red hazard colour code is explicitly
 excluded."*). Block design belongs to a later task, but those blocks are in **every frame** the floor material
 would be judged in. Retone them to the warm ramp as part of task 2's **review setup**, or every material read
 is taken against a colour the direction forbids.
+
+**A holding retone, not the block design.** The one property that must survive it: lethal and drag still read
+as *different things* at a glance.
 
 ### Process deviation, deliberate
 
