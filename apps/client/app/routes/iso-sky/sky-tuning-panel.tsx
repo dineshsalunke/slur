@@ -30,10 +30,12 @@ const GROUPS: readonly { title: string; note: string; sliders: readonly Slider[]
             {
                 key: 'fovDeg',
                 label: 'Field of view',
-                min: 70,
+                // Floor 43: below fovDeg/aspect ≤ 2·edgeFadeDeg the alpha fade meets itself and the patch
+                // can never reach full opacity. Moves if edgeFadeDeg does.
+                min: 43,
                 max: 200,
                 step: 1,
-                hint: 'Angular WIDTH of the image. The chase cam frame spans ~108° at top speed, plus ~15.5° of strafe yaw on each side (the patch is world-fixed; the camera turns inside it) — so below ~140 the void can reach the frame edge during a hard strafe. Going much higher zooms the composition out and drifts the planet limb cornerward. Height follows the image aspect and is not authored.',
+                hint: 'Angular WIDTH of the image. Full frame coverage needs 134.3° (107.5° of frame at top speed plus 13.4° of strafe yaw each side — the patch is world-fixed and the camera turns inside it). Shipped at 70 by owner decision: the patch is a framed feature in a black surround, ~15% of frame width each side parked and ~33% on one side under sustained max strafe. Going much higher zooms the composition out and drifts the planet limb cornerward. Height follows the image aspect and is not authored.',
             },
             {
                 key: 'backdropBearingDeg',

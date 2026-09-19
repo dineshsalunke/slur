@@ -13,7 +13,9 @@ import {
 const SLIDERS: readonly { key: SkyTuningNumber; label: string; min: number; max: number; step: number }[] = [
     { key: 'backdropBearingDeg', label: 'pan', min: -90, max: 90, step: 1 },
     { key: 'backdropElevationDeg', label: 'tilt', min: -40, max: 40, step: 1 },
-    { key: 'fovDeg', label: 'fov', min: 70, max: 200, step: 1 },
+    // Floor 43, not a round number: below fovDeg/aspect ≤ 2·edgeFadeDeg (42.6° at the committed 12°) the
+    // alpha fade meets itself and the patch can never reach full opacity. Moves if edgeFadeDeg does.
+    { key: 'fovDeg', label: 'fov', min: 43, max: 200, step: 1 },
 ];
 
 /**
