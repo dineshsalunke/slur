@@ -1,5 +1,18 @@
 # V2 reference index and precedence
 
+## Current additions
+
+- **17_golden_reference_FINAL.png — FINAL, explicitly user-approved.** Canonical integrated scene, dark materials, faint cold undertone, golden energy and borderless HUD. Supersedes draft and board-14 appearance pointers below. [Decision record](../GOLDEN_REFERENCE.md) · [complete image/prompt archive](../explorations/2026-09-19-nebula-golden-reference/README.md).
+
+- **17_golden_reference_cold_undertone_DRAFT.png — latest corrective draft, pending approval.** Restores faint cold slate-blue to draft 16 while keeping deep darks, and redraws tile perspective. [Review](17_golden_reference_REVIEW.md); not a verified dimensional sheet.
+
+- **16_golden_reference_desaturated_DRAFT.png — colour/contrast correction, pending approval.** Desaturated environment, deeper stone/graphite darks and preserved localized golden energy. [Review and remaining limitations](16_golden_reference_REVIEW.md). Board 14 remains the approved composition/HUD reference, but its saturated sky and lifted material values are not the target.
+
+- **15_environment_intensity_proposal.png — new A/B/C proposal, not yet approved.** Matched scene studies, material closeups and recovery rhythm. Read [its companion specification](15_environment_intensity_SPEC.md) for controls and review caveats. Generated surface examples do not override material requirements.
+
+- **14_golden_reference_borderless_hud.png — approved current golden scene.** Integrated scene and borderless HUD direction; recorded limits and superseding decisions are in [GOLDEN_REFERENCE.md](../GOLDEN_REFERENCE.md). It replaces board 12 as the overall appearance target, not as a source of exact dimensions or generated asset topology.
+- Original numbered boards below remain reference/provenance until individually replaced. Their descriptions are historical wherever they conflict with the new golden-reference record.
+
 Use these images by purpose. No image is a dimensional engineering drawing.
 
 | Image | Use / limits |

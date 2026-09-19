@@ -1,5 +1,17 @@
 # SLUR — Current art direction status
 
+## Final approval — latest session
+
+The user approved [17_golden_reference_FINAL.png](boards/17_golden_reference_FINAL.png) as the final golden reference. This supersedes the earlier draft/board-14 status below. The final direction combines deep dark materials, faint desaturated cold light, localized marigold and the compact borderless HUD. [Archive and lineage](explorations/2026-09-19-nebula-golden-reference/README.md) preserve all 15 generated outputs, their successful prompts, source attachments and decision notes. Environment-intensity board 15 remains an unapproved earlier proposal and must be corrected from the final source before approval. Remaining detailed boards are still future work.
+
+## Latest session update — approved new golden reference
+
+**Subsequent correction:** board 14's saturated environment and lifted shadows were identified as drift. Its composition/HUD remain approved; colour/contrast must follow the dark desaturated written direction. [Board 16](boards/16_golden_reference_desaturated_DRAFT.png) is the corrective draft pending review. [GOLDEN_REFERENCE.md](GOLDEN_REFERENCE.md) records the distinction.
+
+The user approved [board 14](boards/14_golden_reference_borderless_hud.png): integrated scene, irregular interior tile-seam lights, visible monolith glow, stepped gap intent, combat/boost illustration and small borderless HUD. Read [GOLDEN_REFERENCE.md](GOLDEN_REFERENCE.md) for precedence, exact scope and remaining generated inaccuracies. It supersedes conflicting statements in the historical review below, including final HUD direction being wholly open. Detailed replacement boards are being developed according to [BOARD_REBUILD_PLAN.md](BOARD_REBUILD_PLAN.md); their approval is separate.
+
+## Historical production review — 2026-09-18
+
 Reviewed 2026-09-18. Codex owns art design, visual review, and handoff work in this workspace. Claude owns implementation.
 
 ## Overall status
