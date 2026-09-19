@@ -1,150 +1,118 @@
-# Lane handover — the debug panel, at the unit-2 seam (2026-09-20)
+# Lane handover — unit 2 CLOSED, and the sweep needs re-aiming (2026-09-20)
 
-Written by the supervisor. **This file is self-contained. Do not re-read `INDEX.md`, the GDD, or the
-art-direction package to start work** — everything you need for the next three units is here, and the
-big docs will cost you the context this handover exists to save.
+Written by the supervisor. **Self-contained. Do not re-read `INDEX.md`, the GDD, `LANE-BRIEF.md`,
+`SLICE-2-BRIEF.md`, or anything under `docs/art-direction/`** to start work.
 
-## Position — nothing owed, nothing dirty
+Supersedes the previous version of this file. Everything below is first-hand measurement unless marked
+`[unmeasured]`.
 
-`art/track-slice2` tip **`ae5b547`**, pushed; `origin/art/track-slice2` matches. Tree clean.
+## Position
 
-- `56d6f99` — chase camera + ADR-011.
-- `c9efcdf` — lane state carried onto the branch.
-- `ae5b547` — ADR-011 margin fixup (23.0°, not 15.5° — `fovStretch` compounds with `backStretch`).
+`art/track-slice2` tip **`868d5f8`**, pushed, origin matches, tree clean, gate green at that tip
+(typecheck clean; biome 3 **pre-existing** `noExcessiveLinesPerFile`; canvas-isolation 8/8; comment
+ratchet no gain; shared 75/75, client 66/66, server 4/4; `pnpm build` ✓).
 
-Gate re-run green at the tip: biome shows 3 **pre-existing** `noExcessiveLinesPerFile`, nothing new;
-Canvas-isolation clean across 8 route entry modules; comment ratchet "27 changed source files, none
-gained comment lines"; typecheck clean; shared 75/75, client 66/66, server 4/4; `pnpm build` ✓.
+Landed on this branch: the owner-dialled chase camera + ADR-011 (`56d6f99`, `ae5b547`), the debug panel
+(`4305a4d`), and the synchronous-notify fix (`868d5f8`).
 
-Stack: already up on client `:5201` / server `:2601`. **Check before starting another.**
+## Unit 2 — SOLVED. The rAF defer was the whole bug.
 
-## Unit 1 — DONE, do not reopen
+The old `notify()` was `if (pending) return; pending = true; requestAnimationFrame(...)` — and `pending`
+was cleared **only inside the rAF callback**. A hidden tab never runs rAF (free-running counter read 0
+across four separate calls: dead, not throttled), so `pending` latched `true` **permanently** and every
+later `notify()` short-circuited forever, *including after the tab came back to the foreground*. One
+backgrounding poisoned the store for the life of the page.
 
-Camera landed verbatim: `height 7.5 · back 15 · lookAhead 9.5 · lookAtLift 6 · fov 70`. Shipped values
-framed the ship at **−0.20°** (off the bottom edge); new values give **11.94°** margin at rest, widening
-to **23.00°** at top speed. The `CHASE` comment block that asserted "MUST stay > BLOCK_HEIGHT (8)" has
-been rewritten to state plainly that the eye is below 8u and the see-over vantage is given up.
+That explains the owner's live tab exactly. `setDebugTuning` does `applyCamera()` — a synchronous mutation
+of the `CHASE` singleton that `updateChaseCamera` reads every frame — **and then** `notify()`. So the five
+camera knobs kept working past the short-circuit while every React-path knob was dead, and `DebugPanel`'s
+own numbers were stuck because the panel is itself a consumer.
 
-## Unit 2 — the panel's non-camera knobs. NOT SOLVED. Read all of this before touching anything.
+**"The camera knobs work" was never evidence the store was healthy — it was evidence of the opposite shape.**
 
-**Symptom (owner, in a live-rAF tab):** the four non-camera knobs — bloom, floor `envMapIntensity`,
-ambient — do nothing. The five camera knobs work.
+**Verified fixed** at `868d5f8`, in a *hidden* tab, driven through the app's own slider elements with no
+dynamic import in the path: bloom intensity 1.2→0.4, floor envMap 1→0.25, ambient 1→1.8, camHeight 7.5→9.
+All four panel DOM values moved. Impossible before the fix.
 
-### What is established
+## Unit 2a — duplicate module CONFIRMED. It was instrumentation, not the app.
 
-- **`notify()` defers through `requestAnimationFrame`.** In a hidden tab rAF is dead (free-running
-  counter read 0 across four separate CDP calls), so `debugTuningVersion()` is stuck at 0 and the panel
-  is dead **by construction**. This is a defect in its own right — see "Unit 2c".
-- **Store → React → three.js is wired.** In that same hidden tab, calling `setDebugTuning` directly and
-  then forcing a re-render by an unrelated route (a discrete click on a lab layer toggle) DID apply:
-  floor `envMapIntensity` 1→0, AmbientLight 1→2, and the panel's own DOM numbers moved with them.
+`performance` resource entries show two URLs: `/app/dev/debug-tuning.ts?t=1789849203541` (what the app
+runs, via Vite HMR) and `/app/dev/debug-tuning.ts` (what `await import(...)` returns). Two instances.
+Behavioural control: wrote `DEBUG_TUNING.camHeight = 42` on the probe's instance, drove the app's instance
+through its real slider, and the app's `applyCamera` read **7.5, not 42**.
 
-### The observation that wounds the hypothesis — and why it is not yet evidence
+**Standing rule from this:** every future probe must drive **the app's own DOM elements**. A value written
+through `await import(...)` is written into a module the app is not running. This voided an entire earlier
+evidence block and cost a unit.
 
-In a tab that was genuinely `visible`, `hasFocus: true`, canvas 2760×1474, real rAF alive at 1022 ticks:
-`setDebugTuning('floorEnvMapIntensity', 0)` and `('ambientIntensity', 2)` → one frame later **`version`
-went 0→1, so `notify()` fired and the listeners were called** — and AmbientLight was still 1, floor
-`envMapIntensity` still 1, panel DOM still reading 1. Nothing re-rendered despite a successful notify.
+## Unit 2b — RETIRED on first-hand evidence.
 
-**Two reasons not to build on that, both stated by the lane that measured it:**
+Panel `envMapIntensity` 0 and 2 both landed on the live material (`material.envMapIntensity` read 0, then
+2). R3F applies the prop; there is no `<primitive object>` in the path. The value does **not** stop before
+the object.
 
-1. **Contamination.** The read came back `visibility: "hidden"` — the window was re-occluded between the
-   notify and the read, so React may simply never have flushed. One observation, across a visibility flip.
-2. **Possible duplicate module.** The store was reached via `await import('/app/dev/debug-tuning.ts')`.
-   If Vite ever handed a *second* module instance, those writes were invisible to the app and **the whole
-   block above is void**. Evidence against: on first load the panel DOM did reflect values set through
-   that import. Not proven.
+## The finding that re-aims the sweep — the deck's washout is on NO panel axis
 
-### Unit 2a — the control that must run FIRST (cheap, and it validates or voids everything above)
+Deck mesh, identified by visibility toggle: 10704 verts, `MeshStandardMaterial`, `metalness 1`,
+`roughness 0.42`, `color ffffff`, `map` present, **`envMap null`**, **`emissive c8d0d8` @
+`emissiveIntensity 0.05`**.
 
-Drive **`camHeight`** through the same `await import(...)` path and watch the camera actually move.
-`camHeight` is the known-good knob: `updateChaseCamera` reads the `CHASE` singleton every frame and never
-crosses React. So:
+- `emissiveIntensity` 0.05 → 0 **blacks the deck out**. That is the dominant term.
+- `envMapIntensity` 0 → 2: no visible change.
+- `AmbientLight` 1 → 0: no visible change.
+- `DirectionalLight` 1.6 → 0: no visible change.
+- `scene.environment` is a `CubeTexture`, mapping 301, image dims `undefined`. `gl.toneMapping` 0 (None),
+  exposure 1.
 
-- camera moves → one module instance, the evidence block is real, go to 2b.
-- camera does not move → you had a duplicate module, every unit-2 experiment so far is void, and the
-  correct next move is to reach the store through the page's own UI instead of an import.
+**So the panel's three "washout cause" knobs do not control the washout, and the knob that does is not on
+the panel.** The deck is self-lit, which is the art direction working as intended — `03-lighting/README.md`
+§1a has the track lighting itself from its own emissives — so the live question is its *level and colour*
+(`c8d0d8` is a cool grey-white), not whether it should be emissive at all.
 
-Do not skip this. It is the difference between a real finding and an artefact.
+**The bloom/deck/ambient sweep as originally scoped is dead.** Do not run it.
 
-### Unit 2b — the untested hypothesis family: the value reaches React and stops before the object
+## The DirectionalLight is NOT a constraint violation — closed, do not re-raise
 
-**Nothing here has been tested.** No `<primitive object>` check, no `needsUpdate` test, no postprocessing
-accessor check.
+Traced at source: that light is `StarLight` (`game/scene/star-light.tsx`), mounted only through
+`DeepSpaceSky`, which reaches `/art-lab` via `TunableSky` and otherwise only `/iso-sky`. Its own doc
+comment states why it exists — "a PMREM-convolved cubemap cannot hold a small hard highlight — the rig does
+the soft rim, this does the crisp one." It is **the star**, which `03-lighting/README.md` §1a explicitly
+sanctions ("barely touches the track"), not a key light.
 
-- A three.js object held as a module singleton or `useMemo` and mounted via `<primitive object={…}>` gets
-  **no prop diffing** — React re-renders and R3F applies nothing. `floorSurface()` and the material
-  `track-floor.tsx` hands `envMapIntensity` to is the prime suspect.
-- `postprocessing` 3.0.4's `Bloom` exposes several settings as accessors rather than constructor args;
-  some need re-instantiation. `radius`/`levels` were already suspected of needing a key-remount — check
-  whether `intensity`/`threshold`/`smoothing` are in that same family before assuming they differ.
-- Mutating a live material can need `needsUpdate`. This repo already has the scar: **HMR does not rebuild
-  an already-mounted material** — every sweep frame needs a full reload regardless.
+It is also **lab-only**: `/game` mounts no authored rig at all, its entire light list being one
+`<ambientLight intensity={1}>`. "No key light on the track, ever" still stands and is not breached here.
 
-`envMapIntensity` is the cleanest test in the set: `scene.environment` is set **even with the lab's `env`
-layer OFF**, so it is live and *should* be strongly visible on a `metalness: 1.0` deck. It is still
-unexplained.
+## Frame tap — mount-then-hide ANSWERS 504. Visual gates are visible-tab-only.
 
-### Unit 2c — fix the rAF-deferred notify regardless of the outcome above
+Probe condition met exactly: mounted while visible (canvas 3456×1882, `window.__ART_LAB` present), a second
+tab opened to force hidden (`visibilityState "hidden"`, canvas still 3456×1882, `__ART_LAB` still present),
+then curl → **HTTP 504 in 0.26 s**, no file written.
 
-`notify()` must stop coalescing on `requestAnimationFrame`. A microtask or a timer behaves identically in
-a visible tab and keeps working in a hidden one. As written, the panel can never drive a frame-tap
-capture either — an `advance()` pump does **not** flush pending rAF callbacks.
+Caveat carried honestly: there is **no same-session visible-tab control** for that curl, because the window
+re-hid before one could be taken. The only 200 on record is a cross-session one. So "504 means hidden" is
+strong but not airtight. `[unmeasured]`
 
-### Accepted and closed — `ambientLight` is inert here for PHYSICAL reasons
+Reconfirmed: a **never-visible** tab never mounts R3F at all (canvas 300×150, `__ART_LAB` undefined, rAF 0),
+and `resize_window` did not fix it.
 
-The deck is `metalness: 1.0` and has no diffuse term. The only other lit surface in the default lab frame
-is a `metalness: 0` boundary whose base colour is near-black `#15171a` under `emissiveIntensity: 2.0`; the
-rest are two `MeshBasicMaterial` meshes and a `Points` ShaderMaterial, which ignore lights entirely.
-**Nothing in that frame can visibly answer `ambientLight`.** If the ambient knob notifies correctly and
-still changes nothing on screen, that is not a bug — do not chase it, and note that the ambient axis may
-have nothing to measure in the lab's default frame.
+**Plan every visual gate around a visible tab.** Do not spend more time on frame-tap.
 
-## Frame tap — the README is WRONG for our case, and this supersedes it
+## Known instrument hazards — read before trusting any visual read
 
-Probed this session: full page reload on `:5201/art-lab`, then
-`curl 'http://localhost:5201/__frame-tap?name=probe-01'` → **504, "nobody answered"**, no file written.
-
-**The cause is verified and it is NOT the README's intermittent fault, so its "reload and tap again"
-remedy does not apply.** Immediately after that reload the canvas measured **300×150 with
-`window.__ART_LAB` absent — R3F never mounted at all.** `FrameTap` lives inside `<Canvas>`, so its HMR
-listener was never registered. Nobody answered because *the responder does not exist in a hidden tab*.
-
-Why: R3F gates root creation on a non-zero measured size, and measurement never resolves while the tab is
-hidden. `resize_window` forces it — that is how a mounted 1442×1992 canvas was obtained earlier in the
-session — but it failed on retry (1380→1360), so it is **not reliable**.
-
-**The claim "frame-tap retires the focused-tab constraint" is therefore false as stated.** The tap cannot
-photograph a tab that was never visible, because the tap's own client half cannot mount in one.
-
-**The one probe that decides whether unfocused captures are possible at all** — run it, it is cheap:
-mount the tab **while visible** (confirm a real canvas size and `window.__ART_LAB` present), then let it
-go hidden, then tap. Evidence it may work: one earlier tap answered **200** with a 1442×1992 PNG
-(`.claude/art-pass/00-frame-tap/refs/probe-mounted.png`) at a moment when the lane's own canvas was
-unmounted — so some other already-mounted lab tab served it. Mount-then-hide is untested.
-
-If that probe answers 200, unfocused captures work and the rule is simply "mount visible first". If it
-504s, frame-tap is only usable from a visible tab and we plan every visual gate around that.
-
-## Order of work
-
-1. **Unit 2a** — the `camHeight` control. Everything else is conditional on it.
-2. **Frame-tap mount-then-hide probe.** Cheap, and it sets the rules for every remaining visual gate.
-3. **Unit 2b** — the primitive / `needsUpdate` / accessor family.
-4. **Unit 2c** — move `notify()` off rAF.
-
-## Still held — do not start without the supervisor saying so
-
-The bloom/deck/ambient sweep, the PR for `art/track-slice2`, the retone, the emitter array.
+- **`gl.info.render.frame` can be FROZEN while the lab's run button reads "running"** — observed stuck at
+  57951, 0 frames in 1 s. Screenshots taken then are the same stale frame and prove nothing. After toggling
+  the lab run state: 720 frames in 600 ms. **Check the frame counter is advancing before believing any
+  before/after pair.** Why the counter read 0 while the button said "running" is `[unmeasured]`.
+- Browser pairing is per-session and **needs a retry**: `switch_browser` first returned "No other browsers
+  available" and `list_connected_browsers` returned `[]`, then listed `Browser 1` on retry;
+  `select_browser 88bbfbbc-2060-436d-89a2-7925ab89fd7f` then worked.
+- Backdrop takes **30–45 s** after every reload — dark deck and black sky before it lands is a loading
+  state, not your change.
+- **HMR does not rebuild an already-mounted material** — every sweep frame needs a full reload.
 
 ## Standing constraints
 
-- **No key light on the track, ever** (`03-lighting/README.md` §1a: "NOT a three-point rig"; the star
-  "barely touches the track"). Every fix here is subtractive.
-- **Do not mount the sky rig in `/game` on this branch** — it visibly changes the shipped game, which
-  makes it 03-lighting's subject. Owner ruling. Do not do it "while you're in there".
-- **`FLOOR_METALNESS` stays 1.0** and **the rail stays 1.0u**. Settled; if a later pass wants the rail
-  thinner, stop and ask.
-- Backdrop takes **30–45 s** after every reload — before it lands the deck is dark and the sky black.
-  That is a loading state, not your change.
-- Write lane docs into **this worktree**, never the shared checkout at `/Users/apple/Projects/personal/slur`.
+- **No key light on the track, ever.** Every fix here is subtractive.
+- **Do not mount the sky rig in `/game` on this branch** — that is 03-lighting's subject. Owner ruling.
+- **`FLOOR_METALNESS` stays 1.0**; **the rail stays 1.0u**. If a later pass wants the rail thinner, ask.
+- Write lane docs into **this worktree**, never the shared checkout.
