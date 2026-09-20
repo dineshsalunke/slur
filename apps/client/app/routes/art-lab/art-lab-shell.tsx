@@ -1,4 +1,4 @@
-import { procgenDescriptor, resolveTrack } from '@slur/shared';
+import { DEFAULT_SHIP, procgenDescriptor, resolveTrack, type ShipId } from '@slur/shared';
 import { Fragment, useMemo, useState } from 'react';
 import { DebugPanel } from '../../dev/debug-panel';
 import { ENV_VARIANTS } from '../../game/scene/env-config';
@@ -16,6 +16,7 @@ const ENV_NAMES = ENV_VARIANTS.map( ( v ) => v.name );
  */
 export function ArtLabShell() {
     const [ seed, setSeed ] = useState( 1234 );
+    const [ shipId, setShipId ] = useState< ShipId >( DEFAULT_SHIP );
     const [ envIndex, setEnvIndex ] = useState( ENV_VARIANTS.length - 1 ); // default C · Grid Void (the locked one)
     const [ bloom, setBloom ] = useState( true );
     const [ layers, setLayers ] = useState( DEFAULT_LAB_LAYERS );
@@ -36,10 +37,18 @@ export function ArtLabShell() {
                 onBloom={ setBloom }
                 layers={ layers }
                 onLayer={ toggleLayer }
+                shipId={ shipId }
+                onShip={ setShipId }
             />
             <ArtLabReadout track={ track } />
             { import.meta.env.DEV && <DebugPanel /> }
-            <ArtLabCanvas seed={ seed } env={ ENV_VARIANTS[ envIndex ] } bloom={ bloom } layers={ layers } />
+            <ArtLabCanvas
+                seed={ seed }
+                env={ ENV_VARIANTS[ envIndex ] }
+                bloom={ bloom }
+                layers={ layers }
+                shipId={ shipId }
+            />
         </Fragment>
     );
 }

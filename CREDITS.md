@@ -22,10 +22,11 @@ Full per-file audio breakdown lives in
 
 | Asset | Author | License | Source |
 |-------|--------|---------|--------|
-| Ship fleet — `bob`, `challenger`, `dispatcher`, `executioner`, `imperial` (5× glTF) | **Quaternius** | **CC0** | *Ultimate Spaceships Pack* — https://quaternius.com/ |
+| Ship placeholders — `bob`, `challenger`, `dispatcher`, `executioner` (4× glTF) | **Quaternius** | **CC0** | *Ultimate Spaceships Pack* — https://quaternius.com/ |
 
-The five ship classes each use one model from Quaternius' **Ultimate Spaceships Pack**
-(CC0, public domain). No attribution is required; we acknowledge it gladly.
+Four of the five ship classes still fly a placeholder from Quaternius' **Ultimate Spaceships Pack**
+(CC0, public domain). No attribution is required; we acknowledge it gladly. The Freighter's
+`split-crown` is a bespoke project asset, not a Quaternius model.
 
 ## Music
 

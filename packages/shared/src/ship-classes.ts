@@ -16,7 +16,7 @@ import { DEFAULT_TUNING, deriveJump, type FlightTuning } from './constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from './sim-config.js';
 
 export type ShipClassId = 'interceptor' | 'fighter' | 'comet' | 'phantom' | 'freighter';
-export type ShipId = 'executioner' | 'challenger' | 'bob' | 'dispatcher' | 'imperial';
+export type ShipId = 'executioner' | 'challenger' | 'bob' | 'dispatcher' | 'split-crown';
 
 export interface ShipClass {
     id: ShipClassId;
@@ -109,7 +109,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             strafeAccel: 118, // worst weaver: still the sluggish floor (sets the weave CURV_CAP), but responsive enough to flick
             strafeClamp: 65,
             strafeDamp: 10, // crisper than 5 so even the heavy ship's flicks land instead of drifting
-            halfW: 1.25, // 2.5u = 0.62 cell (imperial CAPPED for size — feel-gate 2026-08-09). Weave penalty is
+            halfW: 1.25, // 2.5u = 0.62 cell (Split Crown CAPPED for size — feel-gate 2026-08-09). Weave penalty is
             //             its sluggish strafe (105/65), NOT a huge hitbox, so the footprint can stay moderate.
             halfL: 3.0, // 6.0u = 1.5 cell — still the LONGEST ⇒ gap-tank, but no longer oppressively big.
             ...deriveJump( { height: 3.6, apexTime: 0.3, descentTime: 0.24, doubleHeight: 4.3, minHeight: 0.9 } ),
@@ -125,7 +125,7 @@ export const SHIPS: Record< ShipId, Ship > = {
     challenger: { id: 'challenger', name: 'Challenger', classId: 'fighter' },
     bob: { id: 'bob', name: 'Bob', classId: 'comet' },
     dispatcher: { id: 'dispatcher', name: 'Dispatcher', classId: 'phantom' },
-    imperial: { id: 'imperial', name: 'Imperial', classId: 'freighter' },
+    'split-crown': { id: 'split-crown', name: 'Split Crown', classId: 'freighter' },
 };
 
 // Default ship = the Fighter-class variant (the neutral all-rounder new players / unset wire values get).
@@ -142,7 +142,7 @@ export function isShipId( id: unknown ): id is ShipId {
 
 // Ordered ship list — the stable index used by the dev hot-swap keys 1..5 (client sends the id, not the
 // index, so reordering this never desyncs the wire; it only reshuffles which key maps to which ship).
-export const SHIP_ORDER: ShipId[] = [ 'executioner', 'challenger', 'bob', 'dispatcher', 'imperial' ];
+export const SHIP_ORDER: ShipId[] = [ 'executioner', 'challenger', 'bob', 'dispatcher', 'split-crown' ];
 
 // Resolve a (possibly unknown / stale / empty) shipId to its ship, class, and flight tuning. Falls back to
 // the default ship so a bad wire value can NEVER crash the sim (server or client replay).

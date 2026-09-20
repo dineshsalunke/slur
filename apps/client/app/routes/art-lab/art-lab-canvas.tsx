@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer } from '@react-three/postprocessing';
-import { procgenDescriptor, resolveTrack } from '@slur/shared';
+import { procgenDescriptor, resolveTrack, type ShipId } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, Suspense, useMemo } from 'react';
 import { FrameTap } from '../../dev/frame-tap';
@@ -32,11 +32,13 @@ export function ArtLabCanvas( {
     env,
     bloom,
     layers,
+    shipId,
 }: {
     seed: number;
     env: EnvConfig;
     bloom: boolean;
     layers: LabLayers;
+    shipId: ShipId;
 } ) {
     // Rebuilding on seed change is the intended structural re-render — a different seed IS a different
     // track. It is a pure function, so there is nothing to tear down.
@@ -49,7 +51,7 @@ export function ArtLabCanvas( {
                      ambient would contradict the direction's "no fill, shadow sides go black". */ }
                 { /* Mounted FIRST so its useFrame advances sim.z before the track and Environment read it. */ }
                 <SceneLighting />
-                <ArtLabRig track={ track } />
+                <ArtLabRig track={ track } shipId={ shipId } />
                 { import.meta.env.DEV && <SceneProbe /> }
                 { layers.env ? <Environment config={ env } seed={ seed } /> : null }
                 { /* The void colour and the sky's LIGHT rig both stay unconditional: with no lab lights

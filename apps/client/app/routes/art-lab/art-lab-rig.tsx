@@ -1,8 +1,8 @@
 import { useFrame } from '@react-three/fiber';
 import {
     createFixedStep,
-    DEFAULT_SHIP,
     FIXED_DT,
+    type ShipId,
     simulate,
     type Track as TrackHandle,
     tuningForShip,
@@ -98,7 +98,7 @@ function freezePrev( world: World ): void {
  * materialized track, and points the real chase camera at it — with no Colyseus room anywhere in the path.
  * That is the whole point: what you see here is what the game renders, not an approximation of it.
  */
-export function ArtLabRig( { track }: { track: TrackHandle } ) {
+export function ArtLabRig( { track, shipId }: { track: TrackHandle; shipId: ShipId } ) {
     const world = useWorld();
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
 
@@ -115,15 +115,9 @@ export function ArtLabRig( { track }: { track: TrackHandle } ) {
     // side effect that double-fires under StrictMode) and spawning in an event handler (there is no event —
     // the entity must exist for the scene's first frame).
     useEffect( () => {
-        const e = world.spawn(
-            Sim,
-            Prev,
-            Render,
-            Net( { sessionId: 'art-lab', shipId: DEFAULT_SHIP, colorId: 0 } ),
-            LocalPlayer,
-        );
+        const e = world.spawn( Sim, Prev, Render, Net( { sessionId: 'art-lab', shipId, colorId: 0 } ), LocalPlayer );
         return () => e.destroy();
-    }, [ world ] );
+    }, [ world, shipId ] ); // shipId respawns the entity: a different hull is a different model, lift and footprint
 
     useFrame( ( state, delta ) => {
         // Drain any pending teleport BEFORE stepping, so the step and the render lerp agree this frame.

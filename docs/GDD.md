@@ -236,7 +236,7 @@ is data, not an error.)*
 | **Fighter** (baseline) | challenger | 0.65 × 0.63 | 2.6 × 2.5 | ●●●○ | ●●●○ | square all-rounder / default |
 | **Comet** | bob | 0.55 × 0.29 | 2.2 × 1.2 | ●●●○ | ●●○○ | tiny wide-wing glass rocket — fastest, weak jump |
 | **Phantom** | dispatcher | 0.60 × 1.26 | 2.4 × 5.0 | ●●○○ | ●●●●● | long courier — triple-jump air/gap master |
-| **Freighter** | imperial | 0.62 × 1.5 | 2.5 × 6.0 | ●○○○ | ●●●● | long cruiser — worst weaver (sluggish handling), gap-tank |
+| **Freighter** | split-crown | 0.62 × 1.5 | 2.5 × 6.0 | ●○○○ | ●●●● | long cruiser — worst weaver (sluggish handling), gap-tank |
 
 **A "class" is a group; a "ship" is a variant inside it (architecture for growth).** A **ShipClass** owns all
 *mechanics* (the `FlightTuning` incl. footprint) — the balance unit, few and carefully tuned. A **Ship** is a

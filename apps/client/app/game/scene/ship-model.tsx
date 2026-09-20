@@ -1,13 +1,14 @@
 import { Clone, useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
-import { Fragment, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Interp, Sim } from '../ecs/traits';
 import { guardLfsPointer } from './gltf-lfs-guard';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
+import { MARIGOLD_EMISSIVE } from './track-materials';
 
-// Per-ship model (Quaternius CC0). useGLTF caches by URL and drei <Clone> deep-clones per entity, so ships
+// Per-ship model. useGLTF caches by URL and drei <Clone> deep-clones per entity, so ships
 // mount independently while sharing geometry. scale/lift/facing come from ship-visuals.ts, DERIVED so the
 // model box equals the class AABB footprint — what you see is what collides.
 for ( const v of Object.values( SHIP_VISUALS ) ) {
@@ -22,10 +23,6 @@ const DISSOLVE_DURATION = 0.7; // s — dead→gone ramp (and gone→solid disso
 const DISSOLVE_NOISE_SCALE = 1.8; // noise cells across the (object-space) hull — higher = finer speckle
 const DISSOLVE_EDGE_WIDTH = 0.09; // width of the glowing burn band trailing the dissolve front (noise units)
 const DISSOLVE_EDGE_INTENSITY = 2.6; // HDR add on the burn edge (post-tonemap → blows past the bloom threshold)
-
-// Emissive strength of the team wash. The models carry their own albedo, so tinting EMISSIVE keeps the
-// sculpt readable while the ship still reads as whose it is at race distance under bloom.
-const HULL_TINT_INTENSITY = 0.55;
 
 interface DissolveUniforms {
     uDissolve: { value: number };
@@ -94,15 +91,6 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
     mat.needsUpdate = true; // force a recompile so onBeforeCompile runs (material was already compiled once)
 }
 
-// Materials are per-entity clones, so mutating here never leaks into another ship. Non-standard materials
-// are left alone rather than guessed at.
-function tintHull( mat: THREE.Material, color: string ): void {
-    const std = mat as THREE.MeshStandardMaterial;
-    if ( ! std.isMeshStandardMaterial ) return;
-    std.emissive.set( color );
-    std.emissiveIntensity = HULL_TINT_INTENSITY;
-}
-
 // Local entities read the live Sim; remotes read the latest server snapshot. Allocation-free, so it is
 // safe to call every frame.
 function isDead( entity: Entity ): boolean {
@@ -112,23 +100,20 @@ function isDead( entity: Entity ): boolean {
     return buf !== undefined && buf.length > 0 && buf[ buf.length - 1 ].dead;
 }
 
-export function ShipModel( { entity, shipId, color }: { entity: Entity; shipId: string; color: string } ) {
+export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string } ) {
     const v = shipVisual( shipId );
     const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
-    const beaconRef = useRef< THREE.Mesh >( null );
     const patched = useRef( false );
-    const appliedColor = useRef( '' );
     // One uniforms bundle per ship; the same value-objects flow into every patched material of this clone.
     // The dep list MUST stay empty — patchDissolve binds these objects into the shader BY REFERENCE, so a
-    // rebuilt bundle is one the materials never sample and every later write lands on an orphan. Colour
-    // updates ride the `.set()` in useFrame instead, which mutates the object the shader actually holds.
+    // rebuilt bundle is one the materials never sample and every later write lands on an orphan.
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
             uNoiseScale: { value: DISSOLVE_NOISE_SCALE },
             uEdgeWidth: { value: DISSOLVE_EDGE_WIDTH },
-            uEdgeColor: { value: new THREE.Color() }, // seeded by the first useFrame pass, long before any dissolve
+            uEdgeColor: { value: new THREE.Color( MARIGOLD_EMISSIVE ) },
             uEdgeIntensity: { value: DISSOLVE_EDGE_INTENSITY },
         } ),
         [],
@@ -148,43 +133,21 @@ export function ShipModel( { entity, shipId, color }: { entity: Entity; shipId: 
             } );
             patched.current = true;
         }
-        // Re-wash the hull when the owner picks a new colour. Here rather than in an effect because the
-        // materials are three.js state this file already owns imperatively; the traverse only runs on change.
-        if ( appliedColor.current !== color ) {
-            uniforms.uEdgeColor.value.set( color );
-            grp.traverse( ( o ) => {
-                const mesh = o as THREE.Mesh;
-                if ( ! mesh.isMesh ) return;
-                const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
-                for ( const mat of mats ) tintHull( mat, color );
-            } );
-            appliedColor.current = color;
-        }
         const target = isDead( entity ) ? 1 : 0;
         const u = uniforms.uDissolve;
         const step = delta / DISSOLVE_DURATION;
         if ( u.value < target ) u.value = Math.min( target, u.value + step );
         else if ( u.value > target ) u.value = Math.max( target, u.value - step );
-        // Fade the beacon out with the hull so a fully-derezzed ship doesn't leave a glowing orb behind.
-        if ( beaconRef.current ) beaconRef.current.visible = u.value < 0.99;
     } );
 
     return (
-        <Fragment>
-            <Clone
-                ref={ cloneRef }
-                object={ scene }
-                deep="materialsOnly"
-                position={ [ 0, v.lift, 0 ] }
-                scale={ v.scale }
-                rotation={ v.facing }
-            />
-            { /* Team-colour beacon, emissive so it blooms and stays legible at race distance. An unlit mesh,
-                 NOT a pointLight, to avoid the many-dynamic-lights perf cliff. */ }
-            <mesh ref={ beaconRef } position={ [ 0, 1, 0 ] }>
-                <sphereGeometry args={ [ 0.22, 12, 12 ] } />
-                <meshStandardMaterial emissive={ color } emissiveIntensity={ 3 } toneMapped={ false } />
-            </mesh>
-        </Fragment>
+        <Clone
+            ref={ cloneRef }
+            object={ scene }
+            deep="materialsOnly"
+            position={ [ 0, v.lift, 0 ] }
+            scale={ v.scale }
+            rotation={ v.facing }
+        />
     );
 }

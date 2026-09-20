@@ -104,7 +104,7 @@ than 7u, so compositions that assume a generous open lane are not always truthfu
 | **Fighter** (baseline) | challenger | **2.60** | 2.52 | 55 | square all-rounder |
 | Comet | bob | 2.20 | 1.18 | 70 | tiny glass rocket — fastest |
 | Phantom | dispatcher | 2.40 | 5.02 | 50 | long courier — gap master |
-| Freighter | imperial | 2.50 | 6.00 | 62 | long cruiser — gap tank |
+| Freighter | split-crown | 2.50 | 6.00 | 62 | long cruiser — gap tank |
 
 **All five widths cluster between 2.0u and 2.6u** — a 30% spread. Ships differ far more in *length*
 (1.18u → 6.00u, a 5× spread) than in width. Board 03's "SHIP ~2.6u" is **correct** (it's the Fighter).
