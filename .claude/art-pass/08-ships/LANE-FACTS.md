@@ -65,9 +65,25 @@ Per-material Z extents (object space, identity transforms, so these are model co
 ## Art-lab ship picker — added, because the gate was otherwise unreachable
 
 - `art-lab-rig.tsx` hardcoded `shipId: DEFAULT_SHIP` ('challenger'), and `/art-lab` has no room, so there was **no way to put the Freighter on screen at the review URL**.
-- Added `shipId` React state in `art-lab-shell.tsx` → prop to `art-lab-controls.tsx` (a button row over `SHIP_ORDER`, same shape as the existing env row) and to `art-lab-canvas.tsx` → `art-lab-rig.tsx`.
-- `shipId` added to the rig's spawn-effect deps, so changing ship destroys and respawns the lab entity (it restarts at the lead-in). Structural, matching how `seed` already rebuilds the track.
-- Canvas-isolation lint still passes: the state lives in the shell, not a route entry module.
+- FIRST ATTEMPT, reverted: `shipId` as React state in the shell, prop-drilled shell → controls → canvas → rig, with `shipId` in the rig's spawn-effect deps. It worked, but every pick re-rendered the whole Canvas subtree — which `lab-state.ts:12-13` explicitly forbids for control knobs.
+- SHIPPED: `labCommands.setShip` (a drained one-shot, exactly like `jumpToZ`), written by the controls button and drained in the rig's `useFrame`, which calls `entity.set( Net, … )`. `ShipView` subscribes to `Net` via `useTrait`, so ONE leaf re-renders and the scene graph is untouched. Zero props added to shell/canvas.
+- `entity.set( trait, value )` verified in koota 0.6.6's own typings, `dist/types-DONaXEhM.d.ts:455`.
+- The rig holds the entity in a `useRef`; the spawn effect still owns create-on-mount / destroy-on-unmount.
+
+## A PRE-EXISTING CRASH, found and fixed: any Canvas re-render killed /art-lab under bloom
+
+Not caused by this slice — it fires on the untouched `env` A/B/C buttons and the untouched `ships` layer
+toggle. Found because the ship picker's first (prop-based) shape tripped it.
+
+- Symptom: React Router error page, `TypeError: Converting circular structure to JSON … property 'parent' closes the circle`, thrown from `@react-three/postprocessing`, preceded by ~24 `THREE.Texture: Unable to serialize Texture` warnings.
+- Cause, read from the installed source (`@react-three/postprocessing@3.0.4`, `dist/index.js`, the generic effect factory): each effect component does `useMemo( () => […args], [ JSON.stringify( a ) ] )` where `a` is its **rest props**. React 19 passes `ref` as an ordinary prop, so `dev-bloom.tsx`'s `ref={ effect }` lands in `a`; once mounted, `effect.current` is the live `BloomEffect` carrying R3F's circular `__r3f` — and the next render of that element throws.
+- Isolation evidence, in-page, all four readings first-hand:
+  - bloom ON + env A → CRASH; bloom ON + `ships` toggle → CRASH.
+  - bloom OFF (EffectComposer unmounted) + env A/B/C + `ships` + `Split Crown` → all ok.
+  - `ref` temporarily deleted from `<Bloom>`, bloom ON + env A/B/C → all ok. **This is the decisive one.**
+  - after the fix, bloom ON + env A/B/C + `ships` + `Split Crown` + `blocks` + `env` → all ok.
+- Fix: build the `<Bloom>` element ONCE via lazy `useState( () => <Bloom …/> )`, so React never re-renders it and the stringify never runs again. The `ref` is kept. Nothing is lost: `DevBloom`'s priority-0 `useFrame` overwrites all five values from `DEBUG_TUNING` every frame, so the constructor props only ever seeded frame 0. `useState` lazy-init rather than `useMemo` because it needs no dep array and no `biome-ignore`, and it is the idiom postprocessing itself uses for create-once objects.
+- **Blast radius: `TunedBloom` is used by `/art-lab`, `/art-gallery` and `/env-lab`, so all three DEV labs had this.** Worth its own issue in the supervisor's judgement; fixed here because it blocked this lane's gate outright.
 
 ## Gate results — all five, 2026-09-20
 
@@ -83,6 +99,16 @@ Per-material Z extents (object space, identity transforms, so these are model co
 - `pnpm lint` also failed once on formatting (biome wanted `<ArtLabCanvas>` broken across lines once it gained a 5th prop); `pnpm format` fixed it.
 - `grep --include=*.ts` fails under fish without quoting the glob — cost two wasted calls.
 
-## Eye-check
+## Eye-check — PASSED, `/art-lab` chase camera, seed 1234, env C, bloom ON
 
-- [pending — see below]
+- The Split Crown renders nose-forward. From the chase camera you see the **four stern emitters in their 2×2 arrangement** glowing marigold at the end nearest the camera, and the **two forward crown ports** as L-shaped marigold glints further up the hull — which is Codex's README description, seen from behind. The measured `facing: [0, Math.PI, 0]` is correct.
+- Authored marigold and engine emission are intact and are the only chromatic thing on the hull. No team wash, no beacon, nothing tinted by `colorId`.
+- Footprint is WYSIWYG: with the `shipBox` debug AABB on, the box silhouette's left/right edges coincide with the hull's widest points. (The debug box is opaque and fully occludes the ship, so the two cannot be judged in one frame — toggle, do not overlay.)
+- Hull albedo reads mid-grey on screen rather than the near-black the baseColorFactors (0.007–0.017 linear) would suggest on their own — that is the cold key plus the rail emitters lighting it. Whether that is the intended read is an art call for the owner, NOT changed here.
+- The review tab is parked on this exact view (ships on, shipBox off, env C, Split Crown selected).
+
+## Stack traps hit
+
+- The MCP Chrome tab reported `document.visibilityState === "hidden"` for most of the session while the canvas measured 3456×1994 and R3F was fully mounted — the canvas paints black and rAF never runs. It flipped to `"visible"` on its own later. Canvas SIZE is not the test; read `visibilityState`.
+- Closing the other tab in the MCP group destroyed the whole tab group (Chrome auto-removes a group at its last tab), invalidating the tab id. Re-created it and carried on.
+- `git checkout <sha> -- <paths>` was refused by the permission classifier, so the "is it pre-existing" question was settled in-page (the bloom-off / ref-removed A/B above) instead of against the base commit.

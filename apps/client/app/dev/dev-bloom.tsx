@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { Bloom } from '@react-three/postprocessing';
 import type { BloomEffect } from 'postprocessing';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { BloomConfig } from '../game/scene/env-config';
 import { DEBUG_TUNING } from './debug-tuning';
 
@@ -23,9 +23,9 @@ export function DevBloom( { config }: { config: BloomConfig } ) {
         e.mipmapBlurPass.levels = DEBUG_TUNING.bloomLevels;
     }, 0 );
 
-    // Committed config, never the tuning: static props keep `args` stable, so the instance the pass holds
-    // stays the one this ref points at.
-    return (
+    // Built once: postprocessing 3.0.4 memoises an effect's `args` on `JSON.stringify(props)` and React 19
+    // passes `ref` as a prop, so re-rendering this throws on the mounted effect's circular `__r3f`.
+    const [ bloom ] = useState( () => (
         <Bloom
             ref={ effect }
             mipmapBlur
@@ -35,5 +35,7 @@ export function DevBloom( { config }: { config: BloomConfig } ) {
             radius={ config.radius }
             levels={ config.levels }
         />
-    );
+    ) );
+
+    return bloom;
 }
