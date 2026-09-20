@@ -4,10 +4,14 @@ import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
 import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
 import {
-    FLOOR_EMISSIVE,
-    FLOOR_EMISSIVE_INTENSITY,
     FLOOR_ENV_MAP_INTENSITY,
+    FLOOR_METALNESS,
+    FLOOR_ROUGHNESS,
     MARIGOLD_REFERENCE_INTENSITY,
+    RAIL_EMITTER_DECAY,
+    RAIL_EMITTER_INTENSITY,
+    RAIL_EMITTER_LIFT,
+    RAIL_EMITTER_RANGE,
 } from '../game/scene/track-materials';
 
 export interface DebugTuning {
@@ -16,10 +20,14 @@ export interface DebugTuning {
     bloomSmoothing: number;
     bloomRadius: number;
     bloomLevels: number;
-    floorEmissiveIntensity: number;
-    floorEmissive: string;
+    floorRoughness: number;
+    floorMetalness: number;
     floorEnvMapIntensity: number;
     marigoldReference: number;
+    emitterIntensity: number;
+    emitterRange: number;
+    emitterDecay: number;
+    emitterLift: number;
     boundaryWidth: number;
     boundaryWrap: number;
     ambientIntensity: number;
@@ -30,12 +38,8 @@ export interface DebugTuning {
     camFov: number;
 }
 
-// Split by value type: a colour cannot go through a range input. `string extends`, not `extends string` —
-// only a FREE string matches, so a future string-union field cannot fall into the colour setter.
+// Filtered to numbers: a non-number field cannot go through a range input.
 export type DebugTuningKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends number ? K : never }[
-    keyof DebugTuning
-];
-export type DebugTuningColorKey = { [ K in keyof DebugTuning ]: string extends DebugTuning[ K ] ? K : never }[
     keyof DebugTuning
 ];
 
@@ -46,10 +50,14 @@ function committed(): DebugTuning {
         bloomSmoothing: GRID_VOID.bloom.smoothing,
         bloomRadius: GRID_VOID.bloom.radius,
         bloomLevels: GRID_VOID.bloom.levels,
-        floorEmissiveIntensity: FLOOR_EMISSIVE_INTENSITY,
-        floorEmissive: FLOOR_EMISSIVE,
+        floorRoughness: FLOOR_ROUGHNESS,
+        floorMetalness: FLOOR_METALNESS,
         floorEnvMapIntensity: FLOOR_ENV_MAP_INTENSITY,
         marigoldReference: MARIGOLD_REFERENCE_INTENSITY,
+        emitterIntensity: RAIL_EMITTER_INTENSITY,
+        emitterRange: RAIL_EMITTER_RANGE,
+        emitterDecay: RAIL_EMITTER_DECAY,
+        emitterLift: RAIL_EMITTER_LIFT,
         boundaryWidth: BOUNDARY_W,
         boundaryWrap: BOUNDARY_H,
         ambientIntensity: AMBIENT_INTENSITY,
@@ -91,11 +99,6 @@ function applyCamera(): void {
 export function setDebugTuning( key: DebugTuningKey, value: number ): void {
     DEBUG_TUNING[ key ] = value;
     applyCamera();
-    notify();
-}
-
-export function setDebugTuningColor( key: DebugTuningColorKey, value: string ): void {
-    DEBUG_TUNING[ key ] = value;
     notify();
 }
 
@@ -143,10 +146,14 @@ export function debugTuningSource( t: DebugTuning ): string {
         ) }, radius: ${ n( t.bloomRadius ) }, levels: ${ n( t.bloomLevels ) } },`,
         '',
         '// game/scene/track-materials.ts',
-        `export const FLOOR_EMISSIVE = '${ t.floorEmissive }';`,
-        `export const FLOOR_EMISSIVE_INTENSITY = ${ n( t.floorEmissiveIntensity ) };`,
+        `export const FLOOR_ROUGHNESS = ${ n( t.floorRoughness ) };`,
+        `export const FLOOR_METALNESS = ${ n( t.floorMetalness ) };`,
         `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
         `export const MARIGOLD_REFERENCE_INTENSITY = ${ n( t.marigoldReference ) };`,
+        `export const RAIL_EMITTER_INTENSITY = ${ n( t.emitterIntensity ) };`,
+        `export const RAIL_EMITTER_RANGE = ${ n( t.emitterRange ) };`,
+        `export const RAIL_EMITTER_DECAY = ${ n( t.emitterDecay ) };`,
+        `export const RAIL_EMITTER_LIFT = ${ n( t.emitterLift ) };`,
         '',
         '// game/scene/track-geometry.ts',
         `export const BOUNDARY_W = ${ n( t.boundaryWidth ) };`,

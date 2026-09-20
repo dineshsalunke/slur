@@ -464,3 +464,313 @@ The ruling is "reconcile, keep both" between the rev-3 sheet and the uncommitted
 - The frames: `PORT=2601 pnpm dev`, then `curl localhost:5201/__frame-tap?name=<name>`, bloom on AND off
   at a matched camera, both labelled. `[unmeasured]` — every pixel of this slice.
 - The emitter array (step 3) has not been designed or started.
+
+---
+
+# `art/emitter-array` — LANE FACTS
+
+Appended by the emitter-array lane (task 2, D2/D7). Same rules: one line each, `[unmeasured]` is honest.
+
+## Environment
+
+- Worktree `/Users/apple/Projects/personal/slur-worktrees/emitter-array`, branch `art/emitter-array`, base `origin/dev` @ `1b2e71f`.
+- Ports `CLIENT_PORT=5200` / `VITE_SERVER_PORT=2600`; stack started `PORT=2600 pnpm dev`, log `.claude/lane/dev.log`.
+- `curl http://localhost:5200/art-lab` → `200`. Stack came up first try; no stale `.vite` cache, no git-lfs smudge fault.
+- `three` installed version `0.185.1`, read from `apps/client/node_modules/three/package.json`.
+
+## Source readings (three@0.185.1, installed tree)
+
+- `ShaderChunk/lights_fragment_begin.glsl.js` declares `geometryPosition`, `geometryNormal`, `geometryViewDir`, `geometryClearcoatNormal` and `IncidentLight directLight` unguarded, before any light loop.
+- Same chunk calls `RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight )` — the exact signature the patch reuses.
+- `ShaderChunk/lights_pars_begin.glsl.js:56` `getDistanceAttenuation( lightDistance, cutoffDistance, decayExponent )` sits OUTSIDE every `#if NUM_*_LIGHTS` guard → available with zero scene lights.
+- `ShaderChunk/lights_physical_pars_fragment.glsl.js:645` `#define RE_Direct RE_Direct_Physical`, unconditional.
+- Same file lines 178-183: anisotropy enters `RE_Direct_Physical` via `material.anisotropyT`/`anisotropyB` under `USE_ANISOTROPY` — so routing through `RE_Direct` inherits anisotropy with NO change to the injected GLSL.
+- `ShaderLib/meshphysical.glsl.js:186` contains the literal `#include <lights_fragment_begin>` the patch string-matches.
+- `webgl/WebGLUniforms.js:74` `flatten()` returns the array unchanged when element 0 is a number → a flat `Float32Array` uploads directly to a `vec4[]` uniform with no per-frame boxing.
+- `math/Color.js:204,286` `setHex`/`setStyle` default to `SRGBColorSpace` → `new THREE.Color('#F59A24')` converts to working-linear, matching how three treats a light's own colour.
+
+## As-built
+
+- `EMITTER_SLOTS = 12`, a literal interpolated into the GLSL array size; the `onBeforeCompile` closure's source text is constant, so three's default `customProgramCacheKey()` (returns `onBeforeCompile.toString()`) is safe and no override is needed.
+- Slot layout: `uEmitters[i]` = view-space centre xyz + half-length along `uEmitterAxis`; `uEmitterTint[i]` = rgb×intensity + cutoff distance. Cutoff `0` parks a slot.
+- Emitters are TUBES, not points: closest point on the run to the reflection ray (Karis 2013 representative point). A point emitter is the same slot with half-length `0`, which is the shape task 3's engines/pickups inherit.
+- Rail runs are STATIC per track (`buildRailRuns`), not rebuilt per frame: the strip is baked into the deck and neither moves. Per frame the work is a K-nearest scan plus ≤12 writes.
+- Runs are clamped to `[shipZ - range, shipZ + range]` each frame; endpoints therefore slide continuously rather than popping in and out of the K set.
+- Emitter positions are transformed to view space on the CPU (`camera.matrixWorldInverse`), matching what three does for its own lights; the shader does no matrix work.
+- Defaults landed: `RAIL_EMITTER_INTENSITY = 40`, `RAIL_EMITTER_RANGE = 150`, `RAIL_EMITTER_DECAY = 1`. All three are **guesses pending a render** — see below.
+- Decay defaults to 1, not 2: at physical `1/d²` the ribbon's centre is 32u from either rail (attenuation ~1/1024) and would stay black. Authored falloff was the research's stated reason to prefer this mechanism.
+- Panel knobs added under a `rail emitter` section: intensity (0-200), range (10-400), decay (0-3). All three are in `debugTuningSource()` so a landed value copies out as source.
+- Deck material confirmed `FLOOR_METALNESS = 1.0` / `FLOOR_ROUGHNESS = 0.42` at `track-materials.ts:14,16` — matches the brief; the README's "flagged, not decided" section is stale (supervisor owns that doc and is fixing it).
+- Comment ratchet paid in `track-materials.ts`: added 1 line for the authored-decay reason, removed a 2-line doc block that sat on `FLOOR_ENV_MAP_INTENSITY` while describing `floorSurface()`, re-added as 1 line on the function it describes. Net 0.
+
+## Gate
+
+- `pnpm typecheck` → pass (shared, server, client).
+- `pnpm lint` → pass. 3 pre-existing `noExcessiveLinesPerFile` warnings, none in changed files. Comment ratchet: "7 changed source files, none gained comment lines".
+- `pnpm --filter @slur/shared test` → 75 pass / 0 fail.
+- `pnpm -r test` → server 4 pass, client 72 pass (11 files), including 5 new `track-rails.test.ts` cases.
+- `pnpm build` → pass.
+
+## Not measured
+
+- **Nothing has been rendered.** Every visual claim about this slice is `[unmeasured]`.
+- The tab reports `visibilityState: "hidden"`, `document.hasFocus() === false`; rAF is therefore dead and the canvas is black for that reason, not as a result.
+- `curl 'http://localhost:5200/__frame-tap?name=emitter-01'` → `504`. No `__r3f` key on the canvas or any ancestor, and a 40-frame fiber walk found no R3F store → the R3F root never mounted in this tab. Consistent with the known "never-visible tab never mounts R3F" fault, whose remedy is mounting visible, not reloading.
+- Shader compile is therefore **unverified**: with no render, the program is never linked, so a GLSL error would not have surfaced yet. Typecheck cannot see inside a template literal.
+- Isotropic vs anisotropic: `[unmeasured]` — the brief requires settling it by rendering and it is not yet renderable.
+- Whether `FLOOR_METALNESS = 1.0` is tenable: `[unmeasured]`, and it is the README's own "single most likely thing to fail at the rail gate".
+- Frame-time cost of the patch: `[unmeasured]`.
+
+## Emitter lift — the first rendered finding (owner-reported, c21363d)
+
+- Owner at the live tab, moving the sliders: "only the faces in the gaps facing towards camera are emitting light".
+- Cause: emitter y was `top - h/2` = `-0.5`, BELOW the deck plane. `dot(N, L) <= 0` for the top face (normal +Y) → it receives exactly zero.
+- The gap end caps have normals ∓z, so a source at y=-0.5 is still inside THEIR hemisphere — which is why those and only those lit. The report is a precise fingerprint of the sign error, not a vague symptom.
+- General consequence, not a tuning matter: a strip FLUSH with the deck cannot light the deck at all. A coplanar source illuminates a coplanar surface at exactly zero, at every intensity.
+- This is independent corroboration of ADR-012 from the lighting side: the rail has to stand proud to be a light source, which is what PR #151 builds.
+- Fixed: emitter y = `top + lift`, `RAIL_EMITTER_LIFT = 0.5` (half the 1u rail height), panel knob `lift` 0.05-4 with a floor above 0 so it cannot be dragged back into the dead plane.
+- `buildRailRuns` now takes `lift`; runs re-memoize on it, so the slider is live.
+- Test `track-rails.test.ts` pins `y > 0` with the reason, so the sign cannot regress silently.
+- Gate re-run green after the fix: typecheck · lint (ratchet clean, 7 files, none gained) · shared 75/75 · client 72/72 · server 4/4 · build.
+- `pnpm format` does NOT fix `assist/source/organizeImports`; `biome check --write <files>` does. Cost one red lint run.
+- STILL `[unmeasured]` by this lane first-hand: every pixel. The lane's own tab is `visibilityState: "hidden"`; the owner's tab is the only one rendering.
+- Shader compiles and links: proven only INDIRECTLY, by the owner seeing lit gap faces at all. No console read from a rendering tab yet.
+
+## Rebase onto 1b4d760 (PR #151, outboard rail)
+
+- `git rebase origin/dev` clean, no conflicts. 2-dot and 3-dot diffstat IDENTICAL: 9 files, 619 insertions, 5 deletions, all mine. Rebase ate nothing.
+- SEMANTIC conflict the rebase could NOT catch: emitter x was `±(HALF_WIDTH - w/2)` = ±31.5, the retired INSET position — i.e. hovering over playable deck.
+- Post-#151 the band is `[HALF_WIDTH, HALF_WIDTH + BOUNDARY_W]` (`track-geometry.ts:18`), emitting from a top face at `y + h` and an INWARD-facing riser at `x = ±32`, `y` 0→1 (`track-boundary.tsx:22-29`).
+- Corrected emitter x to `±(HALF_WIDTH + w/2)` = ±32.5. `RAIL_EMITTER_LIFT = 0.5` unchanged and still correct: it is the centre of the rail's 1u-tall body.
+- Test now asserts `|x| > HALF_WIDTH` as well as the exact value, so an inset regression fails rather than passing on a self-consistent wrong number.
+- Client test count 72 → 74 (#151 added 2).
+- Gate green post-rebase: typecheck 0 errors · lint 3 pre-existing warnings, ratchet clean · shared 75/75 · client 74/74 · server 4/4 · build pass.
+
+## Deck emissive deleted (346bd7f)
+
+- `FLOOR_EMISSIVE` / `FLOOR_EMISSIVE_INTENSITY` gone from `track-materials.ts`, `floorSurface()`, `track-floor.tsx`, and all four `debug-tuning.ts` sites.
+- Untouched, as instructed: `LETHAL_SURFACE`, `DRAG_SURFACE`, `BOUNDARY_SURFACE`, `MARIGOLD_REFERENCE_INTENSITY`.
+- Unplanned but forced: the whole colour-picker path went too. `floorEmissive` was the ONLY string field in `DebugTuning`, so `DebugTuningColorKey` collapses to `never` and `setDebugTuningColor`'s `DEBUG_TUNING[key] = value` fails with `TS2322: Type 'string' is not assignable to type 'never'`. `DebugColor` became unusable (`tuningKey: never` accepts nothing), not merely unused — so `debug-color.tsx`, `setDebugTuningColor` and `DebugTuningColorKey` were deleted. Discovered by typecheck, not guessed.
+- The panel's `surfaces` note claimed envMap/ambient were inert "because the deck is lit by its own emissive". That premise is dead; rewritten to record that the measurement predates the deletion and has not been redone. The `note="inert here"` slider labels are now unverified claims.
+- Gate green: typecheck · lint exit 0 (ratchet clean) · shared 75/75 · client 74/74 · server 4/4 · build.
+- Owner then reported the deck **entirely black** on :5200. Expected — that is the `FLOOR_METALNESS = 1.0` question surfacing, and nothing was compensated.
+
+## Roughness/metalness knobs (a03228b)
+
+- `floorRoughness` (0.02–1.0, committed 0.42) and `floorMetalness` (0–1, committed 1.0) added to `committed()`, the panel `deck` group, `debugTuningSource()`, and read off tuning in `track-floor.tsx`. Committed values UNCHANGED.
+- **No recompile**, verified against installed three 0.185.1 rather than assumed: `WebGLPrograms.js:137-138,231-232,452-453` keys the program cache on `!!material.roughnessMap` / `!!material.metalnessMap` — map presence, never the scalar; `WebGLMaterials.js:383,393` refreshes `uniforms.metalness.value` / `uniforms.roughness.value` from the material every frame. No `#define`, no `needsUpdate`, and a scalar prop change does not re-run `patchEmitterLight`'s `onBeforeCompile`. Safe on a live path.
+- Gate green: typecheck · lint exit 0 (ratchet clean) · shared 75/75 · client 74/74 · server 4/4 · build. Stack restarted, `/art-lab` 200.
+
+## Is the deck receiving zero, or too little? — arithmetic, no render
+
+Sources, from `three@0.185.1` source (verified-this-session):
+- `RE_Direct_Physical` (`lights_physical_pars_fragment.glsl.js`): `dotNL = saturate(dot(N, L))`, `irradiance = dotNL * directLight.color`, and **both** `directSpecular` and `directDiffuse` are multiplied by that same `irradiance`.
+- `getDistanceAttenuation` (`lights_pars_begin.glsl.js`): `1/max(pow(d,decay),0.01) * pow2(saturate(1 - pow4(d/cutoff)))`.
+
+Geometry: emitter at `x = ±32.5`, `y = deck + 0.5` (`RAIL_EMITTER_LIFT`); deck 64u wide, normal `+Y`; `intensity 40`, `range/cutoff 150`, `decay 1`.
+
+Scalar irradiance `E = dotNL · 40 · atten`, summed over both rails, before the BRDF:
+
+| representative point | centreline `x=0` | `x=31` (1u inboard) | ratio |
+|---|---|---|---|
+| geometric closest (`dz=0`) | `dotNL 0.0154`, `atten 0.0306` → **`3.77e-2`** | `dotNL 0.316`, `atten 0.632` → **`8.00`** | 212× |
+| Karis rep. pt, steep cam (`dz≈2.3`) | **`3.75e-2`** | **`2.53`** | 67× |
+| Karis rep. pt, shallow cam (`dz≈6.7`) | **`3.61e-2`** | **`0.43`** | 12× |
+
+**Answer: too little, not zero.** The centreline gets `~3.7e-2` — six orders above float zero, and the `pow4(d/150)` window contributes a benign `0.996`, nowhere near the cutoff. Near-rail is 12–212× brighter depending on how the reflection ray picks the representative point. No second wiring bug is indicated: a wiring fault would read identically zero at both, and near-rail is not.
+
+Two caveats on the table:
+- The `dz` spread is real, not noise. The shader picks the tube point nearest the **reflection ray** (Karis), not nearest the fragment, so `L` is dragged downtrack by `≈ lift · cos/sin` of the mirror elevation. This *lowers* near-rail toward centreline and is correct for specular, but it under-reports the diffuse term — irrelevant at `metalness 1.0`, where `material.diffuseContribution` is zero, and it becomes a real error the moment metalness is dialled down.
+- `dotNL ≈ 0.015` at the centreline caps **both** terms. Dropping metalness restores a diffuse lobe that is then multiplied by that same `0.015` — it cannot rescue the centre. Consistent with roughness being the lever: at `roughness 0.42` (`alpha = 0.176`) the GGX lobe is far too wide to build a streak out of `3.7e-2`; the `1/(π·alpha²)` peak only becomes large as roughness falls. `[unmeasured]` by this lane — still no renderable tab.
+
+## The one-sided glint — diagnosed from code, NOT reproduced
+
+Method: `buildRailRuns` / `railRunDistance` / `selectNearest` / `feedEmitters` re-run headlessly in node against the real `resolveTrack( procgenDescriptor( 1234 ) )` (the seed `/art-lab` uses), then the shader's own maths — Karis `emT`, the window clamp, `getDistanceAttenuation`, `RE_Direct_Physical`, three's `BRDF_GGX` — evaluated per fragment over the visible deck with the real chase rig. `[unmeasured]` by eye; this is arithmetic.
+
+**All four candidates are ruled out. The code is symmetric to 1.000×.**
+
+1. **K-nearest filling from one side — NO.** 400 segments produce **78 runs, exactly 39 per side**. Over 1600 sampled ship positions (every 5u): runs with a side at **zero emitters = 0/1600**; `|L−R| ≥ 2` = **0/1600**; worst imbalance 3 vs 2. The premise fails because gaps kill *both* outer edges at once — of the 20 segments with asymmetric partial floor strips, e.g. `seg7 z=140 spans [-16,0]`, **neither** span touches `|x| = 32`, so `edgeHeight` returns null on both sides and both runs break together. No fix needed, no decision to take.
+2. **Camera off-centre or rolled — NO.** `chase.ts:39` sets `cam.position.x = p.x` and `lookAt` aims at `p.x`, both rigid; default up, so zero roll. Camera is symmetric about the **ship**, not the track — but sweeping the ship to x = ±4 moves the on-screen L/R peak ratio to **1.0×**, not toward one side. Off-centre flying does not explain it.
+3. **Window clamp stranding one side — NO.** Run endpoints are identical per side (`z0`/`z1` match), and outer-edge **height differs on 0 of 400 segments**, so clamps land identically. Slots are never the binding constraint either: live emitters range 2–10 of 12, so nothing is ever crowded out.
+4. **Karis picking the wrong end — NO.** Faithful per-fragment evaluation at z=200 (6 live slots, 3L/3R): **on-screen peak LEFT `1.83e+2`, RIGHT `1.83e+2`, ratio 1.000×**, with per-side attribution confirming each strip is lit by its own rail (`fromL 1.8e+2` / `fromR 1.3e-3`).
+
+**What the code predicts instead:** a symmetric **pair** of bright strips hugging **x = ±31**, about **19–20u ahead** of the ship, at screen `(±0.72, +0.22)` — upper-middle of frame, toward both edges. Not one patch, and not at the bottom near the camera.
+
+**So the reported patch is probably not the rail response.** Near-camera deck cannot be lit by a rail (`N·L ≈ 0.015`) *and* the rails are outside the frustum at that range — the frame only covers ±43u by 19u ahead, far less up close. A single bright patch low and near is better explained by another emissive object still in the shot: `BOUNDARY_SURFACE` (the rail's own body), a `LETHAL_SURFACE` block at `emissiveIntensity 2.2`, or the ship. Those are untouched by the emissive deletion.
+
+**Cheap discriminator for the owner**, seconds in `/art-lab`: drag **`rail emitter → intensity` to 0**. If the patch survives, it is not the emitter array at all and the search moves to the other layers; if it vanishes, the model above is wrong and the shader is doing something the arithmetic does not capture. The `blocks` / `boundary` layer toggles narrow it the same way.
+
+## Distant deck is unlit BY DESIGN
+
+`RAIL_EMITTER_RANGE = 150` is both the tube clamp (`z ± range` in `feedEmitters`) and the `cutoffDistance` handed to `getDistanceAttenuation`, whose window term `pow2(saturate(1 - pow4(d/cutoff)))` reaches **exactly zero at d = 150**. So deck more than ~150u ahead of the ship has no emitter in range by construction, and the falloff hits zero at the same distance the clamp drops the run — the two agree, so nothing pops as it enters. Expected, not a failure. Raising the knob extends it at the usual inverse-square cost.
+
+## The right-side deck sheen — attributed by arithmetic at the COMMITTED values
+
+Method: the whole `meshphysical` fragment path re-implemented in node from `three@0.185.1` source
+(`D_GGX`, `V_GGX_SmithCorrelated`, `F_Schlick`, `BRDF_Lambert`, `RE_Direct_Physical`,
+`getDistanceAttenuation`), evaluated over every deck fragment inside the frame against the real
+`resolveTrack( procgenDescriptor( 1234 ) )` and the real `CHASE` rig. Material `FLOOR_ROUGHNESS 0.4` /
+`FLOOR_METALNESS 0.75` / `FLOOR_ENV_MAP_INTENSITY 1`, `AMBIENT_INTENSITY 1`, `RAIL_EMITTER_RANGE 400`.
+Deck albedo taken from `track-texture.ts` `BASE = #14181e` (the map MULTIPLIES a white base). Nothing
+committed was changed; the harness was a temp file, now deleted. `[unmeasured]` by eye.
+
+- Screen-right IS world −X, confirmed numerically from the rig, not from the `sky-config` comment: the
+  chase camera's right basis computes to `(−1.000, 0.000, 0.000)`.
+- `skyDirection( 66, 19 ) = (−0.8638, 0.3256, 0.3846)`; `dot( L, cameraRight ) = +0.864`. The star bearing
+  is 86% of the way toward screen-right. **Every screen-right-biased term in the scene traces to
+  `starBearingDeg 66`.**
+- Mean per deck fragment, screen LEFT (`sx < −0.15`) vs screen RIGHT (`sx > 0.15`), ship z=200, at rest:
+
+  | term | left | right | R/L |
+  |---|---|---|---|
+  | `ambient` | 7.13e-4 | 7.13e-4 | **1.00** |
+  | `starDiff` | 3.25e-4 | 3.25e-4 | **1.00** |
+  | `starSpec` | 4.55e-4 | 3.47e-3 | 7.61 |
+  | `railL` + `railR` | 4.93e-4 | 4.93e-4 | **1.00** |
+  | `iblDiff` | 4.64e-4 | 4.64e-4 | **1.00** |
+  | `iblSpec` | 1.14e-3 | 3.60e-2 | **31.6** |
+  | total | 3.59e-3 | 4.15e-2 | 11.55 |
+
+- **Attribution of the right-side EXCESS: `SkyEnvironment` IBL specular 92%, `StarLight` specular 8%,
+  rail array 0%, ambient 0%.** Only the two specular terms are one-sided; every diffuse term is 1.00×
+  because a directional/ambient/IBL-diffuse source on a flat plane has constant `dot(N,L)`.
+- Source-toggle A/B over the same fragments (R/L of total): all three `11.55` · env off `2.52` ·
+  star off `13.41` · **rail alone `1.00`** · env alone `16.05` · star alone `3.02`.
+- At top speed (fov 85, `back` 18) the asymmetry WORSENS to `19.94×`, and `starSpec` overtakes `iblSpec`
+  in the outermost column (`4.73e-1` vs `3.45e-1` at `sx 0.875`) as the widening frame swallows more of
+  the directional lobe.
+
+### Why it is a broad sheen and not a hotspot
+
+The directional light's exact mirror peak on the deck plane (`H == N`) sits at world `x = −19.90`
+(19.9u toward screen-right) and **8.86u ahead of the CAMERA** — a figure fixed by `CHASE.height 7.5` and
+`L` alone, so it does not move with speed. That is **66.0°** off the camera axis laterally, against a
+horizontal half-frame of 51.5° at rest and 58.7° at top speed: **the peak is off-frame in every
+condition**, by 14.5° at rest and 7.3° at top speed. What reaches the frame is the tail of the GGX lobe
+sweeping in from the right edge — no hotspot, a gradient.
+
+### The committed material values did NOT create it
+
+Sweeps at the same geometry, R/L of total (and right-side absolute):
+
+- metalness `1.0` → **23.70×** (3.81e-2) · `0.75` → 11.55× (4.15e-2) · `0.3` → 6.65× · `0.0` → 5.42× (5.17e-2)
+- roughness `0.15` → **25.07×** · `0.4` → 11.55× · `0.7` → 5.11× · `1.0` → 2.75× (2.97e-2)
+
+The sheen's ABSOLUTE brightness is near-flat across both (3.0e-2 – 5.2e-2). What the owner's move to
+metalness 0.75 changed is the **left** side — it restored a diffuse lobe and halved the contrast ratio.
+**The sheen was present and worse at `FLOOR_METALNESS 1.0`**; the deck reading "entirely black" there was
+the rest of the frame going dark around a sheen that never left. This contradicts the supervisor's
+briefed expectation that a one-sided term "would have been nearly invisible" at 1.0.
+
+### How each candidate was eliminated — arithmetic vs plausibility
+
+- `StarLight` — **NOT eliminated. It is a real contributor, 8% of the excess.** Arithmetic.
+- `SkyEnvironment` IBL — **NOT eliminated. It is the dominant term, 92%.** Arithmetic. Its key
+  `<Lightformer>` reads the same `config.starBearingDeg`, so it and the directional light are the same
+  bearing by construction and CANNOT be told apart by which side they light.
+- Rail emitter array — **ruled out by arithmetic, at the NEW values**: `1.000×` symmetric, with `railL`
+  and `railR` exact mirrors per fragment. The predecessor's symmetry conclusion survives the material
+  change because it rests on geometry and slot selection, not on the BRDF.
+- `BOUNDARY_SURFACE`, `LETHAL_SURFACE`, `DRAG_SURFACE` — **ruled out by mechanism**: a `meshStandardMaterial`
+  `emissive` is not a light and illuminates no other surface in three. They can only reach the deck through
+  bloom. Additionally `DEFAULT_LAB_LAYERS` has `blocks: false`, so neither block surface is in the default
+  `/art-lab` view at all; and the boundary runs down BOTH edges, so it is symmetric anyway.
+- Ship emissives — **ruled out by mounting**: `DEFAULT_LAB_LAYERS` has `ships: false`. `ShipBox` is on, but
+  it is `meshBasicMaterial color="#404040"`, unlit and centred.
+- Bloom bleed off an edge-of-frame bright object — **the one candidate not closed by arithmetic.** The only
+  asymmetric bright thing left in frame is the backdrop jpg's own planet, up-right. Against it: this lane's
+  earlier first-hand pixel read put patch interior luma at 42–66/255 = 0.16–0.26, under env C's
+  `bloom.threshold 0.42`, so it should not bloom — but that read was **pre-tone-map**, and it is a sky
+  object rather than a deck response, so the owner can separate it by eye in one look (is the sheen ON the
+  deck?). `[unmeasured]` at fov 120.
+
+### Modelling caveats, stated rather than buried
+
+- The IBL term here is the FULL hemisphere integral (48×192 solid-angle quadrature) of the three
+  `<Lightformer>`s treated as cones of their authored angular size. three ships the **split-sum
+  approximation** against a PMREM-blurred cubemap instead. Direction and dominance are robust to that;
+  the absolute number is approximate and `drei`'s `form="rect"` is modelled as a cone.
+- `computeMultiscattering`'s multi-bounce term is omitted (small at this F0).
+- Deck albedo uses the texture's flat `BASE`; the blotch/grain/panel layers are not integrated.
+
+### Owner-facing summary
+
+The sheen is **the star doing exactly what `starBearingDeg 66` asks it to** — the deck is a very dark
+near-mirror (`F0 ≈ 0.0175`, darker than a dielectric, because a near-black albedo at metalness 0.75
+pulls F0 *below* 0.04), and a dark mirror shows almost nothing except a reflection of the one bright
+thing in the sky. The right side agrees with the direction the backdrop's own crescent implies, which is
+the agreement `sky-config.ts` derives that bearing to buy. **This is a finding, not a defect.** If it is
+too strong, the levers in descending effect are `environment.keyIntensity` (3.2 — owns 92% of it),
+`FLOOR_ENV_MAP_INTENSITY` (1), and `starLight.intensity` (1.6 — owns 8%). Moving `starBearingDeg` moves
+BOTH, and would break the sky/light agreement it exists to hold.
+
+### Owner's characterisation corroborates it, and it was a PREDICTION not a fit
+
+The owner reports a **specular lobe on the right, close to the camera**. The mirror-peak arithmetic above
+was computed before that description reached this lane and puts the directional light's peak at **8.86u
+ahead of the camera** and 19.9u toward screen-right — near-camera, right, specular, no hotspot. Three
+independent axes agree. The rail array's predicted signature is the opposite on every one of them
+(a symmetric PAIR at screen `(±0.72, +0.22)`, ~19–20u ahead), which is a second, independent elimination
+of the rails on top of the `1.000×` arithmetic.
+
+One correction to the supervisor's read, because it matters for what gets tuned: the star's own
+`<directionalLight>` is **8%** of the right-side excess. The other **92%** is `SkyEnvironment`'s key
+`<Lightformer>` — IBL specular, same bearing, same side, invisible to a `starLight.intensity` test.
+Varying `starLight.intensity` alone will move the lobe only slightly; the `Env rig` toggle is the
+discriminator that actually splits them.
+
+## `RAIL_EMITTER_RANGE` 600–800 vs `EMITTER_SLOTS` — measured
+
+Method: `buildRailRuns` re-run headlessly over 7 seeds against the real `resolveTrack`, 1600 ship
+positions each (every 5u of 8000u). A run CONTRIBUTES at ship `z` iff its clamped span is non-empty —
+`feedEmitters` clamps to `[z−range, z+range]`, so the test is `run.z0 < z+range && run.z1 > z−range`.
+Eviction = positions where runs-in-range exceeds `EMITTER_SLOTS`. Committed values unchanged.
+
+| range | runs in range (mean / max over 7 seeds) | slots for ZERO eviction | slots for <1% |
+|---|---|---|---|
+| 150 (pre-#155) | 4.6 / 12 | 12 | 12 |
+| **400 (committed)** | 9.2–10.6 / **20** | **20** | 18 |
+| 600 | 11.6–14.9 / **24** | **24** | 24 |
+| 800 | 14.6–19.1 / **30** | **30** | 29 |
+
+- Worst seed at every range is **99991** (92 runs vs 73–79 elsewhere — more gaps, more run breaks).
+- **The committed pair already pops.** At `range 400` / `SLOTS 12`, eviction hits **10.4%** of positions
+  on seed 1234 and **49.3%** on 99991. The supervisor's premise is confirmed, and it is not a 600–800
+  problem — it is live today.
+- **There is no cheap middle.** Zero-eviction and under-1% land within 0–1 slot of each other at every
+  range, because the runs-in-range distribution has a hard shoulder at its max rather than a tail. The
+  gap the owner was to choose inside is ~1 slot wide; there is effectively nothing to trade.
+
+### Cost, specifically
+
+- **Uniform vectors.** `uEmitters` + `uEmitterTint` are both `vec4[K]` → **2K fragment uniform vectors**.
+  K=12 → 24 · K=24 → 48 · K=30 → 60. GLES 3.0 guarantees `MAX_FRAGMENT_UNIFORM_VECTORS ≥ 224`
+  ("The value must be at least 224", Khronos ES 3.0 `glGet` refpage, verified-this-session), so K=30 takes
+  **26.8% of the guaranteed floor**, up from 10.7%. The delta 12→30 is **+36 vectors = +16% of the floor**.
+  `[unmeasured]`: what `meshphysical` already consumes of that budget — it needs a live
+  `gl.getParameter( gl.MAX_FRAGMENT_UNIFORM_VECTORS )` and a linked program, and this lane cannot render.
+- **Per-fragment loop — the cost is the RANGE, not the slot count.** Parked slots exit on
+  `if ( emTint.w <= 0.0 ) continue;` after one uniform read. `emTint.w` is a **uniform**, so that branch is
+  fully coherent across the draw — zero warp divergence, the cheap case. The expensive body (Karis tube
+  solve + a full `RE_Direct_Physical` GGX evaluation) runs once per **LIVE** emitter. Going 400→800
+  roughly **doubles live emitters** (mean 9.2–10.6 → 14.6–19.1), so it doubles the deck's per-fragment
+  lighting work whatever K is. Raising K from 12 to 30 adds 18 branch-only iterations on top of that —
+  second-order against the doubling the range itself buys.
+- **CPU stays allocation-free at larger K**, verified by reading `track-floor.tsx`: `selectNearest` sorts
+  into the module-level `_near` / `_dist` arrays (they grow once on the first frame that fills K, then
+  never again), `feedEmitters` writes into the preallocated `Float32Array`s via `writeEmitter`, and the
+  view-space transform uses the module-level `_view` scratch. Insertion cost is O(runs × K) worst case =
+  92 × 30 ≈ 2,760 comparisons/frame. The per-frame uniform upload at K=30 is 240 floats. All negligible.
+- **Fixed-size stays fixed-size.** `EMITTER_SLOTS` is interpolated into `FRAG_HEAD` and `FRAG_LIGHTS` as a
+  literal, and `onBeforeCompile.toString()` is three's default `customProgramCacheKey()` — so the constant
+  is build-time by construction and nothing here makes it a live knob.
+
+### The honest answer to the owner's question
+
+`RAIL_EMITTER_RANGE 800` is affordable: it needs `EMITTER_SLOTS = 30` (32 if a future seed is denser than
+99991), which costs 60 of ≥224 fragment uniform vectors and 18 coherent branch-only loop iterations. That
+is **not** where the frame time goes. The frame time goes into roughly **2× the GGX evaluations per deck
+fragment**, bought by the range itself, and that price is the same whether or not the slot count is
+raised — raising K is what stops it popping while paying it. `[unmeasured]`: the actual frame-time delta.
+Recommended pairs for the owner to choose between: **600 / 24** and **800 / 30**. Anything that raises
+range without raising slots ships a flickering horizon instead of a hard one.

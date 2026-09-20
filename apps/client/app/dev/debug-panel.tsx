@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { DebugColor } from './debug-color';
 import { DebugSlider } from './debug-slider';
 import { debugTuningSource, pitchDeg, resetDebugTuning, shipBelowAxisDeg, useDebugTuning } from './debug-tuning';
 
@@ -96,14 +95,57 @@ export function DebugPanel() {
 
             <div className="mt-2 mb-1 text-white/40">deck</div>
             <DebugSlider
-                label="emissive"
-                tuningKey="floorEmissiveIntensity"
-                value={ tuning.floorEmissiveIntensity }
+                label="roughness"
+                tuningKey="floorRoughness"
+                value={ tuning.floorRoughness }
+                min={ 0.02 }
+                max={ 1 }
+                step={ 0.01 }
+                note="streaks live here"
+            />
+            <DebugSlider
+                label="metalness"
+                tuningKey="floorMetalness"
+                value={ tuning.floorMetalness }
                 min={ 0 }
                 max={ 1 }
-                step={ 0.005 }
+                step={ 0.05 }
             />
-            <DebugColor label="emissive col" tuningKey="floorEmissive" value={ tuning.floorEmissive } />
+
+            <div className="mt-2 mb-1 text-white/40">rail emitter</div>
+            <DebugSlider
+                label="intensity"
+                tuningKey="emitterIntensity"
+                value={ tuning.emitterIntensity }
+                min={ 0 }
+                max={ 200 }
+                step={ 1 }
+            />
+            <DebugSlider
+                label="range"
+                tuningKey="emitterRange"
+                value={ tuning.emitterRange }
+                min={ 10 }
+                max={ 400 }
+                step={ 5 }
+            />
+            <DebugSlider
+                label="decay"
+                tuningKey="emitterDecay"
+                value={ tuning.emitterDecay }
+                min={ 0 }
+                max={ 3 }
+                step={ 0.05 }
+            />
+            <DebugSlider
+                label="lift"
+                tuningKey="emitterLift"
+                value={ tuning.emitterLift }
+                min={ 0.05 }
+                max={ 4 }
+                step={ 0.05 }
+                note="above deck"
+            />
 
             <div className="mt-2 mb-1 text-white/40">marigold reference</div>
             <DebugSlider
@@ -136,8 +178,8 @@ export function DebugPanel() {
                 commitOnly
             />
 
-            { /* Kept for other subjects, not for this frame: each was measured to move nothing on the deck
-                (envMap 0→2, ambient 1→0), because the deck is lit by its own emissive. */ }
+            { /* Measured inert (envMap 0→2, ambient 1→0) while the deck's emissive dominated; not remeasured
+                since that emissive was deleted. */ }
             <div className="mt-2 mb-1 text-white/40">surfaces</div>
             <DebugSlider
                 label="floor envMap"
