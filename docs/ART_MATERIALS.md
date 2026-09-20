@@ -495,6 +495,23 @@ answer is sampling (mips, anisotropy) or contrast — **not** a change to the ti
 Both numbers freeze back into M1's table at the gate. Until then no number in this sheet licenses a
 joint.
 
+**Does the deck get a key from above?** The deck is now lit by the rails and the star and nothing else,
+and the rails are functionally coplanar with it (§7 revision 5). The question no slider answers is
+whether a **cold key from above** joins the rig, or whether the deck is *meant* to be a void whose edges
+the rails draw. ***"There is no fill" is not the same as "there is no key"*** — the direction's *"deep
+shadows"* rules out the first and says nothing about the second. This is the owner's call, and two
+numbers already in the tree are waiting on it: M1's metalness 1.0 (§7 item 9) and the undeclared white
+ambient (§7 item 10). It also decides whether M1's **0.35 – 0.50 roughness band survives**: that band was
+written for a surface lit by something, and the soft broad reflection the direction asks for — *"its deck
+reflection spreads broadly and softly"* (`track/24_track_BRIEF.md`), *"spreads across the satin metal at
+lower brightness"* (`track/24_track_material_edge_SPEC.md`) — is a reflection *of a source*. The source
+that actually reaches the deck today is the sky, not the rails: a per-fragment evaluation of three's own
+`meshphysical` path over the in-frame deck attributes the deck's one visible highlight **92% to
+`SkyEnvironment` IBL specular, 8% to the star's directional specular, and 0% to the rail array**.
+Roughness is therefore the knob that governs everything the player actually sees on this surface, and it
+is sharply nonlinear across M1's band and below it — measured left-to-right sheen contrast runs 2.75× at
+roughness 1.0, 5.11× at 0.7, **11.55× at the shipped 0.4**, 25.07× at 0.15.
+
 **Hazard metal (M2) versus engineered stone.** Coated metal is recorded in §7 as the decision taken for
 this revision, and the sheet is written around it. Codex's original engineered-stone proposal remains a
 live alternative: blocks cut from the same worked stone as the monoliths, separated from scenery by
@@ -586,7 +603,81 @@ behind the direction, not disagreeing with it.
    call rather than the package's — the gate can overturn it.)* Linear elements are therefore governed
    by **contrast**, not by a width floor. The floor is unchanged for everything else, wear included.
 
+**Revision 5 — the deck's lighting departures, taken at a live frame (2026-09-20).**
+
+Both departures below are consequences of one change, not two independent opinions. The deck used to
+carry a flat emissive — `FLOOR_EMISSIVE = '#c8d0d8'` at 0.05, whose own code comment called it *"the
+deck's only brightness control"*. It was never art direction; it was a stand-in from when nothing lit the
+deck at all, and a view-independent per-fragment add gives a grey pedestal with zero form. The owner
+deleted it rather than dialling it to zero. What replaced it is the rail emitter array: the deck is now
+lit by the marigold boundary strips, the star, the sky, and nothing else.
+
+That exposed a geometric fact this sheet did not anticipate. The emitters sit at `|x| = 32.5`, 0.5u above
+a 64u-wide deck whose normal is +Y — **0.88° above the surface plane**, so `N·L ≈ 0.015` at the
+centreline, with measured irradiance ~3.7e-2 there against 0.43 – 8.0 one unit inboard of the rail.
+**Two 1u strips at the edges of a 64u plane are, for everything but the last couple of units,
+functionally coplanar with it.** Intensity is not the dial: matching an overhead source needs ~65× and
+the near-rail band blows out long before the centre lifts. The consequence for this sheet is that M1's
+numbers were written for a lit surface and are now being judged on an unlit one.
+
+9. **`FLOOR_METALNESS` is 0.75, not M1's 1.0.** M1 specifies *"bare conductor — exposed dark metal"* at
+   metalness 1.0. The shipped value is 0.75, set by the owner off a live frame.
+
+   **This is the departure §0 explicitly warns against, and it is recorded as such rather than
+   rationalised.** §0 says a bare metal surface with nothing to reflect *"renders black and reads as a
+   hole. This is a constraint on the lighting rig, not a licence to drop metalness until the problem goes
+   away."* Two things are true at once. Dropping metalness does **not** fix the coplanar problem —
+   `RE_Direct` multiplies *both* the diffuse and the specular term by `dotNL`, so a restored diffuse lobe
+   meets the same 0.015 at the centreline — and nobody should be permitted to "solve" edge-only lighting
+   that way. What 0.75 does buy is a diffuse response to the sources that are *not* coplanar with the
+   deck, the star and the ambient term. Measured per-fragment, that is precisely what it did: it lifted
+   the **dark** side of the frame and halved the deck's left-to-right sheen contrast, 23.70× at metalness
+   1.0 to 11.55× at 0.75, while the lit side's absolute brightness barely moved (3.8e-2 to 4.2e-2).
+
+   **So the honest status is that 0.75 is a frame-tuned value standing in for a lighting-rig decision
+   nobody has taken.** It is a fill by another name — it works by making the unlit side less unlit. If
+   the deck gets a cold key from above (§5), M1's 1.0 must be re-tested before 0.75 is frozen here.
+
+10. **A white ambient at intensity 1 is a real fill term.** `AMBIENT_INTENSITY = 1` is an uncoloured
+    `<ambientLight>`, shared by the game and every isolation lab. The direction asks for *"Cold rim
+    light, deep shadows"* (`CURRENT_STATUS.md`) and for restored *"deep shadow masses"*
+    (`golden-reference/history/boards/16_golden_reference_REVIEW.md`), and the track brief is explicit:
+    *"No global orange wash or bright blue ambient fill"* (`track/24_track_BRIEF.md`). The engineering
+    lanes restated it as *"there is no fill; shadow sides go black"* (`.claude/art-pass/INDEX.md` §4). A
+    white ambient at 1 is a fill.
+
+    **It is pre-existing, not a new decision** — it was already on `dev` before the emitter work, so it
+    has been silently underwriting every frame the package has been judged against. Recording it is the
+    point: an undeclared fill is worse than a declared one, because every material value tuned under it
+    was tuned against a term nobody knew was there. Two things follow. It is **white**, not the cold
+    colour the direction would imply if a fill were wanted at all. And it is the first term to vary when
+    judging whether the deck needs a key.
+
+**A correction to this sheet's own expectation, not a departure.** M1 says the deck is judged on
+reflection and that roughness is the knob, which holds — but it assumed the thing being reflected was the
+scene's warm energy. Per-fragment attribution of three's `meshphysical` path over the in-frame deck puts
+the deck's one visible highlight at **92% sky IBL specular, 8% star directional specular, 0% rail array**.
+The largest surface in frame is currently a dark mirror of the *sky*. Its Fresnel base is `F0 ≈ 0.0175`,
+below a dielectric's 0.04, because a near-black albedo at metalness 0.75 drags F0 down — so it shows
+almost nothing except the single brightest thing above it. That is consistent with the direction's *"warm
+reflected spill"* only if the rig gives it something warm to reflect; today it does not.
+
+**Not departures — recorded so they are not mistaken for some.**
+
+- **`FLOOR_ROUGHNESS` 0.42 → 0.4** sits inside M1's 0.35 – 0.50 band.
+- **`RAIL_EMITTER_RANGE` 150 → 400** is a property of the lighting rig, not of a surface, and is out of
+  this sheet's scope.
+
 ## 8. Review log
+
+**Revision 4 → 5, the deck's lighting departures (2026-09-20).** No family definition changes. §7 gains
+items 9 and 10 — `FLOOR_METALNESS` at 0.75 against M1's bare-conductor 1.0, and the pre-existing white
+`AMBIENT_INTENSITY = 1` against the direction's deep shadows — both recorded as departures rather than
+folded into M1's table, because both are frame-tuned stand-ins for a lighting-rig decision that has not
+been taken. §7 also records a correction to this sheet's own expectation: the deck reflects the **sky**,
+not the scene's warm energy (92% IBL / 8% star / 0% rail, per-fragment). §5 gains the question behind all
+of it — does the deck get a cold key from above? M1's numbers are unchanged; §7 now states the condition
+under which they must be re-tested.
 
 **Revision 3 → 4, the owner's ruling on the 4u flag (2026-09-20).** One change. Revision 3's §7 item 5
 flagged its own ban to the owner — *"correct this if the intent was literally 4u"* — and the answer was
