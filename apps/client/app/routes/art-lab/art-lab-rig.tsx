@@ -1,12 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import {
-    createFixedStep,
-    DEFAULT_SHIP,
-    FIXED_DT,
-    simulate,
-    type Track as TrackHandle,
-    tuningForShip,
-} from '@slur/shared';
+import { createFixedStep, FIXED_DT, simulate, type Track as TrackHandle, tuningForShip } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import { useWorld } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
@@ -15,6 +8,7 @@ import { updateChaseCamera } from '../../game/camera/chase';
 import { syncRenderSystem } from '../../game/ecs/systems';
 import { LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
 import { attachKeyboard, currentInput } from '../../game/input/keyboard';
+import { LAB_DEFAULT_SHIP } from './lab-defaults';
 import { labCommands, labControls } from './lab-state';
 
 // One fixed-step tick. This is `netFlightSystem` MINUS the networking: same Prev-then-simulate order,
@@ -117,7 +111,7 @@ export function ArtLabRig( { track }: { track: TrackHandle } ) {
             Sim,
             Prev,
             Render,
-            Net( { sessionId: 'art-lab', shipId: DEFAULT_SHIP, colorId: 0 } ),
+            Net( { sessionId: 'art-lab', shipId: LAB_DEFAULT_SHIP, colorId: 0 } ),
             LocalPlayer,
         );
         ship.current = e;

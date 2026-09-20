@@ -4,8 +4,7 @@
 export interface LabLayers {
     floor: boolean;
     boundary: boolean;
-    // Untextured boxes awaiting their own design task, so OFF by default — but one click away, because
-    // hazard-to-floor contact shading is a real check that needs a block present.
+    // OFF by default but one click away: hazard-to-floor contact shading needs a block present to check.
     blocks: boolean;
     // The nebula patch. Independent of `env` so the track can be judged against "Cold Space" with
     // fog/stars/walls muted.
@@ -13,6 +12,7 @@ export interface LabLayers {
     env: boolean;
     // Hides the ship MESH only — the rig, sim and chase camera keep running.
     ships: boolean;
+    // An unlit opaque slab exactly where the ship belongs — mistaken for the ship itself in #171. OFF.
     shipBox: boolean;
     finish: boolean;
 }
@@ -25,8 +25,8 @@ export const DEFAULT_LAB_LAYERS: LabLayers = {
     blocks: false,
     backdrop: true,
     env: false,
-    ships: false,
-    shipBox: true,
+    ships: true,
+    shipBox: false,
     finish: false,
 };
 
