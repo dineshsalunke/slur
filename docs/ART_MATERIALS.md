@@ -295,12 +295,26 @@ Constraints: the perimeter must read golden, never vermilion or red-orange — v
 not in the source colour (`handoff/HANDOVER.md` §4). No red hazard code. Cyan is not an alternate
 energy family.
 
-**The boundary is an edge, not a rail.** Board 24 panel 02 puts the emitter *in the top outer corner of
-the slab*, with the dark cut side-face dropping away beneath it, and its own do-not-copy column excludes
-*"raised rails or ornamental edge machinery"*. The boundary is therefore a narrow strip embedded at the
-deck's outer edge — a small bright core with a controlled local halo — not a bar standing proud of the
-floor. A near-edge gap keeps *"an intact supporting outer floor strip and a straight outer boundary"*
-(board 24), so the boundary is continuous even where the deck beside it is not.
+**Whatever shape the boundary takes, it is OUTBOARD of the deck — this outranks its styling.** The
+deck's rendered top face ends at exactly ±`HALF_WIDTH`; the boundary occupies `[32, 32+w]` beside it
+(ADR-012, `ART_SCALE_REFERENCE.md` §1a). This is a gameplay-read constraint, not an art one, so it is
+settled before any question of how the boundary looks. A near-edge gap keeps *"an intact supporting
+outer floor strip and a straight outer boundary"* (board 24), so the boundary is continuous even where
+the deck beside it is not.
+
+**DEPARTURE from board 24 panel 02 — owner's call, 2026-09-20, pending Codex.** The package puts the
+emitter *in the top outer corner of the slab*, with the dark cut side-face dropping away beneath it,
+and its do-not-copy column excludes *"raised rails or ornamental edge machinery"*. Read as "embedded in
+the slab's top face", that wording is **unbuildable without taking deck**: the top face ends at ±32, so
+anything embedded in it must extend inward, and every unit of boundary width is a unit of playable floor
+repainted as border. That is what shipped, and it is why the deck drew 62u while the player flew 64u.
+The owner's resolution is a **1u × 1u chamfered bar standing outboard at ±32.5**, which reads as a
+raised rail and therefore departs from the exclusion. See `.claude/art-pass/02-track/PASTE-TO-CODEX-rail-outboard.md`.
+
+**The flush alternative, if Codex holds the line.** The same bar at zero height is a coplanar inlay
+outboard of the deck: it satisfies *"must not stand proud of the floor"* literally and still never
+touches playable width. What is **not** available is the original reading — embedded and inboard — in
+any form. The choice is raised-outboard versus flush-outboard, and it is the owner's with Codex.
 
 **Boundary and interior inserts are separated by continuity, not by intensity.** Both are gameplay tier
 and both may be equally hot; board 24's requirement is only that the boundary stay *"visually distinct
