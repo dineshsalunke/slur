@@ -1,6 +1,4 @@
-// Quad primitives for the track's generated meshes, and the corner contract between the deck and its
-// boundary strip: the deck omits exactly the facets the strip fills, so both must read the same numbers
-// and the same edge rule. A contract shared by two files belongs in neither of them.
+// Quad primitives for the track's generated meshes, plus the boundary dimensions both meshes read.
 
 import { HALF_WIDTH } from '@slur/shared';
 import * as THREE from 'three';
@@ -21,11 +19,15 @@ export const BOUNDARY_W = 1.0;
 /** Wrap down the outer face, so the strip turns the corner instead of foreshortening away. */
 export const BOUNDARY_H = 1.0;
 
-/** A = inboard bevel (ships today), B = outboard flare, C = inboard with the marigold ramped inward. */
-export type BoundaryVariant = 'A' | 'B' | 'C';
+/** A = inboard bevel (ships today), B = outboard flare, C = A with the marigold ramped inward,
+ *  D = outboard rail in `[HALF_WIDTH, HALF_WIDTH + w]`, which the deck's width never pays for. */
+export type BoundaryVariant = 'A' | 'B' | 'C' | 'D';
 export const BOUNDARY_VARIANT: BoundaryVariant = 'A';
 
-export const isOutboard = ( v: BoundaryVariant ): boolean => v === 'B';
+export const isOutboard = ( v: BoundaryVariant ): boolean => v === 'B' || v === 'D';
+
+/** D's `h` lifts the band above the deck (0 = flush); the others carry it downward. */
+export const isRaised = ( v: BoundaryVariant ): boolean => v === 'D';
 
 /** 1 at the track edge, 0 by `w` inward. Of x alone, so it survives `pushQuad` reordering vertices. */
 export function inwardFalloff( w: number ): ( x: number ) => number {

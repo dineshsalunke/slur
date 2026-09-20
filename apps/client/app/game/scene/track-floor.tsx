@@ -12,11 +12,13 @@ import {
     FORWARD,
     isOutboard,
     isOuterEdge,
+    isRaised,
     LEFT,
     packGeometry,
     pushQuad,
     RIGHT,
     UP,
+    type V3,
 } from './track-geometry';
 import { AHEAD } from './track-instancing';
 import { FLOOR_EMISSIVE, FLOOR_EMISSIVE_INTENSITY, FLOOR_ENV_MAP_INTENSITY, floorSurface } from './track-materials';
@@ -47,7 +49,7 @@ const isOffGrid = ( v: number ) => {
  * One floor span: top face, both side walls, and end caps only where the slab genuinely ends —
  * unconditional caps would bury coplanar back-to-back faces between adjacent spans and z-fight.
  *
- * At an outer edge the top face stops short and the side wall starts lower, leaving the corner for
+ * At an inboard edge the top face stops short and the side wall starts lower, leaving the corner for
  * `TrackBoundary`. This yields facets, not material, so the visual hull still equals the physics hull.
  */
 function emitSpan(
@@ -60,35 +62,40 @@ function emitSpan(
     capBack: boolean,
     w: number,
     h: number,
-    outboard: boolean,
+    variant: BoundaryVariant,
 ): void {
     const { x0, x1 } = span;
+    const outboard = isOutboard( variant );
     // The span's own height, not 0. Every span the generator emits today sits at y=0, but `FloorSpan.y`
     // is what the boundary rides, so honouring it keeps a future raised platform correct by construction.
     const t = span.y;
     const b = span.y - SLAB_THICKNESS;
-    // Outboard (B) takes no deck: the top face runs the full span, and the wall moves out under the flare.
+    // Outboard takes no deck: the top face runs the full span, and the wall moves out under the band.
     const deckL = ! outboard && isOuterEdge( x0 ) ? x0 + w : x0;
     const deckR = ! outboard && isOuterEdge( x1 ) ? x1 - w : x1;
-    const wallL = isOuterEdge( x0 ) ? t - h : t;
-    const wallR = isOuterEdge( x1 ) ? t - h : t;
     const sideL = outboard && isOuterEdge( x0 ) ? x0 - w : x0;
     const sideR = outboard && isOuterEdge( x1 ) ? x1 + w : x1;
+    const lip = isRaised( variant ) ? t + h : t - h;
+    const lipL = isOuterEdge( x0 ) ? lip : t;
+    const lipR = isOuterEdge( x1 ) ? lip : t;
 
     // Top face — the surface you fly over, and the physics hull itself: what you see is what you hit.
     pushQuad( pos, uv, [ deckL, t, z0 ], [ deckL, t, z1 ], [ deckR, t, z1 ], [ deckR, t, z0 ], 'xz', UP );
 
     // Side walls — visible thickness, so a gap reads as a hole with depth, not a flat dark patch.
-    pushQuad( pos, uv, [ sideL, b, z0 ], [ sideL, wallL, z0 ], [ sideL, wallL, z1 ], [ sideL, b, z1 ], 'zy', LEFT );
-    pushQuad( pos, uv, [ sideR, wallR, z0 ], [ sideR, b, z0 ], [ sideR, b, z1 ], [ sideR, wallR, z1 ], 'zy', RIGHT );
+    pushQuad( pos, uv, [ sideL, b, z0 ], [ sideL, lipL, z0 ], [ sideL, lipL, z1 ], [ sideL, b, z1 ], 'zy', LEFT );
+    pushQuad( pos, uv, [ sideR, lipR, z0 ], [ sideR, b, z0 ], [ sideR, b, z1 ], [ sideR, lipR, z1 ], 'zy', RIGHT );
 
-    // End caps — what you look straight AT across a gap. Squared: B's flare is not chamfered round an end.
-    const capL = sideL;
-    const capR = sideR;
-    if ( capFront )
-        pushQuad( pos, uv, [ capL, b, z0 ], [ capR, b, z0 ], [ capR, t, z0 ], [ capL, t, z0 ], 'xy', BACKWARD );
-    if ( capBack )
-        pushQuad( pos, uv, [ capR, b, z1 ], [ capL, b, z1 ], [ capL, t, z1 ], [ capR, t, z1 ], 'xy', FORWARD );
+    // End caps follow the lip: one rectangle across the whole width notches a flare and a raised band alike.
+    const cap = ( z: number, n: V3 ) => {
+        if ( sideL < x0 - 1e-4 )
+            pushQuad( pos, uv, [ sideL, b, z ], [ x0, b, z ], [ x0, t, z ], [ sideL, lipL, z ], 'xy', n );
+        pushQuad( pos, uv, [ x0, b, z ], [ x1, b, z ], [ x1, t, z ], [ x0, t, z ], 'xy', n );
+        if ( sideR > x1 + 1e-4 )
+            pushQuad( pos, uv, [ x1, b, z ], [ sideR, b, z ], [ sideR, lipR, z ], [ x1, t, z ], 'xy', n );
+    };
+    if ( capFront ) cap( z0, BACKWARD );
+    if ( capBack ) cap( z1, FORWARD );
 
     // Underside — seen when you fall into a gap, and it closes the solid against a low camera.
     pushQuad( pos, uv, [ sideL, b, z0 ], [ sideL, b, z1 ], [ sideR, b, z1 ], [ sideR, b, z0 ], 'xz', DOWN );
@@ -111,7 +118,7 @@ export function buildSpanGeometry(
 ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
-    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true, w, h, isOutboard( variant ) );
+    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true, w, h, variant );
     return packGeometry( pos, uv );
 }
 
@@ -129,7 +136,6 @@ export function segmentCount( track: Track ): number {
  * rule (GDD §0), so reading spans keeps the visual hull equal to the physics hull whatever it does later.
  */
 function buildFloorGeometry( track: Track, w: number, h: number, variant: BoundaryVariant ): THREE.BufferGeometry {
-    const outboard = isOutboard( variant );
     const pos: number[] = [];
     const uv: number[] = [];
     const last = segmentCount( track );
@@ -155,7 +161,7 @@ function buildFloorGeometry( track: Track, w: number, h: number, variant: Bounda
                 ! continues( next, f.x0, f.x1, f.y ),
                 w,
                 h,
-                outboard,
+                variant,
             );
         }
     }
@@ -166,7 +172,7 @@ function buildFloorGeometry( track: Track, w: number, h: number, variant: Bounda
 /** The ribbon surface as a single generated mesh, with real thickness. Deck only — the boundary strip
  *  and the blocks come from `TrackView`. */
 export function TrackFloor( { track }: { track: Track } ) {
-    // The deck carves itself by the boundary's dimensions, so it rebuilds with the strip or the two desync.
+    // The deck's outer edge answers to the boundary's shape, so it rebuilds with the strip or the two desync.
     const tuning = useDebugTuning();
     const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
     const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;

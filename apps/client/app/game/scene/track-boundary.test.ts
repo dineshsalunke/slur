@@ -135,6 +135,108 @@ describe( 'variant B flares outboard instead of eating deck', () => {
     } );
 } );
 
+describe( 'variant D stands the band outboard and leaves the deck alone', () => {
+    const w = 2;
+
+    it( 'holds the deck edge at ±HALF_WIDTH and the band at [edge, edge+width], for every width', () => {
+        for ( const [ ww, hh ] of [
+            [ 1, 0 ],
+            [ 2, 0.5 ],
+            [ 4, 3 ],
+            [ 7.5, 1 ],
+        ] ) {
+            const deck = buildSpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, ww, hh, 'D' );
+            expect( spread( atHeight( deck, 0, true ) ) ).toEqual( { min: -HALF_WIDTH, max: HALF_WIDTH } );
+
+            // Inner face flush at ±32, outer at ±(32 + width) — centred on ±32 would straddle the edge.
+            const band = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, ww, hh, 'D' );
+            expect( spread( atHeight( band, hh, true ) ) ).toEqual( { min: -HALF_WIDTH - ww, max: HALF_WIDTH + ww } );
+            const inner = atHeight( band, hh, true ).filter( ( x ) => Math.abs( Math.abs( x ) - HALF_WIDTH ) < 1e-6 );
+            expect( inner.length ).toBeGreaterThan( 0 );
+        }
+    } );
+
+    it( 'puts no part of the band inboard of the track edge', () => {
+        const strip = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, 0.5, 'D' );
+        const p = strip.getAttribute( 'position' );
+
+        let inboard = 0;
+        for ( let i = 0; i < p.count; i++ ) if ( Math.abs( p.getX( i ) ) < HALF_WIDTH - 1e-6 ) inboard++;
+        expect( inboard ).toBe( 0 );
+    } );
+
+    it( 'is flush and riserless at wrap 0, which is why the slider reaches it', () => {
+        const flush = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, 0, 'D' );
+        const p = flush.getAttribute( 'position' );
+
+        let highest = -Infinity;
+        for ( let i = 0; i < p.count; i++ ) highest = Math.max( highest, p.getY( i ) );
+        expect( highest ).toBe( 0 );
+        expect( p.count ).toBe( 12 ); // one top-face quad per side, and no riser
+    } );
+
+    it( 'faces the riser inward — an outward one is invisible from the chase cam, every gate green', () => {
+        const strip = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, 1, 'D' );
+        const p = strip.getAttribute( 'position' );
+        const n = strip.getAttribute( 'normal' );
+
+        for ( let i = 0; i < p.count; i++ ) {
+            if ( Math.abs( p.getX( i ) - HALF_WIDTH ) > 1e-6 && Math.abs( p.getX( i ) + HALF_WIDTH ) > 1e-6 ) continue;
+            if ( n.getY( i ) > 0.9 ) continue;
+            expect( p.getX( i ) > 0 ? n.getX( i ) : -n.getX( i ) ).toBeLessThan( 0 );
+        }
+    } );
+
+    it( 'hands the band its outer face and end section from the slab', () => {
+        const h = 1;
+        const deck = buildSpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, h, 'D' );
+        const p = deck.getAttribute( 'position' );
+
+        let widest = 0;
+        let highest = -Infinity;
+        for ( let i = 0; i < p.count; i++ ) {
+            widest = Math.max( widest, Math.abs( p.getX( i ) ) );
+            highest = Math.max( highest, p.getY( i ) );
+        }
+        expect( widest ).toBe( HALF_WIDTH + w );
+        expect( highest ).toBe( h );
+    } );
+} );
+
+describe( 'the end cap follows the outer lip rather than squaring across it', () => {
+    function capAt( geo: THREE.BufferGeometry, x: number ): number[] {
+        const p = geo.getAttribute( 'position' );
+        const n = geo.getAttribute( 'normal' );
+        const out: number[] = [];
+        for ( let i = 0; i < p.count; i++ ) {
+            if ( Math.abs( p.getX( i ) - x ) > 1e-6 || Math.abs( p.getZ( i ) - Z0 ) > 1e-6 ) continue;
+            if ( Math.abs( n.getZ( i ) ) < 0.9 ) continue;
+            out.push( p.getY( i ) );
+        }
+        return out;
+    }
+
+    const [ w, h ] = [ 2, 0.5 ];
+
+    it( "drops to B's flare lip at the outboard corner", () => {
+        const deck = buildSpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, h, 'B' );
+        expect( Math.max( ...capAt( deck, HALF_WIDTH + w ) ) ).toBe( -h );
+        expect( Math.max( ...capAt( deck, HALF_WIDTH ) ) ).toBe( 0 );
+    } );
+
+    it( "rises to D's band top at the outboard corner", () => {
+        const deck = buildSpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, h, 'D' );
+        expect( Math.max( ...capAt( deck, HALF_WIDTH + w ) ) ).toBe( h );
+        expect( Math.max( ...capAt( deck, HALF_WIDTH ) ) ).toBe( 0 );
+    } );
+
+    it( 'leaves the inboard variants their single square cap', () => {
+        const deck = buildSpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, h, 'A' );
+        expect( capAt( deck, HALF_WIDTH ).length ).toBe( 3 );
+        expect( Math.max( ...capAt( deck, HALF_WIDTH ) ) ).toBe( 0 );
+    } );
+} );
+
 describe( 'variant C ramps the marigold inward instead of ending it on a line', () => {
     const w = 3;
 
