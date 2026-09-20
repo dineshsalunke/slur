@@ -31,6 +31,14 @@ boundary, interior cues are non-emissive.*
 decorative: it reinforces perspective and speed. Must read **golden marigold**, never vermilion, rusty red or
 red-orange, **after tone mapping** — check the final displayed pixels, not the input hex.
 
+> **It stands OUTBOARD of the deck, and that outranks its styling — ADR-012 (owner, 2026-09-20).**
+> The deck's rendered top face ends at exactly ±`HALF_WIDTH`; the rail occupies `[32, 32+RAIL_W]`
+> beside it. As decided: **1u wide × 1u tall, 0.15u chamfer on the long edges, centred pivot ±32.5.**
+> It may not take a single unit of playable width, at any setting. The earlier "narrow strip embedded
+> at the deck's outer edge" reading is retired — it is unbuildable without eating deck, and it shipped
+> a deck drawn 62u wide while the player flew 64u. Departure from board 24 panel 02's exclusion of
+> *"raised rails"* is recorded and goes to Codex as `PASTE-TO-CODEX-rail-outboard.md`.
+
 **Gaps** — real missing geometry, never a black plane. Frozen three-part treatment:
 1. subtle marigold edge definition around the opening,
 2. slight inner-lip glow revealing the cut,

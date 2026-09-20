@@ -36,6 +36,28 @@ This is the single correction that matters most. Consequences for art direction:
 | Total track length | **8000u** | `TRACK_SEGMENTS(400) × SEG_LEN(20)` | ≈2.4 min at cruise, ~2.8 min real average |
 | Track thickness (visual) | *free* | — | **not a sim constant.** The sim floor is a plane; thickness is pure art. Board 07's "1u" is a legal choice, not a requirement. |
 | Authoring snap grid | **4u** | `CELL` | design-time only. The sim is continuous float-AABB; **never quantize art to this at runtime** |
+| Edge rail width (x) | **1u** | `RAIL_W` | sits **outboard**: inner face flush at ±32, outer face at ±33 |
+| Edge rail height (y) | **1u** | `RAIL_H` | stands on the deck. See the departure note in `ART_MATERIALS.md` M7 |
+| Edge rail chamfer | **0.15u** | `RAIL_CHAMFER` | on the long edges, so the rim light catches a facet instead of a hard corner |
+
+### 1a. No visual element may take playable width — ADR-012
+
+> **The deck's rendered top face ends at exactly ±`HALF_WIDTH`, always.** Rails, trim, edge strips and
+> any future border art live **outboard** of that, in `[32, 32+w]`, mirrored. Nothing that is drawn may
+> move where the deck is drawn to end.
+
+The rail is positioned by **span**, not by pivot: inner face `x = 32`, outer face `x = 32 + RAIL_W`.
+Stated for a centred pivot — three's `BoxGeometry` is centred on the origin — that is
+`position.x = ±(32 + RAIL_W/2)` = **±32.5**, *not* ±32 (which straddles the edge and eats `RAIL_W/2`
+of deck) and *not* ±33 (which leaves a `RAIL_W/2` gap).
+
+**Why this is a hard rule and not a preference.** The sim's floor spans ±`HALF_WIDTH` unconditionally
+(`packages/shared/src/sim/track.ts:133`) and knows nothing about any client-side trim constant. A trim
+that insets the drawn deck therefore does **not** narrow the track — it makes the picture disagree with
+the physics, and the player flies on solid floor that renders as border. An edge marker drawn somewhere
+other than the edge has failed at its only job. Verify by asserting the deck's outer top-face vertex
+sits at ±`HALF_WIDTH` **for every value of the rail width** — a test that only checks the rail's own
+position passes while the deck moves underneath it.
 
 ## 2. Obstacle blocks — **only the height is fixed**
 

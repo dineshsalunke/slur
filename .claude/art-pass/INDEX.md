@@ -126,6 +126,24 @@ Tests never gate art. A green verify run means the code is sound, not that the a
 
 ## 4. Standing facts (already paid for — do not rediscover)
 
+**Geometry / the playable read**
+- **No drawn element may consume playable width — ADR-012.** The deck's rendered top face ends at
+  exactly ±`HALF_WIDTH`; rails, trim and any future perimeter art live **outboard**, in `[32, 32+w]`.
+  The rail as decided: 1u × 1u, 0.15u chamfer, centred pivot at **±32.5** (`ART_SCALE_REFERENCE.md`
+  §1a). **What it cost to learn:** the boundary was conceived as part of the slab's *top face*, which
+  forces it inward — one constant sized the deck mesh *and* the trim mesh, so the width control shrank
+  the deck and repainted the reclaimed floor as border. The deck drew 62u while the player flew 64u.
+  Three sessions went into tuning bevel shapes inside that frame, including a three-way A/B whose three
+  options were all consequences of the same premise. The owner deleted the frame in one line: a 1u box,
+  chamfered, at `track_width/2 + 0.5u`.
+- **When a control is wrong in the same direction every time, check what it is wired to before tuning
+  it.** The boundary width slider was believed to size the rail; it sized the deck. No amount of shape
+  iteration could have found that, because no shape was the variable. `grep` a constant's consumers
+  before forming an opinion about the look.
+- **Assert the invariant, don't comment it.** Pin the deck's outer top-face vertex at ±`HALF_WIDTH` for
+  *every* rail width. A test that checks only the rail's own position stays green while the deck moves
+  underneath it — which is how the original coupling survived several gates.
+
 **Lighting / materials**
 - **The scene is emissive-first, NOT a three-point rig.** Warm near-field light comes from the gameplay
   emissives themselves (rails, seams, engines, pickups); one cold distant star rims the rocks and the planet;

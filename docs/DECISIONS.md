@@ -500,3 +500,77 @@ Until that happens the occlusion cost is reasoned, not observed. If it reads bad
 **Not decided here.** Selective occlusion fade (v2 §8) is still unbuilt and unaccepted; ADD §10 OQ8
 stays open for the 4–5u question. 7.5u is not a step toward 4.5u, it is the lowest height at which the
 ship stays framed.
+
+---
+
+## ADR-012 — The edge rail stands outboard; no drawn element may take playable width
+
+**Date:** 2026-09-20 · **Status:** ACCEPTED (owner) · **Supersedes:** the "boundary embedded in the
+slab's top face" reading in `ART_MATERIALS.md` M7 · **Departs from:** board 24 panel 02's exclusion of
+*"raised rails or ornamental edge machinery"* — see "The departure", below.
+
+### Decision
+
+**The deck's rendered top face ends at exactly ±`HALF_WIDTH`, always.** The edge rail is a separate
+object standing **outboard** of it, spanning `[32, 32+RAIL_W]` and mirrored on −x. As shipped: a **1u ×
+1u bar with a 0.15u chamfer on its long edges**, centred pivot at **±32.5**. Its width and height may be
+tuned freely; **neither may move where the deck is drawn to end.**
+
+Generalised, because the rail is only the first instance: **no visual element may consume playable
+width.** Trim, borders, edge strips and any future perimeter art live outboard of ±`HALF_WIDTH`.
+
+### Why
+
+The sim's floor spans ±`HALF_WIDTH` unconditionally (`packages/shared/src/sim/track.ts:133`) and has no
+term for any client-side trim constant. So an inset boundary does **not** narrow the track — it makes
+the render disagree with the physics. At the shipped `BOUNDARY_W = 1.0` the deck drew **62u** while the
+player flew **64u**: 1u per side of real, solid, flyable floor rendered as border. An edge marker drawn
+somewhere other than the edge has failed at its only function, and that is worse than an honestly
+narrower track, which would at least be consistent.
+
+### How it was built wrong, and the shape of the mistake
+
+`track-floor.tsx` generated the deck's top face inset by the trim's width —
+`deckL = isOuterEdge( x0 ) ? x0 + w : x0` — and `track-geometry.ts` stated the coupling as the design:
+*"the deck omits exactly the facets the strip fills, so both must read the same numbers and the same
+edge rule."* One constant fed the deck mesh and the boundary mesh, so the width control **shrank the
+deck** and repainted the reclaimed strip as trim.
+
+The frame, not the arithmetic, was the error. Because the trim was conceived as *part of the slab's
+surface* rather than as an object standing beside it, everything downstream was forced: the inward
+inset, the shared width, the wrap, an outboard flare that hid below the sight line, and finally a
+three-way A/B comparing three shapes that were all consequences of the same wrong premise. Several
+sessions were spent tuning inside the frame. **The owner's fix deleted the frame instead: a 1u box,
+chamfered, placed at `track_width/2 + 0.5u`.**
+
+**Generalisable lesson, and the reason this ADR is worded broadly.** When a control's effect is
+consistently wrong in the same direction, interrogate what the control is wired to before tuning it.
+Here the width slider was believed to size the rail; it sized the deck. Three sessions of shape
+variants could not have found that, because no shape was the variable.
+
+### The departure
+
+Board 24 panel 02 excludes *"raised rails or ornamental edge machinery"*, and a 1u bar standing on the
+deck is a raised rail. Read as "embedded in the slab's top face", the package's wording is
+**unbuildable without taking deck** — the top face ends at ±32, so anything embedded in it extends
+inward. The exclusion and the playable-width invariant cannot both hold in that reading.
+
+The owner's position is that the trim must never affect the playable read, and that outranks the
+styling of the trim. This ADR therefore accepts the raised bar and records the departure rather than
+resolving it silently. **`docs/art-direction/` is read-only for Claude**; the correction goes to Codex
+as `.claude/art-pass/02-track/PASTE-TO-CODEX-rail-outboard.md` with the package wording quoted.
+
+If Codex holds the exclusion, the fallback is the **same bar at zero height** — a coplanar inlay
+outboard of the deck, which satisfies *"must not stand proud of the floor"* literally and still takes no
+width. What is not available in any form is the original inboard reading.
+
+### Acceptance
+
+Assert the deck's outer top-face vertex sits at ±`HALF_WIDTH` **for every value of `RAIL_W`**. A test
+that checks only the rail's own position passes while the deck moves underneath it — that is exactly how
+the original coupling survived a green gate for several sessions.
+
+### Not decided here
+
+The rail's final height, its material tier beyond M7, and whether it breaks over full-width gaps or runs
+continuous. Height is exposed on the `/art-lab` panel for the owner to judge.
