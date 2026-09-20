@@ -25,6 +25,10 @@ export default defineConfig( ( { mode } ) => {
             tailwindcss(),
             reactRouter(),
             artRefsPlugin( { dir: resolve( process.cwd(), '../../docs/art-direction/boards' ) } ),
+            artRefsPlugin( {
+                dir: resolve( process.cwd(), '../../docs/art-direction/blocks' ),
+                route: '/art-refs-blocks',
+            } ),
             // Also dev-only. Writes tapped frames into the art-pass refs dir, which is already gitignored
             // (`.claude/art-pass/.gitignore` ignores `*/refs/`) — see frame-tap-plugin.ts.
             frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/art-pass/00-frame-tap/refs' ) } ),

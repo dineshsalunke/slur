@@ -81,3 +81,66 @@ entry. The supervisor writes the prose; this file is the numbers.
   refused for naming it even in a note. `CONTRIBUTING.md:134` states the policy.
 - **Visual gate: `[unmeasured]`.** Not yet looked at in a foreground Chrome tab; `split-crown` was busy
   and tab focus is serialised across lanes.
+
+## Authority correction — board 28 supersedes board 10 and `handoff/04_OBSTACLES.md`
+
+Relayed by the supervisor 2026-09-20; verified against the file. Owner's tightening: **board 28 only** —
+boards 25/26/27 are history, not references.
+
+- `docs/art-direction/blocks/28_non_destructible_blocks_SPEC.md`, first paragraph: *"This is the current
+  non-destructible block art direction, superseding conflicting proposals in boards 25–27."*
+- Same paragraph, on the image: *"the newly generated image has not itself been approved"*. And under
+  validation: *"Illustrative proportions, apparent height and camera matching are not measured evidence."*
+  The written selected direction is what is decided; `ART_SCALE_REFERENCE.md` stays the dimensional
+  authority. Board 28 is a LOOK target.
+- Direction as written: sealed rectangular cuboids, restrained bevels, 8u height, variable width/depth ·
+  marigold seams **vertical only**, variable positions, multiple permitted · *"Top-face luminous returns
+  and glowing outlines are not part of the selected direction"* · no fissures, cracks, separated plates or
+  broken contours · *"Preserve generous dark face areas"* · variation carried by **broad irregular wear
+  patches varying sheen and muted graphite value**, with *"Clean is a legitimate endpoint of the wear
+  range"* and *"Wear strength and seam count are independent controls, not distinct gameplay classes"*.
+- Authoring intent, which confirms the mechanism choice independently: *"Prefer shared parameterized cuboid
+  forms and shared material variation over individually authored models or painted block textures"* —
+  controls named as width/depth, restrained bevel, seam count/position/spacing, wear patch
+  placement/scale/coverage/contrast, and a repeatable instance seed.
+- *"Some fine surface crazing persists: this incidental texture is not authorization to reintroduce
+  fissures."*
+
+**Instrument corrected in the same commit:** `<IsoLab board>` now `28_non_destructible_blocks_FINAL_DRAFT.png`.
+That board lives in `docs/art-direction/blocks/`, not `docs/art-direction/boards/`, so it needed a **second
+`artRefsPlugin` mount** at `/art-refs-blocks` (`apps/client/vite.config.ts`) plus a `REFERENCE_BOARDS` entry
+with a `url` override. Board 10's picker label now reads "(SUPERSEDED)". Nothing under
+`docs/art-direction/` was edited.
+
+## `ART_MATERIALS.md` M2 vs board 28 — asked for by the supervisor
+
+**No contradiction found. Three omissions and one passage that can be misread.** M2 is our engineering
+sheet; where it is silent the spec governs.
+
+1. **Wear is absent from M2 entirely.** M2's block row lists finish, metalness, roughness, colour, seam
+   language and silhouette — no wear. Board 28 makes broad wear patches *the* variation mechanism for the
+   family. M2's element map row (`Standard deadly block | M2 coated | gameplay — sparse functional seams`)
+   also omits it. **This is the gap that matters** — a reader of M2 alone would build a uniform family.
+2. **M2 does not say seams are vertical.** It says "sparse, narrow, functional". Board 28 says vertical
+   only, with variable position and multiple permitted, and explicitly excludes top-face returns. M2 is
+   underspecified, not wrong.
+3. **M2 names no seed / instance-variation concept.** Board 28's authoring intent requires a repeatable
+   instance seed.
+4. **Misread risk, not a conflict:** M2's "Destructible variant" paragraph describes broad recessed
+   fractures with M7 revealed inside. Board 28 rejects fissures *"on this family"* — the non-destructible
+   one — so the two do not collide, but a reader skimming M2 could carry fractures onto the sealed block.
+   ADR-009 gates the destructible block anyway.
+5. **Numbers:** board 28 sets none (*"this generated painting is not a working procedural system"*), so
+   M2's roughness 0.45–0.60 and metalness 0 stand unopposed. Note that broad patches "varying sheen" will
+   need a roughness *spread*; whether the worn end stays inside 0.60 is `[unmeasured]`.
+6. **Agreements:** near-black coated metal, distinct from the bare graphite deck and from stone; generous
+   dark faces; intact silhouette; localized marigold. M2 and board 28 say the same thing in both.
+
+## Still open at this seam
+
+- Cold-key measurement on an 8u block, centreline vs rails, under `cf1c98c`: **`[unmeasured]`** — approved
+  by the supervisor, not started.
+- Triplanar / world-space UV behaviour on the installed three + R3F: **`[unverified]`** — must be checked
+  against the installed typed API before it goes in the PR body, not recalled.
+- Visual gate in a foreground Chrome tab: **`[unmeasured]`** — Chrome was released to this lane, but the
+  context seam arrived first. Nothing has been looked at on screen.

@@ -294,3 +294,22 @@ that failed. No prose, no narrative — that is the supervisor's job, written fr
 **`[unmeasured]` is a legitimate and valuable entry**; refusing to reconstruct a reading you cannot source
 first-hand is the right behaviour, and worth more than the reading would have been. This file is what
 survives when your context is cleared — a lane without it is unrecoverable, which is the expensive half.
+
+### 10h. CORRECTION — §0's block reference is superseded (added by the lane, 2026-09-20)
+
+§0 sends you to `docs/art-direction/handoff/04_OBSTACLES.md` and board `10_obstacle_blocks_final.png`.
+**Both are out.** The current block direction is **`docs/art-direction/blocks/28_non_destructible_blocks_SPEC.md`**
+— its own opening states it is *"the current non-destructible block art direction, superseding conflicting
+proposals in boards 25–27"*, and the per-subject briefs outrank the older `handoff/` package generally
+(`docs/art-direction/README.md`). **Owner's instruction: board 28 only — 25, 26 and 27 are history.**
+
+What changes in practice: no draft or taper (*"Keep sealed rectangular cuboids with restrained bevels"*);
+marigold seams are **vertical only**, variable position, multiple permitted, and *"Top-face luminous
+returns and glowing outlines are not part of the selected direction"*; and the family's variation comes
+from **broad wear patches in sheen and value**, not from varied silhouettes — *"Clean is a legitimate
+endpoint of the wear range."*
+
+Board 28's image is a **final draft that has not itself been approved**, and its spec says *"Illustrative
+proportions, apparent height and camera matching are not measured evidence"*. Take the written direction as
+authority and the image as illustration; `docs/ART_SCALE_REFERENCE.md` remains the sole dimensional
+authority, so §3b's "width and depth are free" is unchanged.
