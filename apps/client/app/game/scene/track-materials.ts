@@ -15,12 +15,14 @@ export const FLOOR_ROUGHNESS = 0.42;
 
 export const FLOOR_METALNESS = 1.0;
 
-/**
- * The ribbon deck. A function, not a frozen object: `trackSurfaceTexture()` needs `document` and must not
- * run at import. `color` is white because base colour MULTIPLIES the map — the near-black the deck used
- * before it was textured crushes the whole texture to flat black.
- */
+/** The ribbon deck. A function, not a frozen object: `trackSurfaceTexture()` needs `document` and must not
+ *  run at import. `color` is white because base colour MULTIPLIES the map. */
 export const FLOOR_ENV_MAP_INTENSITY = 1;
+
+/** The deck's only brightness control, measured: 0 blacks it out, while envMap, ambient and the star each
+ *  move nothing on it. Colour is still the cool grey-white, unresolved against a marigold-primary palette. */
+export const FLOOR_EMISSIVE = '#c8d0d8';
+export const FLOOR_EMISSIVE_INTENSITY = 0.05;
 
 export function floorSurface() {
     return {
@@ -28,8 +30,8 @@ export function floorSurface() {
         map: trackSurfaceTexture(),
         roughness: FLOOR_ROUGHNESS,
         metalness: FLOOR_METALNESS,
-        emissive: '#c8d0d8',
-        emissiveIntensity: 0.05,
+        emissive: FLOOR_EMISSIVE,
+        emissiveIntensity: FLOOR_EMISSIVE_INTENSITY,
     };
 }
 
