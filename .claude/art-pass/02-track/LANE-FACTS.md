@@ -603,3 +603,103 @@ Method: `buildRailRuns` / `railRunDistance` / `selectNearest` / `feedEmitters` r
 ## Distant deck is unlit BY DESIGN
 
 `RAIL_EMITTER_RANGE = 150` is both the tube clamp (`z ± range` in `feedEmitters`) and the `cutoffDistance` handed to `getDistanceAttenuation`, whose window term `pow2(saturate(1 - pow4(d/cutoff)))` reaches **exactly zero at d = 150**. So deck more than ~150u ahead of the ship has no emitter in range by construction, and the falloff hits zero at the same distance the clamp drops the run — the two agree, so nothing pops as it enters. Expected, not a failure. Raising the knob extends it at the usual inverse-square cost.
+
+## The right-side deck sheen — attributed by arithmetic at the COMMITTED values
+
+Method: the whole `meshphysical` fragment path re-implemented in node from `three@0.185.1` source
+(`D_GGX`, `V_GGX_SmithCorrelated`, `F_Schlick`, `BRDF_Lambert`, `RE_Direct_Physical`,
+`getDistanceAttenuation`), evaluated over every deck fragment inside the frame against the real
+`resolveTrack( procgenDescriptor( 1234 ) )` and the real `CHASE` rig. Material `FLOOR_ROUGHNESS 0.4` /
+`FLOOR_METALNESS 0.75` / `FLOOR_ENV_MAP_INTENSITY 1`, `AMBIENT_INTENSITY 1`, `RAIL_EMITTER_RANGE 400`.
+Deck albedo taken from `track-texture.ts` `BASE = #14181e` (the map MULTIPLIES a white base). Nothing
+committed was changed; the harness was a temp file, now deleted. `[unmeasured]` by eye.
+
+- Screen-right IS world −X, confirmed numerically from the rig, not from the `sky-config` comment: the
+  chase camera's right basis computes to `(−1.000, 0.000, 0.000)`.
+- `skyDirection( 66, 19 ) = (−0.8638, 0.3256, 0.3846)`; `dot( L, cameraRight ) = +0.864`. The star bearing
+  is 86% of the way toward screen-right. **Every screen-right-biased term in the scene traces to
+  `starBearingDeg 66`.**
+- Mean per deck fragment, screen LEFT (`sx < −0.15`) vs screen RIGHT (`sx > 0.15`), ship z=200, at rest:
+
+  | term | left | right | R/L |
+  |---|---|---|---|
+  | `ambient` | 7.13e-4 | 7.13e-4 | **1.00** |
+  | `starDiff` | 3.25e-4 | 3.25e-4 | **1.00** |
+  | `starSpec` | 4.55e-4 | 3.47e-3 | 7.61 |
+  | `railL` + `railR` | 4.93e-4 | 4.93e-4 | **1.00** |
+  | `iblDiff` | 4.64e-4 | 4.64e-4 | **1.00** |
+  | `iblSpec` | 1.14e-3 | 3.60e-2 | **31.6** |
+  | total | 3.59e-3 | 4.15e-2 | 11.55 |
+
+- **Attribution of the right-side EXCESS: `SkyEnvironment` IBL specular 92%, `StarLight` specular 8%,
+  rail array 0%, ambient 0%.** Only the two specular terms are one-sided; every diffuse term is 1.00×
+  because a directional/ambient/IBL-diffuse source on a flat plane has constant `dot(N,L)`.
+- Source-toggle A/B over the same fragments (R/L of total): all three `11.55` · env off `2.52` ·
+  star off `13.41` · **rail alone `1.00`** · env alone `16.05` · star alone `3.02`.
+- At top speed (fov 85, `back` 18) the asymmetry WORSENS to `19.94×`, and `starSpec` overtakes `iblSpec`
+  in the outermost column (`4.73e-1` vs `3.45e-1` at `sx 0.875`) as the widening frame swallows more of
+  the directional lobe.
+
+### Why it is a broad sheen and not a hotspot
+
+The directional light's exact mirror peak on the deck plane (`H == N`) sits at world `x = −19.90`
+(19.9u toward screen-right) and **8.86u ahead of the CAMERA** — a figure fixed by `CHASE.height 7.5` and
+`L` alone, so it does not move with speed. That is **66.0°** off the camera axis laterally, against a
+horizontal half-frame of 51.5° at rest and 58.7° at top speed: **the peak is off-frame in every
+condition**, by 14.5° at rest and 7.3° at top speed. What reaches the frame is the tail of the GGX lobe
+sweeping in from the right edge — no hotspot, a gradient.
+
+### The committed material values did NOT create it
+
+Sweeps at the same geometry, R/L of total (and right-side absolute):
+
+- metalness `1.0` → **23.70×** (3.81e-2) · `0.75` → 11.55× (4.15e-2) · `0.3` → 6.65× · `0.0` → 5.42× (5.17e-2)
+- roughness `0.15` → **25.07×** · `0.4` → 11.55× · `0.7` → 5.11× · `1.0` → 2.75× (2.97e-2)
+
+The sheen's ABSOLUTE brightness is near-flat across both (3.0e-2 – 5.2e-2). What the owner's move to
+metalness 0.75 changed is the **left** side — it restored a diffuse lobe and halved the contrast ratio.
+**The sheen was present and worse at `FLOOR_METALNESS 1.0`**; the deck reading "entirely black" there was
+the rest of the frame going dark around a sheen that never left. This contradicts the supervisor's
+briefed expectation that a one-sided term "would have been nearly invisible" at 1.0.
+
+### How each candidate was eliminated — arithmetic vs plausibility
+
+- `StarLight` — **NOT eliminated. It is a real contributor, 8% of the excess.** Arithmetic.
+- `SkyEnvironment` IBL — **NOT eliminated. It is the dominant term, 92%.** Arithmetic. Its key
+  `<Lightformer>` reads the same `config.starBearingDeg`, so it and the directional light are the same
+  bearing by construction and CANNOT be told apart by which side they light.
+- Rail emitter array — **ruled out by arithmetic, at the NEW values**: `1.000×` symmetric, with `railL`
+  and `railR` exact mirrors per fragment. The predecessor's symmetry conclusion survives the material
+  change because it rests on geometry and slot selection, not on the BRDF.
+- `BOUNDARY_SURFACE`, `LETHAL_SURFACE`, `DRAG_SURFACE` — **ruled out by mechanism**: a `meshStandardMaterial`
+  `emissive` is not a light and illuminates no other surface in three. They can only reach the deck through
+  bloom. Additionally `DEFAULT_LAB_LAYERS` has `blocks: false`, so neither block surface is in the default
+  `/art-lab` view at all; and the boundary runs down BOTH edges, so it is symmetric anyway.
+- Ship emissives — **ruled out by mounting**: `DEFAULT_LAB_LAYERS` has `ships: false`. `ShipBox` is on, but
+  it is `meshBasicMaterial color="#404040"`, unlit and centred.
+- Bloom bleed off an edge-of-frame bright object — **the one candidate not closed by arithmetic.** The only
+  asymmetric bright thing left in frame is the backdrop jpg's own planet, up-right. Against it: this lane's
+  earlier first-hand pixel read put patch interior luma at 42–66/255 = 0.16–0.26, under env C's
+  `bloom.threshold 0.42`, so it should not bloom — but that read was **pre-tone-map**, and it is a sky
+  object rather than a deck response, so the owner can separate it by eye in one look (is the sheen ON the
+  deck?). `[unmeasured]` at fov 120.
+
+### Modelling caveats, stated rather than buried
+
+- The IBL term here is the FULL hemisphere integral (48×192 solid-angle quadrature) of the three
+  `<Lightformer>`s treated as cones of their authored angular size. three ships the **split-sum
+  approximation** against a PMREM-blurred cubemap instead. Direction and dominance are robust to that;
+  the absolute number is approximate and `drei`'s `form="rect"` is modelled as a cone.
+- `computeMultiscattering`'s multi-bounce term is omitted (small at this F0).
+- Deck albedo uses the texture's flat `BASE`; the blotch/grain/panel layers are not integrated.
+
+### Owner-facing summary
+
+The sheen is **the star doing exactly what `starBearingDeg 66` asks it to** — the deck is a very dark
+near-mirror (`F0 ≈ 0.0175`, darker than a dielectric, because a near-black albedo at metalness 0.75
+pulls F0 *below* 0.04), and a dark mirror shows almost nothing except a reflection of the one bright
+thing in the sky. The right side agrees with the direction the backdrop's own crescent implies, which is
+the agreement `sky-config.ts` derives that bearing to buy. **This is a finding, not a defect.** If it is
+too strong, the levers in descending effect are `environment.keyIntensity` (3.2 — owns 92% of it),
+`FLOOR_ENV_MAP_INTENSITY` (1), and `starLight.intensity` (1.6 — owns 8%). Moving `starBearingDeg` moves
+BOTH, and would break the sky/light agreement it exists to hold.
