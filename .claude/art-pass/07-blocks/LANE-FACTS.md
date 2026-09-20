@@ -296,3 +296,75 @@ Nothing here is recalled.
    overridden whenever a patch's GLSL varies with a JS value, or three serves a stale compiled program.
    `patchEmitterLight` does not override it and is safe only because its GLSL is constant — any patch we
    write whose source text depends on a parameter must.
+
+## Closing the two open questions on the measurement (2026-09-20)
+
+### Q1 — the env specular term, INTEGRATED rather than bounded. It is rgb(0,0,0).
+
+Rather than saturate the bound I closed the term. Method: the three authored cards sampled to
+(direction, radiance, solid angle), then a `D_GGX`-weighted normalised average around the reflection
+vector — which is what a PMREM mip approximates — times three's env BRDF. The env BRDF uses the Karis
+analytic fit as a **labelled stand-in**: three 0.185 samples a `dfgLUT` texture
+(`lights_physical_pars_fragment.glsl.js:380`, `EnvironmentBRDF`) which needs GL, and the fit is the
+same function that LUT tabulates.
+
+For the presented (-Z) face, chase-cam view: `V = (0.000, 0.371, -0.928)`, `R = (0.000, -0.371, -0.928)`,
+`dotNV = 0.928`.
+
+- prefiltered env radiance in that lobe: **9.53e-3** luma
+- env BRDF at roughness 0.52, dotNV 0.928: **3.05e-2**
+- **env specular = 2.91e-4.** Total presented face = 2.91e-4 + 4.81e-5 diffuse = **3.39e-4 → rgb(0,0,0)**
+
+So the earlier O(4e-4) estimate was right, and the face is **literally black at 8-bit, not at a noise
+floor**. Note `dotNV = 0.928` — the presented face is seen nearly head-on, so Fresnel sits at its
+*minimum*; there is no grazing-angle rescue available.
+
+**The saturated bound is not worth quoting.** Forcing the whole lobe to see the brightest card (the KEY)
+gives 7.21e-2 → rgb(60,68,83), but that is geometrically impossible: `R` points backward and downward
+while the key card is ahead and above. The integrated number above is the real closure.
+
+**Consequence: the tab is no longer a blocker for this question.** Nothing an on-screen check can show
+would move rgb(0,0,0). The visual gate is still wanted for the *look*, not for this number.
+
+### Q2 — a roughness spread on the top face buys 2 levels. Wear is a consolation, not a fallback.
+
++Y face, chase cam, sweeping roughness across the whole M2 band:
+
+| roughness | direct spec | env spec | diffuse | TOTAL lin | ACES+sRGB |
+|---|---|---|---|---|---|
+| 0.45 | 4.78e-2 | 7.36e-3 | 2.89e-3 | 5.80e-2 | rgb(51,57,65) |
+| 0.48 | 4.66e-2 | 9.47e-3 | 2.89e-3 | 5.90e-2 | rgb(52,58,66) |
+| 0.52 | 4.31e-2 | 1.28e-2 | 2.89e-3 | 5.88e-2 | rgb(52,58,66) |
+| 0.56 | 3.84e-2 | 1.65e-2 | 2.89e-3 | 5.78e-2 | rgb(51,57,66) |
+| 0.60 | 3.34e-2 | 2.03e-2 | 2.89e-3 | 5.66e-2 | rgb(50,56,65) |
+
+**Green-channel swing across the entire M2 band: 56 to 58 — 2 levels. And it is NOT monotonic**: it
+peaks at 0.48 and falls again. The cause is a near-cancellation — direct specular *drops* with roughness
+(4.78e-2 → 3.34e-2) while env specular *rises* (7.36e-3 → 2.03e-2), and under this particular rig the
+two almost exactly trade off. That is a property of this lighting, not of the material.
+
+**The value dial is no better.** Board 28 names two wear controls, sheen *and* muted graphite value. At
+roughness 0.52 the specular terms are albedo-independent (F0 is fixed at 0.04 for metalness 0), so only
+the diffuse 2.89e-3 of the 5.88e-2 total — **4.9%** — responds to value at all:
+
+| albedo | TOTAL lin | ACES+sRGB |
+|---|---|---|
+| x0.0 (pure black) | 4.28e-2 | rgb(40,44,48) |
+| x1.0 (`#0d1117`) | 4.55e-2 | rgb(42,46,52) |
+| x2.0 | 4.82e-2 | rgb(44,49,56) |
+| x3.0 | 5.09e-2 | rgb(46,51,59) |
+
+Driving the albedo to pure black costs 2 levels; **tripling** it buys 7. Across any range that still
+reads as "muted graphite" it is ~4 levels.
+
+**So both of board 28's wear controls are exhausted at roughly 2-4 levels of 8-bit, on the one face that
+carries any signal, and at exactly zero on the face the player sees.** "Wear is a top-and-side-profile
+mechanism" is therefore a **consolation, not a fallback** — under this rig, wear cannot carry the
+family's variation at all, by any authoring inside M2's own band. That is a rig finding, not a block
+finding, and it is escalated, not acted on.
+
+### Confirmed present, per the supervisor's check
+
+The `onBeforeCompile` single-slot collision with `patchEmitterLight`, the `customProgramCacheKey`
+staleness trap, and the built-in triplanar's `positionLocal` default (which would scale the pattern with
+the instance) are all already written into the triplanar section above, as items 8, 8 and 2.
