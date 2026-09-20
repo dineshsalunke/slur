@@ -7,9 +7,9 @@ import {
     type Track as TrackHandle,
     tuningForShip,
 } from '@slur/shared';
-import type { World } from 'koota';
+import type { Entity, World } from 'koota';
 import { useWorld } from 'koota/react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { PerspectiveCamera } from 'three';
 import { updateChaseCamera } from '../../game/camera/chase';
 import { syncRenderSystem } from '../../game/ecs/systems';
@@ -100,6 +100,7 @@ function freezePrev( world: World ): void {
  */
 export function ArtLabRig( { track }: { track: TrackHandle } ) {
     const world = useWorld();
+    const ship = useRef< Entity | null >( null );
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
 
     // JUSTIFIED EFFECT — external sync: window keydown/keyup. `attachKeyboard()` installs the listeners and
@@ -110,10 +111,7 @@ export function ArtLabRig( { track }: { track: TrackHandle } ) {
     useEffect( attachKeyboard, [] );
 
     // JUSTIFIED EFFECT — external sync: the koota world is a module singleton OUTSIDE React, so the lab's
-    // entity has to be created in it imperatively and removed on unmount or it leaks into the next route.
-    // Precedent: `env-rig.tsx` does exactly this. Rejected alternatives: spawning during render (an impure
-    // side effect that double-fires under StrictMode) and spawning in an event handler (there is no event —
-    // the entity must exist for the scene's first frame).
+    // entity is created in it imperatively and removed on unmount or it leaks into the next route.
     useEffect( () => {
         const e = world.spawn(
             Sim,
@@ -122,10 +120,20 @@ export function ArtLabRig( { track }: { track: TrackHandle } ) {
             Net( { sessionId: 'art-lab', shipId: DEFAULT_SHIP, colorId: 0 } ),
             LocalPlayer,
         );
-        return () => e.destroy();
+        ship.current = e;
+        return () => {
+            ship.current = null;
+            e.destroy();
+        };
     }, [ world ] );
 
     useFrame( ( state, delta ) => {
+        // Setting the trait rather than respawning: ShipView subscribes to Net, so only that leaf re-renders.
+        const nextShip = labCommands.setShip;
+        if ( nextShip !== null ) {
+            labCommands.setShip = null;
+            ship.current?.set( Net, { sessionId: 'art-lab', shipId: nextShip, colorId: 0 } );
+        }
         // Drain any pending teleport BEFORE stepping, so the step and the render lerp agree this frame.
         const jump = labCommands.jumpToZ;
         if ( jump !== null ) {

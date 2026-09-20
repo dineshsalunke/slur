@@ -30,7 +30,10 @@ export const labControls = {
  * One-shot commands, drained by the rig on the next frame. A command is `null` when there is nothing
  * pending. Using a drained slot rather than a callback keeps the DOM controls free of any frame coupling.
  */
+import type { ShipId } from '@slur/shared';
+
 export const labCommands = {
     /** Teleport the ship to this world-z, zeroing velocity. Drained to null once applied. */
     jumpToZ: null as number | null,
+    setShip: null as ShipId | null,
 };

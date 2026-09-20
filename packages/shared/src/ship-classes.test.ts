@@ -44,7 +44,7 @@ test( 'each ship takes its published stun duration', () => {
         bob: 1.08, // Comet · armour 0.1
         challenger: 0.96, // Fighter · armour 0.2 (the default ship)
         dispatcher: 0.84, // Phantom · armour 0.3
-        imperial: 0.72, // Freighter · armour 0.4
+        'split-crown': 0.72, // Freighter · armour 0.4
     };
     for ( const shipId of SHIP_ORDER ) {
         const want = published[ shipId ];
@@ -60,7 +60,7 @@ test( 'each ship takes its published stun duration', () => {
 // that does nothing at all. Monotonic is not the same as meaningful, so pin the magnitude separately.
 test( 'the armour spread is wide enough to change how a hit feels', () => {
     const longest = stunDurationForShip( 'executioner' ); // least armour
-    const shortest = stunDurationForShip( 'imperial' ); // most armour
+    const shortest = stunDurationForShip( 'split-crown' ); // most armour
     assert.ok(
         longest - shortest >= 0.3,
         `armour spread is only ${ ( longest - shortest ).toFixed( 3 ) }s — too small to read in play`,
@@ -71,7 +71,7 @@ test( 'the armour spread is wide enough to change how a hit feels', () => {
 // on the end value rather than on the multiplier.
 test( 'the best weaver takes a strictly longer stun than the worst', () => {
     assert.ok(
-        stunDurationForShip( 'executioner' ) > stunDurationForShip( 'imperial' ),
+        stunDurationForShip( 'executioner' ) > stunDurationForShip( 'split-crown' ),
         'the Interceptor variant must stay stunned longer than the Freighter variant',
     );
     assert.equal( stunDurationForShip( 'executioner' ), STUN_SECONDS, 'a zero-armour ship takes the full stun' );
