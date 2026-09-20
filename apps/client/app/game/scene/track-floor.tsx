@@ -1,5 +1,5 @@
 import { CELL, SEG_LEN, type Segment, type Track } from '@slur/shared';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { useDebugTuning } from '../../dev/debug-tuning';
 import {
@@ -56,16 +56,18 @@ function emitSpan(
     z1: number,
     capFront: boolean,
     capBack: boolean,
+    w: number,
+    h: number,
 ): void {
     const { x0, x1 } = span;
     // The span's own height, not 0. Every span the generator emits today sits at y=0, but `FloorSpan.y`
     // is what the boundary rides, so honouring it keeps a future raised platform correct by construction.
     const t = span.y;
     const b = span.y - SLAB_THICKNESS;
-    const deckL = isOuterEdge( x0 ) ? x0 + BOUNDARY_W : x0;
-    const deckR = isOuterEdge( x1 ) ? x1 - BOUNDARY_W : x1;
-    const wallL = isOuterEdge( x0 ) ? t - BOUNDARY_H : t;
-    const wallR = isOuterEdge( x1 ) ? t - BOUNDARY_H : t;
+    const deckL = isOuterEdge( x0 ) ? x0 + w : x0;
+    const deckR = isOuterEdge( x1 ) ? x1 - w : x1;
+    const wallL = isOuterEdge( x0 ) ? t - h : t;
+    const wallR = isOuterEdge( x1 ) ? t - h : t;
 
     // Top face — the surface you fly over, and the physics hull itself: what you see is what you hit.
     pushQuad( pos, uv, [ deckL, t, z0 ], [ deckL, t, z1 ], [ deckR, t, z1 ], [ deckR, t, z0 ], 'xz', UP );
@@ -88,10 +90,17 @@ function emitSpan(
  * Not a `boxGeometry`: box UVs are normalised per face, which would stretch one tile across the whole
  * 64u width and show the gallery a finish the game never renders.
  */
-export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: number ): THREE.BufferGeometry {
+export function buildSpanGeometry(
+    x0: number,
+    x1: number,
+    z0: number,
+    z1: number,
+    w = BOUNDARY_W,
+    h = BOUNDARY_H,
+): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
-    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true );
+    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true, w, h );
     return packGeometry( pos, uv );
 }
 
@@ -108,7 +117,7 @@ export function segmentCount( track: Track ): number {
  * direction rejects. Spans rather than a lane grid: their 4u alignment is a generator artifact and not a
  * rule (GDD §0), so reading spans keeps the visual hull equal to the physics hull whatever it does later.
  */
-function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
+function buildFloorGeometry( track: Track, w: number, h: number ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
     const last = segmentCount( track );
@@ -132,6 +141,8 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
                 seg.z1,
                 ! continues( prev, f.x0, f.x1, f.y ),
                 ! continues( next, f.x0, f.x1, f.y ),
+                w,
+                h,
             );
         }
     }
@@ -142,10 +153,14 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
 /** The ribbon surface as a single generated mesh, with real thickness. Deck only — the boundary strip
  *  and the blocks come from `TrackView`. */
 export function TrackFloor( { track }: { track: Track } ) {
-    // `resolveTrack` is pure, so a seed always yields identical geometry — built once, never per frame.
-    // R3F owns a geometry passed via the `geometry` prop, so there is nothing to dispose by hand.
-    const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
+    // The deck carves itself by the boundary's dimensions, so it rebuilds with the strip or the two desync.
     const tuning = useDebugTuning();
+    const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
+    const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;
+    const geo = useMemo( () => buildFloorGeometry( track, w, h ), [ track, w, h ] );
+
+    // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
+    useEffect( () => () => geo.dispose(), [ geo ] );
 
     return (
         <mesh geometry={ geo }>

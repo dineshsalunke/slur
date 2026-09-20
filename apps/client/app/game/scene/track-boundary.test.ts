@@ -58,6 +58,15 @@ describe( 'the boundary is embedded in the deck, not standing on it', () => {
         } );
     } );
 
+    it( 'still meets the deck exactly once the dimensions are tuned off their defaults', () => {
+        const [ w, h ] = [ 2.5, 3 ];
+        const deck = buildSpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, h );
+        const strip = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, w, h );
+
+        expect( spread( atHeight( deck, 0, true ) ) ).toEqual( { min: -HALF_WIDTH + w, max: HALF_WIDTH - w } );
+        expect( spread( atHeight( strip, -h ) ) ).toEqual( { min: -HALF_WIDTH, max: HALF_WIDTH } );
+    } );
+
     it( 'leaves interior span edges alone — those are gap rims, not the boundary', () => {
         const strip = buildBoundarySpanGeometry( -24, -8, Z0, Z1 );
         expect( strip.getAttribute( 'position' ).count ).toBe( 0 );

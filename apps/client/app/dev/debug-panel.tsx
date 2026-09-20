@@ -111,9 +111,29 @@ export function DebugPanel() {
                 tuningKey="marigoldReference"
                 value={ tuning.marigoldReference }
                 min={ 0 }
-                max={ 4 }
+                max={ 8 }
                 step={ 0.05 }
                 note="pre-bloom"
+            />
+            <DebugSlider
+                label="width"
+                tuningKey="boundaryWidth"
+                value={ tuning.boundaryWidth }
+                min={ 0.25 }
+                max={ 4 }
+                step={ 0.25 }
+                note="on release"
+                commitOnly
+            />
+            <DebugSlider
+                label="wrap"
+                tuningKey="boundaryWrap"
+                value={ tuning.boundaryWrap }
+                min={ 0.25 }
+                max={ 4 }
+                step={ 0.25 }
+                note="on release"
+                commitOnly
             />
 
             { /* Kept for other subjects, not for this frame: each was measured to move nothing on the deck
