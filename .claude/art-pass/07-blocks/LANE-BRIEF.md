@@ -216,3 +216,81 @@ adding a dependency · and your design direction **before** you invest a slice i
 
 **Do not escalate** what you can settle by verifying — an API's behaviour, a measured value, whether
 something renders. Verify, don't ask. Never treat silence as approval.
+
+---
+
+## 10. DISPATCH AMENDMENTS — 2026-09-20, written at dispatch. These OVERRIDE §0 and §6 above.
+
+The brief was written 2026-09-19 and sat undispatched for a day. Four things changed underneath it.
+
+### 10a. Your branch is `art/sealed-block`, NOT `art/block`
+
+`art/block` exists locally and on the remote, and it is **poisoned**. Its 2-dot diff against `dev`
+(`git diff origin/dev origin/art/block`) is **227 files, +3866 / −9536** — it predates every art merge from
+#131 onward, so building on it and merging would silently DELETE the deck, the rails, the emitter array,
+the lead-in and `ART_MATERIALS.md`. The 3-dot diff hides this. Do not check it out, do not rebase onto it,
+do not look at it for reference. It is scheduled for deletion.
+
+**Branch `art/sealed-block`, worktree `../slur-worktrees/sealed-block`, base fresh `origin/dev`.**
+
+### 10b. Your ports are 5204 / 2604
+
+`CLIENT_PORT=5204`, `VITE_SERVER_PORT=2604`. §0's 5202/2602 are held by the `seam-check` worktree and
+5200/2600 by the `split-crown` lane. Launch the stack with a matching `PORT` in the shell —
+`PORT=2604 pnpm dev` — because `tsx` has no dotenv loader.
+
+### 10c. §6's "art/track is rewriting these files right now" is NO LONGER TRUE — but the scope rule stands
+
+That lane finished. `track-floor.tsx`, `track-rails.ts`, `emitter-array.ts` and the rest are **merged and
+live on `dev`**; there is no concurrent writer. The only other lane running is `split-crown` (issue #159,
+the Freighter's ship model), which touches ship files, not track files.
+
+**The file list in §6 is therefore not a collision rule any more — it is still a SCOPE rule.** Your
+deliverable is the block's own visual in its own new component plus the `/iso-block` instrument. Wiring it
+into the game's instanced blocks is a separate integration step after this lands. If you conclude you must
+edit a track file, that is still a NEEDS-DECISION.
+
+### 10d. Read everything from YOUR worktree — both files are tracked on `dev`
+
+An earlier draft of this amendment claimed `.claude/art-pass/07-blocks/` was untracked and told you to read
+it from the shared checkout. **That was wrong** — the brief and `.claude/art-pass/INDEX.md` are both
+committed on `dev` and are present in your worktree. Read your own copies.
+
+Specifically **do not read the shared checkout's `INDEX.md`**: its working copy is dirty and *older* in one
+respect — it is missing the whole **"Geometry / the playable read"** block of standing facts (ADR-012: no
+drawn element may consume playable width, the deck's top face ends at exactly ±`HALF_WIDTH`, and the
+"check what a control is wired to before tuning it" lesson that cost three sessions). Your worktree's
+committed copy has them. It is the one that is right.
+
+The one thing your `INDEX.md` does **not** yet know is the Alpha milestone: the owner's target is *finish
+the remaining track slices → land the bespoke ship → build the sealed block*, and that is issues #163, #159
+and #164 under the **`Alpha — core gameplay with art`** milestone. Your task-7 row still reads "BRIEFED, not
+started". It is started now: you are it.
+### 10e. Issue number
+
+This lane is **[#164](https://github.com/dineshsalunke/slur/issues/164)**, milestone *Alpha — core gameplay
+with art*. Claim it with a lock comment before you start, and open the PR against `dev` referencing it.
+
+### 10f. One correction to §5's "distinguishable from an environmental monolith"
+
+Monoliths (task 4) are still unbuilt, so that remains unjudgeable — the instruction to **state plainly what
+carries your block's hazard identity** so task 4 inherits the duty to differentiate is the whole of what you
+owe on that point. Do not invent a monolith to compare against.
+
+### 10g. You own your stack, and you keep `LANE-FACTS.md` from your first commit
+
+**The stack is yours.** Start it yourself as your first action, backgrounded and redirected:
+`PORT=2604 pnpm dev > .claude/lane/dev.log 2>&1 &` (`.claude/lane/.gitignore` is already in place holding a
+single `*`, so the log ignores itself). Never stream a dev server into your context — HMR chatter is how a
+lane reaches its context limit having built nothing; `tail` the log on demand. Check nothing is already
+listening on 5204/2604 before you start one. **`curl` the URL and get a 2xx before you judge anything on
+screen** — a black canvas is as likely to be a dead stack as a real result. A stack that will not start is
+your first task and your first report, with the log tail; it is not plumbing to hand back.
+
+**Keep `.claude/art-pass/07-blocks/LANE-FACTS.md` beside this brief, from your very first commit, and
+commit it alongside the code it describes.** Raw first-hand facts, one line each: measurements with units,
+SHAs, `file:line` citations, config values read from installed source, gate results, and what you tried
+that failed. No prose, no narrative — that is the supervisor's job, written from your numbers.
+**`[unmeasured]` is a legitimate and valuable entry**; refusing to reconstruct a reading you cannot source
+first-hand is the right behaviour, and worth more than the reading would have been. This file is what
+survives when your context is cleared — a lane without it is unrecoverable, which is the expensive half.
