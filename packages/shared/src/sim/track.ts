@@ -130,6 +130,7 @@ export interface ProcgenDescriptor {
 export const SEG_LEN = 20; // world-z length of one segment = 5 z-cells. A GAP is one segment long.
 export const TRACK_SEGMENTS = 400; // hazard segments before finish → finishZ = TRACK_SEGMENTS·SEG_LEN = 8000u. ≈2.4 min at cruise (55 u/s) / ~2.8 min at real avg — the 2–3 min target. The SECTIONS arrangement normalizes to this, so the Believer arc just stretches.
 export const START_SAFE = 6; // leading segments forced flat + full-width (spawn/accel zone) — no early death.
+export const LEAD_SEGMENTS = 1; // flat apron segments BEFORE the spawn line at z=0. 20u: the chase cam's frame bottom reaches 5.6u behind the ship at rest and 19.5u behind it after a start-zone respawn, so a shorter apron shows void under the deck.
 export const HALF_WIDTH = 32; // lateral half-extent → 16 lanes wide (2·HALF_WIDTH/CELL). Matches DEFAULT_TUNING.halfWidth.
 export const LANES = ( 2 * HALF_WIDTH ) / CELL; // 16 lateral cells (lanes).
 export const ZCELLS = SEG_LEN / CELL; // 5 forward cells (rows) per segment.
@@ -387,7 +388,8 @@ function buildSegment( seed: number, i: number, length: number ): Segment {
 
     // Finish: a flat full-width pad from `length` onward (isFinish flips `finished` on cross).
     if ( i >= length ) return { ...base, kind: 'finish', floors: fullFloor( 0 ), isFinish: true };
-    // Start-safe accel zone.
+    if ( i < -LEAD_SEGMENTS ) return { ...base, kind: 'gap', floors: [] }; // the track's real back edge: `i < START_SAFE` alone hands out floor at every negative index forever
+    // Lead-in apron + start-safe accel zone.
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
     // Gap: rolled one AND the previous segment didn't (guarantees a landing pad after every gap, and no two

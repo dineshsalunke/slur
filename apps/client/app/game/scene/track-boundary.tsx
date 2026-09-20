@@ -1,4 +1,4 @@
-import type { Track } from '@slur/shared';
+import { LEAD_SEGMENTS, type Track } from '@slur/shared';
 import { useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { useDebugTuning } from '../../dev/debug-tuning';
@@ -65,7 +65,7 @@ function buildBoundaryGeometry( track: Track, w: number, h: number ): THREE.Buff
     const uv: number[] = [];
     const last = segmentCount( track );
 
-    for ( let i = 0; i < last; i++ ) {
+    for ( let i = -LEAD_SEGMENTS; i < last; i++ ) {
         const seg = track.segmentAt( i );
         for ( const f of seg.floors ) emitBoundary( pos, uv, f, seg.z0, seg.z1, w, h );
     }
