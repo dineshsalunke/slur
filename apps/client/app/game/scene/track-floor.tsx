@@ -1,7 +1,11 @@
+import { useFrame } from '@react-three/fiber';
 import { CELL, LEAD_SEGMENTS, SEG_LEN, type Segment, type Track } from '@slur/shared';
-import { useEffect, useMemo } from 'react';
-import type * as THREE from 'three';
+import { useWorld } from 'koota/react';
+import { useEffect, useMemo, useRef } from 'react';
+import * as THREE from 'three';
 import { useDebugTuning } from '../../dev/debug-tuning';
+import { LocalPlayer, Sim } from '../ecs/traits';
+import { createEmitterUniforms, EMITTER_SLOTS, parkEmitter, patchEmitterLight, writeEmitter } from './emitter-array';
 import {
     BACKWARD,
     BOUNDARY_H,
@@ -17,7 +21,65 @@ import {
     type V3,
 } from './track-geometry';
 import { AHEAD } from './track-instancing';
-import { FLOOR_EMISSIVE, FLOOR_EMISSIVE_INTENSITY, FLOOR_ENV_MAP_INTENSITY, floorSurface } from './track-materials';
+import {
+    FLOOR_EMISSIVE,
+    FLOOR_EMISSIVE_INTENSITY,
+    FLOOR_ENV_MAP_INTENSITY,
+    floorSurface,
+    MARIGOLD_EMISSIVE,
+    RAIL_EMITTER_DECAY,
+    RAIL_EMITTER_INTENSITY,
+    RAIL_EMITTER_RANGE,
+} from './track-materials';
+import { buildRailRuns, type RailRun, railRunDistance } from './track-rails';
+
+const RAIL_COLOR = new THREE.Color( MARIGOLD_EMISSIVE );
+const _view = new THREE.Vector3();
+const _axis = new THREE.Vector3();
+const _near: RailRun[] = [];
+const _dist: number[] = [];
+
+function feedEmitters(
+    uniforms: ReturnType< typeof createEmitterUniforms >,
+    runs: RailRun[],
+    z: number,
+    camera: THREE.Camera,
+    intensity: number,
+    range: number,
+): void {
+    uniforms.uEmitterAxis.value.copy( _axis.set( 0, 0, 1 ).transformDirection( camera.matrixWorldInverse ) );
+
+    const n = selectNearest( runs, z, EMITTER_SLOTS );
+    let slot = 0;
+    for ( let i = 0; i < n; i++ ) {
+        const run = _near[ i ];
+        const z0 = Math.max( run.z0, z - range );
+        const z1 = Math.min( run.z1, z + range );
+        if ( z1 <= z0 ) continue;
+        _view.set( run.x, run.y, ( z0 + z1 ) / 2 ).applyMatrix4( camera.matrixWorldInverse );
+        writeEmitter( uniforms, slot, _view, ( z1 - z0 ) / 2, RAIL_COLOR, intensity, range );
+        slot++;
+    }
+    for ( let i = slot; i < EMITTER_SLOTS; i++ ) parkEmitter( uniforms, i );
+}
+
+function selectNearest( runs: RailRun[], z: number, limit: number ): number {
+    let n = 0;
+    for ( const run of runs ) {
+        const d = railRunDistance( run, z );
+        let at = n;
+        while ( at > 0 && _dist[ at - 1 ] > d ) at--;
+        if ( at >= limit ) continue;
+        for ( let k = Math.min( n, limit - 1 ); k > at; k-- ) {
+            _near[ k ] = _near[ k - 1 ];
+            _dist[ k ] = _dist[ k - 1 ];
+        }
+        _near[ at ] = run;
+        _dist[ at ] = d;
+        if ( n < limit ) n++;
+    }
+    return n;
+}
 
 /**
  * Downward extrusion of the slab (world units). The sim never reads it — its floor is a plane at y=0.
@@ -163,16 +225,38 @@ function buildFloorGeometry( track: Track, w: number, h: number ): THREE.BufferG
 export function TrackFloor( { track }: { track: Track } ) {
     // The deck's outer edge answers to the boundary's shape, so it rebuilds with the strip or the two desync.
     const tuning = useDebugTuning();
+    const world = useWorld();
     const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
     const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;
     const geo = useMemo( () => buildFloorGeometry( track, w, h ), [ track, w, h ] );
+    const runs = useMemo( () => buildRailRuns( track, segmentCount( track ), w, h ), [ track, w, h ] );
+    const uniforms = useMemo( createEmitterUniforms, [] );
+    const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
+    const patched = useRef( false );
+    const range = import.meta.env.DEV ? tuning.emitterRange : RAIL_EMITTER_RANGE;
+    const intensity = import.meta.env.DEV ? tuning.emitterIntensity : RAIL_EMITTER_INTENSITY;
+    const decay = import.meta.env.DEV ? tuning.emitterDecay : RAIL_EMITTER_DECAY;
 
     // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );
 
+    useFrame( ( { camera } ) => {
+        const mat = matRef.current;
+        if ( ! mat ) return;
+        if ( ! patched.current ) {
+            patchEmitterLight( mat, uniforms );
+            patched.current = true;
+        }
+
+        uniforms.uEmitterDecay.value = decay;
+        const z = world.queryFirst( LocalPlayer, Sim )?.get( Sim )?.z ?? 0;
+        feedEmitters( uniforms, runs, z, camera, intensity, range );
+    } );
+
     return (
         <mesh geometry={ geo }>
             <meshStandardMaterial
+                ref={ matRef }
                 { ...floorSurface() }
                 emissive={ import.meta.env.DEV ? tuning.floorEmissive : FLOOR_EMISSIVE }
                 emissiveIntensity={ import.meta.env.DEV ? tuning.floorEmissiveIntensity : FLOOR_EMISSIVE_INTENSITY }

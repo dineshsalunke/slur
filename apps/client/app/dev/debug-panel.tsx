@@ -105,6 +105,32 @@ export function DebugPanel() {
             />
             <DebugColor label="emissive col" tuningKey="floorEmissive" value={ tuning.floorEmissive } />
 
+            <div className="mt-2 mb-1 text-white/40">rail emitter</div>
+            <DebugSlider
+                label="intensity"
+                tuningKey="emitterIntensity"
+                value={ tuning.emitterIntensity }
+                min={ 0 }
+                max={ 200 }
+                step={ 1 }
+            />
+            <DebugSlider
+                label="range"
+                tuningKey="emitterRange"
+                value={ tuning.emitterRange }
+                min={ 10 }
+                max={ 400 }
+                step={ 5 }
+            />
+            <DebugSlider
+                label="decay"
+                tuningKey="emitterDecay"
+                value={ tuning.emitterDecay }
+                min={ 0 }
+                max={ 3 }
+                step={ 0.05 }
+            />
+
             <div className="mt-2 mb-1 text-white/40">marigold reference</div>
             <DebugSlider
                 label="boundary"

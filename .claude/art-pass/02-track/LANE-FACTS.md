@@ -464,3 +464,59 @@ The ruling is "reconcile, keep both" between the rev-3 sheet and the uncommitted
 - The frames: `PORT=2601 pnpm dev`, then `curl localhost:5201/__frame-tap?name=<name>`, bloom on AND off
   at a matched camera, both labelled. `[unmeasured]` — every pixel of this slice.
 - The emitter array (step 3) has not been designed or started.
+
+---
+
+# `art/emitter-array` — LANE FACTS
+
+Appended by the emitter-array lane (task 2, D2/D7). Same rules: one line each, `[unmeasured]` is honest.
+
+## Environment
+
+- Worktree `/Users/apple/Projects/personal/slur-worktrees/emitter-array`, branch `art/emitter-array`, base `origin/dev` @ `1b2e71f`.
+- Ports `CLIENT_PORT=5200` / `VITE_SERVER_PORT=2600`; stack started `PORT=2600 pnpm dev`, log `.claude/lane/dev.log`.
+- `curl http://localhost:5200/art-lab` → `200`. Stack came up first try; no stale `.vite` cache, no git-lfs smudge fault.
+- `three` installed version `0.185.1`, read from `apps/client/node_modules/three/package.json`.
+
+## Source readings (three@0.185.1, installed tree)
+
+- `ShaderChunk/lights_fragment_begin.glsl.js` declares `geometryPosition`, `geometryNormal`, `geometryViewDir`, `geometryClearcoatNormal` and `IncidentLight directLight` unguarded, before any light loop.
+- Same chunk calls `RE_Direct( directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight )` — the exact signature the patch reuses.
+- `ShaderChunk/lights_pars_begin.glsl.js:56` `getDistanceAttenuation( lightDistance, cutoffDistance, decayExponent )` sits OUTSIDE every `#if NUM_*_LIGHTS` guard → available with zero scene lights.
+- `ShaderChunk/lights_physical_pars_fragment.glsl.js:645` `#define RE_Direct RE_Direct_Physical`, unconditional.
+- Same file lines 178-183: anisotropy enters `RE_Direct_Physical` via `material.anisotropyT`/`anisotropyB` under `USE_ANISOTROPY` — so routing through `RE_Direct` inherits anisotropy with NO change to the injected GLSL.
+- `ShaderLib/meshphysical.glsl.js:186` contains the literal `#include <lights_fragment_begin>` the patch string-matches.
+- `webgl/WebGLUniforms.js:74` `flatten()` returns the array unchanged when element 0 is a number → a flat `Float32Array` uploads directly to a `vec4[]` uniform with no per-frame boxing.
+- `math/Color.js:204,286` `setHex`/`setStyle` default to `SRGBColorSpace` → `new THREE.Color('#F59A24')` converts to working-linear, matching how three treats a light's own colour.
+
+## As-built
+
+- `EMITTER_SLOTS = 12`, a literal interpolated into the GLSL array size; the `onBeforeCompile` closure's source text is constant, so three's default `customProgramCacheKey()` (returns `onBeforeCompile.toString()`) is safe and no override is needed.
+- Slot layout: `uEmitters[i]` = view-space centre xyz + half-length along `uEmitterAxis`; `uEmitterTint[i]` = rgb×intensity + cutoff distance. Cutoff `0` parks a slot.
+- Emitters are TUBES, not points: closest point on the run to the reflection ray (Karis 2013 representative point). A point emitter is the same slot with half-length `0`, which is the shape task 3's engines/pickups inherit.
+- Rail runs are STATIC per track (`buildRailRuns`), not rebuilt per frame: the strip is baked into the deck and neither moves. Per frame the work is a K-nearest scan plus ≤12 writes.
+- Runs are clamped to `[shipZ - range, shipZ + range]` each frame; endpoints therefore slide continuously rather than popping in and out of the K set.
+- Emitter positions are transformed to view space on the CPU (`camera.matrixWorldInverse`), matching what three does for its own lights; the shader does no matrix work.
+- Defaults landed: `RAIL_EMITTER_INTENSITY = 40`, `RAIL_EMITTER_RANGE = 150`, `RAIL_EMITTER_DECAY = 1`. All three are **guesses pending a render** — see below.
+- Decay defaults to 1, not 2: at physical `1/d²` the ribbon's centre is 32u from either rail (attenuation ~1/1024) and would stay black. Authored falloff was the research's stated reason to prefer this mechanism.
+- Panel knobs added under a `rail emitter` section: intensity (0-200), range (10-400), decay (0-3). All three are in `debugTuningSource()` so a landed value copies out as source.
+- Deck material confirmed `FLOOR_METALNESS = 1.0` / `FLOOR_ROUGHNESS = 0.42` at `track-materials.ts:14,16` — matches the brief; the README's "flagged, not decided" section is stale (supervisor owns that doc and is fixing it).
+- Comment ratchet paid in `track-materials.ts`: added 1 line for the authored-decay reason, removed a 2-line doc block that sat on `FLOOR_ENV_MAP_INTENSITY` while describing `floorSurface()`, re-added as 1 line on the function it describes. Net 0.
+
+## Gate
+
+- `pnpm typecheck` → pass (shared, server, client).
+- `pnpm lint` → pass. 3 pre-existing `noExcessiveLinesPerFile` warnings, none in changed files. Comment ratchet: "7 changed source files, none gained comment lines".
+- `pnpm --filter @slur/shared test` → 75 pass / 0 fail.
+- `pnpm -r test` → server 4 pass, client 72 pass (11 files), including 5 new `track-rails.test.ts` cases.
+- `pnpm build` → pass.
+
+## Not measured
+
+- **Nothing has been rendered.** Every visual claim about this slice is `[unmeasured]`.
+- The tab reports `visibilityState: "hidden"`, `document.hasFocus() === false`; rAF is therefore dead and the canvas is black for that reason, not as a result.
+- `curl 'http://localhost:5200/__frame-tap?name=emitter-01'` → `504`. No `__r3f` key on the canvas or any ancestor, and a 40-frame fiber walk found no R3F store → the R3F root never mounted in this tab. Consistent with the known "never-visible tab never mounts R3F" fault, whose remedy is mounting visible, not reloading.
+- Shader compile is therefore **unverified**: with no render, the program is never linked, so a GLSL error would not have surfaced yet. Typecheck cannot see inside a template literal.
+- Isotropic vs anisotropic: `[unmeasured]` — the brief requires settling it by rendering and it is not yet renderable.
+- Whether `FLOOR_METALNESS = 1.0` is tenable: `[unmeasured]`, and it is the README's own "single most likely thing to fail at the rail gate".
+- Frame-time cost of the patch: `[unmeasured]`.

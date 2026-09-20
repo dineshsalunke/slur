@@ -8,6 +8,9 @@ import {
     FLOOR_EMISSIVE_INTENSITY,
     FLOOR_ENV_MAP_INTENSITY,
     MARIGOLD_REFERENCE_INTENSITY,
+    RAIL_EMITTER_DECAY,
+    RAIL_EMITTER_INTENSITY,
+    RAIL_EMITTER_RANGE,
 } from '../game/scene/track-materials';
 
 export interface DebugTuning {
@@ -20,6 +23,9 @@ export interface DebugTuning {
     floorEmissive: string;
     floorEnvMapIntensity: number;
     marigoldReference: number;
+    emitterIntensity: number;
+    emitterRange: number;
+    emitterDecay: number;
     boundaryWidth: number;
     boundaryWrap: number;
     ambientIntensity: number;
@@ -50,6 +56,9 @@ function committed(): DebugTuning {
         floorEmissive: FLOOR_EMISSIVE,
         floorEnvMapIntensity: FLOOR_ENV_MAP_INTENSITY,
         marigoldReference: MARIGOLD_REFERENCE_INTENSITY,
+        emitterIntensity: RAIL_EMITTER_INTENSITY,
+        emitterRange: RAIL_EMITTER_RANGE,
+        emitterDecay: RAIL_EMITTER_DECAY,
         boundaryWidth: BOUNDARY_W,
         boundaryWrap: BOUNDARY_H,
         ambientIntensity: AMBIENT_INTENSITY,
@@ -147,6 +156,9 @@ export function debugTuningSource( t: DebugTuning ): string {
         `export const FLOOR_EMISSIVE_INTENSITY = ${ n( t.floorEmissiveIntensity ) };`,
         `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
         `export const MARIGOLD_REFERENCE_INTENSITY = ${ n( t.marigoldReference ) };`,
+        `export const RAIL_EMITTER_INTENSITY = ${ n( t.emitterIntensity ) };`,
+        `export const RAIL_EMITTER_RANGE = ${ n( t.emitterRange ) };`,
+        `export const RAIL_EMITTER_DECAY = ${ n( t.emitterDecay ) };`,
         '',
         '// game/scene/track-geometry.ts',
         `export const BOUNDARY_W = ${ n( t.boundaryWidth ) };`,
