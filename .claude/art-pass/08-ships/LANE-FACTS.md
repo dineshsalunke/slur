@@ -183,3 +183,11 @@ Extension reconnected mid-session (`list_connected_browsers` → `Browser 1`, lo
 - **Albedo, side by side: the Split Crown is dramatically brighter than every placeholder** — near-white against their dark navy/gold. Unresolved open art call, NOT changed.
 - Keyboard input did not drive the sim (`w` x50 left speed at 0.0 u/s); the `jump to` waypoints were used instead. Continuous-motion flicker therefore remains `[unmeasured]`.
 - Tab parked: Split Crown, grounded, z 3600, `shipBox` OFF, `ships` ON.
+
+## THE ACTUAL CAUSE — deck-off A/B, 2026-09-20 (owner still reported "half sunk" after all the above)
+
+- **Deck layer OFF vs ON, same camera, same frame: the hull silhouette is IDENTICAL.** No extra hull appears when the deck is removed. The deck hides ZERO hull — geometrically nothing is below y=0, confirming every number measured so far.
+- **So the read is tonal, not geometric.** With the deck ON, the hull's wide flared LOWER BODY renders at very nearly the deck's own value; the two merge, and what the eye segments as "the ship" is only the brighter upper nacelles — which reads exactly as the top half of a hull protruding from the floor. With the deck OFF, against black, that lower body is plainly part of the ship.
+- **This also explains why the 0.5u lift "fixed" it** — the lift corrected no geometry; it moved the lower body off the deck so its silhouette gained an edge against a different background. Clearance masks the symptom; it is not the cause.
+- **Directly tied to the open albedo anomaly:** the hull renders far brighter than its authored near-black (baseColorFactor 0.007-0.017 linear) while the deck is mid-dark — the two have converged in value. Resolving the albedo is the candidate root fix; clearance/hover (#167) is the candidate cosmetic fix. NOT decided here.
+- Deck toggle restored to ON. Nothing changed in the tree; no fix committed.
