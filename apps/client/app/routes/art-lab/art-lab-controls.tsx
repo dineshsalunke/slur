@@ -1,4 +1,4 @@
-import { SEG_LEN, SHIP_ORDER, type ShipId, shipOf, TRACK_SEGMENTS } from '@slur/shared';
+import { DEFAULT_SHIP, SEG_LEN, SHIP_ORDER, type ShipId, shipOf, TRACK_SEGMENTS } from '@slur/shared';
 import { Fragment, useState } from 'react';
 import { ArtLabSkyControls } from './art-lab-sky-controls';
 import { LAB_LAYER_KEYS, type LabLayerKey, type LabLayers } from './lab-layers';
@@ -38,8 +38,6 @@ export function ArtLabControls( {
     onBloom,
     layers,
     onLayer,
-    shipId,
-    onShip,
 }: {
     seed: number;
     onSeed: ( seed: number ) => void;
@@ -50,9 +48,8 @@ export function ArtLabControls( {
     onBloom: ( on: boolean ) => void;
     layers: LabLayers;
     onLayer: ( key: LabLayerKey ) => void;
-    shipId: ShipId;
-    onShip: ( id: ShipId ) => void;
 } ) {
+    const [ shipId, setShipId ] = useState< ShipId >( DEFAULT_SHIP );
     const [ paused, setPaused ] = useState( labControls.paused );
     const [ ghost, setGhost ] = useState( labControls.ghost );
 
@@ -131,7 +128,10 @@ export function ArtLabControls( {
                         key={ id }
                         type="button"
                         className={ `${ BTN } ${ id === shipId ? BTN_ON : BTN_OFF }` }
-                        onClick={ () => onShip( id ) }
+                        onClick={ () => {
+                            labCommands.setShip = id;
+                            setShipId( id );
+                        } }
                     >
                         { shipOf( id ).name }
                     </button>
