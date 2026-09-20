@@ -157,3 +157,70 @@ Near-black is the house palette; this is load-bearing.
   else: the deck top faces **up** and the hull underside faces **down**, so the coplanar pair is never both
   front-facing and cannot fight. It is recorded here because it is the fact that closed the "half sunk"
   geometric hypothesis for good.
+
+---
+
+# MEASURED — #171's premise is false. Written by the lane, 2026-09-20.
+
+**#171 claims the hull renders ~0.4 linear, a 50–60x gap. Measured, it renders 0.0497 linear. The claim
+overstates by 8x.** All values below are read from a tapped PNG (`relay-probe`, seed 1234, `ships` ON,
+`shipBox` OFF, Split Crown, bloom ON) with a Node `zlib` PNG decoder; none are by eye.
+
+## The colour path, read from installed source — there is NO tone map
+
+| stage | value | where |
+|---|---|---|
+| R3F 9.7.0 default | `ACESFilmicToneMapping` | `@react-three/fiber/dist/events-*.esm.js` — `gl.toneMapping = flat ? NoToneMapping : ACESFilmicToneMapping` |
+| **overridden to** | **`NoToneMapping`** | `@react-three/postprocessing` 3.0.4 `<EffectComposer>`: `useEffect(() => { const prev = gl.toneMapping; gl.toneMapping = NoToneMapping; ... })` |
+| output encode | `SRGBColorSpace` | R3F default, `flat` not set on the Canvas |
+| effect stack | `Bloom` only — **no `ToneMappingEffect`** | `art-lab-canvas.tsx` → `TunedBloom` |
+
+So the inversion is the plain sRGB EOTF and nothing else. **`8bit → linear` only.**
+
+## The control that settles it
+
+`ship-box.tsx` draws `<meshBasicMaterial color="#404040" />` — unlit. It sampled **`#404040` exactly, min =
+max = 64 across 6561 pixels**. A sRGB→linear→encode→sRGB round trip returning the input bit-for-bit proves
+the transfer path is identity. **A colour-management error of 7x, let alone 50x, is impossible here** — it
+would have moved this pixel. Whatever brightness the hull has is light, not a broken transfer function.
+
+## The pixels
+
+| sample | 8-bit | linear (R) | ×authored charcoal `0.00700` |
+|---|---|---|---|
+| hull top plate | `#3f4348` | **0.04971** | 7.10x |
+| hull left pod | `#3f4449` | 0.05002 | 7.15x |
+| hull body (shadow side) | `#25282c` | 0.01841 | 2.63x |
+| deck near ship (control) | `#2a2e34` | 0.02355 | 3.36x |
+| deck far from rails (control) | `#101113` | 0.00510 | 0.73x |
+
+- **#171's "~0.4 linear" would be 8-bit 170.** Measured is 63.
+- The brief's own prediction — authored `0.00700` encodes to 8-bit 20, `#171A1D` — is what the deck reads
+  **far from the rails** (`#101113`, 0.0051). That is near-black arriving correctly.
+- The hull is not uniformly bright: its shadow side is 2.6x and the deck beside it 3.4x. Both ship and deck
+  brighten together toward the rails and darken together away from them. **That gradient is the rail emitter
+  array (`intensity 40`, `range 600`), not a per-material fault** — a transfer-function bug would be flat.
+
+## Verdict
+
+**#171 is invalid as written and should close.** There is no 50x gap, there is no colour-management problem,
+and near-black arrives correctly on the one surface far enough from a light to show it. #170 is unblocked by
+this result. The residual ~7x on the lit hull face is irradiance from the rails and needs no fix; nothing
+here contradicts `sealed-block`'s rgb(0,0,0) computation, which was for a face with no emitter in range.
+
+**Not measured:** whether the hull's *albedo* is right for the art direction. This lane measured the
+renderer, not the design. `[unmeasured]`
+
+## The frame tap — operational rules paid for this session
+
+- **NEVER close a Chrome tab. `tabs_close_mcp` is forbidden on this lane, permanently.** Closing the last tab
+  quits Chrome and breaks the next agent's browser tools. Let tabs accumulate.
+- **Never use a tap as an "is anything open?" probe (#172).** `entry.done` calls `json()` with no
+  `res.headersSent` guard and is reachable from the deadline timer, the settle timer and the error handler; a
+  second call throws `ERR_HTTP_HEADERS_SENT` from a timer callback and **Node exits**. A retry loop of taps
+  killed this worktree's dev server at 8:04:05 pm and again mid-session. Check the port, then the tab, tap last.
+- **A dead port serves a live-looking page.** With nothing on 5200, Chrome still rendered `/art-lab` from
+  cache, HMR still logged `[vite] connected` against a *later* server, and the lab looked perfect — while no
+  tap could ever answer. `lsof -nP -iTCP:5200 -sTCP:LISTEN` is the check; a cache-busting query forces a real
+  fetch. The tap's own error message points at the tab, which is the wrong half.
+- Restart: `PORT=2600 nohup pnpm dev > .claude/lane/dev.log 2>&1 &` from the worktree root.
