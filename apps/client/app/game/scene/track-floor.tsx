@@ -1,4 +1,4 @@
-import { CELL, SEG_LEN, type Segment, type Track } from '@slur/shared';
+import { CELL, LEAD_SEGMENTS, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { useDebugTuning } from '../../dev/debug-tuning';
@@ -130,9 +130,9 @@ function buildFloorGeometry( track: Track, w: number, h: number ): THREE.BufferG
     const uv: number[] = [];
     const last = segmentCount( track );
 
-    for ( let i = 0; i < last; i++ ) {
+    for ( let i = -LEAD_SEGMENTS; i < last; i++ ) {
         const seg = track.segmentAt( i );
-        const prev = i > 0 ? track.segmentAt( i - 1 ) : null;
+        const prev = i > -LEAD_SEGMENTS ? track.segmentAt( i - 1 ) : null;
         const next = i < last - 1 ? track.segmentAt( i + 1 ) : null;
 
         for ( const f of seg.floors ) {

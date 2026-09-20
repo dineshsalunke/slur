@@ -9,9 +9,11 @@ import {
     applyDescriptor,
     CELL,
     CURV_CAP,
+    DEFAULT_TUNING,
     HALF_WIDTH,
     isHole,
     jumpReach,
+    LEAD_SEGMENTS,
     MIN_LANE,
     mulberry32,
     passableCorridorWidth,
@@ -141,12 +143,10 @@ test( 'every ship class clears a one-segment gap (generous grounded rule)', () =
 function assertSegmentFair( t: Track, seed: number, i: number ): void {
     const s = t.segmentAt( i );
     if ( isHole( s ) ) {
-        // No two active holes in a row (the next segment is forced to a landing pad).
         assert.ok( ! isHole( t.segmentAt( i + 1 ) ), `hole ${ i } not followed by a pad` );
         assert.equal( t.segmentAt( i + 1 ).floors[ 0 ].y, 0, `pad after hole ${ i } not flat y=0` );
         return;
     }
-    // Every non-hole floor is flat ground (no raised platforms anymore).
     for ( const f of s.floors ) assert.equal( f.y, 0, `seed ${ seed } seg ${ i } floor not flat (y=${ f.y })` );
     // A laterally-passable corridor of ≥ MIN_LANE (2 lanes) always survives the cube field.
     assert.ok(
@@ -461,4 +461,40 @@ test( 'ADR-002: anchors are all kind "pickup"; filtering an unmodelled kind yiel
         [],
         'an unmodelled kind matched anchors',
     );
+} );
+
+test( 'the lead-in apron is flat, full-width and hazard-free', () => {
+    for ( const seed of SEEDS ) {
+        const t = makeTrack( seed );
+        for ( let i = -LEAD_SEGMENTS; i < 0; i++ ) {
+            const s = t.segmentAt( i );
+            assert.equal( s.blocks.length, 0, `seed ${ seed } seg ${ i }: a hazard before the start line` );
+            assert.deepEqual(
+                s.floors,
+                [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
+                `seed ${ seed } seg ${ i }: apron is not flat + full-width`,
+            );
+        }
+    }
+} );
+
+test( 'the track has a real back edge one segment behind the lead-in', () => {
+    const t = makeTrack( 7 );
+    assert.deepEqual( t.segmentAtZ( -LEAD_SEGMENTS * SEG_LEN ).floors, [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ] );
+    assert.deepEqual( t.segmentAtZ( -LEAD_SEGMENTS * SEG_LEN - 1 ).floors, [], 'floor past the drawn back edge' );
+    assert.deepEqual( t.segmentAtZ( -1000 ).floors, [], 'floor far past the drawn back edge' );
+} );
+
+// The back edge is unreachable, not merely unreached: a respawn is the only thing that lowers z, and no death
+// is possible before START_SAFE*SEG_LEN. Tune either operand past this and that stops being true, silently.
+test( 'respawnSetback cannot reach past the lead-in apron', () => {
+    assert.ok(
+        DEFAULT_TUNING.respawnSetback < START_SAFE * SEG_LEN,
+        `respawnSetback ${ DEFAULT_TUNING.respawnSetback }u can now outrun the first hazard at ${ START_SAFE * SEG_LEN }u`,
+    );
+    for ( const t of ALL_CLASS_TUNINGS )
+        assert.ok(
+            t.respawnSetback < START_SAFE * SEG_LEN,
+            `a class tuning's respawnSetback outruns the first hazard`,
+        );
 } );
