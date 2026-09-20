@@ -15,24 +15,10 @@ export const RIGHT: V3 = [ 1, 0, 0 ];
 export const FORWARD: V3 = [ 0, 0, 1 ];
 export const BACKWARD: V3 = [ 0, 0, -1 ];
 
+/** Rail width. The band stands OUTBOARD, in `[HALF_WIDTH, HALF_WIDTH + BOUNDARY_W]` — ADR-012. */
 export const BOUNDARY_W = 1.0;
-/** Wrap down the outer face, so the strip turns the corner instead of foreshortening away. */
+/** How far the band stands above the deck. 0 = flush; raised-vs-flush is still the owner's open call. */
 export const BOUNDARY_H = 1.0;
-
-/** A = inboard bevel (ships today), B = outboard flare, C = A with the marigold ramped inward,
- *  D = outboard rail in `[HALF_WIDTH, HALF_WIDTH + w]`, which the deck's width never pays for. */
-export type BoundaryVariant = 'A' | 'B' | 'C' | 'D';
-export const BOUNDARY_VARIANT: BoundaryVariant = 'A';
-
-export const isOutboard = ( v: BoundaryVariant ): boolean => v === 'B' || v === 'D';
-
-/** D's `h` lifts the band above the deck (0 = flush); the others carry it downward. */
-export const isRaised = ( v: BoundaryVariant ): boolean => v === 'D';
-
-/** 1 at the track edge, 0 by `w` inward. Of x alone, so it survives `pushQuad` reordering vertices. */
-export function inwardFalloff( w: number ): ( x: number ) => number {
-    return ( x ) => Math.min( 1, Math.max( 0, 1 - ( HALF_WIDTH - Math.abs( x ) ) / w ) );
-}
 
 /** True at the track's own outer edge, where the boundary lives. Interior span edges are gap rims —
  *  board 24 panel 04 treats those as a separate element. */
@@ -67,16 +53,10 @@ export function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V
     }
 }
 
-export function packGeometry( pos: number[], uv: number[], falloff?: ( x: number ) => number ): THREE.BufferGeometry {
+export function packGeometry( pos: number[], uv: number[] ): THREE.BufferGeometry {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute( 'position', new THREE.Float32BufferAttribute( pos, 3 ) );
     geo.setAttribute( 'uv', new THREE.Float32BufferAttribute( uv, 2 ) );
-    if ( falloff ) {
-        // `uv1` is the name `emissiveMap.channel = 1` reads; a custom attribute would need a shader patch.
-        const ramp: number[] = [];
-        for ( let i = 0; i < pos.length; i += 3 ) ramp.push( falloff( pos[ i ] ), 0.5 );
-        geo.setAttribute( 'uv1', new THREE.Float32BufferAttribute( ramp, 2 ) );
-    }
     geo.computeVertexNormals();
     return geo;
 }

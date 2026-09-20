@@ -5,14 +5,10 @@ import { useDebugTuning } from '../../dev/debug-tuning';
 import {
     BACKWARD,
     BOUNDARY_H,
-    BOUNDARY_VARIANT,
     BOUNDARY_W,
-    type BoundaryVariant,
     DOWN,
     FORWARD,
-    isOutboard,
     isOuterEdge,
-    isRaised,
     LEFT,
     packGeometry,
     pushQuad,
@@ -49,8 +45,7 @@ const isOffGrid = ( v: number ) => {
  * One floor span: top face, both side walls, and end caps only where the slab genuinely ends —
  * unconditional caps would bury coplanar back-to-back faces between adjacent spans and z-fight.
  *
- * At an inboard edge the top face stops short and the side wall starts lower, leaving the corner for
- * `TrackBoundary`. This yields facets, not material, so the visual hull still equals the physics hull.
+ * The rail stands outboard of the span, so the wall moves out under it and the top face is untouched.
  */
 function emitSpan(
     pos: number[],
@@ -62,31 +57,27 @@ function emitSpan(
     capBack: boolean,
     w: number,
     h: number,
-    variant: BoundaryVariant,
 ): void {
     const { x0, x1 } = span;
-    const outboard = isOutboard( variant );
     // The span's own height, not 0. Every span the generator emits today sits at y=0, but `FloorSpan.y`
     // is what the boundary rides, so honouring it keeps a future raised platform correct by construction.
     const t = span.y;
     const b = span.y - SLAB_THICKNESS;
-    // Outboard takes no deck: the top face runs the full span, and the wall moves out under the band.
-    const deckL = ! outboard && isOuterEdge( x0 ) ? x0 + w : x0;
-    const deckR = ! outboard && isOuterEdge( x1 ) ? x1 - w : x1;
-    const sideL = outboard && isOuterEdge( x0 ) ? x0 - w : x0;
-    const sideR = outboard && isOuterEdge( x1 ) ? x1 + w : x1;
-    const lip = isRaised( variant ) ? t + h : t - h;
+    const sideL = isOuterEdge( x0 ) ? x0 - w : x0;
+    const sideR = isOuterEdge( x1 ) ? x1 + w : x1;
+    const lip = t + h;
     const lipL = isOuterEdge( x0 ) ? lip : t;
     const lipR = isOuterEdge( x1 ) ? lip : t;
 
     // Top face — the surface you fly over, and the physics hull itself: what you see is what you hit.
-    pushQuad( pos, uv, [ deckL, t, z0 ], [ deckL, t, z1 ], [ deckR, t, z1 ], [ deckR, t, z0 ], 'xz', UP );
+    // It spans x0..x1 unconditionally: ADR-012 — no drawn element may take playable width, at any setting.
+    pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz', UP );
 
     // Side walls — visible thickness, so a gap reads as a hole with depth, not a flat dark patch.
     pushQuad( pos, uv, [ sideL, b, z0 ], [ sideL, lipL, z0 ], [ sideL, lipL, z1 ], [ sideL, b, z1 ], 'zy', LEFT );
     pushQuad( pos, uv, [ sideR, lipR, z0 ], [ sideR, b, z0 ], [ sideR, b, z1 ], [ sideR, lipR, z1 ], 'zy', RIGHT );
 
-    // End caps follow the lip: one rectangle across the whole width notches a flare and a raised band alike.
+    // End caps follow the lip, so the cap rises with the band instead of squaring across it.
     const cap = ( z: number, n: V3 ) => {
         if ( sideL < x0 - 1e-4 )
             pushQuad( pos, uv, [ sideL, b, z ], [ x0, b, z ], [ x0, t, z ], [ sideL, lipL, z ], 'xy', n );
@@ -114,11 +105,10 @@ export function buildSpanGeometry(
     z1: number,
     w = BOUNDARY_W,
     h = BOUNDARY_H,
-    variant: BoundaryVariant = BOUNDARY_VARIANT,
 ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
-    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true, w, h, variant );
+    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true, w, h );
     return packGeometry( pos, uv );
 }
 
@@ -135,7 +125,7 @@ export function segmentCount( track: Track ): number {
  * direction rejects. Spans rather than a lane grid: their 4u alignment is a generator artifact and not a
  * rule (GDD §0), so reading spans keeps the visual hull equal to the physics hull whatever it does later.
  */
-function buildFloorGeometry( track: Track, w: number, h: number, variant: BoundaryVariant ): THREE.BufferGeometry {
+function buildFloorGeometry( track: Track, w: number, h: number ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
     const last = segmentCount( track );
@@ -161,7 +151,6 @@ function buildFloorGeometry( track: Track, w: number, h: number, variant: Bounda
                 ! continues( next, f.x0, f.x1, f.y ),
                 w,
                 h,
-                variant,
             );
         }
     }
@@ -176,8 +165,7 @@ export function TrackFloor( { track }: { track: Track } ) {
     const tuning = useDebugTuning();
     const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
     const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;
-    const variant = import.meta.env.DEV ? tuning.boundaryVariant : BOUNDARY_VARIANT;
-    const geo = useMemo( () => buildFloorGeometry( track, w, h, variant ), [ track, w, h, variant ] );
+    const geo = useMemo( () => buildFloorGeometry( track, w, h ), [ track, w, h ] );
 
     // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );

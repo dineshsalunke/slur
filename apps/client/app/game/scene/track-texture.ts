@@ -132,37 +132,3 @@ export function trackSurfaceTexture(): THREE.CanvasTexture {
     if ( ! cached ) cached = build();
     return cached;
 }
-
-/** `pow`, not linear: a linear ramp creases where its slope stops, which is the edge C exists to remove. */
-const RAMP_RES = 256;
-const RAMP_EXP = 2.2;
-
-function buildRamp(): THREE.CanvasTexture {
-    const canvas = document.createElement( 'canvas' );
-    canvas.width = RAMP_RES;
-    canvas.height = 1;
-    const ctx = canvas.getContext( '2d' );
-    if ( ! ctx ) throw new Error( 'edgeFalloffRamp: no 2d context' );
-
-    for ( let i = 0; i < RAMP_RES; i++ ) {
-        const v = Math.round( 255 * ( i / ( RAMP_RES - 1 ) ) ** RAMP_EXP );
-        ctx.fillStyle = `rgb(${ v },${ v },${ v })`;
-        ctx.fillRect( i, 0, 1, 1 );
-    }
-
-    const tex = new THREE.CanvasTexture( canvas );
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    // NoColorSpace: a multiplier, so an sRGB decode would silently reshape the curve.
-    tex.colorSpace = THREE.NoColorSpace;
-    tex.channel = 1; // the `uv1` attribute `packGeometry` writes, leaving `uv` for the grain
-    return tex;
-}
-
-let rampCached: THREE.CanvasTexture | null = null;
-
-/** Variant C's inward marigold ramp — a singleton for the same reason the slab texture is one. */
-export function edgeFalloffRamp(): THREE.CanvasTexture {
-    if ( ! rampCached ) rampCached = buildRamp();
-    return rampCached;
-}
