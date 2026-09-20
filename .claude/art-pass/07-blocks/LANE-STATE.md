@@ -35,6 +35,17 @@ Two rules that come with it:
 
 - **`firstDeltaSeconds` reads time since the last frame from ANY source, and a pump is a frame.** Two taps
   back-to-back both report ~0.016 even with rAF stone dead. To use it as an rAF probe, leave a ~10 s gap.
+- **NEVER close a Chrome tab.** `tabs_close_mcp` is forbidden on this lane, permanently. Closing the last
+  tab quits Chrome and the next agent's browser tools and frame tap then fail for a reason invisible from
+  where the failure shows up. This has bitten twice. Let tabs accumulate — the owner closes them.
+- **A tap with NO responder can crash the whole dev server** — issue #172. `entry.done` in
+  `frame-tap-plugin.ts` writes through `json()` with no `res.headersSent` guard and no settled flag, and is
+  reachable from the deadline timer, the settle timer and the `slur:frame-tap:error` handler. A second call
+  throws `ERR_HTTP_HEADERS_SENT` inside a timer callback, nothing catches it, and Node exits — taking client
+  and server down together. **Never tap as a cheap "is anything open?" probe.** Check the port and the loaded
+  tab first; tap last. If the stack dies unexpectedly, #172 before the network.
+- **A tab left open across a dev-server restart has a dead HMR socket** and silently stops answering taps.
+  Reload the tab; do not go hunting for a renderer bug.
 - **A tap that 504s means the route never mounted R3F** (root creation gates on measured size, so a
   never-visible tab has no responder). Reload the tab; do not retry the tap.
 

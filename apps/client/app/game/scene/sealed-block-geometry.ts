@@ -96,6 +96,10 @@ function addCorners( sink: Sink, corner: CornerFn ) {
     }
 }
 
+export function sealedBlockBevel( { w, h, d }: BlockDims, bevel = SEALED_BLOCK_BEVEL ): number {
+    return Math.max( 0, Math.min( bevel, ( MAX_BEVEL_FRACTION * Math.min( w, h, d ) ) / 2 ) );
+}
+
 /**
  * A sealed cuboid with restrained chamfers — board 28’s one permitted silhouette control. Flat-shaded and
  * non-indexed, because a chamfer smoothed into its faces is a rounded box, which the spec excludes.
@@ -105,7 +109,7 @@ function addCorners( sink: Sink, corner: CornerFn ) {
  */
 export function sealedBlockGeometry( { w, h, d }: BlockDims, bevel = SEALED_BLOCK_BEVEL ): THREE.BufferGeometry {
     const half: Vec3 = [ w / 2, h / 2, d / 2 ];
-    const c = Math.max( 0, Math.min( bevel, MAX_BEVEL_FRACTION * Math.min( ...half ) ) );
+    const c = sealedBlockBevel( { w, h, d }, bevel );
     const corner: CornerFn = ( s, axis ) =>
         AXES.map( ( i ) => s[ i ] * ( i === axis ? half[ i ] : half[ i ] - c ) ) as Vec3;
 

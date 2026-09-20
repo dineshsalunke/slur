@@ -13,5 +13,6 @@ export default [
     route( 'iso-monolith', 'routes/iso-monolith/route.tsx' ), // exemplar — PLACEHOLDER subject, real instrument
     route( 'iso-sky', 'routes/iso-sky/route.tsx' ), // art-pass task 1 — procedural deep-space sky + roughness probes
     route( 'iso-block', 'routes/iso-block/route.tsx' ), // art-pass task 7 — the sealed deadly block, three legal footprints
+    route( 'iso-block-wear', 'routes/iso-block-wear/route.tsx' ), // the same block, wear strength swept 0 → 1
     route( 'game/:roomId', 'routes/game/route.tsx' ),
 ] satisfies RouteConfig;
