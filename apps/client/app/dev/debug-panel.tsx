@@ -126,7 +126,7 @@ export function DebugPanel() {
                 tuningKey="emitterRange"
                 value={ tuning.emitterRange }
                 min={ 10 }
-                max={ 400 }
+                max={ 800 }
                 step={ 5 }
             />
             <DebugSlider
@@ -178,8 +178,34 @@ export function DebugPanel() {
                 commitOnly
             />
 
-            { /* Measured inert (envMap 0→2, ambient 1→0) while the deck's emissive dominated; not remeasured
-                since that emissive was deleted. */ }
+            <div className="mt-2 mb-1 text-white/40">cold key</div>
+            <DebugSlider
+                label="intensity"
+                tuningKey="keyIntensity"
+                value={ tuning.keyIntensity }
+                min={ 0 }
+                max={ 60 }
+                step={ 0.5 }
+            />
+            <DebugSlider
+                label="elevation"
+                tuningKey="keyElevation"
+                value={ tuning.keyElevation }
+                min={ 15 }
+                max={ 90 }
+                step={ 1 }
+                note="90 = overhead"
+            />
+            <DebugSlider
+                label="bearing"
+                tuningKey="keyBearing"
+                value={ tuning.keyBearing }
+                min={ 0 }
+                max={ 359 }
+                step={ 1 }
+                note="0 = down-track · 66 = star"
+            />
+
             <div className="mt-2 mb-1 text-white/40">surfaces</div>
             <DebugSlider
                 label="floor envMap"
@@ -197,7 +223,7 @@ export function DebugPanel() {
                 min={ 0 }
                 max={ 2 }
                 step={ 0.05 }
-                note="inert here"
+                note="0 = no fill"
             />
 
             <div className="mt-2 mb-1 text-white/40">chase camera</div>

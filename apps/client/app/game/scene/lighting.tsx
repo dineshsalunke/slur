@@ -1,10 +1,18 @@
+import { Fragment } from 'react';
 import { useDebugTuning } from '../../dev/debug-tuning';
+import { ColdKey } from './cold-key';
 
-/** The scene's one fill term, shared by the game and every isolation lab so a lab frame is never
- *  systematically brighter or darker than the game frame it stands in for. */
-export const AMBIENT_INTENSITY = 1;
+/** Zero: "there is no fill" is the direction, and the white 1 only existed because nothing lit the deck.
+ *  The slider survives so the A/B stays one drag away. */
+export const AMBIENT_INTENSITY = 0;
 
 export function SceneLighting() {
     const tuning = useDebugTuning();
-    return <ambientLight intensity={ import.meta.env.DEV ? tuning.ambientIntensity : AMBIENT_INTENSITY } />;
+
+    return (
+        <Fragment>
+            <ambientLight intensity={ import.meta.env.DEV ? tuning.ambientIntensity : AMBIENT_INTENSITY } />
+            <ColdKey />
+        </Fragment>
+    );
 }

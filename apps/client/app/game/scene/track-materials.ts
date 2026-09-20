@@ -64,7 +64,7 @@ export const BOUNDARY_SURFACE = {
 
 // Decay is authored, not physical: 1/d² leaves the ribbon's centre black 32u from either rail.
 export const RAIL_EMITTER_INTENSITY = 40;
-export const RAIL_EMITTER_RANGE = 400;
+export const RAIL_EMITTER_RANGE = 600;
 export const RAIL_EMITTER_DECAY = 1;
 export const RAIL_EMITTER_LIFT = 0.5;
 
