@@ -62,3 +62,22 @@ entry. The supervisor writes the prose; this file is the numbers.
   `/art-lab`, not the iso lab.
 - Whether a base-contact seam reads as a per-block footprint marker or as a continuous route glow across
   adjacent blocks: `[unmeasured]`.
+
+## Slice 1 — instrument + M2 body (commit `5fc6620`)
+
+- Files added: `game/scene/sealed-block-material.ts`, `sealed-block-geometry.ts`, `sealed-block.tsx`,
+  `sealed-block-geometry.test.ts`; `routes/iso-block/{route,block-family}.tsx`; one line in `routes.ts`.
+  No file on the brief's §6 list was edited.
+- Chosen starting values: roughness **0.52** (midpoint of M2's 0.45–0.60), metalness **0**,
+  colour **`#0d1117`**. No emissive seam yet — seam placement is part of the escalated direction.
+- Footprints rendered: `4 × 8`, `5.5 × 5.5`, `3.5 × 5`, all `× 8u` tall, at x = 0 / 8 / 15, z = 0.
+  `<IsoLab size={8}>` so the scale ruler and the 2.6u Fighter box read directly against the 8u height.
+- Verify gate, all green on `5fc6620`: `pnpm typecheck` clean · `pnpm lint` **3 warnings, all the
+  pre-existing `noExcessiveLinesPerFile` baseline**, comment ratchet "7 changed source files, none gained
+  comment lines" · `pnpm --filter @slur/shared test` **78 pass / 0 fail** · `pnpm -r test` client **80 pass
+  / 12 files** (includes the 6 new cases), server 4 pass · `pnpm build` OK.
+- `curl localhost:5204/iso-block` → **200**; no Vite error in `dev.log` after the request.
+- Commit hook rejects a commit message containing the co-author trailer phrase — the first attempt was
+  refused for naming it even in a note. `CONTRIBUTING.md:134` states the policy.
+- **Visual gate: `[unmeasured]`.** Not yet looked at in a foreground Chrome tab; `split-crown` was busy
+  and tab focus is serialised across lanes.
