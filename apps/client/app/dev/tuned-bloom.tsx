@@ -1,30 +1,20 @@
 import { Bloom } from '@react-three/postprocessing';
 import type { BloomConfig } from '../game/scene/env-config';
-import { useDebugTuning } from './debug-tuning';
+import { DevBloom } from './dev-bloom';
 
-/** `radius` and `levels` are constructor arguments, so they cannot be changed on a live effect — the
- *  key remounts the pass instead of pretending they took. */
+/** The shipped bloom. In DEV the tuning panel drives it imperatively — `dev-bloom.tsx` carries why that
+ *  cannot be done with props. */
 export function TunedBloom( { config }: { config: BloomConfig } ) {
-    const tuning = useDebugTuning();
-    const c = import.meta.env.DEV
-        ? {
-              intensity: tuning.bloomIntensity,
-              threshold: tuning.bloomThreshold,
-              smoothing: tuning.bloomSmoothing,
-              radius: tuning.bloomRadius,
-              levels: tuning.bloomLevels,
-          }
-        : config;
+    if ( import.meta.env.DEV ) return <DevBloom config={ config } />;
 
     return (
         <Bloom
-            key={ `${ c.radius }:${ c.levels }` }
             mipmapBlur
-            intensity={ c.intensity }
-            luminanceThreshold={ c.threshold }
-            luminanceSmoothing={ c.smoothing }
-            radius={ c.radius }
-            levels={ c.levels }
+            intensity={ config.intensity }
+            luminanceThreshold={ config.threshold }
+            luminanceSmoothing={ config.smoothing }
+            radius={ config.radius }
+            levels={ config.levels }
         />
     );
 }
