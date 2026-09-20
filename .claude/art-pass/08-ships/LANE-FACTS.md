@@ -154,3 +154,17 @@ owner's frame had `shipBox` lit, that is what they saw. The parked tab has it OF
 **If it is genuinely sunk with `shipBox` off, the next measurement is the deck's top world-Y versus a
 grounded ship's `s.y`** — and if the deck top is above 0, that is a rig/deck fact affecting ALL five
 ships, not a Split Crown asset fault, and not something to fix by nudging one ship's lift.
+
+## Seating — the visual check, 2026-09-20 (frame tap; no Chrome extension available this session)
+
+- `mcp__claude-in-chrome` was UNUSABLE: `tabs_context_mcp` → "Browser extension is not connected", `list_connected_browsers` → `[]`. Not tab contention — zero extension instances on the relay.
+- Fell back to the frame tap. `curl localhost:5200/__frame-tap?name=split-crown-seating` → 200, wrote `.claude/art-pass/00-frame-tap/refs/split-crown-seating.png` (3456×1994) — so a page WAS mounted visible.
+- **Frame A (shipped `lift: 0`, shipBox OFF, chase camera): the hull does NOT read as sunk.** The full 1.0025u hull height is visible; the stern face and its 2×2 emitter block read down to the deck line; the two forward L-ports glint. Nothing is buried.
+- **Zero visual separation at the contact** — the flat underside meets the deck with no gap, no contact shadow and no parallax. Coplanar exactly as predicted, but it reads as "pressed flat", not "half sunk".
+- **No depth fighting in this frame** — no tear line along the underside, no deck drawing across the hull. Static frame only; a moving camera was not available, so flicker is NOT ruled out.
+- Hull reads near-white/light-grey, brighter than the mid-grey previously noted and far from the near-black the 0.007–0.017 linear baseColorFactors suggest. The known open art call, unchanged.
+
+### What could NOT be measured, and why
+
+- **The lift A/B did not produce a frame.** Probe edit `lift: 0 → 0.5` in `ship-visuals.ts:20` (uncommitted); every tap after it returned 504, and the tap stayed 504 after the edit was reverted. The probe is fully reverted, `git status` and `git diff` clean. The live page was lost at the HMR update and could not be remounted without extension control. `[unmeasured]`
+- **Placeholder-hull contrast: `[unmeasured]`.** Switching ships needs a click on the art-lab picker (`labCommands.setShip`); there is no non-Chrome route to drive it.
