@@ -1,6 +1,7 @@
 # Task 2 — Track: floor material, edge rail, gaps
 
-**Status:** in progress — the review frame is honest (#131); the art itself is not built.
+**Status:** in progress — the deck, the outboard rail and gaps are built; the emitter array that lights
+them is in flight (`art/emitter-array`). Slice 3's floor finish is the open end.
 **Depends on:** task 1 (judged under the real sky and its environment light).
 **Blocks:** task 3 (lighting balances against a real track), and every composition gate after it.
 
@@ -84,15 +85,27 @@ obstacle blocks · finish gate · pickups · final lighting balance (task 3).
 
 ## 7. Decision / As-built
 
-**Status: the review frame is built; the art is not** (2026-09-19). Eight decisions are of-record below.
-D1–D5 predate any code; **D6–D8 were taken after #131 landed** and they re-shape what remains.
+**Status: D1–D6 are built; the deck's finish is the open end** (2026-09-20). Eight decisions are of-record
+below. D1–D5 predate any code; **D6–D8 were taken after #131 landed** and they re-shape what remains.
 
-**What #131 actually landed** — slice 0 only, and it is worth being precise because the PR title says
-"floor material": tone mapping ON at the ACES default, `/art-lab`'s own `ambientLight` + `directionalLight`
-deleted with the sky rig mounted unconditionally, and `TrackView` split into `TrackRibbon` + `TrackBlocks`
-with blocks defaulting OFF. `TrackFloor` and `track-texture.ts` exist but are still mounted **only** behind
-`/art-lab`'s `slab` toggle — `showFloor` is intact and the game's floor is still instanced 0.6u boxes.
-**D1 is not done.** Everything from the floor swap onward is open.
+**#131 landed slice 0 only** — worth being precise because its PR title says "floor material": tone mapping
+ON at the ACES default, `/art-lab`'s own `ambientLight` + `directionalLight` deleted with the sky rig
+mounted unconditionally, and the track split into leaves with blocks defaulting OFF. At that point
+`TrackFloor` and `track-texture.ts` existed but were mounted only behind `/art-lab`'s `slab` toggle.
+
+**That is no longer the state. D1 is DONE** — verified on `dev` @ `1b4d760`: `track-view.tsx` composes three
+leaves, `TrackFloor` is the game's floor, and the instanced 0.6u quads are gone. **D3 is done** —
+`toneMapped: false` is absent from `track-materials.ts`, with a header comment recording why opting out made
+the direction's own "does the rail read marigold in the final frame" test unrunnable. **D5 is done** — the
+leaves are split so blocks default off.
+
+**ADR-012 is now true in the code, not just the docs** (#151, `1b4d760`): boundary variants A/B/C are
+deleted and the outboard rail is the only boundary, so the deck's top face spans `x0..x1` unconditionally
+and no code path can inset it. The committed default had been variant A, which is non-outboard — the deck
+drew 62u while the player flew 64u. Deleting rather than re-defaulting is what makes the invariant hold by
+construction. A lighting-side corroboration arrived independently from the emitter-array work: **a strip
+coplanar with the deck illuminates it at exactly zero** (`dot(N,L) <= 0` against the deck's +Y normal), so
+the retired inset reading was not merely awkward to light, it was unlightable at any intensity.
 
 **⚠ The dependency in this file's header is INVERTED on purpose.** It reads *"Depends on: task 1 (judged
 under the real sky and its environment light)"*. The owner reversed that: task 1's `/iso-sky` gate is
@@ -273,18 +286,70 @@ a repeat period is invisible at any real viewing distance. Board 25's exclusion 
 no skid marks, no bright silver scratches, no dents, no all-over fine noise, no lane-like wear bands, no
 fully outlined tile edges.
 
-### Flagged, not decided — metalness is the likeliest blow-up
+### M1 was TAKEN — and it is still the likeliest blow-up
 
-`ART_MATERIALS.md` M1 specifies bare conductor: **metalness 1.0, roughness 0.35–0.50**. The code ships
-`FLOOR_METALNESS = 0.12` and `FLOOR_ROUGHNESS = 0.62`, with a comment correctly noting that its original
-reason ("no environment map in this scene") died when the lab lost its own lights and the shipped sky rig
-brought `SkyEnvironment`.
+`ART_MATERIALS.md` M1 specifies bare conductor: **metalness 1.0, roughness 0.35–0.50**. The earlier reading
+of this section — that the code shipped 0.12/0.62 and M1 was a proposal — is **stale**. Verified on `dev`
+@ `1b4d760`, `track-materials.ts:14,16`: `FLOOR_ROUGHNESS = 0.42`, `FLOOR_METALNESS = 1.0`. M1 was taken.
+Its old reason for backing off ("no environment map in this scene") had already died when the lab lost its
+own lights and the shipped sky rig brought `SkyEnvironment`.
 
-But metalness 1.0 removes diffuse entirely, and `INDEX.md` §4 records that the sky measures **~linear 0.01**
-as an IBL source. At 1.0, every part of the deck the rail's specular does not reach goes **pure black**. That
-may be exactly right — *"there is no fill; shadow sides go black"* is the stated direction — or it may read
-as a void with a stripe through it. **This is not settleable on paper. Render both and look.** It is the
-single most likely thing to fail at the rail gate.
+Taking it does not settle it. Metalness 1.0 removes diffuse entirely, and `INDEX.md` §4 records the sky at
+**~linear 0.01** as an IBL source, so every part of the deck the rail's specular does not reach goes **pure
+black**. That may be exactly right — *"there is no fill; shadow sides go black"* is the stated direction —
+or it may read as a void with a stripe through it. It was called here as the single most likely thing to
+fail at the rail gate, and **it failed.**
+
+### The rail gate result — the deck went black, and metalness is NOT the cause (2026-09-20)
+
+With the emissive out (below), the owner flew `/art-lab` and reported the deck **black everywhere except one
+specular patch near the camera, on one side only.** That render settles three things at once.
+
+**The array is not broken.** A visible specular patch proves the `onBeforeCompile` patch compiles, its
+uniforms upload and `RE_Direct` runs. Worth stating because this lane had already shipped one fully green
+gate with the light doing literally nothing (the emitter sat below the deck plane), so a black deck was
+ambiguous evidence until something lit up.
+
+**The black is a correct render of a wrong lighting geometry.** The emitters sit at `|x| = 32.5` with
+`RAIL_EMITTER_LIFT = 0.5` against a 64u deck whose normal is +Y. At the centreline that is **0.88° above the
+surface plane — `N·L ≈ 0.015`**, rising to only ~0.32 one unit inboard of the rail. At metalness 1.0 there is
+no diffuse term, so the deck can produce nothing but a narrow view-dependent glint where the reflection
+vector happens to line up. That is exactly what is on screen.
+
+**Backing metalness off does not fix it, and that is the non-obvious part.** `RE_Direct` multiplies *both*
+the diffuse and the specular term by `dotNL`. Lowering metalness restores a diffuse lobe that is then
+multiplied by the same 0.015. It is the reflexive fix, it costs M1, and it buys nothing. **Do not let this
+be "solved" by dropping metalness.**
+
+**The general form, and it is the load-bearing sentence:** two 1u strips at the edges of a 64u plane are,
+for everything but the last couple of units, *functionally coplanar with it*. This is the same finding that
+killed the inset reading and corroborated ADR-012 from the lighting side — it survived the fix for it.
+**Edge rails alone cannot light this deck at any intensity**; at `N·L = 0.015` matching an overhead source
+needs ~65×, and the near-rail band would blow out long before the centre lifted.
+
+**Open, and escalated to the owner rather than taken here:** roughness is the next dial — the wet-road case,
+where grazing light throws long streaks only off a *smooth* surface, so 0.42 may be scattering the streaks
+§8 ruled for into nothing. `floorRoughness`/`floorMetalness` are being wired as live knobs because the two
+constants under test were the only ones that could not be turned. Behind that sits a question a slider
+cannot answer: whether the deck gets a **cold key from above** (the star contributes nothing to it today),
+or whether the deck is *meant* to be a void the rails draw the edges of. *"There is no fill"* is not the
+same as *"there is no key"*. The owner's call, not this document's.
+
+**Also outstanding:** the glint appeared on **one side only**, where two rails and a centreline ship predict
+a symmetric pair. Suspected the K-nearest scan — with `EMITTER_SLOTS = 12` and runs cut short by deck gaps,
+a pure nearest-N distance sort can fill every slot from one rail and starve the other. Under diagnosis; the
+fix shape (balance per side vs more slots) is a decision, not a patch.
+
+**What was hiding it, and is now gone (2026-09-20, owner's call on a frame):** the deck also carried
+`FLOOR_EMISSIVE = '#c8d0d8'` at intensity 0.05 — a flat cool-grey glow whose own comment recorded it as
+*"the deck's only brightness control, measured: 0 blacks it out, while envMap, ambient and the star each
+move nothing on it."* It was never art direction; it was a stand-in from when nothing lit the deck at all,
+added to stop metalness 1.0 rendering a black void. Emissive is added per-fragment with no dependence on
+view angle or light direction, so it laid a **constant grey pedestal with zero form** across the frame and
+swamped the low end that grazing-angle specular streaks need to read against — the deck could not be judged
+while it was in. The emitter array is the light it was standing in for, so it was **deleted** rather than
+dialled down. Expect a much darker frame; that is the point. With it gone, metalness 1.0 is finally being
+judged on what it actually does.
 
 ### Process deviation, deliberate
 
