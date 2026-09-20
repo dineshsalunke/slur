@@ -368,3 +368,79 @@ finding, and it is escalated, not acted on.
 The `onBeforeCompile` single-slot collision with `patchEmitterLight`, the `customProgramCacheKey`
 staleness trap, and the built-in triplanar's `positionLocal` default (which would scale the pattern with
 the instance) are all already written into the triplanar section above, as items 8, 8 and 2.
+
+## Slice 2 — restrained chamfer (commit `f71db93`, pushed)
+
+`sealedBlockGeometry` is no longer a `BoxGeometry`. It builds a chamfered cuboid: 6 face quads, 12 chamfer
+strips, 8 corner triangles — 44 triangles, non-indexed, flat-shaded. Winding is DERIVED from the intended
+normal per polygon, never hand-ordered.
+
+- `SEALED_BLOCK_BEVEL = 0.12` (world units, not a fraction of the block), clamped to
+  `MAX_BEVEL_FRACTION 0.45 × min(half-extent)` so it can never become a taper.
+- Projection sanity, computed not eyeballed: chase distance ~15u at vFOV 60 covers `2·15·tan30 = 17.32u` of
+  height → 62.4 px/u at 1080p. The `-Z/-X` strip is seen at 45°, so `0.12 × cos45 = 0.085u` ≈ **5.3 px**.
+- Two-directional AABB assertion **re-run and green** on all three footprints: the chamfer cuts inward from
+  the corners, the six faces still reach the envelope on every axis.
+- Client tests **85 pass / 12 files** (was 80): +3 winding/outwardness cases (one per footprint), +1 shell
+  triangle count, +1 pin on the `-Z/-X` facet.
+
+### N·L per facet of the chamfered shell — same constants as the cold-key measurement
+
+Node, exact geometry, `skyDirection(0,45)` cold key and `skyDirection(66,19)` star. Only `max(0, N·L)`;
+no BRDF, no ACES — this answers "is the facet lit at all", not "what value does it read".
+
+| facet | N·L key | N·L star |
+|---|---|---|
+| FACE −Z (presented) | 0.0000 | 0.0000 |
+| FACE −X | 0.0000 | 0.8638 |
+| FACE +X | 0.0000 | 0.0000 |
+| FACE +Y (top) | 0.7071 | 0.3256 |
+| BEVEL −Z/+Y | 0.0000 | 0.0000 |
+| BEVEL −Z/−Y | 0.0000 | 0.0000 |
+| BEVEL −Z/+X (vertical) | 0.0000 | 0.0000 |
+| **BEVEL −Z/−X (vertical)** | 0.0000 | **0.3388** |
+| BEVEL −X/+Y | 0.5000 | 0.8410 |
+| BEVEL +X/+Y | 0.5000 | 0.0000 |
+| **CORNER −X/+Y/−Z** | 0.0000 | **0.4646** |
+| CORNER +X/+Y/−Z | 0.0000 | 0.0000 |
+
+**The chamfer recovers exactly ONE lit vertical edge on the presented silhouette** (39% of the fully lit −X
+face), plus a continuous lit top rim right around the block on facets a flat box does not have. It is not a
+general rescue — every other presented-face chamfer facet is still 0.0000, so this does not soften #170.
+
+## Chrome — own tab group, capture attempted, NOT trustworthy
+
+- Tab group `953585186`, tabId `253884869`, created by this session with `createIfEmpty: true`; navigated to
+  `http://localhost:5204/iso-block`. Title resolved to "SLUR — Iso Lab · Sealed block", so the SPA served.
+- `document.visibilityState` = **`"hidden"`** and `document.hasFocus()` = `false`, measured BEFORE a
+  `computer:screenshot` call AND again immediately AFTER it. The screenshot call did not foreground the tab.
+- `canvas.clientWidth × clientHeight` = **1728 × 997**, and the returned frame is not black — so R3F DID
+  mount and something rendered. Per `hidden-tab-blank-canvas`, canvas size is NOT the test, so this proves
+  mounting and proves nothing about frame currency.
+- **No visual conclusion has been drawn and none is recorded here.** The visual gate is still `[unmeasured]`.
+- `/iso-block` debug-overlay defaults, read from source not from the frame (`iso-lab.tsx:50-57`): board
+  compare mode starts `'off'`; `grid` and `rig` both start from the route's `rig` prop, which `/iso-block`
+  leaves at the `true` default. So the neutral rig IS on by default — there is no opaque AABB slab
+  equivalent to `/art-lab`'s `shipBox`, but the lab lighting is on and is not the race rig.
+- `[unverified — tab hidden]` The returned frame appears framed much closer than `IsoLabCanvas`'s computed
+  default (`dist = max(12, 8×1.9) = 15.2`, camera `[9.12, 6.84, 15.2]`, fov 45). Recorded only so the next
+  session checks it against a foregrounded frame rather than rediscovering it.
+
+## Not started at this seam
+
+- Vertical marigold seams: **NOT STARTED.** Nothing written, nothing uncommitted.
+- Wear mechanism: **NOT STARTED.**
+- Design settled before the seam, so it is not re-derived: seams parameterised by a PERIMETER coordinate
+  walking the four side faces (`u ∈ [0, 2(w+d))`), which makes a seam vertical by construction, wraps across
+  chamfer strips continuously (the face-select switches exactly at the corner, where both branches agree),
+  and keeps seam width world-uniform. Masked off horizontal surfaces by `|world normal .y|`, which kills the
+  top/bottom faces AND the near-horizontal top chamfer strips — board 28's "no top-face luminous returns".
+  Emissive added at `#include <emissivemap_fragment>` (verified-this-session: `meshphysical.glsl.js:182`,
+  after `normal_fragment_begin` at `:178`, so the shading normal exists there). Wear on 3D value noise of
+  world position — which is inherently projection-free, so NO triplanar blend is needed at all; it still
+  needs the same `vWorldPos` varying the triplanar section documents. Roughness hook at
+  `roughnessmap_fragment` (`:176`), value hook at `map_fragment` (`:171`) — both before the normal, and
+  neither needs it.
+- Seam colour must be `MARIGOLD_EMISSIVE × MARIGOLD_REFERENCE_INTENSITY` imported from `track-materials.ts`
+  (gameplay tier per `ART_MATERIALS.md` §2), NOT a new number — so `MARIGOLD_REFERENCE_INTENSITY` staying
+  `[unmeasured]` does not block the seams.
