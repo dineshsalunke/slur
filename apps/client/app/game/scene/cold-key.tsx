@@ -6,8 +6,9 @@ import { skyDirection } from './sky-config';
 export const KEY_BEARING_DEG = 0;
 export const KEY_ELEVATION_DEG = 45;
 export const KEY_COLOR = '#c2ccd6';
-/** Large against the star's 1.6 because the deck is near-black: 99% of what the key buys is specular. */
-export const KEY_INTENSITY = 8;
+/** Dialled on the live panel and committed verbatim. 99% of what it buys on the near-black deck
+ *  is specular, so this number moves a sheen, not a black level. */
+export const KEY_INTENSITY = 1;
 
 const LIGHT_DISTANCE = 1000;
 
