@@ -582,3 +582,24 @@ Scalar irradiance `E = dotNL · 40 · atten`, summed over both rails, before the
 Two caveats on the table:
 - The `dz` spread is real, not noise. The shader picks the tube point nearest the **reflection ray** (Karis), not nearest the fragment, so `L` is dragged downtrack by `≈ lift · cos/sin` of the mirror elevation. This *lowers* near-rail toward centreline and is correct for specular, but it under-reports the diffuse term — irrelevant at `metalness 1.0`, where `material.diffuseContribution` is zero, and it becomes a real error the moment metalness is dialled down.
 - `dotNL ≈ 0.015` at the centreline caps **both** terms. Dropping metalness restores a diffuse lobe that is then multiplied by that same `0.015` — it cannot rescue the centre. Consistent with roughness being the lever: at `roughness 0.42` (`alpha = 0.176`) the GGX lobe is far too wide to build a streak out of `3.7e-2`; the `1/(π·alpha²)` peak only becomes large as roughness falls. `[unmeasured]` by this lane — still no renderable tab.
+
+## The one-sided glint — diagnosed from code, NOT reproduced
+
+Method: `buildRailRuns` / `railRunDistance` / `selectNearest` / `feedEmitters` re-run headlessly in node against the real `resolveTrack( procgenDescriptor( 1234 ) )` (the seed `/art-lab` uses), then the shader's own maths — Karis `emT`, the window clamp, `getDistanceAttenuation`, `RE_Direct_Physical`, three's `BRDF_GGX` — evaluated per fragment over the visible deck with the real chase rig. `[unmeasured]` by eye; this is arithmetic.
+
+**All four candidates are ruled out. The code is symmetric to 1.000×.**
+
+1. **K-nearest filling from one side — NO.** 400 segments produce **78 runs, exactly 39 per side**. Over 1600 sampled ship positions (every 5u): runs with a side at **zero emitters = 0/1600**; `|L−R| ≥ 2` = **0/1600**; worst imbalance 3 vs 2. The premise fails because gaps kill *both* outer edges at once — of the 20 segments with asymmetric partial floor strips, e.g. `seg7 z=140 spans [-16,0]`, **neither** span touches `|x| = 32`, so `edgeHeight` returns null on both sides and both runs break together. No fix needed, no decision to take.
+2. **Camera off-centre or rolled — NO.** `chase.ts:39` sets `cam.position.x = p.x` and `lookAt` aims at `p.x`, both rigid; default up, so zero roll. Camera is symmetric about the **ship**, not the track — but sweeping the ship to x = ±4 moves the on-screen L/R peak ratio to **1.0×**, not toward one side. Off-centre flying does not explain it.
+3. **Window clamp stranding one side — NO.** Run endpoints are identical per side (`z0`/`z1` match), and outer-edge **height differs on 0 of 400 segments**, so clamps land identically. Slots are never the binding constraint either: live emitters range 2–10 of 12, so nothing is ever crowded out.
+4. **Karis picking the wrong end — NO.** Faithful per-fragment evaluation at z=200 (6 live slots, 3L/3R): **on-screen peak LEFT `1.83e+2`, RIGHT `1.83e+2`, ratio 1.000×**, with per-side attribution confirming each strip is lit by its own rail (`fromL 1.8e+2` / `fromR 1.3e-3`).
+
+**What the code predicts instead:** a symmetric **pair** of bright strips hugging **x = ±31**, about **19–20u ahead** of the ship, at screen `(±0.72, +0.22)` — upper-middle of frame, toward both edges. Not one patch, and not at the bottom near the camera.
+
+**So the reported patch is probably not the rail response.** Near-camera deck cannot be lit by a rail (`N·L ≈ 0.015`) *and* the rails are outside the frustum at that range — the frame only covers ±43u by 19u ahead, far less up close. A single bright patch low and near is better explained by another emissive object still in the shot: `BOUNDARY_SURFACE` (the rail's own body), a `LETHAL_SURFACE` block at `emissiveIntensity 2.2`, or the ship. Those are untouched by the emissive deletion.
+
+**Cheap discriminator for the owner**, seconds in `/art-lab`: drag **`rail emitter → intensity` to 0**. If the patch survives, it is not the emitter array at all and the search moves to the other layers; if it vanishes, the model above is wrong and the shader is doing something the arithmetic does not capture. The `blocks` / `boundary` layer toggles narrow it the same way.
+
+## Distant deck is unlit BY DESIGN
+
+`RAIL_EMITTER_RANGE = 150` is both the tube clamp (`z ± range` in `feedEmitters`) and the `cutoffDistance` handed to `getDistanceAttenuation`, whose window term `pow2(saturate(1 - pow4(d/cutoff)))` reaches **exactly zero at d = 150**. So deck more than ~150u ahead of the ship has no emitter in range by construction, and the falloff hits zero at the same distance the clamp drops the run — the two agree, so nothing pops as it enters. Expected, not a failure. Raising the knob extends it at the usual inverse-square cost.
