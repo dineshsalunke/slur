@@ -30,12 +30,12 @@ export interface DebugTuning {
     camFov: number;
 }
 
-// Split by value type rather than one `keyof`: a colour cannot go through a range input, and letting the
-// numeric setter accept `floorEmissive` would only fail at runtime.
+// Split by value type: a colour cannot go through a range input. `string extends`, not `extends string` —
+// only a FREE string matches, so a future string-union field cannot fall into the colour setter.
 export type DebugTuningKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends number ? K : never }[
     keyof DebugTuning
 ];
-export type DebugTuningColorKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends string ? K : never }[
+export type DebugTuningColorKey = { [ K in keyof DebugTuning ]: string extends DebugTuning[ K ] ? K : never }[
     keyof DebugTuning
 ];
 
@@ -73,9 +73,8 @@ export function subscribeDebugTuning( fn: () => void ): () => void {
 
 export const debugTuningVersion = () => version;
 
-// Synchronous on purpose. Deferring through rAF made the panel dead in any hidden tab (no rAF) and
-// unable to drive a frame-tap capture (advance() does not flush rAF). React already batches per
-// event, so a pointermove burst costs one render either way — the coalescing bought nothing.
+// Synchronous on purpose: deferring through rAF made the panel dead in a hidden tab and unable to drive a
+// frame-tap capture. React batches per event, so the coalescing bought nothing.
 function notify(): void {
     version++;
     for ( const fn of listeners ) fn();

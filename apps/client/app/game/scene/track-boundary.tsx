@@ -3,14 +3,33 @@ import { useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { useDebugTuning } from '../../dev/debug-tuning';
 import { segmentCount } from './track-floor';
-import { BOUNDARY_H, BOUNDARY_W, isOuterEdge, LEFT, packGeometry, pushQuad, RIGHT, UP } from './track-geometry';
+import { BOUNDARY_H, BOUNDARY_W, isOuterEdge, packGeometry, pushQuad, UP } from './track-geometry';
 import { BOUNDARY_SURFACE, MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
 
-/**
- * NOT a rail: board 24 panel 02 excludes "raised rails or ornamental edge machinery", so the strip IS the
- * slab's top outer corner, carrying M7 where the deck carries M1. It follows the SPAN rather than the
- * track, because a strip embedded in the slab cannot exist where there is no slab.
- */
+/** One outer edge: `s` is −1 at the track's left edge and +1 at its right, and the rail is
+ *  mirror-symmetric, so the sign carries the whole difference. Vertices are world-space — no pivot. */
+function emitEdge(
+    pos: number[],
+    uv: number[],
+    x: number,
+    s: number,
+    y: number,
+    z0: number,
+    z1: number,
+    w: number,
+    h: number,
+): void {
+    // Starts AT the track edge and runs outward: the deck never pays for the rail (ADR-012).
+    const out = x + s * w;
+    const u = y + h;
+
+    // Top and inner face only: the band's outer face and end section come from the slab.
+    pushQuad( pos, uv, [ x, u, z0 ], [ x, u, z1 ], [ out, u, z1 ], [ out, u, z0 ], 'xz', UP );
+    // The riser faces INWARD — an outward one is invisible from the chase cam, with every gate green.
+    if ( h > 1e-4 ) pushQuad( pos, uv, [ x, y, z0 ], [ x, y, z1 ], [ x, u, z1 ], [ x, u, z0 ], 'zy', [ -s, 0, 0 ] );
+}
+
+/** The marigold face at a span's outer edges. It follows the SPAN, because it needs a slab to sit on. */
 function emitBoundary(
     pos: number[],
     uv: number[],
@@ -21,18 +40,8 @@ function emitBoundary(
     h: number,
 ): void {
     const { x0, x1, y } = span;
-    const d = y - h;
-
-    if ( isOuterEdge( x0 ) ) {
-        const i = x0 + w;
-        pushQuad( pos, uv, [ x0, y, z0 ], [ x0, y, z1 ], [ i, y, z1 ], [ i, y, z0 ], 'xz', UP );
-        pushQuad( pos, uv, [ x0, d, z0 ], [ x0, y, z0 ], [ x0, y, z1 ], [ x0, d, z1 ], 'zy', LEFT );
-    }
-    if ( isOuterEdge( x1 ) ) {
-        const i = x1 - w;
-        pushQuad( pos, uv, [ i, y, z0 ], [ i, y, z1 ], [ x1, y, z1 ], [ x1, y, z0 ], 'xz', UP );
-        pushQuad( pos, uv, [ x1, y, z0 ], [ x1, d, z0 ], [ x1, d, z1 ], [ x1, y, z1 ], 'zy', RIGHT );
-    }
+    if ( isOuterEdge( x0 ) ) emitEdge( pos, uv, x0, -1, y, z0, z1, w, h );
+    if ( isOuterEdge( x1 ) ) emitEdge( pos, uv, x1, 1, y, z0, z1, w, h );
 }
 
 /** The boundary on one slab span, for showing the corner outside the game (the gallery). */
@@ -50,8 +59,7 @@ export function buildBoundarySpanGeometry(
     return packGeometry( pos, uv );
 }
 
-/** Baked over the deck's own segment range rather than instanced from a moving Z-window: the strip is part
- *  of the slab's surface, so it is built the way the slab is built. */
+/** Baked over the deck's own segment range, not instanced from a moving Z-window: it is part of the slab. */
 function buildBoundaryGeometry( track: Track, w: number, h: number ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];

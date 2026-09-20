@@ -35,12 +35,8 @@ export function floorSurface() {
     };
 }
 
-/**
- * Lethal blocks — touch and you derezz, so danger must read instantly.
- *
- * Still red although the palette excludes red: retoning is the block-design task's call, judged when
- * someone is judging blocks. `TrackBlocks` is its own layer, so this is not in the default review frame.
- */
+/** Lethal blocks — touch and you derezz, so danger must read instantly. Still red although the palette
+ *  excludes red: retoning is the block-design task's call, and `TrackBlocks` is its own layer. */
 export const LETHAL_SURFACE = {
     emissive: '#ff2740',
     emissiveIntensity: 2.2,

@@ -3,15 +3,12 @@ import * as THREE from 'three';
 /**
  * Procedural graphite/concrete surface for the track slab.
  *
- * WHY GENERATED, NOT AN IMAGE FILE: ADD §9 commits the project to procedural-first, and a texture file
- * would be the only binary asset in the whole track pipeline. A canvas is also tunable from code, which is
- * what an art pass needs — change a number, reload, look.
+ * WHY GENERATED: ADD §9 commits the project to procedural-first, a texture file would be the pipeline's
+ * only binary asset, and a canvas is tunable from code.
  *
- * ONE TILE = ONE PANEL. The tile maps to `PANEL_W × PANEL_L` world units, so the panel border drawn at the
- * tile's edge becomes the "large clean panel division" the art-direction handoff §4/§5 asks for. Panels are
- * therefore a TEXTURE decision, which is exactly why `TrackFloor` is one continuous mesh with continuous
- * UVs rather than instanced tiles — geometry tiles would have locked panel size to 4u.
- */
+ * ONE TILE = ONE PANEL, mapped to `PANEL_W × PANEL_L` world units, so the tile-edge border is the "large
+ * clean panel division" of handoff §4/§5. Panels are therefore a TEXTURE decision — which is why
+ * `TrackFloor` is one continuous mesh: geometry tiles would have locked panel size to 4u. */
 
 /** Panel size in world units. 16u across divides the 64u ribbon into exactly 4 panels — no partial panel
  *  at the edges. 20u along matches `SEG_LEN`, so transverse seams land on segment boundaries and therefore

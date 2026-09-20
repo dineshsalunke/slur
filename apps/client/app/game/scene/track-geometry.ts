@@ -1,6 +1,4 @@
-// Quad primitives for the track's generated meshes, and the corner contract between the deck and its
-// boundary strip: the deck omits exactly the facets the strip fills, so both must read the same numbers
-// and the same edge rule. A contract shared by two files belongs in neither of them.
+// Quad primitives for the track's generated meshes, plus the boundary dimensions both meshes read.
 
 import { HALF_WIDTH } from '@slur/shared';
 import * as THREE from 'three';
@@ -17,9 +15,9 @@ export const RIGHT: V3 = [ 1, 0, 0 ];
 export const FORWARD: V3 = [ 0, 0, 1 ];
 export const BACKWARD: V3 = [ 0, 0, -1 ];
 
+/** Rail width. The band stands OUTBOARD, in `[HALF_WIDTH, HALF_WIDTH + BOUNDARY_W]` — ADR-012. */
 export const BOUNDARY_W = 1.0;
-/** Wrap down the outer face, so the strip turns the corner instead of lying flat and foreshortening
- *  away at the chase angle. */
+/** How far the band stands above the deck. 0 = flush; raised-vs-flush is still the owner's open call. */
 export const BOUNDARY_H = 1.0;
 
 /** True at the track's own outer edge, where the boundary lives. Interior span edges are gap rims —
@@ -36,10 +34,8 @@ export function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     return [ x / PANEL_W, y / PANEL_W ];
 }
 
-/**
- * Two triangles for a quad, wound so the face points along `normal` — computed, never hand-ordered:
- * a hand-ordered inversion disappears under backface culling with every gate still green.
- */
+/** Two triangles wound so the face points along `normal` — computed, never hand-ordered: a hand-ordered
+ *  inversion disappears under backface culling with every gate still green. */
 export function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plane: UvPlane, normal: V3 ): void {
     const ab: V3 = [ b[ 0 ] - a[ 0 ], b[ 1 ] - a[ 1 ], b[ 2 ] - a[ 2 ] ];
     const ac: V3 = [ c[ 0 ] - a[ 0 ], c[ 1 ] - a[ 1 ], c[ 2 ] - a[ 2 ] ];

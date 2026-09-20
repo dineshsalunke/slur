@@ -129,10 +129,10 @@ export function DebugPanel() {
                 label="wrap"
                 tuningKey="boundaryWrap"
                 value={ tuning.boundaryWrap }
-                min={ 0.25 }
+                min={ 0 }
                 max={ 4 }
                 step={ 0.25 }
-                note="on release"
+                note="0 = flush · on release"
                 commitOnly
             />
 

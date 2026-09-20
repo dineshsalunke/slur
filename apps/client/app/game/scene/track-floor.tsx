@@ -14,6 +14,7 @@ import {
     pushQuad,
     RIGHT,
     UP,
+    type V3,
 } from './track-geometry';
 import { AHEAD } from './track-instancing';
 import { FLOOR_EMISSIVE, FLOOR_EMISSIVE_INTENSITY, FLOOR_ENV_MAP_INTENSITY, floorSurface } from './track-materials';
@@ -44,9 +45,7 @@ const isOffGrid = ( v: number ) => {
  * One floor span: top face, both side walls, and end caps only where the slab genuinely ends —
  * unconditional caps would bury coplanar back-to-back faces between adjacent spans and z-fight.
  *
- * At an outer edge the top face stops short and the side wall starts lower, leaving the corner for
- * `TrackBoundary` to surface in M7. The SOLID is unchanged — this yields facets, not material — so the
- * visual hull still equals the physics hull and the strip has nothing to z-fight against.
+ * The rail stands outboard of the span, so the wall moves out under it and the top face is untouched.
  */
 function emitSpan(
     pos: number[],
@@ -64,24 +63,33 @@ function emitSpan(
     // is what the boundary rides, so honouring it keeps a future raised platform correct by construction.
     const t = span.y;
     const b = span.y - SLAB_THICKNESS;
-    const deckL = isOuterEdge( x0 ) ? x0 + w : x0;
-    const deckR = isOuterEdge( x1 ) ? x1 - w : x1;
-    const wallL = isOuterEdge( x0 ) ? t - h : t;
-    const wallR = isOuterEdge( x1 ) ? t - h : t;
+    const sideL = isOuterEdge( x0 ) ? x0 - w : x0;
+    const sideR = isOuterEdge( x1 ) ? x1 + w : x1;
+    const lip = t + h;
+    const lipL = isOuterEdge( x0 ) ? lip : t;
+    const lipR = isOuterEdge( x1 ) ? lip : t;
 
     // Top face — the surface you fly over, and the physics hull itself: what you see is what you hit.
-    pushQuad( pos, uv, [ deckL, t, z0 ], [ deckL, t, z1 ], [ deckR, t, z1 ], [ deckR, t, z0 ], 'xz', UP );
+    // It spans x0..x1 unconditionally: ADR-012 — no drawn element may take playable width, at any setting.
+    pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz', UP );
 
     // Side walls — visible thickness, so a gap reads as a hole with depth, not a flat dark patch.
-    pushQuad( pos, uv, [ x0, b, z0 ], [ x0, wallL, z0 ], [ x0, wallL, z1 ], [ x0, b, z1 ], 'zy', LEFT );
-    pushQuad( pos, uv, [ x1, wallR, z0 ], [ x1, b, z0 ], [ x1, b, z1 ], [ x1, wallR, z1 ], 'zy', RIGHT );
+    pushQuad( pos, uv, [ sideL, b, z0 ], [ sideL, lipL, z0 ], [ sideL, lipL, z1 ], [ sideL, b, z1 ], 'zy', LEFT );
+    pushQuad( pos, uv, [ sideR, lipR, z0 ], [ sideR, b, z0 ], [ sideR, b, z1 ], [ sideR, lipR, z1 ], 'zy', RIGHT );
 
-    // End caps — the faces you look straight AT across a gap, and what gives it depth.
-    if ( capFront ) pushQuad( pos, uv, [ x0, b, z0 ], [ x1, b, z0 ], [ x1, t, z0 ], [ x0, t, z0 ], 'xy', BACKWARD );
-    if ( capBack ) pushQuad( pos, uv, [ x1, b, z1 ], [ x0, b, z1 ], [ x0, t, z1 ], [ x1, t, z1 ], 'xy', FORWARD );
+    // End caps follow the lip, so the cap rises with the band instead of squaring across it.
+    const cap = ( z: number, n: V3 ) => {
+        if ( sideL < x0 - 1e-4 )
+            pushQuad( pos, uv, [ sideL, b, z ], [ x0, b, z ], [ x0, t, z ], [ sideL, lipL, z ], 'xy', n );
+        pushQuad( pos, uv, [ x0, b, z ], [ x1, b, z ], [ x1, t, z ], [ x0, t, z ], 'xy', n );
+        if ( sideR > x1 + 1e-4 )
+            pushQuad( pos, uv, [ x1, b, z ], [ sideR, b, z ], [ sideR, lipR, z ], [ x1, t, z ], 'xy', n );
+    };
+    if ( capFront ) cap( z0, BACKWARD );
+    if ( capBack ) cap( z1, FORWARD );
 
     // Underside — seen when you fall into a gap, and it closes the solid against a low camera.
-    pushQuad( pos, uv, [ x0, b, z0 ], [ x0, b, z1 ], [ x1, b, z1 ], [ x1, b, z0 ], 'xz', DOWN );
+    pushQuad( pos, uv, [ sideL, b, z0 ], [ sideL, b, z1 ], [ sideR, b, z1 ], [ sideR, b, z0 ], 'xz', DOWN );
 }
 
 /**
@@ -153,7 +161,7 @@ function buildFloorGeometry( track: Track, w: number, h: number ): THREE.BufferG
 /** The ribbon surface as a single generated mesh, with real thickness. Deck only — the boundary strip
  *  and the blocks come from `TrackView`. */
 export function TrackFloor( { track }: { track: Track } ) {
-    // The deck carves itself by the boundary's dimensions, so it rebuilds with the strip or the two desync.
+    // The deck's outer edge answers to the boundary's shape, so it rebuilds with the strip or the two desync.
     const tuning = useDebugTuning();
     const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
     const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;
