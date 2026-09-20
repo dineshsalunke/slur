@@ -23,6 +23,8 @@ import {
 import { AHEAD } from './track-instancing';
 import {
     FLOOR_ENV_MAP_INTENSITY,
+    FLOOR_METALNESS,
+    FLOOR_ROUGHNESS,
     floorSurface,
     MARIGOLD_EMISSIVE,
     RAIL_EMITTER_DECAY,
@@ -258,6 +260,8 @@ export function TrackFloor( { track }: { track: Track } ) {
             <meshStandardMaterial
                 ref={ matRef }
                 { ...floorSurface() }
+                roughness={ import.meta.env.DEV ? tuning.floorRoughness : FLOOR_ROUGHNESS }
+                metalness={ import.meta.env.DEV ? tuning.floorMetalness : FLOOR_METALNESS }
                 envMapIntensity={ import.meta.env.DEV ? tuning.floorEnvMapIntensity : FLOOR_ENV_MAP_INTENSITY }
             />
         </mesh>

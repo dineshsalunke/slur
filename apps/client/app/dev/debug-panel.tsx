@@ -93,6 +93,25 @@ export function DebugPanel() {
                 note="remounts"
             />
 
+            <div className="mt-2 mb-1 text-white/40">deck</div>
+            <DebugSlider
+                label="roughness"
+                tuningKey="floorRoughness"
+                value={ tuning.floorRoughness }
+                min={ 0.02 }
+                max={ 1 }
+                step={ 0.01 }
+                note="streaks live here"
+            />
+            <DebugSlider
+                label="metalness"
+                tuningKey="floorMetalness"
+                value={ tuning.floorMetalness }
+                min={ 0 }
+                max={ 1 }
+                step={ 0.05 }
+            />
+
             <div className="mt-2 mb-1 text-white/40">rail emitter</div>
             <DebugSlider
                 label="intensity"

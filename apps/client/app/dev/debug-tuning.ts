@@ -5,6 +5,8 @@ import { AMBIENT_INTENSITY } from '../game/scene/lighting';
 import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
 import {
     FLOOR_ENV_MAP_INTENSITY,
+    FLOOR_METALNESS,
+    FLOOR_ROUGHNESS,
     MARIGOLD_REFERENCE_INTENSITY,
     RAIL_EMITTER_DECAY,
     RAIL_EMITTER_INTENSITY,
@@ -18,6 +20,8 @@ export interface DebugTuning {
     bloomSmoothing: number;
     bloomRadius: number;
     bloomLevels: number;
+    floorRoughness: number;
+    floorMetalness: number;
     floorEnvMapIntensity: number;
     marigoldReference: number;
     emitterIntensity: number;
@@ -46,6 +50,8 @@ function committed(): DebugTuning {
         bloomSmoothing: GRID_VOID.bloom.smoothing,
         bloomRadius: GRID_VOID.bloom.radius,
         bloomLevels: GRID_VOID.bloom.levels,
+        floorRoughness: FLOOR_ROUGHNESS,
+        floorMetalness: FLOOR_METALNESS,
         floorEnvMapIntensity: FLOOR_ENV_MAP_INTENSITY,
         marigoldReference: MARIGOLD_REFERENCE_INTENSITY,
         emitterIntensity: RAIL_EMITTER_INTENSITY,
@@ -140,6 +146,8 @@ export function debugTuningSource( t: DebugTuning ): string {
         ) }, radius: ${ n( t.bloomRadius ) }, levels: ${ n( t.bloomLevels ) } },`,
         '',
         '// game/scene/track-materials.ts',
+        `export const FLOOR_ROUGHNESS = ${ n( t.floorRoughness ) };`,
+        `export const FLOOR_METALNESS = ${ n( t.floorMetalness ) };`,
         `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
         `export const MARIGOLD_REFERENCE_INTENSITY = ${ n( t.marigoldReference ) };`,
         `export const RAIL_EMITTER_INTENSITY = ${ n( t.emitterIntensity ) };`,
