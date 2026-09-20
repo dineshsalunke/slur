@@ -444,3 +444,41 @@ general rescue — every other presented-face chamfer facet is still 0.0000, so 
 - Seam colour must be `MARIGOLD_EMISSIVE × MARIGOLD_REFERENCE_INTENSITY` imported from `track-materials.ts`
   (gameplay tier per `ART_MATERIALS.md` §2), NOT a new number — so `MARIGOLD_REFERENCE_INTENSITY` staying
   `[unmeasured]` does not block the seams.
+
+## VISUAL GATE — the chamfer, via the frame tap (2026-09-20). First pixels seen on this lane.
+
+`curl 'http://localhost:5204/__frame-tap?name=sealed-block-bevel-01'` → `ok: true`, `pumped: 1`,
+ref `.claude/art-pass/00-frame-tap/refs/sealed-block-bevel-01.png` (3456 × 1994; gitignored by
+`.claude/art-pass/.gitignore:3` `*/refs/`, so re-tap to reproduce rather than looking for it in git).
+
+**`firstDeltaSeconds: 89.77`** — the previous frame from ANY source was 89.8 s earlier, which confirms rAF
+was dead in the hidden tab and that the tap pumped the frame itself. So the `computer:screenshot` frame
+taken earlier was stale, and was correctly discarded unread.
+
+**Read as GEOMETRY only.** `/iso-block` mounts the neutral lab rig (`ambientLight 0.5` +
+`directionalLight`, `iso-lab-canvas.tsx:67-68`), not the race rig, so nothing here speaks to levels — that
+is #170's question. Silhouette, chamfer read and contour are what this frame is evidence for.
+
+- **Silhouette: PASS.** Sealed rectangular cuboid, contour unbroken, no taper, no rounding, no fissures or
+  separated plates, generous dark face areas. Board 28's shape requirements are met.
+- **Top chamfer strips: RESOLVE.** A distinct narrow brighter band runs the full length of the top edge,
+  clearly a third facet separate from both the top face and the side face — the "continuous lit top rim"
+  the N·L table predicted. It does not soften the corner; the edge still reads hard.
+- **Corner triangles: PRESENT and correctly oriented.** Visible as a small distinct wedge where three
+  chamfer strips meet at the top corner. Independent confirmation of the winding-from-intended-normal
+  construction, on a facet no test could have caught rendering black.
+- **Vertical chamfer strips: DO NOT RESOLVE at this distance.** The near vertical corner reads as a hard
+  value step between the two side faces, not as a band. The facet is in the geometry (pinned by the
+  `-Z/-X` test) but under this rig, at this zoom, it does not separate from either face.
+- ⚠ **Flag for the owner/Codex, not acted on:** under the lab rig the top chamfer band is the BRIGHTEST
+  feature on the block and reads prominently. It is a *lit* facet, not an emissive one, so it is not a
+  "top-face luminous return" in board 28's sense — but it is close enough to the excluded "glowing
+  outline" read that it should be re-judged once the emissive marigold seams and bloom are on it. Naming
+  it now so the later frame is not the first time anyone notices.
+- **Framing:** two of the three footprints fill the frame at the lab's computed default
+  (`dist = max(12, 8×1.9) = 15.2`, camera `[9.12, 6.84, 15.2]`, fov 45). **This retracts the
+  `[unverified — tab hidden]` "framed much closer than default" note above** — that came from the stale
+  screenshot and is not a real finding. Framing is consistent with the computed default.
+
+**Still `[unmeasured]`:** how the block reads at race speed in `/art-lab` under the real rig; whether a
+base-contact seam reads per-block or as a continuous route glow; `MARIGOLD_REFERENCE_INTENSITY`.
