@@ -18,12 +18,16 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
-> **Revision 3** — 2026-09-19. Folds in the approved golden reference
+> **Revision 4** — 2026-09-20. One change, one section: the deck's panel division is settled at
+> **4u tiles in breaking bond**, on the owner's decision, closing the question revision 3 left open and
+> reversing revision 3's "it must not be built at 4u". Recorded in §7 item 7 with the wording it
+> replaces quoted in full. Nothing else moves.
+> *(Revision 3 — 2026-09-19. Folds in the approved golden reference
 > (`docs/art-direction/golden-reference/DIRECTION.md`) and the frozen track boards **24** (clean
 > baseline) and **25** (wear). Three of revision 2's rules are **dead**, and revision 3 corrects them
 > in place rather than leaving them to be read and built: interior seams are no longer non-emissive,
 > the environmental tier no longer bans the halo, and M1's panel-division range is superseded by the
-> 4u authoring ruler. Every correction is listed in §7 and §8.
+> 4u authoring ruler. Every correction is listed in §7 and §8.)*
 > *(Revision 2 — 2026-09-19, incorporating Codex's review of revision 1.)*
 >
 > **Where this sheet sits in the authority order.** Dimensions: `docs/ART_SCALE_REFERENCE.md`, always.
@@ -84,7 +88,7 @@ The ribbon's deck. The largest surface in frame and the one every other value is
 | Metalness | 1.0 |
 | Roughness | 0.35 – 0.50 |
 | Base colour | deep graphite, between `#0A1117` (deep space) and `#303C45` (muted steel) |
-| Panel division scale | **open — gate it.** See "Panel division" below; revision 2's 8 – 20u is superseded |
+| Panel division scale | **4u tiles in breaking bond** — 16 across the 64u ribbon, alternate rows offset 2u. See "Panel division" below |
 | Joints | dark by default, low contrast, both axes. **Sparse emissive inserts permitted** — see M7 |
 | Finish wear | broad softly-bounded roughness patches; large features, restrained contrast |
 | Scuffs | occasional elongated rub clusters, varied length, weak down-track bias |
@@ -108,19 +112,34 @@ and the sparse emissive inserts the golden reference now permits. What stays for
 version of any of them — no racing line, no safe-route glow, no fully glowing tile grid, no marked
 driving lanes (`golden-reference/DIRECTION.md`).
 
-**Panel division — deliberately left open, because the two authorities disagree on scale and neither
-certifies a number.** Revision 2 set 8 – 20u. Board 24's audit supersedes that with the **4u authoring
-ruler** — *"16 across 64u"* — while saying in the same breath that the ruler is *"not collision
-quantization"* and that *"the generated image does not reliably depict that exact count"*
-(`golden-reference/DIRECTION.md`). So the ruler is an authoring grid, not a measured panel size, and
-this sheet does not convert it into one.
+**Panel division — 4u tiles in breaking bond. Owner decision, 2026-09-20; this closes the question
+revision 3 left open and reverses revision 3's ban.** Board 24's audit gives *"16 across 64u"*
+(`golden-reference/DIRECTION.md`) and `HALF_WIDTH` is defined as *"16 lanes wide (2·HALF_WIDTH/CELL)"* —
+so a 4u tile lands exactly 16 across the 64u ribbon, matching the board's own count. Alternate
+down-track rows are offset by **half a tile (2u)**, the way real metal decking is laid.
 
-**It must not be built at 4u.** `HALF_WIDTH`'s own definition is *"16 lanes wide
-(2·HALF_WIDTH/CELL)"* — so a 4u joint pitch draws a dark line on every cell boundary, which is exactly
-the *"visible runtime lanes"* the direction forbids, rendered by accident. The joint pitch should land
-near the boards' visual relationship (a joint roughly every eighth of the ribbon) **and off the 4u
-grid**, so the deck reads as plating rather than as the authoring grid made visible. Freeze the number
-back into the table at the gate.
+**Why revision 3's ban does not hold.** It reasoned that *"a 4u joint pitch draws a dark line on every
+cell boundary, which is exactly the 'visible runtime lanes' the direction forbids"*. That reasoning is
+about **longitudinal stripes**, and a tile has transverse joints too. The forbidden read —
+*"no racing line, no safe-route glow, no fully glowing tile grid, no marked driving lanes"*
+(`golden-reference/DIRECTION.md`) — requires an **uninterrupted** line running to the vanishing point.
+Breaking bond removes that structurally: no down-track seam survives past one tile before the next
+row's offset interrupts it. Transverse joints were never at risk — they run across the direction of
+travel and cannot be steered by. Bond is preferred over simply lowering joint contrast because it kills
+the failure mode **by construction**, rather than relying on a contrast ratio still holding up at
+distance and at race speed.
+
+Two constraints survive the decision:
+
+- **Joints stay low-contrast value/material divisions, not drawn lines.** At 4u there are 16 tiles
+  across the frame; if the joints read as edges the deck becomes a grid whatever the bond. Board 25's
+  exclusion list already forbids *"fully outlined tile edges"*, and §4's criteria still govern.
+- **Shimmer is a sampling problem, not a size problem.** A 4u pitch on the far deck, at a shallow chase
+  angle and race speed, will alias if the texture is undersampled. That is fixed with mips and
+  anisotropic filtering. It is **not** a reason to re-open the tile size.
+
+The `CELL = 4u` coincidence is cosmetic. The sim never reads `CELL`, collision is continuous
+float-AABB, and `MIN_CLEAR = 7u` is untouched (GDD §0).
 
 **Wear — frozen 2026-09-19 to board 25** (`docs/art-direction/track/25_track_procedural_wear_BRIEF.md`).
 Three layers, in strength order: broad softly-bounded finish patches that *interrupt the warm
@@ -430,9 +449,10 @@ screenshot and fails at speed has failed.
 
 ## 5. Open — the questions still to settle
 
-**Panel joint pitch on the deck (M1).** The authorities give a ruler, not a size, and 4u is the one
-value it must not become (§7 item 5). Settled by looking at the deck at race speed, then frozen back
-into M1's table. Until it is, no number in this sheet licenses a joint pitch.
+**Joint contrast on the deck (M1).** The *size* is settled — 4u tiles in breaking bond (§7 item 7).
+What is not settled is how strongly a joint reads. It is a value/material division, not a line, and the
+only test is the deck at race speed: if the tiling resolves into a grid, or a joint reads as a drawn
+edge, the contrast is too high. Frozen back into M1's table at the gate.
 
 **Hazard metal (M2) versus engineered stone.** Coated metal is recorded in §7 as the decision taken for
 this revision, and the sheet is written around it. Codex's original engineered-stone proposal remains a
@@ -485,14 +505,15 @@ intensity language, or the presence of environmental glow.
 **Revision 3 — decisions taken where the direction left a number open.** Neither is an override; both
 are places the direction explicitly declines to specify.
 
-5. **Panel joint pitch is not set to 4u, and is left to be frozen at the gate.** Board 24's audit hands
-   its 4u study ruler precedence over revision 2's 8 – 20u range, but the same documents call the ruler
-   an authoring reference and say the image's tile count is not certified. Adopting 4u as the panel
-   size would put a dark joint on every `CELL` boundary and draw the 16-lane authoring grid on the
-   deck, which is the *"visible runtime lanes"* the direction forbids — arrived at by accident rather
-   than by choice. M1 therefore records the constraint (near the boards' visual relationship, off the
-   4u grid) and leaves the number to the visual gate. **Flagged to the owner; correct this if the
-   intent was literally 4u.**
+5. *(Superseded by revision 4, item 7 — the owner's answer to this item's own flag was that the intent
+   was literally 4u.)* **Panel joint pitch is not set to 4u, and is left to be frozen at the gate.**
+   Board 24's audit hands its 4u study ruler precedence over revision 2's 8 – 20u range, but the same
+   documents call the ruler an authoring reference and say the image's tile count is not certified.
+   Adopting 4u as the panel size would put a dark joint on every `CELL` boundary and draw the 16-lane
+   authoring grid on the deck, which is the *"visible runtime lanes"* the direction forbids — arrived
+   at by accident rather than by choice. M1 therefore records the constraint (near the boards' visual
+   relationship, off the 4u grid) and leaves the number to the visual gate. **Flagged to the owner;
+   correct this if the intent was literally 4u.**
 6. **The three wear layers are specified as roughness, not albedo.** Board 25 specifies appearance and
    explicitly declines to prescribe a shader. Roughness is chosen because the deck is a near-black bare
    conductor whose visible content is almost entirely reflection — the `art/block` lane measured the
@@ -502,7 +523,34 @@ are places the direction explicitly declines to specify.
 **Revision 3 — departures.** None. All three of revision 2's corrected rules were *this sheet* being
 behind the direction, not disagreeing with it.
 
+**Revision 4 — the owner's answer to item 5's flag.**
+
+7. **Panel joint pitch is 4u, laid in breaking bond.** Item 5 flagged its own ban to the owner and
+   asked to be corrected if the intent was literally 4u. It was — decision taken 2026-09-20. Item 5's
+   reasoning was wrong in one specific way, and the fix is structural rather than a matter of degree:
+   the ban treated the tiling as a set of longitudinal stripes, but a tile also has transverse joints,
+   and the *"visible runtime lanes"* read the direction forbids needs an **uninterrupted** down-track
+   line. Offsetting alternate rows by half a tile means no down-track seam survives past one tile, so
+   the forbidden read is removed by construction and every tile is still exactly 4×4u. See M1's
+   "Panel division". **This is not a departure from the package** — board 24 audits *"16 across 64u"*,
+   which is what 4u across a 64u ribbon produces; revision 3 declined to adopt the board's own count
+   and revision 4 adopts it.
+
 ## 8. Review log
+
+**Revision 3 → 4, the owner's ruling on the 4u flag (2026-09-20).** One change. Revision 3's §7 item 5
+flagged its own ban to the owner — *"correct this if the intent was literally 4u"* — and the answer was
+that it was. The deck's panel division is now **4u tiles in breaking bond**: 16 across the 64u ribbon,
+alternate down-track rows offset 2u.
+
+- **M1's "It must not be built at 4u"** and its table's *"open — gate it"* are both replaced. The ban's
+  reasoning held only for longitudinal stripes; breaking bond removes the continuous down-track seam by
+  construction, so the *"visible runtime lanes"* read cannot occur at any tile size.
+- **§5's "Panel joint pitch on the deck (M1)"** open question is closed and replaced by a narrower one:
+  joint *contrast*, still gated at race speed.
+- Two constraints carried forward into M1 rather than dropped: joints remain low-contrast value
+  divisions rather than drawn lines, and far-deck shimmer at a 4u pitch is a mip/anisotropy problem —
+  explicitly **not** grounds to re-open the size.
 
 **Revision 2 → 3, after the golden reference and the frozen track boards (2026-09-19).** Not a review —
 revision 2 went stale in the days after it was written, and three of its rules would have been read by
@@ -518,7 +566,8 @@ Corrected, each superseded by `golden-reference/DIRECTION.md` or board 24:
   *"localized soft halos"*. §3 now carries the three separators that survive, spelled out, so the tier
   split does not quietly become untestable.
 - **M1's 8 – 20u panel division range**, superseded by board 24's 4u authoring ruler — which is a ruler
-  and not a panel size. See §7 item 5 for why this is left open rather than set to 4u.
+  and not a panel size. See §7 item 5 for why revision 3 left this open rather than setting it to 4u —
+  and §7 item 7 for revision 4 setting it to 4u anyway, on the owner's ruling.
 
 Added, from the frozen boards rather than corrected:
 
