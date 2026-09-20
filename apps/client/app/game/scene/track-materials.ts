@@ -17,11 +17,6 @@ export const FLOOR_METALNESS = 1.0;
 
 export const FLOOR_ENV_MAP_INTENSITY = 1;
 
-/** The deck's only brightness control, measured: 0 blacks it out, while envMap, ambient and the star each
- *  move nothing on it. Colour is still the cool grey-white, unresolved against a marigold-primary palette. */
-export const FLOOR_EMISSIVE = '#c8d0d8';
-export const FLOOR_EMISSIVE_INTENSITY = 0.05;
-
 /** A function, not a frozen object: `trackSurfaceTexture()` needs `document`. White because colour MULTIPLIES the map. */
 export function floorSurface() {
     return {
@@ -29,8 +24,6 @@ export function floorSurface() {
         map: trackSurfaceTexture(),
         roughness: FLOOR_ROUGHNESS,
         metalness: FLOOR_METALNESS,
-        emissive: FLOOR_EMISSIVE,
-        emissiveIntensity: FLOOR_EMISSIVE_INTENSITY,
     };
 }
 

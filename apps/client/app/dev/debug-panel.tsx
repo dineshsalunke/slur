@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { DebugColor } from './debug-color';
 import { DebugSlider } from './debug-slider';
 import { debugTuningSource, pitchDeg, resetDebugTuning, shipBelowAxisDeg, useDebugTuning } from './debug-tuning';
 
@@ -94,17 +93,6 @@ export function DebugPanel() {
                 note="remounts"
             />
 
-            <div className="mt-2 mb-1 text-white/40">deck</div>
-            <DebugSlider
-                label="emissive"
-                tuningKey="floorEmissiveIntensity"
-                value={ tuning.floorEmissiveIntensity }
-                min={ 0 }
-                max={ 1 }
-                step={ 0.005 }
-            />
-            <DebugColor label="emissive col" tuningKey="floorEmissive" value={ tuning.floorEmissive } />
-
             <div className="mt-2 mb-1 text-white/40">rail emitter</div>
             <DebugSlider
                 label="intensity"
@@ -171,8 +159,8 @@ export function DebugPanel() {
                 commitOnly
             />
 
-            { /* Kept for other subjects, not for this frame: each was measured to move nothing on the deck
-                (envMap 0→2, ambient 1→0), because the deck is lit by its own emissive. */ }
+            { /* Measured inert (envMap 0→2, ambient 1→0) while the deck's emissive dominated; not remeasured
+                since that emissive was deleted. */ }
             <div className="mt-2 mb-1 text-white/40">surfaces</div>
             <DebugSlider
                 label="floor envMap"

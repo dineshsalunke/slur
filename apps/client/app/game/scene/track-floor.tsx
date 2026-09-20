@@ -22,8 +22,6 @@ import {
 } from './track-geometry';
 import { AHEAD } from './track-instancing';
 import {
-    FLOOR_EMISSIVE,
-    FLOOR_EMISSIVE_INTENSITY,
     FLOOR_ENV_MAP_INTENSITY,
     floorSurface,
     MARIGOLD_EMISSIVE,
@@ -260,8 +258,6 @@ export function TrackFloor( { track }: { track: Track } ) {
             <meshStandardMaterial
                 ref={ matRef }
                 { ...floorSurface() }
-                emissive={ import.meta.env.DEV ? tuning.floorEmissive : FLOOR_EMISSIVE }
-                emissiveIntensity={ import.meta.env.DEV ? tuning.floorEmissiveIntensity : FLOOR_EMISSIVE_INTENSITY }
                 envMapIntensity={ import.meta.env.DEV ? tuning.floorEnvMapIntensity : FLOOR_ENV_MAP_INTENSITY }
             />
         </mesh>

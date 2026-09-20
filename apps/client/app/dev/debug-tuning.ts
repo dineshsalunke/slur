@@ -4,8 +4,6 @@ import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
 import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
 import {
-    FLOOR_EMISSIVE,
-    FLOOR_EMISSIVE_INTENSITY,
     FLOOR_ENV_MAP_INTENSITY,
     MARIGOLD_REFERENCE_INTENSITY,
     RAIL_EMITTER_DECAY,
@@ -20,8 +18,6 @@ export interface DebugTuning {
     bloomSmoothing: number;
     bloomRadius: number;
     bloomLevels: number;
-    floorEmissiveIntensity: number;
-    floorEmissive: string;
     floorEnvMapIntensity: number;
     marigoldReference: number;
     emitterIntensity: number;
@@ -38,12 +34,8 @@ export interface DebugTuning {
     camFov: number;
 }
 
-// Split by value type: a colour cannot go through a range input. `string extends`, not `extends string` —
-// only a FREE string matches, so a future string-union field cannot fall into the colour setter.
+// Filtered to numbers: a non-number field cannot go through a range input.
 export type DebugTuningKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends number ? K : never }[
-    keyof DebugTuning
-];
-export type DebugTuningColorKey = { [ K in keyof DebugTuning ]: string extends DebugTuning[ K ] ? K : never }[
     keyof DebugTuning
 ];
 
@@ -54,8 +46,6 @@ function committed(): DebugTuning {
         bloomSmoothing: GRID_VOID.bloom.smoothing,
         bloomRadius: GRID_VOID.bloom.radius,
         bloomLevels: GRID_VOID.bloom.levels,
-        floorEmissiveIntensity: FLOOR_EMISSIVE_INTENSITY,
-        floorEmissive: FLOOR_EMISSIVE,
         floorEnvMapIntensity: FLOOR_ENV_MAP_INTENSITY,
         marigoldReference: MARIGOLD_REFERENCE_INTENSITY,
         emitterIntensity: RAIL_EMITTER_INTENSITY,
@@ -106,11 +96,6 @@ export function setDebugTuning( key: DebugTuningKey, value: number ): void {
     notify();
 }
 
-export function setDebugTuningColor( key: DebugTuningColorKey, value: string ): void {
-    DEBUG_TUNING[ key ] = value;
-    notify();
-}
-
 export function resetDebugTuning(): void {
     Object.assign( DEBUG_TUNING, committed() );
     applyCamera();
@@ -155,8 +140,6 @@ export function debugTuningSource( t: DebugTuning ): string {
         ) }, radius: ${ n( t.bloomRadius ) }, levels: ${ n( t.bloomLevels ) } },`,
         '',
         '// game/scene/track-materials.ts',
-        `export const FLOOR_EMISSIVE = '${ t.floorEmissive }';`,
-        `export const FLOOR_EMISSIVE_INTENSITY = ${ n( t.floorEmissiveIntensity ) };`,
         `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
         `export const MARIGOLD_REFERENCE_INTENSITY = ${ n( t.marigoldReference ) };`,
         `export const RAIL_EMITTER_INTENSITY = ${ n( t.emitterIntensity ) };`,
