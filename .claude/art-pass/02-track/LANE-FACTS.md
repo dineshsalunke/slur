@@ -545,3 +545,40 @@ Appended by the emitter-array lane (task 2, D2/D7). Same rules: one line each, `
 - Test now asserts `|x| > HALF_WIDTH` as well as the exact value, so an inset regression fails rather than passing on a self-consistent wrong number.
 - Client test count 72 → 74 (#151 added 2).
 - Gate green post-rebase: typecheck 0 errors · lint 3 pre-existing warnings, ratchet clean · shared 75/75 · client 74/74 · server 4/4 · build pass.
+
+## Deck emissive deleted (346bd7f)
+
+- `FLOOR_EMISSIVE` / `FLOOR_EMISSIVE_INTENSITY` gone from `track-materials.ts`, `floorSurface()`, `track-floor.tsx`, and all four `debug-tuning.ts` sites.
+- Untouched, as instructed: `LETHAL_SURFACE`, `DRAG_SURFACE`, `BOUNDARY_SURFACE`, `MARIGOLD_REFERENCE_INTENSITY`.
+- Unplanned but forced: the whole colour-picker path went too. `floorEmissive` was the ONLY string field in `DebugTuning`, so `DebugTuningColorKey` collapses to `never` and `setDebugTuningColor`'s `DEBUG_TUNING[key] = value` fails with `TS2322: Type 'string' is not assignable to type 'never'`. `DebugColor` became unusable (`tuningKey: never` accepts nothing), not merely unused — so `debug-color.tsx`, `setDebugTuningColor` and `DebugTuningColorKey` were deleted. Discovered by typecheck, not guessed.
+- The panel's `surfaces` note claimed envMap/ambient were inert "because the deck is lit by its own emissive". That premise is dead; rewritten to record that the measurement predates the deletion and has not been redone. The `note="inert here"` slider labels are now unverified claims.
+- Gate green: typecheck · lint exit 0 (ratchet clean) · shared 75/75 · client 74/74 · server 4/4 · build.
+- Owner then reported the deck **entirely black** on :5200. Expected — that is the `FLOOR_METALNESS = 1.0` question surfacing, and nothing was compensated.
+
+## Roughness/metalness knobs (a03228b)
+
+- `floorRoughness` (0.02–1.0, committed 0.42) and `floorMetalness` (0–1, committed 1.0) added to `committed()`, the panel `deck` group, `debugTuningSource()`, and read off tuning in `track-floor.tsx`. Committed values UNCHANGED.
+- **No recompile**, verified against installed three 0.185.1 rather than assumed: `WebGLPrograms.js:137-138,231-232,452-453` keys the program cache on `!!material.roughnessMap` / `!!material.metalnessMap` — map presence, never the scalar; `WebGLMaterials.js:383,393` refreshes `uniforms.metalness.value` / `uniforms.roughness.value` from the material every frame. No `#define`, no `needsUpdate`, and a scalar prop change does not re-run `patchEmitterLight`'s `onBeforeCompile`. Safe on a live path.
+- Gate green: typecheck · lint exit 0 (ratchet clean) · shared 75/75 · client 74/74 · server 4/4 · build. Stack restarted, `/art-lab` 200.
+
+## Is the deck receiving zero, or too little? — arithmetic, no render
+
+Sources, from `three@0.185.1` source (verified-this-session):
+- `RE_Direct_Physical` (`lights_physical_pars_fragment.glsl.js`): `dotNL = saturate(dot(N, L))`, `irradiance = dotNL * directLight.color`, and **both** `directSpecular` and `directDiffuse` are multiplied by that same `irradiance`.
+- `getDistanceAttenuation` (`lights_pars_begin.glsl.js`): `1/max(pow(d,decay),0.01) * pow2(saturate(1 - pow4(d/cutoff)))`.
+
+Geometry: emitter at `x = ±32.5`, `y = deck + 0.5` (`RAIL_EMITTER_LIFT`); deck 64u wide, normal `+Y`; `intensity 40`, `range/cutoff 150`, `decay 1`.
+
+Scalar irradiance `E = dotNL · 40 · atten`, summed over both rails, before the BRDF:
+
+| representative point | centreline `x=0` | `x=31` (1u inboard) | ratio |
+|---|---|---|---|
+| geometric closest (`dz=0`) | `dotNL 0.0154`, `atten 0.0306` → **`3.77e-2`** | `dotNL 0.316`, `atten 0.632` → **`8.00`** | 212× |
+| Karis rep. pt, steep cam (`dz≈2.3`) | **`3.75e-2`** | **`2.53`** | 67× |
+| Karis rep. pt, shallow cam (`dz≈6.7`) | **`3.61e-2`** | **`0.43`** | 12× |
+
+**Answer: too little, not zero.** The centreline gets `~3.7e-2` — six orders above float zero, and the `pow4(d/150)` window contributes a benign `0.996`, nowhere near the cutoff. Near-rail is 12–212× brighter depending on how the reflection ray picks the representative point. No second wiring bug is indicated: a wiring fault would read identically zero at both, and near-rail is not.
+
+Two caveats on the table:
+- The `dz` spread is real, not noise. The shader picks the tube point nearest the **reflection ray** (Karis), not nearest the fragment, so `L` is dragged downtrack by `≈ lift · cos/sin` of the mirror elevation. This *lowers* near-rail toward centreline and is correct for specular, but it under-reports the diffuse term — irrelevant at `metalness 1.0`, where `material.diffuseContribution` is zero, and it becomes a real error the moment metalness is dialled down.
+- `dotNL ≈ 0.015` at the centreline caps **both** terms. Dropping metalness restores a diffuse lobe that is then multiplied by that same `0.015` — it cannot rescue the centre. Consistent with roughness being the lever: at `roughness 0.42` (`alpha = 0.176`) the GGX lobe is far too wide to build a streak out of `3.7e-2`; the `1/(π·alpha²)` peak only becomes large as roughness falls. `[unmeasured]` by this lane — still no renderable tab.
