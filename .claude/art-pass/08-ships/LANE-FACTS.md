@@ -112,3 +112,45 @@ toggle. Found because the ship picker's first (prop-based) shape tripped it.
 - The MCP Chrome tab reported `document.visibilityState === "hidden"` for most of the session while the canvas measured 3456×1994 and R3F was fully mounted — the canvas paints black and rAF never runs. It flipped to `"visible"` on its own later. Canvas SIZE is not the test; read `visibilityState`.
 - Closing the other tab in the MCP group destroyed the whole tab group (Chrome auto-removes a group at its last tab), invalidating the tab id. Re-created it and carried on.
 - `git checkout <sha> -- <paths>` was refused by the permission classifier, so the "is it pre-existing" question was settled in-page (the bloom-off / ref-removed A/B above) instead of against the base commit.
+
+## Seating — origin-to-keel measured across all five ships (owner reported "half sunk")
+
+World-space bbox per ship, composing every node matrix (not just accessor min/max), then applying the
+SHIPPED `scale`/`lift` from `ship-visuals.ts`. `keelAfterLift` = `nativeMinY × scale + lift`.
+
+| ship | nativeMinY | nativeMaxY | scale | shipped lift | derived lift (−minY·s) | keelAfterLift | topAfterLift |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| executioner | −0.7748 | 1.0724 | 0.1996 | 0.154 | 0.1546 | **−0.0006** | 0.3681 |
+| challenger | −0.8215 | 2.2006 | 0.2476 | 0.203 | 0.2034 | **−0.0004** | 0.7479 |
+| bob | −0.8742 | 1.1611 | 0.2095 | 0.182 | 0.1831 | **−0.0011** | 0.4253 |
+| dispatcher | −1.4219 | 1.6644 | 0.4898 | 0.696 | 0.6965 | **−0.0005** | 1.5112 |
+| split-crown | −0.0000 | 1.0025 | 1.0 | 0 | 0.0000 | **−0.0000** | 1.0025 |
+
+**The convention in force is "keel at the render group's origin", and all five satisfy it** — the four
+placeholders land within 0.0011u of zero, split-crown lands exactly on it. The placeholders' origins are
+NOT centred; their `lift` is what keels them, and it matches the derived value in every case.
+
+`syncRenderSystem` (`apps/client/app/game/ecs/systems.ts:24`) writes `grp.position.y = s.y` directly, and
+`ShipModel` places the clone at `[0, v.lift, 0]` inside that group. So a grounded ship's keel is at world
+`y = s.y = 0`, for every hull.
+
+### Which of (a)/(b)/(c) — and the honest answer
+
+- **(a) node-local vs scene-graph bbox — RULED OUT.** The walker above composes every node's TRS and
+  transforms all 8 corners of each primitive; split-crown's 7 nodes are all identity, so the two agree.
+- **(b) renderer places the CENTRE at a hover height — RULED OUT.** It places the keel at the group
+  origin, and the other four only sit right BECAUSE their lift keels them. Nothing is centred.
+- **(c) the deck's top surface is not at the Y the rig assumes — NOT RULED OUT, and [unmeasured].** I did
+  not get a first-hand reading of the deck's top world-Y before hitting the context seam.
+
+**So no compensating translate is warranted by anything I can measure, and I have not added one.** By the
+convention the other four ships satisfy, split-crown is seated correctly to 0.0000u.
+
+**Most likely explanation, and I hit it myself this session:** the `shipBox` debug AABB is an OPAQUE grey
+volume that completely occludes the hull, and from the chase camera it reads exactly like a flat slab
+half-buried in the deck. I mistook it for the ship earlier in this session before toggling it off. If the
+owner's frame had `shipBox` lit, that is what they saw. The parked tab has it OFF.
+
+**If it is genuinely sunk with `shipBox` off, the next measurement is the deck's top world-Y versus a
+grounded ship's `s.y`** — and if the deck top is above 0, that is a rig/deck fact affecting ALL five
+ships, not a Split Crown asset fault, and not something to fix by nudging one ship's lift.
