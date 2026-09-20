@@ -1,6 +1,7 @@
-import { DEFAULT_SHIP, SEG_LEN, SHIP_ORDER, type ShipId, shipOf, TRACK_SEGMENTS } from '@slur/shared';
+import { SEG_LEN, SHIP_ORDER, type ShipId, shipOf, TRACK_SEGMENTS } from '@slur/shared';
 import { Fragment, useState } from 'react';
 import { ArtLabSkyControls } from './art-lab-sky-controls';
+import { LAB_DEFAULT_SHIP } from './lab-defaults';
 import { LAB_LAYER_KEYS, type LabLayerKey, type LabLayers } from './lab-layers';
 import { labCommands, labControls } from './lab-state';
 
@@ -49,7 +50,7 @@ export function ArtLabControls( {
     layers: LabLayers;
     onLayer: ( key: LabLayerKey ) => void;
 } ) {
-    const [ shipId, setShipId ] = useState< ShipId >( DEFAULT_SHIP );
+    const [ shipId, setShipId ] = useState< ShipId >( LAB_DEFAULT_SHIP );
     const [ paused, setPaused ] = useState( labControls.paused );
     const [ ghost, setGhost ] = useState( labControls.ghost );
 
