@@ -5,7 +5,7 @@
 // read marigold in the final tone-mapped frame" — unrunnable. These intensities are authored to survive
 // ACES, not to bypass it.
 
-import { trackSurfaceTexture } from './track-texture';
+import { edgeFalloffRamp, trackSurfaceTexture } from './track-texture';
 
 /**
  * Base roughness of the track's dark metal. The block's per-fragment roughness is perturbed RELATIVELY
@@ -35,12 +35,8 @@ export function floorSurface() {
     };
 }
 
-/**
- * Lethal blocks — touch and you derezz, so danger must read instantly.
- *
- * Still red although the palette excludes red: retoning is the block-design task's call, judged when
- * someone is judging blocks. `TrackBlocks` is its own layer, so this is not in the default review frame.
- */
+/** Lethal blocks — touch and you derezz, so danger must read instantly. Still red although the palette
+ *  excludes red: retoning is the block-design task's call, and `TrackBlocks` is its own layer. */
 export const LETHAL_SURFACE = {
     emissive: '#ff2740',
     emissiveIntensity: 2.2,
@@ -72,6 +68,18 @@ export const BOUNDARY_SURFACE = {
     emissiveIntensity: MARIGOLD_REFERENCE_INTENSITY,
     color: '#15171a',
 } as const;
+
+/**
+ * Variant C: the strip wearing the DECK's material, marigold added as a ramp. Matching the deck exactly is
+ * the point — at the inner lip there must be nothing to read as a line. Cool emissive deliberately dropped.
+ */
+export function boundarySoftSurface() {
+    return {
+        ...floorSurface(),
+        emissive: MARIGOLD_EMISSIVE,
+        emissiveMap: edgeFalloffRamp(),
+    };
+}
 
 /** Drag-block opacity pulse bounds (breathed in TrackBlocks' useFrame; the gallery holds it at MAX). */
 export const DRAG_OPACITY_MIN = 0.25;

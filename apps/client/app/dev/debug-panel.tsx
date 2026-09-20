@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DebugColor } from './debug-color';
 import { DebugSlider } from './debug-slider';
 import { debugTuningSource, pitchDeg, resetDebugTuning, shipBelowAxisDeg, useDebugTuning } from './debug-tuning';
+import { DebugVariant } from './debug-variant';
 
 const BTN = 'rounded border border-white/15 px-2 py-1 font-mono text-[11px] transition-colors hover:bg-white/10';
 
@@ -104,6 +105,9 @@ export function DebugPanel() {
                 step={ 0.005 }
             />
             <DebugColor label="emissive col" tuningKey="floorEmissive" value={ tuning.floorEmissive } />
+
+            <div className="mt-2 mb-1 text-white/40">boundary shape</div>
+            <DebugVariant value={ tuning.boundaryVariant } />
 
             <div className="mt-2 mb-1 text-white/40">marigold reference</div>
             <DebugSlider

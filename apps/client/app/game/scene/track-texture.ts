@@ -3,15 +3,12 @@ import * as THREE from 'three';
 /**
  * Procedural graphite/concrete surface for the track slab.
  *
- * WHY GENERATED, NOT AN IMAGE FILE: ADD §9 commits the project to procedural-first, and a texture file
- * would be the only binary asset in the whole track pipeline. A canvas is also tunable from code, which is
- * what an art pass needs — change a number, reload, look.
+ * WHY GENERATED: ADD §9 commits the project to procedural-first, a texture file would be the pipeline's
+ * only binary asset, and a canvas is tunable from code.
  *
- * ONE TILE = ONE PANEL. The tile maps to `PANEL_W × PANEL_L` world units, so the panel border drawn at the
- * tile's edge becomes the "large clean panel division" the art-direction handoff §4/§5 asks for. Panels are
- * therefore a TEXTURE decision, which is exactly why `TrackFloor` is one continuous mesh with continuous
- * UVs rather than instanced tiles — geometry tiles would have locked panel size to 4u.
- */
+ * ONE TILE = ONE PANEL, mapped to `PANEL_W × PANEL_L` world units, so the tile-edge border is the "large
+ * clean panel division" of handoff §4/§5. Panels are therefore a TEXTURE decision — which is why
+ * `TrackFloor` is one continuous mesh: geometry tiles would have locked panel size to 4u. */
 
 /** Panel size in world units. 16u across divides the 64u ribbon into exactly 4 panels — no partial panel
  *  at the edges. 20u along matches `SEG_LEN`, so transverse seams land on segment boundaries and therefore
@@ -134,4 +131,38 @@ let cached: THREE.CanvasTexture | null = null;
 export function trackSurfaceTexture(): THREE.CanvasTexture {
     if ( ! cached ) cached = build();
     return cached;
+}
+
+/** `pow`, not linear: a linear ramp creases where its slope stops, which is the edge C exists to remove. */
+const RAMP_RES = 256;
+const RAMP_EXP = 2.2;
+
+function buildRamp(): THREE.CanvasTexture {
+    const canvas = document.createElement( 'canvas' );
+    canvas.width = RAMP_RES;
+    canvas.height = 1;
+    const ctx = canvas.getContext( '2d' );
+    if ( ! ctx ) throw new Error( 'edgeFalloffRamp: no 2d context' );
+
+    for ( let i = 0; i < RAMP_RES; i++ ) {
+        const v = Math.round( 255 * ( i / ( RAMP_RES - 1 ) ) ** RAMP_EXP );
+        ctx.fillStyle = `rgb(${ v },${ v },${ v })`;
+        ctx.fillRect( i, 0, 1, 1 );
+    }
+
+    const tex = new THREE.CanvasTexture( canvas );
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    // NoColorSpace: a multiplier, so an sRGB decode would silently reshape the curve.
+    tex.colorSpace = THREE.NoColorSpace;
+    tex.channel = 1; // the `uv1` attribute `packGeometry` writes, leaving `uv` for the grain
+    return tex;
+}
+
+let rampCached: THREE.CanvasTexture | null = null;
+
+/** Variant C's inward marigold ramp — a singleton for the same reason the slab texture is one. */
+export function edgeFalloffRamp(): THREE.CanvasTexture {
+    if ( ! rampCached ) rampCached = buildRamp();
+    return rampCached;
 }

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { CHASE } from '../game/camera/chase';
 import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
-import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
+import { BOUNDARY_H, BOUNDARY_VARIANT, BOUNDARY_W, type BoundaryVariant } from '../game/scene/track-geometry';
 import {
     FLOOR_EMISSIVE,
     FLOOR_EMISSIVE_INTENSITY,
@@ -22,6 +22,7 @@ export interface DebugTuning {
     marigoldReference: number;
     boundaryWidth: number;
     boundaryWrap: number;
+    boundaryVariant: BoundaryVariant;
     ambientIntensity: number;
     camHeight: number;
     camBack: number;
@@ -30,12 +31,12 @@ export interface DebugTuning {
     camFov: number;
 }
 
-// Split by value type rather than one `keyof`: a colour cannot go through a range input, and letting the
-// numeric setter accept `floorEmissive` would only fail at runtime.
+// Split by value type: a colour cannot go through a range input. `string extends` below, not `extends
+// string` — only a FREE string matches, keeping the variant's 'A' | 'B' | 'C' out of the colour setter.
 export type DebugTuningKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends number ? K : never }[
     keyof DebugTuning
 ];
-export type DebugTuningColorKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends string ? K : never }[
+export type DebugTuningColorKey = { [ K in keyof DebugTuning ]: string extends DebugTuning[ K ] ? K : never }[
     keyof DebugTuning
 ];
 
@@ -52,6 +53,7 @@ function committed(): DebugTuning {
         marigoldReference: MARIGOLD_REFERENCE_INTENSITY,
         boundaryWidth: BOUNDARY_W,
         boundaryWrap: BOUNDARY_H,
+        boundaryVariant: BOUNDARY_VARIANT,
         ambientIntensity: AMBIENT_INTENSITY,
         camHeight: CHASE.height,
         camBack: CHASE.back,
@@ -73,9 +75,8 @@ export function subscribeDebugTuning( fn: () => void ): () => void {
 
 export const debugTuningVersion = () => version;
 
-// Synchronous on purpose. Deferring through rAF made the panel dead in any hidden tab (no rAF) and
-// unable to drive a frame-tap capture (advance() does not flush rAF). React already batches per
-// event, so a pointermove burst costs one render either way — the coalescing bought nothing.
+// Synchronous on purpose: deferring through rAF made the panel dead in a hidden tab and unable to drive a
+// frame-tap capture. React batches per event, so the coalescing bought nothing.
 function notify(): void {
     version++;
     for ( const fn of listeners ) fn();
@@ -92,6 +93,12 @@ function applyCamera(): void {
 export function setDebugTuning( key: DebugTuningKey, value: number ): void {
     DEBUG_TUNING[ key ] = value;
     applyCamera();
+    notify();
+}
+
+/** A mode, not a magnitude: it rebuilds both track geometries, so it is a click and never a drag. */
+export function setBoundaryVariant( value: BoundaryVariant ): void {
+    DEBUG_TUNING.boundaryVariant = value;
     notify();
 }
 
@@ -152,6 +159,7 @@ export function debugTuningSource( t: DebugTuning ): string {
         '// game/scene/track-geometry.ts',
         `export const BOUNDARY_W = ${ n( t.boundaryWidth ) };`,
         `export const BOUNDARY_H = ${ n( t.boundaryWrap ) };`,
+        `export const BOUNDARY_VARIANT: BoundaryVariant = '${ t.boundaryVariant }';`,
         '',
         '// game/scene/lighting.tsx',
         `export const AMBIENT_INTENSITY = ${ n( t.ambientIntensity ) };`,
