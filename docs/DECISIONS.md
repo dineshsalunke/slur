@@ -448,3 +448,55 @@ narrowing to 8u at peak", derived from `CORRIDOR_W_START`/`CORRIDOR_W_MIN` lane 
 off-corridor blocks are sparse (`WALL_DENSITY_START 0.14`). The structural point that narrowing the ribbon
 *reduces* obstacle density still holds; the percentages do not. v2's §3 does not repeat the bad figures,
 so nothing downstream inherited them.
+
+---
+
+## ADR-011 — Lower the chase camera to 7.5u; ADR-010's camera deferral partially superseded
+
+**Date:** 2026-09-20 · **Status:** ACCEPTED (owner-gated live) · **Supersedes:** the *deferral* in
+ADR-010's "DEFERRED — the low camera (v2 §8)", and the `height` half of ADR-006's chase-cam constants.
+**Does NOT adopt** v2's 4–5u proposal or its selective occlusion fade — both remain unaccepted.
+
+**Context.** PR #120 reframed the chase cam so the player's ship reads big, and a later pass
+(`a50cb3f`) raised `lookAhead` 7→14 and `lookAtLift` 2→5 to buy sky. The combination put the ship
+**off the bottom of the frame**: at `height 9 / back 11 / lookAhead 14 / lookAtLift 5 / fov 60` the
+ship sits `atan2(9,11) − atan2(4,25)` = **30.2°** below the view axis against a **30°** vertical
+half-FOV. Two owner complaints — "not enough sky" and "the track ends above centre" — were the same
+number, and the fix for one broke the other, because at `height 9` a flat pitch necessarily throws the
+ship out of frame.
+
+**Decision.** The chase camera becomes:
+
+| | was | now |
+|---|---|---|
+| `height` | 9 | **7.5** |
+| `back` | 11 | **15** |
+| `lookAhead` | 14 | **9.5** |
+| `lookAtLift` | 5 | **6** |
+| `fov` | 60 | **70** |
+
+Framing at these values: pitch **3.50°**, ship **23.06°** below axis against a **35°** half-FOV —
+**11.9° of margin at rest**, widening to **23.0°** at top speed. Both speed terms help and they
+compound: `backStretch 3` trails the cam to `back 18` (ship 19.5° below axis) while `fovStretch 15`
+opens the lens to `fov 85` (half-FOV 42.5°). The frame is at its tightest parked, which is the safe
+direction — margin only grows as the player goes faster.
+
+**How it was decided.** The owner dialled it live on the `/art-lab` tuning panel shipped in `4305a4d`,
+which exposes the five constants with a derived in-frame/off-edge readout. That is deliberately two of
+the three things ADR-010 required of any camera change — **a prototype in `/art-lab`** and **a human
+feel-gate**. This ADR is the third.
+
+**The cost, stated plainly.** ADR-006 put the camera at **+9u so the player can see over 8u pillars and
+plan a line**, and ADR-010 fenced any reduction as "a gameplay change wearing art clothing". At 7.5u the
+camera eye sits **below pillar height**, so pillars can occlude the view — the precise failure the +9u
+vantage existed to prevent. We accept it because the alternative was a ship that is not on screen, and
+because the widened FOV and longer `back` recover line-planning distance that raw height was buying.
+
+**Outstanding — this ADR does not claim it.** The feel-gate was flown **without pillars in frame and
+from a parked camera**. Nobody has flown 7.5u through the generator's 8u pillar fields with `fly` ON.
+Until that happens the occlusion cost is reasoned, not observed. If it reads badly, the levers are
+`back` and `fov` — **not** a return to `height 9`, which reintroduces the off-screen ship.
+
+**Not decided here.** Selective occlusion fade (v2 §8) is still unbuilt and unaccepted; ADD §10 OQ8
+stays open for the 4–5u question. 7.5u is not a step toward 4.5u, it is the lowest height at which the
+ship stays framed.

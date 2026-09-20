@@ -1,5 +1,6 @@
 import { procgenDescriptor, resolveTrack } from '@slur/shared';
 import { Fragment, useMemo, useState } from 'react';
+import { DebugPanel } from '../../dev/debug-panel';
 import { ENV_VARIANTS } from '../../game/scene/env-config';
 import { ArtLabCanvas } from './art-lab-canvas';
 import { ArtLabControls } from './art-lab-controls';
@@ -37,6 +38,7 @@ export function ArtLabShell() {
                 onLayer={ toggleLayer }
             />
             <ArtLabReadout track={ track } />
+            { import.meta.env.DEV && <DebugPanel /> }
             <ArtLabCanvas seed={ seed } env={ ENV_VARIANTS[ envIndex ] } bloom={ bloom } layers={ layers } />
         </Fragment>
     );

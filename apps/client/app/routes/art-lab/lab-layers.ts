@@ -3,7 +3,7 @@
 
 export interface LabLayers {
     floor: boolean;
-    rails: boolean;
+    boundary: boolean;
     // Untextured boxes awaiting their own design task, so OFF by default — but one click away, because
     // hazard-to-floor contact shading is a real check that needs a block present.
     blocks: boolean;
@@ -13,6 +13,7 @@ export interface LabLayers {
     env: boolean;
     // Hides the ship MESH only — the rig, sim and chase camera keep running.
     ships: boolean;
+    shipBox: boolean;
     finish: boolean;
 }
 
@@ -20,21 +21,23 @@ export type LabLayerKey = keyof LabLayers;
 
 export const DEFAULT_LAB_LAYERS: LabLayers = {
     floor: true,
-    rails: true,
+    boundary: true,
     blocks: false,
     backdrop: true,
     env: false,
     ships: false,
+    shipBox: true,
     finish: false,
 };
 
 /** Stable render order for the toggle row (object key order is not a contract worth relying on). */
 export const LAB_LAYER_KEYS: readonly LabLayerKey[] = [
     'floor',
-    'rails',
+    'boundary',
     'blocks',
     'backdrop',
     'env',
     'ships',
+    'shipBox',
     'finish',
 ];

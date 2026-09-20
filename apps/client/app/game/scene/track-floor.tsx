@@ -1,9 +1,22 @@
 import { CELL, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import type * as THREE from 'three';
+import { useDebugTuning } from '../../dev/debug-tuning';
+import {
+    BACKWARD,
+    BOUNDARY_H,
+    BOUNDARY_W,
+    DOWN,
+    FORWARD,
+    isOuterEdge,
+    LEFT,
+    packGeometry,
+    pushQuad,
+    RIGHT,
+    UP,
+} from './track-geometry';
 import { AHEAD } from './track-instancing';
-import { floorSurface } from './track-materials';
-import { PANEL_L, PANEL_W } from './track-texture';
+import { FLOOR_ENV_MAP_INTENSITY, floorSurface } from './track-materials';
 
 /**
  * Downward extrusion of the slab (world units). The sim never reads it — its floor is a plane at y=0.
@@ -11,52 +24,6 @@ import { PANEL_L, PANEL_W } from './track-texture';
  * more solid but hides holes ("slab thickness must not conceal the gap at low camera height", handoff §5).
  */
 export const SLAB_THICKNESS = 2;
-
-type V3 = readonly [ number, number, number ];
-/** Which world plane a face lies in, so its UVs come from the two axes that actually vary across it. */
-type UvPlane = 'xz' | 'zy' | 'xy';
-
-// Intended outward normals, one per face of the slab. Forward is +z.
-const UP: V3 = [ 0, 1, 0 ];
-const DOWN: V3 = [ 0, -1, 0 ];
-const LEFT: V3 = [ -1, 0, 0 ];
-const RIGHT: V3 = [ 1, 0, 0 ];
-const FORWARD: V3 = [ 0, 0, 1 ];
-const BACKWARD: V3 = [ 0, 0, -1 ];
-
-/**
- * World position over PANEL size, so one tile = one panel and panel size stays a texture decision.
- * Sides and caps use the same scale, so their grain matches the top instead of stretching.
- */
-function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
-    const [ x, y, z ] = p;
-    if ( plane === 'xz' ) return [ x / PANEL_W, z / PANEL_L ];
-    if ( plane === 'zy' ) return [ z / PANEL_L, y / PANEL_W ];
-    return [ x / PANEL_W, y / PANEL_W ];
-}
-
-/**
- * Two triangles for a quad, wound so the face points along `normal`.
- *
- * Winding is computed from the intended normal, never hand-ordered: hand-ordering silently inverts faces,
- * and an inverted face disappears under backface culling with every gate still green.
- */
-function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plane: UvPlane, normal: V3 ): void {
-    const ab: V3 = [ b[ 0 ] - a[ 0 ], b[ 1 ] - a[ 1 ], b[ 2 ] - a[ 2 ] ];
-    const ac: V3 = [ c[ 0 ] - a[ 0 ], c[ 1 ] - a[ 1 ], c[ 2 ] - a[ 2 ] ];
-    const cross: V3 = [
-        ab[ 1 ] * ac[ 2 ] - ab[ 2 ] * ac[ 1 ],
-        ab[ 2 ] * ac[ 0 ] - ab[ 0 ] * ac[ 2 ],
-        ab[ 0 ] * ac[ 1 ] - ab[ 1 ] * ac[ 0 ],
-    ];
-    const dot = cross[ 0 ] * normal[ 0 ] + cross[ 1 ] * normal[ 1 ] + cross[ 2 ] * normal[ 2 ];
-    const order = dot >= 0 ? [ a, b, c, a, c, d ] : [ a, d, c, a, c, b ];
-    for ( const p of order ) {
-        pos.push( p[ 0 ], p[ 1 ], p[ 2 ] );
-        const [ u, v ] = uvFor( p, plane );
-        uv.push( u, v );
-    }
-}
 
 /**
  * True when `other` covers [x0,x1] at the SAME height, so the slab continues and needs no end cap.
@@ -76,6 +43,10 @@ const isOffGrid = ( v: number ) => {
 /**
  * One floor span: top face, both side walls, and end caps only where the slab genuinely ends —
  * unconditional caps would bury coplanar back-to-back faces between adjacent spans and z-fight.
+ *
+ * At an outer edge the top face stops short and the side wall starts lower, leaving the corner for
+ * `TrackBoundary` to surface in M7. The SOLID is unchanged — this yields facets, not material — so the
+ * visual hull still equals the physics hull and the strip has nothing to z-fight against.
  */
 function emitSpan(
     pos: number[],
@@ -88,16 +59,20 @@ function emitSpan(
 ): void {
     const { x0, x1 } = span;
     // The span's own height, not 0. Every span the generator emits today sits at y=0, but `FloorSpan.y`
-    // is what the rails ride, so honouring it keeps a future raised platform correct by construction.
+    // is what the boundary rides, so honouring it keeps a future raised platform correct by construction.
     const t = span.y;
     const b = span.y - SLAB_THICKNESS;
+    const deckL = isOuterEdge( x0 ) ? x0 + BOUNDARY_W : x0;
+    const deckR = isOuterEdge( x1 ) ? x1 - BOUNDARY_W : x1;
+    const wallL = isOuterEdge( x0 ) ? t - BOUNDARY_H : t;
+    const wallR = isOuterEdge( x1 ) ? t - BOUNDARY_H : t;
 
     // Top face — the surface you fly over, and the physics hull itself: what you see is what you hit.
-    pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz', UP );
+    pushQuad( pos, uv, [ deckL, t, z0 ], [ deckL, t, z1 ], [ deckR, t, z1 ], [ deckR, t, z0 ], 'xz', UP );
 
     // Side walls — visible thickness, so a gap reads as a hole with depth, not a flat dark patch.
-    pushQuad( pos, uv, [ x0, b, z0 ], [ x0, t, z0 ], [ x0, t, z1 ], [ x0, b, z1 ], 'zy', LEFT );
-    pushQuad( pos, uv, [ x1, t, z0 ], [ x1, b, z0 ], [ x1, b, z1 ], [ x1, t, z1 ], 'zy', RIGHT );
+    pushQuad( pos, uv, [ x0, b, z0 ], [ x0, wallL, z0 ], [ x0, wallL, z1 ], [ x0, b, z1 ], 'zy', LEFT );
+    pushQuad( pos, uv, [ x1, wallR, z0 ], [ x1, b, z0 ], [ x1, b, z1 ], [ x1, wallR, z1 ], 'zy', RIGHT );
 
     // End caps — the faces you look straight AT across a gap, and what gives it depth.
     if ( capFront ) pushQuad( pos, uv, [ x0, b, z0 ], [ x1, b, z0 ], [ x1, t, z0 ], [ x0, t, z0 ], 'xy', BACKWARD );
@@ -105,14 +80,6 @@ function emitSpan(
 
     // Underside — seen when you fall into a gap, and it closes the solid against a low camera.
     pushQuad( pos, uv, [ x0, b, z0 ], [ x0, b, z1 ], [ x1, b, z1 ], [ x1, b, z0 ], 'xz', DOWN );
-}
-
-function packGeometry( pos: number[], uv: number[] ): THREE.BufferGeometry {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute( 'position', new THREE.Float32BufferAttribute( pos, 3 ) );
-    geo.setAttribute( 'uv', new THREE.Float32BufferAttribute( uv, 2 ) );
-    geo.computeVertexNormals();
-    return geo;
 }
 
 /**
@@ -128,6 +95,12 @@ export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: numbe
     return packGeometry( pos, uv );
 }
 
+/** How many segments the generated meshes span: the whole track, plus the run-out pad past the finish
+ *  line — the leader-grace window is flown over it, so bounding at the line leaves it floorless. */
+export function segmentCount( track: Track ): number {
+    return Math.round( track.finishZ / SEG_LEN ) + Math.ceil( AHEAD / SEG_LEN );
+}
+
 /**
  * The whole ribbon as ONE geometry, from the sim's own `FloorSpan` data.
  *
@@ -138,9 +111,7 @@ export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: numbe
 function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
     const pos: number[] = [];
     const uv: number[] = [];
-    // Past the finish line, not up to it: the leader-grace window is flown over the run-out pad, so
-    // bounding the mesh at the line leaves it floorless. One render window covers the crossing.
-    const last = Math.round( track.finishZ / SEG_LEN ) + Math.ceil( AHEAD / SEG_LEN );
+    const last = segmentCount( track );
 
     for ( let i = 0; i < last; i++ ) {
         const seg = track.segmentAt( i );
@@ -168,16 +139,20 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
     return packGeometry( pos, uv );
 }
 
-/** The ribbon surface as a single generated mesh, with real thickness. Floor only — blocks and rails
- *  come from `TrackView`. */
+/** The ribbon surface as a single generated mesh, with real thickness. Deck only — the boundary strip
+ *  and the blocks come from `TrackView`. */
 export function TrackFloor( { track }: { track: Track } ) {
     // `resolveTrack` is pure, so a seed always yields identical geometry — built once, never per frame.
     // R3F owns a geometry passed via the `geometry` prop, so there is nothing to dispose by hand.
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
+    const tuning = useDebugTuning();
 
     return (
         <mesh geometry={ geo }>
-            <meshStandardMaterial { ...floorSurface() } />
+            <meshStandardMaterial
+                { ...floorSurface() }
+                envMapIntensity={ import.meta.env.DEV ? tuning.floorEnvMapIntensity : FLOOR_ENV_MAP_INTENSITY }
+            />
         </mesh>
     );
 }

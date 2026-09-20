@@ -1,6 +1,5 @@
-// The ONE definition of what each track surface is made of — `meshStandardMaterial` props, spread onto
-// the JSX element. The game and `/art-gallery` spread the same objects so a review cannot drift from what
-// ships.
+// The ONE definition of what each track surface is made of — `meshStandardMaterial` props spread onto the
+// JSX element, so the game and `/art-gallery` cannot drift from what ships.
 //
 // NO `toneMapped: false` HERE, deliberately. Opting out made the art direction's own test — "does the rail
 // read marigold in the final tone-mapped frame" — unrunnable. These intensities are authored to survive
@@ -12,15 +11,17 @@ import { trackSurfaceTexture } from './track-texture';
  * Base roughness of the track's dark metal. The block's per-fragment roughness is perturbed RELATIVELY
  * around this, so the two dark-metal languages cannot fork when it moves — import it, never copy it.
  */
-export const FLOOR_ROUGHNESS = 0.62;
+export const FLOOR_ROUGHNESS = 0.42;
 
-export const FLOOR_METALNESS = 0.12;
+export const FLOOR_METALNESS = 1.0;
 
 /**
  * The ribbon deck. A function, not a frozen object: `trackSurfaceTexture()` needs `document` and must not
  * run at import. `color` is white because base colour MULTIPLIES the map — the near-black the deck used
  * before it was textured crushes the whole texture to flat black.
  */
+export const FLOOR_ENV_MAP_INTENSITY = 1;
+
 export function floorSurface() {
     return {
         color: '#ffffff',
@@ -56,10 +57,11 @@ export const DRAG_SURFACE = {
     depthWrite: false,
 } as const;
 
-/** Edge rails — the bright grid-line read standing proud of the dark floor. */
-export const RAIL_SURFACE = {
-    emissive: '#c8d0d8',
-    emissiveIntensity: 2.6,
+/** The outer boundary strip, embedded in the deck's top outer corner. Still the old rail's VALUES on
+ *  purpose — the marigold retone waits on the owner's ruling about which material sheet is canonical. */
+export const BOUNDARY_SURFACE = {
+    emissive: '#F59A24',
+    emissiveIntensity: 2.0,
     color: '#15171a',
 } as const;
 

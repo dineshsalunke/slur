@@ -1,7 +1,9 @@
 import { BLOCK_HEIGHT, CELL, HALF_WIDTH, SEG_LEN, tuningForShip } from '@slur/shared';
 import type { ReactNode } from 'react';
 import { SLAB_THICKNESS } from '../../game/scene/track-floor';
-import { DRAG_OPACITY_MAX, DRAG_SURFACE, LETHAL_SURFACE, RAIL_SURFACE } from '../../game/scene/track-materials';
+import { BOUNDARY_H, BOUNDARY_W } from '../../game/scene/track-geometry';
+import { DRAG_OPACITY_MAX, DRAG_SURFACE, LETHAL_SURFACE } from '../../game/scene/track-materials';
+import { BoundarySubject } from './boundary-subject';
 import { TrackSlabSubject } from './track-slab-subject';
 
 /**
@@ -44,8 +46,6 @@ const BLOCK_D = 8;
 // A representative slice of ribbon rather than the full 8000u, so the slab is inspectable at a sane camera
 // distance. Full width (64u) is kept — the width is the whole point.
 const SLAB_LEN = SEG_LEN;
-const RAIL_W = 0.6;
-const RAIL_H = 0.35;
 
 // Layout lives here rather than in the canvas so the camera rig can compute a framing position for any
 // subject without importing the scene. Pitch is set by the widest subject (the 64u slab) so neighbours
@@ -66,21 +66,16 @@ export const SUBJECTS: readonly Subject[] = [
         name: 'Track slab',
         group: 'track',
         dims: [ 2 * HALF_WIDTH, SLAB_THICKNESS, SLAB_LEN ],
-        note: 'Full 64u width, one 20u segment deep, at the real slab thickness. The ship is 2.6u — about 1/24th of this. Near-black by design: the neon lives on the rails, not the surface.',
+        note: 'Full 64u width, one 20u segment deep, at the real slab thickness. The ship is 2.6u — about 1/24th of this. Near-black by design: the energy lives at the boundary, not on the surface.',
         node: <TrackSlabSubject />,
     },
     {
-        id: 'rail',
-        name: 'Edge rail',
+        id: 'boundary',
+        name: 'Outer boundary',
         group: 'track',
-        dims: [ RAIL_W, RAIL_H, SLAB_LEN ],
-        note: 'The bright grid-line read. In game these sit at x = ±32u, i.e. over 12 ship-widths from a pilot in the middle — which is ADD §10 OQ6, the open question about whether edge glow can carry navigation at true scale.',
-        node: (
-            <mesh>
-                <boxGeometry args={ [ RAIL_W, RAIL_H, SLAB_LEN ] } />
-                <meshStandardMaterial { ...RAIL_SURFACE } />
-            </mesh>
-        ),
+        dims: [ BOUNDARY_W, BOUNDARY_H, SLAB_LEN ],
+        note: "The emitter strip, embedded in the deck's top outer corner and wrapping it — board 24 panel 02 excludes a raised rail. `dims` is the strip itself; the 8u of deck beside it is context. In game these sit at x = ±32u, over 12 ship-widths from a pilot in the middle, which is ADD §10 OQ6: whether edge glow can carry navigation at true scale.",
+        node: <BoundarySubject />,
     },
     {
         id: 'lethal',

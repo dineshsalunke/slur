@@ -51,6 +51,8 @@ export interface BloomConfig {
     intensity: number;
     threshold: number; // luminanceThreshold — lower = more surfaces bloom
     smoothing: number; // luminanceSmoothing — softness of the threshold knee
+    radius: number;
+    levels: number;
 }
 
 export interface EnvConfig {
@@ -81,7 +83,7 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
             intensity: 2.2,
             yBase: 0,
         },
-        bloom: { intensity: 1.0, threshold: 0.45, smoothing: 0.2 },
+        bloom: { intensity: 1.0, threshold: 0.45, smoothing: 0.2, radius: 0.6, levels: 4 },
     },
     {
         name: 'B · Neon Canyon',
@@ -109,7 +111,7 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
             intensity: 2.8,
             yBase: 0,
         },
-        bloom: { intensity: 1.4, threshold: 0.4, smoothing: 0.25 },
+        bloom: { intensity: 1.4, threshold: 0.4, smoothing: 0.25, radius: 0.6, levels: 4 },
     },
     {
         name: 'C · Grid Void',
@@ -139,7 +141,7 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
             intensity: 2.6,
             yBase: 0,
         },
-        bloom: { intensity: 1.2, threshold: 0.42, smoothing: 0.2 },
+        bloom: { intensity: 1.2, threshold: 0.42, smoothing: 0.2, radius: 0.6, levels: 4 },
     },
 ] as const;
 
