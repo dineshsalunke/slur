@@ -11,9 +11,10 @@ import { trackSurfaceTexture } from './track-texture';
  * Base roughness of the track's dark metal. The block's per-fragment roughness is perturbed RELATIVELY
  * around this, so the two dark-metal languages cannot fork when it moves — import it, never copy it.
  */
-export const FLOOR_ROUGHNESS = 0.42;
+export const FLOOR_ROUGHNESS = 0.4;
 
-export const FLOOR_METALNESS = 1.0;
+// Departs ART_MATERIALS.md M1 (bare conductor at 1.0): M1 was rendered and the owner moved off it.
+export const FLOOR_METALNESS = 0.75;
 
 export const FLOOR_ENV_MAP_INTENSITY = 1;
 
@@ -63,7 +64,7 @@ export const BOUNDARY_SURFACE = {
 
 // Decay is authored, not physical: 1/d² leaves the ribbon's centre black 32u from either rail.
 export const RAIL_EMITTER_INTENSITY = 40;
-export const RAIL_EMITTER_RANGE = 150;
+export const RAIL_EMITTER_RANGE = 400;
 export const RAIL_EMITTER_DECAY = 1;
 export const RAIL_EMITTER_LIFT = 0.5;
 
