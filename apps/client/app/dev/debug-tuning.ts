@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { CHASE } from '../game/camera/chase';
 import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
+import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
 import {
     FLOOR_EMISSIVE,
     FLOOR_EMISSIVE_INTENSITY,
@@ -19,6 +20,8 @@ export interface DebugTuning {
     floorEmissive: string;
     floorEnvMapIntensity: number;
     marigoldReference: number;
+    boundaryWidth: number;
+    boundaryWrap: number;
     ambientIntensity: number;
     camHeight: number;
     camBack: number;
@@ -47,6 +50,8 @@ function committed(): DebugTuning {
         floorEmissive: FLOOR_EMISSIVE,
         floorEnvMapIntensity: FLOOR_ENV_MAP_INTENSITY,
         marigoldReference: MARIGOLD_REFERENCE_INTENSITY,
+        boundaryWidth: BOUNDARY_W,
+        boundaryWrap: BOUNDARY_H,
         ambientIntensity: AMBIENT_INTENSITY,
         camHeight: CHASE.height,
         camBack: CHASE.back,
@@ -143,6 +148,10 @@ export function debugTuningSource( t: DebugTuning ): string {
         `export const FLOOR_EMISSIVE_INTENSITY = ${ n( t.floorEmissiveIntensity ) };`,
         `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
         `export const MARIGOLD_REFERENCE_INTENSITY = ${ n( t.marigoldReference ) };`,
+        '',
+        '// game/scene/track-geometry.ts',
+        `export const BOUNDARY_W = ${ n( t.boundaryWidth ) };`,
+        `export const BOUNDARY_H = ${ n( t.boundaryWrap ) };`,
         '',
         '// game/scene/lighting.tsx',
         `export const AMBIENT_INTENSITY = ${ n( t.ambientIntensity ) };`,
