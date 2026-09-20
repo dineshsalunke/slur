@@ -29,14 +29,15 @@ export default defineConfig( ( { mode } ) => {
             // (`.claude/art-pass/.gitignore` ignores `*/refs/`) — see frame-tap-plugin.ts.
             frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/art-pass/00-frame-tap/refs' ) } ),
         ],
-        // Bind the dev server to ALL interfaces so other machines on the LAN can load
-        // http://<host-ip>:5173 (office play). Vite defaults to localhost-only, which is
-        // the real reason peers couldn't connect. The client reads the ws server host from
-        // window.location.hostname (net/client.ts), so no endpoint config is needed here.
+        // `host: true` binds all interfaces so the LAN can reach the dev server; Vite defaults to
+        // localhost-only. The ws host comes from window.location.hostname (net/client.ts).
         server: {
             host: true,
             // `||` (not `??`): an empty `CLIENT_PORT=` is `""`, which `??` would keep → `Number("")` = 0 = a random OS port.
             port: Number( env.CLIENT_PORT || 5173 ),
+            // Fail on EADDRINUSE rather than Vite's silent +1: a moved port leaves Chrome and
+            // `__frame-tap` pointed at another worktree's stack, looking fine.
+            strictPort: true,
         },
         resolve: {
             tsconfigPaths: true,
