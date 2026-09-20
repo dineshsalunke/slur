@@ -130,6 +130,15 @@ export function DebugPanel() {
                 max={ 3 }
                 step={ 0.05 }
             />
+            <DebugSlider
+                label="lift"
+                tuningKey="emitterLift"
+                value={ tuning.emitterLift }
+                min={ 0.05 }
+                max={ 4 }
+                step={ 0.05 }
+                note="above deck"
+            />
 
             <div className="mt-2 mb-1 text-white/40">marigold reference</div>
             <DebugSlider

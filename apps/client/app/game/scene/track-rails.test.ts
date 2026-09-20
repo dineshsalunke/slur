@@ -55,11 +55,14 @@ describe( 'rail runs', () => {
         expect( runs.filter( ( r ) => r.x > 0 ) ).toHaveLength( 2 );
     } );
 
-    it( 'sits inboard of the deck edge and below its top face', () => {
+    it( 'sits inboard of the deck edge and ABOVE its top face', () => {
         const [ left ] = buildRailRuns( trackOf( [ full() ] ), 1 );
 
         expect( left.x ).toBeCloseTo( -HALF_WIDTH + BOUNDARY_W / 2 );
-        expect( left.y ).toBeCloseTo( -BOUNDARY_H / 2 );
+        // At or below the deck plane the top face is outside the source's hemisphere and receives
+        // nothing at all — the defect that lit only the gap end caps.
+        expect( left.y ).toBeGreaterThan( 0 );
+        expect( left.y ).toBeCloseTo( BOUNDARY_H / 2 );
     } );
 
     it( 'measures distance to the span, not to its centre', () => {

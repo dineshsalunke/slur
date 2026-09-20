@@ -29,6 +29,7 @@ import {
     MARIGOLD_EMISSIVE,
     RAIL_EMITTER_DECAY,
     RAIL_EMITTER_INTENSITY,
+    RAIL_EMITTER_LIFT,
     RAIL_EMITTER_RANGE,
 } from './track-materials';
 import { buildRailRuns, type RailRun, railRunDistance } from './track-rails';
@@ -229,7 +230,8 @@ export function TrackFloor( { track }: { track: Track } ) {
     const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
     const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;
     const geo = useMemo( () => buildFloorGeometry( track, w, h ), [ track, w, h ] );
-    const runs = useMemo( () => buildRailRuns( track, segmentCount( track ), w, h ), [ track, w, h ] );
+    const lift = import.meta.env.DEV ? tuning.emitterLift : RAIL_EMITTER_LIFT;
+    const runs = useMemo( () => buildRailRuns( track, segmentCount( track ), w, h, lift ), [ track, w, h, lift ] );
     const uniforms = useMemo( createEmitterUniforms, [] );
     const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const patched = useRef( false );

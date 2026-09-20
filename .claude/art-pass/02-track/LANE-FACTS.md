@@ -520,3 +520,18 @@ Appended by the emitter-array lane (task 2, D2/D7). Same rules: one line each, `
 - Isotropic vs anisotropic: `[unmeasured]` — the brief requires settling it by rendering and it is not yet renderable.
 - Whether `FLOOR_METALNESS = 1.0` is tenable: `[unmeasured]`, and it is the README's own "single most likely thing to fail at the rail gate".
 - Frame-time cost of the patch: `[unmeasured]`.
+
+## Emitter lift — the first rendered finding (owner-reported, c21363d)
+
+- Owner at the live tab, moving the sliders: "only the faces in the gaps facing towards camera are emitting light".
+- Cause: emitter y was `top - h/2` = `-0.5`, BELOW the deck plane. `dot(N, L) <= 0` for the top face (normal +Y) → it receives exactly zero.
+- The gap end caps have normals ∓z, so a source at y=-0.5 is still inside THEIR hemisphere — which is why those and only those lit. The report is a precise fingerprint of the sign error, not a vague symptom.
+- General consequence, not a tuning matter: a strip FLUSH with the deck cannot light the deck at all. A coplanar source illuminates a coplanar surface at exactly zero, at every intensity.
+- This is independent corroboration of ADR-012 from the lighting side: the rail has to stand proud to be a light source, which is what PR #151 builds.
+- Fixed: emitter y = `top + lift`, `RAIL_EMITTER_LIFT = 0.5` (half the 1u rail height), panel knob `lift` 0.05-4 with a floor above 0 so it cannot be dragged back into the dead plane.
+- `buildRailRuns` now takes `lift`; runs re-memoize on it, so the slider is live.
+- Test `track-rails.test.ts` pins `y > 0` with the reason, so the sign cannot regress silently.
+- Gate re-run green after the fix: typecheck · lint (ratchet clean, 7 files, none gained) · shared 75/75 · client 72/72 · server 4/4 · build.
+- `pnpm format` does NOT fix `assist/source/organizeImports`; `biome check --write <files>` does. Cost one red lint run.
+- STILL `[unmeasured]` by this lane first-hand: every pixel. The lane's own tab is `visibilityState: "hidden"`; the owner's tab is the only one rendering.
+- Shader compiles and links: proven only INDIRECTLY, by the owner seeing lit gap faces at all. No console read from a rendering tab yet.

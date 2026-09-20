@@ -10,6 +10,7 @@ import {
     MARIGOLD_REFERENCE_INTENSITY,
     RAIL_EMITTER_DECAY,
     RAIL_EMITTER_INTENSITY,
+    RAIL_EMITTER_LIFT,
     RAIL_EMITTER_RANGE,
 } from '../game/scene/track-materials';
 
@@ -26,6 +27,7 @@ export interface DebugTuning {
     emitterIntensity: number;
     emitterRange: number;
     emitterDecay: number;
+    emitterLift: number;
     boundaryWidth: number;
     boundaryWrap: number;
     ambientIntensity: number;
@@ -59,6 +61,7 @@ function committed(): DebugTuning {
         emitterIntensity: RAIL_EMITTER_INTENSITY,
         emitterRange: RAIL_EMITTER_RANGE,
         emitterDecay: RAIL_EMITTER_DECAY,
+        emitterLift: RAIL_EMITTER_LIFT,
         boundaryWidth: BOUNDARY_W,
         boundaryWrap: BOUNDARY_H,
         ambientIntensity: AMBIENT_INTENSITY,
@@ -159,6 +162,7 @@ export function debugTuningSource( t: DebugTuning ): string {
         `export const RAIL_EMITTER_INTENSITY = ${ n( t.emitterIntensity ) };`,
         `export const RAIL_EMITTER_RANGE = ${ n( t.emitterRange ) };`,
         `export const RAIL_EMITTER_DECAY = ${ n( t.emitterDecay ) };`,
+        `export const RAIL_EMITTER_LIFT = ${ n( t.emitterLift ) };`,
         '',
         '// game/scene/track-geometry.ts',
         `export const BOUNDARY_W = ${ n( t.boundaryWidth ) };`,

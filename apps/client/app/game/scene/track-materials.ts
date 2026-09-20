@@ -72,6 +72,7 @@ export const BOUNDARY_SURFACE = {
 export const RAIL_EMITTER_INTENSITY = 40;
 export const RAIL_EMITTER_RANGE = 150;
 export const RAIL_EMITTER_DECAY = 1;
+export const RAIL_EMITTER_LIFT = 0.5;
 
 /** Drag-block opacity pulse bounds (breathed in TrackBlocks' useFrame; the gallery holds it at MAX). */
 export const DRAG_OPACITY_MIN = 0.25;
