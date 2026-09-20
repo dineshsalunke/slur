@@ -703,3 +703,74 @@ the agreement `sky-config.ts` derives that bearing to buy. **This is a finding, 
 too strong, the levers in descending effect are `environment.keyIntensity` (3.2 — owns 92% of it),
 `FLOOR_ENV_MAP_INTENSITY` (1), and `starLight.intensity` (1.6 — owns 8%). Moving `starBearingDeg` moves
 BOTH, and would break the sky/light agreement it exists to hold.
+
+### Owner's characterisation corroborates it, and it was a PREDICTION not a fit
+
+The owner reports a **specular lobe on the right, close to the camera**. The mirror-peak arithmetic above
+was computed before that description reached this lane and puts the directional light's peak at **8.86u
+ahead of the camera** and 19.9u toward screen-right — near-camera, right, specular, no hotspot. Three
+independent axes agree. The rail array's predicted signature is the opposite on every one of them
+(a symmetric PAIR at screen `(±0.72, +0.22)`, ~19–20u ahead), which is a second, independent elimination
+of the rails on top of the `1.000×` arithmetic.
+
+One correction to the supervisor's read, because it matters for what gets tuned: the star's own
+`<directionalLight>` is **8%** of the right-side excess. The other **92%** is `SkyEnvironment`'s key
+`<Lightformer>` — IBL specular, same bearing, same side, invisible to a `starLight.intensity` test.
+Varying `starLight.intensity` alone will move the lobe only slightly; the `Env rig` toggle is the
+discriminator that actually splits them.
+
+## `RAIL_EMITTER_RANGE` 600–800 vs `EMITTER_SLOTS` — measured
+
+Method: `buildRailRuns` re-run headlessly over 7 seeds against the real `resolveTrack`, 1600 ship
+positions each (every 5u of 8000u). A run CONTRIBUTES at ship `z` iff its clamped span is non-empty —
+`feedEmitters` clamps to `[z−range, z+range]`, so the test is `run.z0 < z+range && run.z1 > z−range`.
+Eviction = positions where runs-in-range exceeds `EMITTER_SLOTS`. Committed values unchanged.
+
+| range | runs in range (mean / max over 7 seeds) | slots for ZERO eviction | slots for <1% |
+|---|---|---|---|
+| 150 (pre-#155) | 4.6 / 12 | 12 | 12 |
+| **400 (committed)** | 9.2–10.6 / **20** | **20** | 18 |
+| 600 | 11.6–14.9 / **24** | **24** | 24 |
+| 800 | 14.6–19.1 / **30** | **30** | 29 |
+
+- Worst seed at every range is **99991** (92 runs vs 73–79 elsewhere — more gaps, more run breaks).
+- **The committed pair already pops.** At `range 400` / `SLOTS 12`, eviction hits **10.4%** of positions
+  on seed 1234 and **49.3%** on 99991. The supervisor's premise is confirmed, and it is not a 600–800
+  problem — it is live today.
+- **There is no cheap middle.** Zero-eviction and under-1% land within 0–1 slot of each other at every
+  range, because the runs-in-range distribution has a hard shoulder at its max rather than a tail. The
+  gap the owner was to choose inside is ~1 slot wide; there is effectively nothing to trade.
+
+### Cost, specifically
+
+- **Uniform vectors.** `uEmitters` + `uEmitterTint` are both `vec4[K]` → **2K fragment uniform vectors**.
+  K=12 → 24 · K=24 → 48 · K=30 → 60. GLES 3.0 guarantees `MAX_FRAGMENT_UNIFORM_VECTORS ≥ 224`
+  ("The value must be at least 224", Khronos ES 3.0 `glGet` refpage, verified-this-session), so K=30 takes
+  **26.8% of the guaranteed floor**, up from 10.7%. The delta 12→30 is **+36 vectors = +16% of the floor**.
+  `[unmeasured]`: what `meshphysical` already consumes of that budget — it needs a live
+  `gl.getParameter( gl.MAX_FRAGMENT_UNIFORM_VECTORS )` and a linked program, and this lane cannot render.
+- **Per-fragment loop — the cost is the RANGE, not the slot count.** Parked slots exit on
+  `if ( emTint.w <= 0.0 ) continue;` after one uniform read. `emTint.w` is a **uniform**, so that branch is
+  fully coherent across the draw — zero warp divergence, the cheap case. The expensive body (Karis tube
+  solve + a full `RE_Direct_Physical` GGX evaluation) runs once per **LIVE** emitter. Going 400→800
+  roughly **doubles live emitters** (mean 9.2–10.6 → 14.6–19.1), so it doubles the deck's per-fragment
+  lighting work whatever K is. Raising K from 12 to 30 adds 18 branch-only iterations on top of that —
+  second-order against the doubling the range itself buys.
+- **CPU stays allocation-free at larger K**, verified by reading `track-floor.tsx`: `selectNearest` sorts
+  into the module-level `_near` / `_dist` arrays (they grow once on the first frame that fills K, then
+  never again), `feedEmitters` writes into the preallocated `Float32Array`s via `writeEmitter`, and the
+  view-space transform uses the module-level `_view` scratch. Insertion cost is O(runs × K) worst case =
+  92 × 30 ≈ 2,760 comparisons/frame. The per-frame uniform upload at K=30 is 240 floats. All negligible.
+- **Fixed-size stays fixed-size.** `EMITTER_SLOTS` is interpolated into `FRAG_HEAD` and `FRAG_LIGHTS` as a
+  literal, and `onBeforeCompile.toString()` is three's default `customProgramCacheKey()` — so the constant
+  is build-time by construction and nothing here makes it a live knob.
+
+### The honest answer to the owner's question
+
+`RAIL_EMITTER_RANGE 800` is affordable: it needs `EMITTER_SLOTS = 30` (32 if a future seed is denser than
+99991), which costs 60 of ≥224 fragment uniform vectors and 18 coherent branch-only loop iterations. That
+is **not** where the frame time goes. The frame time goes into roughly **2× the GGX evaluations per deck
+fragment**, bought by the range itself, and that price is the same whether or not the slot count is
+raised — raising K is what stops it popping while paying it. `[unmeasured]`: the actual frame-time delta.
+Recommended pairs for the owner to choose between: **600 / 24** and **800 / 30**. Anything that raises
+range without raising slots ships a flickering horizon instead of a hard one.
