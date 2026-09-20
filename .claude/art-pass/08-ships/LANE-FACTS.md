@@ -168,3 +168,18 @@ ships, not a Split Crown asset fault, and not something to fix by nudging one sh
 
 - **The lift A/B did not produce a frame.** Probe edit `lift: 0 → 0.5` in `ship-visuals.ts:20` (uncommitted); every tap after it returned 504, and the tap stayed 504 after the edit was reverted. The probe is fully reverted, `git status` and `git diff` clean. The live page was lost at the HMR update and could not be remounted without extension control. `[unmeasured]`
 - **Placeholder-hull contrast: `[unmeasured]`.** Switching ships needs a click on the art-lab picker (`labCommands.setShip`); there is no non-Chrome route to drive it.
+
+## Seating — the lift A/B, with the extension live, 2026-09-20
+
+Extension reconnected mid-session (`list_connected_browsers` → `Browser 1`, local). Own tab, `/art-lab`, seed 1234, env C, bloom ON, chase camera, `ships` ON, `shipBox` OFF throughout.
+
+- **The tab came up `visibilityState: "hidden"` with `document.querySelector('canvas') === null`** — R3F had not mounted at all. It flipped to `"visible"` on its own ~9s later and the canvas mounted 3456×1882. Canvas ABSENCE, not just size, is the tell for a never-visible tab.
+- **`shipBox` was ON by default in a fresh lab, and `ships` was OFF** — so the opaque grey AABB slab was the ONLY thing drawn where the ship should be. That is almost certainly the frame behind the original "half sunk" report.
+- **A (shipped `lift: 0`): hull rests with its bottom edge exactly on the deck line.** Full hull height visible, nothing buried. Zero separation — no gap, no contact shadow, no parallax.
+- **B (probe `lift: 0.5`, uncommitted): the hull visibly detaches and the "pressed into the deck" read disappears.** It reads as hovering — at 0.5u on a 1.0025u hull, arguably too much.
+- **A' (after revert): identical to A.** So the change in B is the lift, not drift. Probe fully reverted, `git status` and `git diff` clean.
+- **No depth fighting, at any of four z positions** (`start`/`build`/`chorus` waypoints, z 0 -> 3600): no tear line, no flicker, no deck drawing across the hull. Consistent with the coplanar faces never competing — the deck top faces up, the hull underside faces down, so only one is ever front-facing.
+- **Placeholder contrast (Challenger, Dispatcher): they read as RESTING ON the deck.** Both show a dark under-body/gear band at the contact that separates hull from deck. The Split Crown has no such band — its flat, brightly-lit underside edge meets the deck directly. That difference, not depth, is the read.
+- **Albedo, side by side: the Split Crown is dramatically brighter than every placeholder** — near-white against their dark navy/gold. Unresolved open art call, NOT changed.
+- Keyboard input did not drive the sim (`w` x50 left speed at 0.0 u/s); the `jump to` waypoints were used instead. Continuous-motion flicker therefore remains `[unmeasured]`.
+- Tab parked: Split Crown, grounded, z 3600, `shipBox` OFF, `ships` ON.
