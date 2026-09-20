@@ -105,6 +105,17 @@ export function DebugPanel() {
             />
             <DebugColor label="emissive col" tuningKey="floorEmissive" value={ tuning.floorEmissive } />
 
+            <div className="mt-2 mb-1 text-white/40">marigold reference</div>
+            <DebugSlider
+                label="boundary"
+                tuningKey="marigoldReference"
+                value={ tuning.marigoldReference }
+                min={ 0 }
+                max={ 4 }
+                step={ 0.05 }
+                note="pre-bloom"
+            />
+
             { /* Kept for other subjects, not for this frame: each was measured to move nothing on the deck
                 (envMap 0→2, ambient 1→0), because the deck is lit by its own emissive. */ }
             <div className="mt-2 mb-1 text-white/40">surfaces</div>

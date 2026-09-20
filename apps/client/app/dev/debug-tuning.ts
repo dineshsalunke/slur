@@ -2,7 +2,12 @@ import { useSyncExternalStore } from 'react';
 import { CHASE } from '../game/camera/chase';
 import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
-import { FLOOR_EMISSIVE, FLOOR_EMISSIVE_INTENSITY, FLOOR_ENV_MAP_INTENSITY } from '../game/scene/track-materials';
+import {
+    FLOOR_EMISSIVE,
+    FLOOR_EMISSIVE_INTENSITY,
+    FLOOR_ENV_MAP_INTENSITY,
+    MARIGOLD_REFERENCE_INTENSITY,
+} from '../game/scene/track-materials';
 
 export interface DebugTuning {
     bloomIntensity: number;
@@ -13,6 +18,7 @@ export interface DebugTuning {
     floorEmissiveIntensity: number;
     floorEmissive: string;
     floorEnvMapIntensity: number;
+    marigoldReference: number;
     ambientIntensity: number;
     camHeight: number;
     camBack: number;
@@ -40,6 +46,7 @@ function committed(): DebugTuning {
         floorEmissiveIntensity: FLOOR_EMISSIVE_INTENSITY,
         floorEmissive: FLOOR_EMISSIVE,
         floorEnvMapIntensity: FLOOR_ENV_MAP_INTENSITY,
+        marigoldReference: MARIGOLD_REFERENCE_INTENSITY,
         ambientIntensity: AMBIENT_INTENSITY,
         camHeight: CHASE.height,
         camBack: CHASE.back,
@@ -135,6 +142,7 @@ export function debugTuningSource( t: DebugTuning ): string {
         `export const FLOOR_EMISSIVE = '${ t.floorEmissive }';`,
         `export const FLOOR_EMISSIVE_INTENSITY = ${ n( t.floorEmissiveIntensity ) };`,
         `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
+        `export const MARIGOLD_REFERENCE_INTENSITY = ${ n( t.marigoldReference ) };`,
         '',
         '// game/scene/lighting.tsx',
         `export const AMBIENT_INTENSITY = ${ n( t.ambientIntensity ) };`,
