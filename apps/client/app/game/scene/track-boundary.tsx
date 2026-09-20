@@ -3,13 +3,13 @@ import { useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { useDebugTuning } from '../../dev/debug-tuning';
 import { segmentCount } from './track-floor';
-import { BOUNDARY_H, BOUNDARY_W, isOuterEdge, LEFT, packGeometry, pushQuad, RIGHT, UP } from './track-geometry';
+import { BOUNDARY_H, BOUNDARY_W, isOuterEdge, packGeometry, pushQuad, type UvPlane } from './track-geometry';
 import { BOUNDARY_SURFACE, MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
 
 /**
  * NOT a rail: board 24 panel 02 excludes "raised rails or ornamental edge machinery", so the strip IS the
- * slab's top outer corner, carrying M7 where the deck carries M1. It follows the SPAN rather than the
- * track, because a strip embedded in the slab cannot exist where there is no slab.
+ * slab's top outer corner, carrying M7 where the deck carries M1. It follows the SPAN, not the track.
+ * A BEVEL, not flat-top-plus-vertical-drop: a face on the outer plane points away and was always culled.
  */
 function emitBoundary(
     pos: number[],
@@ -22,16 +22,15 @@ function emitBoundary(
 ): void {
     const { x0, x1, y } = span;
     const d = y - h;
+    const plane: UvPlane = w >= h ? 'xz' : 'zy';
 
     if ( isOuterEdge( x0 ) ) {
         const i = x0 + w;
-        pushQuad( pos, uv, [ x0, y, z0 ], [ x0, y, z1 ], [ i, y, z1 ], [ i, y, z0 ], 'xz', UP );
-        pushQuad( pos, uv, [ x0, d, z0 ], [ x0, y, z0 ], [ x0, y, z1 ], [ x0, d, z1 ], 'zy', LEFT );
+        pushQuad( pos, uv, [ x0, d, z0 ], [ x0, d, z1 ], [ i, y, z1 ], [ i, y, z0 ], plane, [ -h, w, 0 ] );
     }
     if ( isOuterEdge( x1 ) ) {
         const i = x1 - w;
-        pushQuad( pos, uv, [ i, y, z0 ], [ i, y, z1 ], [ x1, y, z1 ], [ x1, y, z0 ], 'xz', UP );
-        pushQuad( pos, uv, [ x1, y, z0 ], [ x1, d, z0 ], [ x1, d, z1 ], [ x1, y, z1 ], 'zy', RIGHT );
+        pushQuad( pos, uv, [ i, y, z0 ], [ i, y, z1 ], [ x1, d, z1 ], [ x1, d, z0 ], plane, [ h, w, 0 ] );
     }
 }
 

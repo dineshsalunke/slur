@@ -41,10 +41,13 @@ describe( 'the boundary is embedded in the deck, not standing on it', () => {
         expect( highest ).toBe( 0 );
     } );
 
-    it( 'wraps the corner rather than lying flat on it', () => {
+    it( 'bevels the corner rather than lying flat on it', () => {
         const strip = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1 );
-        expect( strip.getAttribute( 'position' ).count ).toBe( 24 ); // 4 quads: top + outer, both edges
-        expect( spread( atHeight( strip, 0 ) ) ).toEqual( { min: -HALF_WIDTH, max: HALF_WIDTH } );
+        expect( strip.getAttribute( 'position' ).count ).toBe( 12 ); // 2 quads: one bevel per edge
+        expect( spread( atHeight( strip, 0 ) ) ).toEqual( {
+            min: -HALF_WIDTH + BOUNDARY_W,
+            max: HALF_WIDTH - BOUNDARY_W,
+        } );
         expect( spread( atHeight( strip, -BOUNDARY_H ) ) ).toEqual( { min: -HALF_WIDTH, max: HALF_WIDTH } );
     } );
 
@@ -76,16 +79,17 @@ describe( 'the boundary is embedded in the deck, not standing on it', () => {
         expect( spread( atHeight( deck, 0, true ) ) ).toEqual( { min: -24, max: -8 } );
     } );
 
-    it( 'faces the strip outward', () => {
+    it( 'faces the strip outward AND up, so a camera inside the track can see it', () => {
         const strip = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1 );
         const p = strip.getAttribute( 'position' );
         const n = strip.getAttribute( 'normal' );
 
-        // Winding is computed from an intended normal rather than hand-ordered, so this is the check that
-        // the intent was right. An inverted facet vanishes under backface culling with every gate green.
+        // Outward alone is what shipped a face ON the outer plane: correct for a solid, culled from every
+        // in-play camera, and inert at every BOUNDARY_H. The +y term is the half that makes it visible.
         for ( let i = 0; i < p.count; i++ ) {
             if ( p.getX( i ) === HALF_WIDTH && p.getY( i ) === -BOUNDARY_H ) expect( n.getX( i ) ).toBeGreaterThan( 0 );
             if ( p.getX( i ) === -HALF_WIDTH && p.getY( i ) === -BOUNDARY_H ) expect( n.getX( i ) ).toBeLessThan( 0 );
+            expect( n.getY( i ) ).toBeGreaterThan( 0 );
         }
     } );
 } );

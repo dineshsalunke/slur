@@ -18,8 +18,8 @@ export const FORWARD: V3 = [ 0, 0, 1 ];
 export const BACKWARD: V3 = [ 0, 0, -1 ];
 
 export const BOUNDARY_W = 1.0;
-/** Wrap down the outer face, so the strip turns the corner instead of lying flat and foreshortening
- *  away at the chase angle. */
+/** How far the corner bevel drops before it meets the deck's side wall, which starts at `t - h`. Buys
+ *  apparent thickness without taking deck, since only `w` crosses the playable top. */
 export const BOUNDARY_H = 1.0;
 
 /** True at the track's own outer edge, where the boundary lives. Interior span edges are gap rims —
