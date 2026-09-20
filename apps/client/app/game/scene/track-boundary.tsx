@@ -1,9 +1,10 @@
 import type { Track } from '@slur/shared';
 import { useMemo } from 'react';
 import type * as THREE from 'three';
+import { useDebugTuning } from '../../dev/debug-tuning';
 import { segmentCount } from './track-floor';
 import { BOUNDARY_H, BOUNDARY_W, isOuterEdge, LEFT, packGeometry, pushQuad, RIGHT, UP } from './track-geometry';
-import { BOUNDARY_SURFACE } from './track-materials';
+import { BOUNDARY_SURFACE, MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
 
 /**
  * NOT a rail: board 24 panel 02 excludes "raised rails or ornamental edge machinery", so the strip IS the
@@ -60,10 +61,14 @@ function buildBoundaryGeometry( track: Track ): THREE.BufferGeometry {
 
 export function TrackBoundary( { track }: { track: Track } ) {
     const geo = useMemo( () => buildBoundaryGeometry( track ), [ track ] );
+    const tuning = useDebugTuning();
 
     return (
         <mesh geometry={ geo }>
-            <meshStandardMaterial { ...BOUNDARY_SURFACE } />
+            <meshStandardMaterial
+                { ...BOUNDARY_SURFACE }
+                emissiveIntensity={ import.meta.env.DEV ? tuning.marigoldReference : MARIGOLD_REFERENCE_INTENSITY }
+            />
         </mesh>
     );
 }

@@ -59,11 +59,17 @@ export const DRAG_SURFACE = {
     depthWrite: false,
 } as const;
 
-/** The outer boundary strip, embedded in the deck's top outer corner. Still the old rail's VALUES on
- *  purpose — the marigold retone waits on the owner's ruling about which material sheet is canonical. */
+// Gameplay-tier marigold reference — the boundary strip IS it, every other marigold is a fraction of it.
+// Authored pre-bloom: dialling it down to cancel the global <Bloom> rescales every marigold downstream.
+export const MARIGOLD_REFERENCE_INTENSITY = 2.0;
+export const MARIGOLD_EMISSIVE = '#F59A24';
+
+export const ENVIRONMENTAL_MARIGOLD_FRACTION = 0.25;
+export const ENVIRONMENTAL_MARIGOLD_INTENSITY = MARIGOLD_REFERENCE_INTENSITY * ENVIRONMENTAL_MARIGOLD_FRACTION;
+
 export const BOUNDARY_SURFACE = {
-    emissive: '#F59A24',
-    emissiveIntensity: 2.0,
+    emissive: MARIGOLD_EMISSIVE,
+    emissiveIntensity: MARIGOLD_REFERENCE_INTENSITY,
     color: '#15171a',
 } as const;
 
