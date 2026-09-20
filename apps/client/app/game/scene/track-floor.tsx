@@ -16,7 +16,7 @@ import {
     UP,
 } from './track-geometry';
 import { AHEAD } from './track-instancing';
-import { FLOOR_ENV_MAP_INTENSITY, floorSurface } from './track-materials';
+import { FLOOR_EMISSIVE, FLOOR_EMISSIVE_INTENSITY, FLOOR_ENV_MAP_INTENSITY, floorSurface } from './track-materials';
 
 /**
  * Downward extrusion of the slab (world units). The sim never reads it — its floor is a plane at y=0.
@@ -151,6 +151,8 @@ export function TrackFloor( { track }: { track: Track } ) {
         <mesh geometry={ geo }>
             <meshStandardMaterial
                 { ...floorSurface() }
+                emissive={ import.meta.env.DEV ? tuning.floorEmissive : FLOOR_EMISSIVE }
+                emissiveIntensity={ import.meta.env.DEV ? tuning.floorEmissiveIntensity : FLOOR_EMISSIVE_INTENSITY }
                 envMapIntensity={ import.meta.env.DEV ? tuning.floorEnvMapIntensity : FLOOR_ENV_MAP_INTENSITY }
             />
         </mesh>

@@ -1,12 +1,13 @@
 import { useState } from 'react';
+import { DebugColor } from './debug-color';
 import { DebugSlider } from './debug-slider';
 import { debugTuningSource, pitchDeg, resetDebugTuning, shipBelowAxisDeg, useDebugTuning } from './debug-tuning';
 
 const BTN = 'rounded border border-white/15 px-2 py-1 font-mono text-[11px] transition-colors hover:bg-white/10';
 
 /**
- * The one live tuning panel for the three washout causes and the chase framing, mounted by the game and
- * by every lab so a value dialled in one is the value the other renders.
+ * The one live tuning panel for the deck's brightness and the chase framing, mounted by the game and by
+ * every lab so a value dialled in one is the value the other renders.
  */
 export function DebugPanel() {
     const tuning = useDebugTuning();
@@ -93,6 +94,19 @@ export function DebugPanel() {
                 note="remounts"
             />
 
+            <div className="mt-2 mb-1 text-white/40">deck</div>
+            <DebugSlider
+                label="emissive"
+                tuningKey="floorEmissiveIntensity"
+                value={ tuning.floorEmissiveIntensity }
+                min={ 0 }
+                max={ 1 }
+                step={ 0.005 }
+            />
+            <DebugColor label="emissive col" tuningKey="floorEmissive" value={ tuning.floorEmissive } />
+
+            { /* Kept for other subjects, not for this frame: each was measured to move nothing on the deck
+                (envMap 0→2, ambient 1→0), because the deck is lit by its own emissive. */ }
             <div className="mt-2 mb-1 text-white/40">surfaces</div>
             <DebugSlider
                 label="floor envMap"
@@ -101,6 +115,7 @@ export function DebugPanel() {
                 min={ 0 }
                 max={ 2 }
                 step={ 0.05 }
+                note="inert here"
             />
             <DebugSlider
                 label="ambient"
@@ -109,6 +124,7 @@ export function DebugPanel() {
                 min={ 0 }
                 max={ 2 }
                 step={ 0.05 }
+                note="inert here"
             />
 
             <div className="mt-2 mb-1 text-white/40">chase camera</div>
@@ -119,7 +135,7 @@ export function DebugPanel() {
                 min={ 4 }
                 max={ 20 }
                 step={ 0.5 }
-                note="ADR-010 pins 9"
+                note="ADR-011 pins 7.5"
             />
             <DebugSlider label="back" tuningKey="camBack" value={ tuning.camBack } min={ 4 } max={ 30 } step={ 0.5 } />
             <DebugSlider

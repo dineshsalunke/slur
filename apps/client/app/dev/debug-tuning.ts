@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { CHASE } from '../game/camera/chase';
 import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
-import { FLOOR_ENV_MAP_INTENSITY } from '../game/scene/track-materials';
+import { FLOOR_EMISSIVE, FLOOR_EMISSIVE_INTENSITY, FLOOR_ENV_MAP_INTENSITY } from '../game/scene/track-materials';
 
 export interface DebugTuning {
     bloomIntensity: number;
@@ -10,6 +10,8 @@ export interface DebugTuning {
     bloomSmoothing: number;
     bloomRadius: number;
     bloomLevels: number;
+    floorEmissiveIntensity: number;
+    floorEmissive: string;
     floorEnvMapIntensity: number;
     ambientIntensity: number;
     camHeight: number;
@@ -19,7 +21,14 @@ export interface DebugTuning {
     camFov: number;
 }
 
-export type DebugTuningKey = keyof DebugTuning;
+// Split by value type rather than one `keyof`: a colour cannot go through a range input, and letting the
+// numeric setter accept `floorEmissive` would only fail at runtime.
+export type DebugTuningKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends number ? K : never }[
+    keyof DebugTuning
+];
+export type DebugTuningColorKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends string ? K : never }[
+    keyof DebugTuning
+];
 
 function committed(): DebugTuning {
     return {
@@ -28,6 +37,8 @@ function committed(): DebugTuning {
         bloomSmoothing: GRID_VOID.bloom.smoothing,
         bloomRadius: GRID_VOID.bloom.radius,
         bloomLevels: GRID_VOID.bloom.levels,
+        floorEmissiveIntensity: FLOOR_EMISSIVE_INTENSITY,
+        floorEmissive: FLOOR_EMISSIVE,
         floorEnvMapIntensity: FLOOR_ENV_MAP_INTENSITY,
         ambientIntensity: AMBIENT_INTENSITY,
         camHeight: CHASE.height,
@@ -69,6 +80,11 @@ function applyCamera(): void {
 export function setDebugTuning( key: DebugTuningKey, value: number ): void {
     DEBUG_TUNING[ key ] = value;
     applyCamera();
+    notify();
+}
+
+export function setDebugTuningColor( key: DebugTuningColorKey, value: string ): void {
+    DEBUG_TUNING[ key ] = value;
     notify();
 }
 
@@ -116,6 +132,8 @@ export function debugTuningSource( t: DebugTuning ): string {
         ) }, radius: ${ n( t.bloomRadius ) }, levels: ${ n( t.bloomLevels ) } },`,
         '',
         '// game/scene/track-materials.ts',
+        `export const FLOOR_EMISSIVE = '${ t.floorEmissive }';`,
+        `export const FLOOR_EMISSIVE_INTENSITY = ${ n( t.floorEmissiveIntensity ) };`,
         `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
         '',
         '// game/scene/lighting.tsx',
