@@ -176,7 +176,10 @@ Standard deadly blocks and destructible blocks.
 | Roughness | 0.45 – 0.60 |
 | Base colour | near-black, cooler than M1 |
 | Panel / seam language | sparse, narrow, functional; **sparse marigold seams permitted** (§3) |
+| Seam orientation | **vertical only** — variable positions, multiple permitted; **no top-face luminous returns, no glowing outlines** |
 | Silhouette | continuous, uninterrupted broad faces |
+| Wear | **broad irregular patches** varying sheen and muted graphite value — this is the family's variation mechanism, not an optional garnish |
+| Instance variation | seeded: width/depth · restrained bevel · seam count/position/spacing · wear patch placement/scale/coverage/contrast |
 
 **The separation from the deck is finish, not value.** A coated dielectric block and a bare metal deck
 respond to the same light in visibly different ways — the deck carries broad reflection, the block
@@ -189,7 +192,29 @@ defeats it, a modest base-value offset and local lighting are legitimate. The co
 mass — avoid it" read (`handoff/04_OBSTACLES.md`), not a fixed number; a block lightened until it stops
 reading as sealed mass has failed even if it is perfectly visible.
 
-**Destructible variant.** Same family, same 8u envelope, same base values. The difference is
+**Wear is how this family varies, and it was missing from this sheet until 2026-09-20.** Board 28
+(`docs/art-direction/blocks/28_non_destructible_blocks_SPEC.md`) selects *"clean and worn instances of the
+same near-black coated-metal family"*, with *"broad irregular patches vary sheen and muted graphite
+value"*. **Clean is a legitimate endpoint of the range**, and *"wear strength and seam count are
+independent controls, not distinct gameplay classes"* — two dials on one form, never two block types.
+
+Wear reads through **broad surface response and value change only**. Board 28 is explicit that thick
+flaky geometry, fine scratch carpets, bright silver edging, rust and stone-like grain are not required,
+and that the silhouette stays intact at every wear level. The reason is a measured player observation,
+not taste: board 27 records that fine dark scratches were *"unlikely to be visible during racing"*, and
+larger features were asked for to justify the authoring and rendering cost. **Preserve generous dark face
+areas** — the marigold is a local incident on a dark body, not a lighting scheme.
+
+Two consequences for the numbers above, both open. *"Varying sheen"* implies a roughness **spread**, not a
+single value, and whether the worn end stays inside 0.60 is `[unmeasured]`. Board 28 sets no numbers at
+all — it says of itself that it is *"not a working procedural system"* — so M2's values stand unopposed
+rather than confirmed.
+
+**Destructible variant.** Same family, same 8u envelope, same base values. ⚠ **This paragraph describes a
+different family member from the sealed block, and the two must not be blended.** Board 28 rejects
+fissures, cracks and separated plates *"on this family"* — the sealed/deadly block. The recessed fractures
+below belong only to the destructible variant, which remains gated on ADR-009's unrun readability test.
+Incidental surface crazing in a reference image is *"not authorization to reintroduce fissures"*. The difference is
 structural, not tonal: a few large sections, broad recessed fractures, and **visible interruptions of
 the top and side contours**. Surface crack texture alone is explicitly insufficient
 (`handoff/HANDOVER.md` §6). M7 appears inside the fractures, recessed — revealed by the break rather
@@ -378,7 +403,7 @@ Every element in the package, and what it is made of. No row reads "shared with 
 | Hazard-to-floor contact shading | **M1**, lighting only | none |
 | Gap slab side walls and underside | **M8** (M1 family, cut face) | — |
 | Gap rim and inner lip | **M7**, thin | gameplay |
-| Standard deadly block | **M2** coated | gameplay — sparse functional seams |
+| Standard deadly block | **M2** coated | gameplay — sparse functional **vertical** seams; broad wear patches carry the family's variation |
 | Destructible block, intact | **M2** + **M7** in recessed fractures | gameplay |
 | Destructible block, fragments / burst | **M2** + **M7** | gameplay |
 | Finish-line structure | **M1** / **M2** + **M7** | gameplay |
@@ -541,6 +566,16 @@ position.
    ambiguity between the two material classes it names, sitting directly beneath that same document's
    requirement that blocks "must read differently from environmental monoliths". Selected toward metal,
    with engineered stone retained as the live alternative in §5.
+1a. **M2 gained wear, seam orientation and instance variation — 2026-09-20.** Not a departure: a **gap**
+   in this sheet, found by the sealed-block lane while implementing #164 and corrected here. M2 stopped at
+   finish and seams, while the block direction makes **broad wear patches the family's variation
+   mechanism** — so a reader of this sheet alone would have built a uniform family and thought it correct.
+   The authority is `docs/art-direction/blocks/28_non_destructible_blocks_SPEC.md`, which *"supersedes
+   conflicting proposals in boards 25–27"* and also outranks `handoff/04_OBSTACLES.md` and board 10 for
+   blocks — the owner's instruction on 2026-09-20 was **board 28 only**. Two further omissions closed at
+   the same time: seams are **vertical only** with no top-face returns or glowing outlines, and instance
+   variation is **seeded**. Board 28 sets no numbers, so M2's roughness 0.45 – 0.60 and metalness 0 stand
+   unopposed rather than confirmed, and a wear **spread** in roughness is still `[unmeasured]`.
 2. **Pickups, weapon shells and the finish line are metal (M6 / M1–M2).** The package describes a "dark
    structural shell" with "beveled/shaded sides" and asks the finish line to use "the same track/world
    language" without naming a family for either.
