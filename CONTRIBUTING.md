@@ -50,8 +50,9 @@ implementation during the thinking phases.** Trivial changes (a typo, a one-line
   length permit — a seven-line account of how a bug was found is a *why*, and it still does not belong in the
   file. That history goes in the PR body, where someone reading the change wants it, instead of the file,
   where everyone reading the function pays for it forever. Two standing exceptions, both still required: a
-  `useEffect` justification saying what outside-React system it synchronizes with and why no idiomatic
-  mechanism fits (an uncommented Effect is a review failure — "Anti-patterns" below), and a tuning field in
+  `useEffect` justification — **one line naming the outside-React system it synchronizes with, and that is
+  the whole comment**; *which* idiomatic mechanism you rejected and why goes in the PR body, not inline (an
+  uncommented Effect is still a review failure — "Anti-patterns" below) — and a tuning field in
   `constants.ts`, which carries one line so the value can be tuned without reading the sim.
   **`pnpm lint` measures this.** A file you touch may not come out with more comment lines than it went
   in with, and a new file may not exceed 20% comments. The bar was written down twice and lost anyway; a
@@ -84,7 +85,9 @@ These are rejected on sight. Each one has already cost this project real time.
   timers live on module singletons — never in a `useEffect` cleanup. (This bug cost us S2.)
 - **`useEffect` as the default.** It is an escape hatch, for synchronizing with systems *outside* React.
   Reach for the idiomatic mechanism first: derive during render, handle events in handlers, flow data through
-  React Router loaders/actions, use refs for imperative work. Every `useEffect` needs a justification comment.
+  React Router loaders/actions, use refs for imperative work. Every surviving `useEffect` carries **one line
+  naming the outside-React system it synchronizes with** — that is the whole comment; the idioms it rejected
+  go in the PR body (§3, and `CLAUDE.md` non-negotiable #15).
 - **Per-frame React re-renders in gameplay.** Drive the scene from ECS via refs and instancing in
   `useFrame`. React is never in the movement path.
 - **Reading Colyseus state during React render.** It is not React-reactive. Read it through the loader +
