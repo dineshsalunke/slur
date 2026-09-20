@@ -55,10 +55,12 @@ describe( 'rail runs', () => {
         expect( runs.filter( ( r ) => r.x > 0 ) ).toHaveLength( 2 );
     } );
 
-    it( 'sits inboard of the deck edge and ABOVE its top face', () => {
+    it( 'sits OUTBOARD of the deck edge and ABOVE its top face', () => {
         const [ left ] = buildRailRuns( trackOf( [ full() ] ), 1 );
 
-        expect( left.x ).toBeCloseTo( -HALF_WIDTH + BOUNDARY_W / 2 );
+        // ADR-012: the band is [HALF_WIDTH, HALF_WIDTH + w] and takes no playable width.
+        expect( Math.abs( left.x ) ).toBeGreaterThan( HALF_WIDTH );
+        expect( left.x ).toBeCloseTo( -HALF_WIDTH - BOUNDARY_W / 2 );
         // At or below the deck plane the top face is outside the source's hemisphere and receives
         // nothing at all — the defect that lit only the gap end caps.
         expect( left.y ).toBeGreaterThan( 0 );

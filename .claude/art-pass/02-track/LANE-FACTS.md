@@ -535,3 +535,13 @@ Appended by the emitter-array lane (task 2, D2/D7). Same rules: one line each, `
 - `pnpm format` does NOT fix `assist/source/organizeImports`; `biome check --write <files>` does. Cost one red lint run.
 - STILL `[unmeasured]` by this lane first-hand: every pixel. The lane's own tab is `visibilityState: "hidden"`; the owner's tab is the only one rendering.
 - Shader compiles and links: proven only INDIRECTLY, by the owner seeing lit gap faces at all. No console read from a rendering tab yet.
+
+## Rebase onto 1b4d760 (PR #151, outboard rail)
+
+- `git rebase origin/dev` clean, no conflicts. 2-dot and 3-dot diffstat IDENTICAL: 9 files, 619 insertions, 5 deletions, all mine. Rebase ate nothing.
+- SEMANTIC conflict the rebase could NOT catch: emitter x was `±(HALF_WIDTH - w/2)` = ±31.5, the retired INSET position — i.e. hovering over playable deck.
+- Post-#151 the band is `[HALF_WIDTH, HALF_WIDTH + BOUNDARY_W]` (`track-geometry.ts:18`), emitting from a top face at `y + h` and an INWARD-facing riser at `x = ±32`, `y` 0→1 (`track-boundary.tsx:22-29`).
+- Corrected emitter x to `±(HALF_WIDTH + w/2)` = ±32.5. `RAIL_EMITTER_LIFT = 0.5` unchanged and still correct: it is the centre of the rail's 1u-tall body.
+- Test now asserts `|x| > HALF_WIDTH` as well as the exact value, so an inset regression fails rather than passing on a self-consistent wrong number.
+- Client test count 72 → 74 (#151 added 2).
+- Gate green post-rebase: typecheck 0 errors · lint 3 pre-existing warnings, ratchet clean · shared 75/75 · client 74/74 · server 4/4 · build pass.

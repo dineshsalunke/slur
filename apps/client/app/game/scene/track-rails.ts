@@ -21,8 +21,8 @@ function edgeHeight( seg: Segment, left: boolean ): number | null {
  * The rails as light sources: static for the life of the track, because the strip is baked into the deck
  * and neither moves. A gap in the deck has no outer edge, so it ends the run rather than dimming it.
  *
- * `lift` must stay ABOVE the deck: a source in the deck's own plane lights it at exactly zero, so a strip
- * flush with the surface cannot illuminate it at all. ADR-012's outboard rail stands proud for this reason.
+ * Sits OUTBOARD at `HALF_WIDTH + w/2` and above the deck, tracking the band ADR-012 puts in
+ * `[HALF_WIDTH, HALF_WIDTH + w]`: a source in the deck's own plane lights it at exactly zero.
  */
 export function buildRailRuns(
     track: Track,
@@ -49,7 +49,7 @@ export function buildRailRuns(
                 cur.z1 = seg.z1;
                 continue;
             }
-            const run = { x: left ? -HALF_WIDTH + w / 2 : HALF_WIDTH - w / 2, y, z0: seg.z0, z1: seg.z1 };
+            const run = { x: left ? -HALF_WIDTH - w / 2 : HALF_WIDTH + w / 2, y, z0: seg.z0, z1: seg.z1 };
             runs.push( run );
             open[ side ] = run;
         }
