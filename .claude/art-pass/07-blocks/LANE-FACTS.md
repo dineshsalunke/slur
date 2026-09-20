@@ -138,9 +138,161 @@ sheet; where it is silent the spec governs.
 
 ## Still open at this seam
 
-- Cold-key measurement on an 8u block, centreline vs rails, under `cf1c98c`: **`[unmeasured]`** — approved
-  by the supervisor, not started.
-- Triplanar / world-space UV behaviour on the installed three + R3F: **`[unverified]`** — must be checked
-  against the installed typed API before it goes in the PR body, not recalled.
-- Visual gate in a foreground Chrome tab: **`[unmeasured]`** — Chrome was released to this lane, but the
-  context seam arrived first. Nothing has been looked at on screen.
+- ~~Cold-key measurement on an 8u block, centreline vs rails~~ — **MEASURED 2026-09-20**, see the
+  measurement section below. One term inside it is still open: the env SPECULAR contribution, which needs
+  a GL context.
+- ~~Triplanar / world-space UV behaviour on the installed three + R3F~~ — **VERIFIED 2026-09-20** against
+  installed source, see the triplanar section below.
+- Visual gate in a foreground Chrome tab: **`[unmeasured]`** — the tab was serialised to `split-crown`
+  first by the supervisor. Nothing has been looked at on screen.
+
+## Cold-key measurement — an 8u block, centreline vs rails (2026-09-20)
+
+**Method.** A Node port of three 0.185.1's own fragment math, run against the shipped constants. Every
+formula was copied from the installed source and is cited below, so the measurement is reproducible from
+this section alone — the probe scripts themselves were scratch and are not kept. Colour conversion went
+through the installed `three`'s `Color` (ColorManagement on: a hex is sRGB, the working space is
+linear-sRGB), so no hand sRGB arithmetic enters. Units are **linear-sRGB radiance**, Rec.709 luma,
+pre-bloom; the 8-bit column is after ACESFilmic at exposure 1 and the sRGB display encode, which is what
+lands in the framebuffer. Yardstick is the gameplay-tier marigold strip (`#F59A24` x 2.0, linear luma
+**8.530e-1**) — the same reference `cf1c98c` reported the deck against. Surface is the shipped M2 body:
+`#0d1117`, roughness 0.52, metalness 0. View direction is the chase cam as `sky-config.ts` quotes
+`camera/chase.ts` (9u up, ~12.5u back, aiming 7u ahead and 2u up).
+
+**Source citations for the model, all verified-this-session in `node_modules/three@0.185.1`:**
+
+- `WebGLLights.js:281` — `uniforms.color = light.color x light.intensity`.
+- `ShaderChunk/lights_physical_pars_fragment.glsl.js:529-531` — `irradiance = saturate(dot(N,L)) x light.color`.
+- `ShaderChunk/common.glsl.js:103` `BRDF_Lambert`, `:109` `F_Schlick`; `lights_physical_pars_fragment.glsl.js:76`
+  `V_GGX_SmithCorrelated`, `:89` `D_GGX`, `:153` `BRDF_GGX`.
+- `ShaderChunk/envmap_physical_pars_fragment.glsl.js:12` — `getIBLIrradiance = PI x envMapColor x
+  envMapIntensity`; `MeshStandardMaterial.js:348` — `envMapIntensity` defaults to **1.0**, and the block
+  material does not set it.
+- `ShaderChunk/tonemapping_pars_fragment.glsl.js:35,46` — `RRTAndODTFit` + `ACESFilmicToneMapping`.
+- R3F 9.7 sets `gl.toneMapping = ACESFilmicToneMapping` unless `flat`
+  (`@react-three/fiber/dist/events-156d8d12.esm.js:15903`); no Canvas in this app sets `flat` or
+  `toneMapping`, so ACES is on.
+- drei `Lightformer.js:23-28` — a Lightformer is a `meshBasicMaterial` mesh, `toneMapped: false`, with
+  `color = linear(color) x intensity`. A card's RADIANCE is exactly that, which is what gives the env
+  integral below a real basis rather than an assumed one.
+
+### THE ANSWER: centreline and rails are IDENTICAL — by construction, not by tuning
+
+- `getDirectionalLightInfo` (`ShaderChunk/lights_pars_begin.glsl.js:88-94`) reads **no geometry position
+  at all** — it copies `color` and `direction` straight off the uniform. Both the cold key and the star
+  are `directionalLight`, so their contribution is position-independent. So is the env cubemap.
+- The **rail emitter array is floor-only**: `patchEmitterLight` is called at exactly one site,
+  `track-floor.tsx:249`, on the floor material. Grepped the whole client — there is no second call. A
+  block's material is never patched, so it receives nothing from the rails at any x.
+- **Therefore an 8u block receives exactly the same light at x = 0 as at x = 31.5. Zero variation across
+  the 64u ribbon.** The 4.79e+3x edge/centre gradient `cf1c98c` was built to fix is a **deck-only**
+  phenomenon; it does not reach the block.
+
+### What the block actually receives (at every x)
+
+| face | direct lin | env lin | TOTAL lin | / marigold | ACES+sRGB 8-bit |
+|---|---|---|---|---|---|
+| **-Z — the face an approaching player sees** | 0.00e+0 | 4.81e-5 | **4.81e-5** | 5.64e-5 | **rgb(0,0,0)** |
+| +X (one rail side) | 0.00e+0 | 3.02e-5 | 3.02e-5 | 3.54e-5 | **rgb(0,0,0)** |
+| -X (other rail side) | 1.23e-2 | 3.38e-3 | 1.57e-2 | 1.84e-2 | rgb(12,16,22) |
+| +Y (top) | 4.47e-2 | 1.35e-3 | 4.60e-2 | 5.40e-2 | rgb(42,47,53) |
+| +Z (far, faces away) | 6.29e-3 | 1.54e-3 | 7.83e-3 | 9.18e-3 | rgb(4,5,9) |
+
+N.L per face: cold key `skyDirection(0,45) = (0, 0.707, 0.707)` gives 0.707 on +Y and +Z, and **0.000 on
+-Z and on both +/-X**. Star `skyDirection(66,19) = (-0.864, 0.326, 0.385)` gives 0.864 on -X, 0.326 on
++Y, 0.385 on +Z, and **0.000 on -Z and +X**. `AMBIENT_INTENSITY = 0` (`lighting.tsx:6`), so nothing
+fills them.
+
+**Both lights come from ahead and above** — bearing 0 and bearing 66 both carry a positive +Z component,
+and the ship flies +Z. The face a block presents to an approaching ship is lit by neither.
+
+On the one properly lit face (+Y), **97% of the value is specular and 3% diffuse** (4.31e-2 vs 1.54e-3).
+The cold key's own comment — "99% of what it buys on the near-black deck is specular" — holds for the
+block too.
+
+### The reshaping consequence
+
+- The block never fails to be a **silhouette**. The deck at its darkest (centreline, ~4.7e-2 linear per
+  `cf1c98c`) is still ~980x the block's front face, so the outline always reads.
+- The block comprehensively fails to be a **surface**. Board 28 makes "broad irregular wear patches
+  varying sheen and muted graphite value" *the* variation mechanism for this family — and on the face the
+  player sees there is **no incident light for a sheen or a value to modulate**. Wear authored on -Z is
+  invisible at 8-bit, at every position on the track, at every wear strength.
+- Of the four vertical faces, two are rgb(0,0,0), one is rgb(4,5,9) and faces away, and the only one
+  carrying readable value is -X — visible in profile, i.e. off to the player's side, not ahead. The top
+  at rgb(42,47,53) is visible from the chase cam (pitched 18-21 deg down) and is the block's one real
+  surface today.
+- So on the presented face the **only** thing that can carry information is the emissive marigold seam,
+  which is self-lit. That is a strong argument for the seams, and a strong argument that wear is a
+  side-and-top-face mechanism until the lighting changes. Not this lane's bug to fix — reported.
+
+### The deck's position-dependence, for contrast (the term the block does NOT get)
+
+Rail emitters (`RAIL_EMITTER_INTENSITY 40`, `RANGE 600`, `DECAY 1`, `LIFT 0.5`, rails at |x| = 32.5),
+through three's `getDistanceAttenuation` with decay 1, onto a floor point (N = +Y):
+
+| x | distance to nearer rail | atten | N.L | relative irradiance |
+|---|---|---|---|---|
+| 0u | 32.50u | 3.08e-2 | 0.0154 | 1.893e-2 |
+| 16u | 16.51u | 6.06e-2 | 0.0303 | 7.339e-2 |
+| 28u | 4.53u | 2.21e-1 | 0.1104 | 9.756e-1 |
+| 31.5u | 1.12u | 8.94e-1 | 0.4472 | 1.600e+1 |
+
+**845x** from centreline to 31.5u, in emitter-only terms. This is a different endpoint pair and a
+different decomposition from `cf1c98c`'s 4.79e+3x / 3.0e+2x figures — it is NOT a reproduction of them
+and must not be read as either confirming or contradicting them.
+
+### Caveat — the one term not measured
+
+The env **specular** (`getIBLRadiance` at roughness 0.52) is not integrated: it needs the real PMREM mip
+chain, i.e. a GL context, i.e. the tab. It is bounded small and does not change the conclusion. F0 is
+0.04 at metalness 0, and the env radiance in the -Z face's reflection lobe is the fill/wrap level
+(~1e-2 linear), so the term is O(4e-4) — four orders below the marigold yardstick's 8.53e-1, and still
+rgb(0,0,0) after ACES. **Confirm on screen when the tab comes back.** Everything else above is exact.
+
+## Triplanar / world-space UV on the installed stack — was `[unverified]`, now VERIFIED (2026-09-20)
+
+Checked against `node_modules` at `three@0.185.1`, `@react-three/fiber@9.7`, `@react-three/drei@10.7.8`.
+Nothing here is recalled.
+
+1. **There is no usable built-in triplanar.** three 0.185.1 does ship one —
+   `src/nodes/utils/TriplanarTextures.js`, exported as `triplanarTextures` — but it lives in the **TSL /
+   node-material** system, which needs the node material family. This client uses the classic path
+   (`meshStandardMaterial` through R3F, WebGLRenderer) and imports nothing from `three/tsl` or
+   `three/webgpu` — grepped the whole app, zero hits. drei 10.7.8 ships no triplanar at all. **So it is
+   hand-written in `onBeforeCompile`.**
+2. **And the built-in would not have solved our problem anyway.** Its default `positionNode` is
+   `positionLocal` (`TriplanarTextures.js:25`). On an `InstancedMesh` the local position is the **unit
+   box**, so the pattern would scale with the instance — precisely the anisotropy this lane needs to
+   avoid. World-space requires passing `positionWorld` explicitly. Worth knowing before anyone cites the
+   built-in as prior art.
+3. **`instanceMatrix` IS folded into world position.** `ShaderChunk/worldpos_vertex.glsl.js` multiplies
+   by `instanceMatrix` under `USE_INSTANCING` *before* `modelMatrix`, and `project_vertex.glsl.js` does
+   the same for `mvPosition`. A world-space UV on an instanced block is therefore correct and stable
+   under the per-instance scale — the mechanism choice works.
+4. **⚠ `worldPosition` is CONDITIONALLY declared.** `worldpos_vertex.glsl.js:2` guards it on
+   `USE_ENVMAP || DISTANCE || USE_SHADOWMAP || USE_TRANSMISSION || NUM_SPOT_LIGHT_COORDS > 0`. In this
+   scene it happens to exist: `WebGLPrograms.js:60-63` uses `scene.environment` as the envMap for any
+   `MeshStandardMaterial`, and `WebGLProgram.js:493` then emits `#define USE_ENVMAP`. But that makes the
+   world position available **only because the scene has an environment** — delete the `<Environment>`
+   and the chunk silently stops declaring it. **Declare our own varying; never lean on that guard.**
+5. **`worldPosition` is a vertex-shader local, not a varying.** three passes no world position to the
+   fragment shader on this path. A triplanar needs an explicitly added `varying vec3` carrying it.
+6. **World normal in the fragment shader:** `vNormal` is VIEW space. three ships
+   `transformNormalByInverseViewMatrix( normal, viewMatrix )` (`common.glsl.js:69`) and `viewMatrix` is
+   available in the fragment shader. (Do not confuse it with `inverseTransformDirection`, which
+   `common.glsl.js:67` marks `@deprecated r185` as an alias of `transformDirectionByInverseViewMatrix` —
+   a different function. The normal one is current.)
+7. **Non-uniform instance scale does NOT break normals on this version — verified, against expectation.**
+   `defaultnormal_vertex.glsl.js` divides `objectNormal` by the squared column lengths of `instanceMatrix`
+   before multiplying by it, which is the inverse-transpose for a scale+rotation matrix, and the chunk
+   comments "shear transforms in the instance matrix are not supported". Our instance matrices are
+   scale+translate only (`track-instancing.ts` `put()`), so this is exactly the supported case. **No
+   footgun here**; a shader that assumes it must correct the normal itself would be wrong.
+8. **Integration hazard for the later step, not for this lane.** `onBeforeCompile` is ONE function slot
+   per material, and `patchEmitterLight` already occupies it on the floor material
+   (`track-floor.tsx:249`). If the sealed block is ever given emitter light too, the two patches must be
+   **composed**, not both assigned. Related: `customProgramCacheKey` (`Material.js:543`) must be
+   overridden whenever a patch's GLSL varies with a JS value, or three serves a stale compiled program.
+   `patchEmitterLight` does not override it and is safe only because its GLSL is constant — any patch we
+   write whose source text depends on a parameter must.
