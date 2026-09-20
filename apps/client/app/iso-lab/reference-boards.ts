@@ -58,7 +58,13 @@ export const REFERENCE_BOARDS: readonly ReferenceBoard[] = [
     { id: '07_track_visual_language_final.png', name: '07 · Track language', scaleTrust: 'undersized' },
     { id: '08_gap_variations_reference.png', name: '08 · Gap variations', scaleTrust: 'mood-only' },
     { id: '09_small_gap_readability_final.png', name: '09 · Small-gap readability', scaleTrust: 'undersized' },
-    { id: '10_obstacle_blocks_final.png', name: '10 · Obstacle blocks', scaleTrust: 'mood-only' },
+    { id: '10_obstacle_blocks_final.png', name: '10 · Obstacle blocks (SUPERSEDED)', scaleTrust: 'mood-only' },
+    {
+        id: '28_non_destructible_blocks_FINAL_DRAFT.png',
+        name: '28 · Sealed blocks ★ (current)',
+        scaleTrust: 'mood-only',
+        url: '/art-refs-blocks/28_non_destructible_blocks_FINAL_DRAFT.png',
+    },
     { id: '11_pickups_weapons_final.png', name: '11 · Pickups & weapons', scaleTrust: 'mood-only' },
     // 12 is the TOP-PRECEDENCE reference for colour, depth, lighting, material and composition (art-pass
     // INDEX §2), and 13 is the cosmic-scale/cold-rim mood anchor. Both were on disk but missing from this
