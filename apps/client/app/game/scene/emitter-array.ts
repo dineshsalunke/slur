@@ -4,7 +4,7 @@ import * as THREE from 'three';
  * Slots in the emitter uniform array. FIXED, and baked into the GLSL as a literal array size: a light
  * count that varies recompiles the shader mid-race, and an array with no count cannot churn.
  */
-export const EMITTER_SLOTS = 12;
+export const EMITTER_SLOTS = 24;
 
 const STRIDE = 4;
 

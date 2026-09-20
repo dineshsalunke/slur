@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { CHASE } from '../game/camera/chase';
+import { KEY_BEARING_DEG, KEY_ELEVATION_DEG, KEY_INTENSITY } from '../game/scene/cold-key';
 import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
 import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
@@ -31,6 +32,9 @@ export interface DebugTuning {
     boundaryWidth: number;
     boundaryWrap: number;
     ambientIntensity: number;
+    keyIntensity: number;
+    keyElevation: number;
+    keyBearing: number;
     camHeight: number;
     camBack: number;
     camLookAhead: number;
@@ -61,6 +65,9 @@ function committed(): DebugTuning {
         boundaryWidth: BOUNDARY_W,
         boundaryWrap: BOUNDARY_H,
         ambientIntensity: AMBIENT_INTENSITY,
+        keyIntensity: KEY_INTENSITY,
+        keyElevation: KEY_ELEVATION_DEG,
+        keyBearing: KEY_BEARING_DEG,
         camHeight: CHASE.height,
         camBack: CHASE.back,
         camLookAhead: CHASE.lookAhead,
@@ -161,5 +168,10 @@ export function debugTuningSource( t: DebugTuning ): string {
         '',
         '// game/scene/lighting.tsx',
         `export const AMBIENT_INTENSITY = ${ n( t.ambientIntensity ) };`,
+        '',
+        '// game/scene/cold-key.tsx',
+        `export const KEY_BEARING_DEG = ${ n( t.keyBearing ) };`,
+        `export const KEY_ELEVATION_DEG = ${ n( t.keyElevation ) };`,
+        `export const KEY_INTENSITY = ${ n( t.keyIntensity ) };`,
     ].join( '\n' );
 }
