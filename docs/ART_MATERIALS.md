@@ -18,10 +18,12 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
-> **Revision 4** — 2026-09-20. One change, one section: the deck's panel division is settled at
-> **4u tiles in breaking bond**, on the owner's decision, closing the question revision 3 left open and
-> reversing revision 3's "it must not be built at 4u". Recorded in §7 item 7 with the wording it
-> replaces quoted in full. Nothing else moves.
+> **Revision 4** — 2026-09-20. The deck's panel division, settled on the owner's decisions. Tiles are
+> **4u in breaking bond**, closing the question revision 3 left open and reversing revision 3's "it
+> must not be built at 4u" (§7 item 7). The **joint groove is 0.2 – 0.8u**, which forced M1's ~1u
+> detail floor to be exempted for continuous linear elements (§7 item 8). Both are recorded with the
+> wording they replace quoted in full. Joint width and contrast remain open, and §5 now gates them as
+> one question. Nothing outside M1 moves.
 > *(Revision 3 — 2026-09-19. Folds in the approved golden reference
 > (`docs/art-direction/golden-reference/DIRECTION.md`) and the frozen track boards **24** (clean
 > baseline) and **25** (wear). Three of revision 2's rules are **dead**, and revision 3 corrects them
@@ -90,10 +92,11 @@ The ribbon's deck. The largest surface in frame and the one every other value is
 | Base colour | deep graphite, between `#0A1117` (deep space) and `#303C45` (muted steel) |
 | Panel division scale | **4u tiles in breaking bond** — 16 across the 64u ribbon, alternate rows offset 2u. See "Panel division" below |
 | Joints | dark by default, low contrast, both axes. **Sparse emissive inserts permitted** — see M7 |
+| Joint width | **0.2 – 0.8u** (5 – 20% of the 4u tile), start at the top and dial down. Open — gate it with contrast, §5 |
 | Finish wear | broad softly-bounded roughness patches; large features, restrained contrast |
 | Scuffs | occasional elongated rub clusters, varied length, weak down-track bias |
 | Edge rub | small intermittent worn portions near *selected* joint ends and bevels |
-| Detail floor | nothing below ~1u |
+| Detail floor | nothing below ~1u — **except continuous linear elements**, which are governed by contrast instead (§7 item 8) |
 
 Restrained gloss is the brief: enough reflection to carry warm energy across the dark surface, never a
 mirror (`handoff/03_TRACK.md`). Roughness is the knob — if the deck starts reflecting recognisable
@@ -125,7 +128,8 @@ about **longitudinal stripes**, and a tile has transverse joints too. The forbid
 (`golden-reference/DIRECTION.md`) — requires an **uninterrupted** line running to the vanishing point.
 Breaking bond removes that structurally: no down-track seam survives past one tile before the next
 row's offset interrupts it. Transverse joints were never at risk — they run across the direction of
-travel and cannot be steered by. Bond is preferred over simply lowering joint contrast because it kills
+travel and cannot be steered by, though they are the ones that vanish first at distance, which is the
+gate check §5 names. Bond is preferred over simply lowering joint contrast because it kills
 the failure mode **by construction**, rather than relying on a contrast ratio still holding up at
 distance and at race speed.
 
@@ -449,10 +453,33 @@ screenshot and fails at speed has failed.
 
 ## 5. Open — the questions still to settle
 
-**Joint contrast on the deck (M1).** The *size* is settled — 4u tiles in breaking bond (§7 item 7).
-What is not settled is how strongly a joint reads. It is a value/material division, not a line, and the
-only test is the deck at race speed: if the tiling resolves into a grid, or a joint reads as a drawn
-edge, the contrast is too high. Frozen back into M1's table at the gate.
+**Joint width and joint contrast on the deck (M1) — one question, not two.** The tile *size* is settled
+at 4u in breaking bond (§7 item 7). What is open is how wide a joint is and how strongly it reads, and
+these must be gated **as a pair**: a wide faint joint and a narrow dark one are indistinguishable at
+distance, so a number found for either while the other sat at an arbitrary value is only correct for
+that arbitrary value.
+
+**Width — 0.2 – 0.8u, which is 5 – 20% of the tile** (owner, 2026-09-20). Recorded as a fraction as
+well as an absolute so it survives if the tile size ever moves. **Start at 0.8u and dial down:** going
+too fine shows you what you are losing, whereas a joint that was never visible cannot be judged at all.
+
+**Contrast** stays what it always was — a value/material division, not a drawn line. If the tiling
+resolves into a grid, or a joint reads as an edge, it is too high. Board 25 already excludes *"fully
+outlined tile edges"*.
+
+**The specific failure to watch for at the gate — the two joint axes do not fade at the same rate.**
+At the chase camera's vantage (`CHASE`: 7.5u up, 15u back, 70° FOV) the deck 50u ahead is roughly 8.5°
+off edge-on. That grazing angle crushes *transverse* joint spacing by about a factor of seven, while a
+*longitudinal* joint runs away from the viewer and keeps its width untouched. So the transverse joints
+die into the mip blur first and the mid-to-far deck can revert toward **stripes** — the read breaking
+bond was adopted to prevent, re-entering through sampling rather than through geometry. It most likely
+survives, because the 2u row offset should blur into a broad faint smear rather than into a crisp,
+steerable line. **"Most likely" is not a gate**: look explicitly at the deck 40 – 100u
+ahead at race speed and confirm no continuous down-track line has reassembled itself. If one has, the
+answer is sampling (mips, anisotropy) or contrast — **not** a change to the tile size, which is settled.
+
+Both numbers freeze back into M1's table at the gate. Until then no number in this sheet licenses a
+joint.
 
 **Hazard metal (M2) versus engineered stone.** Coated metal is recorded in §7 as the decision taken for
 this revision, and the sheet is written around it. Codex's original engineered-stone proposal remains a
@@ -535,6 +562,15 @@ behind the direction, not disagreeing with it.
    "Panel division". **This is not a departure from the package** — board 24 audits *"16 across 64u"*,
    which is what 4u across a 64u ribbon produces; revision 3 declined to adopt the board's own count
    and revision 4 adopts it.
+8. **The ~1u detail floor is exempted for continuous linear elements.** The owner's joint width of
+   0.2 – 0.8u sits entirely under M1's *"nothing below ~1u"*, so one of the two had to give. The floor
+   gives, because it was written about **isolated features** — §1's rationale is that *"a detail
+   authored to look right on screen is wrong the moment the camera moves"*, an argument about specks
+   that vanish, and a 0.5u scuff patch is exactly that. A continuous line is a different perceptual
+   object: the eye integrates along its length, so a line survives well below a pixel of width as a
+   contrast modulation, the way a distant cable or wire does. *(Perceptual reasoning, this sheet's own
+   call rather than the package's — the gate can overturn it.)* Linear elements are therefore governed
+   by **contrast**, not by a width floor. The floor is unchanged for everything else, wear included.
 
 ## 8. Review log
 
@@ -551,6 +587,17 @@ alternate down-track rows offset 2u.
 - Two constraints carried forward into M1 rather than dropped: joints remain low-contrast value
   divisions rather than drawn lines, and far-deck shimmer at a 4u pitch is a mip/anisotropy problem —
   explicitly **not** grounds to re-open the size.
+
+**Joint width, same day.** The owner set the joint groove itself at **0.2 – 0.8u** (5 – 20% of the
+tile), to start at the top and dial down. Two consequences recorded rather than left implicit:
+
+- **M1's `Detail floor` row is amended** — the ~1u floor now exempts continuous linear elements, which
+  are governed by contrast instead (§7 item 8). Without this the sheet would have specified a joint it
+  elsewhere forbids.
+- **§5's open question becomes width *and* contrast together**, plus a named check: the two joint axes
+  fade at different rates under the chase camera's grazing angle, so the mid-to-far deck can revert
+  toward stripes through mip blur even though breaking bond removed them geometrically. Confirm at the
+  gate; the remedy is sampling or contrast, never the tile size.
 
 **Revision 2 → 3, after the golden reference and the frozen track boards (2026-09-19).** Not a review —
 revision 2 went stale in the days after it was written, and three of its rules would have been read by
