@@ -229,3 +229,22 @@ cp /Users/apple/Projects/personal/slur/.claude/settings.local.json .claude/
 - **Roadmap = GitHub issues** (`github.com/dineshsalunke/slur/issues`), grouped by milestone. File an issue
   for every feature or fix before you build it (`CONTRIBUTING.md`).
 - **Batch related file changes** into one review turn.
+
+## How to answer
+
+- **Quote the source, don't just name it.** A bare pointer like "GDD §5.5" or "ADR-011 says so" is not an
+  answer — the reader has to go open the file to find out what you mean. Give the **file path** and the
+  **words you are relying on**:
+
+  > `docs/GDD.md` §5.5 — *"the widest ship class is ≤ 1 cell (`CELL` = 4u) full width"*
+
+  Same for code: name the file and line, then show the line. This applies to every claim about what a
+  document or a file says, in chat and in PR bodies.
+- **Plain English, short.** Short sentences. Active voice. One idea per sentence. Say the thing, then stop.
+  No preamble, no summary of what you are about to say, no restating the question.
+- **Cut the decoration.** No filler adjectives, no drum-roll phrasing, no long dashes stacked into a
+  paragraph-long sentence. If a sentence works with half its words, use half.
+- **Length follows the question.** A one-line question gets a one-line answer. Only a real design
+  discussion earns paragraphs, and even then keep them tight.
+- This is the response style. The doc writing standard is separate and stricter — `CONTRIBUTING.md` §8
+  (ASD-STE100).
