@@ -8,7 +8,8 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
 ## Pending
 
 - [~] 2026-09-18 [feature] [art] **ART PASS — the world's visual production, procedural, in six sequential tasks**
-  Tracked in **`.claude/art-pass/INDEX.md`**, not as GitHub issues: it is one continuous arc with sequential
+  Tracked in `.claude/art-pass/INDEX.md` until 2026-09-21, when that whole directory was deleted; the arc was
+  never GitHub issues because it is one continuous arc with sequential
   composition gates worked by a single person, so the issue tracker's parallel-ticket model buys nothing.
   Order (**background → track → lighting → monoliths → asteroids → composition**), each with its own folder,
   brief, references and research notes. Everything procedural; each ingredient designed in isolation, then

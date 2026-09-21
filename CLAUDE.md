@@ -20,18 +20,18 @@ Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we 
 lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions + rationale in
 `docs/DECISIONS.md`.
 
-> ### ▶ Picking up the ART work? Read the index FIRST.
-> **`.claude/art-pass/INDEX.md`** — the six-task procedural art arc (background → track → lighting →
-> monoliths → asteroids → composition), its authority order, how each task runs, and the gotchas already
-> paid for. Written to be read cold. All dimensions come from **`docs/ART_SCALE_REFERENCE.md`**, which
-> overrides every number printed on a concept board. The earlier parallel-lane attempt
-> (`.claude/phases/2026-09-18-*`) was deliberately reset — those notes are history, not instructions.
+> ### ▶ The procedural ART arc and its review routes were DELETED (2026-09-21).
+> `.claude/art-pass/` — 86 files: the six-task index (background → track → lighting → monoliths →
+> asteroids → composition), its lane briefs, handovers and frame-tap refs — is gone, together with the
+> **`/art-lab`**, **`/art-gallery`** and four **`/iso-*`** routes, `app/iso-lab/`, and the `artRefsPlugin`
+> that served concept boards into them. Nothing here supersedes that arc; it was removed, not replaced.
+> Recover any of it with `git show e56f643 -- .claude/art-pass`.
 >
-> Review instruments: **`/art-lab`**, **`/art-gallery`** and the four **`/iso-*`** subject labs were
-> **removed 2026-09-21** — along with `app/iso-lab/` and the `artRefsPlugin` that served the concept
-> boards into them. What is left to look at art in: **`/env-lab`**, and a hosted room
-> (`/game/:roomId`) for the real track. The handover notes under `.claude/art-pass/` still describe the
-> deleted routes; read them as history. To bring one back: `git show fe00b5b -- apps/client/app/routes/art-lab`.
+> **What still governs art**, both Claude-owned and both outside the deleted tree:
+> **`docs/ART_SCALE_REFERENCE.md`** (real dimensions — overrides every number printed on a concept board)
+> and **`docs/ART_MATERIALS.md`** (nine material families, element→material map, marigold intensity
+> tiers). **What is left to look at art in:** **`/env-lab`**, and a hosted room (`/game/:roomId`) for the
+> real track.
 
 > ### 🚫 `docs/art-direction/` is ChatGPT's workspace — READ-ONLY for Claude.
 > The owner runs a **ChatGPT project pointed at that folder**; it is Codex's working set, not ours.
