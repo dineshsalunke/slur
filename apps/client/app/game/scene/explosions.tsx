@@ -5,25 +5,21 @@ import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Interp, LocalPlayer, Render, Sim } from '../ecs/traits';
 
-// Death VFX: a neon shard-burst where a ship derezzes, so a kill reads — a silent vanish looks like a bug.
-// One InstancedMesh pool driven in a single useFrame, with no React state, effect or subscription.
-
-const MAX = 240; // shard-pool buffer cap (hard — exceeding silently drops). ~6 concurrent bursts of PER_BURST.
-const PER_BURST = 40; // shards emitted per death
-const LIFE_MIN = 0.5; // shard lifetime range (s)
+const MAX = 240;
+const PER_BURST = 40;
+const LIFE_MIN = 0.5;
 const LIFE_MAX = 0.95;
-const SPEED = 16; // initial outward speed (u/s)
-const UP_BIAS = 6; // extra upward velocity so the burst lifts off the deck, not just splats sideways
-const DRAG = 2.2; // velocity decay (per s) — shards slow as they fly
-const GRAV = 18; // debris gravity (u/s²) → a short arc, not a floaty cloud
-const SIZE = 0.16; // shard box edge (world units)
-const BRIGHT = 2.6; // HDR multiplier on the tint so shards blow past the bloom threshold (toneMapped=false)
+const SPEED = 16;
+const UP_BIAS = 6;
+const DRAG = 2.2;
+const GRAV = 18;
+const SIZE = 0.16;
+const BRIGHT = 2.6;
 
-// Module-scope scratch — reused every frame, zero per-frame allocation (r3f hot-path rule).
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
-const CYAN = new THREE.Color( '#00e5ff' ); // local ship tint
-const MAGENTA = new THREE.Color( '#ff2bd6' ); // remote ship tint
+const CYAN = new THREE.Color( '#00e5ff' );
+const MAGENTA = new THREE.Color( '#ff2bd6' );
 
 interface Shard {
     active: boolean;
@@ -37,7 +33,7 @@ interface Shard {
     maxLife: number;
     r: number;
     g: number;
-    b: number; // tint (0..1), pre-brightness
+    b: number;
 }
 
 function makePool(): Shard[] {
@@ -57,8 +53,6 @@ function makePool(): Shard[] {
     } ) );
 }
 
-// Activate up to PER_BURST idle shards at (x,y,z), flung outward on a random sphere + upward bias.
-// Math.random is fine here: this is client-only cosmetics, never the deterministic sim.
 function spawnBurst( pool: Shard[], x: number, y: number, z: number, tint: THREE.Color ): void {
     let n = 0;
     for ( let i = 0; i < MAX && n < PER_BURST; i++ ) {
@@ -89,7 +83,6 @@ function park( mesh: THREE.InstancedMesh, i: number ): void {
     mesh.setMatrixAt( i, _o.matrix );
 }
 
-// One-time: park every slot + touch every color so the instanceColor buffer is allocated (no mount effect).
 function initPool( mesh: THREE.InstancedMesh ): void {
     for ( let i = 0; i < MAX; i++ ) {
         park( mesh, i );
@@ -97,8 +90,6 @@ function initPool( mesh: THREE.InstancedMesh ): void {
     }
 }
 
-// A ship's `dead` rising edge spawns a burst at its Render position. Local ships read Sim.dead; remotes
-// read the latest server snapshot.
 function detectDeaths( world: World, pool: Shard[], wasDead: Map< number, boolean > ): void {
     for ( const e of world.query( Render ) ) {
         const grp = e.get( Render );
@@ -114,7 +105,6 @@ function detectDeaths( world: World, pool: Shard[], wasDead: Map< number, boolea
     }
 }
 
-// Integrate + fade every live shard (brightness eases out, box shrinks); park it when spent.
 function advanceShards( mesh: THREE.InstancedMesh, pool: Shard[], dt: number ): void {
     const damp = Math.max( 0, 1 - DRAG * dt );
     for ( let i = 0; i < MAX; i++ ) {
@@ -133,13 +123,13 @@ function advanceShards( mesh: THREE.InstancedMesh, pool: Shard[], dt: number ): 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
         p.z += p.vz * dt;
-        const f = p.life / p.maxLife; // 1 → 0 over life
+        const f = p.life / p.maxLife;
         const s = SIZE * ( 0.35 + 0.75 * f );
         _o.position.set( p.x, p.y, p.z );
         _o.scale.set( s, s, s );
         _o.updateMatrix();
         mesh.setMatrixAt( i, _o.matrix );
-        const b = BRIGHT * f * f; // ease-out brightness fade so the glow dies gracefully
+        const b = BRIGHT * f * f;
         mesh.setColorAt( i, _c.setRGB( p.r * b, p.g * b, p.b * b ) );
     }
     mesh.instanceMatrix.needsUpdate = true;
@@ -150,11 +140,9 @@ export function ExplosionField() {
     const world = useWorld();
     const meshRef = useRef< THREE.InstancedMesh | null >( null );
     const pool = useMemo( makePool, [] );
-    const wasDead = useMemo( () => new Map< number, boolean >(), [] ); // entity id → dead last frame (edge detect)
+    const wasDead = useMemo( () => new Map< number, boolean >(), [] );
     const inited = useRef( false );
 
-    // Park every slot at mount via a callback ref, which runs during commit and so beats the first paint.
-    // Parking in the first useFrame instead flashes MAX identity-matrix cubes at the origin for a frame.
     const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
         meshRef.current = mesh;
         if ( mesh && ! inited.current ) {
@@ -163,7 +151,6 @@ export function ExplosionField() {
         }
     }, [] );
 
-    // Fully imperative: detect deaths (after NetLoop synced positions) → spawn, then advance shards.
     useFrame( ( _state, delta ) => {
         const mesh = meshRef.current;
         if ( ! mesh ) return;
@@ -172,9 +159,6 @@ export function ExplosionField() {
     } );
 
     return (
-        // frustumCulled=false: three computes an InstancedMesh's bounding sphere once, so the stale volume
-        // culls the whole burst as the ship flies on. Additive and no depth-write, so overlapping shards
-        // sum to a bright, self-glowing flash.
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial

@@ -7,8 +7,6 @@ import { colorHex } from '../colors';
 import { useRunView } from '../net/use-run-view';
 import { LeaveButton } from './leave-button';
 
-// Final standings (shared computeStandings → rank, DNF flag) + host-only Play Again (RESTART_MESSAGE → server
-// re-opens the lobby, promoting spectators to racers) + Leave. Non-host players just see the table and wait.
 export function ResultsOverlay( { room }: { room: Room< RunState > } ) {
     const view = useRunView( room );
     const isHost = view.selfId === view.hostId;

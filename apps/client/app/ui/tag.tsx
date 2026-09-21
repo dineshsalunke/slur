@@ -1,8 +1,5 @@
 import type { ReactNode } from 'react';
 
-// A tiny uppercase pill label (was `.slur-tag` + `.slur-host` / `.slur-spec` / `.slur-fin`): host ★, YOU,
-// SPECTATING, and the finish-time tag. Border colour lives in the variant so the accent variants never collide
-// with the default hairline. `default` is the neutral YOU tag.
 const VARIANT = {
     default: 'border-hud/35',
     host: 'border-cyan text-cyan',

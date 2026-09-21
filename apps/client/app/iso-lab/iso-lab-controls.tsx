@@ -28,13 +28,6 @@ export interface IsoLabControlsProps {
 
 const BTN = 'rounded px-2 py-1 text-xs transition-colors';
 
-/**
- * The lab's DOM control panel. Tailwind v4 only — no inline style objects, no vanilla CSS (PR #85's lesson).
- *
- * Collapsible, because the panel occludes exactly the corner of the frame you want to compare against a
- * board. Collapsed-by-default was rejected: an instrument whose controls are hidden gets used as a static
- * screenshot, which is the failure mode this route exists to replace.
- */
 export function IsoLabControls( props: IsoLabControlsProps ) {
     const [ open, setOpen ] = useState( true );
     const board = REFERENCE_BOARDS.find( ( b ) => b.id === props.boardId );

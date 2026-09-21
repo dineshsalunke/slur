@@ -8,21 +8,14 @@ import { guardLfsPointer } from './gltf-lfs-guard';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 import { MARIGOLD_EMISSIVE } from './track-materials';
 
-// Per-ship model. useGLTF caches by URL and drei <Clone> deep-clones per entity, so ships
-// mount independently while sharing geometry. scale/lift/facing come from ship-visuals.ts, DERIVED so the
-// model box equals the class AABB footprint — what you see is what collides.
 for ( const v of Object.values( SHIP_VISUALS ) ) {
-    useGLTF.preload( v.url, undefined, undefined, guardLfsPointer ); // preload all 5 → no hot-swap hitch
+    useGLTF.preload( v.url, undefined, undefined, guardLfsPointer );
 }
 
-// Derezz dissolve. onBeforeCompile injects a value-noise `discard` driven by a per-ship `uDissolve` uniform
-// (0 = solid → 1 = gone) plus an emissive burn edge at the front. `deep="materialsOnly"` on <Clone> is what
-// gives each ship its own material clones, so the uniform can be per-entity.
-
-const DISSOLVE_DURATION = 0.7; // s — dead→gone ramp (and gone→solid dissolve-in on respawn). Tune to taste.
-const DISSOLVE_NOISE_SCALE = 1.8; // noise cells across the (object-space) hull — higher = finer speckle
-const DISSOLVE_EDGE_WIDTH = 0.09; // width of the glowing burn band trailing the dissolve front (noise units)
-const DISSOLVE_EDGE_INTENSITY = 2.6; // HDR add on the burn edge (post-tonemap → blows past the bloom threshold)
+const DISSOLVE_DURATION = 0.7;
+const DISSOLVE_NOISE_SCALE = 1.8;
+const DISSOLVE_EDGE_WIDTH = 0.09;
+const DISSOLVE_EDGE_INTENSITY = 2.6;
 
 interface DissolveUniforms {
     uDissolve: { value: number };
@@ -32,8 +25,7 @@ interface DissolveUniforms {
     uEdgeIntensity: { value: number };
 }
 
-// value-noise + uniforms/varying declarations, prepended to the fragment shader (top-level, before main()).
-const DISSOLVE_FRAG_HEAD = /* glsl */ `
+const DISSOLVE_FRAG_HEAD = `
 uniform float uDissolve;
 uniform float uNoiseScale;
 uniform float uEdgeWidth;
@@ -51,23 +43,18 @@ float dsvNoise( vec3 x ) {
 }
 `;
 
-// clip away everything the dissolve front has already passed. `dsvN` is reused by the edge inject below.
-const DISSOLVE_DISCARD = /* glsl */ `
+const DISSOLVE_DISCARD = `
     float dsvN = dsvNoise( vDissolvePos * uNoiseScale );
     if ( uDissolve > 0.001 && dsvN < uDissolve ) discard;
 `;
 
-// bright burn band on the fragments just ahead of the front — added AFTER tonemapping/colorspace (sRGB),
-// so a strong add survives into the bloom pass instead of being clamped by tone mapping.
-const DISSOLVE_EDGE = /* glsl */ `
+const DISSOLVE_EDGE = `
     if ( uDissolve > 0.001 ) {
         float dsvEdge = 1.0 - smoothstep( uDissolve, uDissolve + uEdgeWidth, dsvN );
         gl_FragColor.rgb += uEdgeColor * dsvEdge * uEdgeIntensity;
     }
 `;
 
-// Patch a cloned GLTF material once, guarded via userData. It gets the SAME
-// uniform objects the useFrame mutates, so a single `.value` write drives every mesh of the ship.
 function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void {
     if ( mat.userData.dissolvePatched ) return;
     mat.userData.dissolvePatched = true;
@@ -88,11 +75,9 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
             )
             .replace( '#include <dithering_fragment>', `#include <dithering_fragment>${ DISSOLVE_EDGE }` );
     };
-    mat.needsUpdate = true; // force a recompile so onBeforeCompile runs (material was already compiled once)
+    mat.needsUpdate = true;
 }
 
-// Local entities read the live Sim; remotes read the latest server snapshot. Allocation-free, so it is
-// safe to call every frame.
 function isDead( entity: Entity ): boolean {
     const sim = entity.get( Sim );
     if ( sim ) return sim.dead;
@@ -105,9 +90,6 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
     const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
     const patched = useRef( false );
-    // One uniforms bundle per ship; the same value-objects flow into every patched material of this clone.
-    // The dep list MUST stay empty — patchDissolve binds these objects into the shader BY REFERENCE, so a
-    // rebuilt bundle is one the materials never sample and every later write lands on an orphan.
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
@@ -119,8 +101,6 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
         [],
     );
 
-    // Patch the cloned materials on the first frame, then ease uDissolve toward 1 (dead) or 0 (alive), which
-    // gives the respawn its dissolve-in for free.
     useFrame( ( _state, delta ) => {
         const grp = cloneRef.current;
         if ( ! grp ) return;

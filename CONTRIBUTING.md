@@ -43,21 +43,21 @@ implementation during the thinking phases.** Trivial changes (a typo, a one-line
 
 - **TypeScript, strict, ESM everywhere.** No `any` escapes without a written reason. No CommonJS.
 - **Match the surrounding code.** Copy its naming and its idioms. New code must read like it was always
-  there. **Comment density is the exception — never copy it upward.** A file already over-commented is not a
-  licence to keep writing at that rate; leave it lighter than you found it.
-- **Comment only what the code cannot say**, in **1–2 plain lines**: a rejected alternative, an external
-  constraint, a non-obvious consequence. Everything else is deleted, not shortened. "Why, not what" is not a
-  length permit — a seven-line account of how a bug was found is a *why*, and it still does not belong in the
-  file. That history goes in the PR body, where someone reading the change wants it, instead of the file,
-  where everyone reading the function pays for it forever. Two standing exceptions, both still required: a
-  `useEffect` justification — **one line naming the outside-React system it synchronizes with, and that is
-  the whole comment**; *which* idiomatic mechanism you rejected and why goes in the PR body, not inline (an
-  uncommented Effect is still a review failure — "Anti-patterns" below) — and a tuning field in
-  `constants.ts`, which carries one line so the value can be tuned without reading the sim.
-  **`pnpm lint` measures this.** A file you touch may not come out with more comment lines than it went
-  in with, and a new file may not exceed 20% comments. The bar was written down twice and lost anyway; a
-  count in the gate is what stopped it. To add a comment to a file at its limit, delete two that were not
-  earning their place.
+  there. **Comments are the exception — never copy them upward.** A file that still carries a prose comment
+  is not a licence to add another; leave it lighter than you found it.
+- **No comments at all — except `setTimeout`, `setInterval` and `useEffect`.** Code says what it does in
+  names, types and control flow. Anything a reader cannot get from those — a rejected alternative, an
+  external constraint, a non-obvious consequence, a unit — goes in the PR body, where someone reading the
+  change wants it, instead of the file, where everyone reading the function pays for it forever. "Why, not
+  what" is not a permit: a *why* the reader can already see, and a seven-line account of how a bug was
+  found, both go. **Exactly three constructs may carry a comment, one line each:** `setTimeout`,
+  `setInterval`, `useEffect` — for an Effect that line names the outside-React system it synchronizes with,
+  and an uncommented Effect is still a review failure ("Anti-patterns" below). Nothing else gets one: no
+  file headers, no section banners, no JSDoc, no tuning notes in `constants.ts`. Functional directives are
+  not prose and are exempt: `biome-ignore`, `@ts-expect-error`, `@vitest-environment`, `/// <reference`,
+  shebangs. **`pnpm lint` measures this.** A file you touch may not come out with more comment lines than
+  it went in with. Two successive judgement-based bars ("only what the code cannot say") drifted back into
+  10–20 line blocks; the bar is mechanical now, so there is nothing left to judge.
 - **Never cite a bare number.** `(D7)`, `ADR-006`, `§4`, `#118` alone are useless to a reader — looking one
   up costs them the context they were holding, which is worse than no citation at all. Inline the substance,
   then cite the location.

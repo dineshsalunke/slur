@@ -1,10 +1,8 @@
 import { HALF_WIDTH, type Track } from '@slur/shared';
 import * as THREE from 'three';
 
-// Static neon finish arch at track.finishZ. Purely presentational — the sim latches `finished` on the
-// z-cross, so nothing here is in the gameplay path.
-const H = 14; // arch height (units)
-const W = HALF_WIDTH * 2 + 4; // spans the full corridor plus a little overhang
+const H = 14;
+const W = HALF_WIDTH * 2 + 4;
 
 export function FinishGate( { track }: { track: Track } ) {
     return (

@@ -3,8 +3,6 @@ import { type Anchor, pickupsOf, type RunState, type Track } from '@slur/shared'
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-// Place one slot at its anchor, scaled full (available) or 0 (taken). Shared by the mount-time seeding and
-// the live subscription so both write matrices the same way.
 function placeSlot(
     mesh: THREE.InstancedMesh,
     o: THREE.Object3D,
@@ -24,19 +22,13 @@ function placeSlot(
     mesh.instanceMatrix.needsUpdate = true;
 }
 
-// Track-placed power-up pickups as one instanced mesh. The layout is a read of the track's materialized
-// anchors — identical on every client, and never synced — so positions are fixed at mount and only
-// per-slot VISIBILITY changes, driven imperatively from state.pickupTaken. Emissive gold, vs cyan bolts.
 export function PickupField( { room, track }: { room: Room< RunState >; track: Track } ) {
-    const layout = useMemo( () => pickupsOf( track ), [ track ] ); // networked: same descriptor → same anchors on all clients
+    const layout = useMemo( () => pickupsOf( track ), [ track ] );
     const indexById = useMemo( () => new Map( layout.map( ( p, i ) => [ p.id, i ] as const ) ), [ layout ] );
     const ref = useRef< THREE.InstancedMesh | null >( null );
-    const seededMesh = useRef< THREE.InstancedMesh | null >( null ); // which mesh we've seeded (re-seed on a new one)
+    const seededMesh = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );
 
-    // Seed every slot at mount via a callback ref, which runs during commit and so beats the first paint —
-    // the effect below cannot, and the pickups would draw stacked at the origin for a frame. Positions are a
-    // deterministic read of the track anchors, so they are known this early. Re-seed when a new mesh mounts.
     const setMesh = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
             ref.current = mesh;
@@ -49,19 +41,16 @@ export function PickupField( { room, track }: { room: Room< RunState >; track: T
     );
 
     // Effect justified: subscribes to the pickupTaken MapSchema, which mutates over the wire outside React
-    // and fires no re-render. Cleanup detaches the callbacks only — the room is owned by the loader, never
-    // by this component's lifetime.
     useEffect( () => {
         const mesh = ref.current;
         if ( ! mesh ) return;
-        // Toggle a slot: scale to 0 (hidden) when taken, back to full when available; positions never change.
         const apply = ( id: string, taken: boolean ) => placeSlot( mesh, m, layout, indexById, id, taken );
 
         const $ = getStateCallbacks( room );
-        const onTaken = ( v: boolean, id: string ) => apply( id, v === true ); // present&&true = taken/hidden
-        const offAdd = $( room.state ).pickupTaken.onAdd( onTaken ); // fires for any entries already present
+        const onTaken = ( v: boolean, id: string ) => apply( id, v === true );
+        const offAdd = $( room.state ).pickupTaken.onAdd( onTaken );
         const offChange = $( room.state ).pickupTaken.onChange( onTaken );
-        const offRemove = $( room.state ).pickupTaken.onRemove( ( _v, id ) => apply( id, false ) ); // absent = available
+        const offRemove = $( room.state ).pickupTaken.onRemove( ( _v, id ) => apply( id, false ) );
         return () => {
             offAdd();
             offChange();

@@ -9,11 +9,6 @@ import { LeaveButton } from './leave-button';
 import { Roster } from './roster';
 import { ShipCard } from './ship-card';
 
-// Lobby controls laid around the EDGES so the centred, orbiting local ship (the real scene, via
-// updateLobbyCamera — there is NO 2nd preview Canvas) shows through: roster top-left, pickers bottom-centre,
-// host GO + Leave bottom-right. Picking a ship/colour sends a message; the SERVER owns the change and patches
-// it back → the ECS bridge swaps the ship's model/tint live (WYSIWYG). Pick controls are belt-and-suspenders
-// disabled off-lobby (the server already gates them).
 export function LobbyOverlay( { room }: { room: Room< RunState > } ) {
     const view = useRunView( room );
     const self = view.players.find( ( p ) => p.id === view.selfId );

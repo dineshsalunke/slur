@@ -9,22 +9,14 @@ export function meta( _args: Route.MetaArgs ) {
     return [ { title: 'SLUR' }, { name: 'description', content: 'Multiplayer party ship-racer' } ];
 }
 
-// clientLoader: join the live room list (idempotent — the lobby is a session singleton) and read the saved
-// display name. Browser-only (clientLoader), so localStorage is safe here, not at module top (SSR-safe root).
 export async function clientLoader() {
     await joinLobby();
     return { savedName: localStorage.getItem( NAME_KEY ) ?? '' };
 }
 
-// Holds ZERO reactive state, deliberately — it is the parent of the <LandingScene/> R3F Canvas, and
-// non-negotiable #10 (r3f.md "Componentize by subscription boundary") says a parent that wraps a Canvas
-// sibling must not subscribe to anything. The call-sign field and its state live in <CallSignConsole/>, so
-// typing re-renders that leaf alone and never reaches the scene graph. `savedName` is a one-shot initial
-// value from the loader, not a subscription.
 export default function Home( { loaderData }: Route.ComponentProps ) {
     return (
         <Fragment>
-            { /* Ambient Grid-Void backdrop: a position:fixed Canvas the front-of-house UI overlays. */ }
             <LandingScene />
             <Scrim />
 

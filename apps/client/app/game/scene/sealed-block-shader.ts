@@ -29,8 +29,6 @@ export interface SealedBlockLook {
     wear?: Partial< SealedBlockWear >;
 }
 
-// `Color` already holds working-space (linear) components once ColorManagement converts the sRGB hex, and a
-// custom uniform is uploaded raw — so converting here a second time would darken the seam.
 function seamRadiance(): THREE.Color {
     return new THREE.Color( MARIGOLD_EMISSIVE ).multiplyScalar( MARIGOLD_REFERENCE_INTENSITY );
 }
@@ -57,14 +55,12 @@ export function sealedBlockUniforms( dims: BlockDims, look: SealedBlockLook ): S
     };
 }
 
-// `worldpos_vertex` declares `worldPosition` only under USE_ENVMAP and friends, so the block carries its own
-// rather than depending on the scene happening to have an `<Environment>`.
-const VERT_HEAD = /* glsl */ `
+const VERT_HEAD = `
 varying vec3 vSealedWorld;
 varying vec3 vSealedOffset;
 `;
 
-const VERT_BODY = /* glsl */ `
+const VERT_BODY = `
 mat4 sealedModel = modelMatrix;
 #ifdef USE_INSTANCING
 	sealedModel = modelMatrix * instanceMatrix;
@@ -74,7 +70,7 @@ vSealedWorld = sealedWorld.xyz;
 vSealedOffset = sealedWorld.xyz - sealedModel[ 3 ].xyz;
 `;
 
-const FRAG_HEAD = /* glsl */ `
+const FRAG_HEAD = `
 varying vec3 vSealedWorld;
 varying vec3 vSealedOffset;
 uniform vec2 uSealedInset;
@@ -149,12 +145,6 @@ float sealedSeam( vec3 n ) {
 }
 `;
 
-/**
- * Board 28's two variation controls on the M2 body: vertical marigold seams and broad wear patches.
- *
- * Every parameter arrives as a uniform, so the generated GLSL never varies with a JS value and there is
- * nothing for `customProgramCacheKey` to keep apart.
- */
 export function patchSealedBlock( mat: THREE.Material, u: SealedBlockUniforms ): void {
     if ( mat.userData.sealedPatched ) return;
     mat.userData.sealedPatched = true;

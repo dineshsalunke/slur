@@ -1,7 +1,6 @@
 import { HALF_WIDTH, type Segment, type Track } from '@slur/shared';
 import { BOUNDARY_H, BOUNDARY_W, isOuterEdge } from './track-geometry';
 
-/** One unbroken stretch of boundary strip, as the emitter array sees it: a line at fixed x and y. */
 export interface RailRun {
     x: number;
     y: number;
@@ -17,13 +16,6 @@ function edgeHeight( seg: Segment, left: boolean ): number | null {
     return null;
 }
 
-/**
- * The rails as light sources: static for the life of the track, because the strip is baked into the deck
- * and neither moves. A gap in the deck has no outer edge, so it ends the run rather than dimming it.
- *
- * Sits OUTBOARD at `HALF_WIDTH + w/2` and above the deck, tracking the band ADR-012 puts in
- * `[HALF_WIDTH, HALF_WIDTH + w]`: a source in the deck's own plane lights it at exactly zero.
- */
 export function buildRailRuns(
     track: Track,
     segments: number,
@@ -58,7 +50,6 @@ export function buildRailRuns(
     return runs;
 }
 
-/** Gap from `z` to the run's span, 0 while inside it — the ordering the K-nearest selection sorts on. */
 export function railRunDistance( run: RailRun, z: number ): number {
     if ( z < run.z0 ) return run.z0 - z;
     if ( z > run.z1 ) return z - run.z1;

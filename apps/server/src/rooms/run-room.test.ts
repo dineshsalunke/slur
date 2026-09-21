@@ -1,7 +1,3 @@
-// Room-level tests for the S5 combat loop: a bolt stuns the ship it hits, a racer grabs a pickup, and a
-// taken pickup slot respawns. These cover what the shared sim tests cannot reach — message handling,
-// projectile pruning, and the pickup respawn timer all live on RunRoom, not inside simulate().
-
 import assert from 'node:assert/strict';
 import type { AddressInfo } from 'node:net';
 import { after, before, beforeEach, describe, test } from 'node:test';
@@ -26,14 +22,6 @@ import {
 } from '@slur/shared';
 import { RunRoom } from './run-room.js';
 
-// The room advances physics from setSimulationInterval, i.e. the wall clock. Waiting on real time would
-// cost over six seconds per run (3s countdown + 3s pickup respawn) and stay timing-flaky. So every test
-// STOPS that interval (see racingRoom) and drives the same fixed step by hand instead.
-//
-// Stopping it is not optional. Left running, the room keeps stepping between our calls and races the
-// assertions: a 200ms pause after firing is enough for a bolt to fly, hit, and be pruned before we look.
-// `fixedStep` is private, so this cast is the test seam — the only place this file reaches past the
-// public surface.
 interface FixedStepRoom {
     fixedStep( dt: number ): void;
 }
@@ -53,20 +41,10 @@ describe( 'RunRoom combat', () => {
     let colyseus: ColyseusTestServer;
 
     before( async () => {
-        // Bind an EPHEMERAL port (0 → the OS hands back a guaranteed-free one) so the suite can never collide
-        // with a dev stack on a fixed port — the old hardcoded 2568 just moved the collision one port over (#111).
-        //
-        // We DON'T use @colyseus/testing's boot(): its Server-instance overload ignores the port argument and
-        // always binds its own DEFAULT_TEST_PORT (2568), so boot(gameServer, 0) would still land on 2568. boot's
-        // whole job for a Server is `listen()` then `new ColyseusTestServer(server)` — we do exactly that, but on
-        // port 0. This also drops the @colyseus/tools dependency the boot() comment was avoiding.
         const transport = new WebSocketTransport();
         const gameServer = new Server( { transport } );
         gameServer.define( ROOM_NAME, RunRoom );
         await gameServer.listen( 0 );
-        // Server.listen stores the LITERAL port it was given (0), but ColyseusTestServer reads `server.port` to
-        // build the client's ws:// URL — so backfill the REAL port the OS assigned, read off the HTTP server the
-        // transport is now listening on. `port` is protected (hence the cast), the same seam boot() reaches through.
         const address = transport.server?.address() as AddressInfo | null;
         assert.ok( address && typeof address === 'object', 'the test server bound a TCP port' );
         ( gameServer as unknown as { port: number } ).port = address.port;
@@ -81,11 +59,8 @@ describe( 'RunRoom combat', () => {
         await colyseus.cleanup();
     } );
 
-    // lobby → countdown → racing, driven deterministically. The host is the first joiner (see onJoin).
     async function racingRoom( clients: number ) {
         const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
-        // Take over the clock. onCreate started a live 60Hz interval; calling setSimulationInterval with no
-        // callback clears it and installs nothing, so tick() below is the ONLY thing advancing the sim.
         room.setSimulationInterval();
         const connections = [];
         for ( let i = 0; i < clients; i++ ) {
@@ -96,7 +71,7 @@ describe( 'RunRoom combat', () => {
 
         host.send( START_MESSAGE );
         await room.waitForMessage( START_MESSAGE );
-        tick( room, COUNTDOWN_SECONDS + FIXED_DT ); // bleed the countdown; the phase flips on the last tick
+        tick( room, COUNTDOWN_SECONDS + FIXED_DT );
 
         assert.equal( room.state.phase, PHASE.racing, 'the countdown hands over to racing' );
         return { room, connections, host };
@@ -110,15 +85,8 @@ describe( 'RunRoom combat', () => {
         const shooter = playerOf( room, host.sessionId );
         const victim = playerOf( room, otherClient.sessionId );
 
-        // Pin the victim's class rather than inheriting the default ship. armour scales stun duration, so
-        // leaving it implicit would couple this assertion to whatever the default ship's armour happens to
-        // be. The Interceptor carries zero armour, which makes the STUN_SECONDS literal below both correct
-        // and meaningful — it documents "no armour ⇒ the full stun".
         victim.shipId = 'executioner';
 
-        // No client sends INPUT, and stepRace only calls simulate() when an input is queued — so both ships
-        // hold exactly these poses for the whole test. That is what makes the geometry below deterministic,
-        // and it also keeps the ships off the track hazards that would otherwise kill them mid-test.
         shooter.x = 0;
         shooter.z = 0;
         victim.x = 0;
@@ -129,8 +97,6 @@ describe( 'RunRoom combat', () => {
         otherClient.onMessage( 'hit', () => {
             broadcastHits++;
         } );
-        // 'hit' broadcasts to EVERY client, so the shooter receives it too. Register a no-op there to keep
-        // the SDK from logging an unhandled-message warning during the run.
         host.onMessage( 'hit', () => {} );
 
         host.send( USE_POWERUP_MESSAGE );
@@ -139,26 +105,16 @@ describe( 'RunRoom combat', () => {
         assert.equal( room.state.projectiles.size, 1, 'firing spawns exactly one bolt' );
         assert.equal( shooter.heldPower, HeldPower.none, 'firing empties the single held slot' );
 
-        // The bolt spawns 3u ahead of the shooter and sweeps ~15u per tick (900u/s ÷ 60). The victim's hit
-        // window is only 2 x (BOLT_HALF 1.5 + Interceptor halfL 0.92) = 4.84u deep — NARROWER than one tick of
-        // travel, so a plain point test could step clean past it. boltHits tests the whole SWEPT z-interval
-        // ([z-sweep, z], sweep = boltSpeed·dt), so the crossing still registers — THAT (not a static window
-        // wider than a tick) is why the bolt can't tunnel here. 0.25s carries it well beyond z=20.
         tick( room, 0.25 );
 
         assert.equal( victim.stunTimer, STUN_SECONDS, 'a zero-armour ship takes the full stun' );
         assert.equal( shooter.stunTimer, 0, 'the owner is immune to its own bolt' );
         assert.equal( room.state.projectiles.size, 0, 'a spent bolt is pruned' );
 
-        await delay( 100 ); // the spark is a broadcast, not state — let it cross the socket
+        await delay( 100 );
         assert.equal( broadcastHits, 1, "the impact broadcasts one 'hit' for the cosmetic spark" );
     } );
 
-    // Regression guard for the leak fixed in the client bridge (issue #22 sub-item 1). The client detaches a
-    // bolt's onChange from inside projectiles.onRemove, so that detach only ever runs if the server actually
-    // emits a removal delta for every bolt it announced. This asserts that contract from the wire side. The
-    // client's own per-id map cannot be asserted here — it lives in apps/client, and apps/server must not
-    // import it (the workspace graph is a DAG pointing at shared).
     test( 'every bolt the client is told to add, it is later told to remove', async () => {
         const { room, connections, host } = await racingRoom( 2 );
         const [ , otherClient ] = connections;
@@ -183,12 +139,12 @@ describe( 'RunRoom combat', () => {
         host.send( USE_POWERUP_MESSAGE );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
         await room.waitForNextPatch();
-        await delay( 100 ); // the add delta has to cross the socket before the client callback runs
+        await delay( 100 );
 
         assert.equal( added.length, 1, 'the client saw exactly one bolt appear' );
         assert.deepEqual( removed, [], 'and it has not been removed yet' );
 
-        tick( room, 0.25 ); // carry the bolt into the victim; the hit prunes it server-side
+        tick( room, 0.25 );
         await room.waitForNextPatch();
         await delay( 100 );
 
@@ -197,7 +153,6 @@ describe( 'RunRoom combat', () => {
     } );
 
     test( 'a racer grabs an available pickup and the slot hides', async () => {
-        // One client only: a second racer parked on the start line could sit on a pickup and take it first.
         const { room, host } = await racingRoom( 1 );
         const racer = playerOf( room, host.sessionId );
 
@@ -227,8 +182,6 @@ describe( 'RunRoom combat', () => {
         tick( room, FIXED_DT );
         assert.equal( room.state.pickupTaken.get( pickup.id ), true, 'precondition: the slot is taken' );
 
-        // The racer still holds the bolt and still sits on the slot, so it cannot re-grab. The slot has to
-        // flip back on the timer alone — which is the behaviour under test.
         tick( room, PICKUP_RESPAWN_S + FIXED_DT );
 
         assert.equal( room.state.pickupTaken.get( pickup.id ), false, 'the slot returns after the delay' );

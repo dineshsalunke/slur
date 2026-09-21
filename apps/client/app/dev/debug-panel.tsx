@@ -4,10 +4,6 @@ import { debugTuningSource, pitchDeg, resetDebugTuning, shipBelowAxisDeg, useDeb
 
 const BTN = 'rounded border border-white/15 px-2 py-1 font-mono text-[11px] transition-colors hover:bg-white/10';
 
-/**
- * The one live tuning panel for the deck's brightness and the chase framing, mounted by the game and by
- * every lab so a value dialled in one is the value the other renders.
- */
 export function DebugPanel() {
     const tuning = useDebugTuning();
     const [ open, setOpen ] = useState( true );

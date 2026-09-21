@@ -1,18 +1,6 @@
 import { Fragment } from 'react';
 import { BOUNDARY_SURFACE } from '../../game/scene/track-materials';
 
-/**
- * PLACEHOLDER ONLY — two slabs at plausible monolith scale.
- *
- * This is NOT a monolith design. It exists to prove the `/iso-*` instrument end to end with something whose
- * size is defensible: `docs/ART_SCALE_REFERENCE.md` §5 puts an obelisk at 200–400u (3–6 track widths) and a
- * gate at 200–350u, and board 03 is one of only two boards drawn against a correct 2.6u ship, so it is safe
- * to compare against. The monolith LANE owns everything about how these should actually look; whoever picks
- * that up should delete this file outright rather than evolve it.
- *
- * Material is the shipped `BOUNDARY_SURFACE`, imported rather than invented — but that is the GAMEPLAY
- * emissive tier and a monolith is environmental, which the monolith lane owns unpicking.
- */
 const OBELISK = { w: 26, h: 300, d: 26 };
 const SLAB = { w: 60, h: 140, d: 14 };
 

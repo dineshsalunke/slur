@@ -1,21 +1,13 @@
-// Board 28: a block's identity is seam count/position plus broad wear patches — never a different
-// silhouette. Both derive from ONE seed, so the look is reproducible from where the descriptor puts it.
-
 import { type BlockDims, sealedBlockBevel } from './sealed-block-geometry';
 
 export const SEALED_BLOCK_MAX_SEAMS = 4;
 
-/** World units, so a seam is the same width on a 3.5u block and an 8u one. */
 export const SEALED_BLOCK_SEAM_WIDTH = 0.14;
 
 export interface SealedBlockWear {
-    /** World units per noise cell — the size of one patch. */
     scale: number;
-    /** How much of the surface a patch covers, 0..1. Area, not depth. */
     coverage: number;
-    /** Patch edge: 0 a soft gradient, 1 hard. */
     contrast: number;
-    /** 0 is clean, which board 28 calls a legitimate endpoint of the range. */
     strength: number;
 }
 
@@ -26,11 +18,9 @@ export const SEALED_BLOCK_WEAR: SealedBlockWear = {
     strength: 0,
 };
 
-/** A fully worn patch. The roughness lift lands on 0.60, the top of M2's band — never outside it. */
 export const SEALED_BLOCK_WEAR_VALUE = 0.62;
 export const SEALED_BLOCK_WEAR_ROUGHNESS = 0.08;
 
-/** Half-extents of the rectangle the chamfer strips sit outside of. The seam walk is parameterised on it. */
 export function sealedBlockInset( dims: BlockDims ): [ number, number ] {
     const c = sealedBlockBevel( dims );
     return [ dims.w / 2 - c, dims.d / 2 - c ];
@@ -58,7 +48,6 @@ export function sealedBlockSeamCount( seed: number ): number {
     return 1 + Math.floor( hash01( seed, 0x5eed ) * 3 );
 }
 
-/** A seam sitting ON a corner reads as a glowing outline of the silhouette, which board 28 excludes. */
 const SEALED_BLOCK_CORNER_KEEPOUT = SEALED_BLOCK_SEAM_WIDTH * 2;
 
 function offCorner( u: number, corners: number[] ): number {
@@ -71,7 +60,6 @@ function offCorner( u: number, corners: number[] ): number {
     return u;
 }
 
-/** Stratified, not free: one seam per equal arc, jittered inside it, so two seams can never merge. */
 export function sealedBlockSeams( seed: number, count: number, dims: BlockDims ): number[] {
     const [ a, b ] = sealedBlockInset( dims );
     const perimeter = 4 * ( a + b );

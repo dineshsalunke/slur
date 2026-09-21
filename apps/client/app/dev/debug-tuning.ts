@@ -42,7 +42,6 @@ export interface DebugTuning {
     camFov: number;
 }
 
-// Filtered to numbers: a non-number field cannot go through a range input.
 export type DebugTuningKey = { [ K in keyof DebugTuning ]: DebugTuning[ K ] extends number ? K : never }[
     keyof DebugTuning
 ];
@@ -88,8 +87,6 @@ export function subscribeDebugTuning( fn: () => void ): () => void {
 
 export const debugTuningVersion = () => version;
 
-// Synchronous on purpose: deferring through rAF made the panel dead in a hidden tab and unable to drive a
-// frame-tap capture. React batches per event, so the coalescing bought nothing.
 function notify(): void {
     version++;
     for ( const fn of listeners ) fn();
@@ -122,8 +119,6 @@ export function useDebugTuning(): DebugTuning {
 
 const DEG = 180 / Math.PI;
 
-/** The margin the whole camera question turns on: how far below the view axis the ship sits, against
- *  the vertical half-FOV it has to stay inside. */
 export function shipBelowAxisDeg( t: DebugTuning ): number {
     return (
         Math.atan2( t.camHeight, t.camBack ) * DEG -
@@ -137,7 +132,6 @@ export function pitchDeg( t: DebugTuning ): number {
 
 const n = ( v: number ) => ( Number.isInteger( v ) ? String( v ) : v.toFixed( 3 ).replace( /0+$/, '' ) );
 
-/** The current set as literal source, so whatever is landed on gets committed verbatim. */
 export function debugTuningSource( t: DebugTuning ): string {
     return [
         '// game/camera/chase.ts — CHASE',

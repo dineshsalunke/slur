@@ -28,10 +28,11 @@
    requirement. An `useEffect` with no such line is a **review failure** — treat an unjustified Effect as
    a bug, not a style nit. **Which cheaper idiom you rejected and why — render-derivation, an event
    handler, loader or action data, a ref, a module singleton — belongs in the PR body, never inline**
-   (`CLAUDE.md` non-negotiable #15: 1–2 plain lines, only what the code cannot say; `pnpm lint` counts
-   comment lines per file). *(Superseded 2026-09-20: this rule used to demand the rejected-idiom
-   reasoning inline. That is what grew the 10–20 line "JUSTIFIED EFFECT" blocks, and it cannot fit the
-   line budget the comment-ratio gate now enforces. Do not reinstate it.)* (This rule exists because an
+   (`CLAUDE.md` non-negotiable #15: no comments at all except one line on `setTimeout`, `setInterval` and
+   `useEffect`; `pnpm lint` counts comment lines per file). *(Superseded 2026-09-20: this rule used to
+   demand the rejected-idiom reasoning inline. That is what grew the 10–20 line "JUSTIFIED EFFECT"
+   blocks. Do not reinstate it — and as of 2026-09-21 that single naming line is the Effect's whole
+   comment, one of only two kinds of prose comment left in the codebase, the other being a timer's.)* (This rule exists because an
    unjustified Effect at a Canvas-wrapping parent re-rendered the whole scene on a one-time seed sync,
    and separately because the S2 room-in-cleanup bug hid behind an Effect nobody had to justify.)
 

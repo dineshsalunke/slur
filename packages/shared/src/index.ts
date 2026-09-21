@@ -1,6 +1,3 @@
-// @slur/shared — framework-free simulation + tuning shared by client (S1) and server (S2).
-// Never import @colyseus/schema from the sim; the schema will structurally match SimShip in S2.
-
 export * from './combat/constants.js';
 export * from './combat/pickups.js';
 export * from './combat/projectiles.js';

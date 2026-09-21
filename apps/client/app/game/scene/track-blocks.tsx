@@ -7,11 +7,8 @@ import { LocalPlayer, Sim } from '../ecs/traits';
 import { AHEAD, BACK, park, put } from './track-instancing';
 import { DRAG_OPACITY_MAX, DRAG_OPACITY_MIN, DRAG_PULSE_SPEED, DRAG_SURFACE, LETHAL_SURFACE } from './track-materials';
 
-// per-KIND pool cap (lethal + drag render as two meshes). Worst case is ~108 lethal / ~63 drag per window,
-// asserted in track.test.ts — keep this above that with margin, because overflow drops instances silently.
 const BLOCK_LIMIT = 160;
 
-// Each box is sized from its OWN AABB, so what you see is exactly what the ship's footprint tests against.
 function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment, lethal: boolean ): number {
     for ( const b of seg.blocks ) {
         if ( b.lethal !== lethal ) continue;
@@ -31,12 +28,6 @@ function emitBlocks( mesh: THREE.InstancedMesh, bi: number, seg: Segment, lethal
     return bi;
 }
 
-/**
- * The hazard blocks — lethal walls and passable drag blocks — as their own mountable leaf.
- *
- * Split from the rails so `/art-lab` can judge the deck and rail without these untextured placeholder
- * boxes in the shot, while keeping them one click away for the hazard-to-floor contact check.
- */
 export function TrackBlocks( { track }: { track: Track } ) {
     const world = useWorld();
     const lethalRef = useRef< THREE.InstancedMesh | null >( null );
@@ -50,8 +41,6 @@ export function TrackBlocks( { track }: { track: Track } ) {
         const drag = dragRef.current;
         if ( ! sim || ! lethal || ! drag ) return;
 
-        // Breathing the drag blocks' opacity is what makes them read passable rather than lethal. Cosmetic
-        // only — outside the deterministic sim, so Math.sin is fine here.
         ( drag.material as THREE.MeshStandardMaterial ).opacity =
             DRAG_OPACITY_MIN +
             ( DRAG_OPACITY_MAX - DRAG_OPACITY_MIN ) * 0.5 * ( 1 + Math.sin( clock.elapsedTime * DRAG_PULSE_SPEED ) );
@@ -76,14 +65,10 @@ export function TrackBlocks( { track }: { track: Track } ) {
 
     return (
         <Fragment>
-            { /* frustumCulled=false for the same reason as the rails: three computes an InstancedMesh's
-                 bounding sphere once, and a stale volume culls the lot once the ship flies past it. */ }
             <instancedMesh ref={ lethalRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
                 <meshStandardMaterial { ...LETHAL_SURFACE } />
             </instancedMesh>
-            { /* Drag blocks are passable — fly through for a speed hit. depthWrite=false so they never
-                 z-occlude like a solid; the generator never puts drag and lethal in one lane. */ }
             <instancedMesh ref={ dragRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
                 <boxGeometry />
                 <meshStandardMaterial { ...DRAG_SURFACE } opacity={ DRAG_OPACITY_MAX } />

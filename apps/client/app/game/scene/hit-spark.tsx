@@ -3,25 +3,20 @@ import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { drainHits } from './hit-events';
 
-// Bolt-impact spark at the position the server reports in its 'hit' broadcast, so a landed hit reads before
-// the victim's stun even reconciles. Mirrors ExplosionField but tuned tighter and hotter — a quick pop
-// rather than debris, and unmistakable against the ship-derezz shard burst.
-
-const MAX = 200; // spark-pool buffer cap (hard — exceeding silently drops). ~8 concurrent bursts of PER_BURST.
-const PER_BURST = 22; // sparks emitted per hit
-const LIFE_MIN = 0.18; // spark lifetime range (s) — short, punchy
+const MAX = 200;
+const PER_BURST = 22;
+const LIFE_MIN = 0.18;
 const LIFE_MAX = 0.4;
-const SPEED = 22; // initial outward speed (u/s)
-const UP_BIAS = 2; // slight upward lift (mostly a radial pop, not an arc)
-const DRAG = 4; // fast velocity decay (per s) so the pop snaps to a stop
-const GRAV = 6; // light gravity (u/s²) — barely falls in its short life
-const SIZE = 0.15; // spark box edge (world units)
-const BRIGHT = 3.2; // HDR multiplier so sparks blow past the bloom threshold (toneMapped=false)
+const SPEED = 22;
+const UP_BIAS = 2;
+const DRAG = 4;
+const GRAV = 6;
+const SIZE = 0.15;
+const BRIGHT = 3.2;
 
-// Module-scope scratch — reused every frame, zero per-frame allocation (r3f hot-path rule).
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
-const SPARK = new THREE.Color( '#a8ffff' ); // hot cyan-white — distinct from the ship derezz tints
+const SPARK = new THREE.Color( '#a8ffff' );
 
 interface Spark {
     active: boolean;
@@ -49,8 +44,6 @@ function makePool(): Spark[] {
     } ) );
 }
 
-// Activate up to PER_BURST idle sparks at (x,y,z), flung outward on a random sphere + slight upward bias.
-// Math.random is fine here: client-only cosmetics, never the deterministic sim.
 function spawnBurst( pool: Spark[], x: number, y: number, z: number ): void {
     let n = 0;
     for ( let i = 0; i < MAX && n < PER_BURST; i++ ) {
@@ -78,7 +71,6 @@ function park( mesh: THREE.InstancedMesh, i: number ): void {
     mesh.setMatrixAt( i, _o.matrix );
 }
 
-// One-time: park every slot + touch every color so the instanceColor buffer is allocated (no mount effect).
 function initPool( mesh: THREE.InstancedMesh ): void {
     for ( let i = 0; i < MAX; i++ ) {
         park( mesh, i );
@@ -86,7 +78,6 @@ function initPool( mesh: THREE.InstancedMesh ): void {
     }
 }
 
-// Integrate + fade every live spark (brightness eases out, box shrinks); park it when spent.
 function advanceSparks( mesh: THREE.InstancedMesh, pool: Spark[], dt: number ): void {
     const damp = Math.max( 0, 1 - DRAG * dt );
     for ( let i = 0; i < MAX; i++ ) {
@@ -105,13 +96,13 @@ function advanceSparks( mesh: THREE.InstancedMesh, pool: Spark[], dt: number ): 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
         p.z += p.vz * dt;
-        const f = p.life / p.maxLife; // 1 → 0 over life
+        const f = p.life / p.maxLife;
         const s = SIZE * ( 0.35 + 0.75 * f );
         _o.position.set( p.x, p.y, p.z );
         _o.scale.set( s, s, s );
         _o.updateMatrix();
         mesh.setMatrixAt( i, _o.matrix );
-        const b = BRIGHT * f * f; // ease-out brightness fade so the flash dies gracefully
+        const b = BRIGHT * f * f;
         mesh.setColorAt( i, _c.setRGB( SPARK.r * b, SPARK.g * b, SPARK.b * b ) );
     }
     mesh.instanceMatrix.needsUpdate = true;
@@ -123,8 +114,6 @@ export function HitSpark() {
     const pool = useMemo( makePool, [] );
     const inited = useRef( false );
 
-    // Park the pool AT MOUNT via a callback ref (fires during commit, before the first paint) so the MAX
-    // identity-matrix unit cubes never flash at the origin for a frame. See ExplosionField for the full note.
     const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
         meshRef.current = mesh;
         if ( mesh && ! inited.current ) {
@@ -133,7 +122,6 @@ export function HitSpark() {
         }
     }, [] );
 
-    // Fully imperative: drain queued hit events → spawn a burst each, then advance sparks. No subscription.
     useFrame( ( _state, delta ) => {
         const mesh = meshRef.current;
         if ( ! mesh ) return;
@@ -142,7 +130,6 @@ export function HitSpark() {
     } );
 
     return (
-        // frustumCulled=false and additive, for the reasons ExplosionField gives.
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial

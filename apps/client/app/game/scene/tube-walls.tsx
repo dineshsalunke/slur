@@ -6,30 +6,23 @@ import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import type { WallConfig } from './env-config';
 
-// How far behind the ship a slab may fall before it recycles ahead. The chase cam sits ~13u back, so 20u
-// keeps recycling off-screen.
 const MARGIN = 20;
 
 interface Slab {
     z: number;
-    side: number; // -1 | +1
+    side: number;
     h: number;
 }
 
-// Parallax neon "canyon walls" FAR to each side of the open ribbon — enclosure feel WITHOUT touching
-// gameplay (config.distance is always > HALF_WIDTH 32, non-collidable, purely visual). Same technique as
-// scenery.tsx: seeded instanced slabs recycled ahead of the local ship in a leaf-local useFrame — zero
-// subscriptions, zero re-renders during play. Integration-ready: reads the same LocalPlayer+Sim the real
-// scene owns, so it drops into net-canvas/game-canvas unchanged.
 export function TubeWalls( { config, seed = 9999 }: { config: WallConfig; seed?: number } ) {
     const world = useWorld();
     const ref = useRef< THREE.InstancedMesh | null >( null );
-    const rng = useMemo( () => mulberry32( seed ), [ seed ] ); // networked: seed off the room's procgen descriptor → same walls every client
+    const rng = useMemo( () => mulberry32( seed ), [ seed ] );
     const span = useMemo( () => Math.ceil( config.count / 2 ) * config.spacing, [ config.count, config.spacing ] );
     const slabs = useMemo< Slab[] >(
         () =>
             Array.from( { length: config.count }, ( _, i ) => ( {
-                z: Math.floor( i / 2 ) * config.spacing, // two per z-step (one each side)
+                z: Math.floor( i / 2 ) * config.spacing,
                 side: i % 2 ? 1 : -1,
                 h: config.minHeight + rng() * ( config.maxHeight - config.minHeight ),
             } ) ),
@@ -46,7 +39,7 @@ export function TubeWalls( { config, seed = 9999 }: { config: WallConfig; seed?:
         for ( let i = 0; i < slabs.length; i++ ) {
             const s = slabs[ i ];
             if ( z - s.z > MARGIN ) {
-                s.z += span; // recycle ahead of the ship (seeded, deterministic)
+                s.z += span;
                 s.h = config.minHeight + rng() * ( config.maxHeight - config.minHeight );
             }
             m.position.set( s.side * config.distance, config.yBase + s.h / 2, s.z );
@@ -58,7 +51,6 @@ export function TubeWalls( { config, seed = 9999 }: { config: WallConfig; seed?:
     } );
 
     return (
-        // key on count so a variant switch (different buffer size) cleanly remounts the instanced buffer.
         <instancedMesh
             key={ config.count }
             ref={ ref }
@@ -66,7 +58,6 @@ export function TubeWalls( { config, seed = 9999 }: { config: WallConfig; seed?:
             args={ [ undefined, undefined, config.count ] }
         >
             <boxGeometry />
-            { /* black base + HDR emissive = pure neon slab that the single global Bloom catches. */ }
             <meshStandardMaterial color="#000000" emissive={ config.color } emissiveIntensity={ config.intensity } />
         </instancedMesh>
     );

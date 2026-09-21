@@ -5,9 +5,6 @@ import { LAB_DEFAULT_SHIP } from './lab-defaults';
 import { LAB_LAYER_KEYS, type LabLayerKey, type LabLayers } from './lab-layers';
 import { labCommands, labControls } from './lab-state';
 
-// Jump targets down the Believer arrangement envelope (ADR-006). Percentages, not segment indices, so they
-// keep meaning if TRACK_SEGMENTS is retuned. The bridge/breakdown valley at ~75% is the one worth having a
-// shortcut to — it is the quietest stretch and the easiest place to misjudge the art as "empty".
 const JUMPS: ReadonlyArray< { label: string; frac: number } > = [
     { label: 'start', frac: 0 },
     { label: 'build', frac: 0.25 },
@@ -20,15 +17,6 @@ const BTN = 'rounded border border-white/15 px-2 py-1 font-mono text-[11px] tran
 const BTN_ON = 'border-amber-400/60 bg-amber-400/15 text-amber-200';
 const BTN_OFF = 'text-white/60';
 
-/**
- * DOM control chrome for the art lab. Tailwind only, never inside the Canvas (the styling convention is
- * explicit that Tailwind is DOM-UI-only).
- *
- * Toggles here write to `labControls`, a module singleton, NOT to React state — the rig consumes them every
- * frame and must never re-render the scene. The local `useState` mirrors exist only so these buttons can
- * paint their own on/off state; that re-render is scoped to this leaf and never reaches the Canvas
- * (non-negotiable #10 — subscribe at the leaf).
- */
 export function ArtLabControls( {
     seed,
     onSeed,
@@ -88,8 +76,6 @@ export function ArtLabControls( {
                 </button>
             </div>
 
-            { /* Layers are STRUCTURAL — they mount/unmount scene children — so unlike paused/ghost they are
-                 React state in the route and arrive as props. See `lab-layers.ts`. */ }
             <div className="mb-1 text-white/40">layers</div>
             <div className="mb-2 flex flex-wrap gap-1">
                 { LAB_LAYER_KEYS.map( ( key ) => (
@@ -104,7 +90,6 @@ export function ArtLabControls( {
                 ) ) }
             </div>
 
-            { /* Sky framing. Its own leaf so a slider drag re-renders only itself, never this panel. */ }
             <div className="mb-1 text-white/40">sky framing</div>
             <ArtLabSkyControls />
 

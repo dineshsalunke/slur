@@ -1,9 +1,5 @@
 import * as THREE from 'three';
 
-/**
- * Slots in the emitter uniform array. FIXED, and baked into the GLSL as a literal array size: a light
- * count that varies recompiles the shader mid-race, and an array with no count cannot churn.
- */
 export const EMITTER_SLOTS = 24;
 
 const STRIDE = 4;
@@ -24,7 +20,6 @@ export function createEmitterUniforms(): EmitterUniforms {
     };
 }
 
-/** `view` is the slot's centre in VIEW space, matching the space three puts its own light positions in. */
 export function writeEmitter(
     u: EmitterUniforms,
     slot: number,
@@ -47,21 +42,18 @@ export function writeEmitter(
     t[ i + 3 ] = range;
 }
 
-/** Range 0 is the shader's own liveness test, so an unused slot costs one branch and no upload churn. */
 export function parkEmitter( u: EmitterUniforms, slot: number ): void {
     u.uEmitterTint.value[ slot * STRIDE + 3 ] = 0;
 }
 
-const FRAG_HEAD = /* glsl */ `
+const FRAG_HEAD = `
 uniform vec4 uEmitters[ ${ EMITTER_SLOTS } ];
 uniform vec4 uEmitterTint[ ${ EMITTER_SLOTS } ];
 uniform vec3 uEmitterAxis;
 uniform float uEmitterDecay;
 `;
 
-// Each slot is a TUBE, not a point: the point on the run closest to the reflection ray stands in for the
-// whole run (Karis 2013), which is what elongates the highlight along the rail instead of beading it.
-const FRAG_LIGHTS = /* glsl */ `
+const FRAG_LIGHTS = `
 {
 	vec3 emRay = reflect( - geometryViewDir, geometryNormal );
 	for ( int emI = 0; emI < ${ EMITTER_SLOTS }; emI ++ ) {
@@ -88,10 +80,6 @@ const FRAG_LIGHTS = /* glsl */ `
 }
 `;
 
-/**
- * Bind a material to an emitter array. The shader gets the SAME uniform objects the caller mutates, so
- * per-frame writes never touch the material and never invalidate the compiled program.
- */
 export function patchEmitterLight( mat: THREE.Material, u: EmitterUniforms ): void {
     if ( mat.userData.emitterPatched ) return;
     mat.userData.emitterPatched = true;

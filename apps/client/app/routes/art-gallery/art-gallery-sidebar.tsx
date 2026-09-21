@@ -12,18 +12,9 @@ function dimsLabel( dims: readonly number[] | null ): string {
     return `${ dims[ 0 ] } × ${ dims[ 1 ] } × ${ dims[ 2 ] }u`;
 }
 
-/**
- * DOM chrome for the gallery: the subject manifest with REAL dimensions printed next to each entry, plus
- * the post-processing toggles.
- *
- * Printing dimensions is not decoration. Every scale error in `art-handoff-v1` survived because objects
- * were judged by eye without a number attached; this panel makes the number impossible to miss.
- */
 export function ArtGallerySidebar() {
     const bloom = useBloom();
     const showGrid = useShowGrid();
-    // Mirrors `galleryFocus` purely so the active row can paint itself. The camera rig reads the singleton
-    // per frame; this state only ever re-renders THIS sidebar leaf, never the Canvas (non-negotiable #10).
     const [ focus, setFocus ] = useState( galleryFocus.index );
     return (
         <div className="pointer-events-auto fixed top-4 left-4 z-10 max-h-[calc(100vh-2rem)] w-80 overflow-y-auto rounded-lg border border-white/10 bg-black/80 p-3 font-mono text-[11px] text-white/80 backdrop-blur">

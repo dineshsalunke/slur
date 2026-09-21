@@ -5,16 +5,11 @@ import * as THREE from 'three';
 import { RENDER_DELAY_MS } from '../ecs/net-systems';
 import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
 
-// Buffer size of the ONE instanced bolt mesh. `count` (draw range) tracks live bolts each frame ≤ this cap
-// (r3f.md pooling: allocate once, vary the range). 64 concurrent bolts is far beyond a 12-ship room's fire rate.
 const MAX_BOLTS = 64;
 
-// Sample a bolt's interpolated position ~RENDER_DELAY_MS in the past: lerp the two snapshots straddling
-// renderTime, and NEVER extrapolate. During warm-up hold the FIRST pose, not the latest — holding the latest
-// runs the bolt at its undelayed position and then snaps it back the instant interpolation takes over.
 function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
     if ( buffer.length === 0 ) return null;
-    if ( renderTime <= buffer[ 0 ].t ) return buffer[ 0 ]; // warm-up: hold at spawn, don't race to latest then snap back
+    if ( renderTime <= buffer[ 0 ].t ) return buffer[ 0 ];
     for ( let i = 0; i < buffer.length - 1; i++ ) {
         const a = buffer[ i ];
         const b = buffer[ i + 1 ];
@@ -28,30 +23,23 @@ function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | 
             };
         }
     }
-    return buffer[ buffer.length - 1 ]; // renderTime past the last sample → hold latest (bolt about to be pruned)
+    return buffer[ buffer.length - 1 ];
 }
 
-// The bolt archetype: one instanced mesh driven imperatively from the ECS. HDR-emissive with toneMapped off
-// so bolts bloom. Bolts are interp-only — the client never predicts or hit-tests them, the server does.
 export function ProjectileField() {
     const world = useWorld();
     const ref = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );
 
-    // A thin capsule along +z reads as a streak rather than a drifting ball. CapsuleGeometry runs along Y, so
-    // the rotation onto Z is baked in once — bolts only travel +z, and instance writes stay position-only.
     const boltGeo = useMemo( () => {
-        const g = new THREE.CapsuleGeometry( 0.055, 30, 4, 8 ); // long thin tracer — reads as a beam-streak at the near-instant speed
+        const g = new THREE.CapsuleGeometry( 0.055, 30, 4, 8 );
         g.rotateX( Math.PI / 2 );
         return g;
     }, [] );
 
     // Effect justified: brackets a GPU resource's lifetime. boltGeo is `new`'d in useMemo and attached via
-    // <primitive object>, so R3F never disposes it — it only owns JSX-declared geometries.
     useEffect( () => () => boltGeo.dispose(), [ boltGeo ] );
 
-    // Zero the draw range at mount via a callback ref, which runs during commit and so beats the first paint.
-    // useFrame would park it a frame too late, flashing MAX_BOLTS identity-matrix bolts at the origin.
     const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
         ref.current = mesh;
         if ( mesh ) mesh.count = 0;
@@ -71,7 +59,7 @@ export function ProjectileField() {
             mesh.setMatrixAt( i, m.matrix );
             i++;
         } );
-        mesh.count = i; // draw only the live bolts (the "range")
+        mesh.count = i;
         mesh.instanceMatrix.needsUpdate = true;
     } );
 

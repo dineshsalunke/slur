@@ -1,5 +1,3 @@
-// Quad primitives for the track's generated meshes, plus the boundary dimensions both meshes read.
-
 import { HALF_WIDTH } from '@slur/shared';
 import * as THREE from 'three';
 import { PANEL_L, PANEL_W } from './track-texture';
@@ -7,7 +5,6 @@ import { PANEL_L, PANEL_W } from './track-texture';
 export type V3 = readonly [ number, number, number ];
 export type UvPlane = 'xz' | 'zy' | 'xy';
 
-// Intended outward normals. Forward is +z.
 export const UP: V3 = [ 0, 1, 0 ];
 export const DOWN: V3 = [ 0, -1, 0 ];
 export const LEFT: V3 = [ -1, 0, 0 ];
@@ -15,18 +12,13 @@ export const RIGHT: V3 = [ 1, 0, 0 ];
 export const FORWARD: V3 = [ 0, 0, 1 ];
 export const BACKWARD: V3 = [ 0, 0, -1 ];
 
-/** Rail width. The band stands OUTBOARD, in `[HALF_WIDTH, HALF_WIDTH + BOUNDARY_W]` — ADR-012. */
 export const BOUNDARY_W = 1.0;
-/** How far the band stands above the deck. 0 = flush; raised-vs-flush is still the owner's open call. */
 export const BOUNDARY_H = 1.0;
 
-/** True at the track's own outer edge, where the boundary lives. Interior span edges are gap rims —
- *  board 24 panel 04 treats those as a separate element. */
 export function isOuterEdge( x: number ): boolean {
     return Math.abs( Math.abs( x ) - HALF_WIDTH ) < 1e-4;
 }
 
-/** World position over PANEL size, so sides and caps match the top's grain instead of stretching. */
 export function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     const [ x, y, z ] = p;
     if ( plane === 'xz' ) return [ x / PANEL_W, z / PANEL_L ];
@@ -34,8 +26,6 @@ export function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     return [ x / PANEL_W, y / PANEL_W ];
 }
 
-/** Two triangles wound so the face points along `normal` — computed, never hand-ordered: a hand-ordered
- *  inversion disappears under backface culling with every gate still green. */
 export function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plane: UvPlane, normal: V3 ): void {
     const ab: V3 = [ b[ 0 ] - a[ 0 ], b[ 1 ] - a[ 1 ], b[ 2 ] - a[ 2 ] ];
     const ac: V3 = [ c[ 0 ] - a[ 0 ], c[ 1 ] - a[ 1 ], c[ 2 ] - a[ 2 ] ];

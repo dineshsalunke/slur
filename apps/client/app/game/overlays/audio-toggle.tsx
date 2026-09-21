@@ -1,30 +1,11 @@
 import { useSyncExternalStore } from 'react';
 import { isMuted, subscribeMuted, toggleMute } from '../../audio/audio-engine';
 
-// Speaker glyphs: the base cone plus either sound waves or a cross. Kept as text rather than an SVG or an
-// icon dep — the HUD is already a monospace/glyph aesthetic (see the ⚠ threat tick and ▶ GO button).
 const ON = '🔊';
 const OFF = '🔇';
 
-// Visible audio on/off toggle (issue #63). Audio was keyboard-only (`M`), so a mouse-only player could
-// neither discover nor use it.
-//
-// SUBSCRIPTION LIVES AT THIS LEAF (non-negotiable #10). `useSyncExternalStore` binds directly to the audio
-// engine's module singleton, so a mute change re-renders ONLY this button — never a parent, never a sibling,
-// and never the Canvas. Lifting mute into a parent and prop-drilling it would re-render the whole overlay
-// tree for a one-glyph change.
-//
-// TWO-WAY SYNC IS FREE, not implemented here. `subscribeMuted` fires inside `setMuted`, which is the single
-// write path: this button calls `toggleMute()` → `setMuted()`, and the `M` key calls `setMuted()` directly
-// (game-audio.tsx). So neither route needs to know about the other. There is no mute logic in this file.
 export function AudioToggle() {
-    const muted = useSyncExternalStore(
-        subscribeMuted,
-        isMuted,
-        // Server snapshot: the SPA shell is prerendered with no `localStorage`, where the engine reports
-        // unmuted. Matching that explicitly avoids a hydration mismatch on a persisted-muted reload.
-        () => false,
-    );
+    const muted = useSyncExternalStore( subscribeMuted, isMuted, () => false );
 
     return (
         <button

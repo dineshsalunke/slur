@@ -1,7 +1,3 @@
-// Headless gate for the S4 race brain. Run via `pnpm --filter @slur/shared test` (tsc → node --test on
-// compiled dist). These are hard gates: standings order, race-end conditions, and the reset invariants are
-// what make results correct and a fresh round actually fresh.
-
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { COLOR_COUNT, MAX_RACE_SECONDS, RACE_GRACE_SECONDS, START_STAGGER } from '../constants.js';
@@ -77,9 +73,7 @@ test( 'raceShouldEnd: whole field finished ends immediately', () => {
 
 test( 'raceShouldEnd: leader grace window governs the tail', () => {
     const deadline = 10 + RACE_GRACE_SECONDS;
-    // during the grace window → keep racing
     assert.equal( raceShouldEnd( { elapsed: 15, finishDeadline: deadline, racerCount: 3, finishedCount: 1 } ), false );
-    // grace expired → results
     assert.equal(
         raceShouldEnd( { elapsed: deadline, finishDeadline: deadline, racerCount: 3, finishedCount: 1 } ),
         true,

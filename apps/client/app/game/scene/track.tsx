@@ -5,9 +5,8 @@ import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
 
 const SIZE = 400;
-const GRID_CELL = 40; // texture-tiling cell (NOT the shared 4u sim CELL) → dense reference lines for the speed cue
+const GRID_CELL = 40;
 
-// A neon grid drawn once into a CanvasTexture, tiled with RepeatWrapping.
 function makeGridTexture(): THREE.Texture {
     const px = 512;
     const canvas = document.createElement( 'canvas' );
@@ -27,8 +26,6 @@ function makeGridTexture(): THREE.Texture {
     return tex;
 }
 
-// 2-plane leapfrog floor (cuberun technique): when a plane falls > SIZE behind the ship, teleport
-// it 2*SIZE ahead. Leaf-local, imperative useFrame — no subscription, no re-render.
 export function Track() {
     const world = useWorld();
     const a = useRef< THREE.Mesh | null >( null );
@@ -36,10 +33,6 @@ export function Track() {
     const grid = useMemo( makeGridTexture, [] );
 
     // JUSTIFIED EFFECT — external resource lifetime (a GPU texture we `new`'d in useMemo, not created by
-    // R3F from JSX). r3f.md: manually-created resources are ours to dispose, and three does NOT release a
-    // material's textures when the material is disposed. Keyed on the texture, not `[]`, so a memo the
-    // renderer chose to recompute releases the superseded texture instead of stranding it. No
-    // render-derivation, no event, no data-flow involved — purely bracketing an external resource's lifetime.
     useEffect( () => () => grid.dispose(), [ grid ] );
 
     useFrame( () => {
