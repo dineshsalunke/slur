@@ -21,7 +21,6 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     const predictor = useMemo( createPredictor, [] );
 
     const track = useMemo( () => resolveTrack( descriptor ), [ descriptor ] );
-    const wallSeed = descriptor.kind === 'procgen' ? descriptor.seed : undefined;
     const trackRef = useRef( track );
     trackRef.current = track;
 
@@ -53,7 +52,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     return (
         <WorldProvider world={ world }>
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
-                <WorldScene track={ track } wallSeed={ wallSeed }>
+                <WorldScene track={ track }>
                     <NetLoop predictor={ predictor } track={ track } />
                     <PickupField room={ room } track={ track } />
                     <ProjectileField />

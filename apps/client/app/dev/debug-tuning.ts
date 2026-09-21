@@ -3,8 +3,17 @@ import { CHASE } from '../game/camera/chase';
 import { KEY_BEARING_DEG, KEY_ELEVATION_DEG, KEY_INTENSITY } from '../game/scene/cold-key';
 import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
+import {
+    MONOLITH_DEPTH,
+    MONOLITH_GAP,
+    MONOLITH_HEIGHT,
+    MONOLITH_SPACING_CALM,
+    MONOLITH_SPACING_INTENSE,
+    MONOLITH_WIDTH,
+} from '../game/scene/monoliths';
 import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
 import {
+    ENVIRONMENTAL_MARIGOLD_INTENSITY,
     FLOOR_ENV_MAP_INTENSITY,
     FLOOR_METALNESS,
     FLOOR_ROUGHNESS,
@@ -32,6 +41,13 @@ export interface DebugTuning {
     boundaryWidth: number;
     boundaryWrap: number;
     ambientIntensity: number;
+    monolithHeight: number;
+    monolithWidth: number;
+    monolithDepth: number;
+    monolithGap: number;
+    monolithSpacingCalm: number;
+    monolithSpacingIntense: number;
+    monolithSeam: number;
     keyIntensity: number;
     keyElevation: number;
     keyBearing: number;
@@ -64,6 +80,13 @@ function committed(): DebugTuning {
         boundaryWidth: BOUNDARY_W,
         boundaryWrap: BOUNDARY_H,
         ambientIntensity: AMBIENT_INTENSITY,
+        monolithHeight: MONOLITH_HEIGHT,
+        monolithWidth: MONOLITH_WIDTH,
+        monolithDepth: MONOLITH_DEPTH,
+        monolithGap: MONOLITH_GAP,
+        monolithSpacingCalm: MONOLITH_SPACING_CALM,
+        monolithSpacingIntense: MONOLITH_SPACING_INTENSE,
+        monolithSeam: ENVIRONMENTAL_MARIGOLD_INTENSITY,
         keyIntensity: KEY_INTENSITY,
         keyElevation: KEY_ELEVATION_DEG,
         keyBearing: KEY_BEARING_DEG,
@@ -134,38 +157,15 @@ const n = ( v: number ) => ( Number.isInteger( v ) ? String( v ) : v.toFixed( 3 
 
 export function debugTuningSource( t: DebugTuning ): string {
     return [
-        '// game/camera/chase.ts — CHASE',
-        `height: ${ n( t.camHeight ) },`,
-        `back: ${ n( t.camBack ) },`,
-        `lookAhead: ${ n( t.camLookAhead ) },`,
-        `lookAtLift: ${ n( t.camLookAtLift ) },`,
-        `fov: ${ n( t.camFov ) },`,
-        '',
-        '// game/scene/env-config.ts — GRID_VOID',
-        `bloom: { intensity: ${ n( t.bloomIntensity ) }, threshold: ${ n( t.bloomThreshold ) }, smoothing: ${ n(
-            t.bloomSmoothing,
-        ) }, radius: ${ n( t.bloomRadius ) }, levels: ${ n( t.bloomLevels ) } },`,
+        '// game/scene/monoliths.tsx',
+        `export const MONOLITH_HEIGHT = ${ n( t.monolithHeight ) };`,
+        `export const MONOLITH_WIDTH = ${ n( t.monolithWidth ) };`,
+        `export const MONOLITH_DEPTH = ${ n( t.monolithDepth ) };`,
+        `export const MONOLITH_GAP = ${ n( t.monolithGap ) };`,
+        `export const MONOLITH_SPACING_CALM = ${ n( t.monolithSpacingCalm ) };`,
+        `export const MONOLITH_SPACING_INTENSE = ${ n( t.monolithSpacingIntense ) };`,
         '',
         '// game/scene/track-materials.ts',
-        `export const FLOOR_ROUGHNESS = ${ n( t.floorRoughness ) };`,
-        `export const FLOOR_METALNESS = ${ n( t.floorMetalness ) };`,
-        `export const FLOOR_ENV_MAP_INTENSITY = ${ n( t.floorEnvMapIntensity ) };`,
-        `export const MARIGOLD_REFERENCE_INTENSITY = ${ n( t.marigoldReference ) };`,
-        `export const RAIL_EMITTER_INTENSITY = ${ n( t.emitterIntensity ) };`,
-        `export const RAIL_EMITTER_RANGE = ${ n( t.emitterRange ) };`,
-        `export const RAIL_EMITTER_DECAY = ${ n( t.emitterDecay ) };`,
-        `export const RAIL_EMITTER_LIFT = ${ n( t.emitterLift ) };`,
-        '',
-        '// game/scene/track-geometry.ts',
-        `export const BOUNDARY_W = ${ n( t.boundaryWidth ) };`,
-        `export const BOUNDARY_H = ${ n( t.boundaryWrap ) };`,
-        '',
-        '// game/scene/lighting.tsx',
-        `export const AMBIENT_INTENSITY = ${ n( t.ambientIntensity ) };`,
-        '',
-        '// game/scene/cold-key.tsx',
-        `export const KEY_BEARING_DEG = ${ n( t.keyBearing ) };`,
-        `export const KEY_ELEVATION_DEG = ${ n( t.keyElevation ) };`,
-        `export const KEY_INTENSITY = ${ n( t.keyIntensity ) };`,
+        `export const ENVIRONMENTAL_MARIGOLD_INTENSITY = ${ n( t.monolithSeam ) };`,
     ].join( '\n' );
 }

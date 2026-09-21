@@ -50,7 +50,7 @@ export function EnvLabCanvas() {
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
                 <ambientLight intensity={ 0.4 } />
                 <EnvRig />
-                <Environment config={ config } seed={ 1234 } />
+                <Environment config={ config } />
                 <Track />
                 <EffectComposer multisampling={ 0 }>
                     <Bloom

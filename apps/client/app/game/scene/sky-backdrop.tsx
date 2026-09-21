@@ -75,6 +75,7 @@ export function SkyBackdrop( {
                 map={ map }
                 alphaMap={ alphaMap }
                 transparent
+                fog={ false }
                 depthWrite={ false }
                 side={ THREE.DoubleSide }
                 toneMapped={ toneMapped }

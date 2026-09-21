@@ -22,18 +22,6 @@ export interface FogConfig {
     far: number;
 }
 
-export interface WallConfig {
-    distance: number;
-    thickness: number;
-    minHeight: number;
-    maxHeight: number;
-    spacing: number;
-    count: number;
-    color: string;
-    intensity: number;
-    yBase: number;
-}
-
 export interface BloomConfig {
     intensity: number;
     threshold: number;
@@ -48,7 +36,6 @@ export interface EnvConfig {
     fog: FogConfig;
     dome: DomeConfig;
     stars: StarConfig;
-    walls: WallConfig;
     bloom: BloomConfig;
 }
 
@@ -59,17 +46,6 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
         fog: { color: '#02030a', near: 140, far: 640 },
         dome: { enabled: false, top: '#050a1a', bottom: '#0a1230', radius: 800 },
         stars: { enabled: true, count: 1200, radius: 320, depth: 80, factor: 4, saturation: 0, fade: true, speed: 0.4 },
-        walls: {
-            distance: 92,
-            thickness: 4,
-            minHeight: 6,
-            maxHeight: 26,
-            spacing: 60,
-            count: 40,
-            color: '#1e6fff',
-            intensity: 2.2,
-            yBase: 0,
-        },
         bloom: { intensity: 1.0, threshold: 0.45, smoothing: 0.2, radius: 0.6, levels: 4 },
     },
     {
@@ -87,17 +63,6 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
             fade: true,
             speed: 0.5,
         },
-        walls: {
-            distance: 52,
-            thickness: 5,
-            minHeight: 30,
-            maxHeight: 90,
-            spacing: 26,
-            count: 80,
-            color: '#ff2bd6',
-            intensity: 2.8,
-            yBase: 0,
-        },
         bloom: { intensity: 1.4, threshold: 0.4, smoothing: 0.25, radius: 0.6, levels: 4 },
     },
     {
@@ -114,17 +79,6 @@ export const ENV_VARIANTS: readonly EnvConfig[] = [
             saturation: 0.14,
             fade: true,
             speed: 0.6,
-        },
-        walls: {
-            distance: 68,
-            thickness: 3,
-            minHeight: 14,
-            maxHeight: 40,
-            spacing: 40,
-            count: 60,
-            color: '#c8d0d8',
-            intensity: 2.6,
-            yBase: 0,
         },
         bloom: { intensity: 1.2, threshold: 0.42, smoothing: 0.2, radius: 0.6, levels: 4 },
     },

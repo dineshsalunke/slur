@@ -3,18 +3,18 @@ import type { Track } from '@slur/shared';
 import { Fragment, type ReactNode } from 'react';
 import { TunedBloom } from '../../dev/tuned-bloom';
 import { GRID_VOID } from './env-config';
-import { Environment } from './environment';
 import { ExplosionField } from './explosions';
 import { FinishGate } from './finish-gate';
+import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark';
 import { SceneLighting } from './lighting';
 import { Ships } from './ship';
 import { TrackView } from './track-view';
 
-export function WorldScene( { track, wallSeed, children }: { track: Track; wallSeed?: number; children?: ReactNode } ) {
+export function WorldScene( { track, children }: { track: Track; children?: ReactNode } ) {
     return (
         <Fragment>
-            <Environment config={ GRID_VOID } seed={ wallSeed } />
+            <GameEnvironment config={ GRID_VOID } track={ track } />
             <SceneLighting />
             <ExplosionField />
             <HitSpark />

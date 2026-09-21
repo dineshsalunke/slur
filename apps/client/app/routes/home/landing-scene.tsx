@@ -37,7 +37,7 @@ export function LandingScene() {
                     fadeDistance={ 300 }
                     fadeStrength={ 6 }
                 />
-                <Environment config={ GRID_VOID } seed={ BACKDROP_SEED } />
+                <Environment config={ GRID_VOID } />
                 <EffectComposer multisampling={ 0 }>
                     <Bloom
                         mipmapBlur

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DebugSlider } from './debug-slider';
-import { debugTuningSource, pitchDeg, resetDebugTuning, shipBelowAxisDeg, useDebugTuning } from './debug-tuning';
+import { debugTuningSource, resetDebugTuning, useDebugTuning } from './debug-tuning';
 
 const BTN = 'rounded border border-white/15 px-2 py-1 font-mono text-[11px] transition-colors hover:bg-white/10';
 
@@ -8,10 +8,6 @@ export function DebugPanel() {
     const tuning = useDebugTuning();
     const [ open, setOpen ] = useState( true );
     const [ copied, setCopied ] = useState( '' );
-
-    const belowAxis = shipBelowAxisDeg( tuning );
-    const halfFov = tuning.camFov / 2;
-    const safe = belowAxis <= halfFov;
 
     const copy = () => {
         const text = debugTuningSource( tuning );
@@ -45,221 +41,65 @@ export function DebugPanel() {
                 </button>
             </div>
 
-            <div className="mb-1 text-white/40">bloom</div>
+            <div className="mb-1 text-white/40">monoliths</div>
             <DebugSlider
-                label="intensity"
-                tuningKey="bloomIntensity"
-                value={ tuning.bloomIntensity }
-                min={ 0 }
-                max={ 4 }
-                step={ 0.05 }
-            />
-            <DebugSlider
-                label="threshold"
-                tuningKey="bloomThreshold"
-                value={ tuning.bloomThreshold }
-                min={ 0 }
-                max={ 1 }
-                step={ 0.01 }
-            />
-            <DebugSlider
-                label="smoothing"
-                tuningKey="bloomSmoothing"
-                value={ tuning.bloomSmoothing }
-                min={ 0 }
-                max={ 1 }
-                step={ 0.01 }
-            />
-            <DebugSlider
-                label="radius"
-                tuningKey="bloomRadius"
-                value={ tuning.bloomRadius }
-                min={ 0 }
-                max={ 1 }
-                step={ 0.02 }
-                note="remounts"
-            />
-            <DebugSlider
-                label="levels"
-                tuningKey="bloomLevels"
-                value={ tuning.bloomLevels }
-                min={ 1 }
-                max={ 9 }
-                step={ 1 }
-                note="remounts"
-            />
-
-            <div className="mt-2 mb-1 text-white/40">deck</div>
-            <DebugSlider
-                label="roughness"
-                tuningKey="floorRoughness"
-                value={ tuning.floorRoughness }
-                min={ 0.02 }
-                max={ 1 }
-                step={ 0.01 }
-                note="streaks live here"
-            />
-            <DebugSlider
-                label="metalness"
-                tuningKey="floorMetalness"
-                value={ tuning.floorMetalness }
-                min={ 0 }
-                max={ 1 }
-                step={ 0.05 }
-            />
-
-            <div className="mt-2 mb-1 text-white/40">rail emitter</div>
-            <DebugSlider
-                label="intensity"
-                tuningKey="emitterIntensity"
-                value={ tuning.emitterIntensity }
-                min={ 0 }
-                max={ 200 }
-                step={ 1 }
-            />
-            <DebugSlider
-                label="range"
-                tuningKey="emitterRange"
-                value={ tuning.emitterRange }
-                min={ 10 }
-                max={ 800 }
-                step={ 5 }
-            />
-            <DebugSlider
-                label="decay"
-                tuningKey="emitterDecay"
-                value={ tuning.emitterDecay }
-                min={ 0 }
-                max={ 3 }
-                step={ 0.05 }
-            />
-            <DebugSlider
-                label="lift"
-                tuningKey="emitterLift"
-                value={ tuning.emitterLift }
-                min={ 0.05 }
-                max={ 4 }
-                step={ 0.05 }
-                note="above deck"
-            />
-
-            <div className="mt-2 mb-1 text-white/40">marigold reference</div>
-            <DebugSlider
-                label="boundary"
-                tuningKey="marigoldReference"
-                value={ tuning.marigoldReference }
-                min={ 0 }
-                max={ 8 }
-                step={ 0.05 }
-                note="pre-bloom"
+                label="height"
+                tuningKey="monolithHeight"
+                value={ tuning.monolithHeight }
+                min={ 12 }
+                max={ 400 }
+                step={ 2 }
             />
             <DebugSlider
                 label="width"
-                tuningKey="boundaryWidth"
-                value={ tuning.boundaryWidth }
-                min={ 0.25 }
-                max={ 4 }
-                step={ 0.25 }
-                note="on release"
-                commitOnly
-            />
-            <DebugSlider
-                label="wrap"
-                tuningKey="boundaryWrap"
-                value={ tuning.boundaryWrap }
-                min={ 0 }
-                max={ 4 }
-                step={ 0.25 }
-                note="0 = flush · on release"
-                commitOnly
-            />
-
-            <div className="mt-2 mb-1 text-white/40">cold key</div>
-            <DebugSlider
-                label="intensity"
-                tuningKey="keyIntensity"
-                value={ tuning.keyIntensity }
-                min={ 0 }
-                max={ 60 }
+                tuningKey="monolithWidth"
+                value={ tuning.monolithWidth }
+                min={ 2 }
+                max={ 40 }
                 step={ 0.5 }
             />
             <DebugSlider
-                label="elevation"
-                tuningKey="keyElevation"
-                value={ tuning.keyElevation }
-                min={ 15 }
-                max={ 90 }
-                step={ 1 }
-                note="90 = overhead"
-            />
-            <DebugSlider
-                label="bearing"
-                tuningKey="keyBearing"
-                value={ tuning.keyBearing }
-                min={ 0 }
-                max={ 359 }
-                step={ 1 }
-                note="0 = down-track · 66 = star"
-            />
-
-            <div className="mt-2 mb-1 text-white/40">surfaces</div>
-            <DebugSlider
-                label="floor envMap"
-                tuningKey="floorEnvMapIntensity"
-                value={ tuning.floorEnvMapIntensity }
-                min={ 0 }
-                max={ 2 }
-                step={ 0.05 }
-                note="inert here"
-            />
-            <DebugSlider
-                label="ambient"
-                tuningKey="ambientIntensity"
-                value={ tuning.ambientIntensity }
-                min={ 0 }
-                max={ 2 }
-                step={ 0.05 }
-                note="0 = no fill"
-            />
-
-            <div className="mt-2 mb-1 text-white/40">chase camera</div>
-            <DebugSlider
-                label="height"
-                tuningKey="camHeight"
-                value={ tuning.camHeight }
-                min={ 4 }
-                max={ 20 }
+                label="depth"
+                tuningKey="monolithDepth"
+                value={ tuning.monolithDepth }
+                min={ 2 }
+                max={ 40 }
                 step={ 0.5 }
-                note="ADR-011 pins 7.5"
             />
-            <DebugSlider label="back" tuningKey="camBack" value={ tuning.camBack } min={ 4 } max={ 30 } step={ 0.5 } />
             <DebugSlider
-                label="lookAhead"
-                tuningKey="camLookAhead"
-                value={ tuning.camLookAhead }
+                label="gap outboard of rail"
+                tuningKey="monolithGap"
+                value={ tuning.monolithGap }
                 min={ 0 }
                 max={ 40 }
                 step={ 0.5 }
             />
             <DebugSlider
-                label="lookAtLift"
-                tuningKey="camLookAtLift"
-                value={ tuning.camLookAtLift }
-                min={ 0 }
-                max={ 12 }
-                step={ 0.5 }
+                label="spacing calm"
+                tuningKey="monolithSpacingCalm"
+                value={ tuning.monolithSpacingCalm }
+                min={ 8 }
+                max={ 400 }
+                step={ 2 }
             />
-            <DebugSlider label="fov" tuningKey="camFov" value={ tuning.camFov } min={ 40 } max={ 100 } step={ 1 } />
+            <DebugSlider
+                label="spacing intense"
+                tuningKey="monolithSpacingIntense"
+                value={ tuning.monolithSpacingIntense }
+                min={ 8 }
+                max={ 400 }
+                step={ 2 }
+            />
+            <DebugSlider
+                label="seam"
+                tuningKey="monolithSeam"
+                value={ tuning.monolithSeam }
+                min={ 0 }
+                max={ 4 }
+                step={ 0.05 }
+            />
 
-            <div className="mb-2 text-[10px] leading-relaxed text-white/45">
-                pitch { pitchDeg( tuning ).toFixed( 1 ) }° · ship{ ' ' }
-                <span className={ safe ? 'text-amber-200' : 'text-red-400' }>{ belowAxis.toFixed( 1 ) }°</span> below
-                axis · half-FOV { halfFov.toFixed( 0 ) }°
-                <br />
-                { safe ? 'in frame' : 'OFF THE BOTTOM EDGE' }
-            </div>
-
-            <div className="flex gap-1">
+            <div className="mt-3 flex gap-1">
                 <button type="button" className={ `${ BTN } text-amber-200` } onClick={ copy }>
                     copy values
                 </button>
