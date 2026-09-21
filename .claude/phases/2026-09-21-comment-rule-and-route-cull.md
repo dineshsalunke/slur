@@ -80,3 +80,35 @@ room is a thinner instrument than what was there. Restore any piece with
 
 `dev` = `d35d146`, clean, no worktrees outstanding. Gates green on both merges: typecheck · lint
 (3 warnings, **pre-existing on dev**, verified) · 78 shared + 4 server + 93 client tests · build.
+
+## 3. `.claude/art-pass/` and `.claude/comment-sweep/` deleted — PR #186 (`00f0d49`)
+
+89 files. Both were left stale by the two changes above: the art arc's handovers all described
+`/art-lab` and `/art-gallery`, deleted in #184; the comment-sweep folder planned a sweep #183 had
+already done by other means.
+
+**The one live coupling, worth remembering:** `vite.config.ts` pointed `frameTapPlugin` at
+`.claude/art-pass/00-frame-tap/refs`. The plugin does `mkdirSync(dir, { recursive: true })`, so the
+deletion would not have *broken* anything — it would have silently **recreated a stub of the deleted
+tree** on the next frame-tap write. Repointed to `.claude/frame-tap-refs`. No refs files were tracked.
+
+**Six external references rewritten rather than left dangling:** `CLAUDE.md`'s "read the art index
+FIRST" callout · `.claude/backlog.md` · `docs/ART_MATERIALS.md` ×2 · `docs/DECISIONS.md` ·
+`docs/GDD.md`, whose status table still called the art review instruments **LIVE** after #184 had
+deleted them. Where a deleted file had been cited as evidence, the substance is now inlined instead of
+pointing at a path that no longer resolves.
+
+**What still governs art** (both Claude-owned, both outside the deleted tree):
+`docs/ART_SCALE_REFERENCE.md` (dimensions — overrides every number printed on a concept board) and
+`docs/ART_MATERIALS.md` (nine material families, element→material map, marigold intensity tiers).
+`docs/art-direction/` is untouched and remains ChatGPT's read-only workspace.
+
+Recover any of it: `git show e56f643 -- .claude/art-pass`.
+
+## State after all four merges
+
+`dev` = `00f0d49`, clean, no worktrees. Gates green throughout: typecheck · lint (3 warnings,
+pre-existing) · 78 shared + 4 server + 93 client tests · build.
+
+**Still open** (unchanged by #186): `app.css` comments · the `constants.ts` tuning notes the new
+comment rule took with it.
