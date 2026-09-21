@@ -11,14 +11,22 @@ import { SceneLighting } from './lighting';
 import { Ships } from './ship';
 import { TrackView } from './track-view';
 
-export function WorldScene( { track, children }: { track: Track; children?: ReactNode } ) {
+export function WorldScene( {
+    track,
+    blocks = true,
+    children,
+}: {
+    track: Track;
+    blocks?: boolean;
+    children?: ReactNode;
+} ) {
     return (
         <Fragment>
             <GameEnvironment config={ GRID_VOID } track={ track } />
             <SceneLighting />
             <ExplosionField />
             <HitSpark />
-            <TrackView track={ track } />
+            <TrackView track={ track } blocks={ blocks } />
             <FinishGate track={ track } />
             <Ships />
             { children }

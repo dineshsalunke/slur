@@ -23,7 +23,7 @@ export function TestLevelCanvas() {
     return (
         <WorldProvider world={ world }>
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
-                <WorldScene track={ track }>
+                <WorldScene track={ track } blocks={ false }>
                     <LocalShip />
                     <LocalLoop track={ track } />
                 </WorldScene>
