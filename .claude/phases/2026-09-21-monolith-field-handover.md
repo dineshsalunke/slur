@@ -1,0 +1,84 @@
+# 2026-09-21 — handover: the monolith field and the approved sky
+
+Continues `2026-09-21-test-level-handover.md`. That file's "do this next" list is now partly stale —
+read the status section below before acting on it.
+
+## Status of the previous handover's three items
+
+1. **CLAUDE.md `/solo` amendment** — still not done. The owner said they would. Wording proposal is in
+   the previous handover.
+2. **Push `feat/test-level` and open the PR** — **the owner chose to hold the branch.** It now carries
+   three commits, still unpushed, still no PR. Do not push without asking again.
+3. **Scene lighting** — the owner settled the governing reference: **`cruise-lighting.png`**, not
+   `action-lighting.png`. Started, not finished; see below.
+
+## Shipped on `feat/test-level` (`63c9325`, not pushed)
+
+The scene had been running on the placeholder environment since the project's first week. Two bugs the
+owner spotted in `/test-level` drove the work:
+
+- **White bars beside the track** — `TubeWalls`, random-height emissive white slabs 68u off the deck.
+- **No nebula** — `SkyBackdrop` (`/textures/nebula-backdrop.jpg`) was mounted only by `DeepSpaceSky`,
+  and `DeepSpaceSky`'s only consumers were the `/art-lab` and `/iso-*` routes deleted in `d35d146`.
+  The texture was on disk the whole time; nothing rendered it.
+
+**`GameEnvironment`** (new) now holds background, fog, `DeepSpaceSky` and the monolith field, and
+`WorldScene` mounts it. `DeepSpaceSky` takes `light={false}` so its `StarLight` does not double up on
+`ColdKey`. `SkyBackdrop` gained `fog={false}` — fog `far` is 460 and the backdrop sphere is at radius
+800, so it fogged to nothing without it.
+
+**`Monoliths`** (new) replaces `TubeWalls`, built to `docs/art-direction/progression/overview.png`:
+uniform size, matched left/right pairs, even spacing, flush to the deck edge (inner face at
+`HALF_WIDTH + BOUNDARY_W`), one full-height marigold seam on the track-facing edge. M3 dark stone per
+`ART_MATERIALS.md`; the seam is the **first consumer** of `ENVIRONMENTAL_MARIGOLD_INTENSITY`, which had
+been exported and unused.
+
+**Density is progression-driven** via `intensityAt()` from `@slur/shared` — the ADR-006 envelope that
+already drives corridor width, gap probability, wall density and flick rate. The field derives from
+`track.finishZ`, so it is deterministic and identical on every client, and is built **once** through a
+ref callback: no `useFrame`, no ECS subscription, no per-frame work. Covered by
+`monolith-field.test.ts` (5 cases).
+
+**`TubeWalls` deleted** as a first-week placeholder, with `WallConfig`, the `walls` block of all three
+`ENV_VARIANTS`, and the `wallSeed` plumbing through `WorldScene` / `NetCanvas` / `TestLevelCanvas`.
+
+**Debug panel cut to the monolith sliders only** at the owner's instruction — sliders come back for
+whatever is being worked on. The tuning **store** keeps its other keys, so cold-key, bloom,
+track-material and chase consumers still read their committed defaults.
+
+`pnpm typecheck`, `pnpm lint` and `pnpm test` (100 client tests) all pass.
+
+## Do this next
+
+1. **Freeze the monolith height.** It is deliberately unresolved and sitting on a slider. Default 48u,
+   range 12-400. Fly `/test-level`, dial it, hit **copy values**, paste the constants back into
+   `monoliths.tsx`. Same for width, depth, gap and the two spacing values.
+2. **Finish the lighting pass against `cruise-lighting.png`.** Not started. Two gaps are visible in
+   the current build:
+   - **Rails are blown out** — thick white-cored bars where `CRUISE-LIGHTING.md` asks for *"Rails have
+     controlled halos"*. Levers are bloom threshold and `RAIL_EMITTER_INTENSITY`; **both sliders were
+     just removed from the panel** — re-add them for this item.
+   - **Monolith faces read as near-silhouette.** The board shows stone catching light. `ColdKey` is
+     intensity 1 with `AMBIENT_INTENSITY` 0; the new drei `Environment` IBL is now live, so
+     `FLOOR_ENV_MAP_INTENSITY` is no longer inert. Re-add the cold-key and ambient sliders.
+3. **Decide what the landing page backdrop gets.** Deleting `TubeWalls` stripped its scenery — it is
+   now dome plus stars. It cannot take `Monoliths`, which needs a `Track`.
+
+## Things found this session that outlive it
+
+- **`intensityAt( i, length )` is the progression signal**, exported from `@slur/shared` via
+  `export * from './sim/track.js'`. It is **not a monotonic ramp** — `SECTIONS` in `constants.ts` is a
+  song structure (intro / verse / prechorus / chorus / bridge), so intensity rises and falls. Measured
+  profile on a 400-segment track: trough 0.198 at `z=6000`, peak 0.995 at `z=7200`, max 1.0 at
+  segment 367. A test asserting "denser toward the finish" fails; assert peak-vs-trough instead.
+- **`ART_SCALE_REFERENCE.md` §5 conflicts with the board on monolith height** — §5 says 200-400u, the
+  board reads ~50u. §5 is headed *"from the boards, sanity-checked"* and was only ratio-checked against
+  track width, never against the chase camera. **This needs a departure note** in a Claude-owned doc for
+  the owner to paste into ChatGPT — `docs/art-direction/` is read-only. Not written yet.
+- **`ProcgenDescriptor.tier` is still unwired.** `intensityAt` derives from position along the track,
+  not from `tier`. If per-level intensity ever needs to differ, `tier` is the hook and nothing reads it.
+- **The landing page was a second `TubeWalls` consumer**, easy to miss — `routes/home/landing-scene.tsx`,
+  not just `/env-lab`.
+- Still true from last session: the `arc` skill is not installed; `DebugPanel` should not be rebuilt;
+  blocks are still the two placeholder families in `track-blocks.tsx`; open art issues are #166, #128,
+  #173, #170, #162, #161, #160, #167, #163.
