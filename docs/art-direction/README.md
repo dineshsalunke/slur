@@ -1,29 +1,31 @@
-# SLUR — Art direction workspace
+# SLUR — selected artwork
 
-**Finalized scene backgrounds:** [scene-background/](scene-background/README.md) contains the approved Deep Space / Nebula environment board, specification and prompt, with superseded work in history and the unapproved panoramic texture in experiments.
+This is the image set confirmed by the owner on 2026-09-20. Start here for current art references. Folder and file names describe their subjects rather than generation numbers or draft labels.
 
-**Finalized scene and archive:** [golden-reference/](golden-reference/README.md) contains the approved image, direction record and complete image/prompt history. Environment progression boards, widescreen versions, prompts and notes live in [progression/](progression/README.md). Other asset boards remain under `boards/`.
+| Subject | Selected images | How to use them |
+|---|---|---|
+| Golden reference | [Approved action lighting](golden-reference/action-lighting.png) · [Approved cruise lighting](golden-reference/cruise-lighting.png) · [Original scene](golden-reference/scene-and-hud.png) | Action image governs the latest marigold palette and punchy contrast. Cruise lighting is approved but its HUD accents still need matching. Original scene is retained for comparison; other audit findings remain open. |
+| Background | [Celestial hierarchy](background/celestial-hierarchy.png) | Planet-led and nebula-led environments. |
+| Track | [Approved detailed deck](golden-reference/action-lighting.png) · [Flush-border rails](track/flush-border-rails.png) · [Surface wear](track/surface-wear.png) · [Material baseline](track/material-baseline.png) | The owner’s explicit attachment governs deck detail and wear. The featureless clean diagnostic was not selected. Subject boards await reconciliation. |
+| Ingredients — Blocks — Non-destructible | [Surface details](ingredients/blocks/non-destructible/surface-details.png) · [V1 context](ingredients/blocks/non-destructible/v1-context.png) | Surface details govern the current non-destructible finish. V1 is historical context only: its destructible family, tall/stacked examples and superseded forms are not current non-destructible construction instructions. |
+| Vehicles — Comet | [Concept sheet](vehicles/comet/concept-sheet.png) | Selected developed concept artwork. |
+| Vehicles — Split Crown | [Concept sheet](vehicles/split-crown/concept-sheet.png) · [Approved material study](vehicles/split-crown/material-study.png) | Selected design and dark coated-metal finish. Scene integration and exhaust remain unresolved. |
+| Progression | [Overview](progression/overview.png) · [Calm](progression/calm.png) · [Balanced](progression/balanced.png) · [Intense](progression/intense.png) | Spatial intensity and environment composition. |
 
-This folder holds Codex's art design and direction work for SLUR: concepts, visual reviews, asset design, and handoffs. Claude handles project implementation.
+16 images total, including the approved cruise/action lighting companions and Split Crown material study. Selection confirms the artwork set; generated dimensions and incidental details do not override gameplay contracts or certify production models.
 
-**Finalized track:** [track/](track/README.md) contains the frozen wear artboard, approved clean baseline, production art briefs and supporting prompts/review history.
+## Draft workflow
 
-**Blocks:** [blocks/](blocks/) holds the non-destructible block boards 25–28 — proposals, drafts, wear-at-distance review and the current final draft with its specification. (Folder added by engineering: it was `desctructible-block/`, holding only board 28 while boards 25–27 sat loose in `boards/`.)
+Before preparing a new vehicle proposal, consult the [open vehicle issues and review checks](AUDIT.md): Split Crown exhaust attachment and colour drift are unresolved. Existing integration drafts are not approved for rollout.
 
-## Current handoff
+Each artwork subject has an `explorations/` folder. Put new drafts, variations, temporary renders and working prompts there; its contents are ignored by Git except for the `.gitkeep` placeholder. Use dated subfolders when an exploration needs multiple files.
 
-**FINAL reference: [17_golden_reference_FINAL.png](golden-reference/17_golden_reference_FINAL.png).** User approved the cold-undertone revision after colour/contrast correction. Use [GOLDEN_REFERENCE.md](golden-reference/DIRECTION.md) for the complete decision record and [the session archive](golden-reference/history/README.md) for every generated image, exact successful prompt, reviews and source attachments. Older board-14 pointers below are historical.
+After the owner approves a draft, move the selected image into the main subject folder with a clear, stable filename. Update this index and retain only the concise decisions and reproduction details needed for the approved result alongside it. Do not promote all intermediate attempts or treat a draft as approved merely because it is the newest image.
 
-**Start with [GOLDEN_REFERENCE.md](golden-reference/DIRECTION.md).** It records the newly approved scene and borderless HUD, including later corrections to interior seam lighting, monolith glow and gap treatment. [Board 14](golden-reference/history/boards/14_golden_reference_borderless_hud.png) is the current integrated visual target. [BOARD_REBUILD_PLAN.md](BOARD_REBUILD_PLAN.md) defines the detailed replacement-board series.
+Unselected drafts stay disposable in `explorations/`; remove them when cleanup is requested. Ignored drafts are local-only, are not backed up by Git and still consume disk space until deleted. Git ignores do not remove files already tracked or shrink existing history. Keep the established archive intact; it is not the destination for every future draft.
 
-Read [CURRENT_STATUS.md](CURRENT_STATUS.md) for the reviewed art status, production progress, and open decisions as of 2026-09-18.
+## Archive
 
-The v2 package's written direction and source documents are in [handoff/](handoff/README.md); its reference images are in [boards/](boards/README.md).
+[Archive](archive/ARCHIVE_INDEX.md) contains all other material previously under this directory, including old documentation, prompts, explorations, alternate boards, models and model renders. Its documents preserve earlier statuses and paths as historical records, not competing current selections.
 
-Start with [HANDOVER.md](handoff/HANDOVER.md). It defines the current art decisions and supersedes conflicting v1 guidance. Follow the [reference index](boards/README.md) when using the images.
-
-Keep the extracted package intact. Add future art explorations, reviews, and handoffs alongside it in this workspace.
-
-## Earlier references
-
-The v1 handoff is no longer a separate folder — it was consolidated into this workspace's `boards/` and `handoff/`. Its history is preserved in git.
+Documentation consolidation is a separate next step. Art and implementation documents outside this directory have not been moved or rewritten. Development reference code has not been updated for these paths, at the owner's request.
