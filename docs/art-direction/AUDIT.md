@@ -1,5 +1,9 @@
 # Art consistency audit
 
+**2026-09-21 — camera framing approved:** owner explicitly selected B — Elevated from the individual approximately 16:9 views. Exact image promoted to [camera-elevated.png](progression/camera-elevated.png). Use this framing for both selected progression treatments, Monolith Corridor and Rock Enclosure, with larger monoliths overall. Numeric camera parameters remain unmeasured. [Scope](progression/CAMERA.md).
+
+**2026-09-21 — background approved:** owner accepted the two-environment [background board](background/approved-direction.png), explicitly identifying its hue and tonality as the desired balance. This is the colour and tonal target for remaining board reconciliation, superseding earlier palette guidance wherever it conflicts. Background hierarchy and cold scenic depth are frozen; incidental gameplay objects are outside this approval. Detailed deck wear remains governed by the exact approved action image. Next: progression, then non-destructible blocks and track; vehicle integration last. See [approval scope](background/DIRECTION.md).
+
 **2026-09-21 — Split Crown finish approved:** owner accepted [material-study.png](vehicles/split-crown/material-study.png): dark coated metal, quieter edge highlights and retained detail. Promoted from explorations. Exhaust, scene colour preservation and rollout remain unresolved. The original concept sheet continues to govern design identity.
 
 ## Open vehicle issues — deferred by owner, 2026-09-21

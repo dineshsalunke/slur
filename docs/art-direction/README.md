@@ -4,15 +4,15 @@ This is the image set confirmed by the owner on 2026-09-20. Start here for curre
 
 | Subject | Selected images | How to use them |
 |---|---|---|
-| Golden reference | [Approved action lighting](golden-reference/action-lighting.png) · [Approved cruise lighting](golden-reference/cruise-lighting.png) · [Original scene](golden-reference/scene-and-hud.png) | Action image governs the latest marigold palette and punchy contrast. Cruise lighting is approved but its HUD accents still need matching. Original scene is retained for comparison; other audit findings remain open. |
-| Background | [Celestial hierarchy](background/celestial-hierarchy.png) | Planet-led and nebula-led environments. |
+| Golden reference | [Approved action lighting](golden-reference/action-lighting.png) · [Approved cruise lighting](golden-reference/cruise-lighting.png) · [Original scene](golden-reference/scene-and-hud.png) | Action image preserves approved detailed deck wear and action lighting. Reconcile hue and tonal balance against the newly approved background board; cruise HUD accents still need matching. Original scene is retained for comparison. |
+| Background | [Approved direction](background/approved-direction.png) · [Earlier celestial hierarchy](background/celestial-hierarchy.png) | Approved planet-led and nebula-led environments; hue and tonal balance govern subsequent reconciliation. [Scope](background/DIRECTION.md). |
 | Track | [Approved detailed deck](golden-reference/action-lighting.png) · [Flush-border rails](track/flush-border-rails.png) · [Surface wear](track/surface-wear.png) · [Material baseline](track/material-baseline.png) | The owner’s explicit attachment governs deck detail and wear. The featureless clean diagnostic was not selected. Subject boards await reconciliation. |
 | Ingredients — Blocks — Non-destructible | [Surface details](ingredients/blocks/non-destructible/surface-details.png) · [V1 context](ingredients/blocks/non-destructible/v1-context.png) | Surface details govern the current non-destructible finish. V1 is historical context only: its destructible family, tall/stacked examples and superseded forms are not current non-destructible construction instructions. |
 | Vehicles — Comet | [Concept sheet](vehicles/comet/concept-sheet.png) | Selected developed concept artwork. |
 | Vehicles — Split Crown | [Concept sheet](vehicles/split-crown/concept-sheet.png) · [Approved material study](vehicles/split-crown/material-study.png) | Selected design and dark coated-metal finish. Scene integration and exhaust remain unresolved. |
-| Progression | [Overview](progression/overview.png) · [Calm](progression/calm.png) · [Balanced](progression/balanced.png) · [Intense](progression/intense.png) | Spatial intensity and environment composition. |
+| Progression | [Approved elevated camera](progression/camera-elevated.png) · [Overview](progression/overview.png) · [Calm](progression/calm.png) · [Balanced](progression/balanced.png) · [Intense](progression/intense.png) | Use [approved framing](progression/CAMERA.md) in individual 16:9 scene proposals. Monolith Corridor and Rock Enclosure selected; progression revisions pending. |
 
-16 images total, including the approved cruise/action lighting companions and Split Crown material study. Selection confirms the artwork set; generated dimensions and incidental details do not override gameplay contracts or certify production models.
+18 images total, including the approved elevated camera, background direction, cruise/action lighting companions and Split Crown material study. The background board governs the newly approved hue and tonal balance; golden-reference colour reconciliation remains pending. Selection confirms the artwork set; generated dimensions and incidental details do not override gameplay contracts or certify production models.
 
 ## Draft workflow
 
