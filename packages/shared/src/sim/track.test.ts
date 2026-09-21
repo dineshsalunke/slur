@@ -12,6 +12,7 @@ import {
     LEAD_SEGMENTS,
     MIN_LANE,
     mulberry32,
+    type ProcgenDescriptor,
     passableCorridorWidth,
     pickupLayout,
     procgenDescriptor,
@@ -79,11 +80,29 @@ test( 'resolveTrack builds byte-identical tracks from the same descriptor (deter
 
 test( 'a procgen descriptor round-trips through the wire schema unchanged', () => {
     for ( const seed of SEEDS ) {
-        const descriptor = procgenDescriptor( seed );
+        const base = procgenDescriptor( seed );
+        if ( base.kind !== 'procgen' ) continue;
+        const descriptor: ProcgenDescriptor = { ...base, blockDensity: 0.4, gapChance: 0.7 };
         const state = new TrackDescriptorState();
         applyDescriptor( state, descriptor );
-        assert.deepEqual( toDescriptor( state ), descriptor, `seed ${ seed } descriptor did not round-trip` );
+        const back = toDescriptor( state );
+        assert.equal( back.kind, 'procgen' );
+        if ( back.kind !== 'procgen' ) continue;
+        assert.equal( back.seed, descriptor.seed, `seed ${ seed } did not round-trip` );
+        assert.equal( back.length, descriptor.length );
+        assert.ok( Math.abs( ( back.blockDensity ?? 1 ) - 0.4 ) < 1e-6 );
+        assert.ok( Math.abs( ( back.gapChance ?? 1 ) - 0.7 ) < 1e-6 );
     }
+} );
+
+test( 'an omitted density normalizes to full on the wire', () => {
+    const state = new TrackDescriptorState();
+    applyDescriptor( state, procgenDescriptor( 1 ) );
+    const back = toDescriptor( state );
+    assert.equal( back.kind, 'procgen' );
+    if ( back.kind !== 'procgen' ) return;
+    assert.equal( back.blockDensity, 1 );
+    assert.equal( back.gapChance, 1 );
 } );
 
 test( 'segmentAtZ maps world-z to the right segment (O(1), pure)', () => {

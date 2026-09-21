@@ -3,7 +3,6 @@ import { CELL, LEAD_SEGMENTS, SEG_LEN, type Segment, type Track } from '@slur/sh
 import { useWorld } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useDebugTuning } from '../../dev/debug-tuning';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import { createEmitterUniforms, EMITTER_SLOTS, parkEmitter, patchEmitterLight, writeEmitter } from './emitter-array';
 import {
@@ -183,19 +182,18 @@ function buildFloorGeometry( track: Track, w: number, h: number ): THREE.BufferG
 }
 
 export function TrackFloor( { track }: { track: Track } ) {
-    const tuning = useDebugTuning();
     const world = useWorld();
-    const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
-    const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;
+    const w = BOUNDARY_W;
+    const h = BOUNDARY_H;
     const geo = useMemo( () => buildFloorGeometry( track, w, h ), [ track, w, h ] );
-    const lift = import.meta.env.DEV ? tuning.emitterLift : RAIL_EMITTER_LIFT;
+    const lift = RAIL_EMITTER_LIFT;
     const runs = useMemo( () => buildRailRuns( track, segmentCount( track ), w, h, lift ), [ track, w, h, lift ] );
     const uniforms = useMemo( createEmitterUniforms, [] );
     const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const patched = useRef( false );
-    const range = import.meta.env.DEV ? tuning.emitterRange : RAIL_EMITTER_RANGE;
-    const intensity = import.meta.env.DEV ? tuning.emitterIntensity : RAIL_EMITTER_INTENSITY;
-    const decay = import.meta.env.DEV ? tuning.emitterDecay : RAIL_EMITTER_DECAY;
+    const range = RAIL_EMITTER_RANGE;
+    const intensity = RAIL_EMITTER_INTENSITY;
+    const decay = RAIL_EMITTER_DECAY;
 
     // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );
@@ -218,9 +216,9 @@ export function TrackFloor( { track }: { track: Track } ) {
             <meshStandardMaterial
                 ref={ matRef }
                 { ...floorSurface() }
-                roughness={ import.meta.env.DEV ? tuning.floorRoughness : FLOOR_ROUGHNESS }
-                metalness={ import.meta.env.DEV ? tuning.floorMetalness : FLOOR_METALNESS }
-                envMapIntensity={ import.meta.env.DEV ? tuning.floorEnvMapIntensity : FLOOR_ENV_MAP_INTENSITY }
+                roughness={ FLOOR_ROUGHNESS }
+                metalness={ FLOOR_METALNESS }
+                envMapIntensity={ FLOOR_ENV_MAP_INTENSITY }
             />
         </mesh>
     );

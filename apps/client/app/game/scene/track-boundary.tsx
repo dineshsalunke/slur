@@ -1,7 +1,6 @@
 import { LEAD_SEGMENTS, type Track } from '@slur/shared';
 import { useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
-import { useDebugTuning } from '../../dev/debug-tuning';
 import { segmentCount } from './track-floor';
 import { BOUNDARY_H, BOUNDARY_W, isOuterEdge, packGeometry, pushQuad, UP } from './track-geometry';
 import { BOUNDARY_SURFACE, MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
@@ -66,9 +65,8 @@ function buildBoundaryGeometry( track: Track, w: number, h: number ): THREE.Buff
 }
 
 export function TrackBoundary( { track }: { track: Track } ) {
-    const tuning = useDebugTuning();
-    const w = import.meta.env.DEV ? tuning.boundaryWidth : BOUNDARY_W;
-    const h = import.meta.env.DEV ? tuning.boundaryWrap : BOUNDARY_H;
+    const w = BOUNDARY_W;
+    const h = BOUNDARY_H;
     const geo = useMemo( () => buildBoundaryGeometry( track, w, h ), [ track, w, h ] );
 
     // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
@@ -76,10 +74,7 @@ export function TrackBoundary( { track }: { track: Track } ) {
 
     return (
         <mesh geometry={ geo }>
-            <meshStandardMaterial
-                { ...BOUNDARY_SURFACE }
-                emissiveIntensity={ import.meta.env.DEV ? tuning.marigoldReference : MARIGOLD_REFERENCE_INTENSITY }
-            />
+            <meshStandardMaterial { ...BOUNDARY_SURFACE } emissiveIntensity={ MARIGOLD_REFERENCE_INTENSITY } />
         </mesh>
     );
 }

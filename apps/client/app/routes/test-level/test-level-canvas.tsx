@@ -1,7 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { resolveTrack, type TrackDescriptor } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
-import { DebugPanel } from '../../dev/debug-panel';
 import { world } from '../../game/ecs/world';
 import { WorldScene } from '../../game/scene/world-scene';
 import { LocalLoop } from './local-loop';
@@ -15,6 +14,8 @@ const descriptor: TrackDescriptor = {
     seed: TEST_LEVEL_SEED,
     tier: 0,
     length: TEST_LEVEL_SEGMENTS,
+    blockDensity: 0,
+    gapChance: 0,
 };
 
 const track = resolveTrack( descriptor );
@@ -23,12 +24,11 @@ export function TestLevelCanvas() {
     return (
         <WorldProvider world={ world }>
             <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
-                <WorldScene track={ track } blocks={ false }>
+                <WorldScene track={ track }>
                     <LocalShip />
                     <LocalLoop track={ track } />
                 </WorldScene>
             </Canvas>
-            <DebugPanel />
         </WorldProvider>
     );
 }

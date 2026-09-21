@@ -1,13 +1,13 @@
 import { EffectComposer } from '@react-three/postprocessing';
 import type { Track } from '@slur/shared';
 import { Fragment, type ReactNode } from 'react';
-import { TunedBloom } from '../../dev/tuned-bloom';
 import { GRID_VOID } from './env-config';
 import { ExplosionField } from './explosions';
 import { FinishGate } from './finish-gate';
 import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark';
 import { SceneLighting } from './lighting';
+import { SceneBloom } from './scene-bloom';
 import { Ships } from './ship';
 import { TrackView } from './track-view';
 
@@ -26,12 +26,12 @@ export function WorldScene( {
             <SceneLighting />
             <ExplosionField />
             <HitSpark />
-            <TrackView track={ track } blocks={ blocks } />
+            <TrackView track={ track } />
             <FinishGate track={ track } />
             <Ships />
             { children }
             <EffectComposer multisampling={ 0 }>
-                <TunedBloom config={ GRID_VOID.bloom } />
+                <SceneBloom config={ GRID_VOID.bloom } />
             </EffectComposer>
         </Fragment>
     );

@@ -1,10 +1,7 @@
 import { Bloom } from '@react-three/postprocessing';
-import type { BloomConfig } from '../game/scene/env-config';
-import { DevBloom } from './dev-bloom';
+import type { BloomConfig } from './env-config';
 
-export function TunedBloom( { config }: { config: BloomConfig } ) {
-    if ( import.meta.env.DEV ) return <DevBloom config={ config } />;
-
+export function SceneBloom( { config }: { config: BloomConfig } ) {
     return (
         <Bloom
             mipmapBlur

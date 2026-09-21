@@ -4,7 +4,6 @@ import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio';
-import { DebugPanel } from '../dev/debug-panel';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
@@ -61,7 +60,6 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                 </WorldScene>
             </Canvas>
             { import.meta.env.DEV && <NetDebugHud track={ track } /> }
-            { import.meta.env.DEV && <DebugPanel /> }
         </WorldProvider>
     );
 }

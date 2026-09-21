@@ -1,6 +1,7 @@
 import { MapSchema, Schema, type } from '@colyseus/schema';
 import type { ProjectileState } from './combat/projectiles.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
+import { FULL_DENSITY } from './sim/track.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
 import type { SimShip } from './sim/types.js';
 
@@ -54,6 +55,8 @@ export class TrackDescriptorState extends Schema {
     @type( 'uint32' ) seed = 0;
     @type( 'uint8' ) tier = 0;
     @type( 'uint16' ) length = 0;
+    @type( 'float32' ) blockDensity = 1;
+    @type( 'float32' ) gapChance = 1;
     @type( 'string' ) levelId = '';
 }
 
@@ -63,6 +66,8 @@ export function applyDescriptor( state: TrackDescriptorState, d: TrackDescriptor
         state.seed = d.seed;
         state.tier = d.tier;
         state.length = d.length;
+        state.blockDensity = d.blockDensity ?? FULL_DENSITY.blocks;
+        state.gapChance = d.gapChance ?? FULL_DENSITY.gaps;
     } else {
         state.levelId = d.levelId;
     }
@@ -70,7 +75,14 @@ export function applyDescriptor( state: TrackDescriptorState, d: TrackDescriptor
 
 export function toDescriptor( state: TrackDescriptorState ): TrackDescriptor {
     if ( state.kind === 'procgen' ) {
-        return { kind: 'procgen', seed: state.seed, tier: state.tier, length: state.length };
+        return {
+            kind: 'procgen',
+            seed: state.seed,
+            tier: state.tier,
+            length: state.length,
+            blockDensity: state.blockDensity,
+            gapChance: state.gapChance,
+        };
     }
     return { kind: 'authored', levelId: state.levelId };
 }

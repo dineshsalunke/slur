@@ -79,7 +79,16 @@ export interface ProcgenDescriptor {
     seed: number;
     tier: number;
     length: number;
+    blockDensity?: number;
+    gapChance?: number;
 }
+
+export interface TrackDensity {
+    blocks: number;
+    gaps: number;
+}
+
+export const FULL_DENSITY: TrackDensity = { blocks: 1, gaps: 1 };
 
 export const SEG_LEN = 20;
 export const TRACK_SEGMENTS = 400;
@@ -171,9 +180,9 @@ function flickRate( intensity: number ): number {
     return lerp( FLICK_RATE_START, FLICK_RATE_MAX, intensity );
 }
 
-function rolledGap( seed: number, i: number, length: number ): boolean {
+function rolledGap( seed: number, i: number, length: number, density: TrackDensity ): boolean {
     if ( i < START_SAFE || i >= length ) return false;
-    return mulberry32( hash2( seed, i ) )() < gapProb( intensityAt( i, length ) );
+    return mulberry32( hash2( seed, i ) )() < gapProb( intensityAt( i, length ) ) * density.gaps;
 }
 
 function fullFloor( y: number ): FloorSpan[] {
@@ -233,13 +242,20 @@ function laneState(
     return wall ? 1 : 0;
 }
 
-function flickRolled( seed: number, i: number, length: number ): boolean {
+function flickRolled( seed: number, i: number, length: number, blocks: number ): boolean {
     if ( i < START_SAFE || i >= length ) return false;
-    return mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i ) )() < flickRate( intensityAt( i, length ) );
+    return mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i ) )() < flickRate( intensityAt( i, length ) ) * blocks;
 }
 
-function flickAt( seed: number, i: number, length: number, unionLo: number, unionHi: number ): Flick | null {
-    if ( ! flickRolled( seed, i, length ) || flickRolled( seed, i - 1, length ) ) return null;
+function flickAt(
+    seed: number,
+    i: number,
+    length: number,
+    unionLo: number,
+    unionHi: number,
+    blocks: number,
+): Flick | null {
+    if ( ! flickRolled( seed, i, length, blocks ) || flickRolled( seed, i - 1, length, blocks ) ) return null;
     const minGapLanes = MIN_LANE / CELL;
     if ( unionHi - unionLo + 1 - FLICK_WIDTH < minGapLanes ) return null;
     const fromLeft = mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i * 2 + 1 ) )() < 0.5;
@@ -284,7 +300,7 @@ function buildWalls(
     return blocks;
 }
 
-function buildSegment( seed: number, i: number, length: number ): Segment {
+function buildSegment( seed: number, i: number, length: number, density: TrackDensity ): Segment {
     const z0 = i * SEG_LEN;
     const z1 = z0 + SEG_LEN;
     const base = { index: i, z0, z1, blocks: [] as Block[], isFinish: false };
@@ -293,14 +309,23 @@ function buildSegment( seed: number, i: number, length: number ): Segment {
     if ( i < -LEAD_SEGMENTS ) return { ...base, kind: 'gap', floors: [] };
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
-    if ( rolledGap( seed, i, length ) && ! rolledGap( seed, i - 1, length ) )
+    if ( rolledGap( seed, i, length, density ) && ! rolledGap( seed, i - 1, length, density ) )
         return { ...base, kind: 'gap', floors: gapFloors( seed, i, length ) };
 
     const intensity = intensityAt( i, length );
     const wLanes = corridorWidthLanes( intensity );
     const { lo: unionLo, hi: unionHi } = corridorUnion( seed, i, wLanes );
-    const flick = flickAt( seed, i, length, unionLo, unionHi );
-    const blocks = buildWalls( seed, i, unionLo, unionHi, flick, wallDensity( intensity ), slowGrace( intensity ), z0 );
+    const flick = flickAt( seed, i, length, unionLo, unionHi, density.blocks );
+    const blocks = buildWalls(
+        seed,
+        i,
+        unionLo,
+        unionHi,
+        flick,
+        wallDensity( intensity ) * density.blocks,
+        slowGrace( intensity ) * density.blocks,
+        z0,
+    );
 
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }
@@ -335,7 +360,11 @@ export function segIndexForZ( z: number ): number {
 export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
     const seed = d.seed;
     const length = d.length || TRACK_SEGMENTS;
-    const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length );
+    const density: TrackDensity = {
+        blocks: d.blockDensity ?? FULL_DENSITY.blocks,
+        gaps: d.gapChance ?? FULL_DENSITY.gaps,
+    };
+    const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length, density );
     return {
         finishZ: length * SEG_LEN,
         segmentAt,
