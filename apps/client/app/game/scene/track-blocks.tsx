@@ -4,7 +4,7 @@ import { useWorld } from 'koota/react';
 import { Fragment, useRef } from 'react';
 import type * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
-import { AHEAD, BACK, park, put } from './track-instancing';
+import { AHEAD, BACK, put } from './track-instancing';
 import { DRAG_OPACITY_MAX, DRAG_OPACITY_MIN, DRAG_PULSE_SPEED, DRAG_SURFACE, LETHAL_SURFACE } from './track-materials';
 
 const BLOCK_LIMIT = 160;
@@ -32,8 +32,6 @@ export function TrackBlocks( { track }: { track: Track } ) {
     const world = useWorld();
     const lethalRef = useRef< THREE.InstancedMesh | null >( null );
     const dragRef = useRef< THREE.InstancedMesh | null >( null );
-    const prevLethal = useRef( 0 );
-    const prevDrag = useRef( 0 );
 
     useFrame( ( { clock } ) => {
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
@@ -55,21 +53,29 @@ export function TrackBlocks( { track }: { track: Track } ) {
             li = emitBlocks( lethal, li, seg, true );
             di = emitBlocks( drag, di, seg, false );
         }
-        park( lethal, li, prevLethal.current );
-        park( drag, di, prevDrag.current );
-        prevLethal.current = li;
-        prevDrag.current = di;
+        lethal.count = li;
+        drag.count = di;
         lethal.instanceMatrix.needsUpdate = true;
         drag.instanceMatrix.needsUpdate = true;
     } );
 
     return (
         <Fragment>
-            <instancedMesh ref={ lethalRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
+            <instancedMesh
+                ref={ lethalRef }
+                count={ 0 }
+                frustumCulled={ false }
+                args={ [ undefined, undefined, BLOCK_LIMIT ] }
+            >
                 <boxGeometry />
                 <meshStandardMaterial { ...LETHAL_SURFACE } />
             </instancedMesh>
-            <instancedMesh ref={ dragRef } frustumCulled={ false } args={ [ undefined, undefined, BLOCK_LIMIT ] }>
+            <instancedMesh
+                ref={ dragRef }
+                count={ 0 }
+                frustumCulled={ false }
+                args={ [ undefined, undefined, BLOCK_LIMIT ] }
+            >
                 <boxGeometry />
                 <meshStandardMaterial { ...DRAG_SURFACE } opacity={ DRAG_OPACITY_MAX } />
             </instancedMesh>
