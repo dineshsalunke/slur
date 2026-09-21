@@ -39,24 +39,24 @@ describe( 'arbitrate', () => {
 
     it( 'refuses to write when several tabs answered, and names them', () => {
         const v = arbitrate( [
-            upload( 'http://localhost:5203/art-lab' ),
-            upload( 'http://localhost:5203/art-gallery' ),
+            upload( 'http://localhost:5203/env-lab' ),
+            upload( 'http://localhost:5203/game/demo' ),
         ] );
         expect( v.ok ).toBe( false );
         if ( ! v.ok ) {
             expect( v.status ).toBe( 409 );
-            expect( v.responders ).toEqual( [ 'http://localhost:5203/art-lab', 'http://localhost:5203/art-gallery' ] );
+            expect( v.responders ).toEqual( [ 'http://localhost:5203/env-lab', 'http://localhost:5203/game/demo' ] );
         }
     } );
 
     it( 'treats one responder sending both A/B images as a single responder', () => {
-        const href = 'http://localhost:5203/art-lab';
+        const href = 'http://localhost:5203/env-lab';
         const v = arbitrate( [ upload( href, 'composed' ), upload( href, 'bloom-off' ) ] );
         expect( v.ok ).toBe( true );
         if ( v.ok ) expect( v.uploads ).toHaveLength( 2 );
     } );
 
     it( 'accepts a single responder', () => {
-        expect( arbitrate( [ upload( 'http://localhost:5203/art-lab' ) ].slice() ).ok ).toBe( true );
+        expect( arbitrate( [ upload( 'http://localhost:5203/env-lab' ) ].slice() ).ok ).toBe( true );
     } );
 } );

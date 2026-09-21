@@ -15,7 +15,7 @@
         "verbatimModuleSyntax": true,
         "noEmit": true,
         // Permits `import … from './x.ts'`. Needed by vite.config.ts, whose relative import of
-        // ./art-refs-plugin.ts must carry the extension: Vite 8's forthcoming native config loader
+        // ./frame-tap-plugin.ts must carry the extension: Vite 8's forthcoming native config loader
         // (Node type-stripping) cannot resolve it otherwise and warns on every dev/build run.
         // Legal only because noEmit is on; purely permissive elsewhere.
         "allowImportingTsExtensions": true,

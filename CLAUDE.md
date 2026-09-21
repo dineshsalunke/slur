@@ -27,8 +27,11 @@ lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); d
 > overrides every number printed on a concept board. The earlier parallel-lane attempt
 > (`.claude/phases/2026-09-18-*`) was deliberately reset — those notes are history, not instructions.
 >
-> Review instruments: **`/art-lab`** (fly the real track, no server) and **`/art-gallery`** (subjects at
-> true scale under the game's own bloom).
+> Review instruments: **`/art-lab`**, **`/art-gallery`** and the four **`/iso-*`** subject labs were
+> **removed 2026-09-21** — along with `app/iso-lab/` and the `artRefsPlugin` that served the concept
+> boards into them. What is left to look at art in: **`/env-lab`**, and a hosted room
+> (`/game/:roomId`) for the real track. The handover notes under `.claude/art-pass/` still describe the
+> deleted routes; read them as history. To bring one back: `git show fe00b5b -- apps/client/app/routes/art-lab`.
 
 > ### 🚫 `docs/art-direction/` is ChatGPT's workspace — READ-ONLY for Claude.
 > The owner runs a **ChatGPT project pointed at that folder**; it is Codex's working set, not ours.
