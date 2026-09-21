@@ -78,6 +78,32 @@ them. Flip the prop to bring them back.
 800u, and spacing is 400-200, so only two or three pairs ever exist. Raise the segment count when judging
 field density, or judge it in a hosted room.
 
+## Next design task — density knobs in the descriptor
+
+The owner's ask: control addition/deletion of blocks (and gaps) with a knob, since levels are generated.
+
+**The knobs already exist as constants** — `constants.ts:140` `WALL_DENSITY_START = 0.14` / `WALL_DENSITY_MAX
+= 0.4`, and `constants.ts:179` `GAP_P_START = 0.06` / `GAP_P_MAX = 0.16`, consumed by `wallDensity(
+intensity )` and `gapProb( intensity )` which lerp START→MAX. What is missing is varying them per track
+without editing source.
+
+**A debug-panel slider is the wrong home.** Those constants being module-level is *why* the track is
+deterministic: both ends compute identical geometry because they read identical numbers. Turning blocks
+down client-side desyncs the client's track from the server's and puts prediction in conflict with
+authority over geometry only one end believes in — ADR-000. This is the same reason the `blocks` flag is a
+render flag and not a generator change.
+
+**Recommended shape:** optional density fields on `ProcgenDescriptor` (`blockDensity`, `gapChance`) as
+multipliers defaulting to 1; `wallDensity()` and `gapProb()` multiply by them; `/test-level` sets 0 for a
+clean art track and a room sets them from `tier` or a host control. `ProcgenDescriptor.tier` is the hook
+already reserved for this and still reads nothing.
+
+If this lands, **delete the `blocks` render flag** on `WorldScene`/`TrackView` — a descriptor with
+`blockDensity: 0` makes the special render path redundant, and removes the trap where the test level kills
+you on invisible geometry.
+
+Touches `/shared` (descriptor type, schema, generator) and both ends, so it is not a small change.
+
 ## Do this next
 
 1. **Finish the lighting pass against `cruise-lighting.png`.** Not started. Two gaps are visible in
