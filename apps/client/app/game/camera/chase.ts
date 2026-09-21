@@ -4,11 +4,11 @@ import type { Group, PerspectiveCamera } from 'three';
 import { LocalPlayer, Net, Remote, Render, Sim } from '../ecs/traits';
 
 export const CHASE = {
-    height: 7.5,
-    back: 15,
-    backStretch: 3,
+    height: 4.7,
+    back: 7.3,
+    backStretch: 1.5,
     lookAhead: 9.5,
-    lookAtLift: 6,
+    lookAtLift: 1.35,
     fov: 70,
     fovStretch: 15,
     follow: 16,
