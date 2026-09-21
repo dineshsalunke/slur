@@ -1,0 +1,836 @@
+{
+  "date": "2026-09-20",
+  "scope": "Existing contents of docs/art-direction; selected images promoted to active subject folders.",
+  "files": [
+    {
+      "from": ".DS_Store",
+      "to": "archive/.DS_Store",
+      "sha256": "d13781268afc256ccd7fb6f0e25ceff4a67fe36d32e3c0468e5b2707144dfd26"
+    },
+    {
+      "from": "BOARD_REBUILD_PLAN.md",
+      "to": "archive/BOARD_REBUILD_PLAN.md",
+      "sha256": "915a34889de6648c611b774e1e2df4e37ce6b7dd9a3536bbcde2da4b3015a447"
+    },
+    {
+      "from": "CURRENT_STATUS.md",
+      "to": "archive/CURRENT_STATUS.md",
+      "sha256": "6acadcd255d7da49eb6d9f8b5d05546d26d7496bc4b3dba1aa859695d1cc3967"
+    },
+    {
+      "from": "GOLDEN_REFERENCE.md",
+      "to": "archive/GOLDEN_REFERENCE.md",
+      "sha256": "5820db329df0d899384c6d8d6c097896b38cf3cee0e179a1d572bca9374c73f9"
+    },
+    {
+      "from": "PRODUCTION_VALIDATION.md",
+      "to": "archive/PRODUCTION_VALIDATION.md",
+      "sha256": "a7960fd58f7f0a27e6715cac402846a571520a63a790b3d77e772906d14cac1a"
+    },
+    {
+      "from": "README.md",
+      "to": "archive/README.md",
+      "sha256": "e97cd8ed892dd10ea97a8c4abf27d70f982ef410c28d84f058f36d93c0b2105f"
+    },
+    {
+      "from": "boards/.DS_Store",
+      "to": "archive/boards/.DS_Store",
+      "sha256": "854163b7859c639f19d5e0ea8567ac46bdaed7de8a87f131619c7f22b65cc38d"
+    },
+    {
+      "from": "boards/00_original_slur_gameplay_concept.png",
+      "to": "archive/boards/00_original_slur_gameplay_concept.png",
+      "sha256": "6e8fbc3bf13c99fa93a3b308f352926f06960778aa7d4c602e188155bbb78b1e"
+    },
+    {
+      "from": "boards/01_color_lighting_moodboard.png",
+      "to": "archive/boards/01_color_lighting_moodboard.png",
+      "sha256": "ea088f142433c2f73248ecccc448d62ee881b6e849d43e88a27a849633572941"
+    },
+    {
+      "from": "boards/02_environment_intensity_A_B_C.png",
+      "to": "archive/boards/02_environment_intensity_A_B_C.png",
+      "sha256": "9d71c47ddaa738a6c1d44b2bb0015921a472fe7002d08fc01ab942cac9d8cbb7"
+    },
+    {
+      "from": "boards/03_monoliths_final.png",
+      "to": "archive/boards/03_monoliths_final.png",
+      "sha256": "4fb043498d1d52b5a63b4497035891746513f5b66173c6a49a61806c6cb114d7"
+    },
+    {
+      "from": "boards/04_asteroids_final.png",
+      "to": "archive/boards/04_asteroids_final.png",
+      "sha256": "d0384f0d95cc14c85a3ec853e237842a21f11ec2f1e49eb697979fb8bae1b4eb"
+    },
+    {
+      "from": "boards/05_planets_moons_final.png",
+      "to": "archive/boards/05_planets_moons_final.png",
+      "sha256": "fad31580237ae55177328d6ed141e650bd81a14b6ba5dba3b2f298244efb143f"
+    },
+    {
+      "from": "boards/06_sector_concepts_final.png",
+      "to": "archive/boards/06_sector_concepts_final.png",
+      "sha256": "a459e5baa54c71524ca96bcfeb4b98a5d1b4c14fe32903bbca72f8b6d0c5f5ea"
+    },
+    {
+      "from": "boards/07_track_visual_language_final.png",
+      "to": "archive/boards/07_track_visual_language_final.png",
+      "sha256": "1884bc9134a001d3afe2d045875d75da1236d409c947a9d46be39d1749268d33"
+    },
+    {
+      "from": "boards/08_gap_variations_reference.png",
+      "to": "archive/boards/08_gap_variations_reference.png",
+      "sha256": "4327dd4c13d30b36d992cae6ff5018eba3d1d6903c7847107bcb93b9dfb9cb54"
+    },
+    {
+      "from": "boards/09_small_gap_readability_final.png",
+      "to": "archive/boards/09_small_gap_readability_final.png",
+      "sha256": "b88b04280c49d959e91b7c1da2f4847043f588ebb7226441997a472914a7e415"
+    },
+    {
+      "from": "boards/10_obstacle_blocks_final.png",
+      "to": "ingredients/blocks/non-destructible/v1-context.png",
+      "sha256": "0f61515cfcc92e6800201caedd3053f382375271245016730f29fa244fcddb00"
+    },
+    {
+      "from": "boards/11_pickups_weapons_final.png",
+      "to": "archive/boards/11_pickups_weapons_final.png",
+      "sha256": "c7775f133906b521033200613f4553210409465dffa7d5bdf5050b612bf2892f"
+    },
+    {
+      "from": "boards/12_approved_scene_marigold_depth.png",
+      "to": "archive/boards/12_approved_scene_marigold_depth.png",
+      "sha256": "41cb63a685f878e4d455764f5fce654e48c7d026d3cbab571bf669a14ef11d46"
+    },
+    {
+      "from": "boards/13_original_mood_anchor.png",
+      "to": "archive/boards/13_original_mood_anchor.png",
+      "sha256": "054eefbbc5117ee092fb3110fbc262d3929640854e017b46388f633f9bd98efc"
+    },
+    {
+      "from": "boards/README.md",
+      "to": "archive/boards/README.md",
+      "sha256": "fcd19610e66f7054c18bdab362954a574e47f2887e1d2a99dd43614af51d3824"
+    },
+    {
+      "from": "desctructible-block/28_non_destructible_blocks_FINAL_DRAFT.png",
+      "to": "ingredients/blocks/non-destructible/surface-details.png",
+      "sha256": "ca880f5c1c1b723709f20b855cd97be911dade66c826aba4dc97537c8d89de81"
+    },
+    {
+      "from": "desctructible-block/28_non_destructible_blocks_PROMPT.txt",
+      "to": "archive/desctructible-block/28_non_destructible_blocks_PROMPT.txt",
+      "sha256": "013ad3c03d44c7ff8dffa0ed878c3ad496888e5cd9961a667e18602e5a3a6d01"
+    },
+    {
+      "from": "desctructible-block/28_non_destructible_blocks_SPEC.md",
+      "to": "archive/desctructible-block/28_non_destructible_blocks_SPEC.md",
+      "sha256": "74b630849d287f1f5111409bbe0c4a05e928515563ea6f6b5e2636e61da6de47"
+    },
+    {
+      "from": "desctructible-block/README.md",
+      "to": "archive/desctructible-block/README.md",
+      "sha256": "a90bc7ef837f320cc94c727dd7254f66de1012665ea4f233a39db1d64f4c537f"
+    },
+    {
+      "from": "desctructible-block/history/25_non_destructible_blocks_PROMPT.txt",
+      "to": "archive/desctructible-block/history/25_non_destructible_blocks_PROMPT.txt",
+      "sha256": "5ce0180f51eacf2a6f115346521a0b3068273b92f1b9fdd1b35c509fea27ebf5"
+    },
+    {
+      "from": "desctructible-block/history/25_non_destructible_blocks_SPEC.md",
+      "to": "archive/desctructible-block/history/25_non_destructible_blocks_SPEC.md",
+      "sha256": "61fb19f5f36903cae6f10327cb2e8adf8a91ec5a5f154fce4a3ffc0644208b84"
+    },
+    {
+      "from": "desctructible-block/history/26_non_destructible_blocks_PROMPT.txt",
+      "to": "archive/desctructible-block/history/26_non_destructible_blocks_PROMPT.txt",
+      "sha256": "c280dbad2a7dc4f56134904007f8d1aaa17de7ae96c500984f6c3da4b55593c4"
+    },
+    {
+      "from": "desctructible-block/history/26_non_destructible_blocks_SPEC.md",
+      "to": "archive/desctructible-block/history/26_non_destructible_blocks_SPEC.md",
+      "sha256": "46f1dc8c88071e8e0511df31b281cef725821996a006a93aee56ede787b740b5"
+    },
+    {
+      "from": "desctructible-block/history/27_block_wear_distance_PROMPT.txt",
+      "to": "archive/desctructible-block/history/27_block_wear_distance_PROMPT.txt",
+      "sha256": "b91e649b4c30480215ed7f61db0b3deebfb01cc75e1784fb77f6892b8bdb0a70"
+    },
+    {
+      "from": "desctructible-block/history/27_block_wear_distance_REVIEW.md",
+      "to": "archive/desctructible-block/history/27_block_wear_distance_REVIEW.md",
+      "sha256": "d0401e9380f3559705a9ab94aeb36249540927ca9624e2bf36c6809bcccca190"
+    },
+    {
+      "from": "desctructible-block/history/README.md",
+      "to": "archive/desctructible-block/history/README.md",
+      "sha256": "991c0b8161928e12b342bfd6577021073fad71e0fe6e9913328d2b8a457afb12"
+    },
+    {
+      "from": "explorations/.DS_Store",
+      "to": "archive/explorations/.DS_Store",
+      "sha256": "ab21f1873feb6b92cb88c7a7a789c9438e79b9145cab8ecb330e95a7b88eda93"
+    },
+    {
+      "from": "explorations/2026-09-19-nebula-golden-reference/.DS_Store",
+      "to": "archive/explorations/2026-09-19-nebula-golden-reference/.DS_Store",
+      "sha256": "b64c492017c879a07b372554cd36349d23c40467d03bbc7cf261bbd3294b3356"
+    },
+    {
+      "from": "golden-reference/17_golden_reference_FINAL.png",
+      "to": "golden-reference/scene-and-hud.png",
+      "sha256": "e521de2e7d11ea45a061bbf405510468f8dbaed1d14dad7e81874eee3665239a"
+    },
+    {
+      "from": "golden-reference/DIRECTION.md",
+      "to": "archive/golden-reference/DIRECTION.md",
+      "sha256": "bfb11f6b48852eabe7cb4494ec92d7eab0c4c2d7807048c3cb7cf10996141bd2"
+    },
+    {
+      "from": "golden-reference/README.md",
+      "to": "archive/golden-reference/README.md",
+      "sha256": "ccb044aae46797a06d1f91f52e5e7fa5cf844f84376d85be0ef130f93d677566"
+    },
+    {
+      "from": "golden-reference/history/ACTION-PROMPT.txt",
+      "to": "archive/golden-reference/history/ACTION-PROMPT.txt",
+      "sha256": "7970ec624091fb41a4ce6eb75d2637430f493d022098c9b98bd6fe5b9250df6f"
+    },
+    {
+      "from": "golden-reference/history/ARCHIVE_SHA256.txt",
+      "to": "archive/golden-reference/history/ARCHIVE_SHA256.txt",
+      "sha256": "38217eb670e953df6e0b99c82a62f57cee7147fbd22b3875c7f07c6e0c27a333"
+    },
+    {
+      "from": "golden-reference/history/BOOST-EXHAUST-PROMPT.txt",
+      "to": "archive/golden-reference/history/BOOST-EXHAUST-PROMPT.txt",
+      "sha256": "15fcb924ad4a205a388501b594d7543a6b938c22a0e9d4ab000ed6999bc00a67"
+    },
+    {
+      "from": "golden-reference/history/BORDERLESS-HUD-PROMPT.txt",
+      "to": "archive/golden-reference/history/BORDERLESS-HUD-PROMPT.txt",
+      "sha256": "256fce6740659afd60b3dec81881d0f6846a3303fa77d3e78eeb34870078f20d"
+    },
+    {
+      "from": "golden-reference/history/BRIEF.md",
+      "to": "archive/golden-reference/history/BRIEF.md",
+      "sha256": "236d7404ebf17140b090c25b30bc0d0b8ccef41c4b081f41a1cf157cf18d1c36"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-03-REVIEW.md",
+      "to": "archive/golden-reference/history/CANDIDATE-03-REVIEW.md",
+      "sha256": "0dfb8376062e3f5a6e050c1ed1ea68b1628592673abb1813ad613bd7b17e1bb8"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-04-TILE-BRIEF.md",
+      "to": "archive/golden-reference/history/CANDIDATE-04-TILE-BRIEF.md",
+      "sha256": "60e87de0ba6bf0cf3f1b087001107e39d7e5eccac32fa911ccbe5dbdd1edc3ea"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-05-REVIEW.md",
+      "to": "archive/golden-reference/history/CANDIDATE-05-REVIEW.md",
+      "sha256": "fc8647bf19bc199b37a00f315ee7899a9543ffccdfa8196bbf4dd0850df4c5ef"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-06-REVIEW.md",
+      "to": "archive/golden-reference/history/CANDIDATE-06-REVIEW.md",
+      "sha256": "59b6c1b44db10ed4d74b658ef075a233235b02964d0e353615d945716f92ed2a"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-07-REVIEW.md",
+      "to": "archive/golden-reference/history/CANDIDATE-07-REVIEW.md",
+      "sha256": "1e43e7b03c361907617ea3fcd50ae2e93629b773fa8fe868d7b34f3c7a35050f"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-09-REVIEW.md",
+      "to": "archive/golden-reference/history/CANDIDATE-09-REVIEW.md",
+      "sha256": "dd2ed3ce11b44eaeb341d060893592d8072ae5e0a355c5d07c8402702a3fc438"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-11-HUD-REVIEW.md",
+      "to": "archive/golden-reference/history/CANDIDATE-11-HUD-REVIEW.md",
+      "sha256": "b42fe4663d438b9176954125346eec571fc04c65c1e1c79c3ff25546ab28e0f5"
+    },
+    {
+      "from": "golden-reference/history/CANDIDATE-12-REVIEW.md",
+      "to": "archive/golden-reference/history/CANDIDATE-12-REVIEW.md",
+      "sha256": "62aa3ee1d4db1350d80b17e020f78b50ef63d31d33e0f5855c80e74b529e8a26"
+    },
+    {
+      "from": "golden-reference/history/GENERATED_IMAGE_MANIFEST.json",
+      "to": "archive/golden-reference/history/GENERATED_IMAGE_MANIFEST.json",
+      "sha256": "e0696d3ffb1d8bb366083b35cb8788d1659dd44febf684bcf3390f40e8f66185"
+    },
+    {
+      "from": "golden-reference/history/GLOW-PROMPT.txt",
+      "to": "archive/golden-reference/history/GLOW-PROMPT.txt",
+      "sha256": "980229abda4590981fdbb9220acefc222e9f02377929dd60223d681a0d65e26a"
+    },
+    {
+      "from": "golden-reference/history/HUD-EXPLORATION.md",
+      "to": "archive/golden-reference/history/HUD-EXPLORATION.md",
+      "sha256": "f9ef587abb055bc84203beb5882a3ace587b989153f9a3be33e7453e7b782385"
+    },
+    {
+      "from": "golden-reference/history/HUD-PROMPT.txt",
+      "to": "archive/golden-reference/history/HUD-PROMPT.txt",
+      "sha256": "55a57f2adbc8ac733824089412be5357142fd101cb0511f2a722e1f6576a8bfa"
+    },
+    {
+      "from": "golden-reference/history/IRREGULAR-SEAMS-PROMPT.txt",
+      "to": "archive/golden-reference/history/IRREGULAR-SEAMS-PROMPT.txt",
+      "sha256": "0eb568bda175134860ff3f946d81574e5cba0bf4099ca25440febf8909689a13"
+    },
+    {
+      "from": "golden-reference/history/MOTION-BLUR-PROMPT.txt",
+      "to": "archive/golden-reference/history/MOTION-BLUR-PROMPT.txt",
+      "sha256": "68fce0cb196723c80c536aec225ae0883a05f372e1ae9532b9e7f1bf21404027"
+    },
+    {
+      "from": "golden-reference/history/PROMPT.txt",
+      "to": "archive/golden-reference/history/PROMPT.txt",
+      "sha256": "8b00f91c9c9365f2246f0c78db05dacd570cdd8eab3252e3e722e70d56bf559f"
+    },
+    {
+      "from": "golden-reference/history/README.md",
+      "to": "archive/golden-reference/history/README.md",
+      "sha256": "62620380209466be78df6427586a3773003a3a82117ec6b12979ce9d44fcf300"
+    },
+    {
+      "from": "golden-reference/history/REVISION-PROMPT.txt",
+      "to": "archive/golden-reference/history/REVISION-PROMPT.txt",
+      "sha256": "8963ffe8b53616de9430564cb28b453a4bf5c4dbf8bdaea55d54b35cd84caacc"
+    },
+    {
+      "from": "golden-reference/history/STEPPED-GAPS-PROMPT.txt",
+      "to": "archive/golden-reference/history/STEPPED-GAPS-PROMPT.txt",
+      "sha256": "647369cb31d8d67eedd74d8a4563aa475d14c05b14cc1ed2d7934d39a49a0f0f"
+    },
+    {
+      "from": "golden-reference/history/SUBTLE-BLUR-PROMPT.txt",
+      "to": "archive/golden-reference/history/SUBTLE-BLUR-PROMPT.txt",
+      "sha256": "b676669b67fab5b1fdb9a5369bc4e19b27df262f54a5794f3b6a6a01d9c0cc49"
+    },
+    {
+      "from": "golden-reference/history/TILE-PROMPT.txt",
+      "to": "archive/golden-reference/history/TILE-PROMPT.txt",
+      "sha256": "b72b7b1d6bd02f59c33518cdbefa5d16a27576ef8393cc922b9b34ad222197f5"
+    },
+    {
+      "from": "golden-reference/history/boards/15_environment_intensity_PROMPT.txt",
+      "to": "archive/golden-reference/history/boards/15_environment_intensity_PROMPT.txt",
+      "sha256": "0b17598459cdfe062e2bde212dc09a0de01d74da27c3c2dd5f873ae118e14faa"
+    },
+    {
+      "from": "golden-reference/history/boards/15_environment_intensity_SPEC.md",
+      "to": "archive/golden-reference/history/boards/15_environment_intensity_SPEC.md",
+      "sha256": "214cd69c9f521f20ee623951dade9567a364f6e5d0bd1d381ae70f044c3d3774"
+    },
+    {
+      "from": "golden-reference/history/boards/16_golden_reference_PROMPT.txt",
+      "to": "archive/golden-reference/history/boards/16_golden_reference_PROMPT.txt",
+      "sha256": "383164d983977417ad530d7426aaf843fbf7152b5dc8d5afbb97948a103400aa"
+    },
+    {
+      "from": "golden-reference/history/boards/16_golden_reference_REVIEW.md",
+      "to": "archive/golden-reference/history/boards/16_golden_reference_REVIEW.md",
+      "sha256": "4315f52145b1d7c02539adca9280e0e7bf5b8df784803bbf5bd84ff8c094cc61"
+    },
+    {
+      "from": "golden-reference/history/boards/17_golden_reference_PROMPT.txt",
+      "to": "archive/golden-reference/history/boards/17_golden_reference_PROMPT.txt",
+      "sha256": "929e0ab5103733ae70941e37f447eda99fdc64c2982ca181825f1ce80b688a0e"
+    },
+    {
+      "from": "golden-reference/history/boards/17_golden_reference_REVIEW.md",
+      "to": "archive/golden-reference/history/boards/17_golden_reference_REVIEW.md",
+      "sha256": "0cd0147b34d9ba9b2eff8e3a8c8c2be86b1e00571dc17ba1d0377ccfd4ce2f1a"
+    },
+    {
+      "from": "golden-reference/history/source-inputs/claude-material-report-original.txt",
+      "to": "archive/golden-reference/history/source-inputs/claude-material-report-original.txt",
+      "sha256": "07eb1372df9e044d39ecfdebe18c67b51a4965a0648a66b230a92e2ad1c8c0c7"
+    },
+    {
+      "from": "golden-reference/history/source-inputs/user-prior-proposal.png",
+      "to": "archive/golden-reference/history/source-inputs/user-prior-proposal.png",
+      "sha256": "27cc51ab9fdec50042cdab65d676e6e61ef97e068a093ed9b4cd7856ef58ba6b"
+    },
+    {
+      "from": "handoff/00_STATUS_AND_SCOPE.md",
+      "to": "archive/handoff/00_STATUS_AND_SCOPE.md",
+      "sha256": "67b0fc47e3f7baedab3a1dad20c43ad57fb023c0022480feb6fde3d8becaae59"
+    },
+    {
+      "from": "handoff/01_ART_DIRECTION.md",
+      "to": "archive/handoff/01_ART_DIRECTION.md",
+      "sha256": "b48b16ddcfde8fa049d683182c3b14643c9183a0b0b8c24c568c775115252c56"
+    },
+    {
+      "from": "handoff/02_ENVIRONMENT.md",
+      "to": "archive/handoff/02_ENVIRONMENT.md",
+      "sha256": "ee754517a0968dee115ff591a75ea07240dfe4bb8b3a12a35872546bce60c275"
+    },
+    {
+      "from": "handoff/03_TRACK.md",
+      "to": "archive/handoff/03_TRACK.md",
+      "sha256": "5bc637cbd60c44024958d62fc1d4005626b1871222210cb2f1ec471e6c8b0295"
+    },
+    {
+      "from": "handoff/04_OBSTACLES.md",
+      "to": "archive/handoff/04_OBSTACLES.md",
+      "sha256": "551d37a7bf130eaeaf2b9cad8608d5d4e6c9c545049876f5192f6881b48787df"
+    },
+    {
+      "from": "handoff/05_PICKUPS_WEAPONS.md",
+      "to": "archive/handoff/05_PICKUPS_WEAPONS.md",
+      "sha256": "998a0fdd87ff5cf6c3e814b72346781cdecce11e8cc502096ad2fc663224fe93"
+    },
+    {
+      "from": "handoff/06_IMPLEMENTATION_NOTES_THREEJS.md",
+      "to": "archive/handoff/06_IMPLEMENTATION_NOTES_THREEJS.md",
+      "sha256": "6729de4751e7f017a6db74d3a1df109f9d35dff06565eaca6c6fe65d0a25ad4b"
+    },
+    {
+      "from": "handoff/07_ASSET_CHECKLIST.md",
+      "to": "archive/handoff/07_ASSET_CHECKLIST.md",
+      "sha256": "78e988a20850d3a2cbb0e783813c25f0fc354531db3f8e215190eb55b00e33dd"
+    },
+    {
+      "from": "handoff/08_CLAUDE_START_HERE.md",
+      "to": "archive/handoff/08_CLAUDE_START_HERE.md",
+      "sha256": "325462d77f33e28a8b18d09c0a1133956aa66070bd7ea12c7bcb0dac43cbeb8a"
+    },
+    {
+      "from": "handoff/HANDOVER.md",
+      "to": "archive/handoff/HANDOVER.md",
+      "sha256": "ac9b7ffe9b153618372404ff92fe0db5d23ef0da5f2edf409a11bdda2461210b"
+    },
+    {
+      "from": "handoff/README.md",
+      "to": "archive/handoff/README.md",
+      "sha256": "0b87a7369f12e6576fa4c0e74cbedda7eb72ef3bbca6711d96b993a06de268e1"
+    },
+    {
+      "from": "handoff/manifest.json",
+      "to": "archive/handoff/manifest.json",
+      "sha256": "574b40be90607e09a25ee4b0676b7ddccdccbeafb5f074477c639400cc86d122"
+    },
+    {
+      "from": "progression/20_environment_prop_lighting_DRAFT.png",
+      "to": "progression/overview.png",
+      "sha256": "c5386ff0339272ba38e01461e7c9ba7873bdc06e97212f1874396dd61a2cd710"
+    },
+    {
+      "from": "progression/20_environment_prop_lighting_PROMPT.txt",
+      "to": "archive/progression/20_environment_prop_lighting_PROMPT.txt",
+      "sha256": "19a4d1b16468d361b01167da4272bbf0e2edcc5eeb85a21f45de99e07b6145c8"
+    },
+    {
+      "from": "progression/20_environment_prop_lighting_REVIEW.md",
+      "to": "archive/progression/20_environment_prop_lighting_REVIEW.md",
+      "sha256": "5640cf41d7b26c22385f2bfe8b08a352206c76038b5777c875302acd6c368e49"
+    },
+    {
+      "from": "progression/21_23_widescreen_PROMPTS.txt",
+      "to": "archive/progression/21_23_widescreen_PROMPTS.txt",
+      "sha256": "630126bcf949bf4bb48bddef4453e70d90cbcc82c296c6dd2205beaf5df147b9"
+    },
+    {
+      "from": "progression/21_23_widescreen_REVIEW.md",
+      "to": "archive/progression/21_23_widescreen_REVIEW.md",
+      "sha256": "11365c7de713d52ff19612395034de03c854331c73b403724c5b26a13c3f4957"
+    },
+    {
+      "from": "progression/21_calm_16x9.png",
+      "to": "progression/calm.png",
+      "sha256": "db4a6dd9563b861a974b09c2ee127de8ae8a56f7f986c84c4e9b573bc83e8be6"
+    },
+    {
+      "from": "progression/22_balanced_16x9.png",
+      "to": "progression/balanced.png",
+      "sha256": "5cdb5497f49bfab3a58b0ed8cbf5c74382ce3260331c821ffa812d7e8f3a2d37"
+    },
+    {
+      "from": "progression/23_intense_16x9.png",
+      "to": "progression/intense.png",
+      "sha256": "2876740ab80376d44f372aa67de59a5b92fa7ceb23e0d71906a7800f9399c2d9"
+    },
+    {
+      "from": "progression/README.md",
+      "to": "archive/progression/README.md",
+      "sha256": "69e164eed524b38fdc8eb3a36324d90ef536216509a9f8cf0b75d05e771851e1"
+    },
+    {
+      "from": "progression/history/18_environment_progression_PROMPT.txt",
+      "to": "archive/progression/history/18_environment_progression_PROMPT.txt",
+      "sha256": "53af793e9f516fd8e893ed1c750518cd8574331f1d5c8286ae9b699fba69a1f6"
+    },
+    {
+      "from": "progression/history/18_environment_progression_SPEC.md",
+      "to": "archive/progression/history/18_environment_progression_SPEC.md",
+      "sha256": "c61a4eb78a8be84a792366e2a6c042bdc0fdbd4a8e3c31093ea299e60a71fba5"
+    },
+    {
+      "from": "progression/history/19_environment_progression_PROMPT.txt",
+      "to": "archive/progression/history/19_environment_progression_PROMPT.txt",
+      "sha256": "6ad916808168b9eac86e55d49ef539ab6e15fc58b45cd96c77ddfb3737ff7df9"
+    },
+    {
+      "from": "progression/history/19_environment_progression_REVIEW.md",
+      "to": "archive/progression/history/19_environment_progression_REVIEW.md",
+      "sha256": "41805430dbf00696bde3f6e42f33c525bf17bd5f78f2b3fac6bdddf09fb05923"
+    },
+    {
+      "from": "progression/history/ENVIRONMENT_PROGRESSION_HYPOTHESIS.md",
+      "to": "archive/progression/history/ENVIRONMENT_PROGRESSION_HYPOTHESIS.md",
+      "sha256": "02e4eba019c6908ff9d86b92caaf924dca7a2de2a80a1fdd9e2b004548155523"
+    },
+    {
+      "from": "progression/history/README.md",
+      "to": "archive/progression/history/README.md",
+      "sha256": "4b08d240bbcfa3633763a58d77b3571e31be5c4d0b9edce2b2464f97ae86fcc9"
+    },
+    {
+      "from": "progression/references/earlier_progression_proposal.png",
+      "to": "archive/progression/references/earlier_progression_proposal.png",
+      "sha256": "d205fb2073918cebcf35f87cd12cfef2cc1456de676717005e5d7da80d7f2fd4"
+    },
+    {
+      "from": "scene-background/25_environment_celestial_hierarchy_FINAL.png",
+      "to": "background/celestial-hierarchy.png",
+      "sha256": "48dfb5b3e71e5da2aacf0b9d853f484119c96d7346265f79e1a63cb8154f071c"
+    },
+    {
+      "from": "scene-background/25_environment_celestial_hierarchy_PROMPT.txt",
+      "to": "archive/scene-background/25_environment_celestial_hierarchy_PROMPT.txt",
+      "sha256": "6cada7a1b59809e462272669a496d499dd549dc9079ac7ea34aef7a7b566d6b5"
+    },
+    {
+      "from": "scene-background/25_environment_celestial_hierarchy_SPEC.md",
+      "to": "archive/scene-background/25_environment_celestial_hierarchy_SPEC.md",
+      "sha256": "70387d19ed19d1e4456f95a2f989f83e127695c7a2e2b3fb1e760d086cbb2152"
+    },
+    {
+      "from": "scene-background/README.md",
+      "to": "archive/scene-background/README.md",
+      "sha256": "a920f9c7aecc8df4a94c40028f079e0ff2305ae778be233311563fb510025290"
+    },
+    {
+      "from": "scene-background/experiments/2026-09-19-nebula-panorama/PROMPT.txt",
+      "to": "archive/scene-background/experiments/2026-09-19-nebula-panorama/PROMPT.txt",
+      "sha256": "22c04b0fdff7b1600b729d88e478a6a8bc9427204f40f8df362cfdcb8346621c"
+    },
+    {
+      "from": "scene-background/experiments/2026-09-19-nebula-panorama/README.md",
+      "to": "archive/scene-background/experiments/2026-09-19-nebula-panorama/README.md",
+      "sha256": "4d78f4cf4f9968dc98b5b30e5c1a981d338a18bf925eee1bdccabbf648d5680a"
+    },
+    {
+      "from": "scene-background/experiments/2026-09-19-nebula-panorama/nebula_panorama_01_CANDIDATE.png",
+      "to": "archive/scene-background/experiments/2026-09-19-nebula-panorama/nebula_panorama_01_CANDIDATE.png",
+      "sha256": "aa33e44c0dcddb81b38531d00174c011559186b18507ba4524e98810ae47edd2"
+    },
+    {
+      "from": "scene-background/history/24_environment_space_nebula_PROMPT.txt",
+      "to": "archive/scene-background/history/24_environment_space_nebula_PROMPT.txt",
+      "sha256": "7c13478c9fbaa21a4b8ecfbfd7cdec02ededf17f937a59637ea292b7a408e509"
+    },
+    {
+      "from": "scene-background/history/24_environment_space_nebula_SPEC.md",
+      "to": "archive/scene-background/history/24_environment_space_nebula_SPEC.md",
+      "sha256": "e9687adecdc9919e8dab58da4d434ce01025538d6f5c103b2a3e930d7e0f9ee5"
+    },
+    {
+      "from": "source/CLAUDE_ENGINEERING_FEEDBACK_2026-09-17.md",
+      "to": "archive/source/CLAUDE_ENGINEERING_FEEDBACK_2026-09-17.md",
+      "sha256": "29e8bf31f9845c529e84f56011ce2f6691f9170abdec4c056fd1c5806fd6f10e"
+    },
+    {
+      "from": "source/README.md",
+      "to": "archive/source/README.md",
+      "sha256": "727dbcc8d2af40a78338642b03795eb41d0806daef316d9f3c242e684094bbec"
+    },
+    {
+      "from": "source/SLUR_GDD_v0_current.md",
+      "to": "archive/source/SLUR_GDD_v0_current.md",
+      "sha256": "1f2b9e64673d28be72444b0d1ab5bf0b638bee3c117d9a852f037e0e3edc8e48"
+    },
+    {
+      "from": "track/.DS_Store",
+      "to": "archive/track/.DS_Store",
+      "sha256": "bb286f24a4cd269632f5c309ac7f310bccb6b50c02af220421ae91683257de02"
+    },
+    {
+      "from": "track/24_track_BRIEF.md",
+      "to": "archive/track/24_track_BRIEF.md",
+      "sha256": "21db41e1db863ec6b7b77e202380ddcd1bde8a9107baec6793cc56695b703687"
+    },
+    {
+      "from": "track/24_track_material_edge_FINAL.png",
+      "to": "track/material-baseline.png",
+      "sha256": "ae38e433044d277ba5982e43ec02020fb101a1f5d472825a70bb4c43232a569d"
+    },
+    {
+      "from": "track/24_track_material_edge_FINAL_PROMPT.txt",
+      "to": "archive/track/24_track_material_edge_FINAL_PROMPT.txt",
+      "sha256": "4729ed6cdb2d8e8aa549147cdaae8cec9f99da389f92658d56e265eaa4fb2439"
+    },
+    {
+      "from": "track/24_track_material_edge_PROMPT.txt",
+      "to": "archive/track/24_track_material_edge_PROMPT.txt",
+      "sha256": "7714190e28307e3fa77582ef50e6ddd72da074f726528638de6f891588218f65"
+    },
+    {
+      "from": "track/25_track_external_rails_PROMPTS.txt",
+      "to": "archive/track/25_track_external_rails_PROMPTS.txt",
+      "sha256": "913f39603674061fe6be643e0442b9c761c139c9eb076f6514153e4654a4e777"
+    },
+    {
+      "from": "track/25_track_external_rails_REVIEW.md",
+      "to": "archive/track/25_track_external_rails_REVIEW.md",
+      "sha256": "a1d89fce08901c30fb0141ab336bb5d0c36141b038e5f095db66a4a88d74519a"
+    },
+    {
+      "from": "track/25_track_external_rails_REVISION.png",
+      "to": "archive/track/25_track_external_rails_REVISION.png",
+      "sha256": "e04258b7c119f5691f176b87aedbc5997033c54792a5212e241a2de57c953ec3"
+    },
+    {
+      "from": "track/25_track_flush_border_rails_PROMPT.txt",
+      "to": "archive/track/25_track_flush_border_rails_PROMPT.txt",
+      "sha256": "e3697fa69e77b0e2be65ffd7d64e5cd8fe380a5fce65f593ca423f35be316c3d"
+    },
+    {
+      "from": "track/25_track_flush_border_rails_REVIEW.md",
+      "to": "archive/track/25_track_flush_border_rails_REVIEW.md",
+      "sha256": "7100447cfaf5bf5fb052dc374e7ced393301866e2b06eae0fb9b14e1f40517bc"
+    },
+    {
+      "from": "track/25_track_flush_border_rails_REVISION.png",
+      "to": "archive/track/25_track_flush_border_rails_REVISION.png",
+      "sha256": "b020f9da6121a0beb174590e455bec89443261039e7ec56695364fe6cffafcf9"
+    },
+    {
+      "from": "track/25_track_flush_border_rails_REVISION_02.png",
+      "to": "track/flush-border-rails.png",
+      "sha256": "07086f6ac81c4291af1ae0339b2da77d92f2cec68ab856aa852ddfdc247c0673"
+    },
+    {
+      "from": "track/25_track_flush_border_rails_REVISION_02_PROMPT.txt",
+      "to": "archive/track/25_track_flush_border_rails_REVISION_02_PROMPT.txt",
+      "sha256": "54f60d3811c788106d81eff9d2ae1a00e5d25ca39b1000a5037dc8a8e516b135"
+    },
+    {
+      "from": "track/25_track_flush_border_rails_REVISION_02_REVIEW.md",
+      "to": "archive/track/25_track_flush_border_rails_REVISION_02_REVIEW.md",
+      "sha256": "7b87cab45db0facfb4b4c5d9fa2429277bb90deef795f276ae496b7893771d79"
+    },
+    {
+      "from": "track/25_track_procedural_wear_BRIEF.md",
+      "to": "archive/track/25_track_procedural_wear_BRIEF.md",
+      "sha256": "58ebcefd907ed552bde4a5785d66b06dcb2223b09efbd1d545f5bd9c046c88ea"
+    },
+    {
+      "from": "track/25_track_procedural_wear_FINAL.png",
+      "to": "track/surface-wear.png",
+      "sha256": "d7b51a36424d837d42713feae9e6cfe5acf7d23d3951003cf5df7a8e66b29cb7"
+    },
+    {
+      "from": "track/25_track_procedural_wear_PROMPT.txt",
+      "to": "archive/track/25_track_procedural_wear_PROMPT.txt",
+      "sha256": "86aa0340b29e10856b1e70d260319eb35a51dccf957e47c4c92a4691e943001a"
+    },
+    {
+      "from": "track/README.md",
+      "to": "archive/track/README.md",
+      "sha256": "57c228c2a776a290399cbc5327df5fd5f1d223c540ab9b8793fc8a4556ffc87a"
+    },
+    {
+      "from": "track/history/24_track_material_edge_SPEC.md",
+      "to": "archive/track/history/24_track_material_edge_SPEC.md",
+      "sha256": "9303cc8d706559e12fa2d6727e0756a768e9eff5cc6a8a714a23253dab503bc5"
+    },
+    {
+      "from": "track/history/README.md",
+      "to": "archive/track/history/README.md",
+      "sha256": "381941db3e52898856fc1e7d1d8f043131da6cc81b7a1504af92f0aa88f5c55e"
+    },
+    {
+      "from": "vehicles/README.md",
+      "to": "archive/vehicles/README.md",
+      "sha256": "35283ebc2d78dd02b9db5205eb57135279caf5c79ffb625642fccce824c991bf"
+    },
+    {
+      "from": "vehicles/comet/README.md",
+      "to": "archive/vehicles/comet/README.md",
+      "sha256": "96b260d7e6bc507c0d6401248790f245aea848b16c2f6c089e1baaf677b4d527"
+    },
+    {
+      "from": "vehicles/comet/chase.png",
+      "to": "archive/vehicles/comet/chase.png",
+      "sha256": "f67e27eb7b4095533a2494a6eba26541f650abeb0c5b62cf1a530a859605fab2"
+    },
+    {
+      "from": "vehicles/comet/comet.glb",
+      "to": "archive/vehicles/comet/comet.glb",
+      "sha256": "da0bfa449b7fe439e8e0e377d4a8a0d94f644c398f037732413830f1e1cadde3"
+    },
+    {
+      "from": "vehicles/comet/front.png",
+      "to": "archive/vehicles/comet/front.png",
+      "sha256": "fc764ea28cd18798004e1abb82f05afa11067b625404e78bd77b57c35a408ae4"
+    },
+    {
+      "from": "vehicles/comet/rear.png",
+      "to": "archive/vehicles/comet/rear.png",
+      "sha256": "96594d8591a2a493582e9a1d04018b9c0196bff65bb1a32dcd2d25f3051d78b2"
+    },
+    {
+      "from": "vehicles/comet/references/2026-09-20_comet.png",
+      "to": "vehicles/comet/concept-sheet.png",
+      "sha256": "a1de2462e39d69bf1bf8accab213efe2f94ec6ac0cb3c702e1e489a95ca60dda"
+    },
+    {
+      "from": "vehicles/comet/references/2026-09-20_comet_ABC.png",
+      "to": "archive/vehicles/comet/references/2026-09-20_comet_ABC.png",
+      "sha256": "9b646c382cb68ed8e82dc8139ace28df93ffac0458fb0488c9171afd439afb31"
+    },
+    {
+      "from": "vehicles/comet/side.png",
+      "to": "archive/vehicles/comet/side.png",
+      "sha256": "9d07ba19ba1655bf09fc9574008482687930e448523ccf1b52325bc4b1856970"
+    },
+    {
+      "from": "vehicles/comet/top.png",
+      "to": "archive/vehicles/comet/top.png",
+      "sha256": "44b1baa395491ae240c173d04a9e91e86ef65838bc72aab80d5622236282e093"
+    },
+    {
+      "from": "vehicles/explorations/2026-09-20_BOXY_FREIGHTER.md",
+      "to": "archive/vehicles/explorations/2026-09-20_BOXY_FREIGHTER.md",
+      "sha256": "de91b9e328bf7778e96d98d323afa43f04d6d6628aa17044286be479d142d887"
+    },
+    {
+      "from": "vehicles/explorations/2026-09-20_CHASE_STUDY.md",
+      "to": "archive/vehicles/explorations/2026-09-20_CHASE_STUDY.md",
+      "sha256": "08a005c907e32b805e7df276aeae0c01d431b24ad990e1bdef39a5f15630252b"
+    },
+    {
+      "from": "vehicles/explorations/2026-09-20_PROMPTS.md",
+      "to": "archive/vehicles/explorations/2026-09-20_PROMPTS.md",
+      "sha256": "f2dd7c9a04f4e201b61016bb26a77a460c8209e3e12f025e5f3b16c0454da103"
+    },
+    {
+      "from": "vehicles/explorations/2026-09-20_VARIATIONS_PROMPTS.md",
+      "to": "archive/vehicles/explorations/2026-09-20_VARIATIONS_PROMPTS.md",
+      "sha256": "1f08e53ab5a0e1070764750f830a8a5e3f11ebbee0962a6e95ce3a8de3d89d7e"
+    },
+    {
+      "from": "vehicles/explorations/2026-09-20_chase_camera_C.png",
+      "to": "archive/vehicles/explorations/2026-09-20_chase_camera_C.png",
+      "sha256": "086e674c34fce02be03f69a40606646d16095fcdb94ba304f4898ca99caeb261"
+    },
+    {
+      "from": "vehicles/explorations/MODEL_STUDIES.md",
+      "to": "archive/vehicles/explorations/MODEL_STUDIES.md",
+      "sha256": "761bdbf0224c49284ea9c056d43a5a2f38ca8992b8f61ab7f890c72d8943097e"
+    },
+    {
+      "from": "vehicles/explorations/README.md",
+      "to": "archive/vehicles/explorations/README.md",
+      "sha256": "374830103b61d16a9a86370f7a4036e8016b22f168e458f52808aa8f3f149cc7"
+    },
+    {
+      "from": "vehicles/explorations/SELECTIONS.md",
+      "to": "archive/vehicles/explorations/SELECTIONS.md",
+      "sha256": "ace2818067cae5e5138b959ae5b1ca54fe28822b11272dbda1a8cd8249f1f0f0"
+    },
+    {
+      "from": "vehicles/split_crown/README.md",
+      "to": "archive/vehicles/split_crown/README.md",
+      "sha256": "54844ac23efab1255ef528ec137df34e8045da15da29ceb091c970e0c64c0b0c"
+    },
+    {
+      "from": "vehicles/split_crown/chase.png",
+      "to": "archive/vehicles/split_crown/chase.png",
+      "sha256": "17bf65582f39a0cb4d5a3c05a4f8aabbef4fbc62ec80b1c03691beea16f71a48"
+    },
+    {
+      "from": "vehicles/split_crown/front.png",
+      "to": "archive/vehicles/split_crown/front.png",
+      "sha256": "97d3020e399e54ba80c21ecde4b8c4ca7e3e12d3cf27eeaacd454e3ccd718c09"
+    },
+    {
+      "from": "vehicles/split_crown/rear.png",
+      "to": "archive/vehicles/split_crown/rear.png",
+      "sha256": "895ca03e0b4a5157849b2e28f6746462fbe615a73ce7c3c7736536d1a629fb05"
+    },
+    {
+      "from": "vehicles/split_crown/references/2026-09-20_boxy_freighter_ABC.png",
+      "to": "archive/vehicles/split_crown/references/2026-09-20_boxy_freighter_ABC.png",
+      "sha256": "e76c5ee00312773ebcdc1e06205654f9be76972f4f2245fc3105b9bcde808b20"
+    },
+    {
+      "from": "vehicles/split_crown/references/2026-09-20_freighter_ABC.png",
+      "to": "archive/vehicles/split_crown/references/2026-09-20_freighter_ABC.png",
+      "sha256": "9e7ecfcd1fdbfc94c3fe9707ed96b79f6371ee93ff404b923de7eed9379b7e4a"
+    },
+    {
+      "from": "vehicles/split_crown/references/2026-09-20_freighter_split_crown.png",
+      "to": "vehicles/split-crown/concept-sheet.png",
+      "sha256": "bbda489534b7c3b16cb04c7af8c5d30a5c527f615abc9a758117dbc7b997af7a"
+    },
+    {
+      "from": "vehicles/split_crown/references/2026-09-20_stack_variations_weapons.png",
+      "to": "archive/vehicles/split_crown/references/2026-09-20_stack_variations_weapons.png",
+      "sha256": "02c6fe818626443dd4acb54db063aee23817f266c81eaf466b29e0d60a21e6fa"
+    },
+    {
+      "from": "vehicles/split_crown/references/2026-09-20_twin_block_variations_weapons.png",
+      "to": "archive/vehicles/split_crown/references/2026-09-20_twin_block_variations_weapons.png",
+      "sha256": "d8566e827565e1c8823571042cdf8a7c697969e7326016806b37d6368171e07e"
+    },
+    {
+      "from": "vehicles/split_crown/side.png",
+      "to": "archive/vehicles/split_crown/side.png",
+      "sha256": "9ddfe126b36aea04ad56a9ef66dc816f4d4f6fcb50612050fc78281e5fd16530"
+    },
+    {
+      "from": "vehicles/split_crown/split-crown.glb",
+      "to": "archive/vehicles/split_crown/split-crown.glb",
+      "sha256": "486d8608e1fb3fbecf34bc5586961fc2153110cb3b70fd5856013e649e013905"
+    },
+    {
+      "from": "vehicles/split_crown/top.png",
+      "to": "archive/vehicles/split_crown/top.png",
+      "sha256": "b7e47bb5d3da639b7305236a468bbbccc74783774b8229b34c2522d440aa5729"
+    },
+    {
+      "from": "vehicles/split_crown/tripo-reference/README.md",
+      "to": "archive/vehicles/split_crown/tripo-reference/README.md",
+      "sha256": "d3ce60adf51620b4e04fe7002159dc3873a3fa960669d2717ab529acdd1110f1"
+    },
+    {
+      "from": "vehicles/split_crown/tripo-reference/split_crown_front.png",
+      "to": "archive/vehicles/split_crown/tripo-reference/split_crown_front.png",
+      "sha256": "078bc4cba54e3286337a10bcaa00e58ff299d0b95fa0a4d3e9ea5b799e7ecee3"
+    },
+    {
+      "from": "vehicles/split_crown/tripo-reference/split_crown_rear.png",
+      "to": "archive/vehicles/split_crown/tripo-reference/split_crown_rear.png",
+      "sha256": "4a25863873a73ce9481e55478624829087fd9bc259c90339defa14fe22743cd7"
+    },
+    {
+      "from": "vehicles/split_crown/tripo-reference/split_crown_side.png",
+      "to": "archive/vehicles/split_crown/tripo-reference/split_crown_side.png",
+      "sha256": "3f2364b5f30a4123cecc13d55ae31616318309449dfb33c7f781fc7d007fbd2c"
+    },
+    {
+      "from": "vehicles/split_crown/tripo-reference/split_crown_top.png",
+      "to": "archive/vehicles/split_crown/tripo-reference/split_crown_top.png",
+      "sha256": "09002d2f4edae9f23a097d7358c2895b0d10101817dba51ae1e0a3b4f8ac1d0b"
+    }
+  ]
+}

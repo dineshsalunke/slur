@@ -43,3 +43,13 @@ scratchpad/
 
 # Per-machine Claude Code state — never shared.
 .claude/settings.local.json
+
+# Art drafts stay local; approved work is promoted to its subject folder.
+# Keep the existing archive versionable and retain empty draft folders via .gitkeep.
+/docs/art-direction/golden-reference/explorations/*
+/docs/art-direction/background/explorations/*
+/docs/art-direction/track/explorations/*
+/docs/art-direction/progression/explorations/*
+/docs/art-direction/ingredients/**/explorations/*
+/docs/art-direction/vehicles/**/explorations/*
+!/docs/art-direction/**/explorations/.gitkeep
