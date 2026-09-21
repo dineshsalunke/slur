@@ -3,7 +3,7 @@
 Procedurally building the track's **models and materials**. This file is the durable artifact: it is
 written to be read cold by a lane agent who has never seen the reference boards.
 
-**Status: PLAN, not greenlit.** Four decisions below are the owner's and block parts of the work.
+**Status: PLAN, not greenlit.** Three decisions below are the owner's and block parts of the work.
 
 ---
 
@@ -28,7 +28,7 @@ rendered top face ends at exactly ±HALF_WIDTH, always… Nothing that is drawn 
 drawn to end."* The sim's floor spans ±HALF_WIDTH unconditionally
 (`packages/shared/src/sim/track.ts:133`). Art may not move the play boundary.
 
-So the work is **implementation + four open forks**, not authorship of a new sheet.
+So the work is **implementation + three open forks**, not authorship of a new sheet.
 
 ---
 
@@ -88,8 +88,8 @@ boards show those elements, read them as context for the deck's lighting, not as
   this before "adding" seam lights — the mechanism exists.
 - **Boundary** — separate mesh (`buildBoundaryGeometry`), `BOUNDARY_W/H = 1.0` (matches the 1u × 1u
   scale ref), emissive marigold.
-- **Blocks** — two `InstancedMesh`es (lethal/drag), `BLOCK_LIMIT=160`, plain box + flat emissive
-  material. **This is a placeholder**: no M2 coating, no wear, no vertical seams.
+- **Blocks** — two `InstancedMesh`es, plain box + flat emissive material, a placeholder against M2.
+  **Out of scope — noted only so nobody "fixes" it in passing.**
 - **Values** — `FLOOR_ROUGHNESS=0.4` (inside M1's band), `FLOOR_METALNESS=0.75` (**not** M1's 1.0 —
   recorded as a departure), `MARIGOLD_REFERENCE_INTENSITY=2.0`, `ENVIRONMENTAL_MARIGOLD_FRACTION=0.25`.
 - **Lighting** — `AMBIENT_INTENSITY = 0` plus a `<ColdKey />`, as of commit `cf1c98c` (2026-09-21).
