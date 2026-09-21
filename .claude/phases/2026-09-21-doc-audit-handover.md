@@ -26,7 +26,8 @@ paragraph, the stale raised-camera claim, and a **"Shift boost" control that doe
    not at module load. §0 even claims it "replaces the old ≥2 lanes = 8u" — but 8u is what runs. Owner chose
    flag-only; no issue filed. **CLAUDE.md non-negotiable #11 now points at this section.**
 2. **GDD §5.5 flight stats** disagree with `ship-classes.ts` on strafe power and grip for all five classes.
-   Marked stale in place; reconciliation parked in `.claude/backlog.md`.
+   Marked stale in place; reconciliation parked in the global backlog `~/.claude/backlog.md` (tagged `slur`) —
+   the project backlog is the roadmap and does not take loose scraps.
 
 ## ADD audit — findings only, nothing edited
 

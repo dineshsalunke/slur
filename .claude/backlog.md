@@ -5,10 +5,11 @@ Working model: pick one slice → arc (ideate → brainstorm → prep → align)
 background agent → reconcile; design the next slice while the current one builds.
 Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior's code); S5–S7 layer on S4.
 
-## Pending
+**Scope of this file: the SLUR roadmap** — slices, arcs, and decisions the project pipeline
+needs visible. It is committed on purpose. Loose parked scraps do NOT belong here; they go to
+the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes both).
 
-- [ ] 2026-09-21 [decision] [docs] Reconcile GDD §5.5 flight-stats table with shipped `ship-classes.ts` — sync it, or drop the numeric columns and point at the code
-  why: strafe power + grip drifted on all five classes (Fighter documented 150/8, ships 165/14); found in the 2026-09-21 doc audit, table marked stale in place
+## Pending
 
 - [~] 2026-09-18 [feature] [art] **ART PASS — the world's visual production, procedural, in six sequential tasks**
   Tracked in `.claude/art-pass/INDEX.md` until 2026-09-21, when that whole directory was deleted; the arc was

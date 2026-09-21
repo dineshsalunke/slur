@@ -244,7 +244,7 @@ server (the netcode "one shared `simulate()`" requirement). Model/scale live cli
 > ⚠ **STALE — do not code against this table.** All five classes are wired in
 > `packages/shared/src/ship-classes.ts`, and playtest tuning moved **strafe power and grip** past these
 > numbers on every class. Top speed, accel and jump match. The source of truth is the code; reconciling the
-> table is parked in `.claude/backlog.md` (2026-09-21).
+> table is parked in the global backlog `~/.claude/backlog.md` (2026-09-21, tagged `slur`).
 
 | Class | Top speed | Pickup (accel) | Strafe pwr / cap | Grip (damp) | Jump h / air |
 |---|:--:|:--:|:--:|:--:|:--:|
