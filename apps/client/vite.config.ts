@@ -11,7 +11,7 @@ export default defineConfig( ( { mode } ) => {
         plugins: [
             tailwindcss(),
             reactRouter(),
-            frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/art-pass/00-frame-tap/refs' ) } ),
+            frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/frame-tap-refs' ) } ),
         ],
         server: {
             host: true,

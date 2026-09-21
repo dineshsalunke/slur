@@ -334,7 +334,8 @@ the slab's top face", that wording is **unbuildable without taking deck**: the t
 anything embedded in it must extend inward, and every unit of boundary width is a unit of playable floor
 repainted as border. That is what shipped, and it is why the deck drew 62u while the player flew 64u.
 The owner's resolution is a **1u × 1u chamfered bar standing outboard at ±32.5**, which reads as a
-raised rail and therefore departs from the exclusion. See `.claude/art-pass/02-track/PASTE-TO-CODEX-rail-outboard.md`.
+raised rail and therefore departs from the exclusion. The departure was written up for Codex with the
+package wording quoted; that note lived in `.claude/art-pass/`, deleted 2026-09-21 (`git show e56f643`).
 
 **The flush alternative, if Codex holds the line.** The same bar at zero height is a coplanar inlay
 outboard of the deck: it satisfies *"must not stand proud of the floor"* literally and still never
@@ -678,7 +679,7 @@ numbers were written for a lit surface and are now being judged on an unlit one.
     light, deep shadows"* (`CURRENT_STATUS.md`) and for restored *"deep shadow masses"*
     (`golden-reference/history/boards/16_golden_reference_REVIEW.md`), and the track brief is explicit:
     *"No global orange wash or bright blue ambient fill"* (`track/24_track_BRIEF.md`). The engineering
-    lanes restated it as *"there is no fill; shadow sides go black"* (`.claude/art-pass/INDEX.md` §4). A
+    lanes restated it as *"there is no fill; shadow sides go black"*. A
     white ambient at 1 is a fill.
 
     **It is pre-existing, not a new decision** — it was already on `dev` before the emitter work, so it

@@ -558,7 +558,8 @@ inward. The exclusion and the playable-width invariant cannot both hold in that 
 The owner's position is that the trim must never affect the playable read, and that outranks the
 styling of the trim. This ADR therefore accepts the raised bar and records the departure rather than
 resolving it silently. **`docs/art-direction/` is read-only for Claude**; the correction goes to Codex
-as `.claude/art-pass/02-track/PASTE-TO-CODEX-rail-outboard.md` with the package wording quoted.
+with the package wording quoted. That hand-off note lived in `.claude/art-pass/`, deleted 2026-09-21;
+the correction itself — a 1u × 1u chamfered bar outboard at ±32.5, read as a raised rail — stands above.
 
 If Codex holds the exclusion, the fallback is the **same bar at zero height** — a coplanar inlay
 outboard of the deck, which satisfies *"must not stand proud of the floor"* literally and still takes no

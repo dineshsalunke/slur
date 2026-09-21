@@ -1,3 +1,0 @@
-# Derived board references — regenerate with ./make-refs.sh, never commit.
-# The 2 MB source PNGs are already tracked under docs/art-direction/boards/.
-*/refs/
