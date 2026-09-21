@@ -4,16 +4,17 @@ import { KEY_BEARING_DEG, KEY_ELEVATION_DEG, KEY_INTENSITY } from '../game/scene
 import { GRID_VOID } from '../game/scene/env-config';
 import { AMBIENT_INTENSITY } from '../game/scene/lighting';
 import {
+    MONOLITH_BELOW,
     MONOLITH_DEPTH,
     MONOLITH_GAP,
     MONOLITH_HEIGHT,
+    MONOLITH_SEAM_INTENSITY,
     MONOLITH_SPACING_CALM,
     MONOLITH_SPACING_INTENSE,
     MONOLITH_WIDTH,
 } from '../game/scene/monoliths';
 import { BOUNDARY_H, BOUNDARY_W } from '../game/scene/track-geometry';
 import {
-    ENVIRONMENTAL_MARIGOLD_INTENSITY,
     FLOOR_ENV_MAP_INTENSITY,
     FLOOR_METALNESS,
     FLOOR_ROUGHNESS,
@@ -45,6 +46,7 @@ export interface DebugTuning {
     monolithWidth: number;
     monolithDepth: number;
     monolithGap: number;
+    monolithBelow: number;
     monolithSpacingCalm: number;
     monolithSpacingIntense: number;
     monolithSeam: number;
@@ -84,9 +86,10 @@ function committed(): DebugTuning {
         monolithWidth: MONOLITH_WIDTH,
         monolithDepth: MONOLITH_DEPTH,
         monolithGap: MONOLITH_GAP,
+        monolithBelow: MONOLITH_BELOW,
         monolithSpacingCalm: MONOLITH_SPACING_CALM,
         monolithSpacingIntense: MONOLITH_SPACING_INTENSE,
-        monolithSeam: ENVIRONMENTAL_MARIGOLD_INTENSITY,
+        monolithSeam: MONOLITH_SEAM_INTENSITY,
         keyIntensity: KEY_INTENSITY,
         keyElevation: KEY_ELEVATION_DEG,
         keyBearing: KEY_BEARING_DEG,
@@ -162,10 +165,10 @@ export function debugTuningSource( t: DebugTuning ): string {
         `export const MONOLITH_WIDTH = ${ n( t.monolithWidth ) };`,
         `export const MONOLITH_DEPTH = ${ n( t.monolithDepth ) };`,
         `export const MONOLITH_GAP = ${ n( t.monolithGap ) };`,
+        `export const MONOLITH_BELOW = ${ n( t.monolithBelow ) };`,
         `export const MONOLITH_SPACING_CALM = ${ n( t.monolithSpacingCalm ) };`,
         `export const MONOLITH_SPACING_INTENSE = ${ n( t.monolithSpacingIntense ) };`,
         '',
-        '// game/scene/track-materials.ts',
-        `export const ENVIRONMENTAL_MARIGOLD_INTENSITY = ${ n( t.monolithSeam ) };`,
+        `export const MONOLITH_SEAM_INTENSITY = ${ n( t.monolithSeam ) };`,
     ].join( '\n' );
 }

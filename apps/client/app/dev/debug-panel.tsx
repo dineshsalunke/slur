@@ -75,6 +75,14 @@ export function DebugPanel() {
                 step={ 0.5 }
             />
             <DebugSlider
+                label="extends below deck"
+                tuningKey="monolithBelow"
+                value={ tuning.monolithBelow }
+                min={ 0 }
+                max={ 300 }
+                step={ 5 }
+            />
+            <DebugSlider
                 label="spacing calm"
                 tuningKey="monolithSpacingCalm"
                 value={ tuning.monolithSpacingCalm }

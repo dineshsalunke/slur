@@ -4,18 +4,21 @@ import * as THREE from 'three';
 import { useDebugTuning } from '../../dev/debug-tuning';
 import { monolithField } from './monolith-field';
 import { BOUNDARY_W } from './track-geometry';
-import { ENVIRONMENTAL_MARIGOLD_INTENSITY, MARIGOLD_EMISSIVE } from './track-materials';
+import { MARIGOLD_EMISSIVE } from './track-materials';
 
 export const MONOLITH_COLOR = '#242e36';
 export const MONOLITH_ROUGHNESS = 0.82;
 export const MONOLITH_METALNESS = 0;
 
-export const MONOLITH_HEIGHT = 48;
-export const MONOLITH_WIDTH = 10;
-export const MONOLITH_DEPTH = 10;
+export const MONOLITH_HEIGHT = 50;
+export const MONOLITH_WIDTH = 12;
+export const MONOLITH_DEPTH = 12;
 export const MONOLITH_GAP = 0;
-export const MONOLITH_SPACING_CALM = 140;
-export const MONOLITH_SPACING_INTENSE = 36;
+export const MONOLITH_BELOW = 60;
+export const MONOLITH_SPACING_CALM = 400;
+export const MONOLITH_SPACING_INTENSE = 200;
+
+export const MONOLITH_SEAM_INTENSITY = 2;
 
 export const SEAM_COLOR = '#0b0d0f';
 export const SEAM_WIDTH = 0.25;
@@ -31,9 +34,10 @@ export function Monoliths( { track }: { track: Track } ) {
     const width = dev ? tuning.monolithWidth : MONOLITH_WIDTH;
     const depth = dev ? tuning.monolithDepth : MONOLITH_DEPTH;
     const gap = dev ? tuning.monolithGap : MONOLITH_GAP;
+    const below = dev ? tuning.monolithBelow : MONOLITH_BELOW;
     const calm = dev ? tuning.monolithSpacingCalm : MONOLITH_SPACING_CALM;
     const intense = dev ? tuning.monolithSpacingIntense : MONOLITH_SPACING_INTENSE;
-    const seamIntensity = dev ? tuning.monolithSeam : ENVIRONMENTAL_MARIGOLD_INTENSITY;
+    const seamIntensity = dev ? tuning.monolithSeam : MONOLITH_SEAM_INTENSITY;
 
     const placements = useMemo( () => monolithField( track.finishZ, calm, intense ), [ track.finishZ, calm, intense ] );
 
@@ -42,15 +46,15 @@ export function Monoliths( { track }: { track: Track } ) {
             if ( ! mesh ) return;
             for ( let i = 0; i < placements.length; i++ ) {
                 const p = placements[ i ];
-                scratch.position.set( p.side * ( RAIL_OUTER + gap + width / 2 ), height / 2, p.z );
-                scratch.scale.set( width, height, depth );
+                scratch.position.set( p.side * ( RAIL_OUTER + gap + width / 2 ), ( height - below ) / 2, p.z );
+                scratch.scale.set( width, height + below, depth );
                 scratch.updateMatrix();
                 mesh.setMatrixAt( i, scratch.matrix );
             }
             mesh.instanceMatrix.needsUpdate = true;
             mesh.computeBoundingSphere();
         },
-        [ placements, gap, width, height, depth ],
+        [ placements, gap, width, height, depth, below ],
     );
 
     const fillSeams = useCallback(
