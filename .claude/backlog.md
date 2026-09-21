@@ -11,18 +11,61 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
 
 ## Pending
 
-- [~] 2026-09-18 [feature] [art] **ART PASS — the world's visual production, procedural, in six sequential tasks**
-  Tracked in `.claude/art-pass/INDEX.md` until 2026-09-21, when that whole directory was deleted; the arc was
-  never GitHub issues because it is one continuous arc with sequential
-  composition gates worked by a single person, so the issue tracker's parallel-ticket model buys nothing.
-  Order (**background → track → lighting → monoliths → asteroids → composition**), each with its own folder,
-  brief, references and research notes. Everything procedural; each ingredient designed in isolation, then
-  composed. Spec: `docs/art-direction/` (boards + handoff); **dimensions come from `docs/ART_SCALE_REFERENCE.md`
-  and GDD §0 only — boards are for LOOK, never SIZE.**
-  **Clean slate:** the earlier four-lane parallel attempt was deliberately reset when the consolidated
-  `docs/art-direction/` package landed. Its branches are gone by intent — do not resurrect them.
-  Per-task flow: research agent → review together → align → implement in a worktree → visual gate in a shared
-  `claude-in-chrome` tab (never Playwright) → commit.
+- [~] 2026-09-21 [feature] [art] **ART PASS — retired as a six-task umbrella; superseded by the five items below**
+  Was tracked in `.claude/art-pass/INDEX.md` (deleted 2026-09-21) with the order
+  **background → track → lighting → monoliths → asteroids → composition**. That ordering predates the
+  2026-09-20/21 re-organisation of `docs/art-direction/` (subject folders + `AUDIT.md`; the `handoff/` +
+  numbered `boards/` layout is gone), so it no longer maps to the package. Standing rules carried forward:
+  everything procedural, each ingredient designed in isolation then composed; **dimensions come from
+  `docs/ART_SCALE_REFERENCE.md` and GDD §0 only — art-direction images are for LOOK, never SIZE**
+  (`docs/art-direction/README.md`: *"generated dimensions and incidental details do not override gameplay
+  contracts or certify production models"*); `docs/art-direction/` is READ-ONLY for Claude — disagree in a
+  Claude-owned doc, never by editing it. Per-task flow: research agent → review together → align → implement
+  → visual gate in a shared `claude-in-chrome` tab (never Playwright) → commit.
+  **Clean slate:** the earlier four-lane parallel attempt was deliberately reset. Its branches are gone by
+  intent — do not resurrect them.
+
+- [ ] 2026-09-21 [feature] [art] Test level setup — a fixed scene for doing art work in
+  why: the four art items below all need somewhere to look at the thing being built. `/art-lab`,
+  `/art-gallery` and the `/iso-*` routes were deleted 2026-09-21 and stay deleted; `/env-lab` and a hosted
+  `/game/:roomId` room are what is left. A procgen-seeded race track is the wrong surface for judging a
+  block finish or an exhaust — it changes under you and you cannot park the camera. **Prerequisite: do this
+  first.** Open question for the arc: extend `/env-lab`, or a deterministic hand-authored descriptor fed
+  through the normal `resolveTrack()` path so the test level is the real renderer, not a second one.
+
+- [ ] 2026-09-21 [feature] [art] Scene lighting to the new golden reference
+  why: `docs/art-direction/golden-reference/` now carries two approved lighting states —
+  `action-lighting.png` and `cruise-lighting.png` — and `README.md` says of the action image:
+  *"Reconcile hue and tonal balance against the newly approved background board; cruise HUD accents still
+  need matching."* Also *"the background board governs the newly approved hue and tonal balance;
+  golden-reference colour reconciliation remains pending."* So the lighting target moved and the in-game
+  scene has not followed. Depends on the test level.
+
+- [ ] 2026-09-21 [feature] [art] Track art — deck surface, wear, rails
+  why: `docs/art-direction/README.md` Track row: *"The owner's explicit attachment governs deck detail and
+  wear. The featureless clean diagnostic was not selected. Subject boards await reconciliation."* Confirmed
+  set is `golden-reference/action-lighting.png` (detailed deck) + `track/flush-border-rails.png` ·
+  `surface-wear.png` · `material-baseline.png`. Current in-game deck is the near-black floor from the S6
+  polish pass (art issue #1) — flat, not the approved detailed/worn deck. Materials map through
+  `docs/ART_MATERIALS.md`; widths and clearances through GDD §0, never the boards.
+
+- [ ] 2026-09-21 [feature] [art] Vehicle art — Split Crown first
+  why: Split Crown is the developed one — `vehicles/split-crown/` has both a concept sheet and an
+  **approved material study** ("Selected design and dark coated-metal finish"), where Comet has only a
+  concept sheet. Two blockers named in the package before a proposal is even drafted:
+  `README.md` — *"Scene integration and exhaust remain unresolved"*; and the draft workflow says
+  *"consult the open vehicle issues and review checks: Split Crown exhaust attachment and colour drift are
+  unresolved. Existing integration drafts are not approved for rollout."* Ships today are the CC0 Quaternius
+  models; a bespoke Split Crown has to keep the per-ship AABB footprint contract
+  (`halfW`/`halfL` in `@slur/shared/ship-classes.ts`) or collision changes with the art.
+
+- [ ] 2026-09-21 [feature] [art] Non-destructible block art
+  why: `ingredients/blocks/non-destructible/surface-details.png` "governs the current non-destructible
+  finish"; `v1-context.png` is explicitly *"historical context only: its destructible family, tall/stacked
+  examples and superseded forms are not current non-destructible construction instructions"* — so the V1
+  board must not be read as a spec. In-game these are still the S3 open-scatter instanced cubes. Blocks may
+  be any size (CLAUDE.md #11); the load-bearing constraint is threadable clearance at every z-slice, so the
+  art must not grow the collision box.
 
 - [x] 2026-08-06 → 2026-08-07 [feature] [slice] S1 — Flight feel (local, no network) — **DONE; human gate passed 2026-08-07 ("controls are good")**
   Code is source of truth (`@slur/shared/src`, `apps/client/app/game/`); spec + as-built reconcile: `.claude/phases/2026-08-06-s1-flight-feel.md`. Jump = derived (GDC "Building a Better Jump").
