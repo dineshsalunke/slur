@@ -60,12 +60,13 @@ and more matte than board A's, with wider slabs.
 That A→B difference looks deliberate: **seam density and brightness are a progression dial**
 (calm → balanced → intense), not a constant. Build it as a parameter.
 
-**Gaps (board B).** Cut **through** the ribbon — you see rubble and debris **below the track**. Shapes
-are **notched, not rectangular**: they step along slab boundaries, with partial floor strips surviving
-beside them (which matches the existing generator's "full-width + partial floor-strip" gaps). Every cut
-edge carries a marigold line along the inner lip; that rim is what makes a hole read lethal rather than
-dark. **Consequence: the flat-floor model has nothing underneath to see. A substrate layer is new
-work.**
+**Gaps (board B).** Cut **through** the ribbon. **What shows through is the scene background — the
+nebula and starfield — and nothing else** (owner, 2026-09-21). There is no substrate, no debris layer,
+nothing rendered beneath the deck, and **none needs building**: a gap is a true hole and the existing
+sky dome is already behind it. Shapes are **notched, not rectangular**: they step along slab
+boundaries, with partial floor strips surviving beside them (which matches the existing generator's
+"full-width + partial floor-strip" gaps). Every cut edge carries a marigold line along the inner lip;
+that rim is what makes a hole read lethal rather than dark.
 
 **Lighting.** The only cool light in either frame is the sky — milky-way band, planet-limb rim, faint
 dust. Everything on the ground is marigold. Ambient fill is effectively zero, consistent with the
@@ -157,10 +158,11 @@ existing `emitter-array.ts` uniform path; do **not** add a second mechanism. Res
 gameplay = 1.0, environmental ≤ 0.25. Forbidden by the package: *"no racing line, no safe-route glow,
 no fully glowing tile grid, no marked driving lanes."*
 
-**W3 — Gaps: lit rims + the substrate below.** M8 cut faces (roughness 0.50–0.65) with a thin M7 rim
-and inner-lip illumination. **New work: something visible beneath the ribbon** — a debris/rubble layer
-seen through the holes. Cheapest credible option is a parallaxed or instanced debris field under the
-deck, not real geometry per gap. Must not disturb the sim: gaps are already generated, this is art only.
+**W3 — Gaps: cut faces and lit rims.** M8 side walls (roughness 0.50–0.65) with a thin M7 rim and
+inner-lip illumination. **Nothing is built below the deck** — the hole shows the scene background
+straight through. So the job is the cut geometry and its rim, plus verifying that the dome actually
+reads through a gap at speed and that no ground plane, fog or dome-gradient term greys it out. Must not
+disturb the sim: gaps are already generated, this is art only.
 
 **W4 — Rails** (gated on **D2**). The 1u × 1u chamfered bar at pivot ±32.5, brightest tier, continuous
 and unbroken. ADR-012 governs: the deck's top face ends at exactly ±HALF_WIDTH and the rail may not
