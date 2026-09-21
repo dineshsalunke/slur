@@ -3,7 +3,7 @@
 Procedurally building the track's **models and materials**. This file is the durable artifact: it is
 written to be read cold by a lane agent who has never seen the reference boards.
 
-**Status: PLAN, not greenlit.** Three decisions below are the owner's and block parts of the work.
+**Status: PLAN, not greenlit.** Two decisions below are the owner's and block parts of the work.
 
 ---
 
@@ -28,7 +28,7 @@ rendered top face ends at exactly ±HALF_WIDTH, always… Nothing that is drawn 
 drawn to end."* The sim's floor spans ±HALF_WIDTH unconditionally
 (`packages/shared/src/sim/track.ts:133`). Art may not move the play boundary.
 
-So the work is **implementation + three open forks**, not authorship of a new sheet.
+So the work is **implementation + two open forks**, not authorship of a new sheet.
 
 ---
 
@@ -129,11 +129,10 @@ chamfered bar standing outboard at ±32.5**, which "reads as a raised rail and t
 that exclusion. **The code already ships raised.** This fork is the owner's with Codex, not ours —
 but whichever way it goes, ADR-012 holds: the pivot is ±32.5, never ±32 or ±33.
 
-**D3 — What instrument do we judge in?** Every package below is judged in motion, at speed — the
-package's own standard. `/art-lab` and `/art-gallery` were deleted today (#184), so the options are:
-restore `/art-lab` (`git show fe00b5b -- apps/client/app/routes/art-lab`), use `/env-lab`, or use a
-hosted room. **Recommendation: restore `/art-lab`** — it flew the real track with the real chase camera
-and no server, which is exactly this task's judging condition.
+**D3 — RESOLVED by the owner (2026-09-21): a stripped playable test level, raced in a hosted room.**
+No route is restored — `/art-lab` and `/art-gallery` stay deleted. The instrument is **W-T** below:
+the real ribbon, the real chase camera, the real sim, with every hazard removed so nothing competes
+with the surface for attention. Judged in motion at speed, which is the package's own standard.
 
 ---
 
@@ -146,6 +145,24 @@ and no server, which is exactly this task's judging condition.
 for `toneMapped={false}`; fix if missing. (2) Read `cold-key.tsx` and write down what the deck's key
 actually is. (3) Correct `ART_MATERIALS.md` §7 item 10 (the ambient fill is gone) and close §5's "does
 the deck get a key" question. *No visual work is trustworthy until W0 is done.*
+
+**W-T — The test level. Build this FIRST, right after W0.** A playable ribbon with **no hazards at
+all**: no deadly blocks, no drag blocks, no pickups, no projectiles. Deck, rails, seams and gaps only —
+exactly the four things this task is about, and nothing else drawing the eye.
+
+Ship it as a **`TrackDescriptor` variant resolved through the existing provider** (ADR-001's
+`resolveTrack`) — **not** a new route, **not** a second generator. The descriptor is synced, both ends
+materialize the same `Track` from it, and the shared `simulate()` is untouched; that is the whole
+load-bearing contract and this must not bend it. In practice: the generator's block density goes to
+zero and gaps stay. That is the level.
+
+It still honours the invariants it does not get to opt out of: the floor spans ±HALF_WIDTH
+unconditionally (`packages/shared/src/sim/track.ts:133`), and threadable clearance (`MIN_CLEAR = 7u`,
+GDD §0) is a property of the generator, not of the art. Race it from a hosted room (`/game/:roomId` —
+the host can start solo, there is no min-player gate).
+
+**Keep it in the repo.** It is the standing instrument for every later art change on the ribbon, not a
+throwaway scaffold — which is what `/art-lab` was, and why its deletion cost us one.
 
 **W1 — Deck panelisation to M1.** 4u tiles in breaking bond, 16 across the 64u ribbon, alternate rows
 offset 2u; joints 0.2–0.8u, dark, low contrast. Decide procedural-texture vs geometry seams. Resolve
@@ -194,7 +211,7 @@ edit) → the boards (LOOK, never SIZE).
 
 ## 6. Open, for the owner
 
-- **D1–D3 above.**
+- **D1–D2 above.** D3 is resolved: the W-T test level is the instrument.
 - **Board B is not in the repo** — file it on the ChatGPT side, or §1's written reading is all the lane gets.
 - Scope is the track ribbon only. Monoliths, asteroids, blocks, vehicles and ingredients are out, by
   the owner's instruction 2026-09-21 — including the two block-material forks noted in §3.
