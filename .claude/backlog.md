@@ -25,13 +25,24 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
   **Clean slate:** the earlier four-lane parallel attempt was deliberately reset. Its branches are gone by
   intent — do not resurrect them.
 
-- [ ] 2026-09-21 [feature] [art] Test level setup — a fixed scene for doing art work in
+- [x] 2026-09-21 → 2026-09-21 [feature] [art] Test level setup — a fixed scene for doing art work in — **DONE; #192; visual gate PASSED 2026-09-21** (renders + flies + finish gate in view; console clean)
   why: the four art items below all need somewhere to look at the thing being built. `/art-lab`,
   `/art-gallery` and the `/iso-*` routes were deleted 2026-09-21 and stay deleted; `/env-lab` and a hosted
   `/game/:roomId` room are what is left. A procgen-seeded race track is the wrong surface for judging a
   block finish or an exhaust — it changes under you and you cannot park the camera. **Prerequisite: do this
-  first.** Open question for the arc: extend `/env-lab`, or a deterministic hand-authored descriptor fed
-  through the normal `resolveTrack()` path so the test level is the real renderer, not a second one.
+  first.**
+  **RESOLVED:** neither of the two options in the original open question. `/test-level` is a local flyable
+  mirror of the real game scene with the netcode removed. The room-independent half of `NetCanvas` was
+  extracted to `<WorldScene track>`, which **both** canvases mount — so there is no second renderer to
+  drift, which is what killed `/solo` (`52f5a04` removed it as a duplicate scene, not for being local; the
+  CLAUDE.md line needs amending to say so). Track = fixed procgen seed `20260921`, `length: 40` → finishZ
+  800, 67 blocks, 2 gaps, 8 plain segments. `d.length` IS wired (`sim/track.ts:337`); `tier` is not — the
+  ADR-001 note below is half stale. The authored provider stays unbuilt and belongs to #24. Dead
+  `flightSystem` (no track → no collision) replaced by `localFlightSystem`. As-built:
+  `.claude/phases/2026-09-21-test-level.md`.
+  **Still owed:** the CLAUDE.md `/solo` wording amendment (owner). Blocks render as two placeholder
+  families — `LETHAL_SURFACE` pink, `DRAG_SURFACE` white (`track-blocks.tsx`) — which the block-art item
+  replaces. Next art item: scene lighting to the golden reference.
 
 - [ ] 2026-09-21 [feature] [art] Scene lighting to the new golden reference
   why: `docs/art-direction/golden-reference/` now carries two approved lighting states —
