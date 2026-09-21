@@ -1,0 +1,276 @@
+SLUR — Art Material Sheet (authoritative for surfaces)
+Purpose: name every element in the world, assign it a material family, and define each family
+tightly enough that two people building different assets produce surfaces that belong to the same
+world. This sheet overrides no scale number and no silhouette — dimensions belong to
+docs/ART_SCALE_REFERENCE.md, identity and mood belong to the boards and written direction in
+docs/art-direction/.
+Status: extends the frozen art package rather than reinterpreting it. Section 6 lists, verbatim,
+the three places where it deliberately overrides package wording, and why. Everything else here fills
+a gap the package left open — it defines material names (handoff/06_IMPLEMENTATION_NOTES_THREEJS.md
+lists five, handoff/07_ASSET_CHECKLIST.md adds three) but never defines what any of them is.
+Parameter values below are first-pass art targets, not measurements. Nothing in the package
+supplies roughness, metalness or base colour, so these are proposals to be tuned at a human gate and
+then frozen here. Colour anchors are the package's own (handoff/HANDOVER.md §4); the ranges around
+them are not.
+
+0. The one rule this sheet exists to enforce
+Stone is ancient and dead. Metal is engineered and alive. Marigold belongs only to what can kill you,
+help you, or carry you.
+Everything below is a consequence of that sentence. The world splits in two:
+Layer	What is in it	Material class	Carries marigold?
+Playable layer	track ribbon, boundaries, gaps, obstacle blocks, pickups, projectiles, mines, ships, finish line	hard-surface metal + emissive	Yes — and it is the only layer that does
+World layer	monoliths, asteroids, planets, moons, backdrop	stone, concrete, rock	No
+
+
+The package already states half of this: monoliths and asteroids are "dark stone / worn concrete"
+(handoff/02_ENVIRONMENT.md), the track is "dark graphite / black metallic surface"
+(handoff/03_TRACK.md). It never states the other half — obstacle blocks, pickups and the finish line
+are left on a "shared with track/world" fork that is never taken. This sheet takes it: they are metal.
+Why metal and not stone for the hazards: handoff/04_OBSTACLES.md opens by requiring that "obstacle
+blocks are immediate gameplay hazards and must read differently from environmental monoliths", then
+assigns them a family shared with the world that the monoliths are made of. A material split does that
+job for free, at every distance, in every lighting state, with no extra geometry — an engineered thing
+sitting on an engineered ribbon, framed by ancient rock that was never built by anyone.
+Metal needs something to reflect. Every metal family here assumes an environment source exists in
+the scene; a metal surface with nothing to reflect renders black and reads as a hole. This is a
+constraint on the lighting rig, not a licence to lower metalness until the problem goes away.
+1. Material families
+Nine families. Variation comes from roughness, large-scale form, emissive masks and lighting — never
+from adding a tenth family (handoff/06_IMPLEMENTATION_NOTES_THREEJS.md: "keep material count low").
+Feature scale is given in world units, always. A texture authored to look right on screen is wrong
+the moment the camera moves; at 64u of track width and monoliths 200–400u tall, a detail sized by
+pixels is invisible on one asset and a rash on the next.
+M1 — Track graphite (metal)
+The ribbon's floor. The largest surface in frame and the one every other value is judged against.
+Property	Target
+Class	metal
+Metalness	1.0
+Roughness	0.35 – 0.50
+Base colour	deep graphite, between #0A1117 (deep space) and #303C45 (muted steel)
+Panel division scale	8 – 20u — large clean divisions, cut or baked, never a dense grid
+Transverse seams	occasional, low contrast, non-emissive
+Normal detail	broad only; nothing below ~1u
+
+
+Restrained gloss is the whole brief: enough reflection to carry warm spill across the dark surface,
+never a mirror (handoff/03_TRACK.md). Roughness is the knob — if the floor starts reflecting
+recognisable shapes it has gone too low; if the marigold boundary stops bleeding onto the deck it has
+gone too high. Interior positioning cues are value and material contrast, not light: low-contrast
+panel divisions, restrained roughness variation, and hazard-to-floor contact shading
+(handoff/HANDOVER.md §5). No racing line, no safe-route glow, no emissive seam grid.
+M2 — Hazard metal (metal)
+Standard deadly blocks and destructible blocks. Same family as the track, deliberately a half-step
+apart so a block never disappears into the floor it stands on.
+Property	Target
+Class	metal
+Metalness	1.0
+Roughness	0.50 – 0.65 — matter than the floor
+Base colour	as M1 or a touch darker and cooler
+Panel/seam language	sparse, narrow, functional; non-emissive on the standard block
+Silhouette	continuous, uninterrupted broad faces
+
+
+The separation from the floor is carried by roughness, not by colour: a block that is matter than the
+deck stays legible when the deck is catching warm reflection, and stays legible when it is not. Do not
+buy the separation with a lighter base colour — that costs the "sealed mass" read
+(handoff/04_OBSTACLES.md).
+Destructible variant. Same family, same 8u envelope, same base values — the difference is
+structural, not tonal: a few large sections, broad recessed fractures, and visible interruptions of
+the top and side contours. Surface crack texture alone is explicitly insufficient
+(handoff/HANDOVER.md §6). Inside the fractures, and only there, M7 appears — recessed, so the energy
+is revealed by the break rather than painted on the shell. Fracture interior surfaces are the same
+metal with roughness pushed to 0.7 – 0.85: a torn face, not a machined one.
+M3 — Dark stone (non-metal)
+Monoliths: obelisk, gate, arch. The oldest thing in the frame.
+Property	Target
+Class	dielectric
+Metalness	0.0
+Roughness	0.75 – 0.90 — matte to subtle gloss
+Base colour	around #303C45 (muted steel) pulled cooler and darker
+Panel divisions	large, cut as geometry, 10 – 40u
+Wear	near-zero at gameplay distance
+Emissive	none — see §3
+
+
+These are 200–400u tall (handoff/HANDOVER.md §3). At that size, surface texture is nearly free to
+omit and nearly impossible to get right: the read is silhouette, occlusion and cold rim light landing on
+a broad matte face. "May be almost completely solid if that reads better" (handoff/02_ENVIRONMENT.md)
+is not a fallback, it is the target. If a monolith only reads as stone once you are close enough to see
+its texture, the form is wrong and no map will save it.
+M4 — Worn concrete (non-metal, M3 variant)
+The second monolith surface. Built-looking where M3 is carved-looking; use it to keep a monolith field
+from reading as one repeated prop.
+Property	Target
+Class	dielectric
+Metalness	0.0
+Roughness	0.85 – 0.95
+Base colour	M3 lifted slightly and warmed a touch toward neutral grey
+Erosion scale	broad, 10 – 40u — soft loss of edge, never fine pitting
+
+
+Fine pitting and speckle are invisible at monolith distance and become noise at monolith scale. The
+variant must be legible as a different surface from 300u away or it is not earning its slot.
+M5 — Asteroid rock (non-metal)
+Angular, plate, broken; and the elongated, shattered, cluster variations.
+Property	Target
+Class	dielectric
+Metalness	0.0
+Roughness	0.80 – 0.95
+Base colour	the darkest of the stone families
+Fracture faces	same material, roughness at the low end — a fresh break catches more light than a weathered face
+Emissive	rare marigold veins only — an accent, not the default state
+
+
+Size classes run S 10–50u to XL 400u+ (handoff/HANDOVER.md §3). Silhouette beats surface at every one
+of them: "avoid noisy micro-detail. The silhouette matters more than the surface at speed"
+(handoff/02_ENVIRONMENT.md). The one place surface earns its cost is the contrast between weathered
+outer faces and bright fresh fracture planes — that is what says rock rather than dark shape.
+The energy-vein variant is the single exception to §3's rule that the world layer carries no marigold.
+It is permitted because the package freezes it as a rare accent, and it must stay rare enough that
+seeing one is an event. If vein asteroids read as a category rather than an outlier, cut their
+frequency, not their brightness.
+M6 — Shell (metal)
+Pickups, deployed mines, the seeker body, and any small hard-surface object on the playable layer.
+Property	Target
+Class	metal
+Metalness	1.0
+Roughness	0.30 – 0.40 — the glossiest family here
+Base colour	near-black, cooler than M1
+Bevels	crisp, 1 – 3% of the object's smallest dimension, on every silhouette edge
+Core	M7, inset and recessed
+
+
+These objects are small and usually moving, so they have very little screen area in which to prove they
+are three-dimensional. Gloss and bevels do that work: a bevel that catches a moving highlight is what
+separates a physical object from a flat emissive icon, and an alpha plane or flat icon is explicitly not
+an acceptable pickup body (handoff/HANDOVER.md §7). Judge these while rotating, strafing and
+approaching — never face-on.
+M7 — Marigold emissive
+The energy material. One family, three anchors, used across the entire playable layer.
+Role	Colour
+Primary gainda / marigold	#F59A24
+Hot amber	#FFB52E
+Bright warm core	#FFE0A0
+
+
+Structure every emissive element the same way: a #FFE0A0 core, an #FFB52E body, #F59A24 where it
+meets the dark shell. That gradient is what makes a small emissive read as hot rather than bright,
+and it is why the three anchors exist as a set rather than as alternatives.
+Constraints: the perimeter must read golden, never vermilion or red-orange — check it after tone mapping,
+not in the source colour (handoff/HANDOVER.md §4). No red hazard code. Cyan is not an alternate energy
+family. Bloom is part of the look and is not to be removed to fix haze, but only this family should cross
+the bloom threshold — the environment stays below it (handoff/06_IMPLEMENTATION_NOTES_THREEJS.md).
+M8 — Gap cavity (non-metal)
+The inside of a hole in the floor. Small, and load-bearing far beyond its size.
+Property	Target
+Class	dielectric
+Metalness	0.0
+Roughness	1.0 — fully diffuse
+Base colour	at or below #0A1117
+Reflection	none
+
+
+A gap is missing geometry, not a dark floor material (handoff/03_TRACK.md). The cavity's entire job is
+to fail to catch light: the moment it picks up a highlight or a reflection it reads as a surface you can
+fly over, and a 4 × 20u opening becomes a panel seam. Rim treatment is thin marigold edge definition plus
+slight inner-lip illumination — and the rim must not be bright enough to perceptually close the opening
+(handoff/HANDOVER.md §5).
+M9 — Celestial (non-metal)
+Gas giants, moons, crescent and eclipse bodies.
+Property	Target
+Class	dielectric
+Metalness	0.0
+Roughness	0.90 – 1.0
+Base colour	cold and desaturated; no marigold surface colour
+Bloom	below threshold, including the lit limb
+
+
+Compositional anchors, not gameplay objects (handoff/02_ENVIRONMENT.md). They are lit by rim light,
+backlight or eclipse, and they must never compete with the playable layer for contrast. A planet bright
+enough to bloom has become the subject of the frame, and the subject of the frame is the ship.
+2. Element → material
+Every element in the package, and what it is made of. No row says "shared with track/world".
+Element	Material	Emissive
+Track floor	M1 graphite	none
+Track boundary / edge strip	M1 carrier + M7	yes — continuous, the ribbon's definition
+Interior panel divisions and seams	M1, value/roughness only	none
+Hazard-to-floor contact shading	M1, lighting only	none
+Gap rim and inner lip	M7, restrained	yes — thin
+Gap cavity	M8	none
+Standard deadly block	M2	none
+Destructible block, intact	M2 + M7 in recessed fractures only	yes — in the breaks
+Destructible block, fragments / burst	M2 + M7	yes — brief
+Finish-line structure	M1 / M2 + M7	yes — functional, controlled reveal
+Monolith — obelisk, gate, arch	M3, varied with M4	none (§6, override 2)
+Asteroid — all forms	M5	rare veins only
+Gas giant, moon, crescent/eclipse	M9	none
+Nebula / backdrop	not a surface — colour and depth layers	n/a
+Pickup shells — bolt, boost, shield, mine, seeker	M6	inset M7 core
+Deployed mine	M6 + M7	yes — must stay visible on the track
+Seeker in flight	M6 + M7 rear core	yes — sized to read at rear-view resolution
+Bolt tracer, boost thrust, shield envelope	M7 only — no shell	yes
+Engines / thrust	M7	yes
+Ship hulls	M6 family when designed — deferred, see §5	M7 engines
+HUD / UI	2D; graphite and marigold — deferred, see §5	n/a
+
+
+3. Emissive policy — marigold is a gameplay signal
+Decision (2026-09-19): marigold appears only on the playable layer. Monoliths carry no emissive
+seams. The sole exception in the world layer is the rare asteroid energy vein, which the package freezes
+as an outlier and which stays one.
+The reasoning is a readability contract, not a taste preference. The player is asked to make one
+judgement continuously and at speed: is that thing on the track going to kill me, or is it scenery
+behind the track? If marigold appears on both sides of that question, the answer has to come from size
+and distance cues alone — and the sector concepts deliberately frame monoliths close to the corridor
+(handoff/02_ENVIRONMENT.md: monoliths "frame the track", and Monolith Field is a sector in its own
+right). Hue is the cheapest, most robust separator available, and it is currently being spent on both
+sides of the line.
+What this buys elsewhere: with marigold reserved, every emissive mark in frame is information. The track
+edge means boundary. A seam in a block means this one breaks. A core means pick this up. A streak
+means incoming. That is a vocabulary, and it only works if nothing decorative speaks the same language.
+What it costs: monoliths lose a dramatic device at distance. They are 200–400u of dark matte form
+against a nebula and must carry their drama through silhouette, scale and cold rim light — which is what
+the mood anchor board and "cold rim light, deep shadows" (CURRENT_STATUS.md) ask of them anyway.
+Bloom follows the same line: only M7 crosses the threshold. The environment stays below it, and no
+material outside the playable layer is permitted to halo.
+4. What makes a material correct
+A family is finished when all of these hold — judged in the real chase camera, at race speed, with
+bloom on and again with bloom off:
+1. Stone never reads as metal and metal never reads as stone, at any distance, with no texture
+   detail visible.
+2. A block is distinguishable from the floor it stands on without relying on its marigold seams, and
+   from a monolith without relying on its size.
+3. Sealed versus fractured is legible without labels, at A, B and C intensity, with bloom in both
+   states.
+4. A gap cavity catches no light and never reads as a surface at low camera heights.
+5. A pickup reads as a solid object while rotating — bevels catch a moving highlight, side faces are
+   shaded differently from front faces.
+6. The marigold reads golden after tone mapping, with no reddish spill at the edges.
+7. No surface outside the playable layer blooms.
+Roughness, base colour and bevel values are tuned against these reads and then frozen back into §1.
+A value that passes a static screenshot and fails at speed has failed.
+5. Deferred, deliberately
+- Ship hulls. "Ships and dedicated orthographic passes remain a separate art track"
+  (handoff/HANDOVER.md §1). This sheet pre-assigns them the M6 family with M7 engines so the
+  ship track inherits a surface language rather than inventing a tenth material — the designs themselves
+  stay open, and per-class proportions differ sharply (Comet is wider than long).
+- HUD and UI. Graphite and marigold is the whole of the current direction; typography, layout,
+  motion and the rear-view treatment are open (CURRENT_STATUS.md).
+- Numeric fidelity budgets. No mesh, draw-call or frame-time budget is invented here, matching the
+  package's own refusal to invent one.
+6. Overrides — what this sheet changes, and why
+Three, all narrow. Everything else in docs/art-direction/ stands.
+1. Obstacle blocks are metal (M2), not "dark material family shared with track/world."
+   handoff/04_OBSTACLES.md leaves the family ambiguous between the two material classes it names. That
+   ambiguity sits directly on top of the requirement, in the same document, that blocks "must read
+   differently from environmental monoliths". Resolved toward metal.
+2. Monoliths carry no marigold seams. This overrides handoff/02_ENVIRONMENT.md's "sparse marigold
+   seams only" and handoff/HANDOVER.md §4's "include selective glowing seams". Rationale in §3: the
+   package assigns "sparse marigold seams" to standard deadly blocks and to monoliths, which spends
+   the strongest available separator on both sides of the one distinction the obstacle brief exists to
+   enforce.
+3. Pickups, weapon shells and the finish line are metal (M6 / M1–M2). The package describes a "dark
+   structural shell" with "beveled/shaded sides" and asks the finish line to use "the same track/world
+   language", without naming a family for either. Named here.
+No override touches a silhouette, a frozen form family, a dimension, a colour anchor, or the A/B/C
+intensity language.
