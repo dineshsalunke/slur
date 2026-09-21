@@ -6,54 +6,28 @@ import { DRAG_OPACITY_MAX, DRAG_SURFACE, LETHAL_SURFACE } from '../../game/scene
 import { BoundarySubject } from './boundary-subject';
 import { TrackSlabSubject } from './track-slab-subject';
 
-/**
- * A gallery subject: one piece of art, isolated, at TRUE scale.
- *
- * `dims` is what the thing really measures in world units — the gallery prints it, because the entire
- * reason this route exists is that the concept boards were drawn 4–10× undersized
- * (`docs/ART_SCALE_REFERENCE.md`). A subject that renders at the wrong size here is worse than useless.
- */
 export interface Subject {
     id: string;
     name: string;
     group: 'track' | 'obstacle' | 'structure';
-    /** [width(x), height(y), depth(z)] in world units, or null when the subject has no fixed size. */
     dims: [ number, number, number ] | null;
-    /** What a reviewer needs to know that the mesh alone does not say. */
     note: string;
     node: ReactNode;
 }
 
-// The Fighter's real footprint (2.6 × 2.52u) — used as the scale reference beside every subject. Read from
-// the roster rather than hand-typed: hand-typing a ship width against the grid is precisely what produced
-// the stale "Freighter 3.6u" bug the GDD §0 preamble exists to prevent.
 const FIGHTER = tuningForShip( 'challenger' );
 export const FIGHTER_W = FIGHTER.halfW * 2;
 export const FIGHTER_L = FIGHTER.halfL * 2;
-/**
- * Nominal height for the scale-reference box. Unlike width and length this is NOT a sim constant —
- * `FlightTuning` carries only `halfW`/`halfL`, because height is cosmetic: bodies are solid ground-up and
- * Y never changes kill logic (GDD §5.5). So this is a plausible display value, not a measurement, and it
- * must not be quoted back as a ship dimension.
- */
 export const FIGHTER_H = 1.2;
 
-// One authoring lane wide — what today's generator emits. NOT a rule: GDD §0 is explicit that block
-// width/depth are "a generation artifact, not a rule — any size is legal". Only the 8u HEIGHT is fixed.
 const BLOCK_W = CELL;
 const BLOCK_D = 8;
 
-// A representative slice of ribbon rather than the full 8000u, so the slab is inspectable at a sane camera
-// distance. Full width (64u) is kept — the width is the whole point.
 const SLAB_LEN = SEG_LEN;
 
-// Layout lives here rather than in the canvas so the camera rig can compute a framing position for any
-// subject without importing the scene. Pitch is set by the widest subject (the 64u slab) so neighbours
-// never intersect at true scale.
 export const PITCH = 90;
 const COLS = 3;
 
-/** World position of subject `i` on the gallery floor. */
 export function slotFor( i: number ): [ number, number, number ] {
     const col = i % COLS;
     const row = Math.floor( i / COLS );

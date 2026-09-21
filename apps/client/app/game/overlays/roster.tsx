@@ -3,8 +3,6 @@ import { Tag } from '../../ui/tag';
 import { colorHex } from '../colors';
 import type { PlayerView } from '../net/use-run-view';
 
-// Player list: colour dot, name, host ★, YOU / SPECTATING tags, ship, ghosted if disconnected. A pure view
-// over the run snapshot (no subscription of its own — the parent passes players/hostId/selfId as props).
 export function Roster( { players, hostId, selfId }: { players: PlayerView[]; hostId: string; selfId: string } ) {
     return (
         <ul className="m-0 flex list-none flex-col gap-1 p-0">

@@ -76,7 +76,6 @@ describe( 'sealed block seams', () => {
         expect( worst.u ).toBeGreaterThanOrEqual( 0 );
         expect( worst.top ).toBeLessThan( p );
         expect( worst.gap ).toBeGreaterThan( 4 * SEALED_BLOCK_SEAM_WIDTH );
-        // A seam ON a corner reads as a glowing outline of the silhouette, which board 28 excludes.
         expect( worst.corner ).toBeGreaterThan( SEALED_BLOCK_SEAM_WIDTH );
     } );
 

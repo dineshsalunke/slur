@@ -20,8 +20,6 @@ interface Slider {
     hint: string;
 }
 
-/** Grouped by WHAT IT AFFECTS, and the two groups are deliberately not the same thing — the display sky and
- *  the lighting environment are separate sources, which is the entire pivot. */
 const GROUPS: readonly { title: string; note: string; sliders: readonly Slider[] }[] = [
     {
         title: 'Backdrop — what you see',
@@ -30,8 +28,6 @@ const GROUPS: readonly { title: string; note: string; sliders: readonly Slider[]
             {
                 key: 'fovDeg',
                 label: 'Field of view',
-                // Floor 43: below fovDeg/aspect ≤ 2·edgeFadeDeg the alpha fade meets itself and the patch
-                // can never reach full opacity. Moves if edgeFadeDeg does.
                 min: 43,
                 max: 200,
                 step: 1,
@@ -148,7 +144,6 @@ const SWATCHES: readonly { key: SkyTuningColour; label: string }[] = [
     { key: 'ambientColor', label: 'Ambient' },
 ];
 
-/** The falsifiable self-test lives here, not in a comment: `envOn` off must FLATTEN the probes. */
 const SWITCHES: readonly { key: SkyTuningBool; label: string; hint: string }[] = [
     {
         key: 'envOn',
@@ -174,14 +169,6 @@ const SWITCHES: readonly { key: SkyTuningBool; label: string; hint: string }[] =
 
 const BTN = 'rounded px-2 py-1 text-xs transition-colors';
 
-/**
- * Live tuning for the sky, as a DOM sibling of `<IsoLab>` rather than fields on the shared `IsoLabControls` —
- * the shared instrument must not grow one ingredient's knobs, or every future `/iso-*` lane widens it again.
- *
- * Writes go through `writeSkyTuning`, which bumps the version the Canvas subscribes to. The panel subscribes to
- * the same store rather than keeping a private redraw counter, so panel and scene can never disagree about what
- * the current value is.
- */
 export function SkyTuningPanel() {
     useSyncExternalStore( subscribeSkyTuning, skyTuningVersion, skyTuningVersion );
     const [ open, setOpen ] = useState( true );

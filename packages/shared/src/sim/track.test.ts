@@ -1,7 +1,3 @@
-// Determinism + fairness gate for the track generator. Run via `pnpm --filter @slur/shared test`
-// (tsc -b → node --test on the compiled dist). If any of these fail the game desyncs or becomes
-// unfair — they are hard gates, not smoke tests.
-
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -33,26 +29,18 @@ import {
     ZCELLS,
 } from '../index.js';
 
-// ADR-001: `makeTrack(seed)` was folded behind the provider. These geometry tests exercise the procgen output
-// from a bare seed, so a thin wrapper over resolveTrack(procgenDescriptor(seed)) keeps every seed-driven
-// assertion readable while proving the exact same geometry flows through the new seam.
 const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed ) );
 
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 0x0fffffff, 42, 99991, 0xffffffff ];
-// Half-width of the widest hull in the roster. Track fairness floors to the CLASS SET (the principle
-// ship-classes.ts states), so derive it instead of hard-coding: add a wider ship and the gate guards it.
 const WIDEST_HALF_W = Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfW ) );
-// The band a hull CENTRE may occupy without clipping the outer rails.
 const CENTRE_MIN = -HALF_WIDTH + WIDEST_HALF_W;
 const CENTRE_MAX = HALF_WIDTH - WIDEST_HALF_W;
-const N = TRACK_SEGMENTS + 4; // include a couple of finish segments
+const N = TRACK_SEGMENTS + 4;
 
 function segEqual( a: Segment, b: Segment ): boolean {
     return JSON.stringify( a ) === JSON.stringify( b );
 }
 
-// mulberry32 is the load-bearing PRNG — pin it against KNOWN output (captured from the verified bryc
-// implementation, seed 0) so a mistyped constant can never slip through unnoticed.
 test( 'mulberry32 matches the verified reference stream (seed 0)', () => {
     const r = mulberry32( 0 );
     const got = [ r(), r(), r() ].map( ( v ) => Math.round( v * 1e9 ) );
@@ -77,9 +65,6 @@ test( 'two resolveTrack(procgenDescriptor) are byte-identical for every segment 
     }
 } );
 
-// ADR-001 provider gate: resolveTrack is deterministic (two builds from one descriptor are byte-identical)
-// and a procgen descriptor survives the wire round-trip (applyDescriptor → toDescriptor) unchanged, so the
-// server's descriptor and the client's decoded descriptor resolve to the SAME track.
 test( 'resolveTrack builds byte-identical tracks from the same descriptor (determinism)', () => {
     for ( const seed of SEEDS ) {
         const descriptor = procgenDescriptor( seed );
@@ -123,9 +108,6 @@ test( 'start-safe zone is flat + full-width with no hazards', () => {
     }
 } );
 
-// Every ship class must clear a one-segment gap — the shared server track is floored to the LEAST-capable
-// class, so if the worst class can't jump a gap, the game is unfair for that class. Generous grounded rule:
-// airborne z-distance = SEG_LEN − 2·halfL. (Derived from jump feel + speed → difficulty is a config edit.)
 test( 'every ship class clears a one-segment gap (generous grounded rule)', () => {
     for ( const c of Object.values( SHIP_CLASSES ) ) {
         const effectiveGap = SEG_LEN - 2 * c.tuning.halfL;
@@ -134,12 +116,9 @@ test( 'every ship class clears a one-segment gap (generous grounded rule)', () =
             `class ${ c.id }: effective gap ${ effectiveGap.toFixed( 2 ) } > jumpReach ${ jumpReach( c.tuning ).toFixed( 2 ) }`,
         );
     }
-    // The registry the generator floors to is non-empty (guards an accidental empty class set).
     assert.ok( ALL_CLASS_TUNINGS.length >= 1 );
 } );
 
-// Assert one segment is fair: a hole is followed by a flat pad; a non-hole is flat, leaves a ≥ MIN_LANE
-// corridor, and its cubes are discrete grounded AABBs. Extracted so the seed×segment sweep stays flat.
 function assertSegmentFair( t: Track, seed: number, i: number ): void {
     const s = t.segmentAt( i );
     if ( isHole( s ) ) {
@@ -148,12 +127,10 @@ function assertSegmentFair( t: Track, seed: number, i: number ): void {
         return;
     }
     for ( const f of s.floors ) assert.equal( f.y, 0, `seed ${ seed } seg ${ i } floor not flat (y=${ f.y })` );
-    // A laterally-passable corridor of ≥ MIN_LANE (2 lanes) always survives the cube field.
     assert.ok(
         passableCorridorWidth( s ) >= MIN_LANE - 1e-6,
         `seed ${ seed } seg ${ i } corridor ${ passableCorridorWidth( s ) } < MIN_LANE ${ MIN_LANE }`,
     );
-    // Cubes carry a z-extent (discrete AABB), sit on the floor, and are un-jumpable (tall).
     for ( const b of s.blocks ) {
         assert.ok( b.z1 > b.z0, `seed ${ seed } seg ${ i } cube has no z-extent` );
         assert.ok( b.z0 >= s.z0 && b.z1 <= s.z1, `seed ${ seed } seg ${ i } cube z out of segment` );
@@ -168,11 +145,6 @@ test( 'fairness invariants hold for every segment across many seeds', () => {
     }
 } );
 
-// ── S6 procgen v2 — coherent weave + variable-width walls ──
-
-// The racing line the ship threads must never demand more lateral SPEED (slope) than the least-capable
-// weaver can hold. Cap is DERIVED from ALL_CLASS_TUNINGS (constants.ts) — not hand-picked. Measured on the
-// continuous full-amplitude line; the generator's actual corridor uses ≤ this amplitude, so it stays fair.
 test( 'racing-line slope stays under the derived least-capable cap (weave is threadable)', () => {
     for ( const seed of SEEDS ) {
         let prev = weaveLineLanes( seed, 0 );
@@ -187,8 +159,6 @@ test( 'racing-line slope stays under the derived least-capable cap (weave is thr
     }
 } );
 
-// Slope alone is insufficient: a tight zig-zag inside the slope cap still needs un-affordable REVERSAL.
-// Curvature (slope-change/row) must stay under a cap derived from strafeAccel — the real harder-but-fair lever.
 test( 'racing-line curvature stays under the derived reversal cap', () => {
     for ( const seed of SEEDS ) {
         const prev = weaveLineLanes( seed, 0 );
@@ -205,9 +175,6 @@ test( 'racing-line curvature stays under the derived reversal cap', () => {
     }
 } );
 
-// Fairness BY CONSTRUCTION: ≥ MIN_LANE contiguous open floor at EVERY z-slice, for every segment and every
-// difficulty D (D varies with segment index, so the full sweep covers the whole ramp). This is the per-slice
-// helper (a moving-within-segment corridor is fair at each slice even if the collapsed segment wouldn't be).
 test( 'every z-slice keeps a ≥ MIN_LANE open corridor across all seeds and difficulty', () => {
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
@@ -222,8 +189,6 @@ test( 'every z-slice keeps a ≥ MIN_LANE open corridor across all seeds and dif
     }
 } );
 
-// Goal #2: RLE-merged noise walls produce VARIABLE-width blocks (not just 1-cell cubes). Assert multi-lane
-// blocks actually appear — the whole point of the corridor+RLE model.
 test( 'variable-width blocks appear (walls wider than one cell)', () => {
     let sawWide = false;
     let maxW = 0;
@@ -240,8 +205,6 @@ test( 'variable-width blocks appear (walls wider than one cell)', () => {
     assert.ok( sawWide, `no multi-cell blocks emerged (max width ${ maxW })` );
 } );
 
-// Both hazard kinds must actually appear: red (lethal) walls AND amber (drag) passable blocks. A regression
-// that made every block one kind would silently gut the risk/reward mechanic without failing any other test.
 test( 'both lethal walls and passable drag blocks are generated', () => {
     let lethal = 0;
     let drag = 0;
@@ -258,8 +221,6 @@ test( 'both lethal walls and passable drag blocks are generated', () => {
     assert.ok( drag > 0, 'no drag (amber) blocks generated' );
 } );
 
-// Gaps stay orthogonal + sparse: never two active gaps in a row (the segment after a gap is a landing pad),
-// and none in the start-safe zone. (GAP-REACH per class is asserted separately above.)
 test( 'no two gaps in a row and none in start-safe', () => {
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
@@ -281,17 +242,10 @@ test( 'finish segments are flat and flagged', () => {
     assert.equal( s.floors[ 0 ].y, 0 );
 } );
 
-// Per-slice fairness (≥ MIN_LANE open at every z) is NOT enough on its own: consecutive openings must also be
-// laterally REACHABLE given the ship's bounded strafe (walls are un-jumpable). Otherwise the open lane can jump
-// side-to-side faster than any ship can follow → an unavoidable "L-shaped" dead-end. Forward-flood the set of
-// reachable x-intervals row by row (dilate by ±SLOPE_CAP·CELL, intersect with the open floor); assert it never
-// collapses to empty on a floored stretch. A hole resets reachability (you cross it airborne, landing anywhere).
 function openIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] > {
     if ( isHole( seg ) ) return [];
     const zc = seg.z0 + r * CELL + CELL / 2;
     const walls: Array< [ number, number ] > = [];
-    // Only LETHAL blocks obstruct — drag (amber) blocks are passable (you fly through, just slow), so they
-    // must NOT count toward reachability or a dead-end.
     for ( const b of seg.blocks ) if ( b.lethal && b.z0 <= zc && zc < b.z1 ) walls.push( [ b.x0, b.x1 ] );
     walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
     const open: Array< [ number, number ] > = [];
@@ -303,10 +257,6 @@ function openIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] >
     if ( cursor < HALF_WIDTH ) open.push( [ cursor, HALF_WIDTH ] );
     return open.filter( ( [ a, b ] ) => b > a );
 }
-// Legal CENTRE positions for the widest hull at this row: each opening eroded by halfW on both sides.
-// Eroding BEFORE the flood-fill is the whole point. The reachable set is usually several disjoint
-// intervals, and an opening too thin to hold a hull vanishes here instead of being masked by a wider
-// sibling — exactly what propagating raw openings and then measuring the widest one fails to catch.
 function centreIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] > {
     const out: Array< [ number, number ] > = [];
     for ( const [ a, b ] of openIntervalsAt( seg, r ) ) {
@@ -329,9 +279,6 @@ function intersectIntervals(
         }
     return out;
 }
-// Coalesce overlapping/touching intervals → keeps the flood-fill's interval COUNT bounded (the discrete-pillar
-// geometry otherwise fragments the reachable set every row, and the un-merged O(n²) intersect blows up). Pure
-// optimization: same set of reachable x, fewer redundant interval objects.
 function mergeIntervals( iv: Array< [ number, number ] > ): Array< [ number, number ] > {
     if ( iv.length <= 1 ) return iv;
     const s = [ ...iv ].sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
@@ -344,9 +291,7 @@ function mergeIntervals( iv: Array< [ number, number ] > ): Array< [ number, num
     return out;
 }
 test( 'a widest-hull ship can always thread the corridor (REACH and FIT together)', () => {
-    const reachUnits = SLOPE_CAP * CELL; // how far the least-capable ship can strafe per forward row (world x)
-    // Reachability is tracked over hull CENTRES, not raw openings, so "reachable" always means "a whole
-    // ship fits there" rather than "some sliver of floor is exposed there".
+    const reachUnits = SLOPE_CAP * CELL;
     const full: Array< [ number, number ] > = [ [ CENTRE_MIN, CENTRE_MAX ] ];
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
@@ -375,8 +320,6 @@ test( 'a widest-hull ship can always thread the corridor (REACH and FIT together
     }
 } );
 
-// Worst-case [lethal, drag] block counts in any WINDOW-segment slice of one track (extracted so the budget
-// test below stays flat / under the cognitive-complexity cap).
 function worstWindowCounts( t: Track, window: number ): [ number, number ] {
     let worstLethal = 0;
     let worstDrag = 0;
@@ -395,12 +338,9 @@ function worstWindowCounts( t: Track, window: number ): [ number, number ] {
     return [ worstLethal, worstDrag ];
 }
 
-// Renderer budget guard: the client renders lethal + drag blocks as TWO instanced pools (distinct emissive
-// colour), so EACH kind's worst-case count over a visible window must stay under its pool cap (BLOCK_LIMIT in
-// track-view.tsx — exceeding it SILENTLY DROPS blocks). Checked per-kind, not on the total.
 test( 'block count per visible window stays within the renderer instance budget (per kind)', () => {
-    const WINDOW = Math.ceil( ( 900 + 80 ) / SEG_LEN ); // TrackView AHEAD+BACK
-    const BUDGET = 160; // must match BLOCK_LIMIT in apps/client/.../track-view.tsx (per pool)
+    const WINDOW = Math.ceil( ( 900 + 80 ) / SEG_LEN );
+    const BUDGET = 160;
     let worstLethal = 0;
     let worstDrag = 0;
     for ( const seed of SEEDS ) {
@@ -412,13 +352,6 @@ test( 'block count per visible window stays within the renderer instance budget 
     assert.ok( worstDrag < BUDGET, `worst-case ${ worstDrag } drag blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
 } );
 
-// ── ADR-002: Track.anchors is the first-class source of truth for pickups ──
-
-// track.anchors is the SOURCE OF TRUTH: pickupLayout (and every consumer) is exactly the pickup-kind filter
-// over it. Prove the helper == the read, then pin the PRE-ADR-002 id/position SCHEME so the move into the
-// provider stays a pure refactor. The scheme pins are the real regression guard (the old formula is gone):
-//   - id = the segment index string (integer ≥ START_SAFE) → RunState.pickupTaken keys need ZERO wire migration.
-//   - z  = seg·SEG_LEN + SEG_LEN/2 (segment mid-row) and x within the rails, exactly as the old layout placed them.
 test( 'ADR-002: pickupLayout is exactly track.anchors filtered to kind "pickup" (source of truth)', () => {
     for ( const seed of SEEDS ) {
         const anchors = makeTrack( seed ).anchors.filter( ( a ) => a.kind === 'pickup' );
@@ -447,8 +380,6 @@ test( 'ADR-002: pickup anchor id/position scheme is unchanged (zero wire migrati
     }
 } );
 
-// kind filtering is the read model: 'pickup' is the only kind materialized today; an unmodelled kind yields
-// nothing (guards against a future kind silently leaking into the pickup pool).
 test( 'ADR-002: anchors are all kind "pickup"; filtering an unmodelled kind yields none', () => {
     const anchors = makeTrack( 1234 ).anchors;
     assert.ok( anchors.length > 0, 'no anchors materialized' );
@@ -485,8 +416,6 @@ test( 'the track has a real back edge one segment behind the lead-in', () => {
     assert.deepEqual( t.segmentAtZ( -1000 ).floors, [], 'floor far past the drawn back edge' );
 } );
 
-// The back edge is unreachable, not merely unreached: a respawn is the only thing that lowers z, and no death
-// is possible before START_SAFE*SEG_LEN. Tune either operand past this and that stops being true, silently.
 test( 'respawnSetback cannot reach past the lead-in apron', () => {
     assert.ok(
         DEFAULT_TUNING.respawnSetback < START_SAFE * SEG_LEN,

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { guardLfsPointer, isLfsPointer, LFS_POINTER_HINT } from './gltf-lfs-guard';
 
-// Exactly what git leaves on disk for an LFS-tracked file in a clone that never ran `git lfs pull`.
 const POINTER_FILE = [
     'version https://git-lfs.github.com/spec/v1',
     'oid sha256:8f3c1d0a5e9b7c2f4a6d8e0b1c3f5a7d9e2b4c6f8a0d2e4b6c8f0a2d4e6b8c0f',
@@ -9,16 +8,12 @@ const POINTER_FILE = [
     '',
 ].join( '\n' );
 
-// The opening bytes of a real Quaternius ship .gltf (apps/client/public/models/ships/*.gltf).
 const REAL_GLTF = '{\n    "asset" : {\n        "generator" : "Khronos glTF Blender I/O v1.5.17"\n    }\n}';
 
 function bytes( text: string ): ArrayBuffer {
     return new TextEncoder().encode( text ).buffer as ArrayBuffer;
 }
 
-// Stands in for three-stdlib's GLTFLoader: `parse` JSON-decodes the ArrayBuffer (this is the exact step that
-// yields `Unexpected token 'v'` on a pointer file), and `load` reproduces GLTFLoader.load's try/catch, which
-// is what routes a throw out of `parse` into onError — the path R3F's useLoader turns into a suspense reject.
 function makeLoader() {
     const parsed: string[] = [];
     const loader = {
@@ -54,9 +49,9 @@ describe( 'isLfsPointer', () => {
     it( 'passes real model bytes and short/empty payloads through', () => {
         expect( isLfsPointer( REAL_GLTF ) ).toBe( false );
         expect( isLfsPointer( bytes( REAL_GLTF ) ) ).toBe( false );
-        expect( isLfsPointer( bytes( 'glTF' ) ) ).toBe( false ); // .glb magic
+        expect( isLfsPointer( bytes( 'glTF' ) ) ).toBe( false );
         expect( isLfsPointer( bytes( '' ) ) ).toBe( false );
-        expect( isLfsPointer( bytes( 'version 2' ) ) ).toBe( false ); // shares a prefix word, not the spec URL
+        expect( isLfsPointer( bytes( 'version 2' ) ) ).toBe( false );
     } );
 } );
 

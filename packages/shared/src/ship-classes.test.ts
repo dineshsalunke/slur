@@ -1,6 +1,3 @@
-// Ship combat identity — armour and the stun duration it scales. Server-authoritative data, so these are
-// contract tests: the server reads them to write stunTimer and the pick-UI reads them to describe a ship.
-
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { STUN_SECONDS } from './combat/constants.js';
@@ -14,9 +11,6 @@ test( 'every class declares armour inside the 0..1 band', () => {
     }
 } );
 
-// The load-bearing balance rule. Armour is a SIDEGRADE, not a free stat: a bolt is dodged by weaving, so
-// the ship that weaves best must take the longest stun. If someone later raises a nimble class's armour
-// without lowering its strafe, this test is the thing that catches it.
 test( 'armour ranks as the exact inverse of strafe authority', () => {
     const byWeave = Object.values( SHIP_CLASSES )
         .slice()
@@ -35,16 +29,13 @@ test( 'armour ranks as the exact inverse of strafe authority', () => {
     }
 } );
 
-// LITERALS, deliberately. Deriving the expected value from `armour` asserts the formula against itself and
-// cannot fail — it would pass even if every class were retuned to a meaningless spread. These are the
-// published balance numbers; changing one is a balance decision that should have to change this table too.
 test( 'each ship takes its published stun duration', () => {
     const published: Record< string, number > = {
-        executioner: 1.2, // Interceptor · armour 0
-        bob: 1.08, // Comet · armour 0.1
-        challenger: 0.96, // Fighter · armour 0.2 (the default ship)
-        dispatcher: 0.84, // Phantom · armour 0.3
-        'split-crown': 0.72, // Freighter · armour 0.4
+        executioner: 1.2,
+        bob: 1.08,
+        challenger: 0.96,
+        dispatcher: 0.84,
+        'split-crown': 0.72,
     };
     for ( const shipId of SHIP_ORDER ) {
         const want = published[ shipId ];
@@ -56,19 +47,15 @@ test( 'each ship takes its published stun duration', () => {
     }
 } );
 
-// The ordering test above passes for armour 0 / 0.001 / 0.002 / 0.003 / 0.004 — a 4ms spread, i.e. a stat
-// that does nothing at all. Monotonic is not the same as meaningful, so pin the magnitude separately.
 test( 'the armour spread is wide enough to change how a hit feels', () => {
-    const longest = stunDurationForShip( 'executioner' ); // least armour
-    const shortest = stunDurationForShip( 'split-crown' ); // most armour
+    const longest = stunDurationForShip( 'executioner' );
+    const shortest = stunDurationForShip( 'split-crown' );
     assert.ok(
         longest - shortest >= 0.3,
         `armour spread is only ${ ( longest - shortest ).toFixed( 3 ) }s — too small to read in play`,
     );
 } );
 
-// A bolt must stun the nimble ship for longer than the sluggish one — the whole point of the stat, asserted
-// on the end value rather than on the multiplier.
 test( 'the best weaver takes a strictly longer stun than the worst', () => {
     assert.ok(
         stunDurationForShip( 'executioner' ) > stunDurationForShip( 'split-crown' ),
@@ -77,9 +64,6 @@ test( 'the best weaver takes a strictly longer stun than the worst', () => {
     assert.equal( stunDurationForShip( 'executioner' ), STUN_SECONDS, 'a zero-armour ship takes the full stun' );
 } );
 
-// #71 wiring: stunDurationForShip reads the base stun from the passed SimConfig, not a module global.
-// DIFFERENTIAL on a zero-armour ship (executioner) so the armour factor is 1 and only the base moves —
-// doubling cfg.stunSeconds must double the duration. Proves the param is wired without pinning a literal.
 test( 'stunDurationForShip reads stunSeconds from SimConfig — doubling it doubles the stun', () => {
     const base = stunDurationForShip( 'executioner', DEFAULT_SIM_CONFIG );
     const doubled = stunDurationForShip( 'executioner', {
@@ -90,7 +74,6 @@ test( 'stunDurationForShip reads stunSeconds from SimConfig — doubling it doub
     assert.ok( Math.abs( doubled - 2 * base ) < 1e-9, 'doubled stunSeconds did not double the stun → param not wired' );
 } );
 
-// Same fallback discipline as tuningForShip: a stale or empty wire value can never crash the sim.
 test( 'an unknown ship id falls back to the default ship armour', () => {
     const fallback = armourForShip( DEFAULT_SHIP );
     assert.equal( armourForShip( '' ), fallback, 'an empty id falls back' );

@@ -15,7 +15,6 @@ export interface SealedBlockProps {
     wearStrength?: number;
 }
 
-/** One sealed deadly block, standing on the deck at y=0. Height is never a prop: it is 8u, always. */
 export function SealedBlock( { w, d, x = 0, z = 0, seed, seamCount, wearStrength }: SealedBlockProps ) {
     const dims = useMemo( () => ( { w, h: BLOCK_HEIGHT, d } ), [ w, d ] );
     const geometry = useMemo( () => sealedBlockGeometry( dims ), [ dims ] );

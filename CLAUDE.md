@@ -195,31 +195,31 @@ litmus: "would two clients disagreeing on this field desync the game?" (yes → 
     `setTimeout`, `useEffect`, `useState`, a fresh `requestAnimationFrame` loop, prop-drilling) are the **last**
     candidates, not the first. Understand the requirement, survey the installed stack for the **purpose-built**
     mechanism, list **at least five** candidates, weigh each (correctness · one-clock-vs-many · re-render cost ·
-    idiom-fit · reuses-existing-loop), and commit the winner with a **one-line** rationale **in the code**,
-    and the weighing of the candidates **in the PR body** — never the source (#15).
+    idiom-fit · reuses-existing-loop), and commit the winner with the weighing of the candidates **in the
+    PR body** — never the source (#15: no comments).
     **Incident (PR #85):** a per-frame threat scan shipped as a *third* competing `setInterval` (then papered
     over with a CSS transition to hide the 100 ms stepping) because no alternatives were enumerated; the real
     option set was R3F `addEffect` · drei `<Html>`/`createPortal` driven by `useFrame` · the existing `net-loop`
     `useFrame` publishing a `--threat` CSS var · a raw rAF — and the timer ranked **last**. A raw
     `setInterval`/`setTimeout` polling live game state is **rejected on sight** (CONTRIBUTING §5).
-15. **Comments: terse, and only what the code cannot say** (per explicit user directive, 2026-09-18). A
-    comment is justified **only** when the fact is **not inferable from reading the code** — a rejected
-    alternative, an external constraint, a non-obvious consequence, a unit. Everything a competent reader gets
-    from names and control flow gets **no comment**, a "why" they can already see included. Justified comments
-    are **1–2 plain lines**; anything longer goes in the **PR body**, where someone reading the change wants
-    it, not the file, where everyone reading the function pays for it forever. Full bar + the two standing
-    exceptions: **CONTRIBUTING §3 "Coding standards"**. **`pnpm lint` enforces it** —
-    `scripts/check-comment-ratio.mjs`: a file you touch may not come out with more comment lines than it went
-    in with, and a new file may not exceed 20% comments.
-    **Three ambiguities, settled — do not re-derive them:** (a) a surviving `useEffect` carries **one line
-    naming the outside-React system it synchronizes with**, and **that is the whole comment** — the cheaper
-    idioms it rejected go in the **PR body**, never inline; (b) #14's rationale is **one line in the code**,
-    its ≥5-candidate weighing is **in the PR**; (c) **"match the surrounding code" never applies to comment
-    density** — the bar is absolute, and an over-commented file is not a licence to keep writing at that rate.
+15. **No comments at all — except `setTimeout`, `setInterval` and `useEffect`** (per explicit user directive,
+    2026-09-21; supersedes the earlier "terse, only what the code cannot say" bar). Code carries its meaning
+    in names, types and control flow. Anything a reader cannot get from those — a rejected alternative, an
+    external constraint, a non-obvious consequence, a unit — goes in the **PR body**, where someone reading
+    the change wants it, never in the file, where everyone reading the function pays for it forever.
+    **Exactly three constructs may carry a comment**: `setTimeout`, `setInterval` and `useEffect` — **one
+    line each**, saying why it exists (for `useEffect`, naming the outside-React system it synchronizes
+    with). Nothing else gets one: no file headers, no section banners, no unit notes, no "why" blocks, no
+    `//` above a function, no JSDoc. Functional directives are not prose and are exempt — `biome-ignore`,
+    `@ts-expect-error`, `/// <reference`, `#!` shebangs. **"Match the surrounding code" never applies to
+    comments** — the bar is absolute, and an over-commented file is not a licence to keep writing at that
+    rate; strip what you touch. **`pnpm lint` enforces it** — `scripts/check-comment-ratio.mjs`: a file you
+    touch may not come out with more comment lines than it went in with, and a new file may not exceed 20%
+    comments.
     **Incident:** the codebase had drifted into 10–20 line blocks ("JUSTIFIED EFFECT", "five mechanisms
-    weighed") — "these comments are too verbose and fancy language". That volume buries the few comments that
-    carry non-inferable information. The bar was written down twice and lost anyway; the lint count is what
-    made it stick.
+    weighed") — "these comments are too verbose and fancy language". Two successive attempts to hold a
+    *judgement-based* bar ("only what the code cannot say") drifted back; the bar is now mechanical, so
+    there is nothing to judge.
 
 ## Dev workflow
 

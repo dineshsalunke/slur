@@ -1,7 +1,3 @@
-// Determinism + shape gate for the value-noise primitives that drive S6 procgen. If these drift across
-// engines the track geometry diverges → deaths diverge → desync. Trig-free by construction (see noise.ts);
-// these tests pin the numeric contract the generator relies on.
-
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { smoothstep, tri, valueNoise1D, valueNoise2D } from '../index.js';
@@ -12,8 +8,8 @@ test( 'smoothstep is clamped, monotone, and hits the fade anchors', () => {
     assert.equal( smoothstep( 0 ), 0 );
     assert.equal( smoothstep( 1 ), 1 );
     assert.equal( smoothstep( 0.5 ), 0.5 );
-    assert.equal( smoothstep( -3 ), 0 ); // clamped below
-    assert.equal( smoothstep( 9 ), 1 ); // clamped above
+    assert.equal( smoothstep( -3 ), 0 );
+    assert.equal( smoothstep( 9 ), 1 );
     let prev = -1;
     for ( let i = 0; i <= 20; i++ ) {
         const v = smoothstep( i / 20 );
@@ -23,9 +19,9 @@ test( 'smoothstep is clamped, monotone, and hits the fade anchors', () => {
 } );
 
 test( 'tri is a triangle wave in [-1,1], period 1, trough at integers', () => {
-    assert.ok( Math.abs( tri( 0 ) + 1 ) < 1e-12 ); // trough
-    assert.ok( Math.abs( tri( 1 ) + 1 ) < 1e-12 ); // period 1 → trough again
-    assert.ok( Math.abs( tri( 0.5 ) - 1 ) < 1e-12 ); // peak
+    assert.ok( Math.abs( tri( 0 ) + 1 ) < 1e-12 );
+    assert.ok( Math.abs( tri( 1 ) + 1 ) < 1e-12 );
+    assert.ok( Math.abs( tri( 0.5 ) - 1 ) < 1e-12 );
     for ( let i = 0; i <= 100; i++ ) {
         const v = tri( i / 7 );
         assert.ok( v >= -1 - 1e-12 && v <= 1 + 1e-12, `tri out of range: ${ v }` );
@@ -40,7 +36,6 @@ test( 'valueNoise1D is deterministic, in [0,1), and continuous at lattice nodes'
             assert.equal( a, b, 'valueNoise1D not deterministic' );
             assert.ok( a >= 0 && a < 1, `valueNoise1D out of [0,1): ${ a }` );
         }
-        // At an integer node the value equals the raw lattice value from both sides (continuity).
         assert.equal( valueNoise1D( seed, 5 ), valueNoise1D( seed, 5.0 ) );
     }
 } );

@@ -4,15 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { buildBoundarySpanGeometry } from './track-boundary';
 import { buildSpanGeometry } from './track-floor';
 
-// The deck and the boundary surface ONE solid: the deck omits exactly the facets the strip fills. Neither a
-// type nor a render catches a drift — a corner gap and coplanar faces both look plausible, and only the
-// second z-fights, intermittently.
-
 const Z0 = 0;
 const Z1 = SEG_LEN;
 
-/** X of every vertex at height `y`. `facingUp` narrows to horizontal faces: an end cap's top edge sits at
- *  the deck's height too, so without it the caps mask the notch entirely. */
 function atHeight( geo: THREE.BufferGeometry, y: number, facingUp = false ): number[] {
     const p = geo.getAttribute( 'position' );
     const n = geo.getAttribute( 'normal' );
@@ -27,7 +21,6 @@ function atHeight( geo: THREE.BufferGeometry, y: number, facingUp = false ): num
 
 const spread = ( xs: number[] ) => ( { min: Math.min( ...xs ), max: Math.max( ...xs ) } );
 
-/** Width/wrap pairs spanning the panel's whole range, including wrap 0 and a rail far wider than ships. */
 const SETTINGS: Array< [ number, number ] > = [
     [ 0.25, 0 ],
     [ 1, 1 ],
@@ -62,7 +55,6 @@ describe( 'the rail stands outboard on the deck', () => {
             const band = buildBoundarySpanGeometry( -HALF_WIDTH, HALF_WIDTH, Z0, Z1, ww, hh );
             expect( spread( atHeight( band, hh, true ) ) ).toEqual( { min: -HALF_WIDTH - ww, max: HALF_WIDTH + ww } );
 
-            // Inner face flush at ±32 — centred on ±32 would straddle the edge and eat deck.
             const inner = atHeight( band, hh, true ).filter( ( x ) => Math.abs( Math.abs( x ) - HALF_WIDTH ) < 1e-6 );
             expect( inner.length ).toBeGreaterThan( 0 );
         }
@@ -75,7 +67,7 @@ describe( 'the rail stands outboard on the deck', () => {
         let highest = -Infinity;
         for ( let i = 0; i < p.count; i++ ) highest = Math.max( highest, p.getY( i ) );
         expect( highest ).toBe( 0 );
-        expect( p.count ).toBe( 12 ); // one top-face quad per side, and no riser
+        expect( p.count ).toBe( 12 );
     } );
 
     it( 'faces the riser inward — an outward one is invisible from the chase cam, every gate green', () => {

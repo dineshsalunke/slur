@@ -9,15 +9,10 @@ import { Environment } from '../../game/scene/environment';
 import { Track } from '../../game/scene/track';
 import { EnvRig } from './env-rig';
 
-// Throwaway atmosphere lab: a slow flythrough down a stretch of the real neon ribbon (Track) with the
-// parameterised Environment layered behind it. Keys 1/2/3 switch between the three variant configs live.
-// Isolated on purpose — does NOT touch net-canvas / game-canvas / the existing scene files.
 export function EnvLabCanvas() {
     const [ active, setActive ] = useState( 0 );
 
     // JUSTIFIED EFFECT — external sync: DOM keyboard (window keydown) → variant switch. A discrete keypress
-    // is a global input stream, not derivable from render; the listeners ARE the handler and only need a
-    // mount-scoped lifetime. setActive drives a STRUCTURAL change (swap the config), not a per-frame update.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
             const n = Number( e.key );
@@ -67,9 +62,6 @@ export function EnvLabCanvas() {
                         levels={ config.bloom.levels }
                     />
                 </EffectComposer>
-                { /* Lets this route be photographed from a tab nobody is looking at. Never mounted on /game —
-                     it advances the sim. See app/dev/frame-tap.tsx. The DEV gate is what keeps it OUT of the
-                     production bundle, not merely inert in it. */ }
                 { import.meta.env.DEV && <FrameTap /> }
             </Canvas>
         </WorldProvider>

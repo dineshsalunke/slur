@@ -2,9 +2,6 @@ import { PHASE, ROOM_NAME } from '@slur/shared';
 import { Button } from '../ui/button';
 import { useLobbyRooms } from './lobby-store';
 
-// A run's current phase decides three things at once: the badge colour, its label, and whether a joiner
-// races or spectates. lobby/countdown = still open (Join, cyan); racing/finished = in progress (Spectate,
-// amber). One source of truth so the row can't contradict itself.
 const PHASE_VIEW: Record< number, { label: string; racing: boolean; action: string } > = {
     [ PHASE.lobby ]: { label: 'Race · Lobby', racing: false, action: 'Join' },
     [ PHASE.countdown ]: { label: 'Race · Starting', racing: false, action: 'Join' },
@@ -12,9 +9,6 @@ const PHASE_VIEW: Record< number, { label: string; racing: boolean; action: stri
     [ PHASE.finished ]: { label: 'Race · Results', racing: true, action: 'Spectate' },
 };
 
-// The live list of open runs. Reads the module store (useLobbyRooms) — re-renders only when a room is
-// created/updated/closed, never per frame. Filtered to run rooms (the LobbyRoom itself is not a run).
-// Styled as the console's live-room panel: header count + de-rounded rows (name · racers · code + badge).
 export function RoomList( { onJoin, busy }: { onJoin: ( roomId: string ) => void; busy: boolean } ) {
     const rooms = useLobbyRooms().filter( ( r ) => r.name === ROOM_NAME );
 

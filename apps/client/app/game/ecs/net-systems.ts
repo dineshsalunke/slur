@@ -5,11 +5,6 @@ import { currentInput } from '../input/keyboard';
 import { localRole } from '../spectator';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
 
-// Freeze the local ship's interpolation when the sim ISN'T stepping (lobby/countdown/finished/spectating):
-// copy Sim→Prev so syncRenderSystem's prev→sim lerp becomes the identity and the ship sits still at its
-// authoritative pose. Without this, netFlightSystem (the only Prev writer) doesn't run, so a STALE Prev gets
-// lerped toward Sim by the oscillating fixed-step alpha → violent per-frame jitter (and the lobby hero-cam
-// that looks at the ship flickers). Cheap: the single local entity.
 export function freezeLocalPrev( world: World ): void {
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
         prev.x = s.x;
@@ -18,19 +13,11 @@ export function freezeLocalPrev( world: World ): void {
     } );
 }
 
-// Rapid visible-blink while stunned — makes a hit UNMISTAKABLE ("that ship got hit"). Time-based so it needs
-// no per-entity state and no allocation; local + remote systems share the phase so all stunned ships flicker
-// in sync. ~90ms half-period = a fast, disruptive strobe over the brief stun.
 const STUN_BLINK_MS = 90;
 function stunBlink(): boolean {
     return Math.floor( performance.now() / STUN_BLINK_MS ) % 2 === 0;
 }
 
-// Stun/spectator VFX. The S6 TRON derezz dissolve (ship-model.tsx) now OWNS the death visual — it eases the
-// hull away over ~0.7s and dissolves it back IN on respawn — so we must NOT hard-hide the group on `dead`
-// (that hid the dissolve entirely; the ship just vanished). We still fully hide a spectator's frozen local
-// ship (a mid-race joiner must not see it), and strobe a live stunned ship's visibility so a hit reads on
-// your OWN ship. Imperative, no React state.
 export function localDeathVfxSystem( world: World ): void {
     const blink = stunBlink();
     world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ] ) => {
@@ -38,42 +25,30 @@ export function localDeathVfxSystem( world: World ): void {
             grp.visible = false;
             return;
         }
-        // Alive + stunned → strobe. Otherwise visible (INCLUDING dead — the dissolve shader derezzes it).
         grp.visible = ! s.dead && s.stunTimer > 0 ? blink : true;
     } );
 }
 
-// Render remote ships this far in the past so we always have a "next" snapshot to interpolate toward
-// (netcode: ≥1 patch interval; patchRate is 50ms, so 100ms = 2 patches of slack for jitter/loss).
-// Exported so the projectile field interpolates on the SAME clock as remote ships (shared render delay).
 export const RENDER_DELAY_MS = 100;
 
-// Local predicted flight tick (fixed step). Same as S1's flightSystem but it RECORDS each input into
-// the predictor (value-copied, since keyboard.ts reuses one object) so reconciliation can replay it.
 export function netFlightSystem( world: World, dt: number, predictor: Predictor, track: Track ): void {
     const q = world.query( Sim, Prev, Net, LocalPlayer );
-    if ( q.length === 0 ) return; // local ship not spawned yet (waiting on players.onAdd)
-    const input = { ...currentInput() }; // value copy — the pending list must not alias the reused object
+    if ( q.length === 0 ) return;
+    const input = { ...currentInput() };
     predictor.record( input );
     q.updateEach( ( [ s, prev, net ] ) => {
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        // Predict with THIS ship's tuning + the SAME track the server authorities → identical replay math.
         simulate( s, input, dt, tuningForShip( net.shipId ), track );
     } );
 }
 
 const lerp = ( a: number, b: number, t: number ) => a + ( b - a ) * t;
 
-// Remote interpolation: ease each remote ship toward where it was RENDER_DELAY_MS ago, between the
-// two buffered snapshots that straddle that time. Never extrapolates — on <2 usable samples it holds
-// at the latest known pose (the classic new-joiner warm-up, handled explicitly).
 export function remoteInterpSystem( world: World ): void {
     const renderTime = performance.now() - RENDER_DELAY_MS;
-    const blink = stunBlink(); // shared strobe phase (same as the local ship) for stunned remotes
-    // Trait ORDER matters: koota fills the value array positionally for every trait, tags included.
-    // Put the tag (Remote) LAST so [ interp, grp ] align to Interp + Render (not Remote + Interp).
+    const blink = stunBlink();
     world.query( Interp, Render, Net, Remote ).readEach( ( [ interp, grp, net ] ) => {
         const buf = interp.buffer;
         if ( buf.length === 0 ) return;
@@ -97,17 +72,15 @@ export function remoteInterpSystem( world: World ): void {
             z = lerp( a.z, b.z, t );
             vx = lerp( a.vx, b.vx, t );
         } else {
-            const last = buf[ buf.length - 1 ]; // hold latest (renderTime beyond buffer, or <2 samples)
+            const last = buf[ buf.length - 1 ];
             x = last.x;
             y = last.y;
             z = last.z;
             vx = last.vx;
         }
         grp.position.set( x, y, z );
-        grp.rotation.z = -( vx / tuningForShip( net.shipId ).strafeClamp ) * 0.5; // cosmetic bank (per-ship clamp)
-        const latest = buf[ buf.length - 1 ]; // latest server truth for dead/stunned
-        // Don't hide a dead remote — the dissolve shader (ship-model.tsx) derezzes it and dissolves it back in
-        // on respawn. Strobe a live stunned remote so a hit reads. (Fully-dissolved hull discards itself.)
+        grp.rotation.z = -( vx / tuningForShip( net.shipId ).strafeClamp ) * 0.5;
+        const latest = buf[ buf.length - 1 ];
         grp.visible = ! latest.dead && latest.stunned ? blink : true;
     } );
 }

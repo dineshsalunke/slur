@@ -5,15 +5,12 @@ import { GradientDome } from './gradient-dome';
 import { SkyFollow } from './sky-follow';
 import { TubeWalls } from './tube-walls';
 
-// The parameterised atmosphere, all driven by one EnvConfig. Post-FX is deliberately NOT here — the single
-// global <Bloom> lives at the Canvas root, so this composes the world only and drops in as one child.
 export function Environment( { config, seed }: { config: EnvConfig; seed?: number } ) {
     return (
         <Fragment>
             <color attach="background" args={ [ config.background ] } />
             <fog attach="fog" args={ [ config.fog.color, config.fog.near, config.fog.far ] } />
 
-            { /* Dome + stars ride the camera so the sky is effectively infinite as the ship travels. */ }
             <SkyFollow>
                 { config.dome.enabled ? <GradientDome config={ config.dome } /> : null }
                 { config.stars.enabled ? (

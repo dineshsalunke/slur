@@ -1,17 +1,9 @@
-// Comment-ratio ratchet (CONTRIBUTING §3). A ratchet, not a ceiling: a file you touch must not come out with
-// MORE comment lines than it went in with, so an over-commented file is fixed by whoever next opens it and a
-// file nobody touches costs nothing. New files get a budget, having no baseline to fall below.
-//
-// A line-classifier, deliberately not a parser: the Canvas-isolation guard's regex strip silently eats real
-// code (#138). Here a misclassified line is counted the same on both sides of the diff, so it cancels in the
-// delta and cannot fail a clean change.
-
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
 const BASE = process.env.COMMENT_RATCHET_BASE ?? 'origin/dev';
 const NEW_FILE_MAX_RATIO = 0.2;
-const NEW_FILE_FLOOR = 6; // below this many comment lines, a small file is never flagged
+const NEW_FILE_FLOOR = 6;
 const COMMENT_LINE = /^\s*(\/\/|\/\*|\*\/|\*|\{\s*\/\*)/;
 const SCOPED = /^(apps|packages|scripts)\/.*\.(ts|tsx|mjs|js)$/;
 
@@ -26,7 +18,6 @@ try {
     process.exit( 0 );
 }
 
-// Untracked files too: a brand-new file is the budget rule's whole target and `git diff` cannot see one.
 const changed = [
     ...git( 'diff', '--name-only', base ).split( '\n' ),
     ...git( 'ls-files', '--others', '--exclude-standard' ).split( '\n' ),
@@ -36,14 +27,14 @@ const grown = [];
 const overBudget = [];
 
 for ( const file of changed ) {
-    if ( ! existsSync( file ) ) continue; // deleted
+    if ( ! existsSync( file ) ) continue;
     const after = countComments( readFileSync( file, 'utf8' ) );
 
     let before = null;
     try {
         before = countComments( git( 'show', `${ base }:${ file }` ) );
     } catch {
-        before = null; // new file
+        before = null;
     }
 
     if ( before === null ) {

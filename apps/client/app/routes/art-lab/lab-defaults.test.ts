@@ -13,7 +13,6 @@ describe( 'the lab opens on something worth judging', () => {
         expect( SHIP_ORDER ).toContain( LAB_DEFAULT_SHIP );
     } );
 
-    // Our only bespoke asset, and so the only ship worth judging art against.
     it( 'opens on the Split Crown', () => {
         expect( LAB_DEFAULT_SHIP ).toBe( 'split-crown' );
     } );

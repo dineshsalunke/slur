@@ -1,31 +1,12 @@
-// The frozen concept boards, as an addressable list.
-//
-// These are served in dev by `art-refs-plugin.ts` off `docs/art-direction/boards/` — nothing is
-// copied, so this list is a pointer, not a duplicate. Filenames are the contract between the two.
-//
-// SCALE WARNING carried in the data, not in a README nobody opens: `docs/ART_SCALE_REFERENCE.md` overrides
-// every dimension printed on a board. Only 03 and 04 were drawn against a correct ship reference; 07 and 09
-// are 4–10× undersized. `scaleTrust` surfaces that in the picker, so a reviewer cannot eyeball a render
-// against a board that is lying about size without being told.
-
 export type ScaleTrust = 'trusted' | 'mood-only' | 'undersized';
 
 export interface ReferenceBoard {
-    /** Filename inside the boards dir — also the id. */
     id: string;
-    /** Short label for the picker. */
     name: string;
-    /** Is this board safe to judge SIZE against? */
     scaleTrust: ScaleTrust;
-    /**
-     * Absolute URL override for references that do NOT live in the boards dir. Without this the list can only
-     * address `docs/art-direction/boards/`, and the one unoccluded sky reference lives in the client's own
-     * `public/` — copying it in would fork the file the game actually renders.
-     */
     url?: string;
 }
 
-/** Where the dev middleware mounts. Must match `artRefsPlugin`'s `route`. */
 export const ART_REFS_ROUTE = '/art-refs';
 
 export function boardUrl( id: string ): string {
@@ -34,14 +15,6 @@ export function boardUrl( id: string ): string {
 }
 
 export const REFERENCE_BOARDS: readonly ReferenceBoard[] = [
-    // AUTHORITY ENTRY 0 (art-pass INDEX §2). The boards were COMPOSED OVER this image — the sky in 12/13 IS
-    // this file with rock painted on top — so for the SKY/far field it outranks them on tone as well as
-    // structure; they are the same picture with information removed. Board 12 still outranks it for overall
-    // scene colour, depth, composition and material: different subjects, both true.
-    //
-    // Judging an isolated ingredient against a COMPOSED board reads occlusion as intended faintness, which
-    // cost a full review cycle: it produced "the nebula should be nearly invisible", which was backwards.
-    // Served from the client's own public/ by Vite, not by the art-refs middleware, hence the `url` override.
     {
         id: 'nebula-backdrop.jpg',
         name: '★ Nebula backdrop (boards’ sky)',
@@ -66,9 +39,6 @@ export const REFERENCE_BOARDS: readonly ReferenceBoard[] = [
         url: '/art-refs-blocks/28_non_destructible_blocks_FINAL_DRAFT.png',
     },
     { id: '11_pickups_weapons_final.png', name: '11 · Pickups & weapons', scaleTrust: 'mood-only' },
-    // 12 is the TOP-PRECEDENCE reference for colour, depth, lighting, material and composition (art-pass
-    // INDEX §2), and 13 is the cosmic-scale/cold-rim mood anchor. Both were on disk but missing from this
-    // list, so the picker could not open the one board that outranks the rest.
     { id: '12_approved_scene_marigold_depth.png', name: '12 · Approved scene ★', scaleTrust: 'mood-only' },
     { id: '13_original_mood_anchor.png', name: '13 · Original mood anchor', scaleTrust: 'mood-only' },
 ] as const;

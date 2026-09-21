@@ -7,7 +7,6 @@ import { LocalPlayer, Net, Render } from '../../game/ecs/traits';
 
 const HEIGHT = 3;
 
-// Unlit and dark so it cannot skew the bloom, and sized from halfW/halfL so edge contact reads true.
 export function ShipBox() {
     const world = useWorld();
     const ref = useRef< Mesh >( null );

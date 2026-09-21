@@ -3,11 +3,6 @@ import type { RunState } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { waitForDescriptor } from './matchmaking';
 
-// A minimal stand-in for the parts of Room<RunState> that waitForDescriptor touches: a mutable `state`, and
-// an `onStateChange` that is CALLABLE (register a handler) with a `.remove` (deregister) — the @colyseus/sdk
-// shape. `emit()` fires every registered handler, standing in for a decoded state patch landing over the wire;
-// `setDescriptor` mutates what the next patch will carry. We drive these by hand so the async ordering the
-// real footgun is about (join resolves BEFORE the descriptor patch decodes) is reproduced deterministically.
 interface Descriptor {
     kind: string;
     seed?: number;
@@ -37,10 +32,9 @@ function makeRoom( descriptor?: Descriptor ) {
     };
 }
 
-// procgen: descriptorReady is `seed !== 0`, so seed 0 = present-but-not-ready, a real non-zero seed = ready.
 const READY = { kind: 'procgen', seed: 12345, tier: 0, length: 400 };
 const PENDING = { kind: 'procgen', seed: 0, tier: 0, length: 400 };
-const RESOLVED = { kind: 'procgen', seed: 12345, tier: 0, length: 400 }; // toDescriptor's plain shape
+const RESOLVED = { kind: 'procgen', seed: 12345, tier: 0, length: 400 };
 
 describe( 'waitForDescriptor', () => {
     it( 'resolves immediately when the descriptor is already present and ready', async () => {
@@ -55,16 +49,16 @@ describe( 'waitForDescriptor', () => {
             resolved = d;
         } );
 
-        expect( handlerCount() ).toBe( 1 ); // subscribed and waiting — undefined state did NOT throw
-        emit(); // a patch lands with descriptor STILL undefined
-        expect( resolved ).toBeNull(); // must not resolve on an absent descriptor
+        expect( handlerCount() ).toBe( 1 );
+        emit();
+        expect( resolved ).toBeNull();
 
         setDescriptor( PENDING );
-        emit(); // descriptor now present but seed 0 → not ready
-        expect( resolved ).toBeNull(); // must not resolve until descriptorReady
+        emit();
+        expect( resolved ).toBeNull();
 
         setDescriptor( READY );
-        emit(); // ready at last
+        emit();
         await done;
         expect( resolved ).toEqual( RESOLVED );
     } );

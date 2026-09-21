@@ -6,10 +6,8 @@ export interface BlockDims {
     d: number;
 }
 
-/** World units, not a fraction: the same chamfer width on a 3.5u block and an 8u one. */
 export const SEALED_BLOCK_BEVEL = 0.12;
 
-/** Past this a chamfer stops reading as an edge treatment and starts reading as a taper, which is excluded. */
 const MAX_BEVEL_FRACTION = 0.45;
 
 const AXES = [ 0, 1, 2 ];
@@ -17,7 +15,6 @@ const SIGNS = [ -1, 1 ];
 
 type Vec3 = [ number, number, number ];
 
-/** The corner vertex that stays OUT on `axis` and is pulled in on the other two. The whole chamfer is this. */
 type CornerFn = ( s: Vec3, axis: number ) => Vec3;
 
 interface Sink {
@@ -31,8 +28,6 @@ function crossNormal( a: Vec3, b: Vec3, c: Vec3 ): THREE.Vector3 {
     return ab.cross( ac ).normalize();
 }
 
-/** Winding is DERIVED from the normal we want, never reasoned about: a hand-picked vertex order inverts
- *  facets silently and the block renders unlit with every gate green. */
 function pushPolygon( sink: Sink, poly: Vec3[], want: Vec3 ) {
     const n = new THREE.Vector3( ...want ).normalize();
     const ordered = crossNormal( poly[ 0 ], poly[ 1 ], poly[ 2 ] ).dot( n ) < 0 ? [ ...poly ].reverse() : poly;
@@ -64,7 +59,6 @@ function addFace( sink: Sink, corner: CornerFn, axis: number, s: number, u: numb
     pushPolygon( sink, [ at( -1, -1 ), at( -1, 1 ), at( 1, 1 ), at( 1, -1 ) ], unit( axis, s ) );
 }
 
-/** The chamfer strip running along `axis`, bridging the ±u face to the ±v face it is wedged between. */
 function addChamfer( sink: Sink, corner: CornerFn, axis: number, u: number, su: number, v: number, sv: number ) {
     const [ lo, hi ] = SIGNS.map( ( s ) => signAt( axis, s, u, su, v, sv ) );
     const want: Vec3 = [ 0, 0, 0 ];
@@ -100,13 +94,6 @@ export function sealedBlockBevel( { w, h, d }: BlockDims, bevel = SEALED_BLOCK_B
     return Math.max( 0, Math.min( bevel, ( MAX_BEVEL_FRACTION * Math.min( w, h, d ) ) / 2 ) );
 }
 
-/**
- * A sealed cuboid with restrained chamfers — board 28’s one permitted silhouette control. Flat-shaded and
- * non-indexed, because a chamfer smoothed into its faces is a rounded box, which the spec excludes.
- *
- * The chamfer is cut INWARD from the corners and the six faces still touch the envelope, so the mesh stays
- * the physics hull: it never kills the player on apparent empty air, nor draws short enough to look hoppable.
- */
 export function sealedBlockGeometry( { w, h, d }: BlockDims, bevel = SEALED_BLOCK_BEVEL ): THREE.BufferGeometry {
     const half: Vec3 = [ w / 2, h / 2, d / 2 ];
     const c = sealedBlockBevel( { w, h, d }, bevel );

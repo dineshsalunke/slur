@@ -7,24 +7,9 @@ import { FrameTap } from '../dev/frame-tap';
 import { GRID_VOID } from '../game/scene/env-config';
 import { ScaleReference } from './scale-reference';
 
-/** How far back the camera starts, as a multiple of the subject's declared size. */
 const FRAMING = 1.9;
-/** Where the scale reference stands, as a multiple of the subject's declared size, so it never intersects. */
 const REF_OFFSET = 0.75;
 
-/**
- * The WebGL half of an isolation lab: ONE subject, the game's real void, the game's real bloom.
- *
- * It imports `GRID_VOID` rather than declaring its own background/bloom numbers. That is the whole point —
- * a lab that lies about the game is worse than no lab, and the only defence that survives a retune is to
- * consume the same object the game consumes, so divergence is impossible by construction rather than by
- * discipline. (Same reason `/art-gallery` spreads `track-materials.ts`.)
- *
- * WHY `memo`: the controls (overlay mode, opacity, board) live in the DOM sibling and change on every slider
- * drag. Without memo each drag would reconcile the entire R3F subtree. The `children` element identity is
- * stable across those re-renders (it comes from the route's render, not the lab's), so memo genuinely bails
- * out. Non-negotiable #4, applied to a control panel rather than a frame loop.
- */
 export const IsoLabCanvas = memo( function IsoLabCanvas( {
     children,
     size,
@@ -33,11 +18,9 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
     rig,
 }: {
     children: ReactNode;
-    /** The subject's largest world dimension — drives camera distance and ruler height. Nothing is scaled. */
     size: number;
     bloom: boolean;
     grid: boolean;
-    /** The neutral ambient+directional pair and the scale ruler. Off for an ingredient that IS the lighting. */
     rig: boolean;
 } ) {
     const dist = Math.max( 12, size * FRAMING );
@@ -54,14 +37,6 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
         >
             <color attach="background" args={ [ GRID_VOID.background ] } />
 
-            { /* Deliberately NOT the game's fog: at 300u a monolith would sit inside GRID_VOID's 460u far
-                 plane and be judged half-dissolved. Atmosphere is `/art-lab`'s question; this route answers
-                 "what is this object". Lighting stays neutral and matches `/art-gallery` so the two agree.
-
-                 Suppressible via `rig`, because ONE ingredient — the sky — is itself the lighting, and a
-                 neutral directional light there would light a roughness probe all on its own and quietly make
-                 the environment self-test pass whether or not the environment works. The ruler goes with it:
-                 it is an emissive cyan bar, which is exactly what a cold sky must not be judged against. */ }
             { rig ? (
                 <Fragment>
                     <ambientLight intensity={ 0.5 } />
@@ -75,9 +50,6 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
 
             { rig ? <ScaleReference height={ size } offsetX={ -size * REF_OFFSET } /> : <Fragment /> }
 
-            { /* True-scale ground grid: one cell = CELL (4u, the AUTHORING snap grid — never a runtime unit,
-                 GDD §0), one heavy section = 64u = ONE FULL TRACK WIDTH. So "how many heavy squares wide is
-                 this thing" reads directly as "how many track widths". */ }
             { grid ? (
                 <Grid
                     args={ [ 10, 10 ] }
@@ -96,10 +68,6 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
                 <Fragment />
             ) }
 
-            { /* Free orbit, unlike `/art-gallery`'s scripted rig. The gallery optimises for two comparable
-                 screenshots; a lab optimises for "get your eye to the angle the board was drawn from", which
-                 is exactly what a scripted rig cannot do. `makeDefault` so any drei helper added later by an
-                 ingredient lane picks these up as the scene controls instead of fighting them. */ }
             <OrbitControls
                 makeDefault
                 enableDamping
@@ -110,8 +78,6 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
                 maxPolarAngle={ Math.PI * 0.495 }
             />
 
-            { /* The shipped bloom config (GRID_VOID), so what you judge here is what ships. Toggling it off
-                 is a first-class review mode: the handoff requires readability to survive without bloom. */ }
             { bloom ? (
                 <EffectComposer multisampling={ 0 }>
                     <Bloom
@@ -126,9 +92,6 @@ export const IsoLabCanvas = memo( function IsoLabCanvas( {
             ) : (
                 <Fragment />
             ) }
-            { /* Lets every /iso-* route be photographed from a tab nobody is looking at. Never mounted on
-                 /game — it advances the sim. See app/dev/frame-tap.tsx. The DEV gate is what keeps it OUT of
-                 the production bundle, not merely inert in it. */ }
             { import.meta.env.DEV && <FrameTap /> }
         </Canvas>
     );

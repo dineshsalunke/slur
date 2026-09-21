@@ -4,59 +4,21 @@ import { IsoLabControls } from './iso-lab-controls';
 import { type OverlayMode, ReferenceOverlay } from './reference-overlay';
 
 export interface IsoLabProps {
-    /** Panel heading — the ingredient under review. */
     title: string;
-    /** The subject's largest world dimension, in units. Frames the camera and sizes the ruler. */
     size: number;
-    /** Board filename from `REFERENCE_BOARDS` to open with. */
     board: string;
-    /** The subject itself: R3F nodes, at TRUE world scale. Never scaled by the lab. */
     children: ReactNode;
-    /**
-     * The lab's neutral object rig — an ambient + directional pair, the scale ruler and the ground grid.
-     * Default on: it is what makes an OBJECT legible with nothing else in the scene. Pass `false` for an
-     * ingredient that IS the lighting (the sky), where a neutral light would answer the question being asked.
-     * Still a toggle in the panel either way — this only sets where it starts.
-     */
     rig?: boolean;
 }
 
-/**
- * The reusable isolation lab. ONE ingredient, the game's real void/bloom/materials, a concept board to
- * compare it against.
- *
- * ── HOW TO ADD AN INGREDIENT ROUTE (the whole contract — two steps, no shared files beyond one line) ──
- *   1. Create `app/routes/iso-<thing>/route.tsx`:
- *        export default function IsoThingRoute() {
- *            return <IsoLab title="Thing" size={300} board="04_asteroids_final.png"><Thing /></IsoLab>;
- *        }
- *   2. Add ONE line to `app/routes.ts`:
- *        route( 'iso-thing', 'routes/iso-thing/route.tsx' ),
- * Nothing in `app/iso-lab/` needs to change. Two lanes can do this simultaneously and touch only their own
- * directory plus one adjacent line — which is the constraint this design was built around.
- *
- * WHY NOT `<Canvas>` PER ROUTE: every ingredient must be judged under the SAME bloom and the SAME void, or
- * two lanes will unknowingly tune against different renderers and their outputs will not compose. The wrapper
- * owning the Canvas is the mechanism that makes that impossible rather than merely discouraged.
- *
- * WHY `useState` AND NOT A MODULE SINGLETON (`/art-lab` and `/art-gallery` both use singletons): those hold
- * values read PER FRAME inside `useFrame`, where a re-render would be catastrophic. Nothing here is read per
- * frame — the overlay is DOM, and the Canvas is memoised so the slider never reaches it. State that only ever
- * changes on a click belongs in React; reaching for a singleton anyway would be cargo-culting the pattern
- * past the reason it exists.
- */
 export function IsoLab( { title, size, board, children, rig = true }: IsoLabProps ) {
     const [ mode, setMode ] = useState< OverlayMode >( 'off' );
     const [ boardId, setBoardId ] = useState( board );
     const [ t, setT ] = useState( 0.5 );
     const [ bloom, setBloom ] = useState( true );
     const [ rigOn, setRigOn ] = useState( rig );
-    // The grid is part of the object rig conceptually but keeps its own toggle, so it follows `rig` only as a
-    // starting value — a ground plane under a sky is noise, a ground plane under a monolith is the scale read.
     const [ grid, setGrid ] = useState( rig );
 
-    // In `split` the render gets its own pane, so the Canvas is inset from the right by (1 - t). Everything
-    // else is full-bleed with the board stacked on top.
     const renderPane = mode === 'split' ? { right: `${ ( 1 - t ) * 100 }%` } : { right: 0 };
 
     return (
@@ -67,8 +29,6 @@ export function IsoLab( { title, size, board, children, rig = true }: IsoLabProp
                 </IsoLabCanvas>
             </div>
 
-            { /* `key` on the board id so a failed load resets when a different board is picked — otherwise
-                 one 404 would poison the overlay for the rest of the session. */ }
             <ReferenceOverlay key={ boardId } mode={ mode } boardId={ boardId } t={ t } />
 
             <IsoLabControls

@@ -1,7 +1,5 @@
 import { useSyncExternalStore } from 'react';
 
-// A module store, not route state: a hook in the route module re-renders the whole Canvas subtree on
-// every toggle (non-negotiable #10, enforced by scripts/check-canvas-isolation.mjs).
 let bloom = true;
 let showGrid = true;
 const listeners = new Set< () => void >();

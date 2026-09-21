@@ -22,8 +22,6 @@ describe( 'validateTapName', () => {
     it.each( [ '../../etc/passwd', 'a/b', 'a\\b', '.hidden', 'x.png', '', 'name with spaces', 'a'.repeat( 65 ) ] )(
         'rejects %j',
         ( bad ) => {
-            // Traversal is impossible BY CONSTRUCTION rather than by resolving-and-comparing paths: the shape
-            // whitelist cannot express `..` or a separator, so there is no path arithmetic to get wrong.
             expect( validateTapName( bad ).ok ).toBe( false );
         },
     );
@@ -35,15 +33,11 @@ describe( 'arbitrate', () => {
         expect( v.ok ).toBe( false );
         if ( ! v.ok ) {
             expect( v.status ).toBe( 504 );
-            // The hint has to say the tab need NOT be focused, or the reader goes hunting for the very
-            // dependency this instrument removed.
             expect( v.error ).toMatch( /focused/ );
         }
     } );
 
     it( 'refuses to write when several tabs answered, and names them', () => {
-        // Three lanes share one Chrome, so two tabs on one port is likely, not hypothetical. Last-write-wins
-        // here would hand a lane someone else's frame and every downstream art judgement would inherit it.
         const v = arbitrate( [
             upload( 'http://localhost:5203/art-lab' ),
             upload( 'http://localhost:5203/art-gallery' ),
@@ -56,8 +50,6 @@ describe( 'arbitrate', () => {
     } );
 
     it( 'treats one responder sending both A/B images as a single responder', () => {
-        // Keyed on distinct href, not on upload count — an `ab=1` tap legitimately produces two uploads and
-        // must not be mistaken for two tabs.
         const href = 'http://localhost:5203/art-lab';
         const v = arbitrate( [ upload( href, 'composed' ), upload( href, 'bloom-off' ) ] );
         expect( v.ok ).toBe( true );
