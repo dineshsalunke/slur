@@ -63,7 +63,7 @@ export const DEEP_SPACE: SkyConfig = {
         elevationDeg: -2,
         fovDeg: 120,
         edgeFadeDeg: 12,
-        gain: 1,
+        gain: 0.4,
     },
     stars: {
         enabled: true,
@@ -81,7 +81,7 @@ export const DEEP_SPACE: SkyConfig = {
     },
     environment: {
         resolution: 128,
-        keyIntensity: 3.2,
+        keyIntensity: 0.9,
         keyColor: '#cfe0ff',
         keySizeDeg: 60,
         fillIntensity: 0.35,

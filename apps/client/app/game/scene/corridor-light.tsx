@@ -11,7 +11,7 @@ export const BOUNCE_GROUND_COLOR = '#b2650f';
 export const BOUNCE_INTENSITY = 1.2;
 
 export const RAIL_GLOW_COLOR = MARIGOLD_EMISSIVE;
-export const RAIL_GLOW_INTENSITY = 1400;
+export const RAIL_GLOW_INTENSITY = 700;
 export const RAIL_GLOW_DISTANCE = 170;
 export const RAIL_GLOW_DECAY = 2;
 export const RAIL_GLOW_LIFT = 1.5;

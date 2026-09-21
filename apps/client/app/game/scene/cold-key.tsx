@@ -3,7 +3,7 @@ import { skyDirection } from './sky-config';
 export const KEY_BEARING_DEG = 0;
 export const KEY_ELEVATION_DEG = 45;
 export const KEY_COLOR = '#c2ccd6';
-export const KEY_INTENSITY = 1;
+export const KEY_INTENSITY = 0;
 
 const LIGHT_DISTANCE = 1000;
 
