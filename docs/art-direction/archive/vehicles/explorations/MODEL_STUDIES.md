@@ -1,0 +1,35 @@
+# Selected ship model studies
+
+Status: selected silhouettes developed into proposed model details; these new sheets are not yet user-approved. Art direction only, no development changes.
+
+## Written construction intent
+
+Dimensions remain 2.50u wide by 6.00u long for Freighter; 2.20u wide by 1.18u long for Comet, as recorded in the [scale reference](../../../ART_SCALE_REFERENCE.md). Game units are not declared metres. No height is frozen here.
+
+Sheets: [Freighter](../split_crown/references/2026-09-20_freighter_split_crown.png) and [Comet](../comet/references/2026-09-20_comet.png).
+
+Freighter: parallel-sided blunt rectangular base, paired raised longitudinal crowns around a lower spine/channel, mirrored marigold L insets on crown roofs, four stern exhausts in a centered 2-by-2 cluster. Place a forward-facing muzzle flush in each crown's front end; no separate gun pod or backward-facing muzzle.
+
+Comet: short broad blade wings, small wingtip fins, central faceted crest, paired wing-root top light recesses, two separated stern exhausts. Place forward-facing recessed weapon ports in front faces of existing wing-root housings; preserve the selected outline.
+
+Paired physical ports are an art proposal, not authorization for dual shots, changed projectile origins, or any new weapon mechanic. Claude owns implementation.
+
+## Reading the images
+
+These generated sheets clarify appearance and front/rear identity. They are not certified orthographic CAD or measured geometry. Written dimensions and construction intent take precedence over generated labels or incidental panel detail. Front/rear elevations retain perspective. Comet's corrected top panel still has residual rear-face visibility and should not be traced as an exact plan; its dimension arrows do not reliably enclose the entire hull. Exact vertex/panel correspondence remains to be resolved in a measured production model. Do not infer hidden geometry or height from them.
+
+## Prompts
+
+Built-in image generation, using the selected proposal boards as image references; Comet top panel receives a targeted orientation/unit correction.
+
+### Freighter
+
+Create a single coherent SLUR FREIGHTER / SPLIT CROWN model study sheet. Use ONLY C3 right column of input as selected design. Four views of EXACTLY SAME OBJECT: left half large elevated REAR CHASE perspective with rear engines closest and bow away; right half true orthographic TOP (nose up) above two small orthographic FRONT and REAR elevations. Consistency essential. Hull is a rectangular block exactly length-to-width 2.4:1 (6 long 2.5 wide), strictly parallel sides, flat blunt bow and stern, no taper. Two raised rectangular longitudinal roof crowns flank a lower central channel/spine. Each crown has one mirrored recessed marigold L shape on upper surface. Main stern centered raised engine block with FOUR golden rectangular apertures in precise 2x2 array. FRONT has ZERO engines: exactly two small dark circular weapon bores inside square bezels, placed flush on forward vertical end of each raised crown. NO extra weapon pods: crown itself houses gun. From rear camera, the front muzzle openings are hidden, crown backs closed metal. NO rear-facing dark muzzle holes. Top view shows crown roofs and mirrored L insets, no circular holes pointing upward. All views identical counts and positions. A few broad simple armor panels, smooth very DARK charcoal satin coated metal, very faint slate-blue reflected ambient, minimal tiny wear, no stone or grey mottled texture, no chrome, no glowing outline. Golden lights localized to roof and rear engine mouths only. Near-black clean board background. Include text heading 'SLUR / FREIGHTER — SPLIT CROWN', view labels 'CHASE', 'TOP', 'FRONT / WEAPON PORTS', 'REAR / ENGINES'. Footer 'MODEL STUDY / 2.50 W × 6.00 L / PROPOSED DETAILS'. Orthographic top must visibly have accurate rectangular 2.4 length/width ratio, do not make needle 4:1. No added designs, no scenery, no weapons firing, no HUD. Visually rich yet minimal game-ready shape language, no production accuracy claims.
+
+### Comet
+
+Create coherent SLUR COMET model study sheet using ONLY right-hand COMET in input as selected identity. Do NOT use Freighter on left. Four views of EXACT SAME SHIP: left half large elevated REAR CHASE view rear engines closest nose away; right half true orthographic TOP nose up above small orthographic FRONT and REAR views. Preserve thin broad angular blade wings, short faceted central diamond crest, small raised wingtip fins, TWO separated rectangular golden rear engine mouths beside central pod, two small golden top wing-root recesses. Footprint exactly 2.20 wide by 1.18 long: TOP VIEW must be almost TWICE AS WIDE AS LONG (1.86:1), SHORT nose inside envelope. Do not elongate center pod or sweep wings backwards into long fighter. Weapon integration new detail: two SMALL dark circular muzzles in square bezels flush within FORWARD vertical faces of wing-root engine housings, ahead of engines, no added turrets or gun pods, no large barrels, no silhouette extension. Main REAR chase shows closed backs and exhausts, NO dark muzzles pointing back. FRONT view shows exactly two dark muzzle apertures, ZERO glowing rear engines. TOP shows only roof crest/recesses, no bores pointing upward. Rear view shows two warm rectangular engines and wing silhouette. Exact same wing shape, tip fins and placement between all views. Smooth dark nearly-black satin coated metal, faint desaturated slate ambient, spare broad facets, minimal scuffing, NO mottled stone texture or light grey raw metal. Localized golden marigold top lights and engine mouths, no luminous edges or giant exhaust flames. Near-black clean background. Text heading 'SLUR / COMET', view labels 'CHASE', 'TOP', 'FRONT / WEAPON PORTS', 'REAR / ENGINES'. Footer 'MODEL STUDY / 2.20 W × 1.18 L / PROPOSED DETAILS'. Premium restrained sci-fi form study, no scenery, no HUD, no added alternate designs.
+
+### Comet top correction
+
+Edit this model sheet with a precise correction ONLY to the TOP panel at upper right. It currently incorrectly repeats a rear perspective. Replace that ship with a TRUE DIRECT OVERHEAD ORTHOGRAPHIC PLAN VIEW of same Comet: camera vertically above looking straight down, nose points straight UP, no visible front/rear vertical faces, no engine apertures visible because they face horizontally backward. Wing tips and short central diamond pod all seen from directly above. Plan footprint width 2.20 units and length 1.18 units, ratio 1.864 wide-to-long. Preserve selected wide blade-wing contour, crest, top marigold wing-root insets and thin raised wingtip fins. Engine roof housings are dark with no glowing exhaust facing sky. Dimensions should read '2.20 u' horizontally and '1.18 u' vertically, NOT meters. Remove '(ORTHOGRAPHIC)' redundant text and retain 'TOP'. All other panels, rear chase hero, forward muzzle view, rear engine view, title, dark material and palette unchanged. Do not change silhouette or embellish surfaces.
