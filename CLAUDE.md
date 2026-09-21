@@ -1,82 +1,68 @@
-<!-- WRITING STANDARD — ASD-STE100 (Simplified Technical English). All CLAUDE-facing docs and replies SHALL
-conform to ASD-STE100 where applicable: short sentences, active voice, one instruction per sentence, approved
-vocabulary, no needless synonyms. "Where applicable" = procedural, spec, and how-to prose. Evocative design
-pitch and flavour copy keep their voice. When clarity and voice conflict in technical text, clarity wins. -->
-
 # SLUR — Project Guide
 
-**SLUR** is a casual **multiplayer ship-racer** — play it on the office **LAN** or **hosted on the web** — a
-party game about *messing with your friends*. Player-controlled flight down a **finite track to a finish line**
-— **Race** — over courses that range from short to long. SkyRoads (1993) speed/jump × Blur (2010) pickup-combat
-× [cuberun](https://github.com/akarlsten/cuberun) neon. Aesthetic = **"Cold Space. Warm Energy."** — marigold-primary,
-TRON-*influenced* not TRON-literal; frozen by the external art package `docs/art-direction/`
-(**ADR-008**, supersedes the full-TRON pivot and closes #117 as moot). **Real dimensions live in
-`docs/ART_SCALE_REFERENCE.md`** — it overrides every scale number on a concept board. Server-authoritative,
-**round-based** — the host launches a run and everyone in the room races together; **join a room anytime and
-race the next round** (the field locks at GO; late joiners spectate). Asymmetric ship classes
-(Fighter/Freighter/Interceptor…).
+**SLUR** is a casual **multiplayer ship-racer** — office **LAN** or **hosted on the web** — a party game
+about *messing with your friends*. Player-controlled flight down a **finite track to a finish line**
+(**Race**), over courses ranging short to long. SkyRoads (1993) speed/jump × Blur (2010) pickup-combat ×
+[cuberun](https://github.com/akarlsten/cuberun) neon. Aesthetic = **"Cold Space. Warm Energy."** —
+marigold-primary, TRON-*influenced* not TRON-literal. Server-authoritative, **round-based**: the host
+launches a run and the room races together; join anytime, the field locks at GO and late joiners spectate.
+Asymmetric ship classes (Fighter/Freighter/Interceptor…).
 
-Design lives in **`docs/`** (GDD · TDD · ADD · AUDIO). This file is **how we build**. Retired design intent
-lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions + rationale in
-`docs/DECISIONS.md`.
-
-> ### ▶ The procedural ART arc and its review routes were DELETED (2026-09-21).
-> `.claude/art-pass/` — 86 files: the six-task index (background → track → lighting → monoliths →
-> asteroids → composition), its lane briefs, handovers and frame-tap refs — is gone, together with the
-> **`/art-lab`**, **`/art-gallery`** and four **`/iso-*`** routes, `app/iso-lab/`, and the `artRefsPlugin`
-> that served concept boards into them. Nothing here supersedes that arc; it was removed, not replaced.
-> Recover any of it with `git show e56f643 -- .claude/art-pass`.
->
-> **What still governs art**, both Claude-owned and both outside the deleted tree:
-> **`docs/ART_SCALE_REFERENCE.md`** (real dimensions — overrides every number printed on a concept board)
-> and **`docs/ART_MATERIALS.md`** (nine material families, element→material map, marigold intensity
-> tiers). **What is left to look at art in:** **`/env-lab`**, and a hosted room (`/game/:roomId`) for the
-> real track.
+**Design lives in `docs/`** (GDD · TDD · ADD · AUDIO). **This file is *how we build*.** Decisions +
+rationale: `docs/DECISIONS.md` (ADR log). Retired design intent: `docs/archive/superseded-design.md`
+(forward-framed as **PRECEDED**).
 
 > ### 🚫 `docs/art-direction/` is ChatGPT's workspace — READ-ONLY for Claude.
-> The owner runs a **ChatGPT project pointed at that folder**; it is Codex's working set, not ours.
-> **Never edit, move, rename, reformat, reflow, split, consolidate or delete anything under
-> `docs/art-direction/`** — docs, boards, `manifest.json`, all of it. That includes tidying: do not
-> "fix" a stale dimension, resolve a documented conflict in place, correct the manifest, or reshoot a
-> board. Renaming or reorganising the folder breaks the file set ChatGPT is indexed against. If a change
-> in there is genuinely needed, **ask the owner** — they make it on the ChatGPT side.
+> The owner runs a **ChatGPT project pointed at that folder**; it is Codex's working set. **Never edit,
+> move, rename, reformat, split, consolidate or delete anything under it** — images, docs, all of it. That
+> includes tidying: do not "fix" a stale dimension or resolve a documented conflict in place. Renaming
+> breaks the file set ChatGPT is indexed against. If a change is genuinely needed, **ask the owner**.
+> Images will **not** be re-rendered on our say-so — use them for LOOK, never for SIZE.
+>
+> **Structure (re-organised 2026-09-20/21 — the old `handoff/` + numbered `boards/` layout is gone).**
+> Start at `docs/art-direction/README.md`: the confirmed image set by subject — `golden-reference/` ·
+> `background/` · `track/` · `ingredients/blocks/` · `vehicles/<ship>/` · `progression/`. Open issues live
+> in `AUDIT.md`; each subject's `explorations/` folder is git-ignored draft space. **Docs elsewhere in the
+> repo still cite the retired `handoff/`/`boards/NN_*` paths** — treat any such reference as stale and
+> resolve it through `README.md`.
 >
 > **Division of labour:** Codex owns art design, visual review and direction; **Claude owns
-> implementation** and the engineering-side sheets. Claude's art outputs live **outside** that folder —
-> `docs/ART_SCALE_REFERENCE.md` (dimensions, overrides every board number), **`docs/ART_MATERIALS.md`**
-> (surfaces: nine material families, element→material map, marigold intensity tiers), and
-> `.claude/art-pass/` (execution).
+> implementation** and the engineering-side sheets — `docs/ART_SCALE_REFERENCE.md` (real dimensions;
+> **overrides every scale number on a concept board**) and `docs/ART_MATERIALS.md` (nine material families,
+> element→material map, marigold intensity tiers).
 >
-> **How to disagree with the package:** never by editing it. Write the correction in a Claude-owned doc
-> with an explicit *decisions + departures* section that quotes the package wording it changes (see
-> `ART_MATERIALS.md` §7 for the shape), then hand it to the owner to paste into ChatGPT. A silent edit
-> inside the folder is invisible to Codex and desynchronises both sides. Boards will **not** be
-> reshot — stop asking; use them for LOOK, never for SIZE.
+> **How to disagree with the package:** never by editing it. Write the correction in a Claude-owned doc with
+> an explicit *decisions + departures* section quoting the package wording it changes (`ART_MATERIALS.md` §7
+> shows the shape), then hand it to the owner to paste into ChatGPT. A silent edit inside the folder is
+> invisible to Codex and desynchronises both sides.
+>
+> **Where to look at art:** `/env-lab`, and a hosted room (`/game/:roomId`) for the real track. The
+> `/art-lab`, `/art-gallery` and `/iso-*` routes and `.claude/art-pass/` were **deleted 2026-09-21** —
+> removed, not replaced. Recover with `git show e56f643 -- .claude/art-pass`.
 
 ---
 
-## ⚠️ Golden rule — read the conventions before touching a subsystem
+## ⚠ Golden rule — read the conventions before touching a subsystem
 
 `conventions/*.md` are the **distilled, source-verified research** for each part of the stack — idioms,
-version pins, anti-patterns, footguns. They exist so we **don't re-derive the stack from memory** (memory is
-often wrong about these exact APIs/versions — see notes below).
+version pins, anti-patterns, footguns. They exist so we **don't re-derive the stack from memory**.
 
-**Before writing or changing code in a subsystem, read its `conventions/*.md` file.** Read the *one* you
-need — do not bulk-load all seven every session (wasteful). This rule replaces auto-loading everything.
+The hard rules of each are mirrored as **path-scoped rules in `.claude/rules/`**, which load automatically
+when a matching file is read. The file below is the research behind them: **read the one you need before
+non-trivial work in its subsystem** — never bulk-load all seven.
 
-| Touching… | Read first | Verified-this-session pins & gotchas |
-|-----------|-----------|--------------------------------------|
-| Server / rooms / state sync | `conventions/colyseus.md` | Colyseus **0.17.10**; client is **`@colyseus/sdk` 0.17.43** (NOT legacy `colyseus.js`); `@colyseus/schema` **4.0.30**; callbacks via `getStateCallbacks(room)` |
-| Client routing / app shell | `conventions/react-router.md` | React Router **8.3.0**, **framework mode SPA** (`ssr:false`); Route Modules + `routes.ts`; import from `react-router` (no `react-router-dom`); ESM-only; `useBlocker` guards back-button mid-match |
-| Rendering / VFX / bloom | `conventions/r3f.md` | R3F **9.7.0**, drei **10.7.8**, postprocessing **3.0.4**; **pin `three@0.185.x`** (postprocessing peer `<0.186`); HDR emissive + single global `<Bloom>` |
-| Entities / systems / sim | `conventions/ecs.md` | **koota 0.6.6** (chosen over miniplex/bitECS); no-re-render bridge; `reconcile()` Colyseus→ECS |
-| Networking / prediction | `conventions/netcode.md` | Inputs-not-positions; shared 60Hz `simulate()`; `patchRate` 20Hz; server-authoritative hits |
-| Repo / builds / packages | `conventions/monorepo.md` | pnpm **11.20.0**; `packages/shared` is **`tsc`-compiled** (schema needs `experimentalDecorators`), not source-consumed |
-| 2D UI styling (HUD/lobby/landing) | `conventions/tailwind.md` | **Tailwind CSS v4** (`tailwindcss` **4.3.3** + `@tailwindcss/vite` **4.3.3**); CSS-first (`@import "tailwindcss"`, no config file); **DOM UI ONLY — never the Canvas**; no vanilla `.css`/CSS-Modules for new UI |
+| Touching… | Read first |
+|-----------|-----------|
+| Server / rooms / state sync | `conventions/colyseus.md` |
+| Client routing / app shell | `conventions/react-router.md` |
+| Rendering / VFX / bloom | `conventions/r3f.md` |
+| Entities / systems / sim | `conventions/ecs.md` |
+| Networking / prediction | `conventions/netcode.md` |
+| Repo / builds / packages | `conventions/monorepo.md` |
+| 2D UI styling (HUD/lobby/landing) | `conventions/tailwind.md` |
 
-See `conventions/README.md` for the index.
-
----
+Exact versions are pinned in the **pnpm catalog** (`pnpm-workspace.yaml`) — the single source of truth. Never
+hand-copy a version into prose; read the catalog. Index: `conventions/README.md`.
 
 ## Stack (decided)
 
@@ -85,13 +71,11 @@ See `conventions/README.md` for the index.
 | Server | Colyseus 0.17 (`@colyseus/schema` 4) |
 | Client routing | React Router 8 (framework mode, SPA `ssr:false`) |
 | Rendering | React Three Fiber 9 + drei + postprocessing (three **0.185.x**) |
-| 2D UI styling | **Tailwind CSS v4** (DOM UI only — HUD/lobby/landing; never the Canvas) |
-| Simulation | **koota** ECS |
-| Repo | pnpm workspace monorepo (plain `pnpm -r`, no Turborepo yet) |
+| 2D UI styling | **Tailwind CSS v4** (DOM UI only — never the Canvas) |
+| Simulation | **koota** ECS (client-only; the server runs the plain shared `simulate()`) |
+| Repo | pnpm workspace monorepo (plain `pnpm -r`, no Turborepo) |
 | Build | Vite 8 (client) · tsx/Node ESM (server) · `tsc -b` (shared) |
 | Language | TypeScript 7 (strict), ESM everywhere |
-
-Versions are pinned via a **pnpm catalog** (`pnpm-workspace.yaml`) — single source of truth; see `monorepo.md`.
 
 ## Monorepo layout
 
@@ -104,152 +88,121 @@ slur/
 │   └── shared/      @slur/shared   — Schema classes + shared simulate() + constants/types
 │                                     COMPILED (tsc→dist), ESM-only, private
 ├── conventions/     stack idioms (read-before-touching)
-└── docs/            GDD · TDD · ADD · AUDIO
+└── docs/            GDD · TDD · ADD · AUDIO · DECISIONS · ART_*
 ```
 **Package scope: `@slur/*`.** No `game-core` / `config` packages until real duplication demands them.
 
-## The load-bearing contract (baseline — `docs/DECISIONS.md` ADR-000)
+## The load-bearing contract
 
 > A room is a **descriptor** + **sequence-numbered inputs** + a thin slice of **dynamic state**. The server
 > never sends geometry or visuals. Both ends materialize an *identical* physics-and-anchors `Track` from the
-> descriptor (procgen or authored provider); the one shared `simulate()` runs over it. Prediction,
-> collision-networking, deterministic pickups/anchors, and hazards are **consequences of one fact: the sim
-> depends on the `Track` *abstraction* + determinism — never on how the track was produced.**
+> descriptor; the one shared `simulate()` runs over it.
 
-**Four invariants** (everything else derives): **(1)** descriptor is synced, the `Track` is materialized
-locally — never sync the `Track`; **(2)** `Track` = gameplay data only (physics + anchors), zero visuals —
-litmus: "would two clients disagreeing on this field desync the game?" (yes → in Track); **(3)** motion-affecting
-→ shared `simulate()` + synced state, cosmetic → broadcast; **(4)** determinism — identical materialize +
-`simulate()` across both JS engines (integer/IEEE-754 basic ops only, no transcendentals in the shared path).
+Prediction, collision-networking, deterministic pickups/anchors and hazards are all consequences of that one
+fact. **Full statement + the four invariants: `docs/DECISIONS.md` ADR-000** — read it before changing
+anything about track, state or sync.
 
 ## Project non-negotiables
 
-1. **Server is authoritative.** Clients send **inputs (sequence-numbered), never positions**. Server owns positions, hits, pickups, deaths.
-2. **Deterministic track from a descriptor** (in room state) — materialized identically on both ends behind the `Track` interface; never sync geometry tile-by-tile. *(← was "from a seed"; the seed is now one field inside the descriptor, owned by the procgen provider — ADR-000/ADR-001.)*
-3. **One shared `simulate()`** (60Hz fixed timestep) in `@slur/shared`, imported by client (prediction) and server (authority).
-4. **No per-frame React re-renders in gameplay.** ECS → R3F via refs/instancing in `useFrame` (see `ecs.md`/`r3f.md`).
-5. **`@slur/shared` is `tsc`-compiled to `dist`**, not JIT-source-consumed — the `@colyseus/schema` decorator config makes source-consumption a silent wire-corruption footgun.
-6. **Ship stats are data** (`ShipClass` config in `@slur/shared`), server-authoritative — balancing is a config edit, not code.
+1. **Server is authoritative.** Clients send **inputs (sequence-numbered), never positions**. Server owns
+   positions, hits, pickups, deaths.
+2. **Deterministic track from a descriptor** (in room state) — materialized identically on both ends behind
+   the `Track` interface; never sync geometry tile-by-tile (ADR-000/ADR-001).
+3. **One shared `simulate()`** (60Hz fixed timestep) in `@slur/shared`, imported by client (prediction) and
+   server (authority).
+4. **No per-frame React re-renders in gameplay.** ECS → R3F via refs/instancing in `useFrame`
+   (`ecs.md`/`r3f.md`).
+5. **`@slur/shared` is `tsc`-compiled to `dist`**, not JIT-source-consumed — the `@colyseus/schema`
+   decorator config makes source-consumption a silent wire-corruption footgun.
+6. **Ship stats are data** (`ShipClass` config in `@slur/shared`), server-authoritative — balancing is a
+   config edit, not code.
 7. **No Python** for tooling/scripts (inherits user rule NN-1): jq/yq → fish/bash → node.
-8. **`useEffect` is an escape hatch, NOT the default — and never the *only* way.** React's own docs file
-   Effects under **"Escape Hatches"** and ship a page titled *"You Might Not Need an Effect"*: Effects
-   exist to synchronize with systems *outside* React, and are the tool of **last** resort. Reach for the
-   idiomatic mechanism FIRST — derive during render, handle events in handlers, own/flow data through
-   **React Router loaders/actions**, use refs for imperative work, and keep **long-lived resources
-   (sockets, subscriptions, the Colyseus room, timers) OUTSIDE React on module singletons** — never tied
-   to a component's mount/unmount. **Coupling a connection's lifetime to a `useEffect` cleanup is the
-   exact bug that cost S2** (`room.leave()` in an unmount cleanup → a route remount tore the room down →
-   a new room every render, two clients never shared one). Meta-rule: the framework authors built these
-   idioms deliberately — "most code does X" (including model training priors) is **not** evidence X is
-   right; it is usually the mediocre default. Follow the idiom, and understand **why** before deviating.
-   *(This is a hard non-negotiable, per explicit user directive after the S2 incident.)*
-9. **React house style** (per explicit user directive, 2026-08-09): **no fragment shorthand** — write
-   `<Fragment>…</Fragment>`, never `<>…</>`; **one component per file** (file name matches the component;
-   helpers/hooks/constants may share). Exception: React Router route modules (`root.tsx`, `routes/*`) keep
-   their framework-mandated multi-export. Full rule + rationale in `conventions/r3f.md` ("House React style").
-10. **Componentize by subscription boundary — push every subscription DOWN to its leaf** (per explicit user
-    directive, 2026-08-10). Split components wherever a distinct data subscription lives (koota `useQuery`, a
-    Colyseus `.listen`, a React Router loader value, any store hook) so a change re-renders **only that leaf,
-    never its siblings**. A parent that wraps siblings holds **zero** reactive subscriptions — only
-    `useWorld()`/context + `useFrame`. Never subscribe high and prop-drill the value down. This is the
-    composition rule *behind* non-negotiable #4: components are split so each re-render boundary is as small
-    and as low in the tree as possible — not for tidiness. Full rule + rationale in `conventions/r3f.md`
-    ("Componentize by subscription boundary"); backing incident: `colyseus-state-not-reactive` +
-    `think-rerender-subscription-impact` memories.
-11. **Space is CONTINUOUS; `CELL = 4u` is an AUTHORING SNAP GRID ONLY — read GDD §0 before ANY track/geometry/
-    ship-size/collision work** (per explicit user directive, 2026-08-11 — this is core gameplay and was
-    repeatedly misunderstood). `CELL` is the design-time snap increment for **all** authoring (procgen +
-    hand-authored) — it is **NOT** a runtime unit, **NOT** a movement snap, **NOT** a block-size rule, and the
-    sim never reads it (collision is continuous float-AABB in `step.ts`). **Blocks may be any size** (`5.5×5.5×8u`,
-    …) — never assume cell multiples. The **one** load-bearing spatial invariant is threadable clearance:
-    at every z-slice the widest lethal-free floor run **≥ `MIN_CLEAR = MAX_SHIP_WIDTH (1 cell = 4u) +
-    CLEARANCE_MARGIN (3u) = 7u`**. Ceiling is the **ship-size contract** (widest class ≤ 1 cell, GDD §5.5), NOT
-    roster-max (so a seed's geometry is stable across roster edits); a module-load assertion `2·max(halfW) ≤
-    MAX_SHIP_WIDTH` enforces conformance. Never hand-type a width against the grid — that caused the stale
-    "Freighter 3.6u" bug. Full contract: **GDD §0**. Generator internals: ADR-007 (`docs/DECISIONS.md`).
-13. **Write to the INSTALLED stack, not to training-default habits — verify the mechanism before you type it**
-    (per explicit user directive, 2026-08-12, after PR #85). Before writing code in a subsystem, confirm what
-    the project *actually* uses and how **that** tool wants the job done: read the subsystem `conventions/*.md`,
-    then the **official docs / typed API for the installed version** (source-precedence: official docs → project
-    repo/README/CHANGELOG/`.d.ts` → upstream source, `node_modules` implementation **last resort** → ask). A
-    stack fact that underwrites code — an API, flag, version, feature — must be **verified-this-session**, never
-    recalled. "Most code I've seen does X" is not evidence; it is usually the mediocre default, and model
-    training priors skew hard toward it. **Incident (PR #85):** a HUD hand-rolled a `style={{}}` object while
-    **Tailwind v4** was configured, and reached for `setInterval` while **R3F ships `addEffect`** (a global
-    per-frame callback, `(cb) => () => void`, that runs *outside* the Canvas) — both because a default habit was
-    written down instead of the stack being checked. Read the docs/`.d.ts` *first*; the primitive you reflexively
-    know is rarely the one the stack provides.
-14. **No reflexive primitive — enumerate ≥5 options, weigh them, then choose (and record why)** (per explicit
-    user directive, 2026-08-12, after PR #85). For any *mechanism* decision — how something runs each frame,
-    where state lives, how a resource is owned, how two systems talk — the trained defaults (`setInterval` /
-    `setTimeout`, `useEffect`, `useState`, a fresh `requestAnimationFrame` loop, prop-drilling) are the **last**
-    candidates, not the first. Understand the requirement, survey the installed stack for the **purpose-built**
-    mechanism, list **at least five** candidates, weigh each (correctness · one-clock-vs-many · re-render cost ·
-    idiom-fit · reuses-existing-loop), and commit the winner with the weighing of the candidates **in the
-    PR body** — never the source (#15: no comments).
-    **Incident (PR #85):** a per-frame threat scan shipped as a *third* competing `setInterval` (then papered
-    over with a CSS transition to hide the 100 ms stepping) because no alternatives were enumerated; the real
-    option set was R3F `addEffect` · drei `<Html>`/`createPortal` driven by `useFrame` · the existing `net-loop`
-    `useFrame` publishing a `--threat` CSS var · a raw rAF — and the timer ranked **last**. A raw
-    `setInterval`/`setTimeout` polling live game state is **rejected on sight** (CONTRIBUTING §5).
-15. **No comments at all — except `setTimeout`, `setInterval` and `useEffect`** (per explicit user directive,
-    2026-09-21; supersedes the earlier "terse, only what the code cannot say" bar). Code carries its meaning
-    in names, types and control flow. Anything a reader cannot get from those — a rejected alternative, an
-    external constraint, a non-obvious consequence, a unit — goes in the **PR body**, where someone reading
-    the change wants it, never in the file, where everyone reading the function pays for it forever.
-    **Exactly three constructs may carry a comment**: `setTimeout`, `setInterval` and `useEffect` — **one
-    line each**, saying why it exists (for `useEffect`, naming the outside-React system it synchronizes
-    with). Nothing else gets one: no file headers, no section banners, no unit notes, no "why" blocks, no
-    `//` above a function, no JSDoc. Functional directives are not prose and are exempt — `biome-ignore`,
-    `@ts-expect-error`, `/// <reference`, `#!` shebangs. **"Match the surrounding code" never applies to
-    comments** — the bar is absolute, and an over-commented file is not a licence to keep writing at that
-    rate; strip what you touch. **`pnpm lint` enforces it** — `scripts/check-comment-ratio.mjs`: a file you
-    touch may not come out with more comment lines than it went in with, and a new file may not exceed 20%
-    comments.
-    **Incident:** the codebase had drifted into 10–20 line blocks ("JUSTIFIED EFFECT", "five mechanisms
-    weighed") — "these comments are too verbose and fancy language". Two successive attempts to hold a
-    *judgement-based* bar ("only what the code cannot say") drifted back; the bar is now mechanical, so
-    there is nothing to judge.
+8. **`useEffect` is an escape hatch, NOT the default — and never the *only* way.** Reach for the idiomatic
+   mechanism FIRST: derive during render, handle events in handlers, flow data through **React Router
+   loaders/actions**, use refs for imperative work, and keep **long-lived resources (sockets, subscriptions,
+   the Colyseus room, timers) OUTSIDE React on module singletons** — never tied to a component's
+   mount/unmount. **Coupling a connection's lifetime to a `useEffect` cleanup is the exact bug that cost
+   S2** (`room.leave()` in an unmount cleanup → a route remount tore the room down → a new room per render).
+   Meta-rule: "most code does X" (including model training priors) is **not** evidence X is right; it is
+   usually the mediocre default.
+9. **React house style:** **no fragment shorthand** — write `<Fragment>…</Fragment>`, never `<>…</>`; **one
+   component per file** (file name matches the component; helpers/hooks/constants may share). Exception:
+   React Router route modules (`root.tsx`, `routes/*`) keep their framework-mandated multi-export. Rationale
+   in `conventions/r3f.md` ("House React style").
+10. **Componentize by subscription boundary — push every subscription DOWN to its leaf.** Split components
+    wherever a distinct data subscription lives (koota `useQuery`, a Colyseus `.listen`, a loader value, any
+    store hook) so a change re-renders **only that leaf, never its siblings**. A parent that wraps siblings
+    holds **zero** reactive subscriptions — only `useWorld()`/context + `useFrame`. Never subscribe high and
+    prop-drill down. This is the composition rule *behind* #4. Rationale in `conventions/r3f.md`.
+11. **Space is CONTINUOUS; `CELL = 4u` is an AUTHORING SNAP GRID ONLY.** Not a runtime unit, not a movement
+    snap, not a block-size rule — the sim never reads it (collision is continuous float-AABB in `step.ts`),
+    and blocks may be any size. The one load-bearing spatial invariant is **threadable clearance** at every
+    z-slice. **Read GDD §0 before any track/geometry/ship-size/collision work** — it holds the contract, its
+    constants and the roster-conformance rule. Generator internals: ADR-006/ADR-007.
+    (`.claude/rules/track-space.md`.)
+12. **Write to the INSTALLED stack, not to training-default habits — verify the mechanism before you type
+    it.** Before writing code in a subsystem, confirm what the project *actually* uses and how **that** tool
+    wants the job done: read the subsystem `conventions/*.md`, then the **official docs / typed API for the
+    installed version** (source-precedence: official docs → project repo/README/CHANGELOG/`.d.ts` → upstream
+    source → `node_modules` last resort → ask). A stack fact that underwrites code must be
+    **verified-this-session**, never recalled. **Incident (PR #85):** a HUD hand-rolled a `style={{}}` object
+    while **Tailwind v4** was configured, and reached for `setInterval` while **R3F ships `addEffect`** — both
+    because a default habit was written down instead of the stack being checked.
+13. **No reflexive primitive — enumerate ≥5 options, weigh them, then choose (and record why).** For any
+    *mechanism* decision (how something runs each frame, where state lives, how a resource is owned, how two
+    systems talk) the trained defaults — `setInterval`/`setTimeout`, `useEffect`, `useState`, a fresh rAF
+    loop, prop-drilling — are the **last** candidates. Survey the installed stack for the **purpose-built**
+    mechanism, list **at least five** candidates, weigh each (correctness · one-clock-vs-many · re-render
+    cost · idiom-fit · reuses-existing-loop), and commit the winner with the weighing **in the PR body** —
+    never the source (#14). A raw `setInterval`/`setTimeout` polling live game state is **rejected on sight**
+    (CONTRIBUTING §5).
+14. **No comments at all — except `setTimeout`, `setInterval` and `useEffect`**, one line each saying why it
+    exists (for `useEffect`, naming the outside-React system it synchronizes with). Anything a reader cannot
+    get from names, types and control flow goes in the **PR body**, never the file. **"Match the surrounding
+    code" never applies to comments** — the bar is absolute; strip what you touch. `pnpm lint` enforces it
+    (`scripts/check-comment-ratio.mjs`). Full rule: `.claude/rules/comments.md`.
 
 ## Dev workflow
 
-Scaffolded and verified 2026-08-06 (**runnable blank skeletons, no game logic yet**). From the repo root:
+From the repo root:
 
 | Command | Does |
 |---------|------|
-| `pnpm install` | Install all workspaces (pnpm 11, catalog-pinned) |
+| `pnpm install` | Install all workspaces (catalog-pinned) |
 | `pnpm dev` | All three in parallel: `shared` tsc-watch · `server` (tsx watch, `:2567`) · `client` (react-router dev, `:5173`) |
 | `pnpm build` | Topological build: shared → server → client SPA (`apps/client/build/client`) |
 | `pnpm typecheck` | `tsc -b` (shared/server) + `react-router typegen && tsc` (client) |
-| `pnpm lint` | `biome check .` + `ls-lint` |
+| `pnpm test` | `node:test` (shared, server) + vitest (client) |
+| `pnpm lint` | `biome check .` + `ls-lint` + `check-canvas-isolation.mjs` + `check-comment-ratio.mjs` |
 | `pnpm format` | `biome format --write .` |
 
-**As-built notes (deviations worth knowing):**
-- **Server transport:** `@colyseus/core` + `@colyseus/ws-transport` + `express` — NOT the `colyseus` meta-package (it pulls a git-based uWebSockets build pnpm blocks, plus auth/monitor/redis we don't need). `express` is ws-transport's optional peer.
-- **0.17 client SDK is `@colyseus/sdk`**, not legacy `colyseus.js` (frozen at 0.16) — deferred until the client talks to the server.
-- **Deferred deps (implement phase):** R3F/three/drei/postprocessing/koota/`@colyseus/sdk` are NOT installed yet; client renders a blank page.
-- **`@slur/shared` now holds the S1 flight sim** — tuning/constants, input, `SimShip`, phase-split `stepShip`, fixed-step. Jump physics **derived** from `DEFAULT_JUMP` (GDC "Building a Better Jump"). Schema/networked state still land in S2.
-- **`/solo` was REMOVED** (commit `52f5a04`) and stays removed — the old S1 note "`pnpm dev` → /solo" is stale. **Playtest the track in a hosted room:** the S4 `/game/:roomId` path materializes + renders + `simulate()`s the real track, and a host can **start solo** (no min-player gate on `startRace()`) → GO → race. Controls: W/S throttle-brake, A/D strafe, Space jump (tap/hold/double), Shift boost. Tune flight via `DEFAULT_JUMP` + `DEFAULT_TUNING` in `packages/shared/src/constants.ts`; tune the track via the ADR-006 arrangement-envelope + slalom/flick constants.
-- **pnpm gates:** `allowBuilds: [esbuild, msgpackr-extract]` in `pnpm-workspace.yaml`; a global `minimumReleaseAge` policy auto-records version exclusions. `packageManager` pinned to `pnpm@11.12.0`.
+**As-built notes worth knowing:**
+- **Server transport:** `@colyseus/core` + `@colyseus/ws-transport` + `express` — NOT the `colyseus`
+  meta-package (it pulls a git-based uWebSockets build pnpm blocks, plus auth/monitor/redis we don't need).
+- **Playtest the track in a hosted room.** `/solo` was removed (`52f5a04`) and stays removed. The
+  `/game/:roomId` path materializes + renders + `simulate()`s the real track, and a host can **start solo**
+  (no min-player gate on `startRace()`) → GO → race. Controls: **W/S** throttle-brake, **A/D** strafe,
+  **Space** jump (tap/hold/double), **E** use power-up, **M** mute. Tune flight via `DEFAULT_JUMP` +
+  `DEFAULT_TUNING` in `packages/shared/src/constants.ts`; tune the track via the ADR-006 arrangement-envelope
+  + slalom/flick constants.
+- **pnpm gates:** `allowBuilds: [esbuild, msgpackr-extract]` and a `minimumReleaseAgeExclude` list in
+  `pnpm-workspace.yaml`; `packageManager` is pinned in the root `package.json`.
 - **Dev-server ports are env-driven** (issue #59) so a second stack can run alongside the first. Copy
-  `apps/client/.env.example` → `apps/client/.env` (gitignored) and set a distinct pair: `CLIENT_PORT`
-  (Vite dev port) + `VITE_SERVER_PORT` (the ws port the client connects to). Vite auto-loads that file;
-  the server reads `process.env.PORT` but `tsx` has no `.env` loader, so launch the stack with a matching
-  `PORT` in the shell — `PORT=2568 pnpm dev` (must equal `VITE_SERVER_PORT`). Defaults (no `.env`) stay
-  `:5173`/`:2567`, so ordinary use and office LAN play are unchanged.
+  `apps/client/.env.example` → `apps/client/.env` (gitignored) and set a distinct pair: `CLIENT_PORT` +
+  `VITE_SERVER_PORT`. Vite auto-loads that file; the server reads `process.env.PORT` but `tsx` has no `.env`
+  loader, so launch with a matching `PORT` in the shell — `PORT=2568 pnpm dev` (must equal
+  `VITE_SERVER_PORT`). Defaults stay `:5173`/`:2567`.
 
 ### Worktrees (optional — use them for what they're for)
 
-A worktree exists to stop **concurrent** work colliding. Reach for one when that's the actual
-problem; otherwise branch and commit in the checkout like any normal repo.
+A worktree exists to stop **concurrent** work colliding. Reach for one when that's the actual problem;
+otherwise branch and commit in the checkout like any normal repo.
 
-**Use one when:** another agent is already in the tree or you're about to fan several out in
-parallel · the branch is long-lived and you'll switch away from it mid-flight · you need a second
-live stack running at once (see the port note above) · you're reviewing a PR and don't want to
-disturb your own WIP.
+**Use one when:** another agent is already in the tree, or you're fanning several out in parallel · the
+branch is long-lived and you'll switch away mid-flight · you need a second live stack running at once (see
+the port note) · you're reviewing a PR and don't want to disturb your WIP.
 
 **Don't when** it's a small change you'll finish in one sitting and nobody else is in the tree.
-Branch, commit, push, PR. The setup costs more than the collision it's insuring against.
 
 ```
 git fetch origin
@@ -261,21 +214,37 @@ cp /Users/apple/Projects/personal/slur/.claude/settings.local.json .claude/
 
 - **Sibling path** `../slur-worktrees/<branch>` — outside the repo, so worktrees are never scanned by
   `biome check .` or discovered by pnpm's `apps/*`/`packages/*` globs.
-- **The `cp` carries `autoMemoryDirectory` across.** `settings.local.json` is gitignored, so without it a
-  fresh worktree falls back to the default store and its memories never reach `.claude/memory/`.
+- **The `cp` carries `autoMemoryDirectory` across.** `settings.local.json` is gitignored and points at the
+  in-repo `.claude/memory/`; without it a fresh worktree falls back to the default store.
 - **Cleanup:** `git worktree remove <path>` when merged (`git worktree prune` for stale ones).
 
 ## Working method
 
-- **Design docs are living.** Each carries `OPEN QUESTIONS`; resolve with the team, fold the decision in, delete the question. Don't silently diverge from the docs — update them.
-- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use `/arc` skill (load it — don't paraphrase). Thinking phases are collaborative; reviewed code is documented in the phase doc as reference, then built in Implement. Phase notes in `.claude/phases/`. **Status: S1 ✓ (solo flight sim; `/solo` since removed), S2 ✓ (networked flight), S3 ✓ — obstacle redesign + AABB collision + 5-class ship system (commit `12049bd`); 18 shared tests GREEN; feel-gate playtested (Freighter/imperial capped). **S4 ✓ — complete Race: live room list · host GO → countdown → race → leader+grace results → Play Again · lobby ship/colour pick + hero-orbit preview · spectator (cycle-any-racer) · leave guard · host authority+migration (commits `fc0418f`/`d155481`/`e5eb5f9`; human gate passed 2026-08-09). Round-based, Race spectate-next join policy (Survival dropped — ADR-004). **S5 ✓ — Combat & power-ups: BC1 server-sim projectiles → **Bolt** → **stun** (the track kills), track-placed pickups (`E` = discrete `USE_POWERUP`), server-authoritative hits; client bolt/pickup instancing + `heldPower` chip + hit-spark + on-ship stun-flicker + threat HUD; room→world bridge extracted (commits `9538e0e`→`fd6bdb3`; human gate 2026-08-10). Functionality locked, visuals polish deferred; Mine/Shield/Boost/auto-lock/rearview-mirror = fast-follows. NEXT: S6 (identity: `armour`/combat stats + lobby ship-pick UI + audio + art/juice).** S4 arc+as-built: `.claude/phases/2026-08-09-s4-session-flow.md` (+ `…-s4-batch4-spec.md`); procgen redesign (post-S4, validated headlessly): `…-procgen-flow-progression.md`. S3 arc (pt.1–5) in `.claude/phases/2026-08-09-collision-aabb-jump-vfx.md`; original S3 in `.claude/phases/2026-08-08-s3-track-hazards-collision.md`. **Design captured this session (durable in GDD):** §5.5 = 5-class matrix (Class = mechanics group, Ship = cosmetic variant; per-ship `FlightTuning`+footprint resolved by networked `shipId`); §5.2/§5.7 = **straight-ribbon + no-moving-geometry** constraints, **authored/procgen levels + two-floor fairness validator** (FIT + GAP-REACH; weave uncapped, self-balances via speed), and the **mechanic master-menu** (BC1–BC8 base capabilities). Balance is **playstyle-level, not geometry-equal**. Roadmap S1–S7 in `.claude/backlog.md`. **Track-provider ADRs (2026-08-10):** ADR-001 (`seed` → `TrackDescriptor` + `resolveTrack` provider) and ADR-002 (first-class `Track.anchors`; visual seam frozen) **SHIPPED** (#46/#47/#48); ADR-005 `validateTrack` deferred last. **ADR-006 (2026-08-10/11, playtest-tuned):** rhythm-paced generator — Believer arrangement envelope (`intensityAt`) + **discrete-slalom/flick** micro (short 4×8×8u cube pillars OUTSIDE a moving corridor via uncorrelated noise + 1-lane edge buffer; a 1-lane **flick** pillar juts in to force a sharp sidestep; slow grace-notes on the line) + **varied gaps** (full-width + partial floor-strip), over 3 fixed primitives (gaps/deadly/slow); continuous NOT a rhythm game; concretizes+supersedes ADR-003. Ships tuned for crisp flicks (strafeAccel/damp↑); chase camera raised above walls; `TRACK_SEGMENTS=400` (~2.5–2.8 min). Generator-only, feel-gated in a hosted room (`/solo` stays deleted); 71/71 tests green. **Committed `8ddc9d8`.** ("banks" was tried first + dropped as a tube.) Deferred: Slice 2 = positional-gap L/C/R *forcing*. See memory `rhythm-paced-generation` + `.claude/phases/2026-08-10-rhythm-paced-generation.md`. Full decision log + build sequence in **`docs/DECISIONS.md`**.
-- **Roadmap = GitHub issues.** Actionable work lives as GitHub issues (`github.com/dineshsalunke/slur/issues`), grouped by milestone (**S6** current · **S7** next · **Backlog** deferred). `backlog.md` and the phase notes stay the design/narrative log; the issues are the task tracker. File an issue for every feature or fix before you build it (see `CONTRIBUTING.md`).
+- **Design docs are living.** Each carries `OPEN QUESTIONS`; resolve with the team, fold the decision in,
+  delete the question. Don't silently diverge from the docs — update them.
+- **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use the `/arc` skill — load
+  it, don't paraphrase. Phase notes land in `.claude/phases/`.
+- **Where status lives — never here.** Shipped decisions + rationale: `docs/DECISIONS.md`. Arc narrative and
+  as-built notes per phase: `.claude/phases/`. Design/narrative log: `.claude/backlog.md`.
+- **Roadmap = GitHub issues** (`github.com/dineshsalunke/slur/issues`), grouped by milestone. File an issue
+  for every feature or fix before you build it (`CONTRIBUTING.md`).
 - **Batch related file changes** into one review turn.
 
----
+## How to answer
 
-## History
+- **Quote the source, don't just name it.** A bare pointer like "GDD §5.5" or "ADR-011 says so" is not an
+  answer — the reader has to go open the file to find out what you mean. Give the **file path** and the
+  **words you are relying on**:
 
-Retired design intent is **not** kept inline here — it lives in **`docs/archive/superseded-design.md`**,
-forward-framed as **PRECEDED** (what it was → what it became → the ADR that moved us). Decisions + rationale:
-**`docs/DECISIONS.md`** (the ADR log). Baseline reset was **2026-08-10** (ADR-004 dropped endless Survival).
+  > `docs/GDD.md` §5.5 — *"the widest ship class is ≤ 1 cell (`CELL` = 4u) full width"*
+
+  Same for code: name the file and line, then show the line. This applies to every claim about what a
+  document or a file says, in chat and in PR bodies.
+- **Plain English, short.** Short sentences. Active voice. One idea per sentence. Say the thing, then stop.
+  No preamble, no summary of what you are about to say, no restating the question.
+- **Cut the decoration.** No filler adjectives, no drum-roll phrasing, no long dashes stacked into a
+  paragraph-long sentence. If a sentence works with half its words, use half.
+- **Length follows the question.** A one-line question gets a one-line answer. Only a real design
+  discussion earns paragraphs, and even then keep them tight.
+- This is the response style. The doc writing standard is separate and stricter — `CONTRIBUTING.md` §8
+  (ASD-STE100).

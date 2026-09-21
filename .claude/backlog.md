@@ -5,6 +5,10 @@ Working model: pick one slice → arc (ideate → brainstorm → prep → align)
 background agent → reconcile; design the next slice while the current one builds.
 Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior's code); S5–S7 layer on S4.
 
+**Scope of this file: the SLUR roadmap** — slices, arcs, and decisions the project pipeline
+needs visible. It is committed on purpose. Loose parked scraps do NOT belong here; they go to
+the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes both).
+
 ## Pending
 
 - [~] 2026-09-18 [feature] [art] **ART PASS — the world's visual production, procedural, in six sequential tasks**
