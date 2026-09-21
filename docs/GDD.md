@@ -1,10 +1,10 @@
 # SLUR — Game Design Document (GDD)
 
-> Status: **v0 draft**. Vision captured from kickoff; mechanics deliberately loose pending playtests.
+> Status: **v1 — the design as it stands after S1–S6.** Mechanics still loosen where playtests haven't run.
 >
 > **This doc states the *current* design only** — no inline "superseded" retractions to peel back. Retired
-> design intent lives in `docs/archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions +
-> rationale live in `docs/DECISIONS.md` (the ADR log).
+> design intent lives in `archive/superseded-design.md` (forward-framed as **PRECEDED**); decisions +
+> rationale live in `DECISIONS.md` (the ADR log); *how* it is built lives in `TDD.md`.
 
 ## 0. Spatial model & units — READ THIS FIRST (load-bearing)
 
@@ -153,7 +153,9 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   in the generator until that ADR is accepted.** It is gated on a readability test (can you tell sealed from
   fractured at 55 u/s?) and carries a real cost — it converts a free seed-derived primitive into networked
   mutable state. See `docs/DECISIONS.md` ADR-009.
-- **Locked constraints (2026-08-09):** **straight ribbon** — the track *never turns/curves* (no loops/corkscrews/banked corners); **strafing is the only lateral movement** (reaffirms §5.1). **No autonomous moving geometry** (no crushers / moving cubes / conveyors) — obstacles are static; the challenge is *your* motion through them. Verticality is **impulse-only** (a launch pad pops you up; you land back on the flat ribbon — no multi-level terrain/ceilings/gravity-flip). Player-*triggered* changes (a switch) are allowed — an event, not autonomous motion.
+- **Locked constraints:** straight ribbon · strafe-only lateral · no autonomous moving geometry ·
+  impulse-only verticality. Stated once, in full, in **§5.7** — they bound the whole mechanic catalog, not
+  just the track.
 - **Procgen vs authored is now an OPEN choice** *(ADR-004 — "procgen is PRIMARY" was justified by endless
   Survival, which is dropped; recommendation: **hybrid, ruleset grammar as the pivot**)*. Both feed the same
   `Track` interface, so the sim is unchanged either way. **Fairness = two hard floors only:** **FIT** (a
@@ -161,24 +163,19 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   reach). **Weave difficulty is *uncapped*** — it self-balances via the speed dial. A **validator**
   (z-monotonic flood-fill + per-gap reach) enforces the two floors on *any* track, authored or generated —
   plus the **WYSIWYG-collision** gate (ADR-002) for authored visuals. (Balance is playstyle-level — §5.5, §5.7.)
-- **Generation — rhythm-paced (ADR-006 · 2026-08-10, current).** The core game is **three
-  primitives only: gaps + deadly blocks + slow blocks** (all else is feathering). Two layers: **(macro)** a
-  difficulty **arrangement envelope** — a staircase of escalating waves modelled on *Imagine Dragons
-  "Believer"* (tense verse breathers → building pre-choruses → escalating chorus **slams** → a **bridge
-  breakdown valley ~75%** → biggest **final chorus** → quick **outro** to a plain finish); the music is
-  **hidden pacing scaffolding only — the surface stays continuous, never a rhythm game.** **(micro)** the
-  **discrete slalom + flick** (AS-BUILT; the first "banks/corridor-edge" idea played as a tube and was dropped) —
-  **short discrete cube pillars** (4×8×8u, not full-depth walls) OUTSIDE a moving safe corridor, placed by
-  UNCORRELATED noise (sparse, +1-lane edge buffer → never clumped/tight), plus a **1-lane flick pillar** that
-  juts into the corridor to force a sharp sidestep; **slow blocks = grace-notes ON the line**; **gaps are varied**
-  (full-width jump + partial floor-strip). Ships tuned for crisp flicks; chase camera raised above the walls. Fairness is the **existing** derived caps, now the ceiling: weave speed ≤ `SLOPE_CAP`/`CURV_CAP`
-  ("how hard the peak gets = exactly what the Freighter can just barely thread"), corridor ≥ `MIN_LANE` (incl.
-  the chorus pinch), gaps ≤ `GAP-REACH`. The vocabulary is deliberately these three primitives — there is no
-  multi-beat macro grammar to wait on. Playtested in a **hosted room** (host solo → GO → race; `/solo` stays
-  removed — redundant with the S4 room path). The `D(i)` weave-line + derived slope/curvature/`MIN_LANE`
-  fairness backbone is inherited from the earlier generator and reused as the difficulty ceiling.
-  *(Prior generators — the S6 carved value-noise line + noise-walls, and the ADR-003 two-layer beat grammar —
-  are retired to `docs/archive/superseded-design.md`.)*
+- **Generation — rhythm-paced (ADR-006).** The core game is **three primitives only: gaps + deadly blocks +
+  slow blocks** (all else is feathering); there is deliberately no multi-beat macro grammar to wait on.
+  Two layers: **(macro)** a difficulty **arrangement envelope** — a staircase of escalating waves modelled
+  on *Imagine Dragons "Believer"* (tense verse breathers → building pre-choruses → chorus **slams** →
+  a **bridge breakdown valley ~75%** → biggest **final chorus** → quick **outro** to a plain finish). The
+  music is **hidden pacing scaffolding only — the surface stays continuous, never a rhythm game.**
+  **(micro)** **discrete slalom + flick** — short cube pillars OUTSIDE a moving safe corridor placed by
+  uncorrelated noise (sparse, never clumped), plus a **flick pillar** that juts into the corridor to force
+  a sharp sidestep; **slow blocks = grace-notes ON the line**; **gaps are varied** (full-width jump +
+  partial floor-strip). Fairness is the derived ceiling — weave speed ≤ `SLOPE_CAP`/`CURV_CAP` ("the peak is
+  exactly what the worst weaver can just barely thread"), a `≥ MIN_LANE` corridor per slice, gaps ≤ the
+  worst jumper's reach. Dimensions and the as-built shape live in **TDD §4**; the design argument in
+  **ADR-006**. *(Prior generators are retired to `archive/superseded-design.md`.)*
 
 ### 5.3 Power-ups (Blur trinity) — starter set
 Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time.
@@ -212,13 +209,9 @@ You pick a class at join. Five classes trade along multiple axes so none dominat
 > (→ `deriveJump`) and its `halfW`/`halfL` size. **Per-ship flight is a data swap, not a code change** — the
 > "ship stats are data, server-authoritative" non-negotiable.
 
-**`CELL = 4u` is the AUTHORING SNAP GRID — the runtime is continuous. See §0 (the load-bearing spatial
-contract) — that section governs; this is the design-intent view.** Track = **64u** wide (`HALF_WIDTH 32`;
-16 authoring lanes); a segment is **`SEG_LEN 20u`** deep. Obstacle blocks are **`BLOCK_HEIGHT 8u` tall**
-(above double-jump → **un-jumpable**: strafe around or destroy, never hop) but of **arbitrary width/depth**
-(ADR-007 — NOT locked to `1×1 cell`; see §0). The ship is
-**≤ 1 cell** wide (the §0 `MAX_SHIP_WIDTH` contract). Authoring snaps to the grid; **movement stays
-continuous** (no lane-snapping) — the cuberun contract. **Jump is only for gaps; blocks are only
+**Spatial rules come from §0 — that section governs.** In brief: the runtime is continuous, `CELL = 4u` is
+an authoring snap grid, blocks are `BLOCK_HEIGHT 8u` tall (above double-jump → **un-jumpable**) but of
+arbitrary width/depth (ADR-007), and the ship is **≤ 1 cell** wide. **Jump is only for gaps; blocks are only
 strafe-or-destroy** — the two mechanics never overlap.
 
 **Model = hitbox (WYSIWYG, LOCKED).** Each class is one of our five CC0 models, **uniform-scaled** so its visible
@@ -247,7 +240,11 @@ is a model + a `classId` (balance for free), adding a class is a new archetype. 
 **`shipId`** (set once at join/hot-swap); the sim resolves `shipId → class → tuning` identically on client and
 server (the netcode "one shared `simulate()`" requirement). Model/scale live client-side under the same id.
 
-**Flight stats (S6 target — Fighter/`DEFAULT_TUNING` is wired today; the rest are the balancing spec):**
+**Flight stats (S6 target spec).**
+> ⚠ **STALE — do not code against this table.** All five classes are wired in
+> `packages/shared/src/ship-classes.ts`, and playtest tuning moved **strafe power and grip** past these
+> numbers on every class. Top speed, accel and jump match. The source of truth is the code; reconciling the
+> table is parked in `.claude/backlog.md` (2026-09-21).
 
 | Class | Top speed | Pickup (accel) | Strafe pwr / cap | Grip (damp) | Jump h / air |
 |---|:--:|:--:|:--:|:--:|:--:|
@@ -303,18 +300,18 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Throttle · brake · coast · cruise cap | **LIVE** | player-controlled speed (§5.1) |
 | Strafe (analog, drifty→snappy) + corridor walls | **LIVE** | walls stop+slide, non-lethal |
 | Jump — variable (tap/hold) + double + coyote/buffer | **LIVE** | derived from a jump-feel spec (GDC "Building a Better Jump") |
-| Track — deterministic-from-seed, **4u cell grid** (16-lane / 64u); **procgen v2** carved-corridor + variable-width walls | **LIVE (S6)** | plain / block / gap / finish; racing-line weave (`noise.ts`); walls full-depth (`BLOCK_LIMIT` trade); feel-gate pending |
+| Track — deterministic from a descriptor; **rhythm-paced generator** (ADR-006): arrangement envelope + discrete slalom/flick + varied gaps | **LIVE** | plain / block / gap / finish; fairness caps asserted in `sim/track.test.ts` |
 | Hazards + collision — **AABB** (footprint = model box), swept land + swept body-kill | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable); generous grounded rule; WYSIWYG |
 | Death → shard-burst VFX → respawn (position-scoped grace) | **LIVE** | 1s derezz, setback + re-approach |
 | Netcode — authoritative, predict+reconcile, interp, drop-in | **LIVE** | inputs-not-positions, 60Hz sim / 20Hz patch |
 | **Boost** | **PLANNED (S5 fast-follow)** | *removed from base flight → pickup power-up; v1 shipped Bolt only* |
 | Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine/Shield/Boost/auto-lock = fast-follows |
-| Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); `armour` (stun-multiplier sidegrade) → **S6 REMAINING** |
+| Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); **`armour` (stun-multiplier sidegrade) is LIVE** on `ShipClass`, with invariant tests. Lobby pick-UI identity stats still REMAINING |
 | **Audio** — singleton engine, synth hum (pitch∝speed), CC0 SFX + CC-BY music, positional, event-bound | **LIVE (S6)** | `app/audio/**`; `M`=mute; `RemoteEngineAudio` not hear-verified |
 | **Front-of-house UI** — angular neon landing over Grid-Void | **LIVE (S6), palette PENDING** | Art direction re-frozen by `docs/art-direction/` (**ADR-008**): marigold-primary, TRON-*influenced*. The shipped palette is still the old cyan×marigold retone — recolour is the next art pass. Lobby pick-UI stats + in-game env integration REMAINING |
-| **Art review instruments** — `/art-lab` (real track · real chase cam · no server) + `/art-gallery` (subjects at true scale, shared bloom) | **REMOVED 2026-09-21** | Both deleted with the four `/iso-*` subject labs. They shared `scene/track-materials.ts` with the game, so they could not drift from it; nothing replaces that. What is left: `/env-lab` and a hosted room. Restore: `git show e56f643 -- apps/client/app/routes/art-lab` |
-| **Track surface** — generated slab (`TrackFloor`): one mesh from real `FloorSpan` data, 2u thickness, procedural graphite + 16×20u panel texture | **LIVE (art-lab only)** | Behind the `slab` toggle; NOT yet the game floor. Replaces the instanced floor when the edge rail lands |
-| **Track edge rail** — marigold profile swept along the ribbon | **NEXT** | Currently the old blazing-white rails. Procedural sweep of a 2D cross-section (ribbon never turns), shell + glow as separate geometries |
+| **Art review instruments** — `/art-lab`, `/art-gallery`, `/iso-*` | **REMOVED 2026-09-21** | Nothing replaces them. What is left: `/env-lab` and a hosted room. Restore: `git show e56f643 -- apps/client/app/routes/art-lab` |
+| **Track surface** — generated slab (`TrackFloor`): one mesh from real `FloorSpan` data, procedural graphite + 16×20u panel texture | **LIVE** | It **is** the game floor — `scene/track-view.tsx` renders `TrackFloor` + `TrackBoundary` + `TrackBlocks` |
+| **Track edge rail** — chamfered bar standing **outboard** of ±`HALF_WIDTH` (ADR-012) | **LIVE** | No drawn element may consume playable width; the deck's top face ends at exactly ±`HALF_WIDTH`. Final height + material tier still open |
 | Session flow (lobby→race→results, standings, restart) | **LIVE (S4)** | round lifecycle + room list + spectator + host migration |
 | ~~Survival mode (endless + chase-wall)~~ | **DROPPED (ADR-004)** | replaced by longer finite tracks; Race is the only mode |
 
@@ -467,11 +464,14 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 | Brake / slow | S or ↓ | Hold to decelerate (no reverse) |
 | Strafe left/right | A / D or ← / → | Lateral, **not turning**; smooth analog (lanes fallback) |
 | Jump | Space | Tap = small hop · hold = higher · double-tap = double jump |
-| Use power-up | E or LMB | Uses held power-up (incl. **Boost**, now a pickup — Shift is unbound) |
+| Use power-up | E | Uses held power-up (incl. **Boost**, now a pickup — Shift is unbound; LMB is not bound) |
 | Mute | M | Someone always needs to mute fast |
 | Leave run | Esc | No pause; leaving drops you to spectate/menu |
 
-- **Aiming:** offensive power-ups (Bolt) **auto-lock the nearest target in a forward cone** — combat is disruption, not precision, so no aim skill-wall. Mines drop behind automatically.
+- **Aiming (design intent — NOT built).** Offensive power-ups should **auto-lock the nearest target in a
+  forward cone** — combat is disruption, not precision, so no aim skill-wall. **As built the Bolt is dumb
+  and fires straight forward**; auto-lock needs BC8 (proximity/targeting) and is a fast-follow. Mines drop
+  behind automatically.
 - Chords needed simultaneously (strafe + boost + hop + fire) use common non-ghosting keys; verify on real laptops.
 
 *OPEN: rebind support, gamepad mapping — after movement prototype.*
@@ -482,15 +482,21 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 - Nobody asks "how do I play?" after one round.
 
 ## 10. OPEN QUESTIONS (resolve with team)
-1. ~~**v1 mode** — Race or Survival first?~~ **RESOLVED: Race-to-finish** (finite). ~~Survival is S7.~~ **Endless Survival DROPPED entirely — ADR-004**; the game is finite Race over short→long tracks.
-7. **Procgen vs authored** — now an OPEN choice (ADR-004 removed the endless necessity). Hybrid with the ruleset grammar as pivot? Where does the procgen/authored split land?
-8. **Descriptor shape** (ADR-001) — `RunState.seed: uint32` → a `TrackDescriptor` sub-schema `{kind, seed?/levelId?, tier?, length?}`. Exact wire fields?
-9. **Beat vocabulary + when to build the macro grammar** (ADR-003) — which BC5-family beats land first (boost/slow/launch), and how long does the difficulty arc of a "long" track run?
-2. ~~**Fuel/energy** — keep the SkyRoads resource pressure, or cut for simplicity?~~ **RESOLVED: cut.** Energy only gated boost; boost is now a pickup (§5.1, §5.3), so the meter is gone. Pickups carry their own charge.
-3. **Death penalty** — respawn into same round, wait for next round, or spectate-only until round ends?
+
+1. **Procgen vs authored** — an open choice again since ADR-004 removed the endless necessity. Hybrid with
+   the ruleset grammar as pivot? Where does the split land?
+2. **Beat vocabulary + when to build the macro grammar** (ADR-003) — which BC5-family beats land first
+   (boost/slow/launch), and how long does the difficulty arc of a "long" track run?
+3. **Death penalty** — respawn into the same round, wait for the next, or spectate-only until it ends?
 4. **Power-up carry** — hold 1, hold 2, or slot + queue?
 5. **Friendly targeting** — free-for-all only, or teams mode later?
 6. **Session length** — target minutes per round / per session?
+7. **Slow vs breakable blocks** — ADR-009 is PROPOSED and gated on a readability test; slow blocks stay live
+   in the generator until it is accepted (§5.2).
+
+*Resolved and folded in:* v1 mode = finite **Race** (endless Survival dropped — ADR-004) · fuel/energy
+**cut** (it only gated boost, which is now a pickup — §5.1/§5.3) · descriptor shape shipped as
+`TrackDescriptorState` (ADR-001; fields in TDD §5).
 
 ---
 

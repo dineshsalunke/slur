@@ -7,6 +7,17 @@ Dependency note: **S1→S2→S3→S4 are sequential** (each builds on the prior'
 
 ## Pending
 
+- [ ] 2026-09-21 [task] [docs] **Reconcile GDD §5.5 flight-stats table with shipped `ship-classes.ts`**
+  The §5.5 "Flight stats (S6 target)" table disagrees with the shipped tuning on **every** class — strafe
+  power and grip/damping are wrong across the board (Interceptor documented `195 / 12`, shipped
+  `strafeAccel 210 / strafeDamp 18`; Fighter `150 / 8` vs `165 / 14`; Comet `165 / 4` vs `180 / 9`; Phantom
+  `135 / 8` vs `150 / 13`; Freighter `105 / 5` vs `118 / 10`). Top speed, accel, jump height and `maxJumps`
+  all match. The table was written as an S6 *target* and playtest tuning moved past it without updating it.
+  Footprints in the same section ARE correct against `halfW`/`halfL`.
+  **Decide:** sync the table to shipped values and label it as-built, or delete the numeric columns and
+  point at `packages/shared/src/ship-classes.ts` (removes this whole drift class permanently).
+  Found during the 2026-09-21 doc audit; §5.5 carries an inline pointer to this entry.
+
 - [~] 2026-09-18 [feature] [art] **ART PASS — the world's visual production, procedural, in six sequential tasks**
   Tracked in `.claude/art-pass/INDEX.md` until 2026-09-21, when that whole directory was deleted; the arc was
   never GitHub issues because it is one continuous arc with sequential
