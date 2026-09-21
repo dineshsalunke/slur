@@ -1,0 +1,640 @@
+diff --git a/.claude/art-pass/02-track/README.md b/.claude/art-pass/02-track/README.md
+index d6320b0..98ab014 100644
+--- a/.claude/art-pass/02-track/README.md
++++ b/.claude/art-pass/02-track/README.md
+@@ -127,22 +127,75 @@ inventing it.
+ `anisotropy` setter recompiles when the value crosses zero (`this._anisotropy > 0 !== value > 0` → `version++`),
+ so never animate or toggle it through 0 mid-race.
+ 
+-### D3 — `toneMapped: false` contradicts the done-criterion; it becomes a panel switch
++### D3 — RESOLVED (owner, 2026-09-19): tone mapping is ON, at the renderer default, everywhere
+ 
+ Every surface in `track-materials.ts` sets `toneMapped: false`. But §4's criterion is *"rail reads marigold
+ (not red-orange) **in the final tone-mapped frame**"* — which those pixels opt out of **by construction**. As
+ written the test cannot be run.
+ 
+-This is the **same decision** as task 1's deferred `Tone map` switch, so it is settled **once, for the whole
+-frame**, on one panel, with the track in shot.
+-
+-### Noted, technically out of scope, but it will poison the read
+-
+-Lethal blocks are saturated red `#ff2740` (`LETHAL_SURFACE`), and **red is explicitly excluded** from the
+-widened palette (`INDEX.md` §2: *"No cyan, no magenta, no red. A red hazard colour code is explicitly
+-excluded."*). Block design belongs to a later task, but those blocks are in **every frame** the floor material
+-would be judged in. Retone them to the warm ramp as part of task 2's **review setup**, or every material read
+-is taken against a colour the direction forbids.
++**It does not become a panel switch.** The owner settled it directly: *"since we will be having everything
++tone mapped … lets keep the tone mapping on default."* `toneMapped: false` comes **off** the track surfaces
++and the renderer default stands. One less knob, and the frame becomes internally consistent instead of half
++the pixels living outside the transform the other half go through.
++
++*Verified-this-session* (installed `@react-three/fiber@9.7.0`, `dist/events-*.esm.js`): `<Canvas>` sets
++`gl.toneMapping = ACESFilmicToneMapping` unless the `flat` prop is passed, which it is not anywhere in this
++app. So the default here is **ACES Filmic**, and that is load-bearing for the gate: ACES desaturates and
++rolls hot saturated warms toward yellow-white, so "does the rail still read marigold" becomes a **real** test
++rather than a tautology about the input hex.
++
++**Consequence, expected and not a regression:** every emissive value in `track-materials.ts` was chosen to
++*bypass* tone mapping and will not survive being put through it — the rail's `emissiveIntensity: 2.6` first.
++Re-tuning them is the work of task 2's first slice.
++
++This also forecloses task 1's deferred `Tone map` knob: ON.
++
++### D4 — NEW (owner, 2026-09-19): `/art-lab` loses its own lights; the shipped sky rig lights it
++
++`art-lab-canvas.tsx` mounts `ambientLight intensity={0.4}` plus `directionalLight intensity={1.1}` **on top
++of** `DeepSpaceSky`, which already brings the shipped `StarLight` + `SkyEnvironment` rig. The track would
++therefore be judged under two lab-only lights the game does not have — and a flat ambient specifically
++contradicts the standing fact that **there is no fill; shadow sides go black** (`INDEX.md` §4). A review
++conducted under lighting the game does not ship is worthless, which is the same class of error as judging a
++silhouette against a placeholder sky — the deadlock that reset the earlier art attempt.
++
++**Both lab lights are deleted.** The lab is lit by `DeepSpaceSky` and the track's own emissives, nothing else.
++
++**Consequence that must be handled in the same change:** the sky's light and environment currently ride the
++`backdrop` layer toggle, so deleting the lab lights would make "backdrop off" mean "pitch black" and destroy
++a legitimate review mode. The rig (`StarLight` + `SkyEnvironment`) stays mounted regardless of that toggle;
++`backdrop` hides only the visible patch. `DeepSpaceSky` already takes `light` and `environment` props for
++exactly this split (`/iso-sky` uses them for its self-test) — mechanism is the lane's call, behaviour is not.
++
++### D5 — REPLACED (owner, 2026-09-19): the blocks come OUT of the review frame; they are not retoned
++
++**What D5 said first, and why it was wrong.** It read: *retone the red `#ff2740` lethal blocks to the warm
++ramp as review setup, because red is excluded from the palette and those blocks are in every frame the floor
++would be judged in.* True premise, wrong remedy. The owner challenged it directly — *"these obstacles are
++just plain box, they don't really help in any way and also block the view. do you really think we need
++them?"* — and noted the scrapped earlier art attempt had the same blocks in the same lab for the same
++non-reason. **They are right.** Retoning was treating a symptom of leaving them in frame at all.
++
++**The actual cause, verified in the code.** `/art-lab`'s layers bundle blocks and rails into one toggle:
++`art-lab-canvas.tsx` mounts `layers.hazards ? <TrackView …>`, and `TrackView` draws floor quads **plus**
++lethal blocks **plus** drag blocks **plus the edge rails** in a single component. So `hazards` defaults ON
++not because anyone wanted untextured boxes in the shot, but because switching them off also deletes the
++**marigold edge rail — the subject of task 2**. `lab-layers.ts` already states the principle the blocks
++escaped: *"DEFAULTS: track ONLY. The lab's primary job is judging the track surface itself, and environment,
++ships and the finish gate are visual noise while doing that."*
++
++**The decision.** Split the toggle: **rails and blocks become independent layers, and blocks default OFF in
++the lab.** Mechanism is the lane's call (a `showBlocks` prop mirroring the existing `showFloor`, or splitting
++`TrackView` into two leaves — the latter fits non-negotiable #10 better, and D1 is already reshaping this
++component). Behaviour is not: judging the floor, rail and gaps must not require looking past plain boxes.
++
++Blocks stay **one click away**, because §2 does ask for *"clear hazard-to-floor contact shading"* and that
++read needs a block present. It is a check you switch on deliberately, not the default frame.
++
++**The retone is therefore cancelled, not deferred-with-a-workaround.** No blocks in frame → no forbidden red
++in frame → nothing to hold-retone. `LETHAL_SURFACE`'s `#ff2740` is left exactly as it is and belongs to the
++later block-design task, judged when someone is actually judging blocks. **Do not touch
++`track-materials.ts`'s lethal or drag colours in task 2.**
+ 
+ ### Process deviation, deliberate
+ 
+diff --git a/.claude/art-pass/INDEX.md b/.claude/art-pass/INDEX.md
+index 90fc6aa..82d72ca 100644
+--- a/.claude/art-pass/INDEX.md
++++ b/.claude/art-pass/INDEX.md
+@@ -1,7 +1,18 @@
+ # ART PASS — index & state
+ 
+-**Started 2026-09-18.** Single-worker (the owner). Tracked here, **not** in GitHub issues — this is one
+-continuous art arc with sequential composition gates, not a set of independently-schedulable tickets.
++**Started 2026-09-18.** Single-worker (the owner). This is one continuous art arc with sequential
++composition gates, not a set of independently-schedulable tickets — so the **narrative, the decisions and
++the gate results live here**, and this file stays the thing you read to pick the work up.
++
++> **Amended 2026-09-20 — the ALPHA SCOPE is now also tracked as GitHub issues.** The owner set the next
++> target: **finish the remaining track slices → land the bespoke ship → build the sealed
++> non-destructible block**, which together close an **alpha of core gameplay with art**. That scope is the
++> **`Alpha — core gameplay with art`** milestone: [#163](https://github.com/dineshsalunke/slur/issues/163)
++> (gaps + gap rims + the z=0 seam), [#159](https://github.com/dineshsalunke/slur/issues/159) (the Split
++> Crown on the Freighter, **in flight**), [#164](https://github.com/dineshsalunke/slur/issues/164) (the
++> sealed deadly block), [#162](https://github.com/dineshsalunke/slur/issues/162) (the deck out-shining its
++> own rail). **The issues carry scheduling; this file still carries the reasoning.** Tasks 4–6 (monoliths,
++> asteroids, composition) are deliberately NOT in the alpha and stay untracked here.
+ 
+ > **This is a CLEAN SLATE.** An earlier four-lane parallel art attempt (`sky` / `asteroids` / `monoliths` /
+ > `backdrop-only`) was deliberately reset by the owner when the consolidated `docs/art-direction/` package
+@@ -25,11 +36,23 @@ everything else.
+ | # | Task | Folder | Status |
+ |---|------|--------|--------|
+ | 1 | **Background** — deep space + nebula, and its contribution to scene lighting | [`01-background/`](01-background/README.md) | **BUILT + GATE GREEN 2026-09-19** (cheap path) — `nebula-backdrop.jpg` on a camera-locked sphere **patch**; lit by a `<Lightformer>` rig + one `DirectionalLight`. **Visual gate DEFERRED** until a track is in frame (§ below), not skipped and not failed. Read [`01-background/HANDOVER-SESSION-5.md`](01-background/HANDOVER-SESSION-5.md) **first** — it lists four things a cold context will try to "fix" back. Procedural work preserved on `art/procedural-bg` @ `6d52029` |
+-| 2 | **Track** — floor material, glowing edge rail, gaps, gap rims | [`02-track/`](02-track/README.md) | not started |
+-| 3 | **Scene lighting** — key/rim/fill/env, exposure, bloom budget | [`03-lighting/`](03-lighting/README.md) | not started |
++| 2 | **Track** — floor material, glowing edge rail, gaps, gap rims | [`02-track/`](02-track/README.md) | **MOSTLY BUILT — floor + rail done, GAPS AND GAP RIMS ARE NOT.** ⚠️ `02-track/README.md`'s own status header still says "not started" and is **STALE** — its §7 decisions (D1–D5) are live and binding, its status line is not. Shipped: deck as the game's floor (#131/#140), slice-2 boundary retone + ADR-011 chase camera (#142), marigold reference (#145), width/wrap panel (#147), rail outboard (#151), lead-in apron (#157), emitter array (#155). **Remaining = [#163](https://github.com/dineshsalunke/slur/issues/163)** (gaps, gap rims, rail breaks over gaps, the never-inspected z=0 seam). Three open rail-lighting bugs against this code: [#162](https://github.com/dineshsalunke/slur/issues/162) (deck ~17x brighter than the rail lighting it), [#160](https://github.com/dineshsalunke/slur/issues/160), [#161](https://github.com/dineshsalunke/slur/issues/161) |
++| 3 | **Scene lighting** — key/rim/fill/env, exposure, bloom budget | [`03-lighting/`](03-lighting/README.md) | **PARTLY BUILT.** The cold key shipped (#158, `cf1c98c`): bearing 0 · elevation 45 · `#c2ccd6` · intensity 1, `AMBIENT_INTENSITY` 1→0, the white fill deleted. Facts in [`03-lighting/LANE-FACTS-COLD-KEY.md`](03-lighting/LANE-FACTS-COLD-KEY.md). **Structural limit found:** a directional light on a flat plane has constant `N·L`, so the key cannot vary across the deck's width at all (flat to 2% across the middle 32u) — half the original brief's gate is unmeetable by this light shape. Rim/fill/env and the bloom budget remain |
+ | 4 | **Monoliths** — isolation → placement (track-flanking + scene filler) | [`04-monoliths/`](04-monoliths/README.md) | not started |
+ | 5 | **Asteroids** — isolation → placement | [`05-asteroids/`](05-asteroids/README.md) | not started |
+ | 6 | **Composition** — everything together, one final art validation | [`06-composition/`](06-composition/README.md) | not started |
++| 7 | **Sealed deadly block** — silhouette + material (ADDED 2026-09-19, runs **parallel** to task 2) | [`07-blocks/`](07-blocks/LANE-BRIEF.md) | **BRIEFED, not started — [#164](https://github.com/dineshsalunke/slur/issues/164), IN THE ALPHA.** Sealed/deadly **only** — the fractured state stays gated on ADR-009's unrun readability test. Brief is complete and never dispatched; note its stated ports 5202/2602 are now taken by `slur-worktrees/seam-check` |
++
++**Why blocks were added as a seventh task, out of the original six.** Blocks were never in the arc; the
++agreed order ran track → asteroids → monoliths → environment → blocks, with blocks last because they compose
++against everything else. The owner pulled the **sealed** block forward on 2026-09-19 for two reasons that
++hold up: it is genuinely cheap (ADR-009 leaves the sealed/deadly state *"unchanged"*, so building it bets on
++nothing), and **it helps task 2's own gates** — the track spec requires *"clear hazard-to-floor contact
++shading"*, which is unjudgeable with no object making contact. It is the same "what is this element teaching
++me?" test that removed the placeholder boxes in task 2's D5, returning the opposite answer now that the
++object is worth looking at. The **fractured/breakable** half stays out: ADR-009 is `PROPOSED` and says *"do
++not build until that gate passes"*, and it drags a sim change, a synced destroyed flag and a
++fairness-validator change behind it.
+ 
+ **Why background first.** It inverts the earlier attempt's order, on purpose. Lighting flows *from* the
+ environment, so any silhouette or material judged under a placeholder sky has to be re-judged the moment the
+@@ -422,8 +445,11 @@ Everything else in the plan approved as written — dropping `celestial-body.tsx
+ 
+ ### ▶ NEXT — state as of 2026-09-19, read this first
+ 
+-**Task 1 is done and the lane is stopped.** `art/background` @ `903be08`, verify gate green (typecheck · lint
+-· 75 shared + 34 client + 4 server · build). **Read
++**Task 1 is done, merged, and the lane is stopped.** `art/background` @ `3f8458a` → **squash-merged to `dev`
++as `1807bc0` (PR #126) on 2026-09-19**, verify gate re-run green at the merged SHA (typecheck · lint · 75
++shared + 34 client + 4 server · build) and the PR head checked against the gated SHA before merging. `dev`
++therefore now carries the sky **and** all the art-pass tracking docs, which were previously untracked in the
++shared checkout. Task 2 branches off fresh `origin/dev`. **Read
+ [`01-background/HANDOVER-SESSION-5.md`](01-background/HANDOVER-SESSION-5.md) before touching the sky or
+ starting task 2** — it is self-contained and assumes no chat history.
+ 
+@@ -449,17 +475,44 @@ stated "depends on task 1" header on purpose — `02-track/README.md` §7 says s
+    **On relaunch:** confirm with `/list-agents` (alias `/peers`) that the lane is reachable, and prefer it
+    over `herdr agent prompt`. Verify delivery either way — never filter the ack down to a grep that turns a
+    failure into an empty string, which is how the dropped packet hid.
+-2. **Task 2 (track).** Decided, **not** started — D1/D2/D3 of-record with full reasoning in
+-   `02-track/README.md` §7. Headlines: `TrackFloor` (one generated continuous mesh) replaces `TrackView`'s
+-   instanced floor quads; task 3's **emitter array comes forward** (patched `MeshStandardMaterial`,
+-   **fixed-size** uniform array of the K nearest emitters — a varying light count recompiles the shader
+-   mid-race); `toneMapped: false` becomes a panel switch settled once for the whole frame. Also flagged there:
+-   lethal blocks are saturated red `#ff2740` while **red is excluded from the palette** — retone them as part
+-   of the review setup, or every material read is taken against a forbidden colour.
+-   **The supervisor writes that lane brief** — see "Division of labour" below.
+-3. **Then the deferred `/iso-sky` + `/art-lab` gate**, bloom on **and** off, in a **foreground** tab. Three
+-   knobs sit at defensible defaults awaiting the eye: `Tone map` (ON), `Field of view` (**140** — the floor,
+-   not the answer), `Tilt` (**0°**, the most likely to move, judgeable only in `/art-lab`).
++2. **Task 2 (track).** Decided and **briefed**, not started — **five** decisions of-record with full reasoning
++   in `02-track/README.md` §7, and the supervisor-written lane brief at `02-track/LANE-BRIEF.md`. Headlines:
++   **D1** `TrackFloor` (one generated continuous mesh) replaces `TrackView`'s instanced floor quads; **D2**
++   task 3's **emitter array comes forward** (patched `MeshStandardMaterial`, **fixed-size** uniform array of
++   the K nearest emitters — a varying light count recompiles the shader mid-race); **D3 RESOLVED by the owner
++   2026-09-19** — tone mapping is **ON at the renderer default everywhere**, `toneMapped: false` comes off the
++   track surfaces and no panel switch is built (verified: r3f 9.7.0's `<Canvas>` sets ACES Filmic unless
++   `flat`, which nothing passes — so every emissive value in `track-materials.ts` needs re-tuning, and that is
++   the work, not a regression); **D4 NEW, owner 2026-09-19** — `/art-lab`'s own `ambientLight` +
++   `directionalLight` are **deleted** and the lab is lit by the shipped `DeepSpaceSky` rig alone, with
++   `StarLight`/`SkyEnvironment` mounted regardless of the `backdrop` toggle so "backdrop off" does not mean
++   "pitch black"; **D5 REPLACED by the owner 2026-09-19** — the obstacle blocks come **out of the review
++   frame** instead of being retoned. They are untextured boxes that block the view and teach nothing about the
++   floor; they default ON only because `/art-lab` welds them to the **edge rail** in one `hazards` toggle
++   (`TrackView` draws floor + lethal + drag + rails together). Split them: **rails and blocks become
++   independent layers, blocks default OFF**, one click away for the hazard-to-floor contact-shading check.
++   `LETHAL_SURFACE`'s forbidden red is then **not touched at all** in task 2 — no blocks in frame, nothing to
++   retone; it belongs to the later block-design task. *(The scrapped earlier art attempt made the same mistake
++   — blocks in the lab for the same non-reason. Twice is a pattern: ask what each thing in frame is teaching
++   you.)*
++   The brief cuts the work into five gated slices (honest frame → floor swap → panel language → rail + emitter
++   array → gaps) and names the ports (`5201`/`2601`) so it cannot collide with the background lane.
++   **State 2026-09-19:** the lane is **running** (`art/track` off `1807bc0`, worktree
++   `../slur-worktrees/track`, ports `5201`/`2601`, peer name `track-6c`). **Slice 0 is committed**
++   (`1bb5839 art(track): slice 0 — an honest review frame`). **Next action: the owner's eye on slice 0**
++   in a foreground `/art-lab` tab — the frame should be *honest* (only lighting the game has) and
++   *uncluttered* (no obstacle boxes), and it is expected to look worse than before, because it was
++   flattering itself. Slice 1 does not start until that gate passes.
++3. **Then the deferred `/iso-sky` + `/art-lab` gate**, bloom on **and** off, in a **foreground** tab. `Tone
++   map` is no longer one of the knobs — **D3 forecloses it: ON**. Two remain awaiting the eye: `Field of view`
++   (**140** — the floor, not the answer) and `Tilt` (**0°**, the most likely to move, judgeable only in
++   `/art-lab`).
++   > ⚠ **Run the environment self-test with `Star light` OFF as well as `Env rig` off** (owner, 2026-09-19).
++   > `DeepSpaceSky`'s `light` prop mounts `StarLight`, and a star light lights the roughness probes exactly
++   > as a neutral rig light does — which is the whole reason `/iso-sky` drops the lab rig at all. With the
++   > star still on, "the probes differentiate at `roughness 0.2` vs `0.9`" proves nothing about the
++   > `<Lightformer>` bake. Both switches are already in the panel (`Star light`, `Env rig`) and the prop is
++   > already documented on `DeepSpaceSky` — this is gate procedure, not code to write.
+    > ⚠ **Never gate from an automated Chrome tab** — it reports `visibilityState: "hidden"`, rAF never fires,
+    > and the canvas stays black while the DOM panels render fine. Already paid for twice.
+ 
+diff --git a/docs/ADD.md b/docs/ADD.md
+index 309ec6c..44af5f7 100644
+--- a/docs/ADD.md
++++ b/docs/ADD.md
+@@ -1,319 +1,74 @@
+-# SLUR — Art Design Document (ADD)
++# SLUR — Art Design Document
+ 
+-> Status: **v1**. Scene/world art direction is **FROZEN** by the external art-direction package
+-> `docs/art-direction/` (adopted 2026-09-17, ADR-008). Ship art direction is still in progress.
+->
+-> **Precedence — read this first.** Where this file and the handoff disagree, **the handoff wins** on
+-> anything visual; this file records what the direction *means* for the build and what it costs. Where the
+-> handoff and *gameplay* disagree (scale, mechanics, the GDD §0 spatial contract), **gameplay wins** — see
+-> **`docs/ART_SCALE_REFERENCE.md`**, which overrides every scale number printed on a concept board.
++Reconciled 2026-09-19. The [final art subject folders](art-direction/README.md) govern appearance. This document summarizes the design for engineering; it does not establish competing targets.
+ 
+-## 0. Where the art direction actually lives
++## Visual direction
+ 
+-| Thing | Authority |
+-|---|---|
+-| Visual direction, palette, material/shape language, A→B→C | **`docs/art-direction/handoff/`** — supersedes v1 |
+-| Concept boards | `docs/art-direction/boards/` (all 14 boards, consolidated — v1's + v2's board `12`) |
+-| The approved integrated look | **`docs/art-direction/boards/12_approved_scene_marigold_depth.png`** |
+-| **Real dimensions of everything** | **`docs/ART_SCALE_REFERENCE.md`** (source-verified; overrides the boards) |
+-| Gameplay + spatial contract | **GDD §0** (continuous sim; `CELL` is authoring-only) |
+-| This file | the bridge: consequences, costs, and the open problems the handoff didn't answer |
+-
+-## 1. Visual pillar
+-
+-> **Cold Space. Warm Energy. Minimal forms. Readable gameplay.**
+-
+-**A cold, desaturated universe containing warm, saturated gameplay energy.** The environment is vast,
+-silent, severe, and ancient. The active game layer is fast, hot, precise, and alive. The contrast between
+-those two registers *is* the art direction — everything else follows from protecting it.
+-
+-**TRON-influenced, not TRON-literal** (adopted 2026-09-17, supersedes the 2026-08-12 "full TRON" pivot).
+-The debt is to high-contrast **functional** light — light that tells you where to go and what will kill
+-you — not to circuit-trace pastiche. This also retires the clone-risk that dogged both the LCARS blend and
+-the pure-TRON pivot. **Issue #117's "which TRON era" question is therefore closed as moot**: the answer is
+-neither, and the handoff package is the direction.
+-
+-This is also a **performance strategy**: a near-black world, one warm emissive family, and heavy instancing
+-means few materials and few draw calls.
+-
+-**Minimalism rule.** Prefer large forms, clean silhouettes, broad planes, restrained seams, limited material
+-families, sparse emissive accents. Avoid dense greebling, technical decals, noisy normals at gameplay
+-distance, many tiny emissive marks, and ornament with no readability purpose.
+-
+-Anchor reference: **cuberun** (neon-on-black). Motion reference: **SkyRoads** (floating ribbon in space).
+-Energy reference: **Blur** (glowing pickups, punchy combat VFX).
+-
+-## 2. Mood / one-liner
+-> "Cold Space. Warm Energy. Straight to infinity."
+-
+-## 3. Color — **marigold-primary** (adopted 2026-09-17, ADR-008)
+-
+-**Marigold is the signature and the only energy colour.** It carries *every* functional/energetic read:
+-track boundaries, critical seams, pickups, projectiles, engines and boost, monolith seams, asteroid energy
+-veins, the finish line, and destructible-block internals.
+-
+-| Role | Colour | Hex |
+-|---|---|---|
+-| **Primary energy** | Marigold | `#F59A24` |
+-| Energy — hot | Amber | `#FFB52E` |
+-| Energy — glow | Energy Glow | `#FFE0A0` |
+-| Energy — core | Hot White | `#FFFBE7` |
+-| Environment | Deep Space | `#0A1117` |
+-| Environment | Space Grey | `#162028` |
+-| Environment | Blue Grey | `#303C45` |
+-| Environment | Steel | `#53616B` |
+-| Support (sparing) | Alert Red | `#FF4B3E` |
+-| Support (sparing) | Cyan Accent | `#3BD6FF` |
+-| Support (sparing) | Purple FX | `#B46BFF` |
+-| Support (sparing) | Green Pickup | `#7CFF9B` |
+-
+-**Approximate usage ratio:** Background 70% · Environment 20% · Gameplay 8% · Highlights 2%.
+-
+-**Environment is cold and desaturated** — blue-grey, graphite, charcoal, cold metallic grey, deep-space
+-blue/black. Backgrounds stay low-saturation so the playable layer carries the strongest colour signal.
+-
+-**Do not flood the world with marigold.** It is valuable because it is controlled.
+-
+-**This supersedes the 2026-08-10 cyan×marigold "gainda" duo.** Cyan is demoted from co-primary to a sparing
+-support accent at `#3BD6FF`; the locked marigold also shifts `#ff9f1c` → `#F59A24`. The old rule *"colour
+-carries meaning — never use a player hue for a hazard"* is **retired**: under a single-energy-colour system
+-colour no longer discriminates between object classes, so **discrimination moves to silhouette, material
+-state, and motion** (see §4).
++**Cold Space. Warm Energy. Minimal forms. Readable gameplay.**
+ 
+-### Player colour — deliberately deferred
++Deep near-black graphite and stone, faint desaturated slate-blue surroundings, localized golden energy. Preserve cold depth without saturated blue skies or grey lifted shadows. Gameplay remains the clearest signal.
+ 
+-The world is **uniformly marigold for every player** (decided 2026-09-17). Hue-shifting is reserved for one
+-job only — telling *opponent* ships apart — and is deferred until a real playtest shows it is needed.
+-`COLOR_COUNT = 12` already exists in `@slur/shared` as palette *capacity*; it is not a committed visual
+-direction. See §10 OQ3.
+-
+-## 4. Shape language
+-
+-Colour no longer separates object classes, so **silhouette and material state must**. This is the load-
+-bearing readability contract of the marigold-primary system:
+-
+-| Read | Cue | Never |
+-|---|---|---|
+-| **Deadly block** | sealed, solid, monolithic mass; sparse functional seams | fractured |
+-| **Breakable block** | visibly fractured shell, internal marigold energy through the cracks | sealed |
+-| **Environment monolith** | huge (200–400u), background-scale, framing — never track-adjacent mass | mistakable for a hazard |
+-| **Track boundary** | continuous marigold edge channel | matched by any decorative seam |
+-| **Pickup** | floating geometric icon, rotating, distinct silhouette per type | static |
+-
+-- **Ships:** simple, low-poly, angular/arrow silhouettes — distinguishable at distance by **silhouette**,
+-  not detail or colour. *Ship art direction is still open — see §0/§10.*
+-- **Track:** dark graphite ribbon, large clean panel divisions, sparse fine seams, restrained gloss,
+-  functional marigold edge channels. **No ornamental greebling.**
+-- **Environment:** monoliths (Obelisk · Gate · Arch) and asteroids (Angular · Plate · Broken, varied by
+-  Elongated · Shattered · Cluster) in dark stone / worn concrete. Planets and moons stay cold and
+-  desaturated — **no marigold surface colour by default**.
+-- **Geometry stays angular** — hard edges, chamfered corners, trapezoidal/hex forms. Roundness is reserved
+-  for **lights** (status pips, glows), never structural panels.
+-- Minimal texture detail; the "detail" is light, motion, and trails.
+-
+-### A → B → C intensity
+-
+-One world language at three intensities — **Subtle → Balanced → Intense** — varying *density, scale,
+-proximity, lighting pressure, particles, and selective warm energy*. **C is not "more saturation
+-everywhere"**; gameplay contrast is invariant across all three.
+-
+-**A→B→C is driven by `intensityAt(z)`, not hand-authored.** The handoff's "example level flow" curve
+-(calm entry → build → challenge → recovery → final stretch → finish) is the *same curve* as ADR-006's
+-Believer arrangement envelope, which is already implemented. Binding the art to the existing function means
+-the environment breathes with real difficulty, deterministically, with **zero new synced state** (it is
+-cosmetic and client-side — ADR-002 clean). This is the single highest-leverage integration in the package.
+-
+-## 5. VFX (the juice)
+-- **Bloom** (postprocessing EffectComposer) — the signature. Emissive materials + selective bloom on ships/pickups/track lines. See `conventions/r3f.md`.
+-- **Speed cues:** motion streaks, FOV/camera-shake on boost, star/grid parallax, chromatic aberration ramp with speed.
+-- **Combat VFX:** **(S5 built)** cyan bolt tracers (instanced+interpolated), hit-spark burst (additive HDR), on-ship stun-flicker. **Planned:** shield shimmer, mine pulse, hit-spin, ship light-trails.
+-- **Trails:** each ship leaves a fading light-trail in its hue (identity + speed read).
+-- VFX are **client-local** (not networked) — driven by ECS/game events. See TDD §5.
+-
+-## 6. Camera — **third-person chase** (decided)
+-- Chase cam behind + slightly above the ship, low and close for speed. First-person is rejected: it hides your ship's hue/trail (your **identity** signal) and worsens dodge awareness.
+-- **Aim at a look-ahead point** *ahead* of the ship (not the ship itself) so you read incoming track early.
+-- **Framing tuned to keep your ship readable (first pass, 2026-08-14 — feel-gate pending).** The
+-  raised-above-walls vantage (ADR-006: height > `BLOCK_HEIGHT` = 8u so you see over the pillars and plan your
+-  line) compounded with a *far* look-ahead + wide FOV made the player's own ship a tiny speck low on screen
+-  (near-invisible for the short-hulled Comet/`bob`). Resolution: **keep the height** (see-over is load-bearing)
+-  and pull the ship bigger + higher via the other three levers — **shorter look-ahead, tighter base FOV,
+-  closer trail, lifted aim**. Knobs are named + commented in `apps/client/app/game/camera/chase.ts` (`CHASE`),
+-  live-tunable. On-screen ship *size* is dominated by this framing, **not** by model scale (locked to the
+-  collision footprint — GDD §5.5), so "the ship looks small" is a camera or class-size question, never a scale
+-  bug. The look-ahead↔see-over trade stays a feel-gate tune.
+-- **Speed cues:** FOV widens + camera pulls back on boost; subtle bank into strafes; light shake at high speed.
+-- **On hit/stun: spin the *ship*, keep the *camera* stable** — disrupt without disorienting (fair, not nauseating).
+-- **Comfort options (day one):** sliders to dampen shake / FOV-kick / chromatic aberration — cheap motion-sickness insurance.
+-- **Death:** TRON derezz, then **spectator** follow-cam on the pack / cycle players.
+-
+-## 7. UI / HUD — **still open, but no longer blocked on "which TRON"**
+-- **Direction (2026-09-17):** minimal, functional, angular panels in the §3 palette — dark graphite frames,
+-  marigold for functional/active state only, thin geometric type, high negative space. Not circuit-trace
+-  pastiche (§1: TRON-influenced, not TRON-literal).
+-- **Issue #117 ("which TRON era — 1982 vs Legacy") is closed as moot** — the handoff package answered the
+-  aesthetic question from a different direction, and neither era is being cloned. The *remaining* open work
+-  is the concrete frame/type/motion spec and a typeface, which is a normal design task, not an era decision.
+-- **Explicitly NOT frozen by the handoff** (per its own `00_STATUS_AND_SCOPE.md`): final HUD/UI treatment,
+-  including the rear-view mirror.
+-- HUD content: speed/fuel, held power-up, position/alive-count, mini threat indicators (incoming bolt/mine). **(S5 built:** `heldPower` chip + directional threat-warning HUD; dev stun/held/bolt readout. Speed/position/alive-count still to do.)
+-- Diegetic-lite and minimal — never clutter the flight view; readable in peripheral vision at speed.
+-- Death = **TRON derezz** dissolve; respawn = materialize-in.
+-- *Caveat: it's an office toy — evoke TRON, keep it original; don't lift film assets/logos.*
+-
+-## 8. Performance-driven art constraints (hard rules)
+-These exist so the art *stays* 60fps with 12 ships + pickups + projectiles:
+-1. **Few materials.** Emissive + basic PBR only; reuse materials → instancing works.
+-2. **Instance everything repeated:** track segments, pickups, projectiles, stars (`InstancedMesh`/drei `<Instances>`).
+-3. **Low-poly, no heavy textures.** Light does the work, not texels.
+-4. **One bloom pass**, tuned — not per-object glow hacks.
+-5. **Budget:** *OPEN* — set tri-count + draw-call budgets after first perf test.
+-6. **WYSIWYG collision (hard rule — ADR-002).** The rendered track IS the physics hull; any authored mesh
+-   must faithfully cover the collidable hull (no invisible lethal walls, no visible walls you pass through).
+-   Full statement + the ADR-000 litmus live in **§12** (added by the ADR-002 implementation).
+-
+-## 9. Asset pipeline — **procedural-first** (decided 2026-09-17)
+-
+-**Generate as much as possible in code; author as little as possible.** The handoff's minimal-forms language
+-makes this cheap, and it keeps the zero-asset-pipeline property.
+-
+-| Asset | Approach | Confidence |
+-|---|---|---|
+-| Track slab | **BUILT** — one generated mesh from real `FloorSpan` data + procedural canvas texture | **done** |
+-| Edge channels | procedural **sweep of a 2D cross-section** along z (the ribbon never turns, so a sweep is a quad strip per profile segment — no `ExtrudeGeometry`, no authored mesh). Shell and glow as **separate geometries** so the one emissive face is tunable without touching the shell | **~100%** |
+-| Gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
+-| Obstacle blocks (both states) | procedural geometry | **~100%** |
+-| Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
+-| Asteroids (Angular · Plate · Broken) | procedural — convex hull over jittered points, flat-shaded | **~90%** |
+-| Planets / moons | procedural — sphere + gradient/terminator shading | high |
+-| Pickups | procedural — low-poly geometric icons | high |
+-| **Ships** | **keep the authored Quaternius CC0 models** — already integrated, WYSIWYG-locked (GDD §5.5) | — |
++| Role | Anchor |
++|---|---|
++| Primary marigold | `#F59A24` |
++| Hot amber | `#FFB52E` |
++| Bright warm core | `#FFE0A0` |
++| Deep space | `#0A1117` |
++| Muted steel | `#303C45` |
++| Cold blue-grey | `#53616B` |
+ 
+-**Surface detail is the one real exception** — the "worn concrete / dark stone" read and the fracture
+-patterns. These still do **not** need image files: **fBm noise** covers stone, and **Worley (cellular)
+-noise is natively a crack generator**, which is exactly the destructible-block fracture language. Both are
+-GLSL functions, so "procedural textures" rather than "texture assets".
++These are colour anchors, not guaranteed displayed samples after lighting and tone mapping. No new red hazard code or cyan alternate energy family is approved.
+ 
+-> **AS-BUILT (2026-09-18) — the track slab took the canvas route, not the shader route.**
+-> `scene/track-texture.ts` generates a `CanvasTexture` rather than writing GLSL. Cheaper to build, trivially
+-> tunable from named constants (which is what an art pass actually needs), and it costs no per-pixel ALU.
+-> The shader approach stays the plan for anything needing *world-space continuous* detail — asteroid stone
+-> and destructible fractures — where a tiling canvas would visibly repeat.
+->
+-> **One tile = one panel, 16 × 20u.** 16u divides the 64u ribbon into exactly 4 panels with no partial panel
+-> at the edges; 20u matches `SEG_LEN` so transverse seams land on segment boundaries and agree with gap
+-> edges rather than cutting across them.
+->
+-> **Hard-won rule: size texture features in WORLD units, never pixels.** The first version used a ~3px seam,
+-> which over a 16u tile is 0.05u — a five-centimetre line on a 64u ribbon, sub-pixel at any real distance.
+-> The surface read as flat grey until this was fixed.
++## Final authorities
+ 
+-**The one bitmap in the pipeline** is `public/textures/nebula-backdrop.jpg` — a placeholder deep-space
+-backdrop until the procedural celestial layer exists. Deliberately not LFS: a missing backdrop should
+-degrade, not crash.
++| Area | Source |
++|---|---|
++| Integrated scene, palette, contrast and HUD | [Golden reference 17](art-direction/golden-reference/DIRECTION.md) |
++| Track surfaces, boundaries, sparse seam inserts and procedural wear | [Track 24/25](art-direction/track/README.md) |
++| Deep Space / Nebula celestial hierarchy | [Scene-background 25](art-direction/scene-background/README.md) |
++| Calm / Balanced / Intense | [Progression](art-direction/progression/README.md) |
++| Clean/worn coated-metal non-destructible blocks | [Block 28](art-direction/desctructible-block/README.md) |
++| Other retained silhouettes | [Family reference index](art-direction/boards/README.md) |
++| Dimensions and collision constraints | [Scale reference](ART_SCALE_REFERENCE.md) and [gameplay contract](GDD.md) |
++| Material families | [Material guidance](ART_MATERIALS.md) |
+ 
+-> **Honest cost:** shader noise trades texture memory for per-pixel ALU, which is in tension with §8 rule 3
+-> ("light does the work, not texels"). With instanced fields and 12 ships it is usually a win, but it is a
+-> real cost — **measure it at the 12-ship perf gate (§10 OQ5 / issue #17), don't assume it.**
++## Shape and material
+ 
+-A Blender MCP toolchain remains available if an authored asset turns out to be genuinely cheaper.
++The playable layer uses engineered metal: satin bare graphite deck, coated blocks and pickup shells. The world layer uses matte stone, worn concrete and rock. Broad forms, restrained bevels and readable silhouettes matter more than fine noise.
+ 
+-## 10. OPEN QUESTIONS
+-1. ~~**Fidelity of ships**~~ — **RESOLVED:** keep the authored CC0 models (§9); everything else procedural.
+-2. ~~**Track look** — tube vs open ribbon~~ — **RESOLVED (2026-08-10, reaffirmed):** hybrid open ribbon with
+-   distant non-collidable framing. The handoff's monolith/asteroid/celestial vocabulary *is* that framing.
+-3. ~~**Palette lock**~~ — **RESOLVED (2026-09-17):** §3 marigold-primary palette. Player-hue question
+-   deliberately deferred — one world colour for everyone; hue-shift opponents only if playtest demands it.
+-4. **Chromatic aberration / heavy post** — still open; gate behind a comfort slider. The handoff adds a
+-   constraint: *"readability should survive with bloom disabled."*
+-5. **Perf budgets** — still open. Now carries the procedural-shader cost from §9. Set at the 12-ship gate.
+-6. ~~**edge-glow is a weak guide at true scale**~~ — **ANSWERED by the art-direction handoff (`docs/art-direction/handoff/`) §5.** Confirmed: *"Track
+-   edges define the ribbon boundary; they cannot supply all fine positioning across 64u."* The answer is
+-   **interior cues**: low-contrast large panel divisions, occasional transverse seams, restrained
+-   material/reflection differences, and clear hazard-to-floor **contact shading**.
+-   **Explicitly rejected** — and this is the important half — *"no automatic racing line, safe-route glow,
+-   dense emissive seam grid, or dependence on monolith spacing for steering."* That kills the guide-rail
+-   failure we were worried about: cues give speed and lateral-motion feedback **without** revealing the safe
+-   path. Visible on board `12`.
+-7. ~~**deadly vs breakable must read in ~0.5s**~~ — **ANSWERED by the art-direction handoff (`docs/art-direction/handoff/`) §6.** The rule is
+-   **"sealed mass = avoid; broken-contour shell = shoot to clear"**, and crucially: *"Surface crack texture
+-   alone is insufficient for the approved read."* The distinction must break the **outer silhouette** —
+-   visible interruptions at top/side contours — not merely decorate the faces. Interior floor cues and block
+-   readability are **both** required, not alternatives.
+-   **`Alert Red` as a fallback is rejected**: *"No new red hazard code is approved. Cyan is not an alternate
+-   energy family."* So the single-energy-colour system holds and silhouette carries the load.
+-   *Correction to our own framing:* we claimed an 8u block gives "half a second" to react. v2 rightly notes
+-   *"at 55 u/s, half a second is 27.5u travel; obstacle height does not establish the detection window"* —
+-   the window is set by draw distance and framing, not block height. The gate still stands, measured properly.
+-8. **NEW — camera height 4–5u vs the 8u see-over-walls rule.** v2 proposes a low camera (nominal **4.5u**)
+-   with **selective occlusion fade**. This collides directly with ADR-006, where the chase cam sits at **+9u**
+-   *specifically* so you can see over the 8u pillars and plan a line (see `camera/chase.ts`). Fading occluders
+-   is the proposed mitigation, and v2 is clear it is **a prototype, not a frozen setting**, requiring a 6–8u
+-   control camera alongside. **This is a gameplay-affecting change, not an art change** — it needs an ADR and
+-   a feel-gate before any of it lands. It also overlaps PR #120 (chase-cam reframe), which is still open.
++- Track boundaries are continuous. Most interior joints remain dark, with sparse irregular emissive inserts. No glowing grid, driving lanes or safe-route guidance.
++- Track wear follows final board 25 at its accepted strength: broad finish variation, shallow scuffs and sparse edge rub. Produce it procedurally; it does not change collision geometry.
++- Non-destructible blocks remain sealed at all wear levels. Destructible shells have broad recessed fractures, internal marigold and visibly broken outer contours.
++- Gaps are missing floor. Thin lips, dark cut slab edges and open void establish depth; no cavity material or black floor.
++- Monoliths retain Obelisk/Gate/Arch silhouettes with selective visible marigold seams and localized halos. Asteroids retain the approved rocky families, with rare energy veins.
++- Pickups have shaded volume, bevels, dark shells and luminous cores. The Seeker remains an elongated untapered square body with four fins.
+ 
+-## 11. As-built + art research (2026-08-10) — inputs for the S6 art pass
++All gameplay blocks retain an 8u height envelope with variable width/depth. Simulation is continuous; 4u is an authoring ruler, not a runtime lane or block-size rule.
+ 
+-*(S5 shipped the first real combat VFX; a research pass then inventoried the scene + surveyed the aesthetic
+-space. This section **persists that research** — it is INPUT for S6, not locked decisions.)*
++## Progression and motion
+ 
+-**As-built scene reality (the gap vs the pillar):**
+-- **Bloom is timid** in the networked race (`intensity 0.5, threshold 0.6`). The signature look only half-exists. *(The `/solo` half of this note is stale — `/solo` was removed in `52f5a04`.)*
+-- **No atmosphere:** flat `#05060a` void — no fog, skybox/gradient, or real starfield (cuberun, our anchor, leans on fog + a ~10k-star field + a galaxy skybox for depth).
+-- **Ship identity is a beacon pip**, not the hull — at speed you read a small glowing dot, not a coloured ship. *(Re-scoped 2026-09-17: under the single-marigold world this matters less for identity and more for simple presence.)*
+-- ~~**`COLOR_COUNT` is 8**~~ — **STALE. `COLOR_COUNT = 12` in source, verified 2026-09-17.** The 8→12 task is done. Instancing discipline is solid (few draw calls) — the art can get much richer with no perf bill.
++Calm / Balanced / Intense changes density, proximity, scale, enclosure and selective prop lighting. Keep material identity and gameplay contrast stable. Recovery beats are allowed. Final art does not prescribe an implemented mapping to difficulty.
+ 
+-**Cheap, high-impact moves (S6):** unify solo/net into one scene module + push bloom (~`1.0–1.5` / threshold `~0.4`); add **atmosphere** (`fog` + drei `<Stars>` + gradient backdrop → new `scene/environment.tsx`); put the team hue **on the hull**; vignette + subtle grain; speed-ramped chromatic aberration (the core set merges into ~one full-screen pass — largely ship-count-independent).
++Boost uses energetic exhaust and subtle environmental blur, mostly near the track and periphery. It is a temporary player state, independent of environmental intensity. Strong cinematic blur studies are not the normal gameplay target.
+ 
+-**Research-informed answers to §10:**
+-- **OQ1 (ship fidelity):** keep the authored Quaternius CC0 models — already integrated, WYSIWYG collision (GDD §5.5). Pure-primitive is a bigger pivot; don't chase it.
+-- **OQ2 (tube vs ribbon):** still open — tube = cheap enclosed atmosphere + speed cues; open ribbon fits the current sim/hazards. Trade-off, unresolved.
+-- **OQ3 (palette):** colour science caps categorical palettes at ~8; 12 against black under bloom is hard. Three concrete proposals exist (Wong-extended / max-chroma neon-wheel / value-staggered); lean on **silhouette + value-staggering** as the colourblind backstop, or auto-assign for max pairwise distance among present players. **Decide in S6** (and raise `COLOR_COUNT` 8→12).
+-- **OQ4 (heavy post):** the synthwave set (Bloom/Vignette/ChromaticAberration/Noise/Scanline) is confirmed in `@react-three/postprocessing` and composes cheaply — but it directly threatens **combat legibility** (bolts + 12 ships wash to white). Gate it behind a **comfort/intensity slider** (§6/§7); consider **SelectiveBloom** now that combat is on screen. Verify exotic effects (DoF/N8AO/GodRays) against the pinned `3.0.4` before use.
+-- **OQ5 (perf budgets):** set after a first 12-ship test; drei `<PerformanceMonitor>` + `<AdaptiveDpr>` as insurance.
++## HUD
+ 
+-*Key files an S6 art pass would touch: `net-canvas.tsx`, `scene/track-view.tsx`, `scene/scenery.tsx`, `scene/ship-model.tsx`, `colors.ts` (+ `@slur/shared` `COLOR_COUNT`), `scene/explosions.tsx`; new `scene/environment.tsx` (built — env-lab), `scene/trails.tsx`.*
++The final direction is small, borderless floating text and icons. No opaque panels, box outlines or decorative cockpit chrome.
+ 
+-**S6 direction LOCKED (2026-08-10):** aesthetic = ~~**TRON colour/material × Trek-Wars geometry, de-rounded**~~
+-**→ SUPERSEDED by the 2026-08-12 full-TRON pivot below** (§1/§4/§7; the angular result is unchanged, the
+-Trek/Wars borrowings are dropped); palette = **cyan `#00e5ff` × marigold `#ff9f1c` ("gainda")**, magenta → one player hue; world =
+-**hybrid open ribbon + distant non-collidable tube-walls** (resolves OQ2); post = **conservative** — bloom + fog
+-+ starfield + gradient only, chromatic-aberration / scanline / vignette **DEFERRED** to a post-12-ship
+-legibility gate (resolves OQ4); **`COLOR_COUNT` 8→12**, value-staggered / max-pairwise auto-assign (resolves
+-OQ3). Chosen environment prototype = **Grid Void** (`scene/environment.tsx`; view at `/env-lab`, keys 1/2/3).
+-Integrate into the net canvas + landing during S6 Implement; retune wall density/height + bloom at the gate.
+-**AS-BUILT (2026-08-10):** landing UI shipped (de-rounded neon over Grid-Void, cyan×marigold); **REMAINING** —
+-in-game net-canvas env integration, hull-colour on the ship, `COLOR_COUNT` 8→12, ship trails, dissolve derezz.
++- Compact rear-view strip at top centre.
++- Five nearby racer rows at upper left: two ahead, own highlighted row, two behind, adjusted at standings ends; small connected count.
++- Speed, secondary position, course progress and elapsed time at bottom left.
++- One held item and use prompt at bottom right, with a separate active-effect indicator.
++- Pale neutral text; marigold for own position and meaningful active states.
+ 
+-**AESTHETIC PIVOT (2026-08-12 — user direction) — ⚠ ITSELF NOW SUPERSEDED, see ADR-008 / §1 above.**
+-LCARS was dropped in favour of **full TRON** as the single language for colour, material, geometry, UI and
+-audio, with the cyan×marigold "gainda" duo kept and the era question (1982 vs *Legacy*) gated behind issue
+-**#117**.
++No fuel, health, ammo or lap UI is added by the reference. Typography, responsive sizing, alerts and rear-camera correctness remain production detail.
+ 
+-**What replaced it (2026-09-17, ADR-008):** the external package (then `art-handoff-v1`, now consolidated
+-unversioned at `docs/art-direction/`) was adopted as the frozen scene/world direction. Three things changed:
+-1. **Marigold `#F59A24` became primary** and the only energy colour; cyan demoted to a sparing support
+-   accent. The "gainda" duo is retired as a *duo*.
+-2. **TRON-influenced, not TRON-literal** — so **#117 closes as moot**. Neither era is being cloned, and the
+-   UI/audio work it blocked is now ordinary open design work.
+-3. The **angular geometry survives both pivots** unchanged — it was right under all three framings.
++## Production boundary
+ 
+-*Kept here rather than deleted because this is the §11 research-and-history section; the live direction is
+-§1–§4. History is forward-framed per the project's docs convention.*
++Procedural-first is an authoring preference, not a ban on all image assets. The local implementation ships a bitmap sky with separate lighting. Final scene-background art specifies the intended appearance, not a completed sky replacement.
+ 
+-## 12. Physics ⇄ visual split — **FROZEN** (ADR-002, 2026-08-10)
++Keep existing authored ship models until their separate designs are approved. Ship footprints remain tied to collision. Camera framing, not arbitrary model rescaling, controls screen size. The local gameplay chase camera is 9u above the ship; the lower-camera/occlusion-fade proposal remains deferred.
+ 
+-**WYSIWYG collision stays a documented rule, not code.** The hull the player sees IS the collidable
+-footprint, and the rendered track IS the physics `Segment` set — `scene/track-view.tsx` renders the shared
+-sim's physics `Segment`s **directly**. There is deliberately **no** `resolveVisual` / `VisualTrack` / visual
+-abstraction: introducing one before authored content or the art pass actually needs the visual to diverge from
+-the hull would be speculative structure.
++Visual geometry must faithfully represent collidable geometry. Cosmetic choices must not introduce invisible lethal walls, visible traversable walls or new gameplay behavior. Server-authoritative gameplay remains outside art approval.
+ 
+-- **Where the seam sits:** gameplay data that both clients must agree on (pickups today; hazards/checkpoints
+-  later) is a first-class `Track.anchors[]`, materialized by the provider and derived from the descriptor — see
+-  ADR-002 and `sim/track.ts`. Cosmetic-only data does **not** go on the `Track`.
+-- **Litmus (ADR-000) for anything new:** "would two clients disagreeing on this desync the game?" **yes →** it
+-  is gameplay data (a `Track` anchor / physics `Segment`); **cosmetic-only →** it would belong to the future
+-  (currently unbuilt) VisualTrack, never the physics `Track`.
+-- **Unfreeze when:** authored levels or the art pass require the rendered geometry to diverge from the
+-  collidable hull. Until then, render output is byte-for-byte the physics track.
++Use [production validation](art-direction/PRODUCTION_VALIDATION.md) for motion, bloom, scale, recognition and performance checks. Final boards do not prove these checks have passed.
+diff --git a/docs/ART_SCALE_REFERENCE.md b/docs/ART_SCALE_REFERENCE.md
+index a5bba65..bbc7a66 100644
+--- a/docs/ART_SCALE_REFERENCE.md
++++ b/docs/ART_SCALE_REFERENCE.md
+@@ -12,19 +12,12 @@
+ 
+ **The track is 64 units wide. The widest ship is 2.6 units wide.**
+ 
+-A ship spans **~4% of the track width** — about **1/24th**. The `docs/art-direction/boards/` boards draw the ship at
+-roughly **1/8th to 1/10th** of the track, so the real track is **~2.5–3× wider, relative to the ship,**
+-than every board shows.
++The Fighter spans **4.0625% of the track width in world space or at equal depth**. This is not a screenshot-width rule. Perspective, camera framing and cropping change the apparent ratio. Generated boards are not measured scale drawings.
+ 
+ This is the single correction that matters most. Consequences for art direction:
+ 
+-- The real ribbon reads **vaster, emptier, and more lonely** than the boards. That may be *better* —
+-  "Cold Space. Warm Energy." — but it is not what was drawn.
+-- **Marigold edge-glow is a weak guide at true scale.** The handoff makes track edges the primary
+-  navigational read, but at true scale each edge sits **32u** off-centre — over 12 ship-widths away.
+-  A pilot threading the middle of the track cannot use them for fine positioning. Some interior
+-  functional read (lane seams, the racing line, hazard-local cues) likely has to carry that load.
+-  **Flagging this as an open art problem, not solving it here.**
++- Boundaries define the ribbon; interior panel/material cues, sparse irregular seam inserts and hazard contact shading provide fine positioning.
++- The final track brief rejects visible driving lanes and automatic safe-route glow. This question is settled in the [track direction](art-direction/track/README.md).
+ 
+ ## 1. Track
+ 
+@@ -87,8 +80,7 @@ than 7u, so compositions that assume a generous open lane are not always truthfu
+ **All five widths cluster between 2.0u and 2.6u** — a 30% spread. Ships differ far more in *length*
+ (1.18u → 6.00u, a 5× spread) than in width. Board 03's "SHIP ~2.6u" is **correct** (it's the Fighter).
+ 
+-Note the consequence: the Freighter is **6u long and 2.5u wide** — a 2.4:1 needle. Ships are much
+-longer than they are wide, and art should reflect that.
++Note the consequence: the Freighter is **6u long and 2.5u wide** — a 2.4:1 needle. That elongation is class-specific: Comet is wider than long, while Fighter is nearly square. Preserve each class's footprint.
+ 
+ ## 5. Environment scale (from the boards, sanity-checked)
+ 
+@@ -140,8 +132,7 @@ tracer" read is correct and should be pushed further.
+ 
+ ## 8. Player colour
+ 
+-`COLOR_COUNT = 12` — **already 12 in source.** ADD §11's "raise `COLOR_COUNT` 8→12" task is stale and
+-is now marked done. Note this is *palette capacity*, not a committed visual direction: per the
++`COLOR_COUNT = 12` — already 12 in source. Note this is *palette capacity*, not a committed visual direction: per the
+ 2026-09-17 call, the world is uniformly marigold and hue-shifting is reserved for distinguishing
+ opponent ships if and when that proves necessary.
+ 
+@@ -158,5 +149,4 @@ For regenerating concept art at true scale, per **one 64u-wide track**:
+ - One segment = **20u** → the track is **400 of these** end to end
+ - Obelisk = **200–400u** → **3–6 track-widths tall**
+ 
+-> Rule of thumb for a chase-cam shot: if the ship looks like it occupies more than about **4%** of the
+-> ribbon's width, the track is drawn too narrow.
++> Compare ship and track widths at equal depth or from measured world geometry. Do not apply the 4% world-space ratio directly to a perspective screenshot.
