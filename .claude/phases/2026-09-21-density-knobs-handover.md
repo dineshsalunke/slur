@@ -1,7 +1,7 @@
 # 2026-09-21 — handover: descriptor density knobs, debug panel retired
 
 Continues `2026-09-21-monolith-field-handover.md`. Commits: `4fdc1df` (and the monolith work before it).
-Branch `feat/test-level`, **eight commits, still unpushed, no PR** — the owner chose to hold it.
+Branch `feat/test-level`, **ten commits, still unpushed, no PR** — the owner chose to hold it.
 
 ## Shipped
 
@@ -24,17 +24,15 @@ the panel, so `TunedBloom` collapsed into **`SceneBloom`** — a plain config-dr
 
 `pnpm typecheck`, `pnpm lint`, 84 shared + 100 client tests all pass.
 
-## Owner preference recorded this session
+## Source-editing rule — DONE (`9228580`)
 
-**Do not edit source files with `sed`/`perl`/regex — use the stack's own tooling (ts-morph, ast-grep) or
-whole-file writes.** This session's harness instruction said to prefer Bash for edits, which is what was
-followed; the owner's preference overrides it. **This is not yet in CLAUDE.md — add it**, or it will not
-survive a `/clear`. Concrete cost this session: BSD `sed` has no `\b`, so a word-boundary substitution
-silently changed nothing and `monoliths.tsx` had to be rewritten wholesale.
+Regex source edits are banned. Landed as **CLAUDE.md non-negotiable #15** and mirrored as
+**`.claude/rules/source-editing.md`** so it auto-loads on any source read. Use **`ast-grep`** (verified
+installed, 0.45.0, no `sgconfig.yml` yet) for structural edits, **ts-morph** for type-aware refactors,
+or a whole-file Write. Reading with `grep`/`rg`/`sed -n` stays fine. The rule explicitly overrides the
+harness instruction to prefer Bash for edits — that conflict is why it needed writing down.
 
 ## Do this next
-
-1. **Add the no-sed-for-source rule to CLAUDE.md.**
 2. **Expose the knobs to a room.** `blockDensity`/`gapChance` are wired end to end but nothing sets them
    except `/test-level`. `ProcgenDescriptor.tier` is still unwired and is the natural driver, or a host
    control in the lobby.
