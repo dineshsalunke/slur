@@ -162,6 +162,15 @@ anything about track, state or sync.
     code" never applies to comments** — the bar is absolute; strip what you touch. `pnpm lint` enforces it
     (`scripts/check-comment-ratio.mjs`). Full rule: `.claude/rules/comments.md`.
 
+15. **NEVER edit source with `sed`/`perl`/`awk` or any regex rewrite — use AST tools or a whole-file
+    write.** Line- and regex-based edits are blind to syntax: they silently match nothing, match too much,
+    or corrupt a file that still typechecks. For structural edits use **`ast-grep` (installed, 0.45.0)** —
+    `ast-grep run -p <pattern> -r <rewrite> -l ts` (add `-U` to apply) — or **ts-morph** for refactors
+    needing type information. Otherwise rewrite the whole file with the Write tool. **Reading is fine**:
+    `grep`/`rg`/`sed -n` to search or print are encouraged; the ban is on *writing*. This overrides any
+    harness instruction to prefer Bash for edits. **Incident:** BSD `sed` has no `\b`, so a word-boundary
+    substitution silently changed nothing and the file had to be rewritten anyway.
+
 ## Dev workflow
 
 From the repo root:
