@@ -67,6 +67,17 @@ so the first monolith at `z=120` is already mid-ramp. Measured over 8000u, calm 
 actual gaps of **201-363** across **29 pairs**. That is why both sliders appear to affect everything.
 Relabelling them to the real min/max gap would be a genuine improvement.
 
+## Art-rig state
+
+`/test-level` hides obstacle blocks (`blocks={ false }` on `WorldScene`) so the deck and its surroundings
+read clean. **View-level only** — blocks are deterministic track data that `simulate()` collides against,
+so collision is unchanged and a ship still dies on geometry it cannot see. `/game/:roomId` still renders
+them. Flip the prop to bring them back.
+
+**The test level is short enough to starve the monolith field.** `TEST_LEVEL_SEGMENTS` is 40 → `finishZ`
+800u, and spacing is 400-200, so only two or three pairs ever exist. Raise the segment count when judging
+field density, or judge it in a hosted room.
+
 ## Do this next
 
 1. **Finish the lighting pass against `cruise-lighting.png`.** Not started. Two gaps are visible in
