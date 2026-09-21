@@ -43,3 +43,23 @@ scratchpad/
 
 # Per-machine Claude Code state — never shared.
 .claude/settings.local.json
+
+# Browser-automation scratch output.
+.playwright-mcp/
+
+# Art drafts stay local; approved work is promoted to its subject folder.
+# Empty draft folders are retained via .gitkeep so the structure survives a clone.
+/docs/art-direction/golden-reference/explorations/*
+/docs/art-direction/background/explorations/*
+/docs/art-direction/track/explorations/*
+/docs/art-direction/progression/explorations/*
+/docs/art-direction/ingredients/**/explorations/*
+/docs/art-direction/vehicles/**/explorations/*
+!/docs/art-direction/**/explorations/.gitkeep
+
+# The pre-revamp art direction is superseded and slated for deletion, so it is
+# not versioned here. It stays on disk for the ChatGPT project to read, and the
+# complete folder is preserved on the `snapshot/codex-art-2026-09-21` branch —
+# do not delete that ref. 86 of its files exist nowhere else, the two source
+# .glb vehicle models among them.
+/docs/art-direction/archive/
