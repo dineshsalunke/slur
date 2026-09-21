@@ -3,7 +3,7 @@
 Procedurally building the track's **models and materials**. This file is the durable artifact: it is
 written to be read cold by a lane agent who has never seen the reference boards.
 
-**Status: PLAN, not greenlit.** Two decisions below are the owner's and block parts of the work.
+**Status: all three decisions settled by the owner 2026-09-21 (§3). Nothing blocks — ready for a lane.**
 
 ---
 
@@ -28,7 +28,7 @@ rendered top face ends at exactly ±HALF_WIDTH, always… Nothing that is drawn 
 drawn to end."* The sim's floor spans ±HALF_WIDTH unconditionally
 (`packages/shared/src/sim/track.ts:133`). Art may not move the play boundary.
 
-So the work is **implementation + two open forks**, not authorship of a new sheet.
+So the work is **implementation**, not authorship of a new sheet.
 
 ---
 
@@ -118,16 +118,21 @@ boards show those elements, read them as context for the deck's lighting, not as
 engineered stone — are **deferred with the blocks themselves**, out of this task's scope. They are
 recorded in `docs/ART_MATERIALS.md` §5 and matter whenever blocks are picked up again.*
 
-**D1 — Scope: implementation-only, or may this propose direction changes?** If it may, the output needs
-a *decisions + departures* section quoting the package wording it changes, for the owner to paste to
-Codex (the shape is `ART_MATERIALS.md` §7). We never edit `docs/art-direction/` ourselves.
+**D1 — RESOLVED: direction changes MAY be proposed, if the blast radius is small.** Small means it
+changes one surface or one treatment, not the palette, the camera or the progression. Every proposal
+goes in a *decisions + departures* section quoting the package wording it changes (shape:
+`ART_MATERIALS.md` §7), for the owner to paste to Codex. **Never edit `docs/art-direction/` — a silent
+edit there is invisible to Codex and desynchronises both sides.** If a change would touch more than one
+surface, stop and ask rather than widening it.
 
-**D2 — Raised or flush rail?** Unsettled *by the package's own admission*
-(`ART_MATERIALS.md:330-343`): the archived brief wants rails "flush and coplanar" with "zero air gap"
-and excludes "raised rails or ornamental edge machinery"; the owner's resolution is a **1u × 1u
-chamfered bar standing outboard at ±32.5**, which "reads as a raised rail and therefore departs from"
-that exclusion. **The code already ships raised.** This fork is the owner's with Codex, not ours —
-but whichever way it goes, ADR-012 holds: the pivot is ±32.5, never ±32 or ±33.
+**D2 — RESOLVED: FLUSH rail.** The rail is **flush and coplanar with the deck, zero air gap**, which is
+what the archived brief always asked for — so this *reverses* the raised-bar resolution and the
+departure recorded at `ART_MATERIALS.md:330-343`. Two consequences the lane must carry out:
+**(a)** the code ships **raised** today (`BOUNDARY_H = 1.0`, a lipped box) — that is now wrong and W4
+is a geometry change, not a finish pass; **(b)** `ART_MATERIALS.md` §7's raised-rail departure is no
+longer a departure and must be rewritten to record the reversal, since we are back in line with the
+package. ADR-012 is unaffected and still governs: the deck's top face ends at exactly ±HALF_WIDTH, the
+boundary occupies [32, 33] beside it, pivot ±32.5 — never ±32, never ±33.
 
 **D3 — RESOLVED by the owner (2026-09-21): a stripped playable test level, raced in a hosted room.**
 No route is restored — `/art-lab` and `/art-gallery` stay deleted. The instrument is **W-T** below:
@@ -181,10 +186,12 @@ straight through. So the job is the cut geometry and its rim, plus verifying tha
 reads through a gap at speed and that no ground plane, fog or dome-gradient term greys it out. Must not
 disturb the sim: gaps are already generated, this is art only.
 
-**W4 — Rails** (gated on **D2**). The 1u × 1u chamfered bar at pivot ±32.5, brightest tier, continuous
-and unbroken. ADR-012 governs: the deck's top face ends at exactly ±HALF_WIDTH and the rail may not
-move it. Today's `BOUNDARY_W/H = 1.0` already matches the scale ref, so this is finish, not geometry —
-unless D2 lands on flush.
+**W4 — Rails, FLUSH (D2).** Coplanar with the deck, zero air gap, no raised lip, no ornamental edge
+machinery. Brightest emissive tier, continuous and unbroken — it is what tells a player where the track
+ends. **This is a geometry change**: `BOUNDARY_H = 1.0` currently builds a raised box and has to go
+flat. `RAIL_W` stays 1u, the pivot stays ±32.5, the deck's top face still ends at exactly ±HALF_WIDTH
+(ADR-012). Also update `ART_MATERIALS.md` §7 per D2 — the raised-rail departure is reversed, not
+amended. Check the chamfer still earns its place once the bar is flat; it may not.
 
 **Housekeeping (independent, do anytime):** `env-config.ts` still carries three named variants A/B/C
 with blue `#1e6fff` and magenta `#ff2bd6` walls; only `GRID_VOID` (C) is wired up. Two-thirds of it
@@ -211,7 +218,8 @@ edit) → the boards (LOOK, never SIZE).
 
 ## 6. Open, for the owner
 
-- **D1–D2 above.** D3 is resolved: the W-T test level is the instrument.
+- **All three decisions are settled** (§3): direction changes allowed at small blast radius · flush
+  rail · the W-T test level is the instrument.
 - **Board B is not in the repo** — file it on the ChatGPT side, or §1's written reading is all the lane gets.
 - Scope is the track ribbon only. Monoliths, asteroids, blocks, vehicles and ingredients are out, by
   the owner's instruction 2026-09-21 — including the two block-material forks noted in §3.
