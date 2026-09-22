@@ -96,12 +96,49 @@ Stray clicks wrote `Env.bandColor` `#8c9199` and `Deck.roughness` 0.1, which the
 briefly corrupted a judgement about the cold cast. Prefer `reset to schema` before judging, and
 confirm a field's label in the same screenshot the coordinates came from.
 
+## The ambient cast was blue; the reference is neutral
+
+Owner's call, confirmed on screen. Measured as blue-minus-red on the three contributors:
+`Env.groundColor` `#2a323d` at **+19**, `Env.skyColor` `#8c9199` at **+13**, `Fill.color` `#bcc0c4`
+at +8. `groundColor` is the lower hemisphere the deck reflects head-on, so it dominated the near
+field and the monolith faces.
+
+Moved `groundColor` → `#343639` and `skyColor` → `#97979a`. The cast cleared while the nebula stayed
+cool, which is the reference's relationship: **cold background, neutral lit surfaces**. `Fill.color`
+left alone as the smallest contributor at intensity 0.35.
+
+## Persistence was contaminated by its own HMR introduction
+
+`Env.bandColor` read `#8c9199` on load with `from` correctly `#F59A24` — so `restore` was right and
+the stored *value* was wrong. localStorage held no leva keys, so leva does not persist. The path was:
+my mis-typed value sat in leva's **in-memory** store from before persistence existed, then
+`tuning-panel.tsx` hot-updated (`[vite] hot updated` in console), the remount fired `onChange` with
+that stale in-memory value, and the new layer captured it.
+
+Verified benign: `localStorage.clear()` + a reload with no HMR in between gives **nothing differs from
+schema**. The layer is sound. But it silently contaminated three judgements earlier in the session, so
+**after any HMR of the tuning panel, clear storage and hard-reload before judging art.**
+
+`changedDefaults` now compares colours case-insensitively — `ACCENT_ANCHOR` is uppercase and leva
+normalises to lowercase on mount, which reported false changes.
+
+## Pre-existing bug found: `patch` is a reserved word in GLSL ES
+
+`sealed-block-shader.ts` fails to compile on every load:
+
+> `ERROR: 0:107: 'patch' : Illegal use of reserved word`
+> `float patch = smoothstep( t - edge, t + edge, n );`
+
+Not introduced here — it predates this branch and the sealed-block material has been failing
+silently. Needs an issue and a rename of that local.
+
 ## Schema defaults changed
 
 | Tunable | Was | Now |
 |---|---|---|
 | `GRAPHITE_ALBEDO` (constant) | `#303c45` | `#7c8590` |
-| `Env.skyColor` | `#6b7d94` | `#8c9199` |
+| `Env.skyColor` | `#6b7d94` | `#97979a` |
+| `Env.groundColor` | `#2a323d` | `#343639` |
 | `Fill.color` | `#9fb4cc` | `#bcc0c4` |
 | `Env.bandIntensity` | 1.8 | 0.4 |
 | `RailLight.*`, `Bloom.*` | — | new groups |
@@ -140,7 +177,8 @@ Typecheck clean · lint clean (9 pre-existing warnings, comment ratchet passed) 
    `GRAPHITE_ALBEDO` move into conductor range, and the composer's tone-mapping ownership.
 5. **`apps/client/public/textures/metal/` (3.9M) is still uncommitted and unwired**, per the previous
    handover's recommendation to add a procedural grain layer instead.
-6. Open a PR for `art/rail-lights`.
+6. **File an issue for the `patch` GLSL reserved-word bug** and rename that local.
+7. Open a PR for `art/rail-lights`.
 
 ## Related
 
