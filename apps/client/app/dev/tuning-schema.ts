@@ -74,8 +74,8 @@ export const NUMBER_TUNABLES = {
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
-    'Env.skyColor': { value: '#8c9199', rebuild: false },
-    'Env.groundColor': { value: '#2a323d', rebuild: false },
+    'Env.skyColor': { value: '#97979a', rebuild: false },
+    'Env.groundColor': { value: '#343639', rebuild: false },
     'Env.bandColor': { value: ACCENT_ANCHOR, rebuild: false },
     'NearFill.color': { value: '#ffb964', rebuild: false },
     'RailLight.color': { value: ACCENT_ANCHOR, rebuild: false },

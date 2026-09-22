@@ -11,7 +11,8 @@ export function changedDefaults(): string {
 
     for ( const path of Object.keys( COLOR_TUNABLES ) as ColorPath[] ) {
         const value = col( path );
-        if ( value !== COLOR_TUNABLES[ path ].value ) lines.push( `    '${ path }': '${ value }',` );
+        const base = COLOR_TUNABLES[ path ].value;
+        if ( value.toLowerCase() !== base.toLowerCase() ) lines.push( `    '${ path }': '${ value }',` );
     }
 
     return lines.join( '\n' );
