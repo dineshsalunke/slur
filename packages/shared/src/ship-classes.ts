@@ -102,7 +102,7 @@ export const SHIPS: Record< ShipId, Ship > = {
     'split-crown': { id: 'split-crown', name: 'Split Crown', classId: 'freighter' },
 };
 
-export const DEFAULT_SHIP: ShipId = 'challenger';
+export const DEFAULT_SHIP: ShipId = 'split-crown';
 
 export const SET_CLASS_MESSAGE = 'setClass';
 
