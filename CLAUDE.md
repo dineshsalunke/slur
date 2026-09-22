@@ -203,16 +203,27 @@ From the repo root:
   loader, so launch with a matching `PORT` in the shell — `PORT=2568 pnpm dev` (must equal
   `VITE_SERVER_PORT`). Defaults stay `:5173`/`:2567`.
 
-### Worktrees (optional — use them for what they're for)
+### Branching — `dev` only
 
-A worktree exists to stop **concurrent** work colliding. Reach for one when that's the actual problem;
-otherwise branch and commit in the checkout like any normal repo.
+**All work happens directly on `dev`, in this checkout.** Never create a branch here, and never
+`git checkout` another one. Every agent shares one working tree and one `.git/index`, so a branch
+switch moves the ground under everyone, and a commit made on a branch strands **other sessions'**
+commits off `dev` alongside your own.
 
-**Use one when:** another agent is already in the tree, or you're fanning several out in parallel · the
-branch is long-lived and you'll switch away mid-flight · you need a second live stack running at once (see
-the port note) · you're reviewing a PR and don't want to disturb your WIP.
+**A worktree is the only sanctioned form of branching, and only when it is genuinely required** —
+concurrent work that would otherwise collide in the tree. **If in doubt, ask the owner.** Never
+create one on your own judgement.
 
-**Don't when** it's a small change you'll finish in one sitting and nobody else is in the tree.
+**A second live stack is not a reason to branch.** It needs a second *origin*, not a second checkout:
+`CLIENT_PORT` + `VITE_SERVER_PORT` give you one inside this checkout (see the port note above). That
+is also what separates the `localStorage` tuning store, which is shared per-origin across every
+driven tab.
+
+**Incident (2026-09-23).** One agent created `feat/asteroid-bands` here. Because the checkout follows
+one HEAD, two *other* sessions committed onto it without choosing it, and `dev` sat four commits
+behind until the branch was fast-forwarded back.
+
+**Once the owner has approved a worktree:**
 
 ```
 git fetch origin
