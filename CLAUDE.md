@@ -235,7 +235,8 @@ cp /Users/apple/Projects/personal/slur/.claude/settings.local.json .claude/
 - **Arc phases** (Ideate → Brainstorm → Prep → Align → Implement → Reconcile): use the `/arc` skill — load
   it, don't paraphrase. Phase notes land in `.claude/phases/`.
 - **Where status lives — never here.** Shipped decisions + rationale: `docs/DECISIONS.md`. Arc narrative and
-  as-built notes per phase: `.claude/phases/`. Design/narrative log: `.claude/backlog.md`.
+  as-built notes per phase: `.claude/phases/`. Design/narrative log: `.claude/backlog.md`. Read
+  `.claude/phases/INDEX.md` on demand when you need phase-note context — it is not loaded by default.
 - **Roadmap = GitHub issues** (`github.com/dineshsalunke/slur/issues`), grouped by milestone. File an issue
   for every feature or fix before you build it (`CONTRIBUTING.md`).
 - **Batch related file changes** into one review turn.

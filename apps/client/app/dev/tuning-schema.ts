@@ -25,13 +25,13 @@ export const NUMBER_TUNABLES = {
     'Rail.normalScale': { value: 0.8, min: 0, max: 3, step: 0.01, rebuild: false },
     'Rail.plate': { value: 4, min: 1, max: 24, step: 1, rebuild: true },
     'Rail.railEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
-    'Rail.rimEmissive': { value: 6, min: 0, max: 30, step: 0.05, rebuild: false },
+    'Rail.rimEmissive': { value: 2, min: 0, max: 30, step: 0.05, rebuild: false },
 
     'Monolith.metalness': { value: 0.9, min: 0, max: 1, step: 0.01, rebuild: false },
     'Monolith.roughness': { value: 0.35, min: 0.02, max: 1, step: 0.01, rebuild: false },
     'Monolith.envMapIntensity': { value: 1.55, min: 0, max: 6, step: 0.05, rebuild: false },
     'Monolith.plate': { value: 17, min: 4, max: 40, step: 1, rebuild: true },
-    'Monolith.seamEmissive': { value: 10, min: 0, max: 10, step: 0.05, rebuild: false },
+    'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
     'Groove.width': { value: 0.15, min: 0.02, max: 1.2, step: 0.01, rebuild: true },
     'Groove.wallTilt': { value: 0.05, min: 0, max: 0.8, step: 0.01, rebuild: true },

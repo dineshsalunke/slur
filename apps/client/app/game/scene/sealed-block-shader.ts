@@ -7,6 +7,7 @@ import {
     SEALED_BLOCK_WEAR_COLOR,
     SEALED_BLOCK_WEAR_ROUGHNESS,
 } from './sealed-block-variation';
+import { MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
 
 export interface SealedBlockUniforms {
     uSealedBevel: { value: number };
@@ -28,7 +29,7 @@ export function sealedBlockUniforms(): SealedBlockUniforms {
         uSealedBevel: { value: SEALED_BLOCK_BEVEL },
         uSealedSeamWidth: { value: SEALED_BLOCK_SEAM_WIDTH },
         uSealedSeamColor: { value: SEAM_BASE },
-        uSealedSeamIntensity: { value: 1 },
+        uSealedSeamIntensity: { value: MARIGOLD_REFERENCE_INTENSITY },
         uSealedWear: {
             value: new THREE.Vector4(
                 SEALED_BLOCK_WEAR.scale,
