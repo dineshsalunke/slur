@@ -3,6 +3,7 @@ import { useThree } from '@react-three/fiber';
 import type { Track } from '@slur/shared';
 import { Fragment } from 'react';
 import * as THREE from 'three';
+import { Asteroids } from './asteroids';
 import { BACKDROP_URL } from './backdrop';
 import { DeepSpaceSky } from './deep-space-sky';
 import { Monoliths } from './monoliths';
@@ -29,6 +30,7 @@ export function GameEnvironment( { track }: { track: Track } ) {
             <primitive attach="background" object={ map } />
             <DeepSpaceSky config={ DEEP_SPACE } />
             <Monoliths track={ track } />
+            <Asteroids track={ track } />
         </Fragment>
     );
 }
