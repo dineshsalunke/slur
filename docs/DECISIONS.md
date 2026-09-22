@@ -236,6 +236,20 @@ generator stops changing shape. Today's per-slice assertion holds the line until
   grace-notes on the line, and **varied gaps** (full-width jump + partial floor-strip). Ships tuned for crisp
   flicks; chase camera raised above the walls; `TRACK_SEGMENTS=400` (~2.5–2.8 min). Full evolution + final
   constants: the phase note. 71/71 shared tests green.
+- **As-built 2026-09-23 — the pinch accent is finally built, and the +1-lane buffer is GONE.** The
+  buffer above is retired. It made every lane of the weave union unconditionally open, so deadly blocks could
+  only ever land at the track edges: measured on seed 20260921, the narrowest non-gap corridor over 420
+  segments was **16u** against a 2.6u ship, the median **44u**, and **125 of 420** segments were empty across
+  the full 64u. Walking the racing line, **90%** of segments needed no lateral input and the longest coast ran
+  **29s**. Owner playtest: *"very boring… I didn't even have to lift any strafing finger for nearly 25% of the
+  track."* The corridor is now an **open band** narrowing 48u→24u with intensity, plus the **pinch accent this
+  ADR specified and nobody implemented** — a solid gate with one **12u** hole, 2–4 segments, above intensity
+  0.45, its hole **frozen** for the gate's length (a weave-following 12u slot has *negative* segment-to-segment
+  overlap and is unthreadable) and **funnelled on both sides**, the exit as much as the entry. Gates are built
+  at full segment depth, or varied block depths leave two ways through. `WALL_DENSITY_MAX` 0.4→0.9 so the band
+  is the widest run. `SECTIONS` 16→10 because ~9.5s phrases swung intensity 0.86→0.05 in nineteen segments.
+  Longest coast **29s→10.5–13.8s**; peak lateral demand **110 u/s (above the 80 u/s clamp — unfair) →52–66**.
+  The tube warning below still governs: the corridor narrows in **accents**, never permanently.
 - **Supersedes:** the S6 value-noise **difficulty model** (monotonic `difficultyAt` ease-out-to-cap + triangle
   pace) and the **noise-wall** hazard placement. **Concretizes + supersedes ADR-003's** macro layer (voids its
   "wait for BC5 beats" gate). Keeps the S6 **weave line + derived `SLOPE_CAP`/`CURV_CAP`/`MIN_LANE` fairness
