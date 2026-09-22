@@ -1,5 +1,3 @@
-export const REAR_PANEL_WIDTH = 352;
-export const REAR_PANEL_HEIGHT = 110;
+export const REAR_PANEL_WIDTH = 448;
+export const REAR_PANEL_HEIGHT = 140;
 export const REAR_ASPECT = REAR_PANEL_WIDTH / REAR_PANEL_HEIGHT;
-export const REAR_TEXTURE_WIDTH = 512;
-export const REAR_TEXTURE_HEIGHT = Math.round( REAR_TEXTURE_WIDTH / REAR_ASPECT );

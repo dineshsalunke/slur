@@ -75,6 +75,10 @@ export const NUMBER_TUNABLES = {
     'RearView.fov': { value: 36, min: 15, max: 100, step: 1, rebuild: false },
     'RearView.lift': { value: 3, min: 0, max: 12, step: 0.1, rebuild: false },
     'RearView.tilt': { value: 4, min: -20, max: 30, step: 0.5, rebuild: false },
+    'RearView.gain': { value: 1, min: 0, max: 2, step: 0.01, rebuild: false },
+    'RearView.featherX': { value: 0.22, min: 0, max: 0.5, step: 0.01, rebuild: false },
+    'RearView.featherY': { value: 0.18, min: 0, max: 0.5, step: 0.01, rebuild: false },
+    'RearView.scale': { value: 1, min: 0.5, max: 2, step: 0.05, rebuild: true },
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
