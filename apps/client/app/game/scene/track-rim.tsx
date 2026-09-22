@@ -13,7 +13,7 @@ export const CORD_SEGMENTS = 8;
 export const CORD_INTENSITY = MARIGOLD_REFERENCE_INTENSITY;
 export const CORD_DEPTH_BIAS = -2;
 
-const RIM_EMISSIVE = 6;
+const RIM_EMISSIVE = CORD_INTENSITY;
 
 export interface Cord {
     x: number;

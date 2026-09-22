@@ -5,7 +5,7 @@ import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
 import { bodySpan, bodyTransform, type MonolithTransform, seamTransform, shapeProfile } from './monolith-transforms';
-import { cleanToMapRoughness, monolithBodySurface } from './track-materials';
+import { cleanToMapRoughness, MARIGOLD_REFERENCE_INTENSITY, monolithBodySurface } from './track-materials';
 
 const scratch = new THREE.Object3D();
 const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } );
@@ -13,7 +13,7 @@ const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } )
 const MONO_METALNESS = 0.9;
 const MONO_ROUGHNESS = 0.35;
 const MONO_ENV_MAP_INTENSITY = 1.55;
-const MONO_SEAM_EMISSIVE = 10;
+const MONO_SEAM_EMISSIVE = MARIGOLD_REFERENCE_INTENSITY;
 
 function fill(
     mesh: THREE.InstancedMesh,

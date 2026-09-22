@@ -4,9 +4,9 @@ import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { buildSeamGeometry, buildSeamInserts } from './seam-inserts';
 import { segmentCount } from './track-floor';
-import { SEAM_SURFACE } from './track-materials';
+import { MARIGOLD_REFERENCE_INTENSITY, SEAM_SURFACE } from './track-materials';
 
-const SEAM_EMISSIVE = 2;
+const SEAM_EMISSIVE = MARIGOLD_REFERENCE_INTENSITY;
 
 export function TrackSeams( { track }: { track: Track } ) {
     const geo = useMemo(
