@@ -21,8 +21,10 @@ disturbed. That absorbed the five `art/rail-lights` commits. `dev` is **not push
 dev..<branch>`, two dots — the three-dot form is misleading here because the merge base is ancient)
 puts both **net behind** dev: `feat/ship-feel` is +2444/−3327, `feat/test-level` +1458/−1683. Merging
 either would revert dev. They look safe to delete; that is the owner's call and was left open.
-`/Users/apple/Projects/personal/slur-worktrees/ship-feel` is still a registered worktree, also left
-for the owner.
+**Both were deleted on the owner's instruction**, along with the
+`/Users/apple/Projects/personal/slur-worktrees/ship-feel` worktree. The worktree was clean with nothing
+unpushed, and `origin/feat/test-level` and `origin/feat/ship-feel` still exist, so the work is
+recoverable from the remote. The main checkout is now the only worktree.
 
 ## Three agents, one working tree
 
@@ -106,10 +108,12 @@ sees is the block's `z0` face, at 17%. The bias is the amplifier, not the cause.
 texture and lighting make blocks readable and the flicker is fixed, side seams may stay.** So the
 face-weighting change was NOT made.
 
-**Chamfer 0.12u → 0.5u.** On an 8u block 0.12u is 1.5% — invisible at any distance, and flat-shaded
-besides (`sealed-block-geometry.ts` pushes an explicit per-face normal per triangle). The owner's call
-was explicitly *silhouette, not specular*, given the lighting. 0.5u matches the monoliths' existing
-0.45u.
+**Chamfer 0.12u → 0.5u → 0.2u (`49edd6f`).** On an 8u block 0.12u is 1.5% — invisible at any distance,
+and flat-shaded besides (`sealed-block-geometry.ts` pushes an explicit per-face normal per triangle).
+The owner's call was explicitly *silhouette, not specular*, given the lighting. 0.5u was tried first to
+match the monoliths' 0.45u and **the owner judged it too strong**: on a 4u-wide block it takes 12% off
+each corner, which reads as a softened octagon rather than a cut edge. Settled at **0.2u** — still 1.7×
+the original, readable at distance, without rounding the hazard profile.
 
 **A duplicated-constant trap, caught before it shipped.** `track-blocks.tsx` had its own `BLOCK_BEVEL`
 and `BLOCK_SEAM_WIDTH` shadowing `SEALED_BLOCK_BEVEL` and `SEALED_BLOCK_SEAM_WIDTH`. Widening only one
@@ -202,10 +206,17 @@ never measured.**
 
 ## Blocked
 
-**The Chrome extension is not connected this session.** Nothing below was judged on screen — the seam
-flicker fix, the 0.5u chamfer and the whole Fresnel argument are reasoned from source and arithmetic,
-not looked at. The dev stack is up on `:5173`/`:2567`. First thing next session: reconnect the
-extension and look at `/test-level`.
+**The extension connected late, and the canvas could not be made to render.** The seam flicker fix and
+the whole Fresnel argument are reasoned from source and arithmetic, **not looked at**. Only the chamfer
+was judged, by the owner directly.
+
+The backgrounded-tab freeze was **reproduced, not just reported**: a screenshot of `/test-level` came
+back with the WebGL canvas fully black while `hud`'s DOM readout drew correctly and its per-frame speed
+value sat blank. That asymmetry is the signature — DOM paints, `rAF` does not fire, so the canvas never
+draws. A driven tab cannot judge art on its own; **the owner has to click into the tab and keep it
+foregrounded**, and any screenshot taken before that is worthless rather than merely dim.
+
+The dev stack is up on `:5173`/`:2567`.
 
 ## Next
 
