@@ -159,6 +159,7 @@ export function TuningPanel() {
         idle: numberControl( 'Exhaust.idle' ),
         softness: numberControl( 'Exhaust.softness' ),
         falloff: numberControl( 'Exhaust.falloff' ),
+        heat: numberControl( 'Exhaust.heat' ),
         hot: colorControl( 'Exhaust.hot' ),
         cool: colorControl( 'Exhaust.cool' ),
     } );

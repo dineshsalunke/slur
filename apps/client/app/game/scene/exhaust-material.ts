@@ -26,6 +26,7 @@ uniform vec3 uHot;
 uniform vec3 uCool;
 uniform float uSoftness;
 uniform float uFalloff;
+uniform float uHeat;
 varying float vAxial;
 varying float vGlow;
 varying vec3 vNormalView;
@@ -34,7 +35,8 @@ varying vec3 vViewDir;
 void main() {
     float facing = abs( dot( normalize( vNormalView ), normalize( vViewDir ) ) );
     float body = pow( facing, uSoftness ) * pow( 1.0 - vAxial, uFalloff );
-    gl_FragColor = vec4( mix( uHot, uCool, vAxial ) * body * vGlow, 1.0 );
+    vec3 tint = mix( uCool, uHot, pow( body, uHeat ) );
+    gl_FragColor = vec4( tint * body * vGlow, 1.0 );
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }
@@ -49,6 +51,7 @@ export function buildExhaustMaterial(): THREE.ShaderMaterial {
             uCool: { value: accent().clone() },
             uSoftness: { value: 2.2 },
             uFalloff: { value: 1.6 },
+            uHeat: { value: 1 },
         },
         transparent: true,
         depthWrite: false,

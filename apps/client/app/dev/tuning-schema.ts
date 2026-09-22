@@ -92,12 +92,13 @@ export const NUMBER_TUNABLES = {
     'RearView.featherY': { value: 0.18, min: 0, max: 0.5, step: 0.01, rebuild: false },
     'RearView.scale': { value: 1, min: 0.5, max: 2, step: 0.05, rebuild: true },
 
-    'Exhaust.length': { value: 4.5, min: 0.5, max: 24, step: 0.1, rebuild: false },
+    'Exhaust.length': { value: 1.4, min: 0.5, max: 24, step: 0.1, rebuild: false },
     'Exhaust.spread': { value: 1.6, min: 0.5, max: 5, step: 0.05, rebuild: false },
-    'Exhaust.glow': { value: 3.2, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Exhaust.glow': { value: 11, min: 0, max: 20, step: 0.05, rebuild: false },
     'Exhaust.idle': { value: 0.35, min: 0, max: 1, step: 0.01, rebuild: false },
     'Exhaust.softness': { value: 2.2, min: 0.2, max: 8, step: 0.05, rebuild: false },
     'Exhaust.falloff': { value: 1.6, min: 0.2, max: 8, step: 0.05, rebuild: false },
+    'Exhaust.heat': { value: 1, min: 0.2, max: 8, step: 0.05, rebuild: false },
 
     'EngineLight.intensity': { value: 18, min: 0, max: 200, step: 0.5, rebuild: false },
     'EngineLight.distance': { value: 14, min: 1, max: 80, step: 0.5, rebuild: false },

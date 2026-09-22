@@ -37,6 +37,7 @@ function syncPalette( material: THREE.ShaderMaterial, applied: Palette ): void {
     }
     material.uniforms.uSoftness.value = num( 'Exhaust.softness' );
     material.uniforms.uFalloff.value = num( 'Exhaust.falloff' );
+    material.uniforms.uHeat.value = num( 'Exhaust.heat' );
 }
 
 function writeShip( mesh: THREE.InstancedMesh, drive: Float32Array, at: number, entity: Entity ): number {
