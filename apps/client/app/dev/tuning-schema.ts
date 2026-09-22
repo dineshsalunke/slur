@@ -43,6 +43,9 @@ export const NUMBER_TUNABLES = {
     'Fill.elevation': { value: 35, min: -20, max: 89, step: 1, rebuild: false },
     'Fill.azimuth': { value: 25, min: -90, max: 90, step: 1, rebuild: false },
 
+    'Fog.near': { value: 60, min: 0, max: 900, step: 5, rebuild: false },
+    'Fog.far': { value: 500, min: 50, max: 2000, step: 10, rebuild: false },
+
     'Deck.metalness': { value: GRAPHITE_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Deck.roughness': { value: GRAPHITE_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
     'Deck.envMapIntensity': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
@@ -96,6 +99,7 @@ export const COLOR_TUNABLES = {
     'NearFill.color': { value: '#ffb964', rebuild: false },
     'RailLight.color': { value: ACCENT_ANCHOR, rebuild: false },
     'Fill.color': { value: '#bcc0c4', rebuild: false },
+    'Fog.color': { value: '#070a10', rebuild: false },
     'Deck.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Rail.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Monolith.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },

@@ -96,6 +96,12 @@ export function TuningPanel() {
         color: colorControl( 'Fill.color' ),
     } );
 
+    useControls( 'Fog', {
+        near: numberControl( 'Fog.near' ),
+        far: numberControl( 'Fog.far' ),
+        color: colorControl( 'Fog.color' ),
+    } );
+
     useControls( 'Deck', {
         metalness: numberControl( 'Deck.metalness' ),
         roughness: numberControl( 'Deck.roughness' ),
