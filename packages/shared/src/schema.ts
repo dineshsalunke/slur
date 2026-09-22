@@ -1,7 +1,7 @@
 import { MapSchema, Schema, type } from '@colyseus/schema';
 import type { ProjectileState } from './combat/projectiles.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
-import { FULL_DENSITY } from './sim/track.js';
+import { FULL_DENSITY } from './sim/space.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
 import type { SimShip } from './sim/types.js';
 

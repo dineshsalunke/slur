@@ -1,7 +1,7 @@
 import type { FlightTuning } from '../constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
-import { type Segment, spanHasZ, spanOverlapsZ, type Track } from './track.js';
+import { type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
 import type { SimShip } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };

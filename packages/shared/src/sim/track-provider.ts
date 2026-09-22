@@ -1,4 +1,5 @@
-import { makeProcgenTrack, type ProcgenDescriptor, TRACK_SEGMENTS, type Track } from './track.js';
+import { type ProcgenDescriptor, TRACK_SEGMENTS, type Track } from './space.js';
+import { makeProcgenTrack } from './track.js';
 
 export type TrackDescriptor = ProcgenDescriptor | { kind: 'authored'; levelId: string };
 

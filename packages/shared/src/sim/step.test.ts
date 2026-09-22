@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT } from '../constants.js';
 import { emptyInput } from './input.js';
+import { BLOCK_HEIGHT, HALF_WIDTH, SEG_LEN, type Segment, type Track } from './space.js';
 import { simulate } from './step.js';
-import { BLOCK_HEIGHT, HALF_WIDTH, SEG_LEN, type Segment, type Track } from './track.js';
 import { spawnShip } from './types.js';
 
 const t = DEFAULT_TUNING;

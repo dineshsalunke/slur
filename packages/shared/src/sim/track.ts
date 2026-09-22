@@ -2,374 +2,44 @@ import {
     BLOCK_MAX_LANES,
     CELL,
     CORRIDOR_BUFFER,
-    CORRIDOR_W_MIN,
-    CORRIDOR_W_START,
-    CRACK_EDGE_MARGIN_LANES,
-    CRACK_FRAC,
-    CRACK_SEGS_MAX,
-    CRACK_SEGS_MIN,
-    CRACK_W_LANES_MAX,
-    CRACK_W_LANES_MIN,
-    DEFAULT_TUNING,
-    demandSpacingSegments,
-    deriveNodePeriod,
-    deriveWeaveCurvatureCap,
-    deriveWeavePeriod,
-    deriveWeaveSlopeCap,
-    FLICK_RATE_MAX,
-    FLICK_RATE_START,
     FLICK_WIDTH,
-    FULL_GAP_FRAC,
-    GAP_BLOCK_ATTEMPTS,
-    GAP_BLOCK_RATE_MAX,
-    GAP_BLOCK_RATE_START,
-    GAP_P_MAX,
-    GAP_P_START,
-    REST_INTENSITY,
-    SECTIONS,
-    WALL_DENSITY_MAX,
-    WALL_DENSITY_START,
     WALL_NOISE_FZ_LANE,
     WALL_NOISE_FZ_SEG,
-    WEAVE_CARRIER_BUDGET,
-    WEAVE_NOISE_FRAC,
 } from '../constants.js';
-import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
-import { blockDepthFor, blockZSpan } from './block-depth.js';
-import { type LaneRange, rimTeeth } from './gap-teeth.js';
-import { smoothstep, tri, valueNoise1D, valueNoise2D } from './noise.js';
+import { blockZSpan } from './block-depth.js';
+import { openCenterX } from './clearance.js';
+import { gapBlocks } from './gap-blocks.js';
+import { crackCovering, crackFloors, gapFloors, gapOpens } from './gaps.js';
+import { corridorWidthLanes, flickRate, intensityAt, spacingSegments, wallDensity } from './intensity.js';
+import { valueNoise2D } from './noise.js';
 import { hash2, mulberry32 } from './rng.js';
+import {
+    type Anchor,
+    BLOCK_HEIGHT,
+    type Block,
+    clamp,
+    FULL_DENSITY,
+    fullFloor,
+    HALF_WIDTH,
+    isHole,
+    LANES,
+    LEAD_SEGMENTS,
+    MIN_LANE,
+    PICKUP_SPACING,
+    type ProcgenDescriptor,
+    SEG_LEN,
+    type Segment,
+    START_SAFE,
+    segIndexForZ,
+    TRACK_SEGMENTS,
+    type Track,
+    type TrackDensity,
+    ZCELLS,
+} from './space.js';
+import { rowGlobal, weaveRaw } from './weave.js';
 
-export interface FloorSpan {
-    x0: number;
-    x1: number;
-    y: number;
-    z0?: number;
-    z1?: number;
-}
-
-export function spanZ0( seg: Segment, f: FloorSpan ): number {
-    return f.z0 ?? seg.z0;
-}
-
-export function spanZ1( seg: Segment, f: FloorSpan ): number {
-    return f.z1 ?? seg.z1;
-}
-
-export function isFullSpan( f: FloorSpan ): boolean {
-    return f.z0 === undefined && f.z1 === undefined;
-}
-
-export function spanHasZ( seg: Segment, f: FloorSpan, z: number ): boolean {
-    return z >= spanZ0( seg, f ) - 1e-4 && z <= spanZ1( seg, f ) + 1e-4;
-}
-
-export function spanOverlapsZ( seg: Segment, f: FloorSpan, z0: number, z1: number ): boolean {
-    return z1 > spanZ0( seg, f ) + 1e-4 && z0 < spanZ1( seg, f ) - 1e-4;
-}
-
-export interface Block {
-    x0: number;
-    x1: number;
-    y0: number;
-    y1: number;
-    z0: number;
-    z1: number;
-}
-
-export type SegmentKind = 'plain' | 'block' | 'gap' | 'finish';
-
-export interface Segment {
-    index: number;
-    z0: number;
-    z1: number;
-    kind: SegmentKind;
-    floors: FloorSpan[];
-    blocks: Block[];
-    isFinish: boolean;
-}
-
-export interface Anchor {
-    id: string;
-    kind: string;
-    x: number;
-    y: number;
-    z: number;
-    params?: unknown;
-}
-
-export interface Track {
-    finishZ: number;
-    segmentAt( i: number ): Segment;
-    segmentAtZ( z: number ): Segment;
-    anchors: Anchor[];
-}
-
-export interface ProcgenDescriptor {
-    kind: 'procgen';
-    seed: number;
-    tier: number;
-    length: number;
-    blockDensity?: number;
-    gapChance?: number;
-}
-
-export interface TrackDensity {
-    blocks: number;
-    gaps: number;
-}
-
-export const FULL_DENSITY: TrackDensity = { blocks: 1, gaps: 1 };
-
-export const SEG_LEN = 20;
-export const TRACK_SEGMENTS = 400;
-export const START_SAFE = 6;
-export const LEAD_SEGMENTS = 1;
-export const HALF_WIDTH = 32;
-export const LANES = ( 2 * HALF_WIDTH ) / CELL;
-export const ZCELLS = SEG_LEN / CELL;
-export const MIN_LANE = 2 * CELL;
-export const BLOCK_HEIGHT = 8;
-export const PICKUP_SPACING = 3;
-
-export const WEAVE_AMP_LANES = LANES;
-export const SLOPE_CAP = deriveWeaveSlopeCap( ALL_CLASS_TUNINGS );
-export const CURV_CAP = deriveWeaveCurvatureCap( ALL_CLASS_TUNINGS, CELL );
-export const FZ_ROWS = deriveNodePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES );
-export const WEAVE_PERIOD_ROWS = deriveWeavePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES, WEAVE_CARRIER_BUDGET );
-
-const SALT_LINE_A = 0x1234567 | 0;
-const SALT_LINE_B = 0x2b3c4d5 | 0;
 const SALT_WALL = 0x51ed270b | 0;
 const SALT_FLICK = 0x7a1c9e33 | 0;
-const SALT_GAP = 0x2f6a1b9d | 0;
-const SALT_CRACK = 0x7b19c3a5 | 0;
-const SALT_GAP_BLOCK = 0x5c2e91b7 | 0;
-
-function rowGlobal( i: number, r: number ): number {
-    return i * ZCELLS + r;
-}
-
-function weavePhaseRows( seed: number ): number {
-    return valueNoise1D( ( seed ^ SALT_LINE_A ) | 0, 0.5 ) * WEAVE_PERIOD_ROWS;
-}
-
-export function weaveRaw( seed: number, row: number ): number {
-    const phase = ( row + weavePhaseRows( seed ) ) / WEAVE_PERIOD_ROWS;
-    const carrier = smoothstep( ( tri( phase ) + 1 ) / 2 );
-    const perturb = valueNoise1D( ( seed ^ SALT_LINE_B ) | 0, row / FZ_ROWS );
-    const v = ( 1 - WEAVE_NOISE_FRAC ) * carrier + WEAVE_NOISE_FRAC * perturb;
-    return v < 0 ? 0 : v > 1 ? 1 : v;
-}
-export function weaveLineLanes( seed: number, row: number ): number {
-    return weaveRaw( seed, row ) * WEAVE_AMP_LANES;
-}
-
-function lerp( a: number, b: number, t: number ): number {
-    return a + ( b - a ) * t;
-}
-function clamp( v: number, lo: number, hi: number ): number {
-    return v < lo ? lo : v > hi ? hi : v;
-}
-const SECTION_BOUNDS = ( () => {
-    const total = SECTIONS.reduce( ( sum, s ) => sum + s.weight, 0 );
-    let acc = 0;
-    return SECTIONS.map( ( s ) => {
-        const f0 = acc / total;
-        acc += s.weight;
-        return { f0, f1: acc / total, i0: s.i0, i1: s.i1 };
-    } );
-} )();
-export function intensityAt( i: number, length: number ): number {
-    if ( i < START_SAFE ) return 0;
-    const span = length - START_SAFE;
-    const pos = span > 0 ? clamp( ( i - START_SAFE ) / span, 0, 1 ) : 0;
-    let s = SECTION_BOUNDS[ SECTION_BOUNDS.length - 1 ];
-    for ( const b of SECTION_BOUNDS ) {
-        if ( pos >= b.f0 && pos < b.f1 ) {
-            s = b;
-            break;
-        }
-    }
-    const t = s.f1 > s.f0 ? ( pos - s.f0 ) / ( s.f1 - s.f0 ) : 1;
-    return clamp( lerp( s.i0, s.i1, smoothstep( clamp( t, 0, 1 ) ) ), 0, 1 );
-}
-function corridorWidthLanes( intensity: number ): number {
-    const w = Math.round( lerp( CORRIDOR_W_START, CORRIDOR_W_MIN, intensity ) );
-    return clamp( w, CORRIDOR_W_MIN, LANES );
-}
-export function restScale( intensity: number ): number {
-    return clamp( intensity / REST_INTENSITY, 0, 1 );
-}
-function wallDensity( intensity: number ): number {
-    return lerp( WALL_DENSITY_START, WALL_DENSITY_MAX, intensity ) * restScale( intensity );
-}
-function gapProb( intensity: number ): number {
-    return lerp( GAP_P_START, GAP_P_MAX, intensity ) * restScale( intensity );
-}
-function flickRate( intensity: number ): number {
-    return lerp( FLICK_RATE_START, FLICK_RATE_MAX, intensity ) * restScale( intensity );
-}
-
-function rolledGap( seed: number, i: number, length: number, density: TrackDensity ): boolean {
-    if ( i < START_SAFE || i >= length ) return false;
-    return mulberry32( hash2( seed, i ) )() < gapProb( intensityAt( i, length ) ) * density.gaps;
-}
-
-export function spacingSegments( intensity: number ): number {
-    return demandSpacingSegments( intensity, SEG_LEN, DEFAULT_TUNING.maxCruise );
-}
-
-function gapOpens( seed: number, i: number, length: number, density: TrackDensity ): boolean {
-    if ( ! rolledGap( seed, i, length, density ) ) return false;
-    const back = spacingSegments( intensityAt( i, length ) );
-    for ( let p = 1; p <= back + CRACK_SEGS_MAX; p++ ) {
-        if ( ! rolledGap( seed, i - p, length, density ) ) continue;
-        const c = crackAt( seed, i - p );
-        const ends = i - p + ( c === null ? 1 : c.segs );
-        if ( ends + back > i ) return false;
-    }
-    return true;
-}
-
-function fullFloor( y: number ): FloorSpan[] {
-    return [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y } ];
-}
-
-function laneOf( x: number ): number {
-    return Math.round( ( x + HALF_WIDTH ) / CELL );
-}
-
-function holeLanes( floors: FloorSpan[] ): LaneRange[] {
-    const out: LaneRange[] = [];
-    let cursor = 0;
-    for ( const f of floors ) {
-        const lo = laneOf( f.x0 );
-        if ( lo > cursor ) out.push( { lo: cursor, hi: lo - 1 } );
-        cursor = Math.max( cursor, laneOf( f.x1 ) );
-    }
-    if ( cursor < LANES ) out.push( { lo: cursor, hi: LANES - 1 } );
-    return out;
-}
-
-function toothSpans( seed: number, i: number, floors: FloorSpan[], z0: number ): FloorSpan[] {
-    const z1 = z0 + SEG_LEN;
-    return rimTeeth( seed, i, holeLanes( floors ), ZCELLS ).map( ( t ) => ( {
-        x0: -HALF_WIDTH + t.lo * CELL,
-        x1: -HALF_WIDTH + ( t.hi + 1 ) * CELL,
-        y: 0,
-        z0: t.front ? z0 : z1 - t.rows * CELL,
-        z1: t.front ? z0 + t.rows * CELL : z1,
-    } ) );
-}
-
-export interface Crack {
-    segs: number;
-    lo: number;
-    w: number;
-}
-
-export function crackAt( seed: number, i: number ): Crack | null {
-    const r = mulberry32( hash2( ( seed ^ SALT_CRACK ) | 0, i ) );
-    if ( r() >= CRACK_FRAC ) return null;
-    const w = CRACK_W_LANES_MIN + Math.floor( r() * ( CRACK_W_LANES_MAX - CRACK_W_LANES_MIN + 1 ) );
-    const span = CRACK_W_LANES_MAX - CRACK_W_LANES_MIN;
-    const segs = Math.round( lerp( CRACK_SEGS_MAX, CRACK_SEGS_MIN, span > 0 ? ( w - CRACK_W_LANES_MIN ) / span : 0 ) );
-    const slots = LANES - 2 * CRACK_EDGE_MARGIN_LANES - w;
-    const lo = CRACK_EDGE_MARGIN_LANES + Math.floor( r() * ( slots + 1 ) );
-    return { segs, lo, w };
-}
-
-function crackStartAt( seed: number, s: number, length: number, density: TrackDensity ): Crack | null {
-    return gapOpens( seed, s, length, density ) ? crackAt( seed, s ) : null;
-}
-
-function crackCovering( seed: number, i: number, length: number, density: TrackDensity ): Crack | null {
-    for ( let s = i - CRACK_SEGS_MAX + 1; s <= i; s++ ) {
-        const c = crackStartAt( seed, s, length, density );
-        if ( c && s + c.segs > i ) return c;
-    }
-    return null;
-}
-
-export function crackFloors( c: Crack ): FloorSpan[] {
-    const x0 = -HALF_WIDTH + c.lo * CELL;
-    const x1 = x0 + c.w * CELL;
-    return [
-        { x0: -HALF_WIDTH, x1: x0, y: 0 },
-        { x0: x1, x1: HALF_WIDTH, y: 0 },
-    ];
-}
-
-function gapFloors( seed: number, i: number, length: number, z0: number ): FloorSpan[] {
-    const full = mulberry32( hash2( ( seed ^ SALT_GAP ) | 0, i ) )() < FULL_GAP_FRAC;
-    if ( full ) return toothSpans( seed, i, [], z0 );
-    const wLanes = corridorWidthLanes( intensityAt( i, length ) );
-    const openStart = clamp(
-        Math.round( weaveRaw( seed, rowGlobal( i, Math.floor( ZCELLS / 2 ) ) ) * ( LANES - wLanes ) ),
-        0,
-        LANES - wLanes,
-    );
-    const x0 = -HALF_WIDTH + openStart * CELL;
-    const deck: FloorSpan[] = [ { x0, x1: x0 + wLanes * CELL, y: 0 } ];
-    return [ ...deck, ...toothSpans( seed, i, deck, z0 ) ];
-}
-
-function gapBlockRate( intensity: number ): number {
-    return lerp( GAP_BLOCK_RATE_START, GAP_BLOCK_RATE_MAX, intensity );
-}
-
-function gapBlockCandidate(
-    seed: number,
-    i: number,
-    attempt: number,
-    floors: FloorSpan[],
-    z0: number,
-    intensity: number,
-): Block | null {
-    const decks = floors.filter( isFullSpan );
-    if ( decks.length === 0 ) return null;
-    const r = mulberry32( hash2( ( seed ^ SALT_GAP_BLOCK ) | 0, i * ( GAP_BLOCK_ATTEMPTS + 1 ) + attempt + 1 ) );
-    const deck = decks[ Math.min( decks.length - 1, Math.floor( r() * decks.length ) ) ];
-    const lo = laneOf( deck.x0 );
-    const hi = laneOf( deck.x1 );
-    const lanes = 1 + Math.floor( r() * BLOCK_MAX_LANES );
-    if ( hi - lo < lanes ) return null;
-    const start = lo + Math.floor( r() * ( hi - lo - lanes + 1 ) );
-    const half = SEG_LEN / 2;
-    const depth = blockDepthFor( r(), intensity, half );
-    const bz0 = z0 + half + r() * ( half - depth );
-    return {
-        x0: -HALF_WIDTH + start * CELL,
-        x1: -HALF_WIDTH + ( start + lanes ) * CELL,
-        y0: 0,
-        y1: BLOCK_HEIGHT,
-        z0: bz0,
-        z1: bz0 + depth,
-    };
-}
-
-function gapBlocks(
-    seed: number,
-    i: number,
-    length: number,
-    floors: FloorSpan[],
-    z0: number,
-    z1: number,
-    density: TrackDensity,
-): Block[] {
-    const intensity = intensityAt( i, length );
-    const roll = mulberry32( hash2( ( seed ^ SALT_GAP_BLOCK ) | 0, i ) )();
-    if ( roll >= gapBlockRate( intensity ) * density.blocks ) return [];
-    const trial: Segment = { index: i, z0, z1, kind: 'gap', floors, blocks: [], isFinish: false };
-    for ( let a = 0; a < GAP_BLOCK_ATTEMPTS; a++ ) {
-        const b = gapBlockCandidate( seed, i, a, floors, z0, intensity );
-        if ( b === null ) continue;
-        trial.blocks = [ b ];
-        if ( passableCorridorWidth( trial ) >= MIN_LANE - 1e-6 ) return [ b ];
-    }
-    return [];
-}
 
 function corridorUnion( seed: number, i: number, wLanes: number ): { lo: number; hi: number } {
     let lo = LANES;
@@ -488,18 +158,19 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     if ( i < -LEAD_SEGMENTS ) return { ...base, kind: 'gap', floors: [] };
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
+    const intensity = intensityAt( i, length );
+
     const crack = crackCovering( seed, i, length, density );
     if ( crack ) {
         const floors = crackFloors( crack );
-        return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, length, floors, z0, z1, density ) };
+        return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, intensity, floors, z0, z1, density ) };
     }
 
     if ( gapOpens( seed, i, length, density ) ) {
         const floors = gapFloors( seed, i, length, z0 );
-        return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, length, floors, z0, z1, density ) };
+        return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, intensity, floors, z0, z1, density ) };
     }
 
-    const intensity = intensityAt( i, length );
     const wLanes = corridorWidthLanes( intensity );
     const { lo: unionLo, hi: unionHi } = corridorUnion( seed, i, wLanes );
     const flick = flickAt( seed, i, length, unionLo, unionHi, density.blocks, density );
@@ -517,21 +188,15 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }
 
-export function openCenterX( seg: Segment ): number {
-    let common: Run[] | null = null;
-    for ( const zc of sliceCentres( seg ) ) {
-        const runs = openRunsAtSlice( seg, zc );
-        common = common === null ? runs : intersectRuns( common, runs );
-        if ( common.length === 0 ) break;
+function pickupAnchors( length: number, segmentAt: ( i: number ) => Segment ): Anchor[] {
+    const out: Anchor[] = [];
+    for ( let seg = START_SAFE; seg < length; seg += PICKUP_SPACING ) {
+        const s = segmentAt( seg );
+        if ( isHole( s ) ) continue;
+        const z = seg * SEG_LEN + SEG_LEN / 2;
+        out.push( { id: String( seg ), kind: 'pickup', x: openCenterX( s ), y: 0, z } );
     }
-    const threading = common !== null && common.length > 0;
-    const runs = threading ? ( common as Run[] ) : openRunsAtSlice( seg, ( seg.z0 + seg.z1 ) / 2 );
-    const widest = widestRun( runs );
-    return widest === null ? 0 : ( widest[ 0 ] + widest[ 1 ] ) / 2;
-}
-
-export function segIndexForZ( z: number ): number {
-    return Math.floor( z / SEG_LEN );
+    return out;
 }
 
 export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
@@ -548,102 +213,4 @@ export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
         segmentAtZ: ( z: number ) => segmentAt( segIndexForZ( z ) ),
         anchors: pickupAnchors( length, segmentAt ),
     };
-}
-
-function pickupAnchors( length: number, segmentAt: ( i: number ) => Segment ): Anchor[] {
-    const out: Anchor[] = [];
-    for ( let seg = START_SAFE; seg < length; seg += PICKUP_SPACING ) {
-        const s = segmentAt( seg );
-        if ( isHole( s ) ) continue;
-        const z = seg * SEG_LEN + SEG_LEN / 2;
-        out.push( { id: String( seg ), kind: 'pickup', x: openCenterX( s ), y: 0, z } );
-    }
-    return out;
-}
-
-export function isHole( seg: Segment ): boolean {
-    return ! seg.floors.some( isFullSpan );
-}
-
-type Run = [ number, number ];
-
-const SLICE_EPS = 1e-3;
-
-function sliceCentres( seg: Segment ): number[] {
-    const bounds: number[] = [ seg.z0, seg.z1 ];
-    const edge = ( z: number ): void => {
-        if ( z > seg.z0 + SLICE_EPS && z < seg.z1 - SLICE_EPS ) bounds.push( z );
-    };
-    for ( const b of seg.blocks ) {
-        edge( b.z0 );
-        edge( b.z1 );
-    }
-    for ( const f of seg.floors ) {
-        edge( spanZ0( seg, f ) );
-        edge( spanZ1( seg, f ) );
-    }
-    bounds.sort( ( a, b ) => a - b );
-    const out: number[] = [];
-    for ( let k = 1; k < bounds.length; k++ ) {
-        if ( bounds[ k ] - bounds[ k - 1 ] > SLICE_EPS ) out.push( ( bounds[ k - 1 ] + bounds[ k ] ) / 2 );
-    }
-    return out;
-}
-
-function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Run[] {
-    const walls: Run[] = [];
-    for ( const b of seg.blocks ) {
-        if ( b.z0 <= zc && zc < b.z1 ) {
-            const lo = Math.max( f.x0, b.x0 );
-            const hi = Math.min( f.x1, b.x1 );
-            if ( hi > lo ) walls.push( [ lo, hi ] );
-        }
-    }
-    walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
-    return walls;
-}
-
-function openRunsAtSlice( seg: Segment, zc: number ): Run[] {
-    const runs: Run[] = [];
-    for ( const f of seg.floors ) {
-        if ( ! spanHasZ( seg, f, zc ) ) continue;
-        let cursor = f.x0;
-        for ( const [ lo, hi ] of wallsOnSlice( seg, f, zc ) ) {
-            if ( lo > cursor ) runs.push( [ cursor, lo ] );
-            cursor = Math.max( cursor, hi );
-        }
-        if ( f.x1 > cursor ) runs.push( [ cursor, f.x1 ] );
-    }
-    runs.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
-    return runs;
-}
-
-function intersectRuns( a: Run[], b: Run[] ): Run[] {
-    const out: Run[] = [];
-    for ( const [ a0, a1 ] of a ) {
-        for ( const [ b0, b1 ] of b ) {
-            const lo = Math.max( a0, b0 );
-            const hi = Math.min( a1, b1 );
-            if ( hi > lo ) out.push( [ lo, hi ] );
-        }
-    }
-    return out;
-}
-
-function widestRun( runs: Run[] ): Run | null {
-    let best: Run | null = null;
-    for ( const r of runs ) {
-        if ( best === null || r[ 1 ] - r[ 0 ] > best[ 1 ] - best[ 0 ] ) best = r;
-    }
-    return best;
-}
-
-export function passableCorridorWidth( seg: Segment ): number {
-    if ( seg.floors.length === 0 ) return 0;
-    let worst = Number.POSITIVE_INFINITY;
-    for ( const zc of sliceCentres( seg ) ) {
-        const widest = widestRun( openRunsAtSlice( seg, zc ) );
-        worst = Math.min( worst, widest === null ? 0 : widest[ 1 ] - widest[ 0 ] );
-    }
-    return worst === Number.POSITIVE_INFINITY ? 0 : worst;
 }

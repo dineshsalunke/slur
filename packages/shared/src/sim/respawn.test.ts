@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT, type FlightTuning } from '../constants.js';
 import { emptyInput } from './input.js';
+import type { Track } from './space.js';
 import { simulate } from './step.js';
-import type { Track } from './track.js';
 import { procgenDescriptor, resolveTrack } from './track-provider.js';
 import { type SimShip, spawnShip } from './types.js';
 

@@ -1,4 +1,4 @@
-import type { Anchor, Track } from '../sim/track.js';
+import type { Anchor, Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 
 export interface Pickup {

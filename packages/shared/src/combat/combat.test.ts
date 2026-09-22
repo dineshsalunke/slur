@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HALF_WIDTH, START_SAFE, type Track } from '../sim/track.js';
+import { HALF_WIDTH, START_SAFE, type Track } from '../sim/space.js';
 import { procgenDescriptor, resolveTrack } from '../sim/track-provider.js';
 import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
 import { BOLT_HALF, BOLT_SPEED } from './constants.js';

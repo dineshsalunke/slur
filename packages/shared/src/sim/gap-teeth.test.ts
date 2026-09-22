@@ -1,20 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CELL } from '../constants.js';
+import { passableCorridorWidth } from './clearance.js';
 import { rimTeeth, TOOTH_MAX_ROWS } from './gap-teeth.js';
-import {
-    isFullSpan,
-    isHole,
-    LANES,
-    makeProcgenTrack,
-    passableCorridorWidth,
-    SEG_LEN,
-    type Segment,
-    spanZ0,
-    spanZ1,
-    TRACK_SEGMENTS,
-    ZCELLS,
-} from './track.js';
+import { isFullSpan, isHole, LANES, SEG_LEN, type Segment, spanZ0, spanZ1, TRACK_SEGMENTS, ZCELLS } from './space.js';
+import { makeProcgenTrack } from './track.js';
 
 const HOLE = [ { lo: 0, hi: LANES - 1 } ];
 
