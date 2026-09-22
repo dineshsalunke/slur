@@ -3,8 +3,8 @@
    clusters are React components under app/ui/, NOT @apply (tailwind.md).
 
    A single visual world by choice — a neon arcade screen, no light mode. TRON colour × Trek/Wars geometry:
-   de-rounded (chamfered) corners, hard edges, glass panels. Palette locked to cyan × marigold over a
-   near-black void.
+   de-rounded (chamfered) corners, hard edges, glass panels. Palette locked to marigold-primary over a
+   near-black void (ADR-008): marigold is the only energy colour, cyan a sparing support accent.
 
    NOTE: the ~12 player HUES are NOT tokens here. They live in game/colors.ts as a data registry indexed by the
    synced colorId (with a COLOR_COUNT compile-time guard); duplicating them into CSS would break that guard and
@@ -12,11 +12,11 @@
 @import "tailwindcss";
 
 @theme {
-    /* Brand + surface palette. cyan × marigold ("gainda") over a near-black void. */
+    /* Brand + surface palette. marigold-primary over a near-black void (ADD §3, ADR-008). */
     --color-void: #05060a; /* near-black backdrop */
     --color-void-2: #080b13;
-    --color-cyan: #00e5ff; /* brand primary */
-    --color-marigold: #ff9f1c; /* brand secondary */
+    --color-cyan: #3bd6ff; /* support accent — sparing, demoted from co-primary */
+    --color-marigold: #f59a24; /* brand primary — the only energy colour */
     --color-gold: #ffd24a; /* held-power / pickup gold — brighter than marigold, its own accent */
     --color-spring: #46e6a0; /* live-room pulse dot */
     --color-fin: #00ff85; /* finisher tag */
@@ -44,25 +44,25 @@
        --shadow-* → box-shadow, --drop-shadow-* → filter (a box-shadow is clipped by the chamfer clip-path),
        --text-shadow-* → text-shadow. All three are stock Tailwind v4 theme namespaces (verified against the
        installed 4.3.3 theme.css + the theme-variables docs), so each emits a same-named utility. */
-    --shadow-hud: 0 0 18px rgba( 0, 229, 255, 0.25 ), inset 0 0 12px rgba( 0, 229, 255, 0.08 ); /* cyan glass panel */
+    --shadow-hud: 0 0 18px rgba( 59, 214, 255, 0.25 ), inset 0 0 12px rgba( 59, 214, 255, 0.08 ); /* cyan glass panel */
     --shadow-hud-magenta: 0 0 18px rgba( 255, 43, 214, 0.3 ); /* spectator panel */
     --shadow-hud-gold: 0 0 16px rgba( 255, 210, 74, 0.35 ); /* held-power chip */
-    --shadow-go: 0 0 14px rgba( 0, 229, 255, 0.5 ); /* primary GO button */
+    --shadow-go: 0 0 14px rgba( 59, 214, 255, 0.5 ); /* primary GO button */
     --shadow-dot: 0 0 8px currentColor; /* the colour dot / live dot glow — inherits the element's colour */
     --shadow-live: 0 0 8px var( --color-spring ); /* live-room pulse dot */
-    --shadow-focus: 0 0 0 3px rgba( 0, 229, 255, 0.16 ); /* call-sign focus ring */
-    --shadow-ship-on: 0 0 10px rgba( 0, 229, 255, 0.4 ); /* selected ship card */
-    --shadow-stat: 0 0 6px rgba( 255, 159, 28, 0.75 ); /* ship-card stat-bar fill */
+    --shadow-focus: 0 0 0 3px rgba( 59, 214, 255, 0.16 ); /* call-sign focus ring */
+    --shadow-ship-on: 0 0 10px rgba( 59, 214, 255, 0.4 ); /* selected ship card */
+    --shadow-stat: 0 0 6px rgba( 245, 154, 36, 0.75 ); /* ship-card stat-bar fill */
     --shadow-swatch: 0 0 10px var( --color-white ); /* selected colour swatch ring */
 
     /* Landing CTA glow — a drop-shadow FILTER, not a box-shadow: the chamfer clip-path would clip a box-shadow. */
-    --drop-shadow-cta: 0 0 14px rgba( 0, 229, 255, 0.5 );
-    --drop-shadow-cta-hover: 0 0 20px rgba( 0, 229, 255, 0.78 );
+    --drop-shadow-cta: 0 0 14px rgba( 59, 214, 255, 0.5 );
+    --drop-shadow-cta-hover: 0 0 20px rgba( 59, 214, 255, 0.78 );
 
-    --text-shadow-wordmark: 0 0 18px rgba( 0, 229, 255, 0.55 ), 0 0 42px rgba( 0, 229, 255, 0.28 ); /* SLUR */
-    --text-shadow-marigold: 0 0 22px rgba( 255, 159, 28, 0.5 ); /* "Wreck" in the lead headline */
-    --text-shadow-timer: 0 0 10px rgba( 0, 229, 255, 0.7 ); /* race timer readout */
-    --text-shadow-count: 0 0 40px rgba( 0, 229, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
+    --text-shadow-wordmark: 0 0 18px rgba( 59, 214, 255, 0.55 ), 0 0 42px rgba( 59, 214, 255, 0.28 ); /* SLUR */
+    --text-shadow-marigold: 0 0 22px rgba( 245, 154, 36, 0.5 ); /* "Wreck" in the lead headline */
+    --text-shadow-timer: 0 0 10px rgba( 59, 214, 255, 0.7 ); /* race timer readout */
+    --text-shadow-count: 0 0 40px rgba( 59, 214, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
     --text-shadow-power: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power chip label */
     --text-shadow-threat: 0 0 12px rgba( 255, 92, 110, 0.85 ); /* incoming-bolt warning tick */
 }
