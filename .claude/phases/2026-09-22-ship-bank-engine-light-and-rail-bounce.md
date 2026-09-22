@@ -200,3 +200,47 @@ branch can land first without waiting.
    forward speed. Both need a wider `Snapshot`, which is netcode scope, not ship art.
 4. The four placeholder `.gltf` ships still load and still have their single `Texture` material. They are
    unreachable by default now but `SHIP_ORDER` keys 1–4 on `/test-level` still select them.
+
+## PENDING — the rebase and merge (next session picks this up)
+
+All four commits are in and the worktree is clean. **One task remains: rebase `feat/ship-feel` onto
+`feat/test-level` and merge it in.** It is blocked on `slur-supervisor`'s go and must not start before
+it arrives — the shared branch is mid-landing.
+
+Landing order agreed with `slur-supervisor`: `monoliths` commits, then `slur-supervisor`, **then** this
+rebase + merge. One rebase here beats two on their side.
+
+State at handover: `feat/test-level` HEAD was `6353169`. `asteroids` has landed (`adfd749` + `6353169`,
+placement only — tested dead code, nothing mounts it). `monoliths` is the last blocker; its block work
+and the whole `packages/shared` slow-block removal are **staged but not committed** in the shared index.
+
+### Expect real conflicts in exactly three files
+
+Verified by diffing the changed-file sets — against `feat/test-level` as of `6353169` there is **zero**
+overlap, but that is only because the two overlapping sessions have not committed yet. After they do:
+
+- `packages/shared/src/sim/step.ts` — `monoliths` deletes the drag branch immediately *above* the
+  `clampToEdges` call site; this branch edits the *inside* of `clampToEdges` below it. Adjacent, not
+  semantically overlapping. Keep both: their deletion **and** the `vx` reflection.
+- `packages/shared/src/constants.ts` — they delete `DRAG_SPEED_FRAC` and the `SLOW_*` block; this branch
+  adds `railBounce` to `FlightTuning` and `DEFAULT_TUNING`. Disjoint hunks. Keep both.
+- `apps/client/app/dev/tunables.ts` — **append-only, never a wholesale rewrite.** It carries three or
+  four sessions' knob groups. Keep every group: this branch's `Ship bank` and `Ship light`,
+  `slur-supervisor`'s `seam.emissive`, `monoliths`' `Blocks` + `Level`, `asteroids`' `rock.*`.
+
+This branch references none of the symbols `monoliths` removed — no `SimConfig`, `dragSpeedFrac`,
+`DRAG_SPEED_FRAC`, `overlapsBlock` or `Block.lethal` — checked by grep. `rail-bounce.test.ts` calls
+`simulate()` with no `track`, so it takes the `resolveFlatFloor` path and builds no `Block` or
+`SimConfig` fixture. So the conflicts should be textual only.
+
+`slur-supervisor` offered to arbitrate rather than have anyone guess at another session's intent: **ask
+it if a hunk is not obviously resolvable.**
+
+After the rebase: `pnpm typecheck`, `pnpm test`, `pnpm lint` before merging. Do **not** push or open the
+PR — `slur-supervisor` does that.
+
+### Careful: the shared checkout's git index is not session-local
+
+`/Users/apple/Projects/personal/slur/.git/index` is shared by every session in that checkout, so a
+`git add` there is visible to all of them and can stage someone else's work. This worktree has its own
+index and is insulated. Stage by explicit path if you ever work in the shared checkout.
