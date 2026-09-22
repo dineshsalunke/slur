@@ -19,15 +19,19 @@ Foregrounded, the same probe gives `{ hidden: false, frames: 26 }` — ~52fps. *
 any screenshot.** A black canvas with a blank per-frame HUD readout and a clean console is the
 freeze, not a rendering bug, and no amount of scene debugging will move it.
 
-**Solved — `window.focus()` from inside the page lifts the window itself:**
+**Partly solved — `window.focus()` from inside the page SOMETIMES lifts the window:**
 
 ```js
 window.focus();   // { hidden: false, focus: true }, rAF resumes
 ```
 
-Verified this session. Three handovers treated the freeze as something only the owner could clear by
-clicking into the tab; it is not. Call `window.focus()`, wait ~800ms, then probe and shoot. No
-owner intervention, no lost turns.
+**It is not reliable.** It worked on a window the owner had recently foregrounded, and failed
+minutes later on a freshly created one — same code, same session. Try it, it is free, but **never
+assume it worked**: probe `document.hidden` and the rAF count every time, and if it failed, ask the
+owner and wait. An earlier version of this note claimed it as a solved problem. It is not.
+
+Also: each new session gets a new tab group and window, so tab ids go stale between turns with
+"Couldn't determine which page this action targets" — re-run `tabs_context_mcp`.
 
 Driving the ship from the tool works — the keyboard module listens on `window`, so synthetic events
 reach it:
