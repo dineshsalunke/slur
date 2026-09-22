@@ -298,3 +298,45 @@ test( 'no track → legacy S1 flat floor (solo unchanged): lands at y=0, never d
     assert.equal( s.y, 0 );
     assert.equal( s.dead, false );
 } );
+
+test( 'strafing off the deck edge drops the ship into the void and kills it', () => {
+    const s = spawnShip( 0, SEG_LEN * 1.5 );
+    s.y = 0;
+    const inp = emptyInput();
+    inp.strafe = 1;
+    for ( let i = 0; i < 400 && ! s.dead; i++ ) simulate( s, inp, FIXED_DT, t, flatTrack( 100 ) );
+    assert.equal( s.dead, true, 'the edge still walls the ship in' );
+    assert.ok( s.lastSafeX > t.halfWidth - t.halfW - 1, 'died before ever reaching the old clamp' );
+} );
+
+test( 'the deck edge holds a ship that overhangs it, and drops one that clears it', () => {
+    const hanging = spawnShip( 0, SEG_LEN * 1.5 );
+    hanging.x = HALF_WIDTH + t.halfW - 0.1;
+    hanging.y = 0;
+    simulate( hanging, idle, FIXED_DT, t, flatTrack( 100 ) );
+    assert.equal( hanging.grounded, true, 'an overhanging ship lost its footing' );
+
+    const clear = spawnShip( 0, SEG_LEN * 1.5 );
+    clear.x = HALF_WIDTH + t.halfW + 0.1;
+    clear.y = 0;
+    simulate( clear, idle, FIXED_DT, t, flatTrack( 100 ) );
+    assert.equal( clear.grounded, false, 'a ship fully past the edge was still held up' );
+} );
+
+test( 'respawn after an edge fall lands fully on the deck, never on the overhang it fell from', () => {
+    const s = spawnShip( 0, SEG_LEN * 1.5 );
+    s.y = 0;
+    const inp = emptyInput();
+    inp.strafe = 1;
+    for ( let i = 0; i < 400 && ! s.dead; i++ ) simulate( s, inp, FIXED_DT, t, flatTrack( 100 ) );
+    assert.equal( s.dead, true, 'never fell off the edge' );
+    assert.ok(
+        s.lastSafeX > t.halfWidth - t.halfW,
+        'test setup: fell from an overhang the old code would restore verbatim',
+    );
+
+    for ( let i = 0; i < 400 && s.dead; i++ ) simulate( s, idle, FIXED_DT, t, flatTrack( 100 ) );
+    assert.equal( s.dead, false, 'never respawned' );
+    assert.ok( Math.abs( s.x ) <= t.halfWidth - t.halfW, `respawned off the deck at x=${ s.x }` );
+    assert.equal( s.grounded, true, 'respawned into a death loop instead of onto the deck' );
+} );

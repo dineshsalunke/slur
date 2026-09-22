@@ -71,8 +71,12 @@ function resolveFlatFloor( s: SimShip, t: FlightTuning ): void {
     clampToEdges( s, t );
 }
 
+function deckLimit( t: FlightTuning ): number {
+    return t.halfWidth - t.halfW;
+}
+
 function clampToEdges( s: SimShip, t: FlightTuning ): void {
-    const limit = t.halfWidth - t.halfW;
+    const limit = deckLimit( t );
     if ( s.x < -limit ) {
         s.x = -limit;
         if ( s.vx < 0 ) s.vx = 0;
@@ -129,7 +133,8 @@ function markDead( s: SimShip, t: FlightTuning ): void {
 
 function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.dead = false;
-    s.x = s.lastSafeX;
+    const limit = deckLimit( t );
+    s.x = Math.min( limit, Math.max( -limit, s.lastSafeX ) );
     let z = s.lastSafeZ - t.respawnSetback;
     let floorY = floorUnder( track.segmentAtZ( z ), s.x, z, Number.POSITIVE_INFINITY, t.stepTol );
     if ( floorY === null ) {
@@ -200,8 +205,6 @@ export function resolveCollisions(
     } else {
         s.invulnTimer = 0;
     }
-
-    clampToEdges( s, t );
 
     if ( track.segmentAtZ( s.z ).isFinish && s.z >= track.finishZ && ! s.finished ) s.finished = true;
 }
