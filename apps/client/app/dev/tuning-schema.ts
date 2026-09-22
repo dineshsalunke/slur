@@ -1,3 +1,4 @@
+import { ACCENT_ANCHOR } from '../game/scene/accent';
 import { GRAPHITE_ALBEDO, GRAPHITE_METALNESS, GRAPHITE_ROUGHNESS } from '../game/scene/graphite';
 
 interface NumberTunable {
@@ -14,6 +15,34 @@ interface ColorTunable {
 }
 
 export const NUMBER_TUNABLES = {
+    'Environment.intensity': { value: 1, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
+
+    'Env.skyIntensity': { value: 0.4, min: 0, max: 5, step: 0.01, rebuild: false },
+    'Env.groundIntensity': { value: 0.22, min: 0, max: 5, step: 0.01, rebuild: false },
+    'Env.bandIntensity': { value: 0.4, min: 0, max: 4, step: 0.05, rebuild: false },
+    'Env.bandHeight': { value: 5, min: 0.5, max: 60, step: 0.5, rebuild: false },
+
+    'RailLight.intensity': { value: 3, min: 0, max: 200, step: 0.5, rebuild: false },
+    'RailLight.span': { value: 60, min: 4, max: 400, step: 1, rebuild: false },
+    'RailLight.thickness': { value: 0.6, min: 0.05, max: 8, step: 0.05, rebuild: false },
+    'RailLight.lift': { value: 0.6, min: 0, max: 12, step: 0.05, rebuild: false },
+    'RailLight.stride': { value: 55, min: 4, max: 400, step: 1, rebuild: false },
+    'RailLight.offset': { value: 10, min: -120, max: 240, step: 1, rebuild: false },
+
+    'Bloom.intensity': { value: 1.2, min: 0, max: 5, step: 0.05, rebuild: false },
+    'Bloom.threshold': { value: 0.6, min: 0, max: 2, step: 0.01, rebuild: false },
+    'Bloom.smoothing': { value: 0.2, min: 0, max: 1, step: 0.01, rebuild: false },
+
+    'NearFill.intensity': { value: 40, min: 0, max: 400, step: 1, rebuild: false },
+    'NearFill.forward': { value: 6, min: -10, max: 30, step: 0.5, rebuild: false },
+    'NearFill.height': { value: 3, min: -5, max: 20, step: 0.5, rebuild: false },
+    'NearFill.distance': { value: 45, min: 5, max: 200, step: 1, rebuild: false },
+
+    'Fill.intensity': { value: 0.35, min: 0, max: 3, step: 0.01, rebuild: false },
+    'Fill.elevation': { value: 35, min: -20, max: 89, step: 1, rebuild: false },
+    'Fill.azimuth': { value: 25, min: -90, max: 90, step: 1, rebuild: false },
+
     'Deck.metalness': { value: GRAPHITE_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Deck.roughness': { value: GRAPHITE_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
     'Deck.envMapIntensity': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
@@ -45,6 +74,12 @@ export const NUMBER_TUNABLES = {
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
+    'Env.skyColor': { value: '#8c9199', rebuild: false },
+    'Env.groundColor': { value: '#2a323d', rebuild: false },
+    'Env.bandColor': { value: ACCENT_ANCHOR, rebuild: false },
+    'NearFill.color': { value: '#ffb964', rebuild: false },
+    'RailLight.color': { value: ACCENT_ANCHOR, rebuild: false },
+    'Fill.color': { value: '#bcc0c4', rebuild: false },
     'Deck.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Rail.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Monolith.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },

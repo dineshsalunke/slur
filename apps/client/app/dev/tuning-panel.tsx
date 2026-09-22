@@ -1,11 +1,14 @@
-import { useControls } from 'leva';
-import { setCol, setNum } from './tuning';
-import { COLOR_TUNABLES, type ColorPath, NUMBER_TUNABLES, type NumberPath } from './tuning-schema';
+import { button, useControls } from 'leva';
+import { DEFAULT_HDRI_SLUG, ENV_MODES, envMode, HDRI_SLUGS, setEnvMode, setHdriSlug } from './env-store';
+import { col, num, setCol, setNum } from './tuning';
+import { copyDefaults } from './tuning-export';
+import { forget } from './tuning-persist';
+import { type ColorPath, NUMBER_TUNABLES, type NumberPath } from './tuning-schema';
 
 function numberControl( path: NumberPath ) {
     const spec = NUMBER_TUNABLES[ path ];
     return {
-        value: spec.value,
+        value: num( path ),
         min: spec.min,
         max: spec.max,
         step: spec.step,
@@ -15,15 +18,84 @@ function numberControl( path: NumberPath ) {
 }
 
 function colorControl( path: ColorPath ) {
-    const spec = COLOR_TUNABLES[ path ];
     return {
-        value: spec.value,
+        value: col( path ),
         onChange: ( value: string ) => setCol( path, value ),
         transient: true as const,
     };
 }
 
 export function TuningPanel() {
+    useControls( 'Environment', {
+        source: {
+            value: envMode(),
+            options: [ ...ENV_MODES ],
+            onChange: setEnvMode,
+            transient: true as const,
+        },
+        skyColor: colorControl( 'Env.skyColor' ),
+        skyIntensity: numberControl( 'Env.skyIntensity' ),
+        groundColor: colorControl( 'Env.groundColor' ),
+        groundIntensity: numberControl( 'Env.groundIntensity' ),
+        bandColor: colorControl( 'Env.bandColor' ),
+        bandIntensity: numberControl( 'Env.bandIntensity' ),
+        bandHeight: numberControl( 'Env.bandHeight' ),
+        hdri: {
+            value: DEFAULT_HDRI_SLUG,
+            options: [ ...HDRI_SLUGS ],
+            onChange: setHdriSlug,
+            transient: true as const,
+        },
+        slug: {
+            value: '',
+            onChange: ( value: string ) => {
+                if ( value.trim() ) setHdriSlug( value );
+            },
+            transient: true as const,
+        },
+        intensity: numberControl( 'Environment.intensity' ),
+        rotation: numberControl( 'Environment.rotation' ),
+    } );
+
+    useControls( 'Rail lights', {
+        intensity: numberControl( 'RailLight.intensity' ),
+        span: numberControl( 'RailLight.span' ),
+        thickness: numberControl( 'RailLight.thickness' ),
+        lift: numberControl( 'RailLight.lift' ),
+        stride: numberControl( 'RailLight.stride' ),
+        offset: numberControl( 'RailLight.offset' ),
+        color: colorControl( 'RailLight.color' ),
+    } );
+
+    useControls( 'Bloom', {
+        intensity: numberControl( 'Bloom.intensity' ),
+        threshold: numberControl( 'Bloom.threshold' ),
+        smoothing: numberControl( 'Bloom.smoothing' ),
+    } );
+
+    useControls( 'Tuning', {
+        'copy changed defaults': button( copyDefaults ),
+        'reset to schema': button( () => {
+            forget();
+            location.reload();
+        } ),
+    } );
+
+    useControls( 'Near fill', {
+        intensity: numberControl( 'NearFill.intensity' ),
+        forward: numberControl( 'NearFill.forward' ),
+        height: numberControl( 'NearFill.height' ),
+        distance: numberControl( 'NearFill.distance' ),
+        color: colorControl( 'NearFill.color' ),
+    } );
+
+    useControls( 'Fill', {
+        intensity: numberControl( 'Fill.intensity' ),
+        elevation: numberControl( 'Fill.elevation' ),
+        azimuth: numberControl( 'Fill.azimuth' ),
+        color: colorControl( 'Fill.color' ),
+    } );
+
     useControls( 'Deck', {
         metalness: numberControl( 'Deck.metalness' ),
         roughness: numberControl( 'Deck.roughness' ),

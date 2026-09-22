@@ -1,10 +1,15 @@
 import type { Track } from '@slur/shared';
 import { Fragment, type ReactNode } from 'react';
 import { RenderScale } from '../../dev/render-scale';
+import { BackFill } from './back-fill';
 import { ExplosionField } from './explosions';
 import { FinishGate } from './finish-gate';
 import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark';
+import { NearFill } from './near-fill';
+import { RailLights } from './rail-lights';
+import { SceneEffects } from './scene-effects';
+import { SceneEnvironment } from './scene-environment';
 import { Ships } from './ship';
 import { TrackView } from './track-view';
 
@@ -20,6 +25,10 @@ export function WorldScene( {
     return (
         <Fragment>
             <GameEnvironment track={ track } />
+            <SceneEnvironment />
+            <BackFill />
+            <NearFill />
+            <RailLights track={ track } />
             <RenderScale />
             <ExplosionField />
             <HitSpark />
@@ -27,6 +36,7 @@ export function WorldScene( {
             <FinishGate track={ track } />
             <Ships />
             { children }
+            <SceneEffects />
         </Fragment>
     );
 }
