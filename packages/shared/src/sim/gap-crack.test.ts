@@ -150,15 +150,23 @@ test( 'gap widths now span the range, not just the full track width', () => {
     assert.ok( sorted[ sorted.length - 1 ] >= 2 * HALF_WIDTH, 'no full-width gap generated' );
 } );
 
-test( 'a crack segment carries no blocks and no teeth', () => {
+test( 'a crack segment carries no teeth and at most one landing-side block', () => {
     for ( const seed of SEEDS ) {
         const t = track( seed );
         for ( let i = START_SAFE; i < LENGTH; i++ ) {
             const seg = t.segmentAt( i );
             if ( ! isCrack( seg ) ) continue;
-            assert.equal( seg.blocks.length, 0, `seed ${ seed } seg ${ i }: crack carries blocks` );
+            assert.ok( seg.blocks.length <= 1, `seed ${ seed } seg ${ i }: more than one block on a crack` );
             assert.equal( seg.floors.length, 2, `seed ${ seed } seg ${ i }: crack carries extra spans` );
             assert.equal( seg.z1 - seg.z0, SEG_LEN );
+            for ( const b of seg.blocks ) {
+                assert.ok(
+                    b.z0 >= seg.z0 + SEG_LEN / 2 - 1e-6 && b.z1 <= seg.z1 + 1e-6,
+                    `seed ${ seed } seg ${ i }: block ${ b.z0 }..${ b.z1 } is not on the landing side`,
+                );
+                const onDeck = fullSpans( seg ).some( ( f ) => b.x0 >= f.x0 - 1e-6 && b.x1 <= f.x1 + 1e-6 );
+                assert.ok( onDeck, `seed ${ seed } seg ${ i }: block overhangs the crack` );
+            }
         }
     }
 } );

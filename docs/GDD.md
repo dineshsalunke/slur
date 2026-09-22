@@ -51,7 +51,7 @@ ceiling to make tracks harder). Any `MIN_LANE`-style constant is *derived*, **no
 | Track width | `64u` (`HALF_WIDTH 32`) | 16 lanes *in the current generator*; the width, not the lane count, is what matters |
 | Segment depth | `SEG_LEN` `20u` | one segment; a gap is one segment long |
 | Deadly block height | `8u` (`BLOCK_HEIGHT`) | **above double-jump reach on purpose** — strafe around, never hop |
-| Deadly block width/depth | generator-quantized today | a *generation artifact*, **not** a rule — any size is legal |
+| Deadly block width/depth | 1–3 lanes wide; depth drawn from `BLOCK_DEPTHS` `4/8/16u` at a varied z-offset | a *generation artifact*, **not** a rule — any size is legal |
 | `MAX_SHIP_WIDTH` | `1 cell = 4u` | the ship-size **contract**; ceiling for `MIN_CLEAR`; roster asserted ≤ this |
 | `CLEARANCE_MARGIN` | `3u` | the **only** clearance tunable (raise = easier tracks) |
 | `MIN_CLEAR` | `7u` | `MAX_SHIP_WIDTH + CLEARANCE_MARGIN`; per-slice threadable-floor floor |
@@ -145,7 +145,7 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   placements). Pickup/hazard *layout* is a track anchor; per-anchor *availability* is thin synced state
   (`pickupTaken` generalised); runtime-spawned things (bolts/drops/active hazards) are synced entities. Visuals
   are a separate client-side concern (ADR-002 — the 3-layer model).
-- **Core hazard vocabulary (implemented):** *cube fields* (**un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump is **gaps-only**; blocks are **strafe-or-destroy** — the two never overlap. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
+- **Core hazard vocabulary (implemented):** *cube fields* (**un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump answers gaps; blocks are **strafe-or-destroy** — **and the two now overlap**: a gap segment that keeps a floor deck (a crack, or a partial gap) may carry one deadly block on its **landing side**, so crossing it is one decision with two parts — clear the hole *and* be somewhere specific laterally when you land. A **full-width** gap never carries a block: there is nothing to stand on. Block height stays **8u** (above double-jump reach, ADR-007), so a block is never the thing you jump. Threadable clearance is measured over the **combined** floor-and-block result, so the deck a block sits on still keeps a ≥ `MIN_CLEAR` run. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
 - **⚠ Slow blocks are under review — ADR-009 (PROPOSED, 2026-09-17).** The `docs/art-direction/` direction drops
   slow blocks and instead freezes art for **destructible** blocks. The proposal merges both into a single
   **breakable block** (fractured shell — shoot it to clear the path, or smash through and pay a speed tax),

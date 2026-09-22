@@ -178,6 +178,10 @@ export const GAP_P_START = 0.06;
 export const GAP_P_MAX = 0.16;
 export const FULL_GAP_FRAC = 0.4;
 
+export const GAP_BLOCK_RATE_START = 0.3;
+export const GAP_BLOCK_RATE_MAX = 0.75;
+export const GAP_BLOCK_ATTEMPTS = 6;
+
 export const CRACK_FRAC = 0.45;
 export const CRACK_W_LANES_MIN = 1;
 export const CRACK_W_LANES_MAX = 5;

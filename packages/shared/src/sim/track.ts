@@ -18,6 +18,9 @@ import {
     FLICK_RATE_START,
     FLICK_WIDTH,
     FULL_GAP_FRAC,
+    GAP_BLOCK_ATTEMPTS,
+    GAP_BLOCK_RATE_MAX,
+    GAP_BLOCK_RATE_START,
     GAP_P_MAX,
     GAP_P_START,
     SECTIONS,
@@ -29,7 +32,7 @@ import {
     WEAVE_NOISE_FRAC,
 } from '../constants.js';
 import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
-import { blockZSpan } from './block-depth.js';
+import { blockDepthFor, blockZSpan } from './block-depth.js';
 import { type LaneRange, rimTeeth } from './gap-teeth.js';
 import { smoothstep, tri, valueNoise1D, valueNoise2D } from './noise.js';
 import { hash2, mulberry32 } from './rng.js';
@@ -138,6 +141,7 @@ const SALT_WALL = 0x51ed270b | 0;
 const SALT_FLICK = 0x7a1c9e33 | 0;
 const SALT_GAP = 0x2f6a1b9d | 0;
 const SALT_CRACK = 0x7b19c3a5 | 0;
+const SALT_GAP_BLOCK = 0x5c2e91b7 | 0;
 
 function rowGlobal( i: number, r: number ): number {
     return i * ZCELLS + r;
@@ -293,6 +297,62 @@ function gapFloors( seed: number, i: number, length: number, z0: number ): Floor
     return [ ...deck, ...toothSpans( seed, i, deck, z0 ) ];
 }
 
+function gapBlockRate( intensity: number ): number {
+    return lerp( GAP_BLOCK_RATE_START, GAP_BLOCK_RATE_MAX, intensity );
+}
+
+function gapBlockCandidate(
+    seed: number,
+    i: number,
+    attempt: number,
+    floors: FloorSpan[],
+    z0: number,
+    intensity: number,
+): Block | null {
+    const decks = floors.filter( isFullSpan );
+    if ( decks.length === 0 ) return null;
+    const r = mulberry32( hash2( ( seed ^ SALT_GAP_BLOCK ) | 0, i * ( GAP_BLOCK_ATTEMPTS + 1 ) + attempt + 1 ) );
+    const deck = decks[ Math.min( decks.length - 1, Math.floor( r() * decks.length ) ) ];
+    const lo = laneOf( deck.x0 );
+    const hi = laneOf( deck.x1 );
+    const lanes = 1 + Math.floor( r() * BLOCK_MAX_LANES );
+    if ( hi - lo < lanes ) return null;
+    const start = lo + Math.floor( r() * ( hi - lo - lanes + 1 ) );
+    const half = SEG_LEN / 2;
+    const depth = blockDepthFor( r(), intensity, half );
+    const bz0 = z0 + half + r() * ( half - depth );
+    return {
+        x0: -HALF_WIDTH + start * CELL,
+        x1: -HALF_WIDTH + ( start + lanes ) * CELL,
+        y0: 0,
+        y1: BLOCK_HEIGHT,
+        z0: bz0,
+        z1: bz0 + depth,
+    };
+}
+
+function gapBlocks(
+    seed: number,
+    i: number,
+    length: number,
+    floors: FloorSpan[],
+    z0: number,
+    z1: number,
+    density: TrackDensity,
+): Block[] {
+    const intensity = intensityAt( i, length );
+    const roll = mulberry32( hash2( ( seed ^ SALT_GAP_BLOCK ) | 0, i ) )();
+    if ( roll >= gapBlockRate( intensity ) * density.blocks ) return [];
+    const trial: Segment = { index: i, z0, z1, kind: 'gap', floors, blocks: [], isFinish: false };
+    for ( let a = 0; a < GAP_BLOCK_ATTEMPTS; a++ ) {
+        const b = gapBlockCandidate( seed, i, a, floors, z0, intensity );
+        if ( b === null ) continue;
+        trial.blocks = [ b ];
+        if ( passableCorridorWidth( trial ) >= MIN_LANE - 1e-6 ) return [ b ];
+    }
+    return [];
+}
+
 function corridorUnion( seed: number, i: number, wLanes: number ): { lo: number; hi: number } {
     let lo = LANES;
     let hi = -1;
@@ -397,10 +457,15 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
     const crack = crackCovering( seed, i, length, density );
-    if ( crack ) return { ...base, kind: 'gap', floors: crackFloors( crack ) };
+    if ( crack ) {
+        const floors = crackFloors( crack );
+        return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, length, floors, z0, z1, density ) };
+    }
 
-    if ( rolledGap( seed, i, length, density ) && ! rolledGap( seed, i - 1, length, density ) )
-        return { ...base, kind: 'gap', floors: gapFloors( seed, i, length, z0 ) };
+    if ( rolledGap( seed, i, length, density ) && ! rolledGap( seed, i - 1, length, density ) ) {
+        const floors = gapFloors( seed, i, length, z0 );
+        return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, length, floors, z0, z1, density ) };
+    }
 
     const intensity = intensityAt( i, length );
     const wLanes = corridorWidthLanes( intensity );
