@@ -195,3 +195,60 @@ browser. This is the check worth repeating after any dialling session.
 **Should `lethal` and `drag` bloom?** Crossing 1.0 needs `lethal` ≈ 5.0 and `drag` ≈ 2.4. It is a
 readability argument (a hazard that does not glow) against an art one, and it has never been true in
 this project. Needs a route with `blockDensity > 0` to judge.
+
+## Third pass — the sky patch is gone, the image is `scene.background`
+
+Owner: *"we are now going with the image as background… why not remove the whole dome and just put the
+image as scene background"*, then *"the image in the dome itself is not contributing anything to
+lighting right now, so why have the dome"*.
+
+### What the "dome" actually was
+
+Not a dome. `sky-backdrop.tsx` built a **spherical patch** — `sphereGeometry` with a phi span of
+`fovDeg: 120` and a matching theta span, aimed by `bearingDeg: 0` / `elevationDeg: -2`, alpha-feathered
+`edgeFadeDeg: 12` at its rim, at `radius: 800`. Everything outside that patch was the flat
+`<color attach="background">` from `EnvConfig.background` (`#02030a`). The patch existed to give a
+**rectangular** matte (`/textures/nebula-backdrop.jpg`, 1672×941) a direction in the world.
+
+The owner is right that it lit nothing: `meshBasicMaterial`, and three has no SSR. Reflections on the
+`metalness` 0.9 deck come from `GradientIbl`, which is untouched by this change.
+
+### An argument this session made and withdrew
+
+The case against `scene.background` was that a plain `Texture` (UVMapping) is drawn screen-space and
+does **not** rotate with the camera, so the nebula would be pinned to the frame — and that fixing it
+properly needed the art re-authored as an equirect panorama.
+
+**The owner's counter is correct:** *"game camera only moves in one direction what is a panorama going
+to help with"*. The chase camera looks down `+Z` and only yaws by the strafe lag — the deleted test
+computed exactly that angle as `atan( STRAFE_LAG_U / LOOK_DISTANCE_U )`, a few degrees. There is no
+view in this game where a panorama shows anything a flat image cannot. Argument withdrawn; recorded
+here because it was made in chat and someone will otherwise re-make it.
+
+### As built
+
+`game-environment.tsx` puts the texture on `scene.background` via `<primitive attach="background" />`,
+with `repeat`/`offset` derived from `useThree( state => state.size )` so the image **covers** the
+viewport instead of stretching on a non-matching aspect. A second benefit over the patch: a background
+has no geometry, so it cannot be clipped by the far plane — the patch sat at `radius` 800 against the
+`far: 1000` that landed in `4cf3a84`, 200u of headroom that nobody was watching.
+
+**Deleted:** `sky-backdrop.tsx`; the `backdrop` and `toneMapped` props on `DeepSpaceSky`;
+`SkyBackdropConfig` and `DEEP_SPACE.backdrop`; the `config` prop on `GameEnvironment`
+(`EnvConfig.background` was its only reader). Four `sky-config.test.ts` cases described only the patch
+geometry — removed with their helpers (`frameHalfWidthDeg`, `IMAGE_ASPECT`, `CANVAS_ASPECT`,
+`STRAFE_LAG_U`, `LOOK_DISTANCE_U`); the far-plane and star-shell assertions stay under clearer names.
+
+**Untouched:** `Stars`, `SkyFollow`, `StarLight`, `SkyEnvironment`, `GradientIbl`.
+
+`pnpm typecheck` · `pnpm test` (125 client, down 3 from the removed patch tests) · `pnpm lint` green,
+7 warnings, same set as `HEAD` before the change. Verified live: the nebula fills the frame edge to
+edge where the patch used to feather into flat `#02030a` at the margins.
+
+Committed as **`adcd356`**.
+
+### Note for whoever reads `EnvConfig` next
+
+`EnvConfig.background` now has no reader in the game path. It is still declared in `env-config.ts` and
+set by all three presets. Left in place rather than cascading the removal — `environment.tsx` (the
+`/env-lab` path with `GradientDome`) is a separate consumer and was not part of this change.
