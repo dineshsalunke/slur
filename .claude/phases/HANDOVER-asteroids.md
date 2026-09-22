@@ -23,17 +23,34 @@ of track in three draw calls. The five-way mechanism weighing is in issue #211.
 `variants`, `detail` and `limit` in `asteroid-config.ts` stay unused. The first two describe real
 rock shapes; a sphere has one of each. `limit` is a per-window budget and the field is not windowed.
 
-## The look is NOT judged — this is the open work
+## The look, judged on a clean origin
 
-Pass 1 is spheres. Whether they read correctly is unknown. Two readings were published and both
-were retracted; see the correction comment on issue #211. Open questions:
+Done on `:5175` / `:2569`, a second stack inside this checkout on `dev` — a separate origin whose
+`localStorage` held only leva's self-persisted defaults (every entry `value === from`), so the
+scene rendered at pure schema values with no override from any other session.
 
-- Does the rock read as lit cold blue-grey form, or as flat silhouette? If flat, rig issue #170
-  (no light on the player-facing face) is the suspect and #211 should block on it.
-- Is `meshStandardMaterial` at `#5a6570` / metalness 0.05 / roughness 0.9 the right rock, against
-  `docs/art-direction/AUDIT.md`: *"Cold, desaturated light separates distant rock/planet forms from
-  space."*
-- Do the three bands read as three depth layers, or do `mid` and `belt` merge?
+Three findings, all reproducible at defaults:
+
+1. **The rock reads two-tone, not as cold desaturated form.** Where the fill light catches it, it
+   blows out to a pale near-white grey. Where it does not, the camera-facing hemisphere goes flat
+   dark with almost no shading gradient across it. There is no middle. Against
+   `docs/art-direction/AUDIT.md` — *"Cold, desaturated light separates distant rock/planet forms
+   from space"* — the lit side is neither cold nor desaturated, and the dark side does not separate
+   from space at all.
+2. **This is consistent with rig issue #170**, *"The rig gives the player-facing face of everything
+   zero light"*. `back-fill.tsx` is a `directionalLight` aimed by `Fill.elevation`/`Fill.azimuth`,
+   and `near-fill.tsx` is a `pointLight` with a `distance` cutoff that never reaches rock at
+   110–700u. Stated as consistency, not as proven cause — that is the mistake this note already
+   records twice. #211 should not be closed before #170 is resolved and the rock re-checked.
+3. **The 12×8 sphere is visibly faceted on the flank band.** Near rock shows straight silhouette
+   edges. It is cheap to raise segments, but the better answer is the shaped geometry that
+   `variants` and `detail` were written for, so this is pass-2 work rather than a knob.
+
+Whether the three bands read as three depth layers is still unanswered — the washed lit side and
+flat dark side between them destroy the depth cue that fog is supposed to give, so this cannot be
+judged until 1 and 2 are.
+
+Do not judge any of this on `:5173`.
 
 Still outstanding from the atmospherics handover: the owner's mid-band crop of
 `docs/art-direction/golden-reference/cruise-lighting.png`. Mid-band size and lighting have to sit
