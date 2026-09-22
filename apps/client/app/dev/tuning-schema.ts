@@ -64,6 +64,14 @@ export const NUMBER_TUNABLES = {
     'Monolith.plate': { value: 17, min: 4, max: 40, step: 1, rebuild: true },
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
+    'Block.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
+    'Block.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
+    'Block.roughness': { value: 0.52, min: 0.02, max: 1, step: 0.01, rebuild: false },
+    'Block.metalness': { value: GRAPHITE_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Block.envMapIntensity': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Block.seamEmissive': { value: 6, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Block.wear': { value: 0.6, min: 0, max: 1, step: 0.01, rebuild: false },
+
     'Groove.width': { value: 0.15, min: 0.02, max: 1.2, step: 0.01, rebuild: true },
     'Groove.wallTilt': { value: 0.05, min: 0, max: 0.8, step: 0.01, rebuild: true },
     'Groove.bevelShare': { value: 0.05, min: 0, max: 0.5, step: 0.01, rebuild: true },

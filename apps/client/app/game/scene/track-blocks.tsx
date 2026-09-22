@@ -3,6 +3,7 @@ import { SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { num } from '../../dev/tuning';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import {
     type BlockDims,
@@ -13,6 +14,7 @@ import {
 } from './sealed-block-geometry';
 import { SEALED_BLOCK_SURFACE } from './sealed-block-material';
 import { patchSealedBlock, sealedBlockUniforms } from './sealed-block-shader';
+import { useSealedBlockMaps } from './sealed-block-texture';
 import {
     SEALED_BLOCK_MAX_SEAMS,
     SEALED_BLOCK_SEAM_WIDTH,
@@ -24,10 +26,6 @@ import {
 import { AHEAD, BACK, put } from './track-instancing';
 
 const BLOCK_LIMIT = 160;
-
-const BLOCK_SEAM = 6;
-const BLOCK_WEAR = 0.6;
-const BLOCK_ROUGHNESS = 0.52;
 
 interface SealedVariation {
     seams: number[];
@@ -84,6 +82,7 @@ function emitSealed( mesh: THREE.InstancedMesh, attrs: SealedAttributes, bi: num
 export function TrackBlocks( { track }: { track: Track } ) {
     const world = useWorld();
     const blockRef = useRef< THREE.InstancedMesh | null >( null );
+    const maps = useSealedBlockMaps();
 
     const uniforms = useMemo( () => sealedBlockUniforms(), [] );
     const attrs = useMemo< SealedAttributes >(
@@ -110,9 +109,16 @@ export function TrackBlocks( { track }: { track: Track } ) {
 
         uniforms.uSealedBevel.value = SEALED_BLOCK_BEVEL;
         uniforms.uSealedSeamWidth.value = SEALED_BLOCK_SEAM_WIDTH;
-        uniforms.uSealedSeamIntensity.value = BLOCK_SEAM;
-        uniforms.uSealedWearMax.value = BLOCK_WEAR;
-        ( blocks.material as THREE.MeshStandardMaterial ).roughness = BLOCK_ROUGHNESS;
+        uniforms.uSealedSeamIntensity.value = num( 'Block.seamEmissive' );
+        uniforms.uSealedWearMax.value = num( 'Block.wear' );
+        uniforms.uSealedTexSpan.value = num( 'Block.textureSpan' );
+
+        const material = blocks.material as THREE.MeshStandardMaterial;
+        const normalScale = num( 'Block.normalScale' );
+        material.roughness = num( 'Block.roughness' );
+        material.metalness = num( 'Block.metalness' );
+        material.envMapIntensity = num( 'Block.envMapIntensity' );
+        material.normalScale.set( normalScale, normalScale );
 
         const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
         const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );
@@ -133,7 +139,11 @@ export function TrackBlocks( { track }: { track: Track } ) {
             frustumCulled={ false }
             args={ [ undefined, undefined, BLOCK_LIMIT ] }
         >
-            <meshStandardMaterial { ...SEALED_BLOCK_SURFACE } ref={ ( m ) => m && patchSealedBlock( m, uniforms ) } />
+            <meshStandardMaterial
+                { ...SEALED_BLOCK_SURFACE }
+                { ...maps }
+                ref={ ( m ) => m && patchSealedBlock( m, uniforms ) }
+            />
         </instancedMesh>
     );
 }

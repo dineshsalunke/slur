@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { accentDerived } from './accent';
 import { SEALED_BLOCK_BEVEL, SEALED_BLOCK_UNIT_BEVEL } from './sealed-block-geometry';
+import { SEALED_BLOCK_TEXTURE_SPAN } from './sealed-block-texture';
 import {
     SEALED_BLOCK_SEAM_WIDTH,
     SEALED_BLOCK_WEAR,
@@ -18,6 +19,7 @@ export interface SealedBlockUniforms {
     uSealedWearMax: { value: number };
     uSealedWearColor: { value: THREE.Color };
     uSealedWearRoughness: { value: number };
+    uSealedTexSpan: { value: number };
 }
 
 const SEAM_BASE = accentDerived( ( base, out ) => {
@@ -41,6 +43,7 @@ export function sealedBlockUniforms(): SealedBlockUniforms {
         uSealedWearMax: { value: 0 },
         uSealedWearColor: { value: new THREE.Color( SEALED_BLOCK_WEAR_COLOR ).convertSRGBToLinear() },
         uSealedWearRoughness: { value: SEALED_BLOCK_WEAR_ROUGHNESS },
+        uSealedTexSpan: { value: SEALED_BLOCK_TEXTURE_SPAN },
     };
 }
 
@@ -50,6 +53,7 @@ const VERT_HEAD = `
 attribute vec4 aSealedSeams;
 attribute vec2 aSealedVariation;
 uniform float uSealedBevel;
+uniform float uSealedTexSpan;
 varying vec3 vSealedWorld;
 varying vec3 vSealedOffset;
 varying vec2 vSealedInset;
@@ -72,6 +76,15 @@ vSealedOffset = sealedWorld.xyz - sealedModel[ 3 ].xyz;
 vSealedInset = max( vec2( sealedScale.x, sealedScale.z ) * 0.5 - uSealedBevel, vec2( 1e-3 ) );
 vSealedSeams = aSealedSeams;
 vSealedVariation = aSealedVariation;
+vec3 sealedAxis = abs( objectNormal );
+vec2 sealedUv = sealedAxis.y > max( sealedAxis.x, sealedAxis.z )
+	? sealedWorld.xz
+	: ( sealedAxis.x > sealedAxis.z ? sealedWorld.zy : sealedWorld.xy );
+sealedUv /= max( uSealedTexSpan, 1e-3 );
+vMapUv = sealedUv;
+vNormalMapUv = sealedUv;
+vRoughnessMapUv = sealedUv;
+vMetalnessMapUv = sealedUv;
 `;
 
 const FRAG_HEAD = `

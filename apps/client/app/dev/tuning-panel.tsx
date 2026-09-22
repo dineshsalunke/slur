@@ -126,6 +126,16 @@ export function TuningPanel() {
         seamEmissive: numberControl( 'Monolith.seamEmissive' ),
     } );
 
+    useControls( 'Block', {
+        textureSpan: numberControl( 'Block.textureSpan' ),
+        normalScale: numberControl( 'Block.normalScale' ),
+        roughness: numberControl( 'Block.roughness' ),
+        metalness: numberControl( 'Block.metalness' ),
+        envMapIntensity: numberControl( 'Block.envMapIntensity' ),
+        seamEmissive: numberControl( 'Block.seamEmissive' ),
+        wear: numberControl( 'Block.wear' ),
+    } );
+
     useControls( 'Groove', {
         width: numberControl( 'Groove.width' ),
         wallTilt: numberControl( 'Groove.wallTilt' ),
