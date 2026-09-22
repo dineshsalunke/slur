@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 29cebf5f-df66-4ac8-b08d-35f5778300d8
-  modified: 2026-09-22T18:40:38.824Z
+  modified: 2026-09-22T19:05:35.483Z
 ---
 
 Several Claude sessions working in `/Users/apple/Projects/personal/slur` share a single
@@ -19,6 +19,14 @@ committed them under its own message.
 **How to apply:** in a shared checkout, always `git commit -- <explicit pathspecs>`, never a bare
 `git commit`. Announce before staging. Better, take a worktree — see
 [[worktrees-are-for-concurrency]]; the one session that did had a clean branch and no collision.
+
+**The branch moves under you the same way the index does.** A shared checkout follows one HEAD, so
+a peer's `git checkout -b` silently redirects every other session's commits. On 2026-09-23 three
+sessions' commits landed on `feat/asteroid-bands` instead of `dev` — the exhaust ramp fix, a phase
+correction and the asteroid bands — and nobody noticed, because **`git status --short` does not
+print the branch**. Recovery was a clean fast-forward only because the branch was cut from `dev`'s
+exact tip. **Run `git branch --show-current` immediately before every commit.** Standing owner
+policy: everyone commits to `dev`, no feature branches unless asked.
 
 A second trap in the same shape: two sessions editing one file (`dev/tunables.ts`,
 `track-materials.ts`) cannot be split by path at all, because the file's contents interleave —
