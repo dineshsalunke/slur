@@ -2,11 +2,10 @@ import { useFrame } from '@react-three/fiber';
 import { HALF_WIDTH, type Track } from '@slur/shared';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
+import { num } from '../../dev/tuning';
 import { buildSeamGeometry, buildSeamInserts } from './seam-inserts';
 import { segmentCount } from './track-floor';
-import { MARIGOLD_REFERENCE_INTENSITY, SEAM_SURFACE } from './track-materials';
-
-const SEAM_EMISSIVE = MARIGOLD_REFERENCE_INTENSITY;
+import { SEAM_SURFACE } from './track-materials';
 
 export function TrackSeams( { track }: { track: Track } ) {
     const geo = useMemo(
@@ -22,7 +21,7 @@ export function TrackSeams( { track }: { track: Track } ) {
     useEffect( () => () => material.dispose(), [ material ] );
 
     useFrame( () => {
-        material.emissiveIntensity = SEAM_EMISSIVE;
+        material.emissiveIntensity = num( 'Deck.seamEmissive' );
     } );
 
     return <mesh geometry={ geo } material={ material } />;

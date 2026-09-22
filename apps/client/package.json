@@ -35,6 +35,7 @@
         "@types/react-dom": "^19.2.3",
         "@types/three": "^0.185.0",
         "jsdom": "^30.0.1",
+        "leva": "catalog:",
         "tailwindcss": "catalog:",
         "typescript": "catalog:",
         "vite": "^8.2.1",

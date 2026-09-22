@@ -1,19 +1,16 @@
 import { useFrame } from '@react-three/fiber';
 import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { num } from '../../dev/tuning';
+import { useRebuildToken } from '../../dev/use-rebuild-token';
 import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
 import { bodySpan, bodyTransform, type MonolithTransform, seamTransform, shapeProfile } from './monolith-transforms';
-import { cleanToMapRoughness, MARIGOLD_REFERENCE_INTENSITY, monolithBodySurface } from './track-materials';
+import { cleanToMapRoughness, monolithBodySurface } from './track-materials';
 
 const scratch = new THREE.Object3D();
 const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } );
-
-const MONO_METALNESS = 0.9;
-const MONO_ROUGHNESS = 0.35;
-const MONO_ENV_MAP_INTENSITY = 1.55;
-const MONO_SEAM_EMISSIVE = MARIGOLD_REFERENCE_INTENSITY;
 
 function fill(
     mesh: THREE.InstancedMesh,
@@ -39,7 +36,8 @@ export function MonolithGroup( {
     shape: MonolithShapeConfig;
     placements: readonly MonolithPlacement[];
 } ) {
-    const surface = useMemo( monolithBodySurface, [] );
+    const rebuild = useRebuildToken();
+    const surface = useMemo( monolithBodySurface, [ rebuild ] );
     const bodyRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const seamRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const size: MonolithSize = [ shape.width, bodySpan( shape ), shape.depth ];
@@ -61,12 +59,12 @@ export function MonolithGroup( {
     useFrame( () => {
         const body = bodyRef.current;
         if ( body ) {
-            body.metalness = MONO_METALNESS;
-            body.roughness = cleanToMapRoughness( MONO_ROUGHNESS );
-            body.envMapIntensity = MONO_ENV_MAP_INTENSITY;
+            body.metalness = num( 'Monolith.metalness' );
+            body.roughness = cleanToMapRoughness( num( 'Monolith.roughness' ) );
+            body.envMapIntensity = num( 'Monolith.envMapIntensity' );
         }
         const seam = seamRef.current;
-        if ( seam ) seam.emissiveIntensity = MONO_SEAM_EMISSIVE;
+        if ( seam ) seam.emissiveIntensity = num( 'Monolith.seamEmissive' );
     } );
 
     return (

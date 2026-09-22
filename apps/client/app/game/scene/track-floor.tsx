@@ -2,6 +2,8 @@ import { useFrame } from '@react-three/fiber';
 import { CELL, LEAD_SEGMENTS, SEG_LEN, type Track } from '@slur/shared';
 import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
+import { num } from '../../dev/tuning';
+import { useRebuildToken } from '../../dev/use-rebuild-token';
 import {
     BACKWARD,
     DOWN,
@@ -17,11 +19,6 @@ import {
 import { AHEAD } from './track-instancing';
 import { cleanToMapRoughness, floorSurface } from './track-materials';
 import { spanEdges } from './track-openings';
-
-const DECK_METALNESS = 0.9;
-const DECK_ROUGHNESS = 0.35;
-const DECK_ENV_MAP_INTENSITY = 1;
-const DECK_NORMAL_SCALE = 0.8;
 
 const isOffGrid = ( v: number ) => {
     const m = Math.abs( v % CELL );
@@ -90,7 +87,8 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
 export function TrackFloor( { track }: { track: Track } ) {
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
     const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
-    const surface = useMemo( floorSurface, [] );
+    const rebuild = useRebuildToken();
+    const surface = useMemo( floorSurface, [ rebuild ] );
 
     // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );
@@ -99,10 +97,11 @@ export function TrackFloor( { track }: { track: Track } ) {
         const mat = matRef.current;
         if ( ! mat ) return;
 
-        mat.metalness = DECK_METALNESS;
-        mat.roughness = cleanToMapRoughness( DECK_ROUGHNESS );
-        mat.envMapIntensity = DECK_ENV_MAP_INTENSITY;
-        mat.normalScale.set( DECK_NORMAL_SCALE, DECK_NORMAL_SCALE );
+        mat.metalness = num( 'Deck.metalness' );
+        mat.roughness = cleanToMapRoughness( num( 'Deck.roughness' ) );
+        mat.envMapIntensity = num( 'Deck.envMapIntensity' );
+        const scale = num( 'Deck.normalScale' );
+        mat.normalScale.set( scale, scale );
     } );
 
     return (
