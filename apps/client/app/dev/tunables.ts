@@ -106,6 +106,18 @@ export const NUMBER_SPECS = {
     'mono.envMapIntensity': { group: 'Monolith', label: 'env map', value: 1.55, min: 0, max: 6, step: 0.05 },
     'mono.plate': { group: 'Monolith', label: 'plate size (u)', value: 17, min: 4, max: 40, step: 1, rebuild: true },
     'mono.seam': { group: 'Monolith', label: 'seam emissive', value: 10, min: 0, max: 10, step: 0.05 },
+
+    'ship.bankRoll': { group: 'Ship bank', label: 'roll (rad)', value: 0.5, min: 0, max: 1.2, step: 0.01 },
+    'ship.bankYaw': { group: 'Ship bank', label: 'yaw (rad)', value: 0.12, min: 0, max: 0.6, step: 0.01 },
+    'ship.bankPitch': { group: 'Ship bank', label: 'pitch (rad)', value: 0.18, min: 0, max: 0.8, step: 0.01 },
+    'ship.bankStiffness': { group: 'Ship bank', label: 'stiffness', value: 90, min: 5, max: 400, step: 1 },
+    'ship.bankDamping': { group: 'Ship bank', label: 'damping ratio', value: 0.75, min: 0.2, max: 2, step: 0.01 },
+
+    'ship.engineIdle': { group: 'Ship light', label: 'engine idle', value: 1.8, min: 0, max: 20, step: 0.05 },
+    'ship.engineCruise': { group: 'Ship light', label: 'engine cruise', value: 3.2, min: 0, max: 20, step: 0.05 },
+    'ship.accentEmissive': { group: 'Ship light', label: 'accent trim', value: 1.2, min: 0, max: 10, step: 0.05 },
+    'ship.hullRoughness': { group: 'Ship light', label: 'hull roughness', value: 1, min: 0, max: 2, step: 0.01 },
+    'ship.hullEnvMap': { group: 'Ship light', label: 'hull env map', value: 1.2, min: 0, max: 6, step: 0.05 },
 } as const satisfies Record< string, NumberSpec >;
 
 export const COLOR_SPECS = {

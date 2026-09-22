@@ -1,7 +1,8 @@
-import { DEFAULT_TUNING, simulate, type Track, tuningForShip } from '@slur/shared';
+import { simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import { currentInput } from '../input/keyboard';
-import { LocalPlayer, Net, Prev, Render, Sim } from './traits';
+import { bankTuning, driveAttitude } from './attitude';
+import { Attitude, LocalPlayer, Net, Prev, Render, Sim } from './traits';
 
 export function localFlightSystem( world: World, dt: number, track: Track ): void {
     const input = currentInput();
@@ -15,9 +16,10 @@ export function localFlightSystem( world: World, dt: number, track: Track ): voi
 
 const lerp = ( a: number, b: number, t: number ) => a + ( b - a ) * t;
 
-export function syncRenderSystem( world: World, alpha: number ): void {
-    world.query( Sim, Prev, Render ).readEach( ( [ s, prev, grp ] ) => {
+export function syncRenderSystem( world: World, alpha: number, dt: number ): void {
+    const bank = bankTuning();
+    world.query( Sim, Prev, Render, Net, Attitude ).readEach( ( [ s, prev, grp, net, att ] ) => {
         grp.position.set( lerp( prev.x, s.x, alpha ), lerp( prev.y, s.y, alpha ), lerp( prev.z, s.z, alpha ) );
-        grp.rotation.z = -( s.vx / DEFAULT_TUNING.strafeClamp ) * 0.5;
+        driveAttitude( att, grp, s.vx, s.vy, tuningForShip( net.shipId ), bank, dt );
     } );
 }

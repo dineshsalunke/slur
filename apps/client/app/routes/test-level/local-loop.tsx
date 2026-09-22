@@ -18,7 +18,7 @@ export function LocalLoop( { track }: { track: Track } ) {
     useFrame( ( state, delta ) => {
         if ( ! simFreeze.on ) {
             const alpha = advance( delta, ( dt ) => localFlightSystem( world, dt, track ) );
-            syncRenderSystem( world, alpha );
+            syncRenderSystem( world, alpha, delta );
             localDeathVfxSystem( world );
         }
         updateChaseCamera( state.camera as PerspectiveCamera, world, delta );

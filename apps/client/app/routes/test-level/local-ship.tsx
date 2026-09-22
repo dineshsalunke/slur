@@ -1,7 +1,7 @@
 import { DEFAULT_SHIP, SHIP_ORDER } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect } from 'react';
-import { LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
+import { Attitude, LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
 import { attachKeyboard } from '../../game/input/keyboard';
 import { localRole } from '../../game/spectator';
 
@@ -19,6 +19,7 @@ export function LocalShip() {
             Net( { sessionId: 'test-level', shipId: DEFAULT_SHIP as string, colorId: 0 } ),
             Sim,
             Prev,
+            Attitude,
             LocalPlayer,
         );
         return () => ship.destroy();

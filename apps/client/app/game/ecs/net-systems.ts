@@ -3,7 +3,8 @@ import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { currentInput } from '../input/keyboard';
 import { localRole } from '../spectator';
-import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
+import { bankTuning, driveAttitude } from './attitude';
+import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
 
 export function freezeLocalPrev( world: World ): void {
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
@@ -46,10 +47,11 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
 
 const lerp = ( a: number, b: number, t: number ) => a + ( b - a ) * t;
 
-export function remoteInterpSystem( world: World ): void {
+export function remoteInterpSystem( world: World, dt: number ): void {
     const renderTime = performance.now() - RENDER_DELAY_MS;
     const blink = stunBlink();
-    world.query( Interp, Render, Net, Remote ).readEach( ( [ interp, grp, net ] ) => {
+    const bank = bankTuning();
+    world.query( Interp, Render, Net, Attitude, Remote ).readEach( ( [ interp, grp, net, att ] ) => {
         const buf = interp.buffer;
         if ( buf.length === 0 ) return;
         let a: ( typeof buf )[ number ] | null = null;
@@ -65,21 +67,25 @@ export function remoteInterpSystem( world: World ): void {
         let y: number;
         let z: number;
         let vx: number;
+        let vy: number;
         if ( a && b ) {
-            const t = ( renderTime - a.t ) / ( b.t - a.t || 1 );
+            const span = b.t - a.t || 1;
+            const t = ( renderTime - a.t ) / span;
             x = lerp( a.x, b.x, t );
             y = lerp( a.y, b.y, t );
             z = lerp( a.z, b.z, t );
             vx = lerp( a.vx, b.vx, t );
+            vy = ( ( b.y - a.y ) / span ) * 1000;
         } else {
             const last = buf[ buf.length - 1 ];
             x = last.x;
             y = last.y;
             z = last.z;
             vx = last.vx;
+            vy = 0;
         }
         grp.position.set( x, y, z );
-        grp.rotation.z = -( vx / tuningForShip( net.shipId ).strafeClamp ) * 0.5;
+        driveAttitude( att, grp, vx, vy, tuningForShip( net.shipId ), bank, dt );
         const latest = buf[ buf.length - 1 ];
         grp.visible = ! latest.dead && latest.stunned ? blink : true;
     } );

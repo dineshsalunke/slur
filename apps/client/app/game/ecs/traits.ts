@@ -8,6 +8,8 @@ export const Prev = trait( { x: 0, y: 0, z: 0 } );
 
 export const Render = trait( () => new THREE.Group() );
 
+export const Attitude = trait( () => ( { roll: 0, rollVel: 0, yaw: 0, yawVel: 0, pitch: 0, pitchVel: 0 } ) );
+
 export const LocalPlayer = trait();
 
 export const Net = trait( { sessionId: '', shipId: DEFAULT_SHIP as string, colorId: 0 } );

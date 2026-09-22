@@ -18,8 +18,8 @@ export function NetLoop( { predictor, track }: { predictor: Predictor; track: Tr
             if ( racing ) netFlightSystem( world, dt, predictor, track );
         } );
         if ( ! racing ) freezeLocalPrev( world );
-        syncRenderSystem( world, alpha );
-        remoteInterpSystem( world );
+        syncRenderSystem( world, alpha, delta );
+        remoteInterpSystem( world, delta );
         localDeathVfxSystem( world );
         const cam = state.camera as PerspectiveCamera;
         if ( runPhase.value === PHASE.lobby ) updateLobbyCamera( cam, world, delta );

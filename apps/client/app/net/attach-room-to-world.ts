@@ -2,7 +2,18 @@ import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import { INPUT_MESSAGE, type PlayerState, type ProjectileState, type RunState, type Track } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
-import { Interp, LocalPlayer, Net, NetProjectile, Prev, ProjInterp, Remote, Render, Sim } from '../game/ecs/traits';
+import {
+    Attitude,
+    Interp,
+    LocalPlayer,
+    Net,
+    NetProjectile,
+    Prev,
+    ProjInterp,
+    Remote,
+    Render,
+    Sim,
+} from '../game/ecs/traits';
 import { pushHit } from '../game/scene/hit-events';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
@@ -48,8 +59,8 @@ function spawnPlayer(
     net: { sessionId: string; shipId: string; colorId: number },
 ): Entity {
     return isLocal
-        ? world.spawn( Render, Net( net ), Sim, Prev, LocalPlayer )
-        : world.spawn( Render, Net( net ), Remote, Interp );
+        ? world.spawn( Render, Net( net ), Sim, Prev, Attitude, LocalPlayer )
+        : world.spawn( Render, Net( net ), Attitude, Interp, Remote );
 }
 
 export function attachRoomToWorld(
