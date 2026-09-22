@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import {
     type BlockDims,
+    SEALED_BLOCK_BEVEL,
     SEALED_BLOCK_UNIT_BEVEL,
     SEALED_BLOCK_UNIT_DIMS,
     sealedBlockGeometry,
@@ -14,6 +15,7 @@ import { SEALED_BLOCK_SURFACE } from './sealed-block-material';
 import { patchSealedBlock, sealedBlockUniforms } from './sealed-block-shader';
 import {
     SEALED_BLOCK_MAX_SEAMS,
+    SEALED_BLOCK_SEAM_WIDTH,
     sealedBlockSeamCount,
     sealedBlockSeams,
     sealedBlockSeed,
@@ -23,8 +25,6 @@ import { AHEAD, BACK, put } from './track-instancing';
 
 const BLOCK_LIMIT = 160;
 
-const BLOCK_BEVEL = 0.12;
-const BLOCK_SEAM_WIDTH = 0.14;
 const BLOCK_SEAM = 6;
 const BLOCK_WEAR = 0.6;
 const BLOCK_ROUGHNESS = 0.52;
@@ -108,8 +108,8 @@ export function TrackBlocks( { track }: { track: Track } ) {
         const blocks = blockRef.current;
         if ( ! sim || ! blocks ) return;
 
-        uniforms.uSealedBevel.value = BLOCK_BEVEL;
-        uniforms.uSealedSeamWidth.value = BLOCK_SEAM_WIDTH;
+        uniforms.uSealedBevel.value = SEALED_BLOCK_BEVEL;
+        uniforms.uSealedSeamWidth.value = SEALED_BLOCK_SEAM_WIDTH;
         uniforms.uSealedSeamIntensity.value = BLOCK_SEAM;
         uniforms.uSealedWearMax.value = BLOCK_WEAR;
         ( blocks.material as THREE.MeshStandardMaterial ).roughness = BLOCK_ROUGHNESS;

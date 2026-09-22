@@ -116,9 +116,9 @@ float sealedWearPatch() {
 	float n = sealedNoise( p ) + 0.25 * ( sealedNoise( p * 3.7 ) - 0.5 );
 	float edge = mix( 0.16, 0.01, contrast );
 	float t = mix( 0.90, 0.10, clamp( uSealedWear.y, 0.0, 1.0 ) );
-	float patch = smoothstep( t - edge, t + edge, n );
+	float wear = smoothstep( t - edge, t + edge, n );
 	float grain = sealedNoise( p * max( uSealedWear.w, 1e-3 ) );
-	return patch * mix( 0.4, 1.0, grain ) * strength;
+	return wear * mix( 0.4, 1.0, grain ) * strength;
 }
 
 // Clamping to the INSET rectangle collapses each chamfer strip to a single perimeter value, so a seam
@@ -144,16 +144,15 @@ float sealedSeam( vec3 n ) {
 	float perimeter = 4.0 * ( vSealedInset.x + vSealedInset.y );
 	float u = sealedPerimeterU( n );
 	float halfW = 0.5 * uSealedSeamWidth;
-	// fwidth explodes where u wraps at the 0/perimeter corner; clamped, that artefact stays sub-pixel.
-	float feather = clamp( fwidth( u ), 0.0, 0.05 );
+	float footprint = max( length( fwidth( vSealedWorld.xz ) ), 1e-5 );
+	float feather = 0.5 * footprint;
 	float count = vSealedVariation.x;
 	float s = sealedSeamAt( u, vSealedSeams.x, perimeter, halfW, feather ) * step( 0.5, count );
 	s = max( s, sealedSeamAt( u, vSealedSeams.y, perimeter, halfW, feather ) * step( 1.5, count ) );
 	s = max( s, sealedSeamAt( u, vSealedSeams.z, perimeter, halfW, feather ) * step( 2.5, count ) );
 	s = max( s, sealedSeamAt( u, vSealedSeams.w, perimeter, halfW, feather ) * step( 3.5, count ) );
-	// |n.y| is 0 on the four sides, 0.577 on a corner triangle, 0.707 on a top strip, 1 on the caps: board
-	// 28's "no top-face luminous returns" holds by construction rather than by care.
-	return s * ( 1.0 - smoothstep( 0.2, 0.45, abs( n.y ) ) );
+	float coverage = clamp( halfW / footprint, 0.0, 1.0 );
+	return s * coverage * ( 1.0 - smoothstep( 0.2, 0.45, abs( n.y ) ) );
 }
 `;
 
