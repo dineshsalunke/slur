@@ -110,3 +110,25 @@ fly 420 segments by hand before this is called finished.
 The 4u jumpable block (the research strengthens the case for deferring it — never generate a height
 in the ambiguous zone between two known-good ones), bounce-instead-of-kill
 ([[HANDOVER-block-mechanics]]), and the tuning-panel retirement.
+
+## Addendum — 2026-09-23, the refactor item is closed
+
+`1fc678c` splits `track.ts` into `space` / `weave` / `intensity` / `gaps` / `gap-blocks` /
+`clearance`, leaving `track.ts` at 216 lines. All 301 tests pass unchanged — the seed-specific
+phrasing and density assertions are what make it checkable as a pure move. Lint is at nine warnings,
+down from ten; the one that went is `track.ts`'s own.
+
+One signature changed: `gapBlocks()` takes `intensity` instead of `length`, so it no longer reaches
+back into `intensityAt`. `buildSegment` already held the value.
+
+**Collision during the work.** `slur-supervisor` started the same extraction at 01:39 and overwrote
+this session's in-flight `space.ts` and `clearance.ts` before either was committed. Untracked files,
+so nothing to recover from — the reconstruction was merged forward rather than re-clobbered. The
+lesson is not "use a worktree": it is that **two sessions read the same "Left undone" list and both
+started**. A claim belongs in the lane before the first file is written.
+
+Still undone: the human playtest, and the missing vertical-reach check in the validator.
+`slur-supervisor` found the tab freeze clears by activating Chrome natively from the shell
+(`osascript -e 'tell application "Google Chrome" ... activate'`) — 44-46 fps after that — but a
+throttle-only run stalls on the first block and a crude autopilot took 16 deaths in 20s. It needs
+hands.
