@@ -411,27 +411,17 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }
 
-function openCenterX( seg: Segment ): number {
-    const zc = seg.z0 + SEG_LEN / 2;
-    const walls = seg.blocks
-        .filter( ( b ) => b.z0 <= zc && zc < b.z1 )
-        .map( ( b ): [ number, number ] => [ b.x0, b.x1 ] )
-        .sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
-    let cursor = -HALF_WIDTH;
-    let bestLo = -HALF_WIDTH;
-    let bestHi = -HALF_WIDTH;
-    const consider = ( lo: number, hi: number ): void => {
-        if ( hi - lo > bestHi - bestLo ) {
-            bestLo = lo;
-            bestHi = hi;
-        }
-    };
-    for ( const [ lo, hi ] of walls ) {
-        if ( lo > cursor ) consider( cursor, lo );
-        cursor = Math.max( cursor, hi );
+export function openCenterX( seg: Segment ): number {
+    let common: Run[] | null = null;
+    for ( const zc of sliceCentres( seg ) ) {
+        const runs = openRunsAtSlice( seg, zc );
+        common = common === null ? runs : intersectRuns( common, runs );
+        if ( common.length === 0 ) break;
     }
-    if ( HALF_WIDTH > cursor ) consider( cursor, HALF_WIDTH );
-    return ( bestLo + bestHi ) / 2;
+    const threading = common !== null && common.length > 0;
+    const runs = threading ? ( common as Run[] ) : openRunsAtSlice( seg, ( seg.z0 + seg.z1 ) / 2 );
+    const widest = widestRun( runs );
+    return widest === null ? 0 : ( widest[ 0 ] + widest[ 1 ] ) / 2;
 }
 
 export function segIndexForZ( z: number ): number {
@@ -469,8 +459,33 @@ export function isHole( seg: Segment ): boolean {
     return ! seg.floors.some( isFullSpan );
 }
 
-function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Array< [ number, number ] > {
-    const walls: Array< [ number, number ] > = [];
+type Run = [ number, number ];
+
+const SLICE_EPS = 1e-3;
+
+function sliceCentres( seg: Segment ): number[] {
+    const bounds: number[] = [ seg.z0, seg.z1 ];
+    const edge = ( z: number ): void => {
+        if ( z > seg.z0 + SLICE_EPS && z < seg.z1 - SLICE_EPS ) bounds.push( z );
+    };
+    for ( const b of seg.blocks ) {
+        edge( b.z0 );
+        edge( b.z1 );
+    }
+    for ( const f of seg.floors ) {
+        edge( spanZ0( seg, f ) );
+        edge( spanZ1( seg, f ) );
+    }
+    bounds.sort( ( a, b ) => a - b );
+    const out: number[] = [];
+    for ( let k = 1; k < bounds.length; k++ ) {
+        if ( bounds[ k ] - bounds[ k - 1 ] > SLICE_EPS ) out.push( ( bounds[ k - 1 ] + bounds[ k ] ) / 2 );
+    }
+    return out;
+}
+
+function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Run[] {
+    const walls: Run[] = [];
     for ( const b of seg.blocks ) {
         if ( b.z0 <= zc && zc < b.z1 ) {
             const lo = Math.max( f.x0, b.x0 );
@@ -482,16 +497,37 @@ function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Array< [ number
     return walls;
 }
 
-function maxOpenAtSlice( seg: Segment, zc: number ): number {
-    let best = 0;
+function openRunsAtSlice( seg: Segment, zc: number ): Run[] {
+    const runs: Run[] = [];
     for ( const f of seg.floors ) {
         if ( ! spanHasZ( seg, f, zc ) ) continue;
         let cursor = f.x0;
         for ( const [ lo, hi ] of wallsOnSlice( seg, f, zc ) ) {
-            if ( lo > cursor ) best = Math.max( best, lo - cursor );
+            if ( lo > cursor ) runs.push( [ cursor, lo ] );
             cursor = Math.max( cursor, hi );
         }
-        if ( f.x1 > cursor ) best = Math.max( best, f.x1 - cursor );
+        if ( f.x1 > cursor ) runs.push( [ cursor, f.x1 ] );
+    }
+    runs.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
+    return runs;
+}
+
+function intersectRuns( a: Run[], b: Run[] ): Run[] {
+    const out: Run[] = [];
+    for ( const [ a0, a1 ] of a ) {
+        for ( const [ b0, b1 ] of b ) {
+            const lo = Math.max( a0, b0 );
+            const hi = Math.min( a1, b1 );
+            if ( hi > lo ) out.push( [ lo, hi ] );
+        }
+    }
+    return out;
+}
+
+function widestRun( runs: Run[] ): Run | null {
+    let best: Run | null = null;
+    for ( const r of runs ) {
+        if ( best === null || r[ 1 ] - r[ 0 ] > best[ 1 ] - best[ 0 ] ) best = r;
     }
     return best;
 }
@@ -499,9 +535,9 @@ function maxOpenAtSlice( seg: Segment, zc: number ): number {
 export function passableCorridorWidth( seg: Segment ): number {
     if ( seg.floors.length === 0 ) return 0;
     let worst = Number.POSITIVE_INFINITY;
-    for ( let r = 0; r < ZCELLS; r++ ) {
-        const zc = seg.z0 + r * CELL + CELL / 2;
-        worst = Math.min( worst, maxOpenAtSlice( seg, zc ) );
+    for ( const zc of sliceCentres( seg ) ) {
+        const widest = widestRun( openRunsAtSlice( seg, zc ) );
+        worst = Math.min( worst, widest === null ? 0 : widest[ 1 ] - widest[ 0 ] );
     }
     return worst === Number.POSITIVE_INFINITY ? 0 : worst;
 }
