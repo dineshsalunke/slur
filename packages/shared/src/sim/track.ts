@@ -25,6 +25,7 @@ import {
     GAP_BLOCK_RATE_START,
     GAP_P_MAX,
     GAP_P_START,
+    REST_INTENSITY,
     SECTIONS,
     WALL_DENSITY_MAX,
     WALL_DENSITY_START,
@@ -197,14 +198,17 @@ function corridorWidthLanes( intensity: number ): number {
     const w = Math.round( lerp( CORRIDOR_W_START, CORRIDOR_W_MIN, intensity ) );
     return clamp( w, CORRIDOR_W_MIN, LANES );
 }
+export function restScale( intensity: number ): number {
+    return clamp( intensity / REST_INTENSITY, 0, 1 );
+}
 function wallDensity( intensity: number ): number {
-    return lerp( WALL_DENSITY_START, WALL_DENSITY_MAX, intensity );
+    return lerp( WALL_DENSITY_START, WALL_DENSITY_MAX, intensity ) * restScale( intensity );
 }
 function gapProb( intensity: number ): number {
-    return lerp( GAP_P_START, GAP_P_MAX, intensity );
+    return lerp( GAP_P_START, GAP_P_MAX, intensity ) * restScale( intensity );
 }
 function flickRate( intensity: number ): number {
-    return lerp( FLICK_RATE_START, FLICK_RATE_MAX, intensity );
+    return lerp( FLICK_RATE_START, FLICK_RATE_MAX, intensity ) * restScale( intensity );
 }
 
 function rolledGap( seed: number, i: number, length: number, density: TrackDensity ): boolean {

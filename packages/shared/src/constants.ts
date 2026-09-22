@@ -158,21 +158,25 @@ export interface Section {
     i1: number;
 }
 export const SECTIONS: Section[] = [
-    { name: 'intro', weight: 5, i0: 0.5, i1: 0.55 },
-    { name: 'verse1', weight: 7, i0: 0.26, i1: 0.32 },
-    { name: 'verse2', weight: 7, i0: 0.3, i1: 0.36 },
-    { name: 'prechor1', weight: 5, i0: 0.4, i1: 0.66 },
-    { name: 'chorus1', weight: 7, i0: 0.8, i1: 0.82 },
-    { name: 'chorus2', weight: 6, i0: 0.82, i1: 0.8 },
-    { name: 'verse3', weight: 6, i0: 0.38, i1: 0.44 },
-    { name: 'verse4', weight: 5, i0: 0.42, i1: 0.48 },
-    { name: 'prechor2', weight: 5, i0: 0.52, i1: 0.74 },
-    { name: 'chorus3', weight: 6, i0: 0.88, i1: 0.9 },
-    { name: 'chorus4', weight: 6, i0: 0.9, i1: 0.88 },
-    { name: 'bridge', weight: 8, i0: 0.18, i1: 0.28 },
-    { name: 'finalcho', weight: 10, i0: 0.96, i1: 1.0 },
-    { name: 'outro', weight: 7, i0: 0.6, i1: 0.06 },
+    { name: 'intro', weight: 5, i0: 0.08, i1: 0.28 },
+    { name: 'build1', weight: 5, i0: 0.28, i1: 0.6 },
+    { name: 'spike1', weight: 3, i0: 0.8, i1: 0.82 },
+    { name: 'release1', weight: 3, i0: 0.55, i1: 0.14 },
+    { name: 'rest1', weight: 4, i0: 0.06, i1: 0.06 },
+    { name: 'build2', weight: 6, i0: 0.1, i1: 0.68 },
+    { name: 'spike2', weight: 3, i0: 0.88, i1: 0.86 },
+    { name: 'release2', weight: 3, i0: 0.58, i1: 0.16 },
+    { name: 'rest2', weight: 4, i0: 0.05, i1: 0.05 },
+    { name: 'build3', weight: 6, i0: 0.1, i1: 0.74 },
+    { name: 'spike3', weight: 3, i0: 0.9, i1: 0.92 },
+    { name: 'release3', weight: 3, i0: 0.6, i1: 0.18 },
+    { name: 'bridge', weight: 6, i0: 0.1, i1: 0.03 },
+    { name: 'finalbuild', weight: 5, i0: 0.06, i1: 0.8 },
+    { name: 'finalcho', weight: 6, i0: 0.96, i1: 1 },
+    { name: 'outro', weight: 5, i0: 0.6, i1: 0.02 },
 ];
+
+export const REST_INTENSITY = 0.15;
 
 export const GAP_P_START = 0.06;
 export const GAP_P_MAX = 0.16;
