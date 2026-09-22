@@ -4,7 +4,6 @@ import { Fragment, type ReactNode } from 'react';
 import { ExposureTuning } from '../../dev/exposure-tuning';
 import { RenderScale } from '../../dev/render-scale';
 import { ToneTuning } from '../../dev/tone-tuning';
-import { GRID_VOID } from './env-config';
 import { ExplosionField } from './explosions';
 import { FinishGate } from './finish-gate';
 import { GameEnvironment } from './game-environment';
@@ -25,7 +24,7 @@ export function WorldScene( {
 } ) {
     return (
         <Fragment>
-            <GameEnvironment config={ GRID_VOID } track={ track } />
+            <GameEnvironment track={ track } />
             <SceneLighting />
             <RenderScale />
             <ExplosionField />

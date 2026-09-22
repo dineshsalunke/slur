@@ -7,14 +7,6 @@ export function skyDirection( bearingDeg: number, elevationDeg: number ): [ numb
     return [ -horizontal * Math.sin( bearing ), Math.sin( elevation ), horizontal * Math.cos( bearing ) ];
 }
 
-export interface SkyBackdropConfig {
-    bearingDeg: number;
-    elevationDeg: number;
-    fovDeg: number;
-    edgeFadeDeg: number;
-    gain: number;
-}
-
 export interface StarFieldConfig {
     enabled: boolean;
     count: number;
@@ -47,7 +39,6 @@ export interface SkyConfig {
     radius: number;
     starBearingDeg: number;
     starElevationDeg: number;
-    backdrop: SkyBackdropConfig;
     stars: StarFieldConfig;
     starLight: StarLightConfig;
     environment: SkyEnvironmentConfig;
@@ -58,13 +49,6 @@ export const DEEP_SPACE: SkyConfig = {
     radius: 800,
     starBearingDeg: 66,
     starElevationDeg: 19,
-    backdrop: {
-        bearingDeg: 0,
-        elevationDeg: -2,
-        fovDeg: 120,
-        edgeFadeDeg: 12,
-        gain: 0.4,
-    },
     stars: {
         enabled: true,
         count: 2200,

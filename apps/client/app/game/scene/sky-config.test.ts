@@ -50,18 +50,6 @@ describe( 'skyDirection', () => {
     } );
 } );
 
-const STRAFE_LAG_U = 80 / 16;
-const LOOK_DISTANCE_U = 14 + 7;
-
-const IMAGE_ASPECT = 1672 / 941;
-const CANVAS_ASPECT = 3456 / 1926;
-
-const toRad = ( d: number ): number => ( d * Math.PI ) / 180;
-
-function frameHalfWidthDeg( vFovDeg: number ): number {
-    return ( Math.atan( Math.tan( toRad( vFovDeg / 2 ) ) * CANVAS_ASPECT ) * 180 ) / Math.PI;
-}
-
 describe( 'DEEP_SPACE', () => {
     it( 'puts the star up and to the right, where the reference image implies it', () => {
         const star = project( DEEP_SPACE.starBearingDeg, DEEP_SPACE.starElevationDeg );
@@ -69,33 +57,11 @@ describe( 'DEEP_SPACE', () => {
         expect( star.y ).toBeGreaterThan( 0 );
     } );
 
-    it( 'keeps the backdrop inside the far plane R3F actually builds', () => {
+    it( 'keeps the sky radius inside the far plane R3F actually builds', () => {
         expect( DEEP_SPACE.radius ).toBeLessThan( R3F_DEFAULT_FAR );
     } );
 
-    it( 'keeps the star shell inside the backdrop patch', () => {
+    it( 'keeps the star shell inside the sky radius', () => {
         expect( DEEP_SPACE.stars.radius + DEEP_SPACE.stars.depth ).toBeLessThan( DEEP_SPACE.radius );
-    } );
-
-    const ACCEPTED_EDGE_MARGIN = 0.12;
-
-    it( 'keeps the patch able to reach full opacity', () => {
-        const fovVDeg = DEEP_SPACE.backdrop.fovDeg / IMAGE_ASPECT;
-        expect( fovVDeg ).toBeGreaterThan( 2 * DEEP_SPACE.backdrop.edgeFadeDeg );
-    } );
-
-    it( 'keeps the worst-case black margin inside the accepted budget', () => {
-        const halfDeg = frameHalfWidthDeg( 75 );
-        const yawDeg = ( Math.atan( STRAFE_LAG_U / LOOK_DISTANCE_U ) * 180 ) / Math.PI;
-        const edgeOffAxisDeg = DEEP_SPACE.backdrop.fovDeg / 2 - yawDeg;
-        const uncovered =
-            edgeOffAxisDeg >= halfDeg
-                ? 0
-                : 0.5 - 0.5 * ( Math.tan( toRad( edgeOffAxisDeg ) ) / Math.tan( toRad( halfDeg ) ) );
-        expect( uncovered ).toBeLessThanOrEqual( ACCEPTED_EDGE_MARGIN );
-    } );
-
-    it( 'covers the frame completely when the camera is not strafing', () => {
-        expect( DEEP_SPACE.backdrop.fovDeg / 2 ).toBeGreaterThan( frameHalfWidthDeg( 75 ) );
     } );
 } );
