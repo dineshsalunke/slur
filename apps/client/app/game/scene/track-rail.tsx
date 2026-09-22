@@ -17,14 +17,19 @@ import {
     UP,
     type V3,
 } from './track-geometry';
-import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from './track-materials';
+import {
+    BOUNDARY_SURFACE,
+    cleanToMapRoughness,
+    MARIGOLD_REFERENCE_INTENSITY,
+    railBodySurface,
+} from './track-materials';
 import { buildRailRuns, type RailRun } from './track-rails';
 
 const RAIL_NORMAL_SCALE = 0.8;
 const RAIL_METALNESS = 0.9;
 const RAIL_ROUGHNESS = 0.35;
 const RAIL_ENV_MAP_INTENSITY = 1;
-const RAIL_EMISSIVE = 2;
+const RAIL_EMISSIVE = MARIGOLD_REFERENCE_INTENSITY;
 
 export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
     const metalPos: number[] = [];
