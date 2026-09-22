@@ -6,6 +6,7 @@ import type * as THREE from 'three';
 import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
 import { guardLfsPointer } from './gltf-lfs-guard';
+import { GRAPHITE_ALBEDO, GRAPHITE_METALNESS, GRAPHITE_ROUGHNESS } from './graphite';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 
 for ( const v of Object.values( SHIP_VISUALS ) ) {
@@ -78,6 +79,14 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
     mat.needsUpdate = true;
 }
 
+function applyGraphite( mat: THREE.Material ): void {
+    const std = mat as THREE.MeshStandardMaterial;
+    if ( ! std.isMeshStandardMaterial || std.emissive.getHex() !== 0 ) return;
+    std.color.set( GRAPHITE_ALBEDO );
+    std.metalness = GRAPHITE_METALNESS;
+    std.roughness = GRAPHITE_ROUGHNESS;
+}
+
 function isDead( entity: Entity ): boolean {
     const sim = entity.get( Sim );
     if ( sim ) return sim.dead;
@@ -109,7 +118,10 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
                 const mesh = o as THREE.Mesh;
                 if ( ! mesh.isMesh ) return;
                 const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
-                for ( const mat of mats ) patchDissolve( mat, uniforms );
+                for ( const mat of mats ) {
+                    applyGraphite( mat );
+                    patchDissolve( mat, uniforms );
+                }
             } );
             patched.current = true;
         }

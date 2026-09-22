@@ -6,13 +6,6 @@ export type SeamFace = 'inner' | 'outer';
 
 export type SeamAlign = 'center' | 'near' | 'far';
 
-export interface MonolithSurface {
-    color: string;
-    roughness: number;
-    metalness: number;
-    envMapIntensity: number;
-}
-
 export interface MonolithSeamConfig {
     face: SeamFace;
     align: SeamAlign;
@@ -31,7 +24,6 @@ export interface MonolithShapeConfig {
     height: number;
     below: number;
     gap: number;
-    surface: MonolithSurface;
     seam: MonolithSeamConfig;
 }
 
@@ -40,13 +32,6 @@ export interface MonolithFieldConfig {
     spacingCalm: number;
     spacingIntense: number;
 }
-
-export const GRAPHITE_SURFACE: MonolithSurface = {
-    color: '#333d47',
-    roughness: 0.78,
-    metalness: 0,
-    envMapIntensity: 1.6,
-};
 
 export const EDGE_SEAM: MonolithSeamConfig = {
     face: 'inner',
@@ -66,7 +51,6 @@ export const BOX_MONOLITH: MonolithShapeConfig = {
     height: 50,
     below: 60,
     gap: 0,
-    surface: GRAPHITE_SURFACE,
     seam: EDGE_SEAM,
 };
 
