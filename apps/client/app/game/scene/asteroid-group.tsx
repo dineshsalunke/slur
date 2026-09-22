@@ -53,6 +53,7 @@ export function AsteroidGroup( {
                 emissive={ ASTEROID_EMISSIVE }
                 emissiveIntensity={ ASTEROID_EMISSIVE_INTENSITY }
                 envMapIntensity={ ASTEROID_ENV_INTENSITY }
+                fog={ false }
             />
         </instancedMesh>
     );

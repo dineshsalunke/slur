@@ -56,10 +56,28 @@ What each pass taught, because the wrong lever is tempting at every step:
 - **Albedo is the brightness lever.** At `#79838f` the rocks read *lighter* than the nebula backdrop
   and popped out like snow. In `cruise-lighting.png` the rubble is consistently **darker than the
   sky behind it**, with lit top edges. `#4a545f` puts it back.
-- **Fog was investigated and ruled out.** The bands sit at 90–700u against a `Fog.far` of 420, so
-  "everything is drawn as flat fog colour" was a good hypothesis. Probed by temporarily setting the
-  `Fog.far` schema default to 1400 and tapping: the rocks did not change. Probe reverted; the
-  `tuning-schema.ts` diff is empty. Do not re-run this.
+- **Fog was the single biggest cause, and the first probe of it was wrong.** `meshStandardMaterial`
+  has `fog: true` by default, so every rock was painted by the scene `THREE.Fog`. The bands sit at
+  90–700u against a `Fog.far` of 420, so most of the field was drawn as near-pure fog colour — flat,
+  formless silhouettes pasted onto a backdrop that is *not* fogged, since the nebula is
+  `scene.background`. `fog={ false }` on the asteroid material, and the same rock in the same frame
+  goes from pale blobs to shaded form with light and shadow faces.
+
+  This was first probed by raising the `Fog.far` schema default to 1400 and tapping, and the probe
+  said fog was innocent. It was wrong: the ship had drifted off the deck between the two frames, so
+  the comparison was across two different camera positions. **A look probe is only valid when the
+  camera has not moved** — reload to spawn and tap immediately, or change nothing else.
+
+  `fog={ false }` is consistent with what the asteroids are: background, the same class as
+  `scene.background` and `DeepSpaceSky`, neither of which is fogged. The cost is that the nearest
+  flank rock at 90u loses the aerial integration fog would give it — a fog factor of 0.13, not
+  visible. The albedo had been dropped to `#4a545f` to fight the fog wash and was lifted back to
+  `#586470` once the wash was gone.
+
+**Check the other environment meshes for the same bug.** `monolith-group.tsx` sets no `fog` prop
+either, so the monoliths are fogged too. That is probably right for them — they stand beside the
+corridor, well inside `Fog.far` — but nothing has been measured. Anything that lives past 420u and
+is meant to read as form, not haze, has this bug.
 
 **What is still wrong, and why it is not an asteroid problem.** Small distant rubble reads flat
 because the scene has no directional key worth the name — `BackFill` is a `directionalLight` at
