@@ -63,3 +63,7 @@ scratchpad/
 # do not delete that ref. 86 of its files exist nowhere else, the two source
 # .glb vehicle models among them.
 /docs/art-direction/archive/
+
+# Frame-tap output: scratch renders written by the dev-server tap plugin, one
+# per `curl /__frame-tap`. Overwritten every tap and never reviewed as history.
+/.claude/frame-tap-refs/
