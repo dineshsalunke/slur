@@ -29,9 +29,30 @@ the tail at ship-local -z, so the ports land at ship-local `(+/-0.31, 0.245 | 0.
 letterboxes, and four round cores in a 2x2 would read as mush); mirror bloom deferred, cheap route
 for now; engine light on the **local ship only**.
 
-**Unresolved model oddity worth someone's attention:** `DEFAULT_TUNING.halfL` is 1.26 while the
-model is 3.0 half-long. Collision is 2.4x shorter than the hull is drawn. `halfW` 1.3 vs model 1.25
-matches fine. Not touched here.
+**Model/collision conformance — CHECKED, nothing wrong.** An earlier draft of this note claimed
+`DEFAULT_TUNING.halfL` 1.26 against a 3.0 half-long model, i.e. collision 2.4x shorter than the hull.
+**That was an error: it compared the Split Crown's hull against the Fighter's box.** `split-crown`
+maps to class `freighter` (`ship-classes.ts:102`), tuning `halfW 1.25, halfL 3.0`. `DEFAULT_TUNING`
+is the *Fighter's* tuning, carried by the Challenger.
+
+Measured 2026-09-23 — POSITION accessor bounds over every mesh primitive, times the
+`ship-visuals.ts` scale, against halfW/halfL x2:
+
+| Ship | Class | Model (scaled) | Collision box | Delta |
+|---|---|---|---|---|
+| Executioner | interceptor | 2.00 x 1.84u | 2.00 x 1.84u | +0.2% |
+| Challenger | fighter | 2.60 x 2.52u | 2.60 x 2.52u | -0.0% |
+| Bob | comet | 2.20 x 1.18u | 2.20 x 1.18u | +0.4% |
+| Dispatcher | phantom | 2.40 x 5.03u | 2.40 x 5.02u | -0.1% |
+| Split Crown | freighter | 2.50 x 6.00u | 2.50 x 6.00u | +0.0% |
+
+Every box is within 0.4% of its hull. The roster is sound; there is nothing to fix here. Node
+transforms were checked separately and are identity on all five (0 non-identity nodes in each), so
+the scaled accessor bounds are the true bounds.
+
+This is the failure mode GDD §0 warns about — *"numbers were written by hand against the grid
+instead of derived"* — in reverse: a correct number checked against the wrong row. Resolve a ship's
+box through `tuningForShip()`, never through `DEFAULT_TUNING`.
 
 ## Files
 
