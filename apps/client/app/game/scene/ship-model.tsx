@@ -5,7 +5,6 @@ import { useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
-import { applyEmitterShader } from './emitter-array';
 import { guardLfsPointer } from './gltf-lfs-guard';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 
@@ -60,7 +59,6 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
     if ( mat.userData.dissolvePatched ) return;
     mat.userData.dissolvePatched = true;
     mat.onBeforeCompile = ( shader ) => {
-        if ( ( mat as THREE.MeshStandardMaterial ).isMeshStandardMaterial ) applyEmitterShader( shader );
         shader.uniforms.uDissolve = uniforms.uDissolve;
         shader.uniforms.uNoiseScale = uniforms.uNoiseScale;
         shader.uniforms.uEdgeWidth = uniforms.uEdgeWidth;

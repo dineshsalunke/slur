@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { num } from '../../dev/tunables';
 import { useRebuildToken } from '../../dev/use-tunables';
-import { patchEmitterLight, railEmitters } from './emitter-array';
 import {
     BACKWARD,
     DOWN,
@@ -88,7 +87,6 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
 export function TrackFloor( { track }: { track: Track } ) {
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
     const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
-    const patched = useRef( false );
     const rebuild = useRebuildToken();
     const surface = useMemo( floorSurface, [ rebuild ] );
 
@@ -98,10 +96,6 @@ export function TrackFloor( { track }: { track: Track } ) {
     useFrame( () => {
         const mat = matRef.current;
         if ( ! mat ) return;
-        if ( ! patched.current ) {
-            patchEmitterLight( mat, railEmitters );
-            patched.current = true;
-        }
 
         mat.metalness = num( 'deck.metalness' );
         mat.roughness = cleanToMapRoughness( num( 'deck.roughness' ) );

@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FpsReadout } from './fps-readout';
-import {
-    CHOICE_SPECS,
-    type ChoiceKey,
-    COLOR_SPECS,
-    type ColorKey,
-    NUMBER_SPECS,
-    type NumberKey,
-    resetTunables,
-    tunablesSnapshot,
-} from './tunables';
+import { COLOR_SPECS, type ColorKey, NUMBER_SPECS, type NumberKey, resetTunables, tunablesSnapshot } from './tunables';
 import { type TuningRow, TuningSection } from './tuning-section';
 
 function groupRows(): [ string, TuningRow[] ][] {
@@ -24,9 +15,6 @@ function groupRows(): [ string, TuningRow[] ][] {
     }
     for ( const key of Object.keys( COLOR_SPECS ) as ColorKey[] ) {
         push( COLOR_SPECS[ key ].group, { kind: 'color', key } );
-    }
-    for ( const key of Object.keys( CHOICE_SPECS ) as ChoiceKey[] ) {
-        push( CHOICE_SPECS[ key ].group, { kind: 'choice', key } );
     }
     return [ ...groups ];
 }

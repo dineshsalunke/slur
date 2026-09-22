@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber';
 import { resolveTrack, type TrackDescriptor } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, useMemo } from 'react';
+import * as THREE from 'three';
 import { num } from '../../dev/tunables';
 import { TuningPanel } from '../../dev/tuning-panel';
 import { useRebuildToken } from '../../dev/use-tunables';
@@ -32,7 +33,7 @@ export function TestLevelCanvas() {
         <Fragment>
             <WorldProvider world={ world }>
                 <Canvas
-                    flat
+                    gl={ { toneMapping: THREE.NeutralToneMapping } }
                     style={ { position: 'fixed', inset: 0 } }
                     camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
                 >

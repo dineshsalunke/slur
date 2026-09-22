@@ -73,5 +73,3 @@ export const SEAM_SURFACE = {
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
 } as const;
-
-export const RAIL_EMITTER_LIFT = 0.5;

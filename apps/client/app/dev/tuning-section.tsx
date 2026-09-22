@@ -1,13 +1,9 @@
 import { useState } from 'react';
-import type { ChoiceKey, ColorKey, NumberKey } from './tunables';
-import { TuningChoice } from './tuning-choice';
+import type { ColorKey, NumberKey } from './tunables';
 import { TuningColor } from './tuning-color';
 import { TuningNumber } from './tuning-number';
 
-export type TuningRow =
-    | { kind: 'number'; key: NumberKey }
-    | { kind: 'color'; key: ColorKey }
-    | { kind: 'choice'; key: ChoiceKey };
+export type TuningRow = { kind: 'number'; key: NumberKey } | { kind: 'color'; key: ColorKey };
 
 const STORAGE_KEY = 'slur.tuning.collapsed';
 
@@ -58,8 +54,7 @@ export function TuningSection( { group, rows }: { group: string; rows: TuningRow
             { open
                 ? rows.map( ( row ) => {
                       if ( row.kind === 'number' ) return <TuningNumber key={ row.key } tunable={ row.key } />;
-                      if ( row.kind === 'color' ) return <TuningColor key={ row.key } tunable={ row.key } />;
-                      return <TuningChoice key={ row.key } tunable={ row.key } />;
+                      return <TuningColor key={ row.key } tunable={ row.key } />;
                   } )
                 : null }
         </section>

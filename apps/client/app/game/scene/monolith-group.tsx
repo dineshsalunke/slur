@@ -3,7 +3,6 @@ import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tunables';
 import { useRebuildToken } from '../../dev/use-tunables';
-import { patchEmitterLight } from './emitter-array';
 import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
@@ -76,13 +75,7 @@ export function MonolithGroup( {
                 geometry={ monolithGeometry( shapeProfile( shape ), size ) }
                 args={ [ undefined, undefined, placements.length ] }
             >
-                <meshStandardMaterial
-                    ref={ ( mat ) => {
-                        bodyRef.current = mat;
-                        if ( mat ) patchEmitterLight( mat );
-                    } }
-                    { ...surface }
-                />
+                <meshStandardMaterial ref={ bodyRef } { ...surface } />
             </instancedMesh>
             <instancedMesh
                 key={ `seam-${ placements.length }` }

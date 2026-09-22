@@ -28,7 +28,7 @@ export function GameEnvironment( { track }: { track: Track } ) {
     return (
         <Fragment>
             <primitive attach="background" object={ map } />
-            <DeepSpaceSky config={ DEEP_SPACE } light={ false } environment={ false } />
+            <DeepSpaceSky config={ DEEP_SPACE } />
             <Monoliths track={ track } />
         </Fragment>
     );

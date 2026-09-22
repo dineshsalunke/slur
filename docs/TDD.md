@@ -51,7 +51,7 @@ the catalog, never a version copied into prose.
 ```
 React Router (SPA) — apps/client/app/routes.ts
   ├─ /                 Landing: live room list, host-or-join, over the ambient Grid-Void scene
-  ├─ /env-lab          Environment prototype viewer (no server)
+  ├─ /test-level       Fixed flyable level for art work (no server)
   └─ /game/:roomId     The room — lobby · countdown · race · results, as phase-overlays over one Canvas
 ```
 

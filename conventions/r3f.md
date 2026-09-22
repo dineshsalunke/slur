@@ -97,17 +97,16 @@ that reaches `bloom.threshold`**. Multiply the surface colour's linear luminance
 `#F59A24` is ~0.42 linear, so `emissiveIntensity` 2 lands at ~0.85 and never crosses a 0.9 threshold.
 That is exactly how the gap rim cords shipped un-bloomed.
 
-**Every gameplay `Canvas` carries `flat`.** R3F applies **in-shader ACES** unless it is set (fiber
-9.7.0, `dist/events-156d8d12.esm.js:15903` — `gl.toneMapping = flat ? NoToneMapping :
-ACESFilmicToneMapping`), which would double tone map against the `ToneMappingEffect` in
-`dev/tone-tuning.tsx` and, worse, compress every emissive *before* bloom reads it. With `flat`, the
-scene render stays HDR into the composer and `ToneTuning` is the single curve. `net-canvas.tsx` and
-`routes/test-level/test-level-canvas.tsx` both set it; `landing-scene.tsx` and `env-lab-canvas.tsx`
-deliberately do not, because neither mounts `ToneTuning` and `flat` there would leave them with no
-tone map at all.
+**Every gameplay `Canvas` sets its tone curve on `gl`.** R3F applies **in-shader ACES** unless told
+otherwise (fiber 9.7.0, `dist/events-156d8d12.esm.js:15903` — `gl.toneMapping = flat ? NoToneMapping :
+ACESFilmicToneMapping`). While a composer owned the curve, the canvases carried `flat` so the scene
+render stayed HDR into it and `ToneTuning` was the single curve. **The composer was removed 2026-09-22
+with the lighting strip (issue #196)**, so `flat` would now leave raw linear output that clips:
+`net-canvas.tsx` and `routes/test-level/test-level-canvas.tsx` instead pass
+`gl={ { toneMapping: THREE.NeutralToneMapping } }`. `landing-scene.tsx` still sets neither — it keeps
+its own `<Bloom>` and three's default ACES.
 
-**The curve is Khronos PBR Neutral** — `tone.mapping` defaults to `Neutral`
-(`postprocessing@6.39.4`, `build/index.js:13481` → three's `NeutralToneMapping`). Chosen over ACES
+**The curve is Khronos PBR Neutral** — three's `NeutralToneMapping`. Chosen over ACES
 and AgX because it rolls off highlights while holding hue and saturation: marigold at high intensity
 stays marigold instead of skewing yellow-white. `docs/art-direction/golden-reference/cruise-lighting.png`
 is the target — the rim cords read saturated orange at their brightest and only the exhaust cores go

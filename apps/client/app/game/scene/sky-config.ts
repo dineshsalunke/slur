@@ -18,30 +18,12 @@ export interface StarFieldConfig {
     twinkleSpeed: number;
 }
 
-export interface StarLightConfig {
-    intensity: number;
-    color: string;
-}
-
-export interface SkyEnvironmentConfig {
-    resolution: number;
-    keyIntensity: number;
-    keyColor: string;
-    keySizeDeg: number;
-    fillIntensity: number;
-    fillColor: string;
-    ambientIntensity: number;
-    ambientColor: string;
-}
-
 export interface SkyConfig {
     name: string;
     radius: number;
     starBearingDeg: number;
     starElevationDeg: number;
     stars: StarFieldConfig;
-    starLight: StarLightConfig;
-    environment: SkyEnvironmentConfig;
 }
 
 export const DEEP_SPACE: SkyConfig = {
@@ -58,19 +40,5 @@ export const DEEP_SPACE: SkyConfig = {
         saturation: 0,
         fade: true,
         twinkleSpeed: 0.3,
-    },
-    starLight: {
-        intensity: 1.6,
-        color: '#e8f0ff',
-    },
-    environment: {
-        resolution: 128,
-        keyIntensity: 0.9,
-        keyColor: '#cfe0ff',
-        keySizeDeg: 60,
-        fillIntensity: 0.35,
-        fillColor: '#20303f',
-        ambientIntensity: 0.12,
-        ambientColor: '#2a3646',
     },
 };

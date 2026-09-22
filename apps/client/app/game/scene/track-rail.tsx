@@ -6,7 +6,6 @@ import * as THREE from 'three';
 import { num } from '../../dev/tunables';
 import { useRebuildToken } from '../../dev/use-tunables';
 import { LocalPlayer, Sim } from '../ecs/traits';
-import { railEmitters } from './emitter-array';
 import { segmentCount } from './track-floor';
 import {
     BACKWARD,
@@ -21,7 +20,7 @@ import {
     type V3,
 } from './track-geometry';
 import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from './track-materials';
-import { buildRailRuns, clearRailEmitters, feedRailEmitters, type RailRun } from './track-rails';
+import { buildRailRuns, type RailRun } from './track-rails';
 
 export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
     const metalPos: number[] = [];
@@ -80,9 +79,6 @@ export function TrackRail( { track }: { track: Track } ) {
         [ materials ],
     );
 
-    // The emitter uniforms are a module singleton outside React: unmounting must park the slots this rail owns.
-    useEffect( () => () => clearRailEmitters( railEmitters ), [] );
-
     useFrame( () => {
         const [ metal, strip ] = materials;
         const scale = num( 'rail.normalScale' );
@@ -91,10 +87,6 @@ export function TrackRail( { track }: { track: Track } ) {
         metal.envMapIntensity = num( 'rail.envMapIntensity' );
         metal.normalScale.set( scale, scale );
         strip.emissiveIntensity = num( 'rail.emissive' );
-
-        railEmitters.uEmitterDecay.value = num( 'emitter.decay' );
-        const z = world.queryFirst( LocalPlayer, Sim )?.get( Sim )?.z ?? 0;
-        feedRailEmitters( railEmitters, runs, z, num( 'emitter.intensity' ), num( 'emitter.range' ) );
     } );
 
     return <mesh geometry={ geo } material={ materials } />;
