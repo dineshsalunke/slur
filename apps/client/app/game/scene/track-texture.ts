@@ -1,21 +1,8 @@
 import * as THREE from 'three';
+import { col, num } from '../../dev/tuning';
+import { rebuildToken, subscribeRebuild } from '../../dev/tuning-rebuild';
 
 export const AUTHOR_PLATE_U = 4;
-
-const GROOVE_WIDTH_U = 0.15;
-const GROOVE_WALL_TILT = 0.05;
-const GROOVE_BEVEL_SHARE = 0.05;
-const GROOVE_METALNESS = 1;
-const GROOVE_ROUGHNESS = 1;
-const GROOVE_CONTRAST = 1;
-const GROOVE_CAVITY = 0.3;
-
-const DECK_PLATE_U = 4;
-const DECK_PLATE_COLOR = '#23272a';
-const RAIL_PLATE_U = 4;
-const RAIL_PLATE_COLOR = '#23272a';
-const MONO_PLATE_U = 17;
-const MONO_PLATE_COLOR = '#313b45';
 
 const COLS = 4;
 const ROWS = 4;
@@ -587,6 +574,19 @@ function build( p: SurfaceParams ): TrackSurfaceMaps {
 
 const cache = new Map< string, TrackSurfaceMaps >();
 
+let token = rebuildToken();
+
+subscribeRebuild( () => {
+    if ( rebuildToken() === token ) return;
+    token = rebuildToken();
+    for ( const maps of cache.values() ) {
+        maps.map.dispose();
+        maps.normalMap.dispose();
+        maps.roughnessMap.dispose();
+    }
+    cache.clear();
+} );
+
 export function surfaceMaps( p: SurfaceParams ): TrackSurfaceMaps {
     const key = JSON.stringify( p );
     const hit = cache.get( key );
@@ -598,24 +598,24 @@ export function surfaceMaps( p: SurfaceParams ): TrackSurfaceMaps {
 
 function grooveParams(): Omit< SurfaceParams, 'plate' | 'base' > {
     return {
-        jointWidth: GROOVE_WIDTH_U,
-        wallTilt: GROOVE_WALL_TILT,
-        bevelShare: GROOVE_BEVEL_SHARE,
-        jointMetal: GROOVE_METALNESS,
-        jointRough: GROOVE_ROUGHNESS,
-        jointContrast: GROOVE_CONTRAST,
-        cavity: GROOVE_CAVITY,
+        jointWidth: num( 'Groove.width' ),
+        wallTilt: num( 'Groove.wallTilt' ),
+        bevelShare: num( 'Groove.bevelShare' ),
+        jointMetal: num( 'Groove.metalness' ),
+        jointRough: num( 'Groove.roughness' ),
+        jointContrast: num( 'Groove.darkening' ),
+        cavity: num( 'Groove.cavity' ),
     };
 }
 
 export function deckSurfaceParams(): SurfaceParams {
-    return { plate: DECK_PLATE_U, base: DECK_PLATE_COLOR, ...grooveParams() };
+    return { plate: num( 'Deck.plate' ), base: col( 'Deck.plateColor' ), ...grooveParams() };
 }
 
 export function railSurfaceParams(): SurfaceParams {
-    return { plate: RAIL_PLATE_U, base: RAIL_PLATE_COLOR, ...grooveParams() };
+    return { plate: num( 'Rail.plate' ), base: col( 'Rail.plateColor' ), ...grooveParams() };
 }
 
 export function monolithSurfaceParams(): SurfaceParams {
-    return { plate: MONO_PLATE_U, base: MONO_PLATE_COLOR, ...grooveParams() };
+    return { plate: num( 'Monolith.plate' ), base: col( 'Monolith.plateColor' ), ...grooveParams() };
 }

@@ -3,6 +3,8 @@ import { HALF_WIDTH, type Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
+import { num } from '../../dev/tuning';
+import { useRebuildToken } from '../../dev/use-rebuild-token';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import { segmentCount } from './track-floor';
 import {
@@ -19,12 +21,6 @@ import {
 } from './track-geometry';
 import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from './track-materials';
 import { buildRailRuns, type RailRun } from './track-rails';
-
-const RAIL_NORMAL_SCALE = 0.8;
-const RAIL_METALNESS = 0.9;
-const RAIL_ROUGHNESS = 0.35;
-const RAIL_ENV_MAP_INTENSITY = 1;
-const RAIL_EMISSIVE = 2;
 
 export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
     const metalPos: number[] = [];
@@ -64,12 +60,13 @@ export function TrackRail( { track }: { track: Track } ) {
     const world = useWorld();
     const runs = useMemo( () => buildRailRuns( track, segmentCount( track ) ), [ track ] );
     const geo = useMemo( () => buildRailGeometry( runs ), [ runs ] );
+    const rebuild = useRebuildToken();
     const materials = useMemo( () => {
         return [
             new THREE.MeshStandardMaterial( railBodySurface() ),
             new THREE.MeshStandardMaterial( BOUNDARY_SURFACE ),
         ];
-    }, [] );
+    }, [ rebuild ] );
 
     // GPU buffers outlive React's tree: a geometry replaced by a new track must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );
@@ -84,11 +81,12 @@ export function TrackRail( { track }: { track: Track } ) {
 
     useFrame( () => {
         const [ metal, strip ] = materials;
-        metal.metalness = RAIL_METALNESS;
-        metal.roughness = cleanToMapRoughness( RAIL_ROUGHNESS );
-        metal.envMapIntensity = RAIL_ENV_MAP_INTENSITY;
-        metal.normalScale.set( RAIL_NORMAL_SCALE, RAIL_NORMAL_SCALE );
-        strip.emissiveIntensity = RAIL_EMISSIVE;
+        const scale = num( 'Rail.normalScale' );
+        metal.metalness = num( 'Rail.metalness' );
+        metal.roughness = cleanToMapRoughness( num( 'Rail.roughness' ) );
+        metal.envMapIntensity = num( 'Rail.envMapIntensity' );
+        metal.normalScale.set( scale, scale );
+        strip.emissiveIntensity = num( 'Rail.railEmissive' );
     } );
 
     return <mesh geometry={ geo } material={ materials } />;
