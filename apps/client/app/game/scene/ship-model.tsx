@@ -1,5 +1,6 @@
 import { Clone, useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
+import { tuningForShip } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import type * as THREE from 'three';
@@ -7,6 +8,13 @@ import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
 import { applyEmitterShader } from './emitter-array';
 import { guardLfsPointer } from './gltf-lfs-guard';
+import {
+    ACCENT_MATERIAL,
+    applyShipSurface,
+    ENGINE_MATERIAL,
+    engineIntensity,
+    shipMaterialTuning,
+} from './ship-materials';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 
 for ( const v of Object.values( SHIP_VISUALS ) ) {
@@ -87,11 +95,55 @@ function isDead( entity: Entity ): boolean {
     return buf !== undefined && buf.length > 0 && buf[ buf.length - 1 ].dead;
 }
 
+function shipSpeed( entity: Entity, shipId: string ): number {
+    const sim = entity.get( Sim );
+    if ( ! sim ) return 1;
+    const max = tuningForShip( shipId ).maxCruise;
+    return max <= 0 ? 0 : sim.vz / max;
+}
+
+interface ShipSurfaces {
+    engine: THREE.MeshStandardMaterial[];
+    accent: THREE.MeshStandardMaterial[];
+    hull: THREE.MeshStandardMaterial[];
+}
+
+function classify( mat: THREE.Material, into: ShipSurfaces ): void {
+    if ( ! ( mat as THREE.MeshStandardMaterial ).isMeshStandardMaterial ) return;
+    const std = mat as THREE.MeshStandardMaterial;
+    if ( std.name === ENGINE_MATERIAL ) into.engine.push( std );
+    else if ( std.name === ACCENT_MATERIAL ) into.accent.push( std );
+    else into.hull.push( std );
+}
+
+function collectSurfaces( grp: THREE.Group, uniforms: DissolveUniforms ): ShipSurfaces {
+    const found: ShipSurfaces = { engine: [], accent: [], hull: [] };
+    grp.traverse( ( o ) => {
+        const mesh = o as THREE.Mesh;
+        if ( ! mesh.isMesh ) return;
+        const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
+        for ( const mat of mats ) {
+            patchDissolve( mat, uniforms );
+            classify( mat, found );
+        }
+    } );
+    return found;
+}
+
+function driveShipSurfaces( surfaces: ShipSurfaces, speed: number ): void {
+    const mt = shipMaterialTuning();
+    const glow = engineIntensity( mt, speed );
+    for ( const mat of surfaces.engine ) mat.emissiveIntensity = glow;
+    for ( const mat of surfaces.accent ) mat.emissiveIntensity = mt.accent;
+    for ( const mat of surfaces.hull ) applyShipSurface( mat, mt );
+}
+
 export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string } ) {
     const v = shipVisual( shipId );
     const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
     const patched = useRef( false );
+    const surfaces = useRef< ShipSurfaces >( { engine: [], accent: [], hull: [] } );
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
@@ -107,14 +159,12 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
         const grp = cloneRef.current;
         if ( ! grp ) return;
         if ( ! patched.current ) {
-            grp.traverse( ( o ) => {
-                const mesh = o as THREE.Mesh;
-                if ( ! mesh.isMesh ) return;
-                const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
-                for ( const mat of mats ) patchDissolve( mat, uniforms );
-            } );
+            surfaces.current = collectSurfaces( grp, uniforms );
             patched.current = true;
         }
+
+        driveShipSurfaces( surfaces.current, shipSpeed( entity, shipId ) );
+
         const target = isDead( entity ) ? 1 : 0;
         const u = uniforms.uDissolve;
         const step = delta / DISSOLVE_DURATION;
