@@ -60,6 +60,23 @@ PR #198 is open against `dev`. `pnpm typecheck`, `pnpm test` (141 client, 4 serv
 `pnpm lint` are all clean. `/test-level` and `/game/:roomId` render near-black except emissive
 surfaces. This is the intended baseline.
 
+## Follow-on decision: delete the tunables system
+
+The first pass removed only the lighting groups from the tuning panel. The owner's intent was wider:
+remove all of it. Decision taken 2026-09-22, after the owner saw the panel with eight groups still
+standing. The reason is focus: a bare scene keeps attention on the lighting. Knobs come back only
+when the rebuild needs them.
+
+The panel is not inert UI. `num()` and `col()` are read every frame by the deck, rail, monolith,
+block and groove materials, and by the test-level track descriptor. Full deletion therefore means
+replacing about 40 call sites with constants, at the values the specs hold now.
+
+Scope: delete `dev/tunables.ts`, `dev/use-tunables.ts`, `dev/tuning-panel.tsx`,
+`dev/tuning-section.tsx`, `dev/tuning-number.tsx`, `dev/tuning-color.tsx`. Give each subsystem its
+own constants, taken from the current `NUMBER_SPECS` and `COLOR_SPECS` defaults. Keep `FpsReadout`.
+The rebuild token drops out with the panel, so `useRebuildToken()` call sites become plain `useMemo`
+dependencies.
+
 ## Next
 
 1. Merge #198.
