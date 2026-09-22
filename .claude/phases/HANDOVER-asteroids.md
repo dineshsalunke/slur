@@ -69,15 +69,44 @@ branching off the default branch. `feat/asteroid-bands` stranded three sessions'
 shared checkout follows one HEAD: `hud` and `rearview-mirror` committed onto it without choosing it.
 The owner fast-forwarded `dev` to it; the branch is deleted and `dev` is at `dd24d04`.
 
-**CLAUDE.md still contradicts that instruction** — it carries a full "Worktrees (optional)" section
-with setup steps. That conflict is unresolved and will catch the next agent. Someone should reconcile
-it, but CLAUDE.md is the owner's file, so ask first.
+**That conflict is now fixed at the source.** CLAUDE.md carried a "Worktrees (optional)" section
+whose *"otherwise branch and commit in the checkout like any normal repo"* is the line I followed,
+and whose "Use one when" list offered *"you need a second live stack running at once"* — my exact
+situation, which is why the wrong path read as the documented one. `CLAUDE.md:206` is now
+"Branching — `dev` only" (`734877b`): never create a branch or `git checkout` another one here, a
+worktree is the only sanctioned branching and only when genuinely required, ask the owner if in
+doubt, and a second live stack takes a second origin via `CLIENT_PORT` + `VITE_SERVER_PORT` rather
+than a second checkout.
 
 **`git commit --amend` in a shared checkout clobbered a peer's commit.** Between two of my amends,
 `rearview-mirror` committed onto the branch, so my amend replaced their message with mine. Restored
 byte-identically (`%B` diff empty, trees equal); only the hash moved, `47111c3` → `37e70e0`. One git
 index per checkout applies to `--amend` as much as to `git add`: amend assumes HEAD is yours, and in
 this checkout it is not. Correct a pushed-or-shared message in the issue instead.
+
+## The tuning panel is being retired — judge accordingly
+
+The owner has asked for the debug panel to be removed. It is briefed to `slur-supervisor`, not
+started, and it is a bake-then-delete: 19 scene modules read `num()` / `col()` at runtime, so
+dialled values move into source constants before the store goes.
+
+This lands directly on the knobs the look pass above needs. Two consequences:
+
+- **Anything settled goes into `dev/tuning-schema.ts` defaults, not left in `localStorage`.** When
+  the panel goes, the schema is the only surviving record and stored values die with it. This is the
+  same store that cost this session a judgement — in its permanent form.
+- **Tell `slur-supervisor` when the panel is no longer needed**, so the retirement can be sequenced
+  after this work and `hud`'s.
+
+The asteroid code needs nothing from that pass: `asteroids.tsx`, `asteroid-group.tsx` and
+`asteroid-material.ts` contain zero `num()` / `col()` calls, and the material is already three
+source constants. Keep it that way — prefer real constants over new tunables in anything added here.
+
+## Also briefed and unstarted
+
+`.claude/phases/HANDOVER-block-mechanics.md` (`a551808`): block collisions bouncing instead of
+killing, and 4u–8u organic block heights. The second is blocked by the single-slice clearance
+sampler at `packages/shared/src/sim/track.ts:414`.
 
 ## Environment notes carried forward
 
