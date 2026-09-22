@@ -115,9 +115,7 @@ test( 'pickupLayout: every slot sits on floor and inside the open corridor — n
         for ( const p of layout( seed ) ) {
             const seg = track.segmentAt( Number( p.id ) );
             assert.ok( seg.floors.length > 0, `seed ${ seed }: pickup ${ p.id } placed over a hole (gap)` );
-            const buried = seg.blocks.some(
-                ( b ) => b.lethal && p.x >= b.x0 && p.x < b.x1 && p.z >= b.z0 && p.z < b.z1,
-            );
+            const buried = seg.blocks.some( ( b ) => p.x >= b.x0 && p.x < b.x1 && p.z >= b.z0 && p.z < b.z1 );
             assert.ok( ! buried, `seed ${ seed }: pickup ${ p.id } buried inside a lethal wall block` );
         }
     }

@@ -1,7 +1,7 @@
 import { BLOCK_HEIGHT } from '@slur/shared';
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { sealedBlockGeometry } from './sealed-block-geometry';
+import { SEALED_BLOCK_UNIT_BEVEL, SEALED_BLOCK_UNIT_DIMS, sealedBlockGeometry } from './sealed-block-geometry';
 
 const FOOTPRINTS = [
     { w: 4, d: 8 },
@@ -69,6 +69,22 @@ describe( 'chamfer', () => {
     it( 'emits the full chamfered shell', () => {
         expect( triangles( 4, 8 ) ).toHaveLength( 6 * 2 + 12 * 2 + 8 );
         expect( sealedBlockGeometry( { w: 4, h: 8, d: 8 }, 0 ).getAttribute( 'position' ).count / 3 ).toBe( 12 );
+    } );
+
+    it( 'keeps the instanced unit shell inside the collision AABB', () => {
+        const pos = sealedBlockGeometry( SEALED_BLOCK_UNIT_DIMS, SEALED_BLOCK_UNIT_BEVEL ).getAttribute( 'position' );
+        const faceEdge = 0.5 - 0.5 * SEALED_BLOCK_UNIT_BEVEL;
+        const inset = 0.5 - SEALED_BLOCK_UNIT_BEVEL;
+
+        for ( let i = 0; i < pos.count; i++ ) {
+            for ( const v of [ pos.getX( i ), pos.getY( i ), pos.getZ( i ) ] ) {
+                expect( Math.abs( v ) ).toBeLessThanOrEqual( 0.5 + EPS );
+                const onFace = Math.abs( Math.abs( v ) - 0.5 ) < EPS;
+                const onInset = Math.abs( Math.abs( v ) - inset ) < EPS;
+                expect( onFace || onInset ).toBe( true );
+                expect( Math.abs( v ) > faceEdge ).toBe( onFace );
+            }
+        }
     } );
 
     it( 'puts a facet on the -Z/-X vertical edge', () => {

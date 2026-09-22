@@ -56,6 +56,7 @@ export const NUMBER_SPECS = {
     'deck.envMapIntensity': { group: 'Deck', label: 'env map', value: 1, min: 0, max: 6, step: 0.05 },
     'deck.normalScale': { group: 'Deck', label: 'normal scale', value: 0.8, min: 0, max: 3, step: 0.01 },
     'deck.plate': { group: 'Deck', label: 'plate size (u)', value: 4, min: 1, max: 24, step: 1, rebuild: true },
+    'seam.emissive': { group: 'Deck', label: 'seam emissive', value: 2, min: 0, max: 10, step: 0.05 },
 
     'groove.width': {
         group: 'Groove',
@@ -106,6 +107,23 @@ export const NUMBER_SPECS = {
     'mono.envMapIntensity': { group: 'Monolith', label: 'env map', value: 1.55, min: 0, max: 6, step: 0.05 },
     'mono.plate': { group: 'Monolith', label: 'plate size (u)', value: 17, min: 4, max: 40, step: 1, rebuild: true },
     'mono.seam': { group: 'Monolith', label: 'seam emissive', value: 10, min: 0, max: 10, step: 0.05 },
+
+    'block.bevel': { group: 'Blocks', label: 'chamfer (u)', value: 0.12, min: 0, max: 0.6, step: 0.01 },
+    'block.seamWidth': { group: 'Blocks', label: 'seam width (u)', value: 0.14, min: 0.02, max: 1, step: 0.01 },
+    'block.seam': { group: 'Blocks', label: 'seam emissive', value: 6, min: 0, max: 30, step: 0.05 },
+    'block.wear': { group: 'Blocks', label: 'wear strength', value: 0.6, min: 0, max: 1, step: 0.01 },
+    'block.roughness': { group: 'Blocks', label: 'coating roughness', value: 0.52, min: 0.02, max: 1, step: 0.01 },
+
+    'level.blockDensity': {
+        group: 'Level',
+        label: 'block density',
+        value: 0.6,
+        min: 0,
+        max: 1,
+        step: 0.05,
+        rebuild: true,
+    },
+    'level.gapChance': { group: 'Level', label: 'gap chance', value: 1, min: 0, max: 1, step: 0.05, rebuild: true },
 } as const satisfies Record< string, NumberSpec >;
 
 export const COLOR_SPECS = {

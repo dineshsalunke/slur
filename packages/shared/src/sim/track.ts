@@ -21,10 +21,6 @@ import {
     GAP_P_MAX,
     GAP_P_START,
     SECTIONS,
-    SLOW_GRACE_MAX,
-    SLOW_GRACE_START,
-    SLOW_NOISE_FZ_LANE,
-    SLOW_NOISE_FZ_SEG,
     WALL_DENSITY_MAX,
     WALL_DENSITY_START,
     WALL_NOISE_FZ_LANE,
@@ -72,7 +68,6 @@ export interface Block {
     y1: number;
     z0: number;
     z1: number;
-    lethal: boolean;
 }
 
 export type SegmentKind = 'plain' | 'block' | 'gap' | 'finish';
@@ -140,7 +135,6 @@ export const WEAVE_PERIOD_ROWS = deriveWeavePeriod( SLOPE_CAP, CURV_CAP, WEAVE_A
 const SALT_LINE_A = 0x1234567 | 0;
 const SALT_LINE_B = 0x2b3c4d5 | 0;
 const SALT_WALL = 0x51ed270b | 0;
-const SALT_DRAG = 0x3c9f42a1 | 0;
 const SALT_FLICK = 0x7a1c9e33 | 0;
 const SALT_GAP = 0x2f6a1b9d | 0;
 const SALT_CRACK = 0x7b19c3a5 | 0;
@@ -196,9 +190,6 @@ export function intensityAt( i: number, length: number ): number {
 function corridorWidthLanes( intensity: number ): number {
     const w = Math.round( lerp( CORRIDOR_W_START, CORRIDOR_W_MIN, intensity ) );
     return clamp( w, CORRIDOR_W_MIN, LANES );
-}
-function slowGrace( intensity: number ): number {
-    return lerp( SLOW_GRACE_START, SLOW_GRACE_MAX, intensity );
 }
 function wallDensity( intensity: number ): number {
     return lerp( WALL_DENSITY_START, WALL_DENSITY_MAX, intensity );
@@ -331,12 +322,9 @@ function laneState(
     unionHi: number,
     flick: Flick | null,
     density: number,
-    slowP: number,
-): 0 | 1 | 2 {
+): 0 | 1 {
     if ( lane >= unionLo && lane <= unionHi ) {
-        if ( flick && lane >= flick.lo && lane <= flick.hi ) return 1;
-        const slow = valueNoise2D( ( seed ^ SALT_DRAG ) | 0, lane / SLOW_NOISE_FZ_LANE, i / SLOW_NOISE_FZ_SEG ) < slowP;
-        return slow ? 2 : 0;
+        return flick && lane >= flick.lo && lane <= flick.hi ? 1 : 0;
     }
     if ( lane >= unionLo - CORRIDOR_BUFFER && lane <= unionHi + CORRIDOR_BUFFER ) return 0;
     const wall = valueNoise2D( ( seed ^ SALT_WALL ) | 0, lane / WALL_NOISE_FZ_LANE, i / WALL_NOISE_FZ_SEG ) < density;
@@ -370,12 +358,11 @@ function buildWalls(
     unionHi: number,
     flick: Flick | null,
     density: number,
-    slowP: number,
     z0: number,
 ): Block[] {
     const blocks: Block[] = [];
     let runStart = 0;
-    let runState: 0 | 1 | 2 = 0;
+    let runState: 0 | 1 = 0;
     const bz0 = z0 + ( SEG_LEN - BLOCK_DEPTH ) / 2;
     const bz1 = bz0 + BLOCK_DEPTH;
     const flush = ( endLane: number ): void => {
@@ -386,11 +373,10 @@ function buildWalls(
             y1: BLOCK_HEIGHT,
             z0: bz0,
             z1: bz1,
-            lethal: runState === 1,
         } );
     };
     for ( let lane = 0; lane < LANES; lane++ ) {
-        const st = laneState( seed, i, lane, unionLo, unionHi, flick, density, slowP );
+        const st = laneState( seed, i, lane, unionLo, unionHi, flick, density );
         if ( st !== runState || ( runState !== 0 && lane - runStart >= BLOCK_MAX_LANES ) ) {
             if ( runState !== 0 ) flush( lane - 1 );
             runState = st;
@@ -420,16 +406,7 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     const wLanes = corridorWidthLanes( intensity );
     const { lo: unionLo, hi: unionHi } = corridorUnion( seed, i, wLanes );
     const flick = flickAt( seed, i, length, unionLo, unionHi, density.blocks );
-    const blocks = buildWalls(
-        seed,
-        i,
-        unionLo,
-        unionHi,
-        flick,
-        wallDensity( intensity ) * density.blocks,
-        slowGrace( intensity ) * density.blocks,
-        z0,
-    );
+    const blocks = buildWalls( seed, i, unionLo, unionHi, flick, wallDensity( intensity ) * density.blocks, z0 );
 
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }
@@ -437,7 +414,7 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
 function openCenterX( seg: Segment ): number {
     const zc = seg.z0 + SEG_LEN / 2;
     const walls = seg.blocks
-        .filter( ( b ) => b.lethal && b.z0 <= zc && zc < b.z1 )
+        .filter( ( b ) => b.z0 <= zc && zc < b.z1 )
         .map( ( b ): [ number, number ] => [ b.x0, b.x1 ] )
         .sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
     let cursor = -HALF_WIDTH;
@@ -495,7 +472,6 @@ export function isHole( seg: Segment ): boolean {
 function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Array< [ number, number ] > {
     const walls: Array< [ number, number ] > = [];
     for ( const b of seg.blocks ) {
-        if ( ! b.lethal ) continue;
         if ( b.z0 <= zc && zc < b.z1 ) {
             const lo = Math.max( f.x0, b.x0 );
             const hi = Math.min( f.x1, b.x1 );

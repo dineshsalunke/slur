@@ -224,20 +224,13 @@ test( 'variable-width blocks appear (walls wider than one cell)', () => {
     assert.ok( sawWide, `no multi-cell blocks emerged (max width ${ maxW })` );
 } );
 
-test( 'both lethal walls and passable drag blocks are generated', () => {
-    let lethal = 0;
-    let drag = 0;
+test( 'walls are generated', () => {
+    let walls = 0;
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
-        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
-            for ( const b of t.segmentAt( i ).blocks ) {
-                if ( b.lethal ) lethal++;
-                else drag++;
-            }
-        }
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) walls += t.segmentAt( i ).blocks.length;
     }
-    assert.ok( lethal > 0, 'no lethal walls generated' );
-    assert.ok( drag > 0, 'no drag (amber) blocks generated' );
+    assert.ok( walls > 0, 'no walls generated' );
 } );
 
 test( 'no two gaps in a row and none in start-safe', () => {
@@ -265,7 +258,7 @@ function openIntervalsAt( seg: Segment, r: number ): Array< [ number, number ] >
     if ( isHole( seg ) ) return [];
     const zc = seg.z0 + r * CELL + CELL / 2;
     const walls: Array< [ number, number ] > = [];
-    for ( const b of seg.blocks ) if ( b.lethal && b.z0 <= zc && zc < b.z1 ) walls.push( [ b.x0, b.x1 ] );
+    for ( const b of seg.blocks ) if ( b.z0 <= zc && zc < b.z1 ) walls.push( [ b.x0, b.x1 ] );
     walls.sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
     const open: Array< [ number, number ] > = [];
     let cursor = -HALF_WIDTH;
@@ -339,36 +332,25 @@ test( 'a widest-hull ship can always thread the corridor (REACH and FIT together
     }
 } );
 
-function worstWindowCounts( t: Track, window: number ): [ number, number ] {
-    let worstLethal = 0;
-    let worstDrag = 0;
+function worstWindowCount( t: Track, window: number ): number {
+    let worst = 0;
     for ( let s = START_SAFE; s < TRACK_SEGMENTS; s++ ) {
-        let l = 0;
-        let d = 0;
-        for ( let i = s; i < s + window && i <= TRACK_SEGMENTS; i++ ) {
-            for ( const b of t.segmentAt( i ).blocks ) {
-                if ( b.lethal ) l++;
-                else d++;
-            }
-        }
-        if ( l > worstLethal ) worstLethal = l;
-        if ( d > worstDrag ) worstDrag = d;
+        let n = 0;
+        for ( let i = s; i < s + window && i <= TRACK_SEGMENTS; i++ ) n += t.segmentAt( i ).blocks.length;
+        if ( n > worst ) worst = n;
     }
-    return [ worstLethal, worstDrag ];
+    return worst;
 }
 
-test( 'block count per visible window stays within the renderer instance budget (per kind)', () => {
+test( 'block count per visible window stays within the renderer instance budget', () => {
     const WINDOW = Math.ceil( ( 900 + 80 ) / SEG_LEN );
     const BUDGET = 160;
-    let worstLethal = 0;
-    let worstDrag = 0;
+    let worst = 0;
     for ( const seed of SEEDS ) {
-        const [ l, d ] = worstWindowCounts( makeTrack( seed ), WINDOW );
-        if ( l > worstLethal ) worstLethal = l;
-        if ( d > worstDrag ) worstDrag = d;
+        const n = worstWindowCount( makeTrack( seed ), WINDOW );
+        if ( n > worst ) worst = n;
     }
-    assert.ok( worstLethal < BUDGET, `worst-case ${ worstLethal } lethal blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
-    assert.ok( worstDrag < BUDGET, `worst-case ${ worstDrag } drag blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
+    assert.ok( worst < BUDGET, `worst-case ${ worst } blocks/window ≥ BLOCK_LIMIT ${ BUDGET }` );
 } );
 
 test( 'ADR-002: pickupLayout is exactly track.anchors filtered to kind "pickup" (source of truth)', () => {

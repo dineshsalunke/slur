@@ -1,5 +1,4 @@
 import { BOLT_HALF, BOLT_SPEED, BOLT_TTL, PICKUP_RESPAWN_S, STUN_SECONDS } from './combat/constants.js';
-import { DRAG_SPEED_FRAC } from './constants.js';
 
 export interface SimConfig {
     boltSpeed: number;
@@ -7,7 +6,6 @@ export interface SimConfig {
     boltHalf: number;
     stunSeconds: number;
     pickupRespawnS: number;
-    dragSpeedFrac: number;
 }
 
 export const DEFAULT_SIM_CONFIG: SimConfig = {
@@ -16,5 +14,4 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     boltHalf: BOLT_HALF,
     stunSeconds: STUN_SECONDS,
     pickupRespawnS: PICKUP_RESPAWN_S,
-    dragSpeedFrac: DRAG_SPEED_FRAC,
 };

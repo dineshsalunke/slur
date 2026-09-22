@@ -148,11 +148,6 @@ export const FLICK_RATE_START = 0.15;
 export const FLICK_RATE_MAX = 0.55;
 export const FLICK_WIDTH = 1;
 
-export const SLOW_GRACE_START = 0.05;
-export const SLOW_GRACE_MAX = 0.13;
-export const SLOW_NOISE_FZ_LANE = 3.2;
-export const SLOW_NOISE_FZ_SEG = 3.0;
-
 export interface Section {
     name: string;
     weight: number;
@@ -186,5 +181,3 @@ export const CRACK_W_LANES_MAX = 5;
 export const CRACK_SEGS_MIN = 2;
 export const CRACK_SEGS_MAX = 4;
 export const CRACK_EDGE_MARGIN_LANES = 2;
-
-export const DRAG_SPEED_FRAC = 0.5;

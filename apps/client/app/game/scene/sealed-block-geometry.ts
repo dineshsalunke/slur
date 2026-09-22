@@ -8,6 +8,10 @@ export interface BlockDims {
 
 export const SEALED_BLOCK_BEVEL = 0.12;
 
+export const SEALED_BLOCK_UNIT_BEVEL = 0.2;
+
+export const SEALED_BLOCK_UNIT_DIMS: BlockDims = { w: 1, h: 1, d: 1 };
+
 const MAX_BEVEL_FRACTION = 0.45;
 
 const AXES = [ 0, 1, 2 ];

@@ -147,10 +147,9 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.stunTimer = 0;
 }
 
-function overlapsBlock( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning, lethal: boolean ): boolean {
+function overlapsBlock( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning ): boolean {
     for ( const seg of segs ) {
         for ( const b of seg.blocks ) {
-            if ( b.lethal !== lethal ) continue;
             if (
                 s.x + t.halfW > b.x0 &&
                 s.x - t.halfW < b.x1 &&
@@ -192,7 +191,7 @@ export function resolveCollisions(
         return;
     }
 
-    const insideBody = overlapsBlock( segs, s, prevY, t, true );
+    const insideBody = overlapsBlock( segs, s, prevY, t );
     if ( insideBody ) {
         if ( s.invulnTimer <= 0 ) {
             markDead( s, t );
@@ -200,11 +199,6 @@ export function resolveCollisions(
         }
     } else {
         s.invulnTimer = 0;
-    }
-
-    if ( overlapsBlock( segs, s, prevY, t, false ) ) {
-        const cap = cfg.dragSpeedFrac * t.maxCruise;
-        if ( s.vz > cap ) s.vz = cap;
     }
 
     clampToEdges( s, t );
