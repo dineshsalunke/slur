@@ -139,3 +139,59 @@ Tree is **clean**, everything committed on `feat/test-level`. Next steps, in ord
    3, bolts 4, `mono.seam` 10, `rim.emissive` 6. All hard-coded; each is a code edit.
 3. **Inboard amber deck seams** — the largest remaining gap against the reference.
 4. `BOUNDARY_W`, the sky, `ART_MATERIALS.md` §7, `perf.dpr`, the fog revert.
+
+## Second pass — the knobless emissives needed nothing, and the camera change is accounted for
+
+Owner: *"go ahead and do those changes your self"* — the two items this note handed forward.
+
+### The re-dial item was based on a wrong prediction
+
+The first pass said the hard-coded emissives *"will bloom less than they did"* and would need raising.
+**Wrong, and the arithmetic says so.** Removing the in-shader ACES makes them arrive at the composer
+**hotter**, not dimmer. Linear Rec.709 luminance × `emissiveIntensity`, against the new
+`bloom.threshold` of 1.0:
+
+| Surface | hex | int | lum × int | |
+|---|---|---|---|---|
+| finish gate posts/beam | `#39ff14` | 2.4 | 1.74 | blooms |
+| pickups | `#ffd24a` | 3 | 2.04 | blooms |
+| bolts | `#8affff` | 4 | 3.37 | blooms |
+| rim cords (knobbed) | `#F59A24` | 6 | 2.56 | blooms |
+| boundary / rail | `#F59A24` | 2.0 | 0.85 | below |
+| drag surface | `#ffa51f` | 1.6 | 0.77 | below |
+| lethal surface | `#ff2740` | 2.2 | 0.51 | below |
+| finish banner | `#39ff14` | 0.5 | 0.36 | below |
+
+**Nothing was changed.** Reasoning per row:
+
+- The four that bloom already do; raising them would over-blow the frame.
+- **Rails were not touched even though 0.85 is under threshold.** They were settled *visually* in the
+  first pass and read as thin saturated cords. The live dial outranks the arithmetic. Note also that
+  `rail.emissive` (spec 2) overwrites `BOUNDARY_SURFACE.emissiveIntensity` every frame in
+  `track-rail.tsx:93`, so editing the constant alone would do nothing.
+- **`lethal` 0.51 and `drag` 0.77 are left alone deliberately.** They were below threshold *before*
+  this change too, and further below then. Making hazard blocks glow is a **new art decision, not a
+  repair**, and `/test-level` runs `blockDensity: 0` so there is no way to judge it there. Open
+  question for the owner, not a silent edit.
+- The finish banner is translucent; 0.36 reads as intentional.
+- `track.tsx:56` (`#0a2540` @1.4, luminance 0.02) is legacy and mounted only by `/env-lab`, which has
+  neither `flat` nor `ToneTuning`. Unaffected.
+
+### The camera change is legitimate
+
+`near: 1, far: 1000` arriving with `4cf3a84` was **not** a stray edit. It is a parallel agent's work,
+recorded in `.claude/phases/2026-09-22-depth-precision-and-exposure-order.md`, fixing the owner's
+report that the gap seams flicker while moving. `far: 1000` equals R3F's own default, so the real
+change is `near` 0.1 → 1. Nothing to chase; the first pass's flag is closed.
+
+### Verified
+
+`localStorage['slur.tunables']` was **removed entirely** and `/test-level` reloaded from pure spec
+defaults. The frame is identical to the dialled one — the numbers are in `NUMBER_SPECS`, not in a
+browser. This is the check worth repeating after any dialling session.
+
+### Open for the owner
+
+**Should `lethal` and `drag` bloom?** Crossing 1.0 needs `lethal` ≈ 5.0 and `drag` ≈ 2.4. It is a
+readability argument (a hazard that does not glow) against an art one, and it has never been true in
+this project. Needs a route with `blockDensity > 0` to judge.
