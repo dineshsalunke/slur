@@ -1,8 +1,8 @@
 # The rearview mirror, and why only the blocks were missing from it
 
 **Date:** 2026-09-22
-**Branch:** `art/rail-lights` (worked in the primary checkout, alongside a second agent)
-**State:** built, uncommitted
+**Branch:** `dev` (primary checkout, shared live with two other agents — `slur-supervisor` and `hud`)
+**State:** committed as `980827e`; `dev` 6 ahead of `origin/dev`, **not pushed**
 
 ---
 
@@ -139,21 +139,17 @@ is an ordinary prop, so `<Bloom ref={ ref } mipmapBlur />` in `scene-effects.tsx
 closes the circle. It reproduces on any HMR re-render of `SceneEffects` and clears on reload. It is not
 caused by the mirror, and it lives in the other agent's file, so it was left alone.
 
-## Uncommitted at handover
+## Committed
 
-Nothing was committed — the checkout is shared with a live agent holding uncommitted work in
-`sealed-block-shader.ts`. When committing, use **explicit pathspecs** covering only:
+`980827e` on `dev`, 13 files. `dev` is 6 ahead of `origin/dev` and **not pushed** — nobody asked for
+a push, and it is outward-facing.
 
-```
-apps/client/app/game/scene/rear-view.tsx
-apps/client/app/game/scene/rear-view-camera.ts
-apps/client/app/game/scene/rear-view-camera.test.ts
-apps/client/app/game/scene/rear-view-panel.tsx
-apps/client/app/game/scene/rear-view-frame.ts
-apps/client/app/game/scene/track-instancing.ts
-apps/client/app/dev/tuning-schema.ts
-apps/client/app/game/net-canvas.tsx
-apps/client/app/routes/test-level/test-level-canvas.tsx
-```
+Committed with `git commit -F - -- <explicit paths>`, so the pathspec bounded the commit even if a
+peer staged something between the `add` and the `commit`. Three agents now share this one working
+tree (this session, `slur-supervisor` on block/monolith surfaces, `hud` on HUD), on `dev` directly —
+no worktrees, no new branches unless the owner asks. Left untouched: `sealed-block-shader.ts`
+(supervisor's, uncommitted), `apps/client/public/textures/metal/`, `apps/client/public/fonts/`.
 
-`apps/client/public/textures/metal/` is untracked and belongs to the other agent — do not add it.
+**The `BACK` change lives inside the supervisor's area** — its only consumer is the emit loop in
+`track-blocks.tsx:117`, which they own. They were told directly, and told that the constant is now
+load-bearing for the mirror. If that loop gets rewritten for `sealed-block-texture.ts`, re-check it.
