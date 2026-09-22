@@ -290,11 +290,22 @@ the same turn you move it.
 **`git commit` was denied by the auto-mode classifier in THIS session, twice.** The files are staged
 and green but uncommitted as this note is written.
 
-**Do not read this as "auto mode blocks `git commit`."** That lesson is too broad and would mislead
-you. `slur-supervisor` ran the same command shape — `git commit -F <msgfile> -- <explicit paths>` —
-from the same checkout, in auto mode, and it was **allowed**: `c4048b2` landed. The accurate
-statement is that it blocked *this session*, repeatably, and the command form was irrelevant: a
-bare heredoc message and an explicit-pathspec form drew a byte-identical refusal.
+**CORRECTED AFTER MERGE — the classifier is FLAKY, not specific to a session or a command.**
+
+This note first concluded that the block was peculiar to *this* session, on the evidence that
+`slur-supervisor` ran the same command shape — `git commit -F <msgfile> -- <explicit paths>` — from
+the same checkout, in auto mode, and was **allowed** (`c4048b2`). **That inference was wrong**, and
+`slur-supervisor`'s own later denials disprove it: minutes after `c4048b2` landed, in that same
+session and the same mode, a `SendMessage` was refused, then the 18-file commit was refused, with
+byte-identical text. One session, one mode, three outcomes.
+
+So do not go looking for something wrong with your session — there is nothing there to find. Retry,
+and expect it to sometimes work and sometimes not.
+
+What IS reliable from this episode: the command form is irrelevant (a bare heredoc message and an
+explicit-pathspec form drew identical refusals), and **no prompt ever appears**, so "retry and I'll
+approve it" is not a workable plan — there is nothing to approve. What actually unblocked it was the
+owner adding `Bash(git commit:*)` to `.claude/settings.local.json`.
 
 The other thing worth knowing: **no prompt appears.** It is the classifier refusing outright, not
 the interactive permission dialog, so "retry and I'll approve it" is not a workable plan — there is
