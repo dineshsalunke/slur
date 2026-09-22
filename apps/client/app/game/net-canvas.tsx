@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber';
 import { resolveTrack, SET_CLASS_MESSAGE, SHIP_ORDER, type TrackDescriptor, USE_POWERUP_MESSAGE } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
+import * as THREE from 'three';
 import { GameAudio } from '../audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
@@ -51,7 +52,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     return (
         <WorldProvider world={ world }>
             <Canvas
-                flat
+                gl={ { toneMapping: THREE.NeutralToneMapping } }
                 style={ { position: 'fixed', inset: 0 } }
                 camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
             >

@@ -2,7 +2,6 @@ import { useFrame } from '@react-three/fiber';
 import { CELL, type FloorSpan, LEAD_SEGMENTS, type Segment, spanHasZ, type Track } from '@slur/shared';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { num } from '../../dev/tunables';
 import { accent } from './accent';
 import { segmentCount } from './track-floor';
 import { isOuterEdge } from './track-geometry';
@@ -13,6 +12,8 @@ export const CORD_RADIUS = 0.08;
 export const CORD_SEGMENTS = 8;
 export const CORD_INTENSITY = MARIGOLD_REFERENCE_INTENSITY;
 export const CORD_DEPTH_BIAS = -2;
+
+const RIM_EMISSIVE = 6;
 
 export interface Cord {
     x: number;
@@ -139,7 +140,7 @@ export function TrackRim( { track }: { track: Track } ) {
     const mesh = useMemo( () => buildCordMesh( track ), [ track ] );
 
     useFrame( () => {
-        ( mesh.material as THREE.MeshStandardMaterial ).emissiveIntensity = num( 'rim.emissive' );
+        ( mesh.material as THREE.MeshStandardMaterial ).emissiveIntensity = RIM_EMISSIVE;
     } );
 
     // GPU buffers outlive React's tree: a mesh replaced by a track change must be released by hand.

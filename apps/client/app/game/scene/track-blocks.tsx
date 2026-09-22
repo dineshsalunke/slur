@@ -3,7 +3,6 @@ import { SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { num } from '../../dev/tunables';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import {
     type BlockDims,
@@ -23,6 +22,12 @@ import {
 import { AHEAD, BACK, put } from './track-instancing';
 
 const BLOCK_LIMIT = 160;
+
+const BLOCK_BEVEL = 0.12;
+const BLOCK_SEAM_WIDTH = 0.14;
+const BLOCK_SEAM = 6;
+const BLOCK_WEAR = 0.6;
+const BLOCK_ROUGHNESS = 0.52;
 
 interface SealedVariation {
     seams: number[];
@@ -103,11 +108,11 @@ export function TrackBlocks( { track }: { track: Track } ) {
         const blocks = blockRef.current;
         if ( ! sim || ! blocks ) return;
 
-        uniforms.uSealedBevel.value = num( 'block.bevel' );
-        uniforms.uSealedSeamWidth.value = num( 'block.seamWidth' );
-        uniforms.uSealedSeamIntensity.value = num( 'block.seam' );
-        uniforms.uSealedWearMax.value = num( 'block.wear' );
-        ( blocks.material as THREE.MeshStandardMaterial ).roughness = num( 'block.roughness' );
+        uniforms.uSealedBevel.value = BLOCK_BEVEL;
+        uniforms.uSealedSeamWidth.value = BLOCK_SEAM_WIDTH;
+        uniforms.uSealedSeamIntensity.value = BLOCK_SEAM;
+        uniforms.uSealedWearMax.value = BLOCK_WEAR;
+        ( blocks.material as THREE.MeshStandardMaterial ).roughness = BLOCK_ROUGHNESS;
 
         const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
         const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );

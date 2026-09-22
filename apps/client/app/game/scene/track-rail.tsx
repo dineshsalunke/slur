@@ -3,10 +3,7 @@ import { HALF_WIDTH, type Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { num } from '../../dev/tunables';
-import { useRebuildToken } from '../../dev/use-tunables';
 import { LocalPlayer, Sim } from '../ecs/traits';
-import { railEmitters } from './emitter-array';
 import { segmentCount } from './track-floor';
 import {
     BACKWARD,
@@ -21,7 +18,13 @@ import {
     type V3,
 } from './track-geometry';
 import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from './track-materials';
-import { buildRailRuns, clearRailEmitters, feedRailEmitters, type RailRun } from './track-rails';
+import { buildRailRuns, type RailRun } from './track-rails';
+
+const RAIL_NORMAL_SCALE = 0.8;
+const RAIL_METALNESS = 0.9;
+const RAIL_ROUGHNESS = 0.35;
+const RAIL_ENV_MAP_INTENSITY = 1;
+const RAIL_EMISSIVE = 2;
 
 export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
     const metalPos: number[] = [];
@@ -61,13 +64,12 @@ export function TrackRail( { track }: { track: Track } ) {
     const world = useWorld();
     const runs = useMemo( () => buildRailRuns( track, segmentCount( track ) ), [ track ] );
     const geo = useMemo( () => buildRailGeometry( runs ), [ runs ] );
-    const rebuild = useRebuildToken();
     const materials = useMemo( () => {
         return [
             new THREE.MeshStandardMaterial( railBodySurface() ),
             new THREE.MeshStandardMaterial( BOUNDARY_SURFACE ),
         ];
-    }, [ rebuild ] );
+    }, [] );
 
     // GPU buffers outlive React's tree: a geometry replaced by a new track must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );
@@ -80,21 +82,13 @@ export function TrackRail( { track }: { track: Track } ) {
         [ materials ],
     );
 
-    // The emitter uniforms are a module singleton outside React: unmounting must park the slots this rail owns.
-    useEffect( () => () => clearRailEmitters( railEmitters ), [] );
-
     useFrame( () => {
         const [ metal, strip ] = materials;
-        const scale = num( 'rail.normalScale' );
-        metal.metalness = num( 'rail.metalness' );
-        metal.roughness = cleanToMapRoughness( num( 'rail.roughness' ) );
-        metal.envMapIntensity = num( 'rail.envMapIntensity' );
-        metal.normalScale.set( scale, scale );
-        strip.emissiveIntensity = num( 'rail.emissive' );
-
-        railEmitters.uEmitterDecay.value = num( 'emitter.decay' );
-        const z = world.queryFirst( LocalPlayer, Sim )?.get( Sim )?.z ?? 0;
-        feedRailEmitters( railEmitters, runs, z, num( 'emitter.intensity' ), num( 'emitter.range' ) );
+        metal.metalness = RAIL_METALNESS;
+        metal.roughness = cleanToMapRoughness( RAIL_ROUGHNESS );
+        metal.envMapIntensity = RAIL_ENV_MAP_INTENSITY;
+        metal.normalScale.set( RAIL_NORMAL_SCALE, RAIL_NORMAL_SCALE );
+        strip.emissiveIntensity = RAIL_EMISSIVE;
     } );
 
     return <mesh geometry={ geo } material={ materials } />;

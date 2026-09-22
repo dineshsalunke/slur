@@ -36,9 +36,10 @@ rationale: `docs/DECISIONS.md` (ADR log). Retired design intent: `docs/archive/s
 > shows the shape), then hand it to the owner to paste into ChatGPT. A silent edit inside the folder is
 > invisible to Codex and desynchronises both sides.
 >
-> **Where to look at art:** `/env-lab`, and a hosted room (`/game/:roomId`) for the real track. The
+> **Where to look at art:** `/test-level`, and a hosted room (`/game/:roomId`) for the real track. The
 > `/art-lab`, `/art-gallery` and `/iso-*` routes and `.claude/art-pass/` were **deleted 2026-09-21** —
-> removed, not replaced. Recover with `git show e56f643 -- .claude/art-pass`.
+> removed, not replaced. Recover with `git show e56f643 -- .claude/art-pass`. `/env-lab` was deleted
+> 2026-09-22 with the lighting strip (issue #196).
 
 ---
 

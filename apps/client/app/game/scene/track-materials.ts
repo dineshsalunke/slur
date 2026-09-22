@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { num } from '../../dev/tunables';
 import { ACCENT_ANCHOR } from './accent';
 import {
     deckSurfaceParams,
@@ -26,31 +25,27 @@ function plateSurface( params: SurfaceParams, clean: number, metalness: number, 
     };
 }
 
+const DECK_ROUGHNESS = 0.35;
+const DECK_METALNESS = 0.9;
+const DECK_NORMAL_SCALE = 0.8;
+
+const RAIL_ROUGHNESS = 0.35;
+const RAIL_METALNESS = 0.9;
+const RAIL_NORMAL_SCALE = 0.8;
+
+const MONO_ROUGHNESS = 0.35;
+const MONO_METALNESS = 0.9;
+
 export function floorSurface() {
-    return plateSurface(
-        deckSurfaceParams(),
-        num( 'deck.roughness' ),
-        num( 'deck.metalness' ),
-        num( 'deck.normalScale' ),
-    );
+    return plateSurface( deckSurfaceParams(), DECK_ROUGHNESS, DECK_METALNESS, DECK_NORMAL_SCALE );
 }
 
 export function railBodySurface() {
-    return plateSurface(
-        railSurfaceParams(),
-        num( 'rail.roughness' ),
-        num( 'rail.metalness' ),
-        num( 'rail.normalScale' ),
-    );
+    return plateSurface( railSurfaceParams(), RAIL_ROUGHNESS, RAIL_METALNESS, RAIL_NORMAL_SCALE );
 }
 
 export function monolithBodySurface() {
-    return plateSurface(
-        monolithSurfaceParams(),
-        num( 'mono.roughness' ),
-        num( 'mono.metalness' ),
-        num( 'deck.normalScale' ),
-    );
+    return plateSurface( monolithSurfaceParams(), MONO_ROUGHNESS, MONO_METALNESS, DECK_NORMAL_SCALE );
 }
 
 export const MARIGOLD_REFERENCE_INTENSITY = 2.0;
@@ -73,5 +68,3 @@ export const SEAM_SURFACE = {
     polygonOffsetFactor: -1,
     polygonOffsetUnits: -1,
 } as const;
-
-export const RAIL_EMITTER_LIFT = 0.5;

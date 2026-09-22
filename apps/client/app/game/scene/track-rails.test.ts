@@ -1,7 +1,7 @@
 import { type FloorSpan, HALF_WIDTH, LEAD_SEGMENTS, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { RAIL_W } from './track-geometry';
-import { buildRailRuns, railRunDistance } from './track-rails';
+import { buildRailRuns } from './track-rails';
 
 const full = (): FloorSpan[] => [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ];
 
@@ -72,13 +72,5 @@ describe( 'rail runs', () => {
         expect( Math.abs( left.x ) ).toBeGreaterThan( HALF_WIDTH );
         expect( left.x ).toBeCloseTo( -HALF_WIDTH - RAIL_W / 2 );
         expect( left.y ).toBe( 0 );
-    } );
-
-    it( 'measures distance to the span, not to its centre', () => {
-        const run = { x: 0, y: 0, z0: 100, z1: 200 };
-
-        expect( railRunDistance( run, 150 ) ).toBe( 0 );
-        expect( railRunDistance( run, 80 ) ).toBe( 20 );
-        expect( railRunDistance( run, 260 ) ).toBe( 60 );
     } );
 } );
