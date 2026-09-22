@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const EMITTER_SLOTS = 24;
+export const EMITTER_SLOTS = 12;
 
 const STRIDE = 4;
 
@@ -9,16 +9,20 @@ export interface EmitterUniforms {
     uEmitterTint: { value: Float32Array };
     uEmitterAxis: { value: THREE.Vector3 };
     uEmitterDecay: { value: number };
+    uEmitterCount: { value: number };
 }
 
-export function createEmitterUniforms(): EmitterUniforms {
+function createEmitterUniforms(): EmitterUniforms {
     return {
         uEmitters: { value: new Float32Array( EMITTER_SLOTS * STRIDE ) },
         uEmitterTint: { value: new Float32Array( EMITTER_SLOTS * STRIDE ) },
         uEmitterAxis: { value: new THREE.Vector3( 0, 0, 1 ) },
         uEmitterDecay: { value: 1 },
+        uEmitterCount: { value: 0 },
     };
 }
+
+export const railEmitters = createEmitterUniforms();
 
 export function writeEmitter(
     u: EmitterUniforms,
@@ -51,47 +55,75 @@ uniform vec4 uEmitters[ ${ EMITTER_SLOTS } ];
 uniform vec4 uEmitterTint[ ${ EMITTER_SLOTS } ];
 uniform vec3 uEmitterAxis;
 uniform float uEmitterDecay;
+uniform int uEmitterCount;
 `;
 
 const FRAG_LIGHTS = `
 {
+	float emCavity = 1.0;
+	#ifdef USE_ROUGHNESSMAP
+		emCavity = texture2D( roughnessMap, vRoughnessMapUv ).r;
+	#endif
 	vec3 emRay = reflect( - geometryViewDir, geometryNormal );
+	vec3 emAxis = normalize( ( viewMatrix * vec4( uEmitterAxis, 0.0 ) ).xyz );
 	for ( int emI = 0; emI < ${ EMITTER_SLOTS }; emI ++ ) {
+		if ( emI >= uEmitterCount ) break;
 		vec4 emTint = uEmitterTint[ emI ];
-		if ( emTint.w <= 0.0 ) continue;
 		vec4 emE = uEmitters[ emI ];
-		vec3 emL0 = emE.xyz - uEmitterAxis * emE.w - geometryPosition;
-		vec3 emLd = uEmitterAxis * ( 2.0 * emE.w );
+		vec3 emCenter = ( viewMatrix * vec4( emE.xyz, 1.0 ) ).xyz;
+		vec3 emL0 = emCenter - emAxis * emE.w - geometryPosition;
+		vec3 emLd = emAxis * ( 2.0 * emE.w );
+		float emLen2 = dot( emLd, emLd );
+
+		float emTd = emLen2 > 1e-4 ? clamp( - dot( emL0, emLd ) / emLen2, 0.0, 1.0 ) : 0.0;
+		vec3 emVecD = emL0 + emLd * emTd;
+		float emDistD = max( length( emVecD ), 1e-4 );
+		vec3 emDirD = emVecD / emDistD;
+		vec3 emIrrD = saturate( dot( geometryNormal, emDirD ) ) * emCavity *
+			emTint.rgb * getDistanceAttenuation( emDistD, emTint.w, uEmitterDecay );
+		reflectedLight.directDiffuse += emIrrD * BRDF_Lambert( material.diffuseContribution );
+
 		float emRd = dot( emRay, emLd );
-		float emDen = dot( emLd, emLd ) - emRd * emRd;
-		float emT = emDen > 1e-4
+		float emDen = emLen2 - emRd * emRd;
+		float emTs = emDen > 1e-4
 			? clamp( ( dot( emRay, emL0 ) * emRd - dot( emL0, emLd ) ) / emDen, 0.0, 1.0 )
-			: 0.0;
-		vec3 emVec = emL0 + emLd * emT;
-		float emDist = max( length( emVec ), 1e-4 );
-		directLight.direction = emVec / emDist;
-		directLight.color = emTint.rgb * getDistanceAttenuation( emDist, emTint.w, uEmitterDecay );
-		directLight.visible = true;
-		RE_Direct(
-			directLight, geometryPosition, geometryNormal, geometryViewDir,
-			geometryClearcoatNormal, material, reflectedLight
-		);
+			: emTd;
+		vec3 emVecS = emL0 + emLd * emTs;
+		float emDistS = max( length( emVecS ), 1e-4 );
+		vec3 emDirS = emVecS / emDistS;
+		vec3 emIrrS = saturate( dot( geometryNormal, emDirS ) ) * emCavity *
+			emTint.rgb * getDistanceAttenuation( emDistS, emTint.w, uEmitterDecay );
+		reflectedLight.directSpecular += emIrrS *
+			BRDF_GGX_Multiscatter( emDirS, geometryViewDir, geometryNormal, material );
 	}
 }
 `;
 
-export function patchEmitterLight( mat: THREE.Material, u: EmitterUniforms ): void {
+export function applyEmitterShader( shader: THREE.WebGLProgramParametersWithUniforms, u = railEmitters ): void {
+    shader.uniforms.uEmitters = u.uEmitters;
+    shader.uniforms.uEmitterTint = u.uEmitterTint;
+    shader.uniforms.uEmitterAxis = u.uEmitterAxis;
+    shader.uniforms.uEmitterDecay = u.uEmitterDecay;
+    shader.uniforms.uEmitterCount = u.uEmitterCount;
+    shader.fragmentShader = ( FRAG_HEAD + shader.fragmentShader ).replace(
+        '#include <lights_fragment_begin>',
+        `#include <lights_fragment_begin>${ FRAG_LIGHTS }`,
+    );
+}
+
+export function patchEmitterLight( mat: THREE.Material, u = railEmitters ): void {
     if ( mat.userData.emitterPatched ) return;
+    if ( ! ( mat as THREE.MeshStandardMaterial ).isMeshStandardMaterial ) return;
     mat.userData.emitterPatched = true;
-    mat.onBeforeCompile = ( shader ) => {
-        shader.uniforms.uEmitters = u.uEmitters;
-        shader.uniforms.uEmitterTint = u.uEmitterTint;
-        shader.uniforms.uEmitterAxis = u.uEmitterAxis;
-        shader.uniforms.uEmitterDecay = u.uEmitterDecay;
-        shader.fragmentShader = ( FRAG_HEAD + shader.fragmentShader ).replace(
-            '#include <lights_fragment_begin>',
-            `#include <lights_fragment_begin>${ FRAG_LIGHTS }`,
-        );
-    };
+    mat.onBeforeCompile = ( shader ) => applyEmitterShader( shader, u );
     mat.needsUpdate = true;
+}
+
+export function patchEmitterTree( root: THREE.Object3D, u = railEmitters ): void {
+    root.traverse( ( o ) => {
+        const mesh = o as THREE.Mesh;
+        if ( ! mesh.isMesh ) return;
+        const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
+        for ( const mat of mats ) patchEmitterLight( mat, u );
+    } );
 }

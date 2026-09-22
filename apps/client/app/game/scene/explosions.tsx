@@ -161,12 +161,7 @@ export function ExplosionField() {
     return (
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
-            <meshBasicMaterial
-                toneMapped={ false }
-                transparent
-                depthWrite={ false }
-                blending={ THREE.AdditiveBlending }
-            />
+            <meshBasicMaterial transparent depthWrite={ false } blending={ THREE.AdditiveBlending } />
         </instancedMesh>
     );
 }

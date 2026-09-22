@@ -9,6 +9,7 @@ import {
     sealedBlockSeamCount,
     sealedBlockSeams,
     sealedBlockSeed,
+    sealedBlockWearSeed,
 } from './sealed-block-variation';
 
 const FOOTPRINTS = [
@@ -105,5 +106,20 @@ describe( 'sealed block wear', () => {
             for ( let z = 0; z < 200; z += 20 ) seeds.add( sealedBlockSeed( x, z ) );
         }
         expect( seeds.size ).toBe( 17 * 10 );
+    } );
+
+    it( 'spans the clean-to-worn range board 28 draws', () => {
+        const strengths = [];
+        for ( let x = -32; x <= 32; x += 4 ) {
+            for ( let z = 0; z < 400; z += 20 ) strengths.push( sealedBlockWearSeed( sealedBlockSeed( x, z ) ) );
+        }
+
+        for ( const s of strengths ) expect( s ).toBeGreaterThanOrEqual( 0 );
+        for ( const s of strengths ) expect( s ).toBeLessThanOrEqual( 1 );
+
+        const clean = strengths.filter( ( s ) => s === 0 ).length / strengths.length;
+        expect( clean ).toBeGreaterThan( 0.2 );
+        expect( clean ).toBeLessThan( 0.6 );
+        expect( Math.max( ...strengths ) ).toBeGreaterThan( 0.9 );
     } );
 } );

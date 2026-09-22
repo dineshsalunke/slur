@@ -4,6 +4,12 @@ import {
     CORRIDOR_BUFFER,
     CORRIDOR_W_MIN,
     CORRIDOR_W_START,
+    CRACK_EDGE_MARGIN_LANES,
+    CRACK_FRAC,
+    CRACK_SEGS_MAX,
+    CRACK_SEGS_MIN,
+    CRACK_W_LANES_MAX,
+    CRACK_W_LANES_MIN,
     deriveNodePeriod,
     deriveWeaveCurvatureCap,
     deriveWeavePeriod,
@@ -15,10 +21,6 @@ import {
     GAP_P_MAX,
     GAP_P_START,
     SECTIONS,
-    SLOW_GRACE_MAX,
-    SLOW_GRACE_START,
-    SLOW_NOISE_FZ_LANE,
-    SLOW_NOISE_FZ_SEG,
     WALL_DENSITY_MAX,
     WALL_DENSITY_START,
     WALL_NOISE_FZ_LANE,
@@ -27,6 +29,7 @@ import {
     WEAVE_NOISE_FRAC,
 } from '../constants.js';
 import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
+import { type LaneRange, rimTeeth } from './gap-teeth.js';
 import { smoothstep, tri, valueNoise1D, valueNoise2D } from './noise.js';
 import { hash2, mulberry32 } from './rng.js';
 
@@ -34,6 +37,28 @@ export interface FloorSpan {
     x0: number;
     x1: number;
     y: number;
+    z0?: number;
+    z1?: number;
+}
+
+export function spanZ0( seg: Segment, f: FloorSpan ): number {
+    return f.z0 ?? seg.z0;
+}
+
+export function spanZ1( seg: Segment, f: FloorSpan ): number {
+    return f.z1 ?? seg.z1;
+}
+
+export function isFullSpan( f: FloorSpan ): boolean {
+    return f.z0 === undefined && f.z1 === undefined;
+}
+
+export function spanHasZ( seg: Segment, f: FloorSpan, z: number ): boolean {
+    return z >= spanZ0( seg, f ) - 1e-4 && z <= spanZ1( seg, f ) + 1e-4;
+}
+
+export function spanOverlapsZ( seg: Segment, f: FloorSpan, z0: number, z1: number ): boolean {
+    return z1 > spanZ0( seg, f ) + 1e-4 && z0 < spanZ1( seg, f ) - 1e-4;
 }
 
 export interface Block {
@@ -43,7 +68,6 @@ export interface Block {
     y1: number;
     z0: number;
     z1: number;
-    lethal: boolean;
 }
 
 export type SegmentKind = 'plain' | 'block' | 'gap' | 'finish';
@@ -79,7 +103,16 @@ export interface ProcgenDescriptor {
     seed: number;
     tier: number;
     length: number;
+    blockDensity?: number;
+    gapChance?: number;
 }
+
+export interface TrackDensity {
+    blocks: number;
+    gaps: number;
+}
+
+export const FULL_DENSITY: TrackDensity = { blocks: 1, gaps: 1 };
 
 export const SEG_LEN = 20;
 export const TRACK_SEGMENTS = 400;
@@ -102,9 +135,9 @@ export const WEAVE_PERIOD_ROWS = deriveWeavePeriod( SLOPE_CAP, CURV_CAP, WEAVE_A
 const SALT_LINE_A = 0x1234567 | 0;
 const SALT_LINE_B = 0x2b3c4d5 | 0;
 const SALT_WALL = 0x51ed270b | 0;
-const SALT_DRAG = 0x3c9f42a1 | 0;
 const SALT_FLICK = 0x7a1c9e33 | 0;
 const SALT_GAP = 0x2f6a1b9d | 0;
+const SALT_CRACK = 0x7b19c3a5 | 0;
 
 function rowGlobal( i: number, r: number ): number {
     return i * ZCELLS + r;
@@ -158,9 +191,6 @@ function corridorWidthLanes( intensity: number ): number {
     const w = Math.round( lerp( CORRIDOR_W_START, CORRIDOR_W_MIN, intensity ) );
     return clamp( w, CORRIDOR_W_MIN, LANES );
 }
-function slowGrace( intensity: number ): number {
-    return lerp( SLOW_GRACE_START, SLOW_GRACE_MAX, intensity );
-}
 function wallDensity( intensity: number ): number {
     return lerp( WALL_DENSITY_START, WALL_DENSITY_MAX, intensity );
 }
@@ -171,17 +201,87 @@ function flickRate( intensity: number ): number {
     return lerp( FLICK_RATE_START, FLICK_RATE_MAX, intensity );
 }
 
-function rolledGap( seed: number, i: number, length: number ): boolean {
+function rolledGap( seed: number, i: number, length: number, density: TrackDensity ): boolean {
     if ( i < START_SAFE || i >= length ) return false;
-    return mulberry32( hash2( seed, i ) )() < gapProb( intensityAt( i, length ) );
+    return mulberry32( hash2( seed, i ) )() < gapProb( intensityAt( i, length ) ) * density.gaps;
 }
 
 function fullFloor( y: number ): FloorSpan[] {
     return [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y } ];
 }
 
-function gapFloors( seed: number, i: number, length: number ): FloorSpan[] {
-    if ( mulberry32( hash2( ( seed ^ SALT_GAP ) | 0, i ) )() < FULL_GAP_FRAC ) return [];
+function laneOf( x: number ): number {
+    return Math.round( ( x + HALF_WIDTH ) / CELL );
+}
+
+function holeLanes( floors: FloorSpan[] ): LaneRange[] {
+    const out: LaneRange[] = [];
+    let cursor = 0;
+    for ( const f of floors ) {
+        const lo = laneOf( f.x0 );
+        if ( lo > cursor ) out.push( { lo: cursor, hi: lo - 1 } );
+        cursor = Math.max( cursor, laneOf( f.x1 ) );
+    }
+    if ( cursor < LANES ) out.push( { lo: cursor, hi: LANES - 1 } );
+    return out;
+}
+
+function toothSpans( seed: number, i: number, floors: FloorSpan[], z0: number ): FloorSpan[] {
+    const z1 = z0 + SEG_LEN;
+    return rimTeeth( seed, i, holeLanes( floors ), ZCELLS ).map( ( t ) => ( {
+        x0: -HALF_WIDTH + t.lo * CELL,
+        x1: -HALF_WIDTH + ( t.hi + 1 ) * CELL,
+        y: 0,
+        z0: t.front ? z0 : z1 - t.rows * CELL,
+        z1: t.front ? z0 + t.rows * CELL : z1,
+    } ) );
+}
+
+export interface Crack {
+    segs: number;
+    lo: number;
+    w: number;
+}
+
+export function crackAt( seed: number, i: number ): Crack | null {
+    const r = mulberry32( hash2( ( seed ^ SALT_CRACK ) | 0, i ) );
+    if ( r() >= CRACK_FRAC ) return null;
+    const w = CRACK_W_LANES_MIN + Math.floor( r() * ( CRACK_W_LANES_MAX - CRACK_W_LANES_MIN + 1 ) );
+    const span = CRACK_W_LANES_MAX - CRACK_W_LANES_MIN;
+    const segs = Math.round( lerp( CRACK_SEGS_MAX, CRACK_SEGS_MIN, span > 0 ? ( w - CRACK_W_LANES_MIN ) / span : 0 ) );
+    const slots = LANES - 2 * CRACK_EDGE_MARGIN_LANES - w;
+    const lo = CRACK_EDGE_MARGIN_LANES + Math.floor( r() * ( slots + 1 ) );
+    return { segs, lo, w };
+}
+
+function crackStartAt( seed: number, s: number, length: number, density: TrackDensity ): Crack | null {
+    if ( ! rolledGap( seed, s, length, density ) ) return null;
+    for ( let p = 1; p < CRACK_SEGS_MAX; p++ ) {
+        if ( rolledGap( seed, s - p, length, density ) ) return null;
+    }
+    return crackAt( seed, s );
+}
+
+function crackCovering( seed: number, i: number, length: number, density: TrackDensity ): Crack | null {
+    for ( let s = i - CRACK_SEGS_MAX + 1; s <= i; s++ ) {
+        const c = crackStartAt( seed, s, length, density );
+        if ( c && s + c.segs > i ) return c;
+    }
+    return null;
+}
+
+export function crackFloors( c: Crack ): FloorSpan[] {
+    const x0 = -HALF_WIDTH + c.lo * CELL;
+    const x1 = x0 + c.w * CELL;
+    return [
+        { x0: -HALF_WIDTH, x1: x0, y: 0 },
+        { x0: x1, x1: HALF_WIDTH, y: 0 },
+    ];
+}
+
+function gapFloors( seed: number, i: number, length: number, z0: number ): FloorSpan[] {
+    const full = mulberry32( hash2( ( seed ^ SALT_GAP ) | 0, i ) )() < FULL_GAP_FRAC;
+    if ( full ) return toothSpans( seed, i, [], z0 );
     const wLanes = corridorWidthLanes( intensityAt( i, length ) );
     const openStart = clamp(
         Math.round( weaveRaw( seed, rowGlobal( i, Math.floor( ZCELLS / 2 ) ) ) * ( LANES - wLanes ) ),
@@ -189,7 +289,8 @@ function gapFloors( seed: number, i: number, length: number ): FloorSpan[] {
         LANES - wLanes,
     );
     const x0 = -HALF_WIDTH + openStart * CELL;
-    return [ { x0, x1: x0 + wLanes * CELL, y: 0 } ];
+    const deck: FloorSpan[] = [ { x0, x1: x0 + wLanes * CELL, y: 0 } ];
+    return [ ...deck, ...toothSpans( seed, i, deck, z0 ) ];
 }
 
 function corridorUnion( seed: number, i: number, wLanes: number ): { lo: number; hi: number } {
@@ -221,25 +322,29 @@ function laneState(
     unionHi: number,
     flick: Flick | null,
     density: number,
-    slowP: number,
-): 0 | 1 | 2 {
+): 0 | 1 {
     if ( lane >= unionLo && lane <= unionHi ) {
-        if ( flick && lane >= flick.lo && lane <= flick.hi ) return 1;
-        const slow = valueNoise2D( ( seed ^ SALT_DRAG ) | 0, lane / SLOW_NOISE_FZ_LANE, i / SLOW_NOISE_FZ_SEG ) < slowP;
-        return slow ? 2 : 0;
+        return flick && lane >= flick.lo && lane <= flick.hi ? 1 : 0;
     }
     if ( lane >= unionLo - CORRIDOR_BUFFER && lane <= unionHi + CORRIDOR_BUFFER ) return 0;
     const wall = valueNoise2D( ( seed ^ SALT_WALL ) | 0, lane / WALL_NOISE_FZ_LANE, i / WALL_NOISE_FZ_SEG ) < density;
     return wall ? 1 : 0;
 }
 
-function flickRolled( seed: number, i: number, length: number ): boolean {
+function flickRolled( seed: number, i: number, length: number, blocks: number ): boolean {
     if ( i < START_SAFE || i >= length ) return false;
-    return mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i ) )() < flickRate( intensityAt( i, length ) );
+    return mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i ) )() < flickRate( intensityAt( i, length ) ) * blocks;
 }
 
-function flickAt( seed: number, i: number, length: number, unionLo: number, unionHi: number ): Flick | null {
-    if ( ! flickRolled( seed, i, length ) || flickRolled( seed, i - 1, length ) ) return null;
+function flickAt(
+    seed: number,
+    i: number,
+    length: number,
+    unionLo: number,
+    unionHi: number,
+    blocks: number,
+): Flick | null {
+    if ( ! flickRolled( seed, i, length, blocks ) || flickRolled( seed, i - 1, length, blocks ) ) return null;
     const minGapLanes = MIN_LANE / CELL;
     if ( unionHi - unionLo + 1 - FLICK_WIDTH < minGapLanes ) return null;
     const fromLeft = mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i * 2 + 1 ) )() < 0.5;
@@ -253,12 +358,11 @@ function buildWalls(
     unionHi: number,
     flick: Flick | null,
     density: number,
-    slowP: number,
     z0: number,
 ): Block[] {
     const blocks: Block[] = [];
     let runStart = 0;
-    let runState: 0 | 1 | 2 = 0;
+    let runState: 0 | 1 = 0;
     const bz0 = z0 + ( SEG_LEN - BLOCK_DEPTH ) / 2;
     const bz1 = bz0 + BLOCK_DEPTH;
     const flush = ( endLane: number ): void => {
@@ -269,11 +373,10 @@ function buildWalls(
             y1: BLOCK_HEIGHT,
             z0: bz0,
             z1: bz1,
-            lethal: runState === 1,
         } );
     };
     for ( let lane = 0; lane < LANES; lane++ ) {
-        const st = laneState( seed, i, lane, unionLo, unionHi, flick, density, slowP );
+        const st = laneState( seed, i, lane, unionLo, unionHi, flick, density );
         if ( st !== runState || ( runState !== 0 && lane - runStart >= BLOCK_MAX_LANES ) ) {
             if ( runState !== 0 ) flush( lane - 1 );
             runState = st;
@@ -284,7 +387,7 @@ function buildWalls(
     return blocks;
 }
 
-function buildSegment( seed: number, i: number, length: number ): Segment {
+function buildSegment( seed: number, i: number, length: number, density: TrackDensity ): Segment {
     const z0 = i * SEG_LEN;
     const z1 = z0 + SEG_LEN;
     const base = { index: i, z0, z1, blocks: [] as Block[], isFinish: false };
@@ -293,14 +396,17 @@ function buildSegment( seed: number, i: number, length: number ): Segment {
     if ( i < -LEAD_SEGMENTS ) return { ...base, kind: 'gap', floors: [] };
     if ( i < START_SAFE ) return { ...base, kind: 'plain', floors: fullFloor( 0 ) };
 
-    if ( rolledGap( seed, i, length ) && ! rolledGap( seed, i - 1, length ) )
-        return { ...base, kind: 'gap', floors: gapFloors( seed, i, length ) };
+    const crack = crackCovering( seed, i, length, density );
+    if ( crack ) return { ...base, kind: 'gap', floors: crackFloors( crack ) };
+
+    if ( rolledGap( seed, i, length, density ) && ! rolledGap( seed, i - 1, length, density ) )
+        return { ...base, kind: 'gap', floors: gapFloors( seed, i, length, z0 ) };
 
     const intensity = intensityAt( i, length );
     const wLanes = corridorWidthLanes( intensity );
     const { lo: unionLo, hi: unionHi } = corridorUnion( seed, i, wLanes );
-    const flick = flickAt( seed, i, length, unionLo, unionHi );
-    const blocks = buildWalls( seed, i, unionLo, unionHi, flick, wallDensity( intensity ), slowGrace( intensity ), z0 );
+    const flick = flickAt( seed, i, length, unionLo, unionHi, density.blocks );
+    const blocks = buildWalls( seed, i, unionLo, unionHi, flick, wallDensity( intensity ) * density.blocks, z0 );
 
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }
@@ -308,7 +414,7 @@ function buildSegment( seed: number, i: number, length: number ): Segment {
 function openCenterX( seg: Segment ): number {
     const zc = seg.z0 + SEG_LEN / 2;
     const walls = seg.blocks
-        .filter( ( b ) => b.lethal && b.z0 <= zc && zc < b.z1 )
+        .filter( ( b ) => b.z0 <= zc && zc < b.z1 )
         .map( ( b ): [ number, number ] => [ b.x0, b.x1 ] )
         .sort( ( a, b ) => a[ 0 ] - b[ 0 ] );
     let cursor = -HALF_WIDTH;
@@ -335,7 +441,11 @@ export function segIndexForZ( z: number ): number {
 export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
     const seed = d.seed;
     const length = d.length || TRACK_SEGMENTS;
-    const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length );
+    const density: TrackDensity = {
+        blocks: d.blockDensity ?? FULL_DENSITY.blocks,
+        gaps: d.gapChance ?? FULL_DENSITY.gaps,
+    };
+    const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length, density );
     return {
         finishZ: length * SEG_LEN,
         segmentAt,
@@ -356,13 +466,12 @@ function pickupAnchors( length: number, segmentAt: ( i: number ) => Segment ): A
 }
 
 export function isHole( seg: Segment ): boolean {
-    return seg.floors.length === 0;
+    return ! seg.floors.some( isFullSpan );
 }
 
 function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Array< [ number, number ] > {
     const walls: Array< [ number, number ] > = [];
     for ( const b of seg.blocks ) {
-        if ( ! b.lethal ) continue;
         if ( b.z0 <= zc && zc < b.z1 ) {
             const lo = Math.max( f.x0, b.x0 );
             const hi = Math.min( f.x1, b.x1 );
@@ -376,6 +485,7 @@ function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Array< [ number
 function maxOpenAtSlice( seg: Segment, zc: number ): number {
     let best = 0;
     for ( const f of seg.floors ) {
+        if ( ! spanHasZ( seg, f, zc ) ) continue;
         let cursor = f.x0;
         for ( const [ lo, hi ] of wallsOnSlice( seg, f, zc ) ) {
             if ( lo > cursor ) best = Math.max( best, lo - cursor );

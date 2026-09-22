@@ -1,7 +1,7 @@
 import type { FlightTuning } from '../constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
-import type { Segment, Track } from './track.js';
+import { type Segment, spanHasZ, spanOverlapsZ, type Track } from './track.js';
 import type { SimShip } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
@@ -82,9 +82,10 @@ function clampToEdges( s: SimShip, t: FlightTuning ): void {
     }
 }
 
-function floorUnder( seg: Segment, x: number, y: number, stepTol: number ): number | null {
+function floorUnder( seg: Segment, x: number, z: number, y: number, stepTol: number ): number | null {
     let best: number | null = null;
     for ( const f of seg.floors ) {
+        if ( ! spanHasZ( seg, f, z ) ) continue;
         if ( x >= f.x0 && x <= f.x1 && f.y <= y + stepTol ) {
             if ( best === null || f.y > best ) best = f.y;
         }
@@ -102,6 +103,7 @@ function bestFloorInSeg( seg: Segment, s: SimShip, prevY: number, t: FlightTunin
     if ( s.z + t.halfL <= seg.z0 || s.z - t.halfL >= seg.z1 ) return null;
     let best: number | null = null;
     for ( const f of seg.floors ) {
+        if ( ! spanOverlapsZ( seg, f, s.z - t.halfL, s.z + t.halfL ) ) continue;
         if ( s.x + t.halfW <= f.x0 || s.x - t.halfW >= f.x1 ) continue;
         if ( prevY + t.stepTol >= f.y && s.y <= f.y && ( best === null || f.y > best ) ) best = f.y;
     }
@@ -129,10 +131,10 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.dead = false;
     s.x = s.lastSafeX;
     let z = s.lastSafeZ - t.respawnSetback;
-    let floorY = floorUnder( track.segmentAtZ( z ), s.x, Number.POSITIVE_INFINITY, t.stepTol );
+    let floorY = floorUnder( track.segmentAtZ( z ), s.x, z, Number.POSITIVE_INFINITY, t.stepTol );
     if ( floorY === null ) {
         z = s.lastSafeZ;
-        floorY = floorUnder( track.segmentAtZ( z ), s.x, Number.POSITIVE_INFINITY, t.stepTol ) ?? 0;
+        floorY = floorUnder( track.segmentAtZ( z ), s.x, z, Number.POSITIVE_INFINITY, t.stepTol ) ?? 0;
     }
     s.z = z;
     s.y = floorY;
@@ -145,10 +147,9 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.stunTimer = 0;
 }
 
-function overlapsBlock( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning, lethal: boolean ): boolean {
+function overlapsBlock( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning ): boolean {
     for ( const seg of segs ) {
         for ( const b of seg.blocks ) {
-            if ( b.lethal !== lethal ) continue;
             if (
                 s.x + t.halfW > b.x0 &&
                 s.x - t.halfW < b.x1 &&
@@ -190,7 +191,7 @@ export function resolveCollisions(
         return;
     }
 
-    const insideBody = overlapsBlock( segs, s, prevY, t, true );
+    const insideBody = overlapsBlock( segs, s, prevY, t );
     if ( insideBody ) {
         if ( s.invulnTimer <= 0 ) {
             markDead( s, t );
@@ -198,11 +199,6 @@ export function resolveCollisions(
         }
     } else {
         s.invulnTimer = 0;
-    }
-
-    if ( overlapsBlock( segs, s, prevY, t, false ) ) {
-        const cap = cfg.dragSpeedFrac * t.maxCruise;
-        if ( s.vz > cap ) s.vz = cap;
     }
 
     clampToEdges( s, t );

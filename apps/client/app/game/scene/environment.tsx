@@ -3,9 +3,8 @@ import { Fragment } from 'react';
 import type { EnvConfig } from './env-config';
 import { GradientDome } from './gradient-dome';
 import { SkyFollow } from './sky-follow';
-import { TubeWalls } from './tube-walls';
 
-export function Environment( { config, seed }: { config: EnvConfig; seed?: number } ) {
+export function Environment( { config }: { config: EnvConfig } ) {
     return (
         <Fragment>
             <color attach="background" args={ [ config.background ] } />
@@ -25,8 +24,6 @@ export function Environment( { config, seed }: { config: EnvConfig; seed?: numbe
                     />
                 ) : null }
             </SkyFollow>
-
-            <TubeWalls config={ config.walls } seed={ seed } />
         </Fragment>
     );
 }

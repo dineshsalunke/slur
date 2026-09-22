@@ -1,15 +1,15 @@
-import { DEFAULT_TUNING, simulate } from '@slur/shared';
+import { DEFAULT_TUNING, simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import { currentInput } from '../input/keyboard';
-import { LocalPlayer, Prev, Render, Sim } from './traits';
+import { LocalPlayer, Net, Prev, Render, Sim } from './traits';
 
-export function flightSystem( world: World, dt: number ): void {
+export function localFlightSystem( world: World, dt: number, track: Track ): void {
     const input = currentInput();
-    world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
+    world.query( Sim, Prev, Net, LocalPlayer ).updateEach( ( [ s, prev, net ] ) => {
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        simulate( s, input, dt, DEFAULT_TUNING );
+        simulate( s, input, dt, tuningForShip( net.shipId ), track );
     } );
 }
 

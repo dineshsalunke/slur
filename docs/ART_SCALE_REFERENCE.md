@@ -36,9 +36,15 @@ This is the single correction that matters most. Consequences for art direction:
 | Total track length | **8000u** | `TRACK_SEGMENTS(400) × SEG_LEN(20)` | ≈2.4 min at cruise, ~2.8 min real average |
 | Track thickness (visual) | *free* | — | **not a sim constant.** The sim floor is a plane; thickness is pure art. Board 07's "1u" is a legal choice, not a requirement. |
 | Authoring snap grid | **4u** | `CELL` | design-time only. The sim is continuous float-AABB; **never quantize art to this at runtime** |
-| Edge rail width (x) | **1u** | `RAIL_W` | sits **outboard**: inner face flush at ±32, outer face at ±33 |
-| Edge rail height (y) | **1u** | `RAIL_H` | stands on the deck. See the departure note in `ART_MATERIALS.md` M7 |
-| Edge rail chamfer | **0.15u** | `RAIL_CHAMFER` | on the long edges, so the rim light catches a facet instead of a hard corner |
+| Edge rail width (x) | **2u** | `RAIL_W` | sits **outboard**: inner face at ±32, outer face at ±34 |
+| Edge rail height (y) | **0u above deck** | — | the rail top face is **coplanar with the deck top**. It never stands proud. Its box drops `SLAB_THICKNESS` below |
+| Rail slab depth (y) | **24u** | `SLAB_THICKNESS` | shared with the deck slab, so rail and deck present one underside |
+| Emissive share of the rail | **12.5%** | `RAIL_EMISSIVE_SHARE` | of `RAIL_W`, centred on the top face → **0.25u** marigold at 2u |
+| Rail metal margin (x) | **0.875u** | `RAIL_MARGIN` | `RAIL_W × (1 − RAIL_EMISSIVE_SHARE) / 2`, one each side of the strip |
+| Interior seam insert width (x) | **0.12u** | `SEAM_WIDTH` | `seam-inserts.ts`; the M7 inserts in the deck face, inboard of both rails |
+| Interior seam lane spacing (x) | **8u** | `SEAM_SPACING` | first lane at `SEAM_INSET` = 4u, mirrored → 8 lanes across 64u |
+| Interior seam length (z) | **3 – 11u** | `SEAM_LEN_MIN/MAX` | varied per insert; never crosses its own segment boundary |
+| Interior seam lift (y) | **0.02u** | `SEAM_LIFT` | plus `polygonOffset`, so the insert never z-fights the deck it sits on |
 
 ### 1a. No visual element may take playable width — ADR-012
 
@@ -47,9 +53,26 @@ This is the single correction that matters most. Consequences for art direction:
 > move where the deck is drawn to end.
 
 The rail is positioned by **span**, not by pivot: inner face `x = 32`, outer face `x = 32 + RAIL_W`.
-Stated for a centred pivot — three's `BoxGeometry` is centred on the origin — that is
-`position.x = ±(32 + RAIL_W/2)` = **±32.5**, *not* ±32 (which straddles the edge and eats `RAIL_W/2`
-of deck) and *not* ±33 (which leaves a `RAIL_W/2` gap).
+Stated for a centred pivot that is `±(32 + RAIL_W/2)` = **±33**, *not* ±32 (which straddles the edge
+and eats `RAIL_W/2` of deck) and *not* ±34 (which leaves a `RAIL_W/2` gap).
+
+**The rail is its own mesh, not part of the deck.** `apps/client/app/game/scene/track-rail.tsx` builds
+it from the same `RailRun` list that feeds the rail emitters, so geometry and lighting can never drift
+apart. `track-floor.tsx` draws the deck slab and stops at ±`HALF_WIDTH`; it no longer extends itself
+outboard to lend the rail an outer wall. The rail box draws top, outer wall, underside and end caps —
+**no inner face**, because the deck slab's own side wall at ±32 already seals that plane, and drawing
+both would be coincident geometry.
+
+The top face is split into two material groups: group 0 is the metal (`railBodySurface()`, the same
+`plateSurface()` treatment the deck and monoliths get, driven by its own `rail.*` tunables), group 1 is
+the `RAIL_EMISSIVE_SHARE` strip in `BOUNDARY_SURFACE` marigold.
+
+**Interior seam inserts are a separate mesh again.** `ART_MATERIALS.md` §2 lists them as *"M7, sparse ·
+short · varied length · irregular spacing"*, gameplay tier. `seam-inserts.ts` places them from a fixed
+salt through `hash2`, so the pattern is deterministic and testable; `track-seams.tsx` draws them in one
+mesh under `SEAM_SURFACE`. They are **not** lit by the rail emitters and they do not feed them — they
+are their own emissive, dialled by `seam.emissive`. They sit strictly inboard of ±`HALF_WIDTH`, so
+ADR-012 holds for them as it does for the rail, and they are skipped over a gap segment.
 
 **Why this is a hard rule and not a preference.** The sim's floor spans ±`HALF_WIDTH` unconditionally
 (`packages/shared/src/sim/track.ts:133`) and knows nothing about any client-side trim constant. A trim

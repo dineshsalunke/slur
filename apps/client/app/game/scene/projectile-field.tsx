@@ -66,7 +66,7 @@ export function ProjectileField() {
     return (
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX_BOLTS ] }>
             <primitive object={ boltGeo } attach="geometry" />
-            <meshStandardMaterial emissive="#8affff" emissiveIntensity={ 4 } toneMapped={ false } />
+            <meshStandardMaterial emissive="#8affff" emissiveIntensity={ 4 } />
         </instancedMesh>
     );
 }

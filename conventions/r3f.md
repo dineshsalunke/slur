@@ -8,7 +8,7 @@
 2. **`useFrame` is the hot path.** No `setState`, no allocations (`new THREE.Vector3()`), no closures created per frame. Pre-allocate scratch objects at module/component scope. Keep the body slim.
 3. **Instance everything repetitive.** Track segments, pickups, projectiles, stars → one `<Instances>`/`InstancedMesh` per archetype. Target a **handful of draw calls**, not thousands of meshes. Drei's soft cap: ≤ ~1000 instances per mesh is comfortable.
 4. **`frameloop`: for a runner, keep `"always"` (default).** `"demand"` is for static/CAD-style scenes. You render every frame anyway, so on-demand buys nothing and complicates the loop.
-5. **Neon bloom = HDR emissive + `toneMapped={false}` + one `<Bloom mipmapBlur>`.** Push emissive channels > 1.0; let bloom key off luminance. Prefer this over `<SelectiveBloom>` (simpler, cheaper) unless you truly need object-masked glow.
+5. **Neon bloom = emissive intensity + one `<Bloom mipmapBlur>`. No material opts out of tone mapping** — see "Tone mapping: one pass, no opt-outs" below. Raise `emissiveIntensity` until the surface clears `bloom.threshold`; let bloom key off luminance. Prefer a global `<Bloom>` over `<SelectiveBloom>` (simpler, cheaper) unless you truly need object-masked glow.
 6. **Pin `three` to `0.185.x`.** `postprocessing@6.39.4` peer-requires `three >= 0.168.0 < 0.186.0`. Bumping three to 0.186+ silently breaks postprocessing. This is the single biggest version footgun in this stack.
 7. **Reuse geometries/materials; dispose what React doesn't.** R3F auto-disposes objects it created on unmount, but manually-created shared resources and pooled objects are yours to `dispose()`.
 
@@ -69,7 +69,7 @@ function Ship({ entity }: { entity: Entity }) {
 ```tsx
 <Instances limit={1000} range={pickups.length}>
   <icosahedronGeometry args={[0.4, 0]} />
-  <meshStandardMaterial emissive="#00e5ff" emissiveIntensity={3} toneMapped={false} />
+  <meshStandardMaterial emissive="#00e5ff" emissiveIntensity={3} />
   {pickups.map((p) => (
     <Instance key={p.id} position={[p.x, p.y, p.z]} color="#00e5ff" />
   ))}
@@ -83,9 +83,35 @@ function Ship({ entity }: { entity: Entity }) {
 
 **Neon material:**
 ```tsx
-<meshStandardMaterial emissive="#ff2bd6" emissiveIntensity={2.5} toneMapped={false} />
+<meshStandardMaterial emissive="#ff2bd6" emissiveIntensity={2.5} />
 ```
-`toneMapped={false}` keeps values above 1.0 from being clamped, so bloom sees them.
+
+**Tone mapping: one pass, no opt-outs.** SLUR tone maps every material. `toneMapped={false}` was
+removed from all eight sites it appeared in (2026-09-22, owner's decision: *"remove all
+`toneMapped: false` instances from the code, lets have everything tone mapped"*), so a mixed frame
+can no longer happen — the old advice traded a consistent image for an easier bloom threshold.
+
+The cost is that the tone curve compresses toward 1.0, so **emissive intensity is now the only lever
+that reaches `bloom.threshold`**. Multiply the surface colour's linear luminance by
+`emissiveIntensity` and compare against the threshold before assuming a surface will bloom: marigold
+`#F59A24` is ~0.42 linear, so `emissiveIntensity` 2 lands at ~0.85 and never crosses a 0.9 threshold.
+That is exactly how the gap rim cords shipped un-bloomed.
+
+**Every gameplay `Canvas` carries `flat`.** R3F applies **in-shader ACES** unless it is set (fiber
+9.7.0, `dist/events-156d8d12.esm.js:15903` — `gl.toneMapping = flat ? NoToneMapping :
+ACESFilmicToneMapping`), which would double tone map against the `ToneMappingEffect` in
+`dev/tone-tuning.tsx` and, worse, compress every emissive *before* bloom reads it. With `flat`, the
+scene render stays HDR into the composer and `ToneTuning` is the single curve. `net-canvas.tsx` and
+`routes/test-level/test-level-canvas.tsx` both set it; `landing-scene.tsx` and `env-lab-canvas.tsx`
+deliberately do not, because neither mounts `ToneTuning` and `flat` there would leave them with no
+tone map at all.
+
+**The curve is Khronos PBR Neutral** — `tone.mapping` defaults to `Neutral`
+(`postprocessing@6.39.4`, `build/index.js:13481` → three's `NeutralToneMapping`). Chosen over ACES
+and AgX because it rolls off highlights while holding hue and saturation: marigold at high intensity
+stays marigold instead of skewing yellow-white. `docs/art-direction/golden-reference/cruise-lighting.png`
+is the target — the rim cords read saturated orange at their brightest and only the exhaust cores go
+white.
 
 **Postprocessing for the synthwave look:**
 ```tsx
@@ -146,7 +172,7 @@ A throttled HUD (e.g. a 10 Hz threat scan) compares `timestamp` deltas *inside* 
 - **Allocating inside `useFrame`** (`new Vector3()`, `[x,y,z]`, inline closures) — WHY: garbage per frame → GC pauses → visible jank in a fast racer. Pre-allocate and reuse.
 - **One `<mesh>` per projectile/pickup/star** — WHY: N draw calls + N reconciler nodes + N JS objects; kills both GPU and React. Instance them.
 - **`frameloop="demand"` for an action game** — WHY: you render every frame regardless, so demand mode adds `invalidate()` bookkeeping for zero benefit and can cause missed frames if you forget to invalidate. Use `"always"`.
-- **Emissive without `toneMapped={false}`** — WHY: tone mapping clamps color to [0,1], so bloom's luminance threshold never triggers and neon looks flat. Values must exceed 1.0.
+- **`toneMapped={false}` on any material** — WHY: it exempts that one surface from the curve every other surface pays, so the frame mixes two colour responses. Removed project-wide 2026-09-22. Reach the bloom threshold with `emissiveIntensity` instead, and check the number: linear luminance × intensity must exceed `bloom.threshold`.
 - **`<SelectiveBloom>` by default** — WHY: requires wiring `lights` + `selection` refs and an extra layer/render; for a scene where *everything* glowing should bloom (synthwave), a single global `<Bloom>` keyed on HDR luminance is simpler and faster. Reach for selective only to exclude specific bright-but-non-glowing surfaces.
 - **Deep React trees driven by ECS data via props** — WHY: prop changes re-render subtrees. Bridge through refs/imperative sync, not prop drilling of positions.
 - **Subscribing to a store/query in a high-level component that wraps siblings** — WHY: a change re-renders the whole subtree (all siblings), causing frame stutters. **Colocate every subscription at the leaf that consumes it:** each archetype view owns its own `useQuery` (re-renders only on *its* spawn/despawn); the root/canvas holds *zero* reactive subscriptions (only `useWorld()` context + `useFrame`). Per-frame values are never a subscription — mutate refs in a local `useFrame`. Purely cosmetic pooled objects (side-scenery, particles) should be **fully imperative** (a local `useFrame` mutating the `InstancedMesh` matrices, no subscription at all).
@@ -160,7 +186,7 @@ A throttled HUD (e.g. a 10 Hz threat scan) compares `timestamp` deltas *inside* 
 - **Instance color needs a color-capable material** and `<Instance color=…>`; forgetting makes all instances share the base material color.
 - **`useFrame` with positive priority disables auto-render** — if you set a priority and forget `gl.render(...)`, you get a black screen.
 - **Disposal:** R3F disposes objects it created when the JSX unmounts, but pooled/shared geometries+materials and anything you `new`'d manually must be `.dispose()`d by you to avoid GPU memory leaks over a long session.
-- **`toneMapped={false}` everywhere** turns off ACES/tone mapping for that material — intentional for neon, wrong for realistic PBR surfaces; apply per-material, not globally.
+- **`toneMapped={false}`** turns off tone mapping for that material. **Not used in this project** — every surface is tone mapped; raise `emissiveIntensity` to bloom.
 - **koota mutation + React:** mutating a callback-trait object does NOT notify React (that's the point). If a React component *should* react to a change, call the entity's change flag (`entity.changed(Trait)`); otherwise it stays silent — great for the render loop, surprising if you expected reactivity.
 - **Effect order matters** in `<EffectComposer>`: children run top-to-bottom. Bloom generally goes late; put tone-mapping/output considerations accordingly.
 - **DOM that must live *in* the scene graph** (anchored to a 3D point, not a fixed overlay) uses drei
@@ -174,7 +200,7 @@ A throttled HUD (e.g. a 10 Hz threat scan) compares `timestamp` deltas *inside* 
 
 **Instancing plan (one `<Instances>` per archetype):** track segments, pickups, projectiles, background stars/grid, enemy ships-if-identical. Each is a single draw call; drive per-instance transforms from the ECS in a per-frame system. Use `limit` = pool max, `range` = live count for pooling.
 
-**Bloom plan:** single global `<Bloom mipmapBlur intensity≈1.0–1.5 luminanceThreshold≈0.5–0.7>` inside `<EffectComposer multisampling={0}>`. All glowing surfaces (ship trails, neon track edges, pickups, projectiles) use `meshStandardMaterial`/`meshBasicMaterial` with `emissive` and `emissiveIntensity > 1`, `toneMapped={false}`. Reserve `<SelectiveBloom>` for the rare case of masking specific objects out.
+**Bloom plan:** single global `<Bloom mipmapBlur intensity≈1.0–1.5 luminanceThreshold≈0.5–0.7>` inside `<EffectComposer multisampling={0}>`. All glowing surfaces (ship trails, neon track edges, pickups, projectiles) use `meshStandardMaterial`/`meshBasicMaterial` with `emissive` and an `emissiveIntensity` high enough to clear the threshold after tone mapping. Reserve `<SelectiveBloom>` for the rare case of masking specific objects out.
 
 **ECS→R3F bridge (koota):**
 ```tsx
