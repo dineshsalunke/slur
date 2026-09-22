@@ -14,7 +14,7 @@ import { TestLevelHud } from './test-level-hud';
 const TuningPanel = import.meta.env.DEV ? lazy( () => import( '../../dev/tuning-panel' ) ) : null;
 
 const TEST_LEVEL_SEED = 20260921;
-const TEST_LEVEL_SEGMENTS = 120;
+const TEST_LEVEL_SEGMENTS = 420;
 const TEST_LEVEL_BLOCK_DENSITY = 0.6;
 const TEST_LEVEL_GAP_CHANCE = 1;
 

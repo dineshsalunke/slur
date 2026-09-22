@@ -343,7 +343,9 @@ function worstWindowCount( t: Track, window: number ): number {
 }
 
 test( 'block count per visible window stays within the renderer instance budget', () => {
-    const WINDOW = Math.ceil( ( 900 + 80 ) / SEG_LEN );
+    const RENDER_AHEAD = 900;
+    const RENDER_BACK = 240;
+    const WINDOW = Math.ceil( ( RENDER_AHEAD + RENDER_BACK ) / SEG_LEN ) + 1;
     const BUDGET = 160;
     let worst = 0;
     for ( const seed of SEEDS ) {
