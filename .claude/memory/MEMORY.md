@@ -9,4 +9,5 @@ lives in its own file beside this one.
 - [Instanced meshes hide scene bugs](instanced-meshes-hide-scene-bugs.md) — a traversal that skips `InstancedMesh` cannot prove a stray object isn't there; audit instance matrices
 - [Leave the browser tab open](leave-the-browser-tab-open.md) — closing it closes the window; reuse the `/test-level` tab
 - [Extension FPS readings are worthless](browser-extension-throttles-fps.md) — the driven tab is backgrounded and rAF is throttled; CPU-per-frame is still trustworthy
-- [The tunables store is shared](shared-tunables-storage.md) — owner's window and the extension tab write one `localStorage`; agree who drives before A/Bs
+- [The tunables store is shared](shared-tunables-storage.md) — one `localStorage` per ORIGIN; a worktree on its own port sidesteps it entirely
+- [One git index per checkout](shared-checkout-shares-one-git-index.md) — `git add` is not session-local; commit with explicit pathspecs
