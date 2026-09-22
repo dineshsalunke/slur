@@ -177,7 +177,10 @@ sampling every block z-boundary in the segment, with tests, before block geometr
 
 ## Handed over by `rearview-mirror`, for whoever owns it
 
-**`scene-effects.tsx` has an HMR-only crash.** On a hot re-render — not a fresh load — the canvas tears
+**`scene-effects.tsx` has an HMR-only crash — this is issue #166, already filed.** Reported
+independently by both peers this session, which is a fair measure of how much it costs: it kills the
+page on any HMR edit that re-renders the Canvas subtree, so iterating on scene code means a hard reload
+every time. On a hot re-render — not a fresh load — the canvas tears
 down with `TypeError: Converting circular structure to JSON`, from `@react-three/postprocessing`'s
 `JSON.stringify( restProps )` memo. Under React 19 `ref` is an ordinary prop, so `<Bloom ref={ ref }
 mipmapBlur />` at `scene-effects.tsx:24` feeds the `BloomEffect` into that stringify, and its internal
@@ -207,7 +210,13 @@ extension and look at `/test-level`.
 ## Next
 
 1. **Reconnect the extension and judge `a0c87d1`** — is the seam flicker gone, and does the 0.5u
-   chamfer read in silhouette? Both are one-constant dials.
+   chamfer read in silhouette? Both are one-constant dials. **Click into the page first:** both peers
+   independently lost time to the driven tab being backgrounded, where `rAF` never fires, the scene
+   screenshots black and per-frame readouts stay blank. It cost one of them a 45s CDP timeout. This is
+   not a rendering bug and it invalidates any screenshot taken before the click.
+2. **Fix issue #166 before the texture work** — `scene-effects.tsx` is mine, and the block texture is
+   the most HMR-iterative task left. Paying a hard reload per edit while dialling a procedural texture
+   is the wrong order of work.
 2. **Build `sealed-block-texture.ts`** per the plan above, plus the `uv` attribute.
 3. **Monolith cap-edge chamfers**, and widen the vertical ones.
 4. **The `GRAPHITE_ALBEDO` decision** — revert into M1's band and fix the ramp environmentally, or amend
