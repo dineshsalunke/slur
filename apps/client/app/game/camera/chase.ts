@@ -1,18 +1,8 @@
 import { DEFAULT_TUNING, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import type { Group, PerspectiveCamera } from 'three';
+import { num } from '../../dev/tunables';
 import { LocalPlayer, Net, Remote, Render, Sim } from '../ecs/traits';
-
-export const CHASE = {
-    height: 4.7,
-    back: 7.3,
-    backStretch: 1.5,
-    lookAhead: 9.5,
-    lookAtLift: 1.35,
-    fov: 70,
-    fovStretch: 15,
-    follow: 16,
-};
 
 export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: number ): void {
     const e = world.queryFirst( LocalPlayer, Render, Sim );
@@ -25,15 +15,17 @@ export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: num
     const net = e.get( Net );
     const maxCruise = net ? tuningForShip( net.shipId ).maxCruise : DEFAULT_TUNING.maxCruise;
 
-    const k = 1 - Math.exp( -CHASE.follow * dt );
-    const back = CHASE.back + ( speed / maxCruise ) * CHASE.backStretch;
+    const stretch = speed / maxCruise;
+
+    const k = 1 - Math.exp( -num( 'cam.follow' ) * dt );
+    const back = num( 'cam.back' ) + stretch * num( 'cam.backStretch' );
 
     cam.position.x = p.x;
-    cam.position.y += ( p.y + CHASE.height - cam.position.y ) * k;
+    cam.position.y += ( p.y + num( 'cam.height' ) - cam.position.y ) * k;
     cam.position.z += ( p.z - back - cam.position.z ) * k;
-    cam.lookAt( p.x, p.y + CHASE.lookAtLift, p.z + CHASE.lookAhead );
+    cam.lookAt( p.x, p.y + num( 'cam.lookAtLift' ), p.z + num( 'cam.lookAhead' ) );
 
-    const fov = CHASE.fov + ( speed / maxCruise ) * CHASE.fovStretch;
+    const fov = num( 'cam.fov' ) + stretch * num( 'cam.fovStretch' );
     if ( Math.abs( cam.fov - fov ) > 0.1 ) {
         cam.fov = fov;
         cam.updateProjectionMatrix();

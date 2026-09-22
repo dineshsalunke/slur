@@ -11,7 +11,7 @@ import {
     shapeProfile,
     taperAt,
 } from './monolith-transforms';
-import { BOUNDARY_W } from './track-geometry';
+import { RAIL_W } from './track-geometry';
 
 const box = MONOLITH_SHAPES.box;
 const obelisk = MONOLITH_SHAPES.obelisk;
@@ -25,7 +25,7 @@ describe( 'bodyTransform', () => {
     it( 'clears the rail on both sides', () => {
         for ( const side of [ -1, 1 ] ) {
             const t = bodyTransform( box, { z: 100, side } );
-            expect( Math.abs( t.position[ 0 ] ) - box.width / 2 ).toBeCloseTo( HALF_WIDTH + BOUNDARY_W );
+            expect( Math.abs( t.position[ 0 ] ) - box.width / 2 ).toBeCloseTo( HALF_WIDTH + RAIL_W );
             expect( Math.sign( t.position[ 0 ] ) ).toBe( side );
         }
     } );

@@ -16,10 +16,11 @@ export function LocalLoop( { track }: { track: Track } ) {
     useEffect( attachFreezeToggle, [] );
 
     useFrame( ( state, delta ) => {
-        if ( simFreeze.on ) return;
-        const alpha = advance( delta, ( dt ) => localFlightSystem( world, dt, track ) );
-        syncRenderSystem( world, alpha );
-        localDeathVfxSystem( world );
+        if ( ! simFreeze.on ) {
+            const alpha = advance( delta, ( dt ) => localFlightSystem( world, dt, track ) );
+            syncRenderSystem( world, alpha );
+            localDeathVfxSystem( world );
+        }
         updateChaseCamera( state.camera as PerspectiveCamera, world, delta );
     } );
 

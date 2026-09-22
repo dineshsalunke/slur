@@ -1,6 +1,9 @@
 import { EffectComposer } from '@react-three/postprocessing';
 import type { Track } from '@slur/shared';
 import { Fragment, type ReactNode } from 'react';
+import { ExposureTuning } from '../../dev/exposure-tuning';
+import { RenderScale } from '../../dev/render-scale';
+import { ToneTuning } from '../../dev/tone-tuning';
 import { GRID_VOID } from './env-config';
 import { ExplosionField } from './explosions';
 import { FinishGate } from './finish-gate';
@@ -24,6 +27,7 @@ export function WorldScene( {
         <Fragment>
             <GameEnvironment config={ GRID_VOID } track={ track } />
             <SceneLighting />
+            <RenderScale />
             <ExplosionField />
             <HitSpark />
             <TrackView track={ track } />
@@ -31,7 +35,9 @@ export function WorldScene( {
             <Ships />
             { children }
             <EffectComposer multisampling={ 0 }>
-                <SceneBloom config={ GRID_VOID.bloom } />
+                <ExposureTuning />
+                <SceneBloom />
+                <ToneTuning />
             </EffectComposer>
         </Fragment>
     );

@@ -1,3 +1,5 @@
+import { ACCENT_ANCHOR } from './accent';
+
 export type MonolithShapeName = 'box' | 'obelisk';
 
 export type SeamFace = 'inner' | 'outer';
@@ -41,8 +43,8 @@ export interface MonolithFieldConfig {
 
 export const GRAPHITE_SURFACE: MonolithSurface = {
     color: '#333d47',
-    roughness: 0.62,
-    metalness: 0.3,
+    roughness: 0.78,
+    metalness: 0,
     envMapIntensity: 1.6,
 };
 
@@ -52,7 +54,7 @@ export const EDGE_SEAM: MonolithSeamConfig = {
     width: 0.5,
     proud: 0.5,
     color: '#0b0d0f',
-    emissive: '#F59A24',
+    emissive: ACCENT_ANCHOR,
     intensity: 2,
 };
 

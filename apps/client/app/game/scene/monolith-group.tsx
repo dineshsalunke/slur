@@ -1,9 +1,14 @@
-import { Fragment, useCallback } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { num } from '../../dev/tunables';
+import { useRebuildToken } from '../../dev/use-tunables';
+import { patchEmitterLight } from './emitter-array';
 import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
-import { monolithGeometry } from './monolith-geometry';
-import { bodyTransform, type MonolithTransform, seamTransform, shapeProfile } from './monolith-transforms';
+import { type MonolithSize, monolithGeometry } from './monolith-geometry';
+import { bodySpan, bodyTransform, type MonolithTransform, seamTransform, shapeProfile } from './monolith-transforms';
+import { cleanToMapRoughness, monolithBodySurface } from './track-materials';
 
 const scratch = new THREE.Object3D();
 const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } );
@@ -32,6 +37,12 @@ export function MonolithGroup( {
     shape: MonolithShapeConfig;
     placements: readonly MonolithPlacement[];
 } ) {
+    const rebuild = useRebuildToken();
+    const surface = useMemo( monolithBodySurface, [ rebuild ] );
+    const bodyRef = useRef< THREE.MeshStandardMaterial | null >( null );
+    const seamRef = useRef< THREE.MeshStandardMaterial | null >( null );
+    const size: MonolithSize = [ shape.width, bodySpan( shape ), shape.depth ];
+
     const fillBodies = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
             if ( mesh ) fill( mesh, placements, ( p ) => bodyTransform( shape, p ) );
@@ -46,19 +57,31 @@ export function MonolithGroup( {
         [ placements, shape ],
     );
 
+    useFrame( () => {
+        const body = bodyRef.current;
+        if ( body ) {
+            body.metalness = num( 'mono.metalness' );
+            body.roughness = cleanToMapRoughness( num( 'mono.roughness' ) );
+            body.envMapIntensity = num( 'mono.envMapIntensity' );
+        }
+        const seam = seamRef.current;
+        if ( seam ) seam.emissiveIntensity = num( 'mono.seam' );
+    } );
+
     return (
         <Fragment>
             <instancedMesh
                 key={ `body-${ placements.length }` }
                 ref={ fillBodies }
-                geometry={ monolithGeometry( shapeProfile( shape ) ) }
+                geometry={ monolithGeometry( shapeProfile( shape ), size ) }
                 args={ [ undefined, undefined, placements.length ] }
             >
                 <meshStandardMaterial
-                    color={ shape.surface.color }
-                    roughness={ shape.surface.roughness }
-                    metalness={ shape.surface.metalness }
-                    envMapIntensity={ shape.surface.envMapIntensity }
+                    ref={ ( mat ) => {
+                        bodyRef.current = mat;
+                        if ( mat ) patchEmitterLight( mat );
+                    } }
+                    { ...surface }
                 />
             </instancedMesh>
             <instancedMesh
@@ -68,6 +91,7 @@ export function MonolithGroup( {
                 args={ [ undefined, undefined, placements.length ] }
             >
                 <meshStandardMaterial
+                    ref={ seamRef }
                     color={ shape.seam.color }
                     emissive={ shape.seam.emissive }
                     emissiveIntensity={ shape.seam.intensity }

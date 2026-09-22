@@ -18,12 +18,16 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
-> **Revision 4** — 2026-09-20. The deck's panel division, settled on the owner's decisions. Tiles are
-> **4u in breaking bond**, closing the question revision 3 left open and reversing revision 3's "it
-> must not be built at 4u" (§7 item 7). The **joint groove is 0.2 – 0.8u**, which forced M1's ~1u
-> detail floor to be exempted for continuous linear elements (§7 item 8). Both are recorded with the
-> wording they replace quoted in full. Joint width and contrast remain open, and §5 now gates them as
-> one question. Nothing outside M1 moves.
+> **Revision 5** — 2026-09-22. **Breaking bond is removed.** Deck plates are laid in **straight bond**
+> and elongated down-track — **4u across the ribbon by 16u along it**. Revision 4's half-tile row
+> offset produced a masonry read, which §M8 already names as the defect to avoid. On the owner's
+> instruction the rationale it was adopted on is **struck**, not kept as superseded text: §7 item 7 is
+> rewritten and §8's revision 4 entry removed. The 4u cross-track pitch is unchanged, and the lane ban
+> now rests on joint contrast alone, which makes §5's gate load-bearing. Nothing outside M1 moves.
+> *(Revision 4 — 2026-09-20. The deck's panel division, settled on the owner's decisions. The **joint
+> groove is 0.2 – 0.8u**, which forced M1's ~1u detail floor to be exempted for continuous linear
+> elements (§7 item 8), recorded with the wording it replaces quoted in full. Joint width and contrast
+> remain open, and §5 now gates them as one question. Its bond decision is struck by revision 5.)*
 > *(Revision 3 — 2026-09-19. Folds in the approved golden reference
 > (`docs/art-direction/golden-reference/DIRECTION.md`) and the frozen track boards **24** (clean
 > baseline) and **25** (wear). Three of revision 2's rules are **dead**, and revision 3 corrects them
@@ -90,7 +94,7 @@ The ribbon's deck. The largest surface in frame and the one every other value is
 | Metalness | 1.0 |
 | Roughness | 0.35 – 0.50 |
 | Base colour | deep graphite, between `#0A1117` (deep space) and `#303C45` (muted steel) |
-| Panel division scale | **4u tiles in breaking bond** — 16 across the 64u ribbon, alternate rows offset 2u. See "Panel division" below |
+| Panel division scale | **4u × 16u plates in straight bond** — 16 across the 64u ribbon, elongated down-track, no row offset. See "Panel division" below |
 | Joints | dark by default, low contrast, both axes. **Sparse emissive inserts permitted** — see M7 |
 | Joint width | **0.2 – 0.8u** (5 – 20% of the 4u tile), start at the top and dial down. Open — gate it with contrast, §5 |
 | Finish wear | broad softly-bounded roughness patches; large features, restrained contrast |
@@ -115,28 +119,29 @@ and the sparse emissive inserts the golden reference now permits. What stays for
 version of any of them — no racing line, no safe-route glow, no fully glowing tile grid, no marked
 driving lanes (`golden-reference/DIRECTION.md`).
 
-**Panel division — 4u tiles in breaking bond. Owner decision, 2026-09-20; this closes the question
-revision 3 left open and reverses revision 3's ban.** Board 24's audit gives *"16 across 64u"*
+**Panel division — 4u × 16u plates in straight bond. Owner decision, 2026-09-22; this replaces
+revision 4's breaking bond.** Board 24's audit gives *"16 across 64u"*
 (`golden-reference/DIRECTION.md`) and `HALF_WIDTH` is defined as *"16 lanes wide (2·HALF_WIDTH/CELL)"* —
-so a 4u tile lands exactly 16 across the 64u ribbon, matching the board's own count. Alternate
-down-track rows are offset by **half a tile (2u)**, the way real metal decking is laid.
+so a 4u cross-track pitch lands exactly 16 across the 64u ribbon, matching the board's own count.
+Plates run **16u down-track** and butt on a grid with **no row offset**.
 
-**Why revision 3's ban does not hold.** It reasoned that *"a 4u joint pitch draws a dark line on every
-cell boundary, which is exactly the 'visible runtime lanes' the direction forbids"*. That reasoning is
-about **longitudinal stripes**, and a tile has transverse joints too. The forbidden read —
-*"no racing line, no safe-route glow, no fully glowing tile grid, no marked driving lanes"*
-(`golden-reference/DIRECTION.md`) — requires an **uninterrupted** line running to the vanishing point.
-Breaking bond removes that structurally: no down-track seam survives past one tile before the next
-row's offset interrupts it. Transverse joints were never at risk — they run across the direction of
-travel and cannot be steered by, though they are the ones that vanish first at distance, which is the
-gate check §5 names. Bond is preferred over simply lowering joint contrast because it kills
-the failure mode **by construction**, rather than relying on a contrast ratio still holding up at
-distance and at race speed.
+**Why breaking bond was removed.** A half-tile row offset on a square tile is a masonry signature: it
+read as a brick wall, not a deck. The sheet already names that failure elsewhere — §M8 quotes board
+24's audit of its own generated image, where the gap walls *"acquire a masonry-like small-panel
+texture, which is not the intended metal section"*. Revision 4 prescribed for the deck the exact read
+§M8 rejects for the wall beneath it. Welded plate butts on a grid and runs with the structure, so the
+plate is elongated along the direction of travel and the bond is straight.
+
+**What now holds the lane ban.** The forbidden read — *"no racing line, no safe-route glow, no fully
+glowing tile grid, no marked driving lanes"* (`golden-reference/DIRECTION.md`) — rests on **joint
+contrast alone**. That makes §5's gate load-bearing rather than a formality; it is no longer backed up
+by a structural guarantee. The 16u plate length puts a transverse joint every 16u across the down-track
+seam, which is weaker than an offset but is not nothing.
 
 Two constraints survive the decision:
 
-- **Joints stay low-contrast value/material divisions, not drawn lines.** At 4u there are 16 tiles
-  across the frame; if the joints read as edges the deck becomes a grid whatever the bond. Board 25's
+- **Joints stay low-contrast value/material divisions, not drawn lines.** At a 4u cross-track pitch
+  there are 16 plates across the frame; if the joints read as edges the deck becomes a grid. Board 25's
   exclusion list already forbids *"fully outlined tile edges"*, and §4's criteria still govern.
 - **Shimmer is a sampling problem, not a size problem.** A 4u pitch on the far deck, at a shallow chase
   angle and race speed, will alias if the texture is undersampled. That is fixed with mips and
@@ -493,30 +498,32 @@ screenshot and fails at speed has failed.
 
 ## 5. Open — the questions still to settle
 
-**Joint width and joint contrast on the deck (M1) — one question, not two.** The tile *size* is settled
-at 4u in breaking bond (§7 item 7). What is open is how wide a joint is and how strongly it reads, and
-these must be gated **as a pair**: a wide faint joint and a narrow dark one are indistinguishable at
-distance, so a number found for either while the other sat at an arbitrary value is only correct for
-that arbitrary value.
+**Joint width and joint contrast on the deck (M1) — one question, not two.** The plate *size* is
+settled at 4u × 16u in straight bond (§7 item 7). What is open is how wide a joint is and how strongly
+it reads, and these must be gated **as a pair**: a wide faint joint and a narrow dark one are
+indistinguishable at distance, so a number found for either while the other sat at an arbitrary value
+is only correct for that arbitrary value.
 
-**Width — 0.2 – 0.8u, which is 5 – 20% of the tile** (owner, 2026-09-20). Recorded as a fraction as
-well as an absolute so it survives if the tile size ever moves. **Start at 0.8u and dial down:** going
-too fine shows you what you are losing, whereas a joint that was never visible cannot be judged at all.
+**Width — 0.1u, which is 2.5% of the cross-track pitch** (owner, 2026-09-22). This **replaces** the
+`0.2 – 0.8u` range set on 2026-09-20; the dial-down that range instructed ran past its own floor, and
+0.3u still read as a groove rather than a seam. The instruction that produced it stands: start wide and
+dial down, because going too fine shows you what you are losing whereas a joint that was never visible
+cannot be judged at all.
 
 **Contrast** stays what it always was — a value/material division, not a drawn line. If the tiling
 resolves into a grid, or a joint reads as an edge, it is too high. Board 25 already excludes *"fully
 outlined tile edges"*.
 
 **The specific failure to watch for at the gate — the two joint axes do not fade at the same rate.**
-At the chase camera's vantage (`CHASE`: 7.5u up, 15u back, 70° FOV) the deck 50u ahead is roughly 8.5°
-off edge-on. That grazing angle crushes *transverse* joint spacing by about a factor of seven, while a
-*longitudinal* joint runs away from the viewer and keeps its width untouched. So the transverse joints
-die into the mip blur first and the mid-to-far deck can revert toward **stripes** — the read breaking
-bond was adopted to prevent, re-entering through sampling rather than through geometry. It most likely
-survives, because the 2u row offset should blur into a broad faint smear rather than into a crisp,
-steerable line. **"Most likely" is not a gate**: look explicitly at the deck 40 – 100u
-ahead at race speed and confirm no continuous down-track line has reassembled itself. If one has, the
-answer is sampling (mips, anisotropy) or contrast — **not** a change to the tile size, which is settled.
+At the chase camera's vantage (`CHASE`: 4.7u up, 7.3u back, 70° FOV — `apps/client/app/game/camera/chase.ts:7`)
+the deck 50u ahead is only a few degrees off edge-on. That grazing angle crushes *transverse* joint
+spacing hard, while a *longitudinal* joint runs away from the viewer and keeps its width untouched. So
+the transverse joints die into the mip blur first and the mid-to-far deck reverts toward **stripes**.
+Under straight bond there is no row offset left to blur into a smear, so this is no longer a "most
+likely survives" — it is the **expected** behaviour, and joint contrast is the only thing holding it.
+**Gate it explicitly:** look at the deck 40 – 100u ahead at race speed and judge whether the down-track
+lines read as steerable lanes. The remedy is sampling (mips, anisotropy) or contrast — **not** the
+plate size, which is settled.
 
 Both numbers freeze back into M1's table at the gate. Until then no number in this sheet licenses a
 joint.
@@ -619,16 +626,15 @@ behind the direction, not disagreeing with it.
 
 **Revision 4 — the owner's answer to item 5's flag.**
 
-7. **Panel joint pitch is 4u, laid in breaking bond.** Item 5 flagged its own ban to the owner and
-   asked to be corrected if the intent was literally 4u. It was — decision taken 2026-09-20. Item 5's
-   reasoning was wrong in one specific way, and the fix is structural rather than a matter of degree:
-   the ban treated the tiling as a set of longitudinal stripes, but a tile also has transverse joints,
-   and the *"visible runtime lanes"* read the direction forbids needs an **uninterrupted** down-track
-   line. Offsetting alternate rows by half a tile means no down-track seam survives past one tile, so
-   the forbidden read is removed by construction and every tile is still exactly 4×4u. See M1's
-   "Panel division". **This is not a departure from the package** — board 24 audits *"16 across 64u"*,
-   which is what 4u across a 64u ribbon produces; revision 3 declined to adopt the board's own count
-   and revision 4 adopts it.
+7. **Panel plates are 4u across by 16u down-track, laid in straight bond.** Item 5 flagged its own ban
+   on a 4u pitch to the owner and asked to be corrected if the intent was literally 4u. It was —
+   decision taken 2026-09-20. Revision 4 then adopted a half-tile row offset; **revision 5 removes it
+   (owner, 2026-09-22) and the reasoning it was adopted on is struck rather than preserved, on the
+   owner's instruction that it was wrongly added.** What replaces it: a square tile in running bond
+   reads as masonry, which §M8 already names as the defect to avoid, so plates are elongated along the
+   direction of travel and butt on a grid. See M1's "Panel division". **This is not a departure from
+   the package** — board 24 audits *"16 across 64u"*, which is what a 4u cross-track pitch on a 64u
+   ribbon produces; revision 3 declined to adopt the board's own count and revision 4 adopts it.
 8. **The ~1u detail floor is exempted for continuous linear elements.** The owner's joint width of
    0.2 – 0.8u sits entirely under M1's *"nothing below ~1u"*, so one of the two had to give. The floor
    gives, because it was written about **isolated features** — §1's rationale is that *"a detail
@@ -715,19 +721,27 @@ not the scene's warm energy (92% IBL / 8% star / 0% rail, per-fragment). §5 gai
 of it — does the deck get a cold key from above? M1's numbers are unchanged; §7 now states the condition
 under which they must be re-tested.
 
-**Revision 3 → 4, the owner's ruling on the 4u flag (2026-09-20).** One change. Revision 3's §7 item 5
-flagged its own ban to the owner — *"correct this if the intent was literally 4u"* — and the answer was
-that it was. The deck's panel division is now **4u tiles in breaking bond**: 16 across the 64u ribbon,
-alternate down-track rows offset 2u.
+**Revision 4 → 5, straight bond and a narrower joint (2026-09-22).** Two owner changes, both on M1.
 
-- **M1's "It must not be built at 4u"** and its table's *"open — gate it"* are both replaced. The ban's
-  reasoning held only for longitudinal stripes; breaking bond removes the continuous down-track seam by
-  construction, so the *"visible runtime lanes"* read cannot occur at any tile size.
-- **§5's "Panel joint pitch on the deck (M1)"** open question is closed and replaced by a narrower one:
-  joint *contrast*, still gated at race speed.
-- Two constraints carried forward into M1 rather than dropped: joints remain low-contrast value
-  divisions rather than drawn lines, and far-deck shimmer at a 4u pitch is a mip/anisotropy problem —
-  explicitly **not** grounds to re-open the size.
+- **Breaking bond is struck.** A half-tile offset on a square tile read as a brick wall. §M8 already
+  names the masonry read as the defect to avoid, so revision 4 was prescribing for the deck what the
+  sheet rejects for the gap wall beneath it. Plates are now **4u across × 16u down-track in straight
+  bond**. **The rationale revision 4 was adopted on is removed, not preserved as superseded text** —
+  the owner's instruction was that it was wrongly added, so §7 item 7 is rewritten and revision 4's own
+  entry in this log is gone rather than struck through.
+- **Consequence, stated because it is easy to miss:** the lane ban no longer has a structural
+  guarantee. Joint contrast is the whole defence, and §5's gate is load-bearing.
+- **Joint width 0.2 – 0.8u → 0.1u.** The dial-down that range instructed ran past its own floor; 0.3u
+  still read as a groove rather than a seam.
+- Carried forward from revision 4 unchanged: joints remain low-contrast value divisions rather than
+  drawn lines, and far-deck shimmer at a 4u pitch is a mip/anisotropy problem — explicitly **not**
+  grounds to re-open the size.
+
+**Revision 3 → 4, the owner's ruling on the 4u flag (2026-09-20).** Revision 3's §7 item 5 flagged its
+own ban to the owner — *"correct this if the intent was literally 4u"* — and the answer was that it
+was. **M1's "It must not be built at 4u"** and its table's *"open — gate it"* were both replaced, and
+**§5's "Panel joint pitch on the deck (M1)"** open question closed and replaced by a narrower one:
+joint width and contrast, gated at race speed. The bond this revision chose is struck by revision 5.
 
 **Joint width, same day.** The owner set the joint groove itself at **0.2 – 0.8u** (5 – 20% of the
 tile), to start at the top and dial down. Two consequences recorded rather than left implicit:
@@ -737,8 +751,8 @@ tile), to start at the top and dial down. Two consequences recorded rather than 
   elsewhere forbids.
 - **§5's open question becomes width *and* contrast together**, plus a named check: the two joint axes
   fade at different rates under the chase camera's grazing angle, so the mid-to-far deck can revert
-  toward stripes through mip blur even though breaking bond removed them geometrically. Confirm at the
-  gate; the remedy is sampling or contrast, never the tile size.
+  toward stripes through mip blur. Confirm at the gate; the remedy is sampling or contrast, never the
+  plate size.
 
 **Revision 2 → 3, after the golden reference and the frozen track boards (2026-09-19).** Not a review —
 revision 2 went stale in the days after it was written, and three of its rules would have been read by

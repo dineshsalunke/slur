@@ -27,12 +27,27 @@ export const TONE_MAPPINGS = [ 'None', 'Linear', 'Reinhard', 'Cineon', 'ACESFilm
 export const NUMBER_SPECS = {
     'perf.dpr': { group: 'Render', label: 'pixel ratio', value: 2, min: 0.5, max: 3, step: 0.05 },
 
+    'cam.back': { group: 'Camera', label: 'back (u)', value: 12, min: 0, max: 60, step: 0.1 },
+    'cam.backStretch': { group: 'Camera', label: 'back @ speed', value: 0, min: 0, max: 20, step: 0.1 },
+    'cam.height': { group: 'Camera', label: 'height (u)', value: 5, min: 0, max: 40, step: 0.1 },
+    'cam.lookAhead': { group: 'Camera', label: 'look ahead (u)', value: 14, min: -20, max: 80, step: 0.5 },
+    'cam.lookAtLift': { group: 'Camera', label: 'look lift (u)', value: 1, min: -10, max: 20, step: 0.05 },
+    'cam.fov': { group: 'Camera', label: 'fov', value: 70, min: 20, max: 120, step: 0.5 },
+    'cam.fovStretch': { group: 'Camera', label: 'fov @ speed', value: 0, min: 0, max: 60, step: 0.5 },
+    'cam.follow': { group: 'Camera', label: 'follow damp', value: 20, min: 0.5, max: 60, step: 0.5 },
+
     'tone.exposure': { group: 'Tone', label: 'exposure', value: 1, min: 0, max: 3, step: 0.01 },
 
-    'ibl.intensity': { group: 'IBL', label: 'intensity', value: 2, min: 0, max: 40, step: 0.1 },
+    'ibl.intensity': { group: 'IBL', label: 'intensity', value: 3, min: 0, max: 40, step: 0.1 },
 
-    'bloom.intensity': { group: 'Bloom', label: 'intensity', value: 0.45, min: 0, max: 4, step: 0.01 },
-    'bloom.threshold': { group: 'Bloom', label: 'threshold', value: 0.9, min: 0, max: 2, step: 0.01 },
+    'fill.point': { group: 'Fill', label: 'camera fill', value: 25.6, min: 0, max: 200, step: 0.05 },
+    'fill.pointBack': { group: 'Fill', label: 'fill behind cam (u)', value: 4, min: -20, max: 80, step: 0.5 },
+    'fill.pointLift': { group: 'Fill', label: 'fill lift (u)', value: 0, min: -20, max: 60, step: 0.5 },
+    'fill.pointDecay': { group: 'Fill', label: 'fill decay', value: 0.1, min: 0, max: 3, step: 0.05 },
+    'fill.pointDistance': { group: 'Fill', label: 'fill cutoff (u)', value: 140, min: 0, max: 600, step: 5 },
+
+    'bloom.intensity': { group: 'Bloom', label: 'intensity', value: 0.7, min: 0, max: 4, step: 0.01 },
+    'bloom.threshold': { group: 'Bloom', label: 'threshold', value: 1, min: 0, max: 2, step: 0.01 },
     'bloom.smoothing': { group: 'Bloom', label: 'smoothing', value: 0.2, min: 0, max: 1, step: 0.01 },
     'bloom.radius': { group: 'Bloom', label: 'radius', value: 0.5, min: 0, max: 1, step: 0.01 },
 
@@ -69,10 +84,10 @@ export const NUMBER_SPECS = {
         step: 0.01,
         rebuild: true,
     },
-    'groove.metalness': { group: 'Groove', label: 'metalness', value: 0.95, min: 0, max: 1, step: 0.01, rebuild: true },
-    'groove.roughness': { group: 'Groove', label: 'roughness', value: 0.95, min: 0, max: 1, step: 0.01, rebuild: true },
+    'groove.metalness': { group: 'Groove', label: 'metalness', value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
+    'groove.roughness': { group: 'Groove', label: 'roughness', value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'groove.contrast': { group: 'Groove', label: 'darkening', value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
-    'groove.cavity': { group: 'Groove', label: 'cavity mask', value: 0.25, min: 0, max: 1, step: 0.01, rebuild: true },
+    'groove.cavity': { group: 'Groove', label: 'cavity mask', value: 0.3, min: 0, max: 1, step: 0.01, rebuild: true },
 
     'rail.metalness': { group: 'Rail', label: 'metalness', value: 0.9, min: 0, max: 1, step: 0.01 },
     'rail.roughness': { group: 'Rail', label: 'roughness', value: 0.35, min: 0.02, max: 1, step: 0.01 },
@@ -80,10 +95,11 @@ export const NUMBER_SPECS = {
     'rail.normalScale': { group: 'Rail', label: 'normal scale', value: 0.8, min: 0, max: 3, step: 0.01 },
     'rail.plate': { group: 'Rail', label: 'plate size (u)', value: 4, min: 1, max: 24, step: 1, rebuild: true },
 
-    'emitter.intensity': { group: 'Rail emitter', label: 'intensity', value: 10, min: 0, max: 120, step: 0.5 },
+    'emitter.intensity': { group: 'Rail emitter', label: 'intensity', value: 1.5, min: 0, max: 120, step: 0.5 },
     'emitter.range': { group: 'Rail emitter', label: 'range (u)', value: 690, min: 20, max: 1200, step: 10 },
     'emitter.decay': { group: 'Rail emitter', label: 'decay', value: 2, min: 0, max: 3, step: 0.05 },
     'rail.emissive': { group: 'Rail emitter', label: 'rail emissive', value: 2, min: 0, max: 10, step: 0.05 },
+    'rim.emissive': { group: 'Rail emitter', label: 'gap rim emissive', value: 6, min: 0, max: 30, step: 0.05 },
 
     'mono.metalness': { group: 'Monolith', label: 'metalness', value: 0.9, min: 0, max: 1, step: 0.01 },
     'mono.roughness': { group: 'Monolith', label: 'roughness', value: 0.35, min: 0.02, max: 1, step: 0.01 },
@@ -93,16 +109,17 @@ export const NUMBER_SPECS = {
 } as const satisfies Record< string, NumberSpec >;
 
 export const COLOR_SPECS = {
-    'ibl.zenith': { group: 'IBL', label: 'zenith', value: '#26292c', rebuild: true },
-    'ibl.horizon': { group: 'IBL', label: 'horizon', value: '#303439', rebuild: true },
-    'ibl.nadir': { group: 'IBL', label: 'nadir', value: '#1e2023', rebuild: true },
+    'ibl.zenith': { group: 'IBL', label: 'zenith', value: '#52575b', rebuild: true },
+    'ibl.horizon': { group: 'IBL', label: 'horizon', value: '#2f3337', rebuild: true },
+    'ibl.nadir': { group: 'IBL', label: 'nadir', value: '#34373c', rebuild: true },
+    'fill.pointColor': { group: 'Fill', label: 'camera fill', value: '#5f6367' },
     'deck.plateColor': { group: 'Deck', label: 'plate', value: '#23272a', rebuild: true },
     'rail.plateColor': { group: 'Rail', label: 'plate', value: '#23272a', rebuild: true },
     'mono.plateColor': { group: 'Monolith', label: 'plate', value: '#313b45', rebuild: true },
 } as const satisfies Record< string, ColorSpec >;
 
 export const CHOICE_SPECS = {
-    'tone.mapping': { group: 'Tone', label: 'mapping', value: 'Reinhard', options: TONE_MAPPINGS },
+    'tone.mapping': { group: 'Tone', label: 'mapping', value: 'Neutral', options: TONE_MAPPINGS },
 } as const satisfies Record< string, ChoiceSpec >;
 
 export type NumberKey = keyof typeof NUMBER_SPECS;

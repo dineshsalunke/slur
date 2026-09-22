@@ -1,18 +1,56 @@
-import { trackSurfaceTexture } from './track-texture';
+import * as THREE from 'three';
+import { num } from '../../dev/tunables';
+import { ACCENT_ANCHOR } from './accent';
+import {
+    deckSurfaceParams,
+    monolithSurfaceParams,
+    NORMAL_SIGN_X,
+    NORMAL_SIGN_Y,
+    ROUGHNESS_MAP_BASE,
+    railSurfaceParams,
+    type SurfaceParams,
+    surfaceMaps,
+} from './track-texture';
 
-export const FLOOR_ROUGHNESS = 0.4;
+export function cleanToMapRoughness( clean: number ): number {
+    return clean / ROUGHNESS_MAP_BASE;
+}
 
-export const FLOOR_METALNESS = 0.75;
-
-export const FLOOR_ENV_MAP_INTENSITY = 1;
-
-export function floorSurface() {
+function plateSurface( params: SurfaceParams, clean: number, metalness: number, scale: number ) {
     return {
         color: '#ffffff',
-        map: trackSurfaceTexture(),
-        roughness: FLOOR_ROUGHNESS,
-        metalness: FLOOR_METALNESS,
+        ...surfaceMaps( params ),
+        normalScale: new THREE.Vector2( scale * NORMAL_SIGN_X, scale * NORMAL_SIGN_Y ),
+        roughness: cleanToMapRoughness( clean ),
+        metalness,
     };
+}
+
+export function floorSurface() {
+    return plateSurface(
+        deckSurfaceParams(),
+        num( 'deck.roughness' ),
+        num( 'deck.metalness' ),
+        num( 'deck.normalScale' ),
+    );
+}
+
+export function railBodySurface() {
+    return plateSurface(
+        railSurfaceParams(),
+        num( 'rail.roughness' ),
+        num( 'rail.metalness' ),
+        num( 'rail.normalScale' ),
+    );
+}
+
+export function monolithBodySurface() {
+    return plateSurface(
+        monolithSurfaceParams(),
+        num( 'mono.roughness' ),
+        num( 'mono.metalness' ),
+        num( 'deck.normalScale' ),
+    );
 }
 
 export const LETHAL_SURFACE = {
@@ -30,7 +68,7 @@ export const DRAG_SURFACE = {
 } as const;
 
 export const MARIGOLD_REFERENCE_INTENSITY = 2.0;
-export const MARIGOLD_EMISSIVE = '#F59A24';
+export const MARIGOLD_EMISSIVE = ACCENT_ANCHOR;
 
 export const ENVIRONMENTAL_MARIGOLD_FRACTION = 0.25;
 export const ENVIRONMENTAL_MARIGOLD_INTENSITY = MARIGOLD_REFERENCE_INTENSITY * ENVIRONMENTAL_MARIGOLD_FRACTION;
@@ -41,9 +79,6 @@ export const BOUNDARY_SURFACE = {
     color: '#15171a',
 } as const;
 
-export const RAIL_EMITTER_INTENSITY = 40;
-export const RAIL_EMITTER_RANGE = 600;
-export const RAIL_EMITTER_DECAY = 1;
 export const RAIL_EMITTER_LIFT = 0.5;
 
 export const DRAG_OPACITY_MIN = 0.25;

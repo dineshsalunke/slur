@@ -9,8 +9,7 @@ export function GameEnvironment( { config, track }: { config: EnvConfig; track: 
     return (
         <Fragment>
             <color attach="background" args={ [ config.background ] } />
-            <fog attach="fog" args={ [ config.fog.color, config.fog.near, config.fog.far ] } />
-            <DeepSpaceSky config={ DEEP_SPACE } light={ false } />
+            <DeepSpaceSky config={ DEEP_SPACE } light={ false } environment={ false } />
             <Monoliths track={ track } />
         </Fragment>
     );

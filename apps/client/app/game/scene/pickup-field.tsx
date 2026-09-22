@@ -61,7 +61,7 @@ export function PickupField( { room, track }: { room: Room< RunState >; track: T
     return (
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, layout.length ] }>
             <icosahedronGeometry args={ [ 0.9, 0 ] } />
-            <meshStandardMaterial emissive="#ffd24a" emissiveIntensity={ 3 } toneMapped={ false } />
+            <meshStandardMaterial emissive="#ffd24a" emissiveIntensity={ 3 } />
         </instancedMesh>
     );
 }

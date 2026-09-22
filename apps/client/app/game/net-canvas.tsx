@@ -50,7 +50,11 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
 
     return (
         <WorldProvider world={ world }>
-            <Canvas style={ { position: 'fixed', inset: 0 } } camera={ { fov: 75, position: [ 0, 5, -13 ] } }>
+            <Canvas
+                flat
+                style={ { position: 'fixed', inset: 0 } }
+                camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
+            >
                 <WorldScene track={ track }>
                     <NetLoop predictor={ predictor } track={ track } />
                     <PickupField room={ room } track={ track } />

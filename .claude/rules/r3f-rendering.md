@@ -20,8 +20,10 @@ Full research + rationale: `conventions/r3f.md`. Read it before non-trivial work
 - **Never a recurring `setInterval`/`setTimeout` touching live game state.** Inside the Canvas use
   `useFrame`; outside it use R3F's `addEffect`. Rejected on sight (non-negotiable: no reflexive primitive).
 - **`frameloop="always"`** — `"demand"` buys nothing in an action game.
-- **Neon = HDR emissive + `toneMapped={false}` + one global `<Bloom mipmapBlur>`.** Not
-  `<SelectiveBloom>` unless you must mask specific surfaces.
+- **Every material is tone mapped — `toneMapped={false}` is banned.** Removed project-wide
+  2026-09-22. Neon = `emissiveIntensity` raised until linear luminance × intensity clears
+  `bloom.threshold`, plus one global `<Bloom mipmapBlur>`. Not `<SelectiveBloom>` unless you must
+  mask specific surfaces.
 - **`three` has a ceiling:** `postprocessing` peer-requires `three < 0.186`. Bumping three breaks
   EffectComposer at *runtime*, not install time. Versions live in the pnpm catalog — read it.
 - **Dispose what React didn't create.** Pooled/shared geometries and materials are yours.

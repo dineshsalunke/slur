@@ -2,11 +2,12 @@ import { Clone, useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { Interp, Sim } from '../ecs/traits';
+import { accent } from './accent';
+import { applyEmitterShader } from './emitter-array';
 import { guardLfsPointer } from './gltf-lfs-guard';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
-import { MARIGOLD_EMISSIVE } from './track-materials';
 
 for ( const v of Object.values( SHIP_VISUALS ) ) {
     useGLTF.preload( v.url, undefined, undefined, guardLfsPointer );
@@ -59,6 +60,7 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
     if ( mat.userData.dissolvePatched ) return;
     mat.userData.dissolvePatched = true;
     mat.onBeforeCompile = ( shader ) => {
+        if ( ( mat as THREE.MeshStandardMaterial ).isMeshStandardMaterial ) applyEmitterShader( shader );
         shader.uniforms.uDissolve = uniforms.uDissolve;
         shader.uniforms.uNoiseScale = uniforms.uNoiseScale;
         shader.uniforms.uEdgeWidth = uniforms.uEdgeWidth;
@@ -95,7 +97,7 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
             uDissolve: { value: 0 },
             uNoiseScale: { value: DISSOLVE_NOISE_SCALE },
             uEdgeWidth: { value: DISSOLVE_EDGE_WIDTH },
-            uEdgeColor: { value: new THREE.Color( MARIGOLD_EMISSIVE ) },
+            uEdgeColor: { value: accent() },
             uEdgeIntensity: { value: DISSOLVE_EDGE_INTENSITY },
         } ),
         [],

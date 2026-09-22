@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { accentDerived } from './accent';
 import type { BlockDims } from './sealed-block-geometry';
 import {
     SEALED_BLOCK_SEAM_WIDTH,
@@ -10,7 +11,7 @@ import {
     sealedBlockSeamCount,
     sealedBlockSeams,
 } from './sealed-block-variation';
-import { MARIGOLD_EMISSIVE, MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
+import { MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
 
 export interface SealedBlockUniforms {
     uSealedInset: { value: THREE.Vector2 };
@@ -29,9 +30,9 @@ export interface SealedBlockLook {
     wear?: Partial< SealedBlockWear >;
 }
 
-function seamRadiance(): THREE.Color {
-    return new THREE.Color( MARIGOLD_EMISSIVE ).multiplyScalar( MARIGOLD_REFERENCE_INTENSITY );
-}
+const SEAM_RADIANCE = accentDerived( ( base, out ) => {
+    out.copy( base ).multiplyScalar( MARIGOLD_REFERENCE_INTENSITY );
+} );
 
 export function sealedBlockUniforms( dims: BlockDims, look: SealedBlockLook ): SealedBlockUniforms {
     const [ a, b ] = sealedBlockInset( dims );
@@ -48,7 +49,7 @@ export function sealedBlockUniforms( dims: BlockDims, look: SealedBlockLook ): S
         },
         uSealedSeamCount: { value: seams.length },
         uSealedSeamWidth: { value: SEALED_BLOCK_SEAM_WIDTH },
-        uSealedSeamColor: { value: seamRadiance() },
+        uSealedSeamColor: { value: SEAM_RADIANCE },
         uSealedWear: { value: new THREE.Vector4( wear.scale, wear.coverage, wear.contrast, wear.strength ) },
         uSealedWearTone: { value: new THREE.Vector2( SEALED_BLOCK_WEAR_VALUE, SEALED_BLOCK_WEAR_ROUGHNESS ) },
         uSealedWearOrigin: { value: new THREE.Vector3( look.seed % 997, 0, ( look.seed >> 8 ) % 991 ) },

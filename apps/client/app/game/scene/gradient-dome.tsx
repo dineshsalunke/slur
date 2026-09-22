@@ -27,13 +27,7 @@ export function GradientDome( { config }: { config: DomeConfig } ) {
     return (
         <mesh scale={ config.radius }>
             <sphereGeometry args={ [ 1, 32, 16 ] } />
-            <meshBasicMaterial
-                map={ tex }
-                side={ THREE.BackSide }
-                depthWrite={ false }
-                fog={ false }
-                toneMapped={ false }
-            />
+            <meshBasicMaterial map={ tex } side={ THREE.BackSide } depthWrite={ false } fog={ false } />
         </mesh>
     );
 }

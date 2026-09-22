@@ -1,6 +1,6 @@
 import { HALF_WIDTH } from '@slur/shared';
 import * as THREE from 'three';
-import { PANEL_L, PANEL_W } from './track-texture';
+import { TEX_SPAN_X, TEX_SPAN_Z } from './track-texture';
 
 export type V3 = readonly [ number, number, number ];
 export type UvPlane = 'xz' | 'zy' | 'xy';
@@ -12,8 +12,11 @@ export const RIGHT: V3 = [ 1, 0, 0 ];
 export const FORWARD: V3 = [ 0, 0, 1 ];
 export const BACKWARD: V3 = [ 0, 0, -1 ];
 
-export const BOUNDARY_W = 1.0;
-export const BOUNDARY_H = 1.0;
+export const SLAB_THICKNESS = 24;
+
+export const RAIL_W = 2.0;
+export const RAIL_EMISSIVE_SHARE = 0.5;
+export const RAIL_MARGIN = ( RAIL_W * ( 1 - RAIL_EMISSIVE_SHARE ) ) / 2;
 
 export function isOuterEdge( x: number ): boolean {
     return Math.abs( Math.abs( x ) - HALF_WIDTH ) < 1e-4;
@@ -21,9 +24,9 @@ export function isOuterEdge( x: number ): boolean {
 
 export function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     const [ x, y, z ] = p;
-    if ( plane === 'xz' ) return [ x / PANEL_W, z / PANEL_L ];
-    if ( plane === 'zy' ) return [ z / PANEL_L, y / PANEL_W ];
-    return [ x / PANEL_W, y / PANEL_W ];
+    if ( plane === 'xz' ) return [ x / TEX_SPAN_X, z / TEX_SPAN_Z ];
+    if ( plane === 'zy' ) return [ z / TEX_SPAN_Z, y / TEX_SPAN_X ];
+    return [ x / TEX_SPAN_X, y / TEX_SPAN_X ];
 }
 
 export function pushQuad( pos: number[], uv: number[], a: V3, b: V3, c: V3, d: V3, plane: UvPlane, normal: V3 ): void {

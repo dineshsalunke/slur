@@ -1,12 +1,12 @@
 import { Fragment } from 'react';
-import { ColdKey } from './cold-key';
-import { CorridorLight } from './corridor-light';
+import { FillLights } from './fill-lights';
+import { GradientIbl } from './gradient-ibl';
 
 export function SceneLighting() {
     return (
         <Fragment>
-            <CorridorLight />
-            <ColdKey />
+            <GradientIbl />
+            <FillLights />
         </Fragment>
     );
 }

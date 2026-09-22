@@ -180,4 +180,11 @@ export const GAP_P_START = 0.06;
 export const GAP_P_MAX = 0.16;
 export const FULL_GAP_FRAC = 0.4;
 
+export const CRACK_FRAC = 0.45;
+export const CRACK_W_LANES_MIN = 1;
+export const CRACK_W_LANES_MAX = 5;
+export const CRACK_SEGS_MIN = 2;
+export const CRACK_SEGS_MAX = 4;
+export const CRACK_EDGE_MARGIN_LANES = 2;
+
 export const DRAG_SPEED_FRAC = 0.5;

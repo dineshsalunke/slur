@@ -2,7 +2,7 @@ import { HALF_WIDTH } from '@slur/shared';
 import type { MonolithShapeConfig, MonolithShapeName } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import type { MonolithProfile } from './monolith-geometry';
-import { BOUNDARY_W } from './track-geometry';
+import { RAIL_W } from './track-geometry';
 
 export interface MonolithTransform {
     position: [ number, number, number ];
@@ -11,7 +11,7 @@ export interface MonolithTransform {
     rotationZ: number;
 }
 
-const RAIL_OUTER = HALF_WIDTH + BOUNDARY_W;
+const RAIL_OUTER = HALF_WIDTH + RAIL_W;
 
 export function bodySpan( shape: MonolithShapeConfig ): number {
     return shape.height + shape.below;
