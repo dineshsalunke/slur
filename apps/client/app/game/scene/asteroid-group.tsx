@@ -1,10 +1,16 @@
 import { useCallback } from 'react';
 import * as THREE from 'three';
 import type { AsteroidPlacement } from './asteroid-field';
-import { ASTEROID_ALBEDO, ASTEROID_METALNESS, ASTEROID_ROUGHNESS } from './asteroid-material';
+import {
+    ASTEROID_ALBEDO,
+    ASTEROID_EMISSIVE,
+    ASTEROID_EMISSIVE_INTENSITY,
+    ASTEROID_ENV_INTENSITY,
+    ASTEROID_METALNESS,
+    ASTEROID_ROUGHNESS,
+} from './asteroid-material';
 
 const scratch = new THREE.Object3D();
-const ROCK_GEOMETRY = new THREE.SphereGeometry( 0.5, 12, 8 );
 
 function fill( mesh: THREE.InstancedMesh, placements: readonly AsteroidPlacement[] ): void {
     for ( let i = 0; i < placements.length; i++ ) {
@@ -19,7 +25,13 @@ function fill( mesh: THREE.InstancedMesh, placements: readonly AsteroidPlacement
     mesh.computeBoundingSphere();
 }
 
-export function AsteroidGroup( { placements }: { placements: readonly AsteroidPlacement[] } ) {
+export function AsteroidGroup( {
+    geometry,
+    placements,
+}: {
+    geometry: THREE.BufferGeometry;
+    placements: readonly AsteroidPlacement[];
+} ) {
     const fillRocks = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
             if ( mesh ) fill( mesh, placements );
@@ -31,13 +43,16 @@ export function AsteroidGroup( { placements }: { placements: readonly AsteroidPl
         <instancedMesh
             key={ placements.length }
             ref={ fillRocks }
-            geometry={ ROCK_GEOMETRY }
+            geometry={ geometry }
             args={ [ undefined, undefined, placements.length ] }
         >
             <meshStandardMaterial
                 color={ ASTEROID_ALBEDO }
                 metalness={ ASTEROID_METALNESS }
                 roughness={ ASTEROID_ROUGHNESS }
+                emissive={ ASTEROID_EMISSIVE }
+                emissiveIntensity={ ASTEROID_EMISSIVE_INTENSITY }
+                envMapIntensity={ ASTEROID_ENV_INTENSITY }
             />
         </instancedMesh>
     );

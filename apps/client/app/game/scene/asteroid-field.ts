@@ -20,7 +20,7 @@ export interface AsteroidPlacement {
     variant: number;
 }
 
-function hash01( seed: number, salt: number ): number {
+export function hash01( seed: number, salt: number ): number {
     let h = Math.imul( seed ^ Math.imul( salt, 0x9e37_79b1 ), 0x85eb_ca6b );
     h ^= h >>> 13;
     h = Math.imul( h, 0xc2b2_ae35 );
@@ -45,10 +45,11 @@ function placeAsteroid( band: AsteroidBand, seed: number, slot: number, side: nu
     const radius = lerp( band.innerRadius, band.outerRadius, hash01( seed, 0x2 ) );
     const angle = lerp( band.minAngle, band.maxAngle, hash01( seed, 0x3 ) );
     const jitter = ( hash01( seed, 0x5 ) - 0.5 ) * band.spacing;
+    const vertical = hash01( seed, 0xa ) < 0.5 ? -1 : 1;
 
     return {
         x: side * Math.cos( angle ) * radius,
-        y: Math.sin( angle ) * radius,
+        y: vertical * Math.sin( angle ) * radius,
         z: slot * band.spacing + jitter,
         size: lerp( band.minSize, band.maxSize, hash01( seed, 0x4 ) ),
         stretch: pick( STRETCH_FAMILIES, hash01( seed, 0xf ) ),

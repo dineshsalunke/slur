@@ -3,6 +3,7 @@ import { resolveTrack, type TrackDescriptor } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, lazy, Suspense, useMemo } from 'react';
 import * as THREE from 'three';
+import { FrameTap } from '../../dev/frame-tap';
 import { world } from '../../game/ecs/world';
 import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
@@ -43,6 +44,7 @@ export function TestLevelCanvas() {
                         <LocalShip />
                         <LocalLoop track={ track } />
                         <RearView />
+                        <FrameTap />
                     </WorldScene>
                 </Canvas>
                 <TestLevelHud track={ track } />

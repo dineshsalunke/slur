@@ -56,6 +56,14 @@ describe( 'asteroidField', () => {
         }
     } );
 
+    it( 'floats rock both above and below the deck in every band', () => {
+        for ( const band of ASTEROID_BANDS ) {
+            const ys = asteroidField( band, ...WINDOW ).map( ( p ) => p.y );
+            expect( ys.some( ( y ) => y < 0 ) ).toBe( true );
+            expect( ys.some( ( y ) => y > 0 ) ).toBe( true );
+        }
+    } );
+
     it( 'puts rock overhead in the belt but not in the flank', () => {
         const highest = ( band: typeof BELT_BAND ) =>
             Math.max( ...asteroidField( band, ...WINDOW ).map( ( p ) => p.y ) );

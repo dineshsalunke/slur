@@ -1,133 +1,122 @@
-# Handover — asteroids (renderer shipped, look unjudged)
+# Handover — asteroids (shape + spread fixed, lighting unjudged)
 
-Session of 2026-09-23, branch `dev`, issue #211. Picked up from `HANDOVER-atmospherics.md`, whose
-"Next" was the asteroid belt.
+Session of 2026-09-23, branch `dev`, issue #211. Picks up from the previous version of this file
+(`bb2d9f5`, the renderer-only slice).
 
-## Shipped
+## The owner's four complaints, and what each got
 
-`bb2d9f5` feat(scene): render the three asteroid bands as instanced spheres (#211) — on `dev`.
-Green on `pnpm typecheck` / `pnpm lint` / `pnpm test`.
+> "asteroids look more like sphere, also they are not lit and are pretty much dark. also they are
+> floating above the deck lets spread it out, and make sure they float in the range of above and
+> below the deck. also the size seems a bit larger"
 
-New: `asteroids.tsx` (`Asteroids`), `asteroid-group.tsx` (`AsteroidGroup`),
-`asteroid-material.ts`. Edited: `game-environment.tsx`, one import plus one line.
+**1. Reads as a sphere — FIXED, seen on screen.** The old geometry was one shared
+`SphereGeometry( 0.5, 12, 8 )`, smooth-shaded: a smooth silhouette with visible straight edges.
+New `asteroid-geometry.ts` displaces an `IcosahedronGeometry` along each vertex's own direction by
+four octaves of a seeded sine lobe (`DISPLACEMENT = 0.34`), then `computeVertexNormals()`. The
+geometry is non-indexed, so displacement is a pure function of position and no cracks open; the
+recomputed normals come out per-face, which is what makes it read as faceted rock rather than a
+dented ball. `variant` and `detail` in `asteroid-config.ts` — dead until now — finally drive it:
+six geometries (flank 3 variants at subdivision 3, mid 2 at 2, belt 2 at 2), so six instanced
+meshes instead of three. Verified on screen: the rock is lumpy and irregular, not spherical.
 
-The existing `asteroid-config.ts` and `asteroid-field.ts` are untouched and their 8 tests still
-pass. This slice was renderer-only.
+**2. Not lit / dark — CHANGED BUT NOT SEEN.** `asteroid-material.ts` gained an emissive floor
+(`#7d8b9c` at 0.5) and `envMapIntensity` 1.6, albedo `#5a6570` → `#6d7885`. The reasoning: the
+two-tone comes from the IBL shell's own structure (a bright band over a dark ground), and raising
+`envMapIntensity` alone raises the contrast with it. Emissive is the one term that is
+direction-independent, so it lifts the unlit hemisphere off black without touching the lit side.
+`#7d8b9c` × 0.5 lands around linear 0.11–0.17, under the 0.6 bloom threshold.
 
-Shape: mirrors the monolith pattern. `Asteroids` builds placements once per band in a `useMemo`
-over the whole track; `AsteroidGroup` fills one `InstancedMesh` per band from a ref callback; one
-module-scope `SphereGeometry( 0.5, 12, 8 )` is shared by all three. Mounted in `GameEnvironment`
-beside `Monoliths`, because asteroids are environment, not track. Roughly 1270 instances over 8000u
-of track in three draw calls. The five-way mechanism weighing is in issue #211.
+**This is the one thing still unverified.** See "Why it could not be judged" below.
 
-`variants`, `detail` and `limit` in `asteroid-config.ts` stay unused. The first two describe real
-rock shapes; a sphere has one of each. `limit` is a per-window budget and the field is not windowed.
+**3. Floating above the deck — FIXED.** `placeAsteroid` had `y = Math.sin( angle ) * radius` with
+every band's angle range positive, so every rock in every band was above the deck. It now takes a
+vertical sign from `hash01( seed, 0xa )`, exactly the way `x` already took one from `SIDES`. Bands
+are now rings around the corridor, not arches over it. A new test asserts every band puts rock both
+above and below.
 
-## The look, judged on a clean origin
+**4. Too large — CUT ~30%, not judged against the owner's baseline.** flank 10–50u → 7–34u, mid
+50–200u → 34–130u, belt 200–400u → 130–270u.
 
-Done on `:5175` / `:2569`, a second stack inside this checkout on `dev` — a separate origin whose
-`localStorage` held only leva's self-persisted defaults (every entry `value === from`), so the
-scene rendered at pure schema values with no override from any other session.
+**Departure from `docs/ART_SCALE_REFERENCE.md` §5**, which prints *"Asteroid S | 10–50u"*,
+*"Asteroid M | 50–200u"*, *"Asteroid L | 200–400u"* and calls each "fine". Every band now sits below
+its printed class floor. That sheet is Claude-owned, so if these sizes survive the owner's eye the
+table wants updating; if they read too small, the honest lever is pushing `innerRadius` out rather
+than going back up, because the flank band at 110u is what crowds the top of frame.
 
-Three findings, all reproducible at defaults:
+All six asteroid files pass `tsc --noEmit` and `biome check` in isolation, and the 9 tests in
+`asteroid-field.test.ts` pass.
 
-1. **The rock reads two-tone, not as cold desaturated form.** Where the fill light catches it, it
-   blows out to a pale near-white grey. Where it does not, the camera-facing hemisphere goes flat
-   dark with almost no shading gradient across it. There is no middle. Against
-   `docs/art-direction/AUDIT.md` — *"Cold, desaturated light separates distant rock/planet forms
-   from space"* — the lit side is neither cold nor desaturated, and the dark side does not separate
-   from space at all.
-2. **This is consistent with rig issue #170**, *"The rig gives the player-facing face of everything
-   zero light"*. `back-fill.tsx` is a `directionalLight` aimed by `Fill.elevation`/`Fill.azimuth`,
-   and `near-fill.tsx` is a `pointLight` with a `distance` cutoff that never reaches rock at
-   110–700u. Stated as consistency, not as proven cause — that is the mistake this note already
-   records twice. #211 should not be closed before #170 is resolved and the rock re-checked.
-3. **The 12×8 sphere is visibly faceted on the flank band.** Near rock shows straight silhouette
-   edges. It is cheap to raise segments, but the better answer is the shaped geometry that
-   `variants` and `detail` were written for, so this is pass-2 work rather than a knob.
+## Why the lighting could not be judged, and the fix that is now in place
 
-Whether the three bands read as three depth layers is still unanswered — the washed lit side and
-flat dark side between them destroy the depth cue that fog is supposed to give, so this cannot be
-judged until 1 and 2 are.
+The clean-origin discipline from the last handover worked: a client-only stack on `:5175`
+(`CLIENT_PORT=5175 VITE_SERVER_PORT=2569 pnpm dev` from `apps/client`, no `.env` written so no other
+session's ports moved) gave a store whose only non-default entries were hex-case differences. Two
+frames rendered there and both were real.
 
-Do not judge any of this on `:5173`.
+**The first frame after a load is not the scene.** Frame 1 showed a near-white deck and pale rock;
+frame 2, seconds later, showed the dark warm deck of the shipped look. `AuthoredEnvironment` uses
+drei `<Environment frames={ Infinity }>` and its cubemap has not converged on the first frame. The
+previous handover's "first screenshot after a reload comes back blank — take a second one" is
+understated: the *second* one can also be wrong. Wait for a third that matches the second.
 
-Still outstanding from the atmospherics handover: the owner's mid-band crop of
-`docs/art-direction/golden-reference/cruise-lighting.png`. Mid-band size and lighting have to sit
-against the monoliths we already render.
+**Then the tab froze hard.** `requestAnimationFrame` stopped firing entirely — a `Runtime.evaluate`
+that awaited one rAF tick timed out after 45s. The HUD kept counting (DOM, not rAF), so three
+successive screenshots looked plausible while showing the *same stale frame*; two material edits
+landed via HMR into a canvas that never repainted. After a reload the canvas did not come back at
+all — `<Canvas>` measures before mounting its children, and in a fully backgrounded tab that
+measurement never arrives, so the whole R3F tree stayed unmounted.
 
-## Do not judge scene look on the shared `:5173` origin
+This is the environment wall in `.claude/memory/browser-extension-throttles-fps.md`, worse than
+recorded: it does not just distort FPS, it can silently serve a stale frame as if it were current.
 
-This cost the whole session. `localStorage['slur.tuning.v1']` is one store per ORIGIN, and other
-sessions dial it live. Across three reloads the same nominal fog config gave flat black rock once
-and a washed-out pale scene once; `Exhaust.idle` and `EngineLight.intensity` appeared as live
-overrides mid-session, absent from the same diff minutes earlier. A reload-to-reload comparison
-there isolates nothing.
+**The fix: `FrameTap` is mounted again.** `apps/client/app/dev/frame-tap.tsx` (built in #134,
+`181a411`) photographs a route from a tab nobody is looking at — it calls R3F's `advance()` itself,
+so it does not need rAF. It had been dead code since 2026-09-21, when `/art-lab`, `/art-gallery` and
+the `/iso-*` routes were deleted and took its only mount sites with them. It is now one line inside
+`TestLevelCanvas`'s `<WorldScene>`. Usage:
 
-**Get a clean origin without a worktree** (worktrees are retired — see below): set `CLIENT_PORT` +
-`VITE_SERVER_PORT` in `apps/client/.env` and launch with a matching `PORT=` in the shell, per
-CLAUDE.md's dev-server note and issue #59. Different port, different origin, separate store, all
-inside this one checkout on `dev`.
+```
+curl -s 'http://localhost:5175/__frame-tap/?name=asteroids&warmup=40&frames=3'
+```
 
-Liveness is decidable from source and worth checking before blaming a stale key. `restore()` in
-`apps/client/app/dev/tuning-persist.ts` applies an entry iff `entry.from` equals the **current**
-schema default in `dev/tuning-schema.ts`. So a populated store proves nothing, and a `value` that
-differs from its own `from` proves nothing either — compare `from` against the schema. A commit that
-moves a default silently kills every entry persisted before it: `03a28c8` did that to `Fog.near`
-60→40, `Fog.far` 500→420, `Fog.color` `#070a10`→`BACKDROP_HORIZON`.
+writes `.claude/frame-tap-refs/asteroids.png`. It still needs a *mounted* canvas, so it does not
+rescue an already-frozen tab — but from a live one it beats screenshotting, because the plugin
+refuses when two tabs answer and reports the frame deltas it actually captured.
 
-## Two process failures worth not repeating
+## What the next session should do first
 
-**I created a branch. The owner had said not to.** The standing instruction is at
-`.claude/phases/2026-09-22-block-surface-and-the-fresnel-trade.md:11` — *"all agents work directly
-on `dev`, no worktrees, and no creating branches unless specifically asked"*. I did not read the
-phase notes before starting and followed CLAUDE.md's worktree section plus the harness default of
-branching off the default branch. `feat/asteroid-bands` stranded three sessions' commits, because a
-shared checkout follows one HEAD: `hud` and `rearview-mirror` committed onto it without choosing it.
-The owner fast-forwarded `dev` to it; the branch is deleted and `dev` is at `dd24d04`.
+Get one live `/test-level` tab on a clean origin — the owner foregrounding the window is the
+reliable way — then tap a frame and judge, in this order:
 
-**That conflict is now fixed at the source.** CLAUDE.md carried a "Worktrees (optional)" section
-whose *"otherwise branch and commit in the checkout like any normal repo"* is the line I followed,
-and whose "Use one when" list offered *"you need a second live stack running at once"* — my exact
-situation, which is why the wrong path read as the documented one. `CLAUDE.md:206` is now
-"Branching — `dev` only" (`734877b`): never create a branch or `git checkout` another one here, a
-worktree is the only sanctioned branching and only when genuinely required, ask the owner if in
-doubt, and a second live stack takes a second origin via `CLIENT_PORT` + `VITE_SERVER_PORT` rather
-than a second checkout.
+1. Does the unlit hemisphere still go flat black, or does the emissive floor separate it from
+   space? `docs/art-direction/AUDIT.md` is the target: *"Cold, desaturated light separates distant
+   rock/planet forms from space"*.
+2. Does the lit side still blow out pale? If it does, the lever is `ASTEROID_ALBEDO` down, not
+   `ASTEROID_ENV_INTENSITY` down — env intensity is also what shapes the rock.
+3. Do the three bands now read as three depth layers? This was unanswerable last session and still
+   is.
+4. Size, against the owner's eye rather than the sheet.
 
-**`git commit --amend` in a shared checkout clobbered a peer's commit.** Between two of my amends,
-`rearview-mirror` committed onto the branch, so my amend replaced their message with mine. Restored
-byte-identically (`%B` diff empty, trees equal); only the hash moved, `47111c3` → `37e70e0`. One git
-index per checkout applies to `--amend` as much as to `git add`: amend assumes HEAD is yours, and in
-this checkout it is not. Correct a pushed-or-shared message in the issue instead.
+**Issue #211 should still not be closed before rig issue #170** (*"The rig gives the player-facing
+face of everything zero light"*). The emissive floor is a material-level workaround for a rig-level
+problem; if #170 is fixed properly the floor may want lowering again.
 
-## The tuning panel is being retired — judge accordingly
+## Keep these out of the tuning panel
 
-The owner has asked for the debug panel to be removed. It is briefed to `slur-supervisor`, not
-started, and it is a bake-then-delete: 19 scene modules read `num()` / `col()` at runtime, so
-dialled values move into source constants before the store goes.
+The panel is being retired (bake-then-delete; 19 scene modules read `num()`/`col()`). All six
+asteroid modules contain zero `num()`/`col()` calls and the material is six source constants. Keep
+it that way — real constants, not new tunables.
 
-This lands directly on the knobs the look pass above needs. Two consequences:
+## Shared-checkout state at handover
 
-- **Anything settled goes into `dev/tuning-schema.ts` defaults, not left in `localStorage`.** When
-  the panel goes, the schema is the only surviving record and stored values die with it. This is the
-  same store that cost this session a judgement — in its permanent form.
-- **Tell `slur-supervisor` when the panel is no longer needed**, so the retirement can be sequenced
-  after this work and `hud`'s.
-
-The asteroid code needs nothing from that pass: `asteroids.tsx`, `asteroid-group.tsx` and
-`asteroid-material.ts` contain zero `num()` / `col()` calls, and the material is already three
-source constants. Keep it that way — prefer real constants over new tunables in anything added here.
+`packages/shared/src/sim/track.ts` and a new `packages/shared/src/sim/clearance.test.ts` are another
+session's in-flight work and `pnpm typecheck` fails on them repo-wide (`Cannot find name 'Run'`,
+`sliceCentres`, `openRunsAtSlice`). `pnpm lint` has two errors, in `monolith-field.test.ts` and
+`track-rail.tsx` — also not this session's. Nothing here touches those files. Committed with
+explicit pathspecs, per `.claude/memory/shared-checkout-shares-one-git-index.md`.
 
 ## Also briefed and unstarted
 
 `.claude/phases/HANDOVER-block-mechanics.md` (`a551808`): block collisions bouncing instead of
-killing, and 4u–8u organic block heights. The second is blocked by the single-slice clearance
-sampler at `packages/shared/src/sim/track.ts:414`.
-
-## Environment notes carried forward
-
-- **Leave the browser tab open**, reuse the `/test-level` tab.
-- **First screenshot after a reload comes back blank** — take a second one.
-- A stack was already running on `:5173`/`:2567` this session, so `pnpm dev` failed on the port and
-  HMR picked the change up instead.
+killing, and 4u–8u organic block heights, the second blocked by the single-slice clearance sampler
+at `packages/shared/src/sim/track.ts:414` — which is what the session above is in.

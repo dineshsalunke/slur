@@ -30,12 +30,12 @@ export const FLANK_BAND: AsteroidBand = {
     outerRadius: 200,
     minAngle: 0 * DEG,
     maxAngle: 35 * DEG,
-    minSize: 10,
-    maxSize: 50,
+    minSize: 7,
+    maxSize: 34,
     spacing: 60,
     density: 0.55,
     variants: 3,
-    detail: 2,
+    detail: 3,
     limit: 32,
 };
 
@@ -46,12 +46,12 @@ export const MID_BAND: AsteroidBand = {
     outerRadius: 520,
     minAngle: 10 * DEG,
     maxAngle: 60 * DEG,
-    minSize: 50,
-    maxSize: 200,
+    minSize: 34,
+    maxSize: 130,
     spacing: 40,
     density: 0.8,
     variants: 2,
-    detail: 1,
+    detail: 2,
     limit: 64,
 };
 
@@ -62,12 +62,12 @@ export const BELT_BAND: AsteroidBand = {
     outerRadius: 700,
     minAngle: 25 * DEG,
     maxAngle: 85 * DEG,
-    minSize: 200,
-    maxSize: 400,
+    minSize: 130,
+    maxSize: 270,
     spacing: 20,
     density: 1,
-    variants: 1,
-    detail: 0,
+    variants: 2,
+    detail: 2,
     limit: 160,
 };
 
