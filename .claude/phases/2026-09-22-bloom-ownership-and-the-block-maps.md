@@ -70,7 +70,7 @@ AmbientCG set into `apps/client/public/textures/metal/` at 21:46 — `Metal046B_
 NormalGL, Roughness, Metalness, Displacement — and `public/` is the served-static folder. Asked, and
 the answer was **load the real maps**. The procedural generator is not written and is not planned.
 
-### Written, green, and NOT YET SEEN — five files, uncommitted
+### Committed as `3b82790`, green, and NOT YET SEEN
 
 `pnpm typecheck` clean · `pnpm lint` clean (9 pre-existing warnings, comment ratchet passed) · 95
 shared + 4 server + 155 client tests pass. **No pixel of it has been looked at.** That is the first
@@ -136,12 +136,12 @@ which **is** inside M1's band, while the deck stays at `#7c8590`. So blocks read
 reads bright — the split arrived at through the texture rather than through a decision. **Still the
 owner's call for the other four surfaces, and it should be made deliberately rather than inherited.**
 
-### The texture files are untracked on purpose
+### The texture files, ~3.4 MB of them
 
-~3.4 MB of JPEG across four maps, still untracked. Committing makes them repo assets. Settle the look
-first, then decide on size — WebP, or 512 for the roughness/metalness pair. Metalness is the one that
-earns its bytes up close: mostly white with a fine dark speckle that is most of the cast-metal
-character.
+Four maps committed with the code, because the code 404s without them. `Displacement.jpg` is left
+untracked — nothing samples it. Size is still worth revisiting: WebP, or 512 for the
+roughness/metalness pair. Metalness is the one that earns its bytes up close — mostly white with a
+fine dark speckle that is most of the cast-metal character.
 
 ## Peers: three sessions in one tree
 
@@ -167,13 +167,12 @@ pnpm exec biome check --write <your paths>
 
 1. **Foreground `/test-level` and look at the block maps.** Probe `document.hidden` first. Check:
    does the shader compile (blocks visible at all), is `Block.textureSpan` 2 sane, does the normal map
-   read at speed, and do the marigold seams still sit right on a textured surface. **Then commit** —
-   the five files are green but unjudged, and they should not sit uncommitted in a shared tree for
-   long.
+   read at speed, and do the marigold seams still sit right on a textured surface. Committed unjudged on the
+   owner's instruction, so `git revert 3b82790` is the fallback if the patch does not compile.
 2. **Judge the 0.2u chamfer and the seam flicker** — still outstanding from two handovers ago, still
    needs the owner's eye. The chamfer needs a mid-distance silhouette; flicker is temporal and a still
    cannot show it.
-3. **Decide the texture file sizes**, then commit `apps/client/public/textures/metal/`.
+3. **Decide the texture file sizes** — the four maps are committed at full 1K JPEG.
 4. **The `GRAPHITE_ALBEDO` decision for the other four surfaces** — see above.
 5. **Monolith cap-edge chamfers**, and widen the vertical ones. `monolith-geometry.ts` chamfers only
    the vertical edges; `crossSection()` builds an 8-point ring and the caps meet the sides at a hard
