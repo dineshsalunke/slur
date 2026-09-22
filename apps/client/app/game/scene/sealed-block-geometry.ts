@@ -6,7 +6,7 @@ export interface BlockDims {
     d: number;
 }
 
-export const SEALED_BLOCK_BEVEL = 0.5;
+export const SEALED_BLOCK_BEVEL = 0.2;
 
 export const SEALED_BLOCK_UNIT_BEVEL = 0.2;
 
