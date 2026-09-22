@@ -25,7 +25,7 @@ import {
 } from './sealed-block-variation';
 import { AHEAD, BACK, put } from './track-instancing';
 
-const BLOCK_LIMIT = 160;
+const BLOCK_LIMIT = 320;
 
 interface SealedVariation {
     seams: number[];

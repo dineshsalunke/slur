@@ -346,7 +346,7 @@ test( 'block count per visible window stays within the renderer instance budget'
     const RENDER_AHEAD = 900;
     const RENDER_BACK = 240;
     const WINDOW = Math.ceil( ( RENDER_AHEAD + RENDER_BACK ) / SEG_LEN ) + 1;
-    const BUDGET = 160;
+    const BUDGET = 320;
     let worst = 0;
     for ( const seed of SEEDS ) {
         const n = worstWindowCount( makeTrack( seed ), WINDOW );

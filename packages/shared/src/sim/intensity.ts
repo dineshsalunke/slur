@@ -7,6 +7,7 @@ import {
     FLICK_RATE_START,
     GAP_P_MAX,
     GAP_P_START,
+    GAP_REST_FLOOR,
     REST_INTENSITY,
     SECTIONS,
     WALL_DENSITY_MAX,
@@ -54,7 +55,8 @@ export function wallDensity( intensity: number ): number {
 }
 
 export function gapProb( intensity: number ): number {
-    return lerp( GAP_P_START, GAP_P_MAX, intensity ) * restScale( intensity );
+    const rest = GAP_REST_FLOOR + ( 1 - GAP_REST_FLOOR ) * restScale( intensity );
+    return lerp( GAP_P_START, GAP_P_MAX, intensity ) * rest;
 }
 
 export function flickRate( intensity: number ): number {

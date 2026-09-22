@@ -4,6 +4,7 @@ import {
     DEFAULT_TUNING,
     intensityAt,
     isHole,
+    passableCorridorWidth,
     procgenDescriptor,
     REST_INTENSITY,
     resolveTrack,
@@ -17,9 +18,11 @@ import {
 
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 42, 99991, 7 ];
 
+const DEMAND_WIDTH = 28;
+
 function busy( t: Track, i: number ): boolean {
     const s = t.segmentAt( i );
-    return s.blocks.length > 0 || s.kind === 'gap';
+    return s.kind === 'gap' || passableCorridorWidth( s ) < DEMAND_WIDTH;
 }
 
 function longestRest( t: Track ): number {
@@ -96,7 +99,7 @@ function busyShare( lo: number, hi: number ): { share: number; n: number } {
     return { share: n === 0 ? 0 : busyN / n, n };
 }
 
-test( 'spike stretches really are denser than rest stretches', () => {
+test( 'spike stretches really are tighter than rest stretches', () => {
     const rest = busyShare( 0, REST_INTENSITY );
     const spike = busyShare( 0.8, 1 );
     assert.ok( rest.n > 0 && spike.n > 0, 'the envelope has no rest or no spike stretch' );
