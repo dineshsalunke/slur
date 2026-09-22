@@ -74,7 +74,7 @@ describe( 'the rail is a flush box outboard of the deck', () => {
 } );
 
 describe( 'the emissive strip takes its share of the top face, centred', () => {
-    it( 'lights 80% of the width and leaves a metal margin each side', () => {
+    it( 'lights its share of the width and leaves a metal margin each side', () => {
         const geo = buildRailGeometry( runs( 1 ) );
         const strip = spread( xsAt( geo, 0, true, 1 ) );
 

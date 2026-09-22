@@ -83,7 +83,7 @@ export function TrackRail( { track }: { track: Track } ) {
     // The emitter uniforms are a module singleton outside React: unmounting must park the slots this rail owns.
     useEffect( () => () => clearRailEmitters( railEmitters ), [] );
 
-    useFrame( ( { camera } ) => {
+    useFrame( () => {
         const [ metal, strip ] = materials;
         const scale = num( 'rail.normalScale' );
         metal.metalness = num( 'rail.metalness' );
@@ -94,7 +94,7 @@ export function TrackRail( { track }: { track: Track } ) {
 
         railEmitters.uEmitterDecay.value = num( 'emitter.decay' );
         const z = world.queryFirst( LocalPlayer, Sim )?.get( Sim )?.z ?? 0;
-        feedRailEmitters( railEmitters, runs, z, camera, num( 'emitter.intensity' ), num( 'emitter.range' ) );
+        feedRailEmitters( railEmitters, runs, z, num( 'emitter.intensity' ), num( 'emitter.range' ) );
     } );
 
     return <mesh geometry={ geo } material={ materials } />;

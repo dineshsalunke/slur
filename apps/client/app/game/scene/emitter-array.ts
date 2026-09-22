@@ -65,12 +65,14 @@ const FRAG_LIGHTS = `
 		emCavity = texture2D( roughnessMap, vRoughnessMapUv ).r;
 	#endif
 	vec3 emRay = reflect( - geometryViewDir, geometryNormal );
+	vec3 emAxis = normalize( ( viewMatrix * vec4( uEmitterAxis, 0.0 ) ).xyz );
 	for ( int emI = 0; emI < ${ EMITTER_SLOTS }; emI ++ ) {
 		if ( emI >= uEmitterCount ) break;
 		vec4 emTint = uEmitterTint[ emI ];
 		vec4 emE = uEmitters[ emI ];
-		vec3 emL0 = emE.xyz - uEmitterAxis * emE.w - geometryPosition;
-		vec3 emLd = uEmitterAxis * ( 2.0 * emE.w );
+		vec3 emCenter = ( viewMatrix * vec4( emE.xyz, 1.0 ) ).xyz;
+		vec3 emL0 = emCenter - emAxis * emE.w - geometryPosition;
+		vec3 emLd = emAxis * ( 2.0 * emE.w );
 		float emLen2 = dot( emLd, emLd );
 
 		float emTd = emLen2 > 1e-4 ? clamp( - dot( emL0, emLd ) / emLen2, 0.0, 1.0 ) : 0.0;

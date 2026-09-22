@@ -39,8 +39,12 @@ This is the single correction that matters most. Consequences for art direction:
 | Edge rail width (x) | **2u** | `RAIL_W` | sits **outboard**: inner face at ±32, outer face at ±34 |
 | Edge rail height (y) | **0u above deck** | — | the rail top face is **coplanar with the deck top**. It never stands proud. Its box drops `SLAB_THICKNESS` below |
 | Rail slab depth (y) | **24u** | `SLAB_THICKNESS` | shared with the deck slab, so rail and deck present one underside |
-| Emissive share of the rail | **50%** | `RAIL_EMISSIVE_SHARE` | of `RAIL_W`, centred on the top face → **1.0u** marigold at 2u |
-| Rail metal margin (x) | **0.5u** | `RAIL_MARGIN` | `RAIL_W × (1 − RAIL_EMISSIVE_SHARE) / 2`, one each side of the strip |
+| Emissive share of the rail | **12.5%** | `RAIL_EMISSIVE_SHARE` | of `RAIL_W`, centred on the top face → **0.25u** marigold at 2u |
+| Rail metal margin (x) | **0.875u** | `RAIL_MARGIN` | `RAIL_W × (1 − RAIL_EMISSIVE_SHARE) / 2`, one each side of the strip |
+| Interior seam insert width (x) | **0.12u** | `SEAM_WIDTH` | `seam-inserts.ts`; the M7 inserts in the deck face, inboard of both rails |
+| Interior seam lane spacing (x) | **8u** | `SEAM_SPACING` | first lane at `SEAM_INSET` = 4u, mirrored → 8 lanes across 64u |
+| Interior seam length (z) | **3 – 11u** | `SEAM_LEN_MIN/MAX` | varied per insert; never crosses its own segment boundary |
+| Interior seam lift (y) | **0.02u** | `SEAM_LIFT` | plus `polygonOffset`, so the insert never z-fights the deck it sits on |
 
 ### 1a. No visual element may take playable width — ADR-012
 
@@ -62,6 +66,13 @@ both would be coincident geometry.
 The top face is split into two material groups: group 0 is the metal (`railBodySurface()`, the same
 `plateSurface()` treatment the deck and monoliths get, driven by its own `rail.*` tunables), group 1 is
 the `RAIL_EMISSIVE_SHARE` strip in `BOUNDARY_SURFACE` marigold.
+
+**Interior seam inserts are a separate mesh again.** `ART_MATERIALS.md` §2 lists them as *"M7, sparse ·
+short · varied length · irregular spacing"*, gameplay tier. `seam-inserts.ts` places them from a fixed
+salt through `hash2`, so the pattern is deterministic and testable; `track-seams.tsx` draws them in one
+mesh under `SEAM_SURFACE`. They are **not** lit by the rail emitters and they do not feed them — they
+are their own emissive, dialled by `seam.emissive`. They sit strictly inboard of ±`HALF_WIDTH`, so
+ADR-012 holds for them as it does for the rail, and they are skipped over a gap segment.
 
 **Why this is a hard rule and not a preference.** The sim's floor spans ±`HALF_WIDTH` unconditionally
 (`packages/shared/src/sim/track.ts:133`) and knows nothing about any client-side trim constant. A trim

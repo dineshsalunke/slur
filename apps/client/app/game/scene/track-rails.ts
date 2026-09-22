@@ -56,8 +56,7 @@ export function railRunDistance( run: RailRun, z: number ): number {
 }
 
 const RAIL_COLOR = accent();
-const _view = new THREE.Vector3();
-const _axis = new THREE.Vector3();
+const _world = new THREE.Vector3();
 const _near: RailRun[] = [];
 const _dist: number[] = [];
 
@@ -83,12 +82,9 @@ export function feedRailEmitters(
     uniforms: EmitterUniforms,
     runs: RailRun[],
     z: number,
-    camera: THREE.Camera,
     intensity: number,
     range: number,
 ): void {
-    uniforms.uEmitterAxis.value.copy( _axis.set( 0, 0, 1 ).transformDirection( camera.matrixWorldInverse ) );
-
     const n = selectNearest( runs, z, EMITTER_SLOTS );
     let slot = 0;
     for ( let i = 0; i < n; i++ ) {
@@ -96,8 +92,8 @@ export function feedRailEmitters(
         const z0 = Math.max( run.z0, z - range );
         const z1 = Math.min( run.z1, z + range );
         if ( z1 <= z0 ) continue;
-        _view.set( run.x, run.y + RAIL_EMITTER_LIFT, ( z0 + z1 ) / 2 ).applyMatrix4( camera.matrixWorldInverse );
-        writeEmitter( uniforms, slot, _view, ( z1 - z0 ) / 2, RAIL_COLOR, intensity, range );
+        _world.set( run.x, run.y + RAIL_EMITTER_LIFT, ( z0 + z1 ) / 2 );
+        writeEmitter( uniforms, slot, _world, ( z1 - z0 ) / 2, RAIL_COLOR, intensity, range );
         slot++;
     }
     for ( let i = slot; i < EMITTER_SLOTS; i++ ) parkEmitter( uniforms, i );
