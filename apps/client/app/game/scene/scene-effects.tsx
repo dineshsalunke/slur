@@ -1,24 +1,24 @@
 import { useFrame } from '@react-three/fiber';
-import { Bloom, EffectComposer, ToneMapping } from '@react-three/postprocessing';
-import { type BloomEffect, ToneMappingMode } from 'postprocessing';
-import { useRef } from 'react';
+import { EffectComposer, ToneMapping } from '@react-three/postprocessing';
+import { BlendFunction, BloomEffect, ToneMappingMode } from 'postprocessing';
+import { useEffect, useMemo } from 'react';
 import { num } from '../../dev/tuning';
 
 export function SceneEffects() {
-    const ref = useRef< BloomEffect | null >( null );
+    const bloom = useMemo( () => new BloomEffect( { blendFunction: BlendFunction.ADD, mipmapBlur: true } ), [] );
+
+    // GPU render targets outlive React's tree: the effect's mip chain must be released by hand.
+    useEffect( () => () => bloom.dispose(), [ bloom ] );
 
     useFrame( () => {
-        const effect = ref.current;
-        if ( ! effect ) return;
-
-        effect.intensity = num( 'Bloom.intensity' );
-        effect.luminanceMaterial.threshold = num( 'Bloom.threshold' );
-        effect.luminanceMaterial.smoothing = num( 'Bloom.smoothing' );
+        bloom.intensity = num( 'Bloom.intensity' );
+        bloom.luminanceMaterial.threshold = num( 'Bloom.threshold' );
+        bloom.luminanceMaterial.smoothing = num( 'Bloom.smoothing' );
     } );
 
     return (
         <EffectComposer multisampling={ 0 }>
-            <Bloom ref={ ref } mipmapBlur />
+            <primitive object={ bloom } />
             <ToneMapping mode={ ToneMappingMode.NEUTRAL } />
         </EffectComposer>
     );
