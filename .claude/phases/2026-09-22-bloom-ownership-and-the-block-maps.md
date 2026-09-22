@@ -19,10 +19,15 @@ Foregrounded, the same probe gives `{ hidden: false, frames: 26 }` — ~52fps. *
 any screenshot.** A black canvas with a blank per-frame HUD readout and a clean console is the
 freeze, not a rendering bug, and no amount of scene debugging will move it.
 
-The constraint is structural and worth stating plainly: **the owner cannot read chat and hold the
-Chrome window in front at the same time.** Art judgement by a driven tab needs the owner to
-foreground the window and then stay out of the terminal. Budget for that, or hand the judgement to
-them.
+**Solved — `window.focus()` from inside the page lifts the window itself:**
+
+```js
+window.focus();   // { hidden: false, focus: true }, rAF resumes
+```
+
+Verified this session. Three handovers treated the freeze as something only the owner could clear by
+clicking into the tab; it is not. Call `window.focus()`, wait ~800ms, then probe and shoot. No
+owner intervention, no lost turns.
 
 Driving the ship from the tool works — the keyboard module listens on `window`, so synthetic events
 reach it:
@@ -70,11 +75,20 @@ AmbientCG set into `apps/client/public/textures/metal/` at 21:46 — `Metal046B_
 NormalGL, Roughness, Metalness, Displacement — and `public/` is the served-static folder. Asked, and
 the answer was **load the real maps**. The procedural generator is not written and is not planned.
 
-### Committed as `3b82790`, green, and NOT YET SEEN
+### Committed as `3b82790` — and now verified on screen
 
 `pnpm typecheck` clean · `pnpm lint` clean (9 pre-existing warnings, comment ratchet passed) · 95
-shared + 4 server + 155 client tests pass. **No pixel of it has been looked at.** That is the first
-job for whoever picks this up.
+shared + 4 server + 155 client tests pass.
+
+**Looked at, foregrounded, at 26 frames / 500ms:** the shader compiles, the maps load, mottling is
+clearly visible across block faces at mid-distance, adjacent blocks sample different regions of the
+texture (so the world-space projection does what it was built for), and the 0.2u chamfer reads as a
+distinct facet down the vertical edge at close range.
+
+**One open judgement, for the owner.** Blocks now read **warm brown**, not the neutral dark metal of
+the reference. The `#ffffff` tint means they take the marigold rail light at full saturation, where
+`GRAPHITE_ALBEDO`'s blue-grey used to neutralise it. Against the bright deck that is a strong
+dark/light split. `Block.textureSpan`, `Block.metalness` and `Block.envMapIntensity` are the dials.
 
 **`sealed-block-texture.ts` (new).** Loads the four maps with drei's `useTexture`, the same hook
 `game-environment.tsx:14` already uses for the nebula backdrop. Sets wrap, `anisotropy = 8` and
@@ -165,10 +179,8 @@ pnpm exec biome check --write <your paths>
 
 ## Next
 
-1. **Foreground `/test-level` and look at the block maps.** Probe `document.hidden` first. Check:
-   does the shader compile (blocks visible at all), is `Block.textureSpan` 2 sane, does the normal map
-   read at speed, and do the marigold seams still sit right on a textured surface. Committed unjudged on the
-   owner's instruction, so `git revert 3b82790` is the fallback if the patch does not compile.
+1. **Owner's call on the warm-brown block cast** (see above), and on whether `Block.textureSpan` 2 is
+   the right texel density. Both are live panel dials.
 2. **Judge the 0.2u chamfer and the seam flicker** — still outstanding from two handovers ago, still
    needs the owner's eye. The chamfer needs a mid-distance silhouette; flicker is temporal and a still
    cannot show it.
