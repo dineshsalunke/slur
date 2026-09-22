@@ -122,6 +122,16 @@ fires, the canvas stays black, and an `await requestAnimationFrame(...)` probe h
 outright. This is the artifact already recorded in `.claude/memory/leave-the-browser-tab-open.md` and
 `.claude/memory/browser-extension-throttles-fps.md`.
 
+**Check for block sparkle at distance while you are there.** The supervisor landed `a0c87d1` right
+after this work: the seam feather was `clamp( fwidth( u ), 0.0, 0.05 )`, and that cap froze the AA
+footprint, so past the distance where a seam is thinner than 0.05u/pixel it became a sub-pixel hard
+step and shimmered. It is now an uncapped `length( fwidth( vSealedWorld.xz ) )` plus a coverage term
+that dims a sub-pixel seam instead of aliasing it. **The mirror is all distance** — a 160px buffer
+showing 240u — so it is the harshest test of that fix in the game. If sparkle remains, it is a second
+aliasing source, most likely the per-fragment procedural wear, which cannot mip; that is on the
+supervisor's list to replace with a mipmapped texture set, so report it to them rather than chasing it
+in the mirror code.
+
 **Next session: ask the owner to foreground the tab and report the framing** — strip size and height,
 and how badly the raw-linear rails clip against the tone-mapped main view. That clipping is the known,
 accepted cost of the pass the owner chose, and it is the most likely thing to need a nudge. The three
