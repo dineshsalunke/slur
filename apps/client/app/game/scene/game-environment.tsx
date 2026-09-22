@@ -3,11 +3,10 @@ import { useThree } from '@react-three/fiber';
 import type { Track } from '@slur/shared';
 import { Fragment } from 'react';
 import * as THREE from 'three';
+import { BACKDROP_URL } from './backdrop';
 import { DeepSpaceSky } from './deep-space-sky';
 import { Monoliths } from './monoliths';
 import { DEEP_SPACE } from './sky-config';
-
-export const BACKDROP_URL = '/textures/nebula-backdrop.jpg';
 
 export function GameEnvironment( { track }: { track: Track } ) {
     const size = useThree( ( state ) => state.size );
