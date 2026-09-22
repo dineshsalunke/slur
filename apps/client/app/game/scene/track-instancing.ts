@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export const AHEAD = 900;
-export const BACK = 80;
+export const BACK = 240;
 
 const _m = new THREE.Object3D();
 

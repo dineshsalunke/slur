@@ -14,6 +14,7 @@ import { NetDebugHud } from './net-debug-hud';
 import { NetLoop } from './net-loop';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
+import { RearView } from './scene/rear-view';
 import { WorldScene } from './scene/world-scene';
 
 export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
@@ -60,6 +61,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                     <NetLoop predictor={ predictor } track={ track } />
                     <PickupField room={ room } track={ track } />
                     <ProjectileField />
+                    <RearView />
                     <GameAudio />
                     <RemoteEngineAudio />
                 </WorldScene>

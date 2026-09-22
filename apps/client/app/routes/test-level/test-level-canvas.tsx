@@ -4,6 +4,7 @@ import { WorldProvider } from 'koota/react';
 import { Fragment, lazy, Suspense, useMemo } from 'react';
 import * as THREE from 'three';
 import { world } from '../../game/ecs/world';
+import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
 import { LocalLoop } from './local-loop';
 import { LocalShip } from './local-ship';
@@ -40,6 +41,7 @@ export function TestLevelCanvas() {
                     <WorldScene track={ track }>
                         <LocalShip />
                         <LocalLoop track={ track } />
+                        <RearView />
                     </WorldScene>
                 </Canvas>
             </WorldProvider>

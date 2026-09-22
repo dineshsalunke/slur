@@ -71,6 +71,10 @@ export const NUMBER_TUNABLES = {
     'Groove.roughness': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.darkening': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.cavity': { value: 0.3, min: 0, max: 1, step: 0.01, rebuild: true },
+
+    'RearView.fov': { value: 36, min: 15, max: 100, step: 1, rebuild: false },
+    'RearView.lift': { value: 3, min: 0, max: 12, step: 0.1, rebuild: false },
+    'RearView.tilt': { value: 4, min: -20, max: 30, step: 0.5, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {

@@ -11,3 +11,4 @@ lives in its own file beside this one.
 - [Extension FPS readings are worthless](browser-extension-throttles-fps.md) — the driven tab is backgrounded and rAF is throttled; CPU-per-frame is still trustworthy
 - [The tunables store is shared](shared-tunables-storage.md) — one `localStorage` per ORIGIN; a worktree on its own port sidesteps it entirely
 - [One git index per checkout](shared-checkout-shares-one-git-index.md) — `git add` is not session-local; commit with explicit pathspecs
+- [Blocks are the only streamed geometry](blocks-are-the-only-streamed-geometry.md) — everything else is built once over the whole track; suspect `BACK` when blocks vanish from a non-chase view
