@@ -2,8 +2,8 @@
 
 **Date:** 2026-09-22 · **Branch:** `dev` (commit `6726322`)
 
-Picks up [[2026-09-22-block-surface-and-the-fresnel-trade]]. Its Next #1 (judge the chamfer and the
-seam flicker) is **still not done**. Its Next #2 (issue #166) is **done and verified**. Its Next #3
+Picks up [[2026-09-22-block-surface-and-the-fresnel-trade]]. Its Next #1 is **done**: the owner
+confirms the **seam flicker is gone**, and the 0.2u chamfer reads. Its Next #2 (issue #166) is **done and verified**. Its Next #3
 (the block texture) changed shape on owner direction and is **written but not yet looked at**.
 
 ## The tab freeze, measured instead of guessed
@@ -181,9 +181,11 @@ pnpm exec biome check --write <your paths>
 
 1. **Owner's call on the warm-brown block cast** (see above), and on whether `Block.textureSpan` 2 is
    the right texel density. Both are live panel dials.
-2. **Judge the 0.2u chamfer and the seam flicker** — still outstanding from two handovers ago, still
-   needs the owner's eye. The chamfer needs a mid-distance silhouette; flicker is temporal and a still
-   cannot show it.
+2. ~~Judge the 0.2u chamfer and the seam flicker.~~ **Both closed.** The owner confirms the flicker
+   is gone, and it stayed gone under the new maps. The fix that earned it was the uncapped
+   `length( fwidth( vSealedWorld.xz ) )` footprint plus the `coverage` term in
+   `sealed-block-shader.ts` (`a0c87d1`), which until now had never been confirmed by eye. Analytic
+   AA and energy conservation are a pair — do not reintroduce a cap on that feather.
 3. **Decide the texture file sizes** — the four maps are committed at full 1K JPEG.
 4. **The `GRAPHITE_ALBEDO` decision for the other four surfaces** — see above.
 5. **Monolith cap-edge chamfers**, and widen the vertical ones. `monolith-geometry.ts` chamfers only
