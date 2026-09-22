@@ -29,6 +29,7 @@ import {
     WEAVE_NOISE_FRAC,
 } from '../constants.js';
 import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
+import { blockZSpan } from './block-depth.js';
 import { type LaneRange, rimTeeth } from './gap-teeth.js';
 import { smoothstep, tri, valueNoise1D, valueNoise2D } from './noise.js';
 import { hash2, mulberry32 } from './rng.js';
@@ -123,7 +124,6 @@ export const LANES = ( 2 * HALF_WIDTH ) / CELL;
 export const ZCELLS = SEG_LEN / CELL;
 export const MIN_LANE = 2 * CELL;
 export const BLOCK_HEIGHT = 8;
-export const BLOCK_DEPTH = 8;
 export const PICKUP_SPACING = 3;
 
 export const WEAVE_AMP_LANES = LANES;
@@ -359,13 +359,13 @@ function buildWalls(
     flick: Flick | null,
     density: number,
     z0: number,
+    intensity: number,
 ): Block[] {
     const blocks: Block[] = [];
     let runStart = 0;
     let runState: 0 | 1 = 0;
-    const bz0 = z0 + ( SEG_LEN - BLOCK_DEPTH ) / 2;
-    const bz1 = bz0 + BLOCK_DEPTH;
     const flush = ( endLane: number ): void => {
+        const [ bz0, bz1 ] = blockZSpan( seed, i, runStart, z0, SEG_LEN, intensity );
         blocks.push( {
             x0: -HALF_WIDTH + runStart * CELL,
             x1: -HALF_WIDTH + ( endLane + 1 ) * CELL,
@@ -406,7 +406,16 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     const wLanes = corridorWidthLanes( intensity );
     const { lo: unionLo, hi: unionHi } = corridorUnion( seed, i, wLanes );
     const flick = flickAt( seed, i, length, unionLo, unionHi, density.blocks );
-    const blocks = buildWalls( seed, i, unionLo, unionHi, flick, wallDensity( intensity ) * density.blocks, z0 );
+    const blocks = buildWalls(
+        seed,
+        i,
+        unionLo,
+        unionHi,
+        flick,
+        wallDensity( intensity ) * density.blocks,
+        z0,
+        intensity,
+    );
 
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }

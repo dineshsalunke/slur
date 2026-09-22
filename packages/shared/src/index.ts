@@ -5,6 +5,7 @@ export * from './constants.js';
 export * from './race/director.js';
 export * from './schema.js';
 export * from './ship-classes.js';
+export * from './sim/block-depth.js';
 export * from './sim/fixed-step.js';
 export * from './sim/gap-teeth.js';
 export * from './sim/input.js';

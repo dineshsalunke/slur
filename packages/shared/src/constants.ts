@@ -142,6 +142,9 @@ export const WALL_DENSITY_MAX = 0.4;
 export const WALL_NOISE_FZ_LANE = 1.0;
 export const WALL_NOISE_FZ_SEG = 1.5;
 export const BLOCK_MAX_LANES = 3;
+export const BLOCK_DEPTHS = [ 4, 8, 16 ];
+export const BLOCK_DEPTH_WEIGHTS_START = [ 0.5, 0.35, 0.15 ];
+export const BLOCK_DEPTH_WEIGHTS_MAX = [ 0.2, 0.35, 0.45 ];
 export const CORRIDOR_BUFFER = 1;
 
 export const FLICK_RATE_START = 0.15;
