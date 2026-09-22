@@ -48,9 +48,9 @@ const BRUSH_ROUGHER_MAX = 0.14;
 const BRUSH_TILT_RAD = 0.06;
 const BRUSH_NORMAL_TILT = 0.1;
 const BRUSH_NORMAL_ALPHA = 0.45;
-const METAL_PLATE = 0.7;
-const METAL_PATCH_MIN = 0.35;
-const METAL_PATCH_MAX = 0.7;
+const METAL_PLATE = 1;
+const METAL_PATCH_MIN = 0.5;
+const METAL_PATCH_MAX = 1;
 const CAVITY_BEVEL_LIFT = 0.37;
 
 export interface SurfaceParams {
