@@ -33,10 +33,13 @@
     --color-wordmark: #eaf6ff; /* landing SLUR wordmark */
     --color-headline: #f3f8ff; /* landing lead headline */
     --color-debug: #00ff88; /* dev-only net-debug readout — terminal green, distinct from the finisher --color-fin */
+    --color-readout: #eceff2; /* in-game HUD primary type — NEUTRAL white, not the cool --color-hud of the panels */
+    --color-readout-dim: #8b929b; /* HUD secondary type — the u/s unit, the key hint, the stat row */
 
     /* Type. display = UI sans; mono = the LCARS-ish label/readout face. */
     --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --font-readout: "Chakra Petch", ui-sans-serif, system-ui, sans-serif; /* the in-game HUD face (@font-face below) */
 
     /* Neon glows. EVERY glow in the app is a token here — the @theme block is the ONE place a brand colour is
        allowed to appear literally, so re-tuning the neon (or the palette) is a single-file edit and no
@@ -59,12 +62,47 @@
     --drop-shadow-cta: 0 0 14px rgba( 59, 214, 255, 0.5 );
     --drop-shadow-cta-hover: 0 0 20px rgba( 59, 214, 255, 0.78 );
 
+    /* The HUD power-slot gem. A drop-shadow FILTER, not a box-shadow: the glow has to follow the SVG polygons,
+       not the element's rectangle. */
+    --drop-shadow-power-gem: 0 0 9px rgba( 245, 154, 36, 0.65 );
+
     --text-shadow-wordmark: 0 0 18px rgba( 59, 214, 255, 0.55 ), 0 0 42px rgba( 59, 214, 255, 0.28 ); /* SLUR */
     --text-shadow-marigold: 0 0 22px rgba( 245, 154, 36, 0.5 ); /* "Wreck" in the lead headline */
     --text-shadow-timer: 0 0 10px rgba( 59, 214, 255, 0.7 ); /* race timer readout */
     --text-shadow-count: 0 0 40px rgba( 59, 214, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
     --text-shadow-power: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power chip label */
     --text-shadow-threat: 0 0 12px rgba( 255, 92, 110, 0.85 ); /* incoming-bolt warning tick */
+
+    /* HUD legibility. The in-game readout has no panel behind it — it sits directly on a deck that swings from
+       near-black to blown-out marigold, so the contrast has to come from the type itself. Set once on the HUD
+       layer and inherited; the marigold variant carries the same dark drop so self/active rows stay readable. */
+    --text-shadow-readout: 0 2px 5px rgba( 0, 0, 0, 0.9 ), 0 0 2px rgba( 0, 0, 0, 0.8 );
+    --text-shadow-readout-marigold: 0 0 10px rgba( 245, 154, 36, 0.55 ), 0 2px 5px rgba( 0, 0, 0, 0.9 );
+}
+
+/* The HUD face — Chakra Petch (SIL OFL 1.1, licence beside the files). Self-hosted latin-only subsets, ~30 KB
+   total: no third-party request on the critical path and no layout shift mid-race. Referenced only through
+   --font-readout above; nothing should name the family directly. */
+@font-face {
+    font-family: "Chakra Petch";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url( "/fonts/chakra-petch-400-latin.woff2" ) format( "woff2" );
+}
+@font-face {
+    font-family: "Chakra Petch";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url( "/fonts/chakra-petch-600-latin.woff2" ) format( "woff2" );
+}
+@font-face {
+    font-family: "Chakra Petch";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url( "/fonts/chakra-petch-700-latin.woff2" ) format( "woff2" );
 }
 
 /* Backdrop scrim over the fixed live-3D Canvas: a centre-clear vignette + a top/bottom fade so the

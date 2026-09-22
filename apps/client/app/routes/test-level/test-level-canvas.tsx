@@ -8,6 +8,7 @@ import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
 import { LocalLoop } from './local-loop';
 import { LocalShip } from './local-ship';
+import { TestLevelHud } from './test-level-hud';
 
 const TuningPanel = import.meta.env.DEV ? lazy( () => import( '../../dev/tuning-panel' ) ) : null;
 
@@ -44,6 +45,7 @@ export function TestLevelCanvas() {
                         <RearView />
                     </WorldScene>
                 </Canvas>
+                <TestLevelHud track={ track } />
             </WorldProvider>
             { TuningPanel ? (
                 <Suspense fallback={ null }>
