@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 29cebf5f-df66-4ac8-b08d-35f5778300d8
-  modified: 2026-09-22T18:21:41.840Z
+  modified: 2026-09-22T18:40:38.824Z
 ---
 
 Several Claude sessions working in `/Users/apple/Projects/personal/slur` share a single
@@ -31,3 +31,11 @@ empty, hand-write a patch containing only your hunk into the scratchpad,
 `git diff --cached` shows none of theirs, then `git commit` with **NO pathspec** — a pathspec
 would re-read the working tree and undo the whole point. Check their hunk survived afterwards.
 `git add -p` is unavailable: interactive flags do not work in this harness.
+
+**Simpler variant when your own hunks are few and trivial to retype** (done 2026-09-23 on
+`dev/tuning-schema.ts`, three lines of mine against a peer's `Exhaust.*`/`EngineLight.*` block):
+copy the mixed file to the scratchpad, `git checkout HEAD -- <file>`, re-apply only your edits with
+the Edit tool, `git add <file>`, then copy the mixed file back. No patch arithmetic, and a pathspec
+on the commit is then harmless. The peer's lines are missing from the WORKING TREE for the few
+seconds in the middle — a peer reading the file right then sees a phantom clobber and a typecheck
+failure, so say what you are doing if one is watching.
