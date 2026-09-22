@@ -73,12 +73,13 @@ function resolveFlatFloor( s: SimShip, t: FlightTuning ): void {
 
 function clampToEdges( s: SimShip, t: FlightTuning ): void {
     const limit = t.halfWidth - t.halfW;
+    const restitution = t.railBounce > 0 ? t.railBounce : 0;
     if ( s.x < -limit ) {
         s.x = -limit;
-        if ( s.vx < 0 ) s.vx = 0;
+        if ( s.vx < 0 ) s.vx = restitution > 0 ? -s.vx * restitution : 0;
     } else if ( s.x > limit ) {
         s.x = limit;
-        if ( s.vx > 0 ) s.vx = 0;
+        if ( s.vx > 0 ) s.vx = restitution > 0 ? -s.vx * restitution : 0;
     }
 }
 
