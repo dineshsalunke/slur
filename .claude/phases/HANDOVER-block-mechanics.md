@@ -15,10 +15,16 @@ off the deck edges — see [[HANDOVER-edge-fall]], whose GDD follow-ups are stil
 
 ### 1. Remove the debug panel — NOT a delete, and it is CONTESTED
 
-**Do not start this without checking with `hud` and `atmospherics` first.** Both are actively
-dialling through the panel: `hud` on the exhaust `EngineLight` pass (targeting the deck streak
-`#95511a` / pool `#3a2c22`), `atmospherics` on an asteroid look that is still unjudged. Removing it
-mid-flight destroys both.
+**Check with `hud` before starting — and only `hud`.** They are dialling the exhaust `EngineLight`
+pass through the panel (targeting the deck streak `#95511a` / pool `#3a2c22`); removing it mid-flight
+destroys that.
+
+**`atmospherics` is clear — verified, not taken on trust.** `grep -c "num(\|col("` over all six
+asteroid files returns 0 for every one. `asteroid-material.ts` already holds its three values as
+source constants (`ASTEROID_ALBEDO` `#5a6570`, `ASTEROID_METALNESS` 0.05, `ASTEROID_ROUGHNESS` 0.9) —
+which is the shape the bake pass is aiming at everywhere else. Their asteroid look is still unjudged,
+but judging it will edit that constants file, not the store, so it does not gate the retirement either
+way.
 
 **Scope is larger than it looks.** `apps/client/app/dev/` holds `tuning-panel.tsx`, `tuning.ts`,
 `tuning-schema.ts`, `tuning-persist.ts`, `tuning-rebuild.ts`, `tuning-export.ts`,
