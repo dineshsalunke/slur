@@ -1,9 +1,10 @@
 import { useFrame } from '@react-three/fiber';
-import { num } from './tunables';
+
+const TARGET_DPR = 2;
 
 export function RenderScale() {
     useFrame( ( state ) => {
-        const target = Math.min( num( 'perf.dpr' ), window.devicePixelRatio );
+        const target = Math.min( TARGET_DPR, window.devicePixelRatio );
         if ( Math.abs( state.gl.getPixelRatio() - target ) > 1e-3 ) state.setDpr( target );
     } );
 
