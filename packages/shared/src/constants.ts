@@ -178,6 +178,20 @@ export const GAP_P_START = 0.06;
 export const GAP_P_MAX = 0.16;
 export const FULL_GAP_FRAC = 0.4;
 
+export const REACTION_WINDOW_S = 0.45;
+export const DEMAND_SPACING_REST_S = 1.6;
+export const DEMAND_SPACING_PEAK_S = 0.5;
+
+export function demandSpacingSeconds( intensity: number ): number {
+    const s = DEMAND_SPACING_REST_S + ( DEMAND_SPACING_PEAK_S - DEMAND_SPACING_REST_S ) * intensity;
+    return s < REACTION_WINDOW_S ? REACTION_WINDOW_S : s;
+}
+
+export function demandSpacingSegments( intensity: number, segLen: number, speed: number ): number {
+    const segs = Math.ceil( ( demandSpacingSeconds( intensity ) * speed ) / segLen );
+    return segs < 1 ? 1 : segs;
+}
+
 export const GAP_BLOCK_RATE_START = 0.3;
 export const GAP_BLOCK_RATE_MAX = 0.75;
 export const GAP_BLOCK_ATTEMPTS = 6;

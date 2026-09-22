@@ -10,6 +10,8 @@ import {
     CRACK_SEGS_MIN,
     CRACK_W_LANES_MAX,
     CRACK_W_LANES_MIN,
+    DEFAULT_TUNING,
+    demandSpacingSegments,
     deriveNodePeriod,
     deriveWeaveCurvatureCap,
     deriveWeavePeriod,
@@ -210,6 +212,22 @@ function rolledGap( seed: number, i: number, length: number, density: TrackDensi
     return mulberry32( hash2( seed, i ) )() < gapProb( intensityAt( i, length ) ) * density.gaps;
 }
 
+export function spacingSegments( intensity: number ): number {
+    return demandSpacingSegments( intensity, SEG_LEN, DEFAULT_TUNING.maxCruise );
+}
+
+function gapOpens( seed: number, i: number, length: number, density: TrackDensity ): boolean {
+    if ( ! rolledGap( seed, i, length, density ) ) return false;
+    const back = spacingSegments( intensityAt( i, length ) );
+    for ( let p = 1; p <= back + CRACK_SEGS_MAX; p++ ) {
+        if ( ! rolledGap( seed, i - p, length, density ) ) continue;
+        const c = crackAt( seed, i - p );
+        const ends = i - p + ( c === null ? 1 : c.segs );
+        if ( ends + back > i ) return false;
+    }
+    return true;
+}
+
 function fullFloor( y: number ): FloorSpan[] {
     return [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y } ];
 }
@@ -259,11 +277,7 @@ export function crackAt( seed: number, i: number ): Crack | null {
 }
 
 function crackStartAt( seed: number, s: number, length: number, density: TrackDensity ): Crack | null {
-    if ( ! rolledGap( seed, s, length, density ) ) return null;
-    for ( let p = 1; p < CRACK_SEGS_MAX; p++ ) {
-        if ( rolledGap( seed, s - p, length, density ) ) return null;
-    }
-    return crackAt( seed, s );
+    return gapOpens( seed, s, length, density ) ? crackAt( seed, s ) : null;
 }
 
 function crackCovering( seed: number, i: number, length: number, density: TrackDensity ): Crack | null {
@@ -396,6 +410,15 @@ function flickRolled( seed: number, i: number, length: number, blocks: number ):
     return mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i ) )() < flickRate( intensityAt( i, length ) ) * blocks;
 }
 
+function flickOpens( seed: number, i: number, length: number, blocks: number ): boolean {
+    if ( ! flickRolled( seed, i, length, blocks ) ) return false;
+    const back = spacingSegments( intensityAt( i, length ) );
+    for ( let p = 1; p <= back; p++ ) {
+        if ( flickRolled( seed, i - p, length, blocks ) ) return false;
+    }
+    return true;
+}
+
 function flickAt(
     seed: number,
     i: number,
@@ -403,8 +426,13 @@ function flickAt(
     unionLo: number,
     unionHi: number,
     blocks: number,
+    density: TrackDensity,
 ): Flick | null {
-    if ( ! flickRolled( seed, i, length, blocks ) || flickRolled( seed, i - 1, length, blocks ) ) return null;
+    if ( ! flickOpens( seed, i, length, blocks ) ) return null;
+    const back = spacingSegments( intensityAt( i, length ) );
+    for ( let p = 1; p <= back; p++ ) {
+        if ( gapOpens( seed, i - p, length, density ) ) return null;
+    }
     const minGapLanes = MIN_LANE / CELL;
     if ( unionHi - unionLo + 1 - FLICK_WIDTH < minGapLanes ) return null;
     const fromLeft = mulberry32( hash2( ( seed ^ SALT_FLICK ) | 0, i * 2 + 1 ) )() < 0.5;
@@ -462,7 +490,7 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
         return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, length, floors, z0, z1, density ) };
     }
 
-    if ( rolledGap( seed, i, length, density ) && ! rolledGap( seed, i - 1, length, density ) ) {
+    if ( gapOpens( seed, i, length, density ) ) {
         const floors = gapFloors( seed, i, length, z0 );
         return { ...base, kind: 'gap', floors, blocks: gapBlocks( seed, i, length, floors, z0, z1, density ) };
     }
@@ -470,7 +498,7 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     const intensity = intensityAt( i, length );
     const wLanes = corridorWidthLanes( intensity );
     const { lo: unionLo, hi: unionHi } = corridorUnion( seed, i, wLanes );
-    const flick = flickAt( seed, i, length, unionLo, unionHi, density.blocks );
+    const flick = flickAt( seed, i, length, unionLo, unionHi, density.blocks, density );
     const blocks = buildWalls(
         seed,
         i,
