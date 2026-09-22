@@ -152,6 +152,25 @@ export function TuningPanel() {
         cavity: numberControl( 'Groove.cavity' ),
     } );
 
+    useControls( 'Exhaust', {
+        length: numberControl( 'Exhaust.length' ),
+        spread: numberControl( 'Exhaust.spread' ),
+        glow: numberControl( 'Exhaust.glow' ),
+        idle: numberControl( 'Exhaust.idle' ),
+        softness: numberControl( 'Exhaust.softness' ),
+        falloff: numberControl( 'Exhaust.falloff' ),
+        hot: colorControl( 'Exhaust.hot' ),
+        cool: colorControl( 'Exhaust.cool' ),
+    } );
+
+    useControls( 'Engine light', {
+        intensity: numberControl( 'EngineLight.intensity' ),
+        distance: numberControl( 'EngineLight.distance' ),
+        back: numberControl( 'EngineLight.back' ),
+        lift: numberControl( 'EngineLight.lift' ),
+        color: colorControl( 'EngineLight.color' ),
+    } );
+
     return null;
 }
 

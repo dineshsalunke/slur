@@ -91,6 +91,18 @@ export const NUMBER_TUNABLES = {
     'RearView.featherX': { value: 0.22, min: 0, max: 0.5, step: 0.01, rebuild: false },
     'RearView.featherY': { value: 0.18, min: 0, max: 0.5, step: 0.01, rebuild: false },
     'RearView.scale': { value: 1, min: 0.5, max: 2, step: 0.05, rebuild: true },
+
+    'Exhaust.length': { value: 4.5, min: 0.5, max: 24, step: 0.1, rebuild: false },
+    'Exhaust.spread': { value: 1.6, min: 0.5, max: 5, step: 0.05, rebuild: false },
+    'Exhaust.glow': { value: 3.2, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Exhaust.idle': { value: 0.35, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Exhaust.softness': { value: 2.2, min: 0.2, max: 8, step: 0.05, rebuild: false },
+    'Exhaust.falloff': { value: 1.6, min: 0.2, max: 8, step: 0.05, rebuild: false },
+
+    'EngineLight.intensity': { value: 18, min: 0, max: 200, step: 0.5, rebuild: false },
+    'EngineLight.distance': { value: 14, min: 1, max: 80, step: 0.5, rebuild: false },
+    'EngineLight.back': { value: 3.4, min: 0, max: 14, step: 0.1, rebuild: false },
+    'EngineLight.lift': { value: 0.5, min: -2, max: 6, step: 0.05, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
@@ -104,6 +116,9 @@ export const COLOR_TUNABLES = {
     'Deck.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Rail.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Monolith.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
+    'Exhaust.hot': { value: '#fff1dc', rebuild: false },
+    'Exhaust.cool': { value: ACCENT_ANCHOR, rebuild: false },
+    'EngineLight.color': { value: '#ff9a3c', rebuild: false },
 } as const satisfies Record< string, ColorTunable >;
 
 export type NumberPath = keyof typeof NUMBER_TUNABLES;

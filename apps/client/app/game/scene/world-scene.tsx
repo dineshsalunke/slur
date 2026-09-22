@@ -2,6 +2,8 @@ import type { Track } from '@slur/shared';
 import { Fragment, type ReactNode } from 'react';
 import { RenderScale } from '../../dev/render-scale';
 import { BackFill } from './back-fill';
+import { EngineLight } from './engine-light';
+import { ExhaustField } from './exhaust-field';
 import { ExplosionField } from './explosions';
 import { FinishGate } from './finish-gate';
 import { GameEnvironment } from './game-environment';
@@ -32,7 +34,9 @@ export function WorldScene( {
             <NearFill />
             <RailLights track={ track } />
             <RenderScale />
+            <EngineLight />
             <ExplosionField />
+            <ExhaustField />
             <HitSpark />
             <TrackView track={ track } />
             <FinishGate track={ track } />
