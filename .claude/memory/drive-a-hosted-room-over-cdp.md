@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: 5c6d06d0-78ec-4c1c-83d8-901b72db2774
-  modified: 2026-09-23T15:42:57.107Z
+  modified: 2026-09-23T21:14:55.451Z
 ---
 
 A hosted-room live check (#223, 2026-09-23) worked this way:
@@ -22,6 +22,9 @@ A hosted-room live check (#223, 2026-09-23) worked this way:
 - A pickup respawns 3 s after it is taken. Reverse with S past it, wait, fly through again: that gives
   two of the same power without luck.
 - A ship pressed against a block has `stunTimer > 0`, and `canFire` refuses. A refused E is not a bug.
+- Two racers from one headless Chrome: open the second tab on `/game/<id>` and it joins. Opening it
+  backgrounds the host tab, so its rAF stops and the HUD's addEffect readouts stay blank. Send
+  `Page.bringToFront` to the tab before you read or screenshot it (#236, 2026-09-24).
 - `location.href = …` inside a CDP eval left the tab deaf to CDP. Open a new tab with
   `PUT /json/new?<url>` and close the old one.
 
