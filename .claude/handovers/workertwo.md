@@ -1,35 +1,34 @@
-Agent: workertwo · Lane: sky review fixes (#227, from #215 / PRs #221 + #224) · Updated: 2026-09-23, ~00:20
+Agent: workertwo · Lane: monolith surface options (#228) · Updated: 2026-09-24, ~01:15
 
 ## Goal
 
-Fix the review findings in `.claude/phases/2026-09-23-review-pr-221-224.md` on the merged sky work
-(`81f9462`). Issue #227.
+The owner says the metal albedo on the monoliths adds little. Build a live switch between (A) the metal
+maps with no albedo and the deck colour, and (B) the deck material outright. Take stills. The owner picks,
+then clean up and update `docs/ART_MATERIALS.md` and `docs/ADD.md`.
 
 ## Done
 
-- `c99c40d`: rail glow + rock key light in world space, moved to view space in the shader with
-  `viewMatrix`, so the rear-view pass is lit from the right place. Rail glow gated to rail runs with a
-  per-segment mask texture (`buildRailMask` in `rail-glow.ts`, R/G = left present/y, B/A = right).
-  2u ramp at run ends. `nbGlobe` `fwidth` moved above the divergent `cosA` return (the `sinR` return is
-  uniform). `ADD.md`: planet/moon counts, missing-rock-map claim, rail-glow paragraph.
+- `ba17a58`: dev tunable `Monolith.surface` (0 = current metal, 1 = A, 2 = B), default 0.
+  `MonolithGroup` renders three body materials. The extra two are JSX children with a no-op `attach`
+  (`unattached`), so R3F owns them and disposes them. `useFrame` assigns `mesh.material`. B uses
+  `floorSurface()` + `patchRailGlow`. `Monoliths` builds the rail mask once as an R3F `<dataTexture>`
+  (`railMaskData` split out of `buildRailMask` in `rail-glow.ts`) and passes a `RailMask` ref down.
+  `finish-gate.tsx` passes no mask, so its arches get no rail glow in B.
+- Issue #228 filed.
 
 ## State
 
-- At `c99c40d`: client tsc clean, vitest 241/241, biome clean on the touched files, comment ratchet passes.
-- Mask content checked live: 14 segments of 466 lack a rail. Segment 57 (z 1140–1160) lacks both
-  rails. That matches a node survey of the `/test-level` track.
-- Gating checked live: zeroing mask rows for segments 58–60 darkens exactly the segment 58 cap facing
-  the pit and the deck beyond it (26k px). Real mask vs all-ones mask: no visible change from the
-  poses I tried. The segment 57 islands are small and hidden behind a tall block. [partial]
-- Rear view: the deck glow now shows in the mirror at both rail edges. No numeric before/after of the
-  mirror shift. [inferred correct from the viewMatrix mechanism, not A/B'd]
-- Bake time (headless Chrome, real GPU: ANGLE Metal Apple M1 Pro, 1600×813, DPR 1): base frame
-  7.8 ms. Frame with a `Sky.seed` change (re-bake + relight) median 153 ms (125–156). Frame with a
-  look-only change (`Sky.brightness`, relight only) median 15 ms. The first-frame bake includes shader
-  compile. [unmeasured]
-- Still: `.claude/frame-tap-refs/227-gap-on.png` (git-ignored).
-- Scratch vite 5183 and headless Chrome 9338 are killed. CDP helpers are in the session scratchpad
-  (`cdp.mjs`, `pngdiff.mjs`, `mask.js`, `bake.js`); they are lost with the session.
+- At `ba17a58`: client tsc clean. Biome clean on the touched files. Comment ratchet passes. vitest 241/241
+  (run before the final `chosenSurface` extraction, which only moved code).
+- Stills (git-ignored), `/test-level`, ship at x 0 z 75, frozen, headless M1 Pro Metal, 1600×813,
+  DPR 1: `.claude/frame-tap-refs/228-current-metal.png`, `228-a-flat-deck-colour.png`,
+  `228-b-deck-material.png`. Pillar pair at z 120.
+- Current is repeatable at that pose: the shot before and after the switch has identical stats.
+- Pillar face luma (left 100×380 px / right): current 16.9 / 18.1, orange cast rgb(32,14,1).
+  A 20.7 / 14.1, neutral, cooler, no texture. B 23.1 / 17.0, deck plate grid readable on the faces.
+- B rail glow reaches the pillar's inner foot: luma 14.7 with the rail light off, 20.3 at 6, warmer.
+  B's UVs are fine on vertical faces: square plates at deck scale.
+- Scratch vite 5183 and headless Chrome 9338 are killed. Scratch-origin localStorage cleared.
 
 ## Uncommitted
 
@@ -37,27 +36,22 @@ None.
 
 ## Held files
 
-`apps/client/app/game/scene/{rail-glow.ts, track-floor.tsx, rock-field.tsx, asteroid-surface.ts,
-nebula-shaders.ts}`, `docs/ADD.md`. Plus the eight #222 files from the last lane.
+`apps/client/app/game/scene/{monolith-group.tsx, monoliths.tsx, monolith-frames.tsx, rail-glow.ts}`,
+`apps/client/app/dev/tuning-schema.ts`. `docs/ART_MATERIALS.md` and `docs/ADD.md` after the owner picks.
 
 ## Next
 
-1. Before/after darkness still pair (`036645c` vs dev), no fix. BLOCKED: it needs a second checkout.
-   A `git archive` export would share `apps/client/node_modules/.vite` with the live dev server, so it
-   needs a worktree, which the owner must approve. `036645c`..dev: no dep changes, shared differs only in
-   combat-step.
-2. Optional: a vitest for `buildRailMask` (layout, run edges, LEAD offset).
-3. Tick #227 items, then close the issue.
-4. #222 items from the last lane: owner judges stills; one-frame hole; debris `mesh.count`; mend-cancel.
+1. Wait for the owner's pick (0 / A / B).
+2. Remove the losing paths and the `Monolith.surface` tunable. If B wins, decide whether `finish-gate.tsx`
+   gets the rail mask. Drop `unattached` if only one material remains.
+3. Update `ART_MATERIALS.md` §7 item 11 and `ADD.md` §4. Update memory `monoliths-are-metal-now.md`.
+4. Earlier lane (#227): still waiting on the worktree and the 145 ms bake questions.
 
 ## Open questions
 
-1. Owner: approve a worktree for the `036645c` still pair?
-2. A 145 ms bake stall on a tunable change is fine for dev. Is it acceptable on the first race frame, or
-   should the bake move behind a loading screen?
-3. `.gitignore` `.tmp/`: supervisor said keep it. Dropped from the lane.
+1. Owner: which surface, current / A / B?
+2. Owner (still open): worktree for the `036645c` darkness stills; the 145 ms bake on the first race frame.
 
 ## Lessons → memory
 
-- `.claude/memory/place-the-ship-over-cdp.md` (updated: a second placement needs an unfreeze; how to
-  reach patched uniforms)
+none (the R3F-owned-material pattern is recorded in the commit; not yet a proven durable lesson)
