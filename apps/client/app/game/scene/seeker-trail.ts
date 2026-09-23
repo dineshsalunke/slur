@@ -1,4 +1,4 @@
-export const TRAIL_POINTS = 12;
+export const TRAIL_POINTS = 16;
 export const TRAIL_SPACING = 2;
 const HEADING_MIN = 0.25;
 

@@ -1,7 +1,7 @@
 import { DEFAULT_SIM_CONFIG, HeldPower, pickupPower, pickupsOf, procgenDescriptor, resolveTrack } from '@slur/shared';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { SEEKER_FLIGHT, SEEKER_PICKUP, seekerCoreGeometry, seekerShellGeometry } from './seeker-look';
+import { SEEKER_FLIGHT, SEEKER_PICKUP, seekerCoreGeometry, seekerShellGeometry, seekerTail } from './seeker-look';
 import { splitPickupLayout } from './seeker-pickups';
 
 function bounds( g: THREE.BufferGeometry ): THREE.Box3 {
@@ -34,8 +34,18 @@ describe( 'seeker in flight', () => {
         const s = bounds( seekerShellGeometry( SEEKER_FLIGHT ) );
         const half = DEFAULT_SIM_CONFIG.seekerHalf;
 
-        expect( s.max.y ).toBeGreaterThan( SEEKER_FLIGHT.half );
-        for ( const v of [ s.max.x, -s.min.x, s.max.y, -s.min.y ] ) expect( v ).toBeLessThanOrEqual( half );
+        for ( const v of [ s.max.x, -s.min.x, s.max.y, -s.min.y ] ) {
+            expect( v ).toBeGreaterThan( SEEKER_FLIGHT.half );
+            expect( v ).toBeLessThanOrEqual( half );
+        }
+    } );
+
+    it( 'puts its nose on the front face of the sim body and trails the rest behind', () => {
+        const s = bounds( seekerShellGeometry( SEEKER_FLIGHT ) );
+
+        expect( s.max.z ).toBeCloseTo( DEFAULT_SIM_CONFIG.seekerHalf );
+        expect( s.max.z - s.min.z ).toBeGreaterThanOrEqual( 2 * SEEKER_FLIGHT.halfLen );
+        expect( -s.min.z ).toBeGreaterThanOrEqual( seekerTail( SEEKER_FLIGHT ) );
     } );
 } );
 

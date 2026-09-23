@@ -11,6 +11,7 @@ import {
     SEEKER_TRAIL_BRIGHT,
     SEEKER_TRAIL_HEAT,
     SEEKER_TRAIL_WIDTH,
+    seekerTail,
     seekerTrailSegmentGeometry,
 } from './seeker-look';
 import { buildSeekerBody } from './seeker-pickups';
@@ -82,18 +83,19 @@ function writeSegment(
 }
 
 function writeTrail( frame: Frame, mesh: THREE.InstancedMesh, x: number, y: number, z: number, r: SeekerTrailRing ) {
-    let px = x - r.hx * SEEKER_FLIGHT.halfLen;
-    let py = y - r.hy * SEEKER_FLIGHT.halfLen;
-    let pz = z - r.hz * SEEKER_FLIGHT.halfLen;
-    let started = false;
+    const tail = seekerTail( SEEKER_FLIGHT );
+    let px = x - r.hx * tail;
+    let py = y - r.hy * tail;
+    let pz = z - r.hz * tail;
+    let first = -1;
     for ( let k = 0; k < r.count; k++ ) {
         const i = trailIndex( r, k );
         const qx = r.x[ i ];
         const qy = r.y[ i ];
         const qz = r.z[ i ];
-        if ( ! started && ( qx - px ) * r.hx + ( qy - py ) * r.hy + ( qz - pz ) * r.hz >= 0 ) continue;
-        started = true;
-        writeSegment( frame, mesh, px, py, pz, qx, qy, qz, 1 - k / TRAIL_POINTS );
+        if ( first < 0 && ( qx - px ) * r.hx + ( qy - py ) * r.hy + ( qz - pz ) * r.hz >= 0 ) continue;
+        if ( first < 0 ) first = k;
+        writeSegment( frame, mesh, px, py, pz, qx, qy, qz, 1 - ( k - first ) / ( TRAIL_POINTS - first ) );
         px = qx;
         py = qy;
         pz = qz;
