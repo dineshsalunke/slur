@@ -1,5 +1,4 @@
 import { button, useControls } from 'leva';
-import { DEFAULT_HDRI_SLUG, ENV_MODES, envMode, HDRI_SLUGS, setEnvMode, setHdriSlug } from './env-store';
 import { col, num, setCol, setNum } from './tuning';
 import { copyDefaults } from './tuning-export';
 import { forget } from './tuning-persist';
@@ -27,12 +26,6 @@ function colorControl( path: ColorPath ) {
 
 export function TuningPanel() {
     useControls( 'Environment', {
-        source: {
-            value: envMode(),
-            options: [ ...ENV_MODES ],
-            onChange: setEnvMode,
-            transient: true as const,
-        },
         skyColor: colorControl( 'Env.skyColor' ),
         skyIntensity: numberControl( 'Env.skyIntensity' ),
         groundColor: colorControl( 'Env.groundColor' ),
@@ -40,19 +33,6 @@ export function TuningPanel() {
         bandColor: colorControl( 'Env.bandColor' ),
         bandIntensity: numberControl( 'Env.bandIntensity' ),
         bandHeight: numberControl( 'Env.bandHeight' ),
-        hdri: {
-            value: DEFAULT_HDRI_SLUG,
-            options: [ ...HDRI_SLUGS ],
-            onChange: setHdriSlug,
-            transient: true as const,
-        },
-        slug: {
-            value: '',
-            onChange: ( value: string ) => {
-                if ( value.trim() ) setHdriSlug( value );
-            },
-            transient: true as const,
-        },
         intensity: numberControl( 'Environment.intensity' ),
         rotation: numberControl( 'Environment.rotation' ),
     } );
