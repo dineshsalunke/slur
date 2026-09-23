@@ -796,3 +796,82 @@ colour on one kind. The art package rejects red as a hazard code, so the colour 
 `apps/server/src/rooms/run-room.ts` · `apps/client/app/game/block-state.ts` ·
 `apps/client/app/game/scene/{track-blocks,block-debris,block-breaks,fractured-block-*}` ·
 `docs/GDD.md` §5.2, §5.7. Commits: `523d63c`, `b6f1f45`, `8c9afaf`.
+
+## ADR-017 — The homing seeker: one at a time, locks what it can see, dodged only late
+
+**Date:** 2026-09-23 · **Status:** PROPOSED (design approved by the owner via slur-supervisor; not built) ·
+**Issue:** #219 · **Implements:** GDD §5 *"Homing seeker … Locks the nearest ship ahead and chases;
+dodge-able"* · **Uses:** BC8 (server distance queries)
+
+### Decision
+
+The seeker is the second held power. It is a slow, visible missile. It locks one target and is hard to
+shake. The owner's steer: *"it should be HARDER TO SHAKE."*
+
+- **Pickup kind.** Each pickup anchor gets a kind from a hash of its id. `seekerRatio` (0.25) of pickups
+  are seekers. Procgen and authored tracks both work, because only the anchor id is read.
+- **One at a time.** At most one seeker exists, held or in flight. `seekerLimit` selects the scope:
+  `'room'` (default) or `'shooter'`. When the limit is reached, a seeker pickup **grants a bolt**. It does
+  not grant nothing, because an empty grab looks like a bug.
+- **Target.** At launch the seeker locks the nearest racer **ahead** of the shooter, with
+  `0 < dz ≤ seekerLockRange` (600u), that is alive, racing, not finished, and **visible**. If no racer
+  qualifies, the seeker flies straight and can hit nobody. The lock does not change after launch.
+- **Line of sight.** A deterministic 2D test in `@slur/shared`: the segment from shooter to target in
+  x–z against every standing block AABB in the segments between them. Broken fractured blocks do not
+  block it. Monoliths are not tested: they are client-only scenery outboard of the rail
+  (`monolith-transforms.ts`, `RAIL_OUTER = HALF_WIDTH + RAIL_W`), and the segment between two points on
+  the deck never leaves the deck. **LOS is checked at launch only.** A check in flight would make every
+  block a third way to lose the seeker.
+- **Flight.** Forward speed ramps from the shooter's `vz` to `seekerSpeed` (120 u/s) over `seekerRampS`
+  (0.3s). The seeker cruises at `seekerCruiseY` (10u), above `BLOCK_HEIGHT` (8u). It does not collide with
+  blocks. Inside `seekerDiveDz` (40u) of the target it descends linearly to `seekerStrikeY` (0.5u).
+- **Two tracking phases.**
+  - *Tracking:* the lateral rate toward the target's x is capped at `seekerTrackTurn` (240 u/s). That is
+    above every ship's `strafeClamp` (65–95), so an early strafe does not lose it.
+  - *Committed:* inside the terminal window the cap drops to `seekerTurn` (40 u/s), so a late strafe can
+    beat it. Once the seeker commits, it stays committed.
+  - `seekerWindowMode` selects the window: `'time'` (time to impact ≤ `seekerWindowS`, 0.35s, with
+    time = dz ÷ max(seeker vz − target vz, ε)) or `'distance'` (dz ≤ `seekerWindowU`, 30u).
+- **Hit.** The seeker can hit only its target. It uses the bolt's x–z box test plus a y band: the target's
+  `y` must be below `seekerHitBand` (1.2u). A full jump (2.8u or more for every class) clears it. A tap jump
+  (0.8–0.9u) does not.
+- **Miss.** The seeker is spent if its target is more than `halfL` behind it, if the target dies,
+  finishes or leaves, or if `seekerTtl` (6s) runs out. A miss after commit broadcasts `seekerMiss` to the
+  target (the dodge sound).
+- **Stun.** `seekerStunS` is 2.0s. The bolt's is 1.2s. Armour scales it through `stunDurationForShip`.
+- **Wire.** `Projectile` gains `kind` (uint8), `targetId` (string) and `committed` (boolean). The server
+  steps seekers. The client interpolates them like bolts and does not predict them.
+- **Data.** Every value above is a `SimConfig` field (non-negotiable #6). The `Seeker.*` group in
+  `dev/tuning-schema.ts` drives the local sim on `/test-level`. A hosted room still runs
+  `DEFAULT_SIM_CONFIG` on the server, so the dev panel does not reach it.
+
+### Exactly two dodges
+
+The owner allows two ways to beat a locked seeker: **jump over it**, or **strafe at the last moment**.
+Blocks do not stop it. LOS is not re-checked. An early strafe does not shake it. Outrunning it is the one
+known exception: the Freighter (`ship-classes.ts:84`, `maxCruise: 124`) is faster than 120 u/s. The
+owner accepted this for now.
+
+### Rejected alternatives
+
+- **One turn cap for the whole flight.** An early strafe shakes it. The owner rejected this.
+- **Block collision in flight, or LOS re-checked in flight.** Each one adds a third dodge.
+- **Proportional navigation.** It is harder to tune to a clean late-strafe window. The two-phase cap gives
+  the window directly.
+- **Refuse to fire with no lock.** The client would have to predict the server's lock for the HUD. A
+  straight flight is never a silent failure.
+- **Hit any ship in the path.** A lock that hits someone else is not a lock.
+
+### Open with the owner
+
+1. With no lock, the seeker flies straight and is wasted. The alternative is to refuse the fire.
+2. Is the seeker drawn through a block when it dives inside 40u? It does not collide, so it can clip.
+
+### Affected
+
+`packages/shared/src/combat/{constants,seeker,pickups,projectiles,combat-step}.ts` ·
+`packages/shared/src/{schema,sim-config}.ts` · `apps/server/src/rooms/run-room.ts` ·
+`apps/client/app/game/scene/{pickup-field,projectile-field,seeker-*}` ·
+`apps/client/app/game/overlays/{threat-hud,held-power-chip}.tsx` · `apps/client/app/audio/sfx-map.ts` ·
+`apps/client/app/routes/test-level/*` · `apps/client/app/dev/tuning-schema.ts` ·
+`docs/GDD.md` §5 · `docs/ART_SCALE_REFERENCE.md` §7.
