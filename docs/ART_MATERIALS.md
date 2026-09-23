@@ -835,7 +835,9 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       fins: top, bottom, left and right. The fins are at the rear. Each fin root is 2.4u long.
     - The nose is at the front of the sim body (sim z + `seekerHalf`, 1u). The drawn body extends
       7.8u behind the sim z. The drawn body is longer than the sim body. The sim body does not change.
-    - The pickup is a near-cube, 1.5u wide and 1.4u long, with a core on both end faces.
+    - The pickup is a bar, 1.5u wide and 4.2u long, with a core on both end faces. The bar is centred
+      on its anchor. It was a near-cube 1.4u long, but it looked like a square block. The owner made it
+      three times longer on 2026-09-23. The pickup grab radius does not change.
     - The trail radius is 0.5u at the head. That is 1.7× the bolt streak's head
       (`BOLT_HEAD_RADIUS`, 0.3u). The trail starts at the rear of the body. Its width and brightness
       decrease with the square of the fade.

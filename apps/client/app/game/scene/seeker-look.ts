@@ -17,7 +17,7 @@ export const SEEKER_FLIGHT: SeekerForm = {
     fins: true,
     faces: 1,
 };
-export const SEEKER_PICKUP: SeekerForm = { half: 0.75, halfLen: 0.7, nose: 0.7, fins: false, faces: 2 };
+export const SEEKER_PICKUP: SeekerForm = { half: 0.75, halfLen: 2.1, nose: 2.1, fins: false, faces: 2 };
 
 const CHAMFER_SHARE = 0.28;
 const BEVEL = 0.06;

@@ -50,13 +50,14 @@ describe( 'seeker in flight', () => {
 } );
 
 describe( 'seeker pickup', () => {
-    it( 'is a near-cube with a core on both end faces', () => {
+    it( 'is a bar about three times longer than wide, centred on its anchor, with a core on both end faces', () => {
         const s = bounds( seekerShellGeometry( SEEKER_PICKUP ) );
         const c = bounds( seekerCoreGeometry( SEEKER_PICKUP ) );
         const ratio = ( s.max.z - s.min.z ) / ( s.max.x - s.min.x );
 
-        expect( ratio ).toBeGreaterThan( 0.8 );
-        expect( ratio ).toBeLessThan( 1.25 );
+        expect( ratio ).toBeGreaterThan( 2.5 );
+        expect( ratio ).toBeLessThan( 3.2 );
+        expect( s.max.z + s.min.z ).toBeCloseTo( 0 );
         expect( c.min.z ).toBeLessThanOrEqual( s.min.z );
         expect( c.max.z ).toBeGreaterThanOrEqual( s.max.z );
     } );
