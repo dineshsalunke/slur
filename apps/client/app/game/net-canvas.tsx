@@ -1,12 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import {
-    DROP_POWERUP_MESSAGE,
-    resolveTrack,
-    SET_CLASS_MESSAGE,
-    SHIP_ORDER,
-    type TrackDescriptor,
-    USE_POWERUP_MESSAGE,
-} from '@slur/shared';
+import { DROP_POWERUP_MESSAGE, resolveTrack, type TrackDescriptor, USE_POWERUP_MESSAGE } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio';
@@ -39,16 +32,6 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
 
     // JUSTIFIED EFFECT — syncs with an external system: the browser DOM keyboard (window keydown/keyup).
     useEffect( attachKeyboard, [] );
-
-    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard → a Colyseus message. Dev class
-    useEffect( () => {
-        const onKey = ( e: KeyboardEvent ) => {
-            const n = Number( e.key );
-            if ( n >= 1 && n <= SHIP_ORDER.length ) room.send( SET_CLASS_MESSAGE, SHIP_ORDER[ n - 1 ] );
-        };
-        addEventListener( 'keydown', onKey );
-        return () => removeEventListener( 'keydown', onKey );
-    }, [ room ] );
 
     // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (1-3/Q/E/X) → Colyseus fire/drop messages.
     useEffect( () => {

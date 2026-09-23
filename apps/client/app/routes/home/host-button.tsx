@@ -1,6 +1,6 @@
 import { useNavigation } from 'react-router';
 import { Button } from '../../ui/button';
-import { Chevron } from './chevron';
+import { Chevron } from '../../ui/chevron';
 
 export function HostButton() {
     const navigation = useNavigation();

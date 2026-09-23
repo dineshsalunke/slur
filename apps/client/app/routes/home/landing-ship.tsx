@@ -4,7 +4,7 @@ import { Suspense, useMemo, useRef } from 'react';
 import { LocalPlayer, Net, Render, Sim } from '../../game/ecs/traits';
 import { prefersReducedMotion } from '../../game/scene/reduced-motion';
 import { ShipModel } from '../../game/scene/ship-model';
-import { currentShip, useShipChoice } from './ship-choice';
+import { currentShip, useShipChoice } from '../../ship/ship-choice';
 
 const AHEAD = 2;
 const PORTRAIT_AHEAD = 15;

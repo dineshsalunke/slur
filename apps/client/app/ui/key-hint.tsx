@@ -1,12 +1,12 @@
-const HINTS = [
-    { keys: [ 'A', 'D' ], does: 'Ship' },
-    { keys: [ 'Enter' ], does: 'Host' },
-] as const;
+export interface Hint {
+    keys: readonly string[];
+    does: string;
+}
 
-export function KeyHint( { className = '' }: { className?: string } ) {
+export function KeyHint( { hints, className = '' }: { hints: readonly Hint[]; className?: string } ) {
     return (
         <dl className={ `items-center gap-5 text-[12px] uppercase tracking-[0.16em] text-readout-dim ${ className }` }>
-            { HINTS.map( ( h ) => (
+            { hints.map( ( h ) => (
                 <div key={ h.does } className="flex items-center gap-1.5">
                     <dt className="flex gap-1">
                         { h.keys.map( ( k ) => (

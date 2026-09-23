@@ -1,13 +1,14 @@
 import type { Room } from '@colyseus/sdk';
-import { PHASE, type RunState, SET_CLASS_MESSAGE, SET_COLOR_MESSAGE, SHIP_ORDER, START_MESSAGE } from '@slur/shared';
+import { PHASE, type RunState, SET_CLASS_MESSAGE, SET_COLOR_MESSAGE, START_MESSAGE } from '@slur/shared';
 import { Fragment } from 'react';
+import { currentShip, cycleShip } from '../../ship/ship-choice';
+import { ShipStepper } from '../../ship/ship-stepper';
 import { HudButton } from '../../ui/hud-button';
 import { HudPanel } from '../../ui/hud-panel';
 import { COLORS } from '../colors';
 import { useRunView } from '../net/use-run-view';
 import { LeaveButton } from './leave-button';
 import { Roster } from './roster';
-import { ShipCard } from './ship-card';
 
 export function LobbyOverlay( { room }: { room: Room< RunState > } ) {
     const view = useRunView( room );
@@ -36,18 +37,13 @@ export function LobbyOverlay( { room }: { room: Room< RunState > } ) {
                         />
                     ) ) }
                 </div>
-                <div className="flex flex-wrap items-stretch gap-1.5">
-                    <span className="text-[11px] uppercase tracking-[2px] opacity-[0.75]">Ship</span>
-                    { SHIP_ORDER.map( ( shipId ) => (
-                        <ShipCard
-                            key={ shipId }
-                            shipId={ shipId }
-                            selected={ self?.shipId === shipId }
-                            disabled={ locked }
-                            onPick={ () => room.send( SET_CLASS_MESSAGE, shipId ) }
-                        />
-                    ) ) }
-                </div>
+                <ShipStepper
+                    disabled={ locked }
+                    onStep={ ( dir ) => {
+                        cycleShip( dir );
+                        room.send( SET_CLASS_MESSAGE, currentShip().id );
+                    } }
+                />
             </HudPanel>
 
             <HudPanel className="fixed right-4 bottom-4 flex flex-col items-stretch gap-2.5 px-3.5 py-3">

@@ -4,7 +4,7 @@ import { useWorld } from 'koota/react';
 import { useEffect, useMemo } from 'react';
 import { LocalPlayer, Net, Render, Sim } from '../../game/ecs/traits';
 import { prefersReducedMotion } from '../../game/scene/reduced-motion';
-import { currentShip } from './ship-choice';
+import { currentShip } from '../../ship/ship-choice';
 
 const CRUISE = DEFAULT_TUNING.maxCruise * 0.6;
 const CAMERA_BACK = 5;

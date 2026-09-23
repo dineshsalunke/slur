@@ -1,8 +1,8 @@
 import { redirect } from 'react-router';
 import { GameShell } from '../../game/game-shell';
-import { waitForDescriptor } from '../../net/matchmaking';
+import { joinByLink, waitForDescriptor } from '../../net/matchmaking';
 import { RoomProvider } from '../../net/room-context';
-import { session } from '../../net/session';
+import { NAME_KEY } from '../home/call-sign-field';
 import type { Route } from './+types/route';
 
 export function meta() {
@@ -10,10 +10,14 @@ export function meta() {
 }
 
 export async function clientLoader( { params }: Route.ClientLoaderArgs ) {
-    const room = session.room;
-    if ( ! room || room.roomId !== params.roomId ) throw redirect( '/' );
-    const descriptor = await waitForDescriptor( room );
-    return { room, descriptor };
+    const name = localStorage.getItem( NAME_KEY )?.trim() || 'Racer';
+    try {
+        const room = await joinByLink( params.roomId, name );
+        const descriptor = await waitForDescriptor( room );
+        return { room, descriptor };
+    } catch {
+        throw redirect( '/?run=closed' );
+    }
 }
 
 export function shouldRevalidate() {

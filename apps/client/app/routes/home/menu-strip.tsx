@@ -1,10 +1,15 @@
 import { Form } from 'react-router';
+import { KeyHint } from '../../ui/key-hint';
 import { CallSignField } from './call-sign-field';
 import { HostButton } from './host-button';
-import { KeyHint } from './key-hint';
 import { MenuError } from './menu-error';
 import { MENU_FORM } from './menu-form';
 import { ShipPicker } from './ship-picker';
+
+const HINTS = [
+    { keys: [ 'A', 'D' ], does: 'Ship' },
+    { keys: [ 'Enter' ], does: 'Host' },
+] as const;
 
 export function MenuStrip( { savedName }: { savedName: string } ) {
     return (
@@ -17,7 +22,7 @@ export function MenuStrip( { savedName }: { savedName: string } ) {
                 <CallSignField savedName={ savedName } />
                 <ShipPicker />
                 <HostButton />
-                <KeyHint className="hidden justify-end self-center lg:flex" />
+                <KeyHint hints={ HINTS } className="hidden justify-end self-center lg:flex" />
             </div>
             <MenuError />
         </Form>

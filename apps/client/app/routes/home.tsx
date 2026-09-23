@@ -1,4 +1,3 @@
-import { isShipId, SET_CLASS_MESSAGE } from '@slur/shared';
 import { Fragment } from 'react';
 import { redirect } from 'react-router';
 import { RoomList } from '../lobby/room-list';
@@ -7,7 +6,7 @@ import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { NAME_KEY } from './home/call-sign-field';
 import { LandingScene } from './home/landing-scene';
-import { MENU_FORM } from './home/menu-form';
+import { MENU_FORM, RUN_CLOSED } from './home/menu-form';
 import { MenuStrip } from './home/menu-strip';
 
 export function meta( _args: Route.MetaArgs ) {
@@ -17,26 +16,23 @@ export function meta( _args: Route.MetaArgs ) {
     ];
 }
 
-export async function clientLoader() {
+export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
     await joinLobby();
-    return { savedName: localStorage.getItem( NAME_KEY ) ?? '' };
+    const closed = new URL( request.url ).searchParams.get( 'run' ) === 'closed';
+    return { savedName: localStorage.getItem( NAME_KEY ) ?? '', notice: closed ? RUN_CLOSED : null };
 }
 
 export async function clientAction( { request }: Route.ClientActionArgs ) {
     const form = await request.formData();
     const name = String( form.get( 'name' ) ?? '' ).trim() || 'Racer';
-    const ship = form.get( 'ship' );
     const join = form.get( 'join' );
     localStorage.setItem( NAME_KEY, name );
     try {
         const room = typeof join === 'string' && join ? await joinRoom( join, name ) : await hostRoom( name );
-        if ( isShipId( ship ) ) room.send( SET_CLASS_MESSAGE, ship );
         return redirect( `/game/${ room.roomId }` );
     } catch {
         return {
-            error: join
-                ? 'That run has closed. Pick another, or host your own.'
-                : 'Could not reach the server. Check the connection and try again.',
+            error: join ? RUN_CLOSED : 'Could not reach the server. Check the connection and try again.',
         };
     }
 }

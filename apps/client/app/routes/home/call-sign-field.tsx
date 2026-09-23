@@ -1,4 +1,4 @@
-import { FieldLabel } from './field-label';
+import { FieldLabel } from '../../ui/field-label';
 
 export const NAME_KEY = 'slur:name';
 
