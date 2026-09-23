@@ -815,34 +815,57 @@ shake. The owner's steer: *"it should be HARDER TO SHAKE."*
   not grant nothing, because an empty grab looks like a bug.
 - **Target.** At launch the seeker locks the nearest racer **ahead** of the shooter, with
   `0 < dz ≤ seekerLockRange` (600u), that is alive, racing, not finished, and **visible**. If no racer
-  qualifies, the fire is **wasted** (owner): the seeker flies straight at cruise height, hits nobody and
-  expires. The fire is not refused. The lock does not change after launch.
+  qualifies, the fire is **wasted** (owner): the seeker flies straight ahead at `seekerFlyY`, hits nobody,
+  and ends at the first standing block in its line or when `seekerTtl` runs out. The fire is not refused.
+  The lock does not change after launch.
 - **Line of sight.** A deterministic 2D test in `@slur/shared`: the segment from shooter to target in
-  x–z against every standing block AABB in the segments between them. Broken fractured blocks do not
-  block it. Monoliths are not tested: they are client-only scenery outboard of the rail
+  x–z against every standing block AABB in the segments between them. Each block is widened by
+  `seekerHalf` (1u), so the seeker's whole body fits the line. Broken fractured blocks do not block it.
+  Monoliths are not tested: they are client-only scenery outboard of the rail
   (`monolith-transforms.ts`, `RAIL_OUTER = HALF_WIDTH + RAIL_W`), and the segment between two points on
-  the deck never leaves the deck. **LOS is checked at launch only.** A check in flight would make every
-  block a third way to lose the seeker.
-- **Flight.** Forward speed ramps from the shooter's `vz` to `seekerSpeed` (120 u/s) over `seekerRampS`
-  (0.3s). The seeker climbs at `seekerClimb` (60 u/s) to `seekerCruiseY` (10u), above `BLOCK_HEIGHT` (8u),
-  so it overflies blocks in cruise. Inside `seekerDiveDz` (40u) of the target it descends linearly to
-  `seekerStrikeY` (0.5u).
-- **Blocks in the dive (owner).** Inside `seekerDiveDz`, a standing block in the seeker's path
-  **destroys the seeker**. A fractured block is destroyed with it (`broken.add`, as a bolt does). The
-  seeker never draws through a block. Outcome `'blocked'`.
+  the deck never leaves the deck. **LOS is checked at launch only.**
+- **Flight height (owner, 2026-09-23).** The seeker flies low, among the ships, not above the blocks.
+  The owner: *"the seeker has to travel at the same height as the other ships"*, then *"we should use
+  something around 2 - 3u"*. It flies at `seekerFlyY` (2.5u) from launch. The renderer draws the seeker
+  at its sim `y` with no hover lift, so 2.5u is the height on screen. In the committed window it drops
+  at `seekerDropRate` (12 u/s) to `seekerStrikeY` (0.5u), so a jumping ship visibly passes over it.
+  Blocks are `BLOCK_HEIGHT` (8u) tall, so the seeker can never overfly one.
+- **Flight path: it follows the target (owner-approved plan, 2026-09-23).** Forward speed ramps from the
+  shooter's `vz` to `seekerSpeed` (120 u/s) over `seekerRampS` (0.3s). Laterally:
+  - *Leg 1* is the LOS line from launch to the target's position at launch. LOS proved it clear.
+  - After that, the seeker follows the **target's own flown path**: every tick it records the target's
+    `(z, x)` when the target has moved `seekerTrailStep` (1u) since the last sample, at most
+    `seekerTrailLen` (1024) live samples. It steers to the path's x at its own z. The target flew that
+    path without a crash, so the path is clear of blocks.
+  - While the box between the seeker and the target (x from one to the other ± `seekerHalf`, z from the
+    seeker to the target) holds no standing block, it homes **direct** on the target's x instead. Any
+    path inside an empty box is safe, and direct homing does not lag a strafe the way the path does.
+  - The path lives in a `WeakMap` beside the seeker (`combat/seeker-trail.ts`), never on the wire. The
+    server and the `/test-level` local sim each build it from the same deterministic inputs.
+- **Blocks (owner no-clip rule).** A standing block that the seeker touches **destroys the seeker**, at
+  any point in the flight. A fractured block is destroyed with it (`broken.add`, as a bolt does). The
+  seeker never draws through a block. Outcome `'blocked'`. The test sweeps z at the old x, then checks
+  the box at the new x, in the order that the step moves it.
+- **Measured (2026-09-23, 30 procgen seeds, tier 0, launch gaps 60–500u, a scripted target that steers
+  around blocks, TTL 20s).** Blocked on 0.5–1.1% of locked shots (3/497 with the target at 90 u/s, 1/238
+  at 110 u/s). A plain level seeker with no path following was blocked on 30–93%. The wide LOS refused
+  765 of the launch attempts. The zero-width LOS refused 621.
 - **Two tracking phases.**
-  - *Tracking:* the lateral rate toward the target's x is capped at `seekerTrackTurn` (240 u/s). That is
-    above every ship's `strafeClamp` (65–95), so an early strafe does not lose it.
+  - *Tracking:* the lateral rate toward the goal x (the target, or its path) is capped at
+    `seekerTrackTurn` (240 u/s). That is above every ship's `strafeClamp` (65–95), so an early strafe
+    does not lose it.
   - *Committed:* inside the terminal window the cap drops to `seekerTurn` (40 u/s), so a late strafe can
     beat it. Once the seeker commits, it stays committed.
   - `seekerWindowMode` selects the window: `'time'` (time to impact ≤ `seekerWindowS`, 0.35s, with
     time = dz ÷ max(seeker vz − target vz, ε)) or `'distance'` (dz ≤ `seekerWindowU`, 30u).
 - **Hit.** The seeker can hit only its target. It uses the bolt's x–z box test plus a y band: the target's
   `y` must be below `seekerHitBand` (1.2u). A full jump (2.8u or more for every class) clears it. A tap jump
-  (0.8–0.9u) does not.
+  (0.8–0.9u) does not. The band tests the ship's `y`, not the seeker's, so the seeker's flight height
+  does not change who it hits.
 - **Miss.** The seeker is spent if its target is more than `halfL` behind it, if the target dies,
-  finishes or leaves, or if `seekerTtl` (6s) runs out. A miss broadcasts `seekerMiss` (the dodge
-  sound).
+  finishes or leaves, or if `seekerTtl` (20s, owner 2026-09-23) runs out. A miss broadcasts `seekerMiss`
+  (the dodge sound). At 6s the seeker reached only about 180u against a 90 u/s target (closing speed
+  30 u/s), far short of the 600u lock range, and most long locks expired.
 - **Stun.** `seekerStunS` is 2.0s. The bolt's is 1.2s. Armour scales it through `stunDurationForShip`.
 - **Wire.** A new `Seeker` schema class (`x y z vz ownerId targetId ttl committed`) in its own map,
   `RunState.seekers`. `Projectile` is unchanged, so the bolt path (`stepBolts`, the threat HUD's bolt
@@ -850,20 +873,30 @@ shake. The owner's steer: *"it should be HARDER TO SHAKE."*
   does not predict them.
 - **Tuning (owner).** Every value above is a `SimConfig` field (non-negotiable #6). **Only `/test-level`
   is tunable**: the `Seeker.*` group in `dev/tuning-schema.ts` drives its local sim. Hosted rooms run
-  `DEFAULT_SIM_CONFIG`, and no panel values go to the server. This is the decision, not a gap.
+  `DEFAULT_SIM_CONFIG`, and no panel values go to the server. This is the decision, not a gap. As of
+  2026-09-23 the group does not exist yet. `Seeker.flyY` is the first entry (owner), and the local sim
+  must pass a tuned `SimConfig` into `aimSeeker`/`stepSeekers` in `routes/test-level/local-combat.ts`.
 
 ### Exactly two dodges
 
 The owner allows two ways to beat a locked seeker: **jump over it**, or **strafe at the last moment**.
-LOS is not re-checked. An early strafe does not shake it. Two known exceptions follow. **A block inside
-the last `seekerDiveDz` (40u)** destroys it; that comes from the owner's no-clip rule, and a target that
-threads past a block at that moment escapes. **Outrunning it** is the other: the Freighter (`ship-classes.ts:84`, `maxCruise: 124`) is faster than 120 u/s. The
+LOS is not re-checked. An early strafe does not shake it. Two known exceptions follow. **A block** can
+destroy it; that comes from the owner's no-clip rule. Path following makes this rare (about 1% measured),
+and it happens mostly in the committed window, where the seeker homes straight at the target and a
+target that threads past a block at that moment escapes. **Outrunning it** is the other: the Freighter (`ship-classes.ts:84`, `maxCruise: 124`) is faster than 120 u/s. The
 owner accepted this for now.
 
 ### Rejected alternatives
 
 - **One turn cap for the whole flight.** An early strafe shakes it. The owner rejected this.
-- **Block collision in cruise, or LOS re-checked in flight.** Each one adds a third dodge.
+- **LOS re-checked in flight.** It adds a third dodge.
+- **Cruise above the blocks and dive at the end** (the first build). The owner wants the seeker among
+  the ships.
+- **Fly level and straight at the target with no path following.** Measured blocked on 30–93% of shots.
+- **Follow the path only, never home direct.** The path lags the target. A strafe just before the
+  window then shakes the seeker, and that breaks the early-strafe rule.
+- **Keep a path for every racer on the server,** so that leg 1 also follows a flown path. It adds state
+  per racer to the room and to the local sim. The wide LOS makes leg 1 safe enough without it.
 - **Bolts and seekers in one `Projectile` map with a `kind` field.** Every bolt consumer would need a
   kind filter.
 - **Proportional navigation.** It is harder to tune to a clean late-strafe window. The two-phase cap gives
@@ -874,7 +907,7 @@ owner accepted this for now.
 
 ### Affected
 
-`packages/shared/src/combat/{constants,seeker,pickups,combat-step}.ts` ·
+`packages/shared/src/combat/{constants,seeker,seeker-trail,pickups,combat-step}.ts` ·
 `packages/shared/src/{schema,sim-config,ship-classes}.ts` · `apps/server/src/rooms/run-room.ts` ·
 `apps/client/app/game/scene/{pickup-field,projectile-field,seeker-*}` ·
 `apps/client/app/game/overlays/{threat-hud,held-power-chip}.tsx` · `apps/client/app/audio/sfx-map.ts` ·

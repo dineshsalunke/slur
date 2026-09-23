@@ -3,9 +3,8 @@ import {
     BOLT_SPEED,
     BOLT_TTL,
     PICKUP_RESPAWN_S,
-    SEEKER_CLIMB,
-    SEEKER_CRUISE_Y,
-    SEEKER_DIVE_DZ,
+    SEEKER_DROP_RATE,
+    SEEKER_FLY_Y,
     SEEKER_HALF,
     SEEKER_HIT_BAND,
     SEEKER_LOCK_RANGE,
@@ -16,6 +15,8 @@ import {
     SEEKER_STRIKE_Y,
     SEEKER_STUN_S,
     SEEKER_TRACK_TURN,
+    SEEKER_TRAIL_LEN,
+    SEEKER_TRAIL_STEP,
     SEEKER_TTL,
     SEEKER_TURN,
     SEEKER_WINDOW_MODE,
@@ -42,10 +43,11 @@ export interface SimConfig {
     seekerWindowMode: SeekerWindowMode;
     seekerWindowS: number;
     seekerWindowU: number;
-    seekerCruiseY: number;
+    seekerFlyY: number;
     seekerStrikeY: number;
-    seekerClimb: number;
-    seekerDiveDz: number;
+    seekerDropRate: number;
+    seekerTrailStep: number;
+    seekerTrailLen: number;
     seekerHitBand: number;
     seekerHalf: number;
     seekerTtl: number;
@@ -68,10 +70,11 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     seekerWindowMode: SEEKER_WINDOW_MODE,
     seekerWindowS: SEEKER_WINDOW_S,
     seekerWindowU: SEEKER_WINDOW_U,
-    seekerCruiseY: SEEKER_CRUISE_Y,
+    seekerFlyY: SEEKER_FLY_Y,
     seekerStrikeY: SEEKER_STRIKE_Y,
-    seekerClimb: SEEKER_CLIMB,
-    seekerDiveDz: SEEKER_DIVE_DZ,
+    seekerDropRate: SEEKER_DROP_RATE,
+    seekerTrailStep: SEEKER_TRAIL_STEP,
+    seekerTrailLen: SEEKER_TRAIL_LEN,
     seekerHitBand: SEEKER_HIT_BAND,
     seekerHalf: SEEKER_HALF,
     seekerTtl: SEEKER_TTL,

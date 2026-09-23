@@ -127,7 +127,7 @@ test( 'speed ramps from the shooter up to seekerSpeed and no further', () => {
     assert.equal( fast.vz, DEFAULT_SIM_CONFIG.seekerSpeed );
 } );
 
-test( 'a seeker with no lock flies straight at cruise height and expires', () => {
+test( 'a seeker with no lock flies straight at fly height and expires', () => {
     const s = launched( '' );
     let out: SeekerOutcome = 'flying';
     let ticks = 0;
@@ -137,7 +137,7 @@ test( 'a seeker with no lock flies straight at cruise height and expires', () =>
     }
     assert.equal( out, 'expired' );
     assert.equal( s.x, 0 );
-    assert.equal( s.y, DEFAULT_SIM_CONFIG.seekerCruiseY );
+    assert.equal( s.y, DEFAULT_SIM_CONFIG.seekerFlyY );
     assert.ok( Math.abs( ticks * FIXED_DT - DEFAULT_SIM_CONFIG.seekerTtl ) < 2 * FIXED_DT );
 } );
 
@@ -193,50 +193,73 @@ test( 'a tap jump does not clear the band', () => {
     assert.equal( out, 'hit' );
 } );
 
-test( 'it cruises above the blocks and dives to strike height', () => {
+test( 'it flies at fly height, even when fired mid-jump, and drops to strike height before impact', () => {
+    const cfg = DEFAULT_SIM_CONFIG;
     const t = ship( 't', { z: 300 } );
-    const s = launched( 't' );
-    for ( let i = 0; i < 60; i++ ) stepSeeker( s, [ t ], OPEN, new Set(), FIXED_DT );
-    assert.equal( s.y, DEFAULT_SIM_CONFIG.seekerCruiseY );
-    assert.ok( s.y > BLOCK_HEIGHT );
-    s.z = t.z - 1;
-    stepSeeker( s, [ t ], OPEN, new Set(), 1 );
-    assert.ok( s.y < DEFAULT_SIM_CONFIG.seekerHitBand );
+    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false };
+    aimSeeker( s, { x: 0, y: 3, z: 0, vz: 55 }, 'me', 't' );
+    let out: SeekerOutcome = 'flying';
+    while ( out === 'flying' ) {
+        if ( ! s.committed ) assert.equal( s.y, cfg.seekerFlyY );
+        t.z += t.vz * FIXED_DT;
+        out = stepSeeker( s, [ t ], OPEN, new Set(), FIXED_DT );
+    }
+    assert.equal( out, 'hit' );
+    assert.equal( s.y, cfg.seekerStrikeY );
+    assert.ok( cfg.seekerFlyY >= 2 && cfg.seekerFlyY <= 3 );
+    assert.ok( cfg.seekerFlyY > cfg.seekerHitBand && cfg.seekerFlyY < BLOCK_HEIGHT );
 } );
 
-function diveInto( kind: Block[ 'kind' ] ): { out: SeekerOutcome; broken: Set< number >; id: number } {
+function flyInto( kind: Block[ 'kind' ] ): { out: SeekerOutcome; broken: Set< number >; id: number } {
     const wall = { ...block( 10, -4, 4 ), kind };
     const track = trackWith( [ wall ] );
     const broken = new Set< number >();
     const t = ship( 't', { z: 10 * SEG_LEN + 30, vz: 0 } );
-    const s = launched( 't', { z: 10 * SEG_LEN - 20, y: 2, vz: 120 } );
+    const s = launched( 't', { z: 10 * SEG_LEN - 20, vz: 120 } );
     let out: SeekerOutcome = 'flying';
     while ( out === 'flying' ) out = stepSeeker( s, [ t ], track, broken, FIXED_DT );
     return { out, broken, id: wall.id };
 }
 
-test( 'a sealed block in the dive path destroys the seeker', () => {
-    const { out, broken } = diveInto( 'sealed' );
+test( 'a sealed block in its path destroys the seeker', () => {
+    const { out, broken } = flyInto( 'sealed' );
     assert.equal( out, 'blocked' );
     assert.equal( broken.size, 0 );
 } );
 
-test( 'a fractured block in the dive path is destroyed with the seeker', () => {
-    const { out, broken, id } = diveInto( 'fractured' );
+test( 'a fractured block in its path is destroyed with the seeker', () => {
+    const { out, broken, id } = flyInto( 'fractured' );
     assert.equal( out, 'blocked' );
     assert.ok( broken.has( id ) );
 } );
 
-test( 'a block far from the target is overflown at cruise height', () => {
-    const track = trackWith( [ block( 10, -4, 4 ) ] );
-    const s = launched( 't', { z: 10 * SEG_LEN - 100 } );
-    const t = ship( 't', { z: 10 * SEG_LEN + 150 } );
+function detour( z: number ): number {
+    const into = Math.min( 1, Math.max( 0, ( z - 370 ) / 15 ) );
+    const out = Math.min( 1, Math.max( 0, ( 445 - z ) / 15 ) );
+    return 10 * into * out;
+}
+
+test( 'it follows the path the target flew around a block', () => {
+    const track = trackWith( [ block( 20, -4, 4 ) ] );
+    const s = launched( 't' );
+    const t = ship( 't', { z: 250 } );
     let out: SeekerOutcome = 'flying';
     while ( out === 'flying' ) {
         t.z += t.vz * FIXED_DT;
+        t.x = detour( t.z );
         out = stepSeeker( s, [ t ], track, new Set(), FIXED_DT );
     }
     assert.equal( out, 'hit' );
+    assert.ok( s.z > 20 * SEG_LEN + 8 );
+} );
+
+test( 'a wasted seeker stops at the first block in its line', () => {
+    const track = trackWith( [ block( 10, -4, 4 ) ] );
+    const s = launched( '' );
+    let out: SeekerOutcome = 'flying';
+    while ( out === 'flying' ) out = stepSeeker( s, [], track, new Set(), FIXED_DT );
+    assert.equal( out, 'blocked' );
+    assert.ok( s.z < 10 * SEG_LEN + 8 );
 } );
 
 test( 'the seeker is lost when its target dies or finishes', () => {
