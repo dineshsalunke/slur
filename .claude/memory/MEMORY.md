@@ -15,5 +15,6 @@ lives in its own file beside this one.
 - [Claim the lane before the first write](claim-the-lane-before-the-first-write.md) — a handover's "Left undone" list is a shared queue; two sessions took the same item and one lost untracked files
 - [Headless Chrome for frame taps](headless-chrome-for-frame-taps.md) — drive a separate headless Chrome and curl `/__frame-tap`; never screenshot the extension tab
 - [Eyeballing a tap lies about brightness](eyeballing-a-tap-lies-about-brightness.md) — the deck measures rgb(28) and looks mid-grey; composite a grey ramp before judging value
-- [Freeze the sim to A/B a light](freeze-the-sim-to-ab-a-light.md) — KeyP holds the camera; reload → fly a fixed duration → freeze → tap
+- [Freeze the sim to A/B a light](freeze-the-sim-to-ab-a-light.md) — KeyP holds the camera, but freeze at the SPAWN pose; a timed flight drifts (SSIM 0.906)
+- [Probe by feature, not by pixel](probe-by-feature-not-by-pixel.md) — find the surface from its own emissive each frame; the bright deck line is the rim cord, not the rail
 - [Monoliths are metal now](monoliths-are-metal-now.md) — moved onto the block texture, softening a named hazard/scenery readability split; owner-accepted, re-gate still unrun
