@@ -1,3 +1,4 @@
+import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import { ACCENT_ANCHOR } from '../game/scene/accent';
 import { BACKDROP_HORIZON } from '../game/scene/backdrop';
 import { METAL_BASE_COLOR, METAL_MAP_TINT, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
@@ -94,6 +95,8 @@ export const NUMBER_TUNABLES = {
     'Hover.follow': { value: 4, min: 0.2, max: 30, step: 0.1, rebuild: false },
     'Hover.bob': { value: 0.06, min: 0, max: 1, step: 0.01, rebuild: false },
     'Hover.bobRate': { value: 0.8, min: 0, max: 5, step: 0.05, rebuild: false },
+
+    'Seeker.flyY': { value: DEFAULT_SIM_CONFIG.seekerFlyY, min: 0.5, max: 7, step: 0.1, rebuild: false },
 
     'Shadow.opacity': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
     'Shadow.size': { value: 2.4, min: 0.5, max: 10, step: 0.05, rebuild: false },

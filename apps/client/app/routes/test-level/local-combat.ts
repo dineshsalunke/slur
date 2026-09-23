@@ -3,6 +3,7 @@ import {
     aimBolt,
     aimSeeker,
     canFire,
+    DEFAULT_SIM_CONFIG,
     type Gunner,
     HeldPower,
     lockTarget,
@@ -10,12 +11,14 @@ import {
     pickupsOf,
     type SeekerEvent,
     type SeekerState,
+    type SimConfig,
     stepBolts,
     stepPickups,
     stepSeekers,
     type Track,
 } from '@slur/shared';
 import type { World } from 'koota';
+import { num } from '../../dev/tuning';
 import { blockWorld, clearBlockState } from '../../game/block-state';
 import { Held, LocalPlayer, Sim } from '../../game/ecs/traits';
 import { pushHit } from '../../game/scene/hit-events';
@@ -60,10 +63,15 @@ function fireBolt( me: Gunner ): void {
     localCombat.bolts.set( String( localCombat.nextId++ ), bolt );
 }
 
+function seekerConfig(): SimConfig {
+    return { ...DEFAULT_SIM_CONFIG, seekerFlyY: num( 'Seeker.flyY' ) };
+}
+
 function fireSeeker( me: Gunner, vz: number, track: Track ): void {
-    const targetId = lockTarget( me, OWNER, [], track, blockWorld.broken );
+    const cfg = seekerConfig();
+    const targetId = lockTarget( me, OWNER, [], track, blockWorld.broken, cfg );
     const seeker: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false };
-    aimSeeker( seeker, { x: me.x, y: me.y, z: me.z, vz }, OWNER, targetId );
+    aimSeeker( seeker, { x: me.x, y: me.y, z: me.z, vz }, OWNER, targetId, cfg );
     localCombat.seekers.set( String( localCombat.nextId++ ), seeker );
 }
 
@@ -96,7 +104,7 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
     localCombat.fireQueued = false;
 
     stepBolts( localCombat.bolts, [], track, blockWorld.broken, dt, pushHit );
-    stepSeekers( localCombat.seekers, [], track, blockWorld.broken, dt, onSeekerEvent );
+    stepSeekers( localCombat.seekers, [], track, blockWorld.broken, dt, onSeekerEvent, seekerConfig() );
     stepPickups( [ me ], localCombat.pickups, localCombat.taken, localCombat.respawn, dt );
 
     if ( me.heldPower !== held ) ship.set( Held, { power: me.heldPower } );
