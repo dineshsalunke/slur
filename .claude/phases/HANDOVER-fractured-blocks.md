@@ -17,6 +17,14 @@ vanish with a spark. So steps 3 and 4 merge: the chunk geometry from step 3 is a
 break, launch the block's 2–3 chunks as pooled instances with velocity, spin and gravity
 (client-only VFX). **Next: step 3 + debris.** Fractured blocks still render as sealed until then.
 
+**File ownership (supervisor, 2026-09-23):** workerthree holds the bolt art. Their files:
+`combat-look.ts`, `pickup-field.tsx`, `projectile-field.tsx`, `routes/test-level/local-pickup-field.tsx`,
+`local-bolt-field.tsx`, and new `bolt-*` scene files. Keep the fractured art and debris in
+`track-blocks.tsx` and new files of this lane (e.g. `fractured-block-*.ts`, `block-debris.tsx`). To
+touch any workerthree file, even a colour constant, message workerthree first.
+
+Stopped here at the context watchdog (~211k), at a seam: everything is committed.
+
 ## Update (second session): step 1 DONE — committed `523d63c`
 
 Lint fixed. `resolveCollisions` no longer takes `cfg`. `simulate` keeps `_cfg` so its signature does
