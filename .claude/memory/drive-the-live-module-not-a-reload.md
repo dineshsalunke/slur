@@ -37,3 +37,5 @@ re-reads anyway.
   schema defaults — `forget()` clears storage but not the in-memory values.
 
 Related: [[headless-chrome-for-frame-taps]], [[probe-by-feature-not-by-pixel]].
+
+**Caveat (2026-09-23):** only safe BEFORE the first HMR update of that module — after one, the import resolves to an orphan instance and the page never sees the change. See [[cdp-import-of-tuning-hits-an-hmr-orphan]].

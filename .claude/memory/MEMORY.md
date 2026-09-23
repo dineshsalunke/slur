@@ -19,3 +19,6 @@ lives in its own file beside this one.
 - [Probe by feature, not by pixel](probe-by-feature-not-by-pixel.md) — find the surface from its own emissive each frame; the bright deck line is the rim cord, not the rail
 - [Monoliths are metal now](monoliths-are-metal-now.md) — moved onto the block texture, softening a named hazard/scenery readability split; owner-accepted, re-gate still unrun
 - [Drive the live module, do not reload](drive-the-live-module-not-a-reload.md) — import the page's own module over CDP and call `setNum`; the camera never moves between A/B frames
+- [Freeze does not stop asteroid drift](freeze-does-not-stop-asteroid-drift.md) — a two-tap diff is contaminated frame-wide; for presence, force an alien colour and scan one tap
+- [CDP import of tuning hits an HMR orphan](cdp-import-of-tuning-hits-an-hmr-orphan.md) — setNum/setCol silently reach a second module instance, not the page; pin uniforms instead
+- [Frame tap may answer from another tab](frame-tap-may-answer-from-another-tab.md) — screenshot the tab you drive over CDP when the reading must match state you just set
