@@ -841,6 +841,29 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     **Departure from package wording.** No text on the board names a hue. The departure is from the
     drawn colour only. The geometry is in `apps/client/app/game/scene/seeker-look.ts`.
 
+15. **The destructible block follows the blocks board, with three departures — 2026-09-23 (#222).**
+    Owner's call: the previous fractured block and its break were *"not good enough"*. The board
+    (`ingredients/blocks/blocks.png`, panel 2) says *"DESTRUCTIBLE BLOCK — FRACTURED. GLOWS WITH ENERGY.
+    SAME BASE MATERIAL. CLEARLY READABLE AS BREAKABLE. SAME PROPORTIONS."* The engine builds it like this:
+
+    - The block is split into about 12 convex cells, which gives 6–9 plates on each face. The cells are
+      apart by a small gap, set in world units. The gap walls are the recessed M7 that M2's destructible
+      paragraph asks for. The walls are marigold at the lip and `#FFE0A0` at depth, at gameplay tier. The
+      outer faces keep the M2 maps. The cracks cross the top face and break the top and side contours.
+    - Panel 5 gives the sequence *"INTACT — clearly fractured · HIT — energy builds · BREAK — fragments
+      separate · CLEAR — brief energy burst"*. HIT is a glow that grows while a bolt closes on the block.
+      At BREAK, every cell flies out and spins. The walls flare and then fade. A bloom-only flash grows
+      and fades. There is no point light.
+
+    **Departures from package wording.**
+
+    1. The board draws *"TALL (1x2)"* and *"STACK / GROUP"* destructibles. There are none. Block height
+       is 8u, always (`ART_SCALE_REFERENCE.md` §2), and a fractured block is at most 12u wide and deep.
+    2. A smash has no HIT step. The ship is already inside the block when the break starts, so the
+       break starts at contact.
+    3. The fragments do not come to rest on the deck. They shrink to nothing in the air, at about 0.9s.
+       The board shows only a few fragments at *"CLEAR"*, and it does not show where they land.
+
 ## 8. Review log
 
 **Revision 6 → 7, one metal, and ship contact shadows (2026-09-23).** No family definition changes —
