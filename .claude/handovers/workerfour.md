@@ -16,6 +16,9 @@ Copy-link chip, Enter = GO for the host, a HOST word tag in place of ★, and th
   `lobby-ship-picker`, `colour-swatches`, `start-control`; `leave-button` gets `tone: 'hud' | 'ghost'`;
   `ui/button` gets optional `type`/`onClick`; AudioToggle hidden in PHASE.lobby (M still mutes). 3 new
   tests in `overlays.test.tsx` (Roster/SpecTag boundary, D sends SET_CLASS, Enter host-only).
+- `e26a79c` finish-review fixes: the racer-count line no longer stacks a second font-size/colour on
+  LABEL; the roster chip row bleeds to the screen edge below `sm`.
+- `3a92a96` `apps/client/DESIGN.md` gains a "Lobby (in-room)" component section.
 
 ## State
 
@@ -26,7 +29,10 @@ Copy-link chip, Enter = GO for the host, a HOST word tag in place of ★, and th
   lobby, guest Enter does not, scrollWidth 390 at 390×844. Shots in this session's scratchpad `shots/`.
 - Copy link NOT verified: headless clipboard write fails with "Document is not focused" [unmeasured in a
   real browser].
-- Finish review (impeccable-finish-reviewer) launched on 7b4579f; result pending.
+- Finish review on 7b4579f returned disposition "fix": 1 material + 1 nit, both applied in e26a79c.
+  The fixes were not re-shot headless (class-only changes) [unmeasured].
+- After e26a79c, client tsc fails only on workerone's in-flight #236 (`race-hud` deleted, still
+  imported); overlay vitest 13/13 pass.
 
 ## Uncommitted
 
@@ -43,9 +49,8 @@ Released to workerone (#236): `game/net-canvas.tsx`, `game/overlays/overlays.tsx
 
 ## Next
 
-1. Apply the material fixes from the finish review; re-shoot headless; commit.
-2. Update `apps/client/DESIGN.md` with the lobby surface; commit.
-3. Report to the supervisor and ask about the orphan `net-debug-hud.tsx` delete.
+1. Lane complete. Wait for the supervisor's next assignment.
+2. Owner check still open: Copy link in a real browser tab.
 
 ## Open questions
 
