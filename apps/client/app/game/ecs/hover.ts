@@ -9,6 +9,7 @@ const TAU = Math.PI * 2;
 interface HoverState {
     lift: number;
     phase: number;
+    applied: number;
 }
 
 function advance( grp: Group, h: HoverState, speed: number, shipId: string, dt: number ): void {
@@ -16,7 +17,8 @@ function advance( grp: Group, h: HoverState, speed: number, shipId: string, dt: 
     const target = num( 'Hover.base' ) + stretch * num( 'Hover.speedLift' );
     h.lift += ( target - h.lift ) * ( 1 - Math.exp( -num( 'Hover.follow' ) * dt ) );
     h.phase = ( h.phase + dt * num( 'Hover.bobRate' ) * TAU ) % TAU;
-    grp.position.y += h.lift + Math.sin( h.phase ) * num( 'Hover.bob' );
+    h.applied = h.lift + Math.sin( h.phase ) * num( 'Hover.bob' );
+    grp.position.y += h.applied;
 }
 
 function trailingSpeed( buffer: { t: number; z: number }[] ): number {

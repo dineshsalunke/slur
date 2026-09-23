@@ -1,7 +1,7 @@
 import { createWorld } from 'koota';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { LocalPlayer, Net, Render, Sim } from '../ecs/traits';
+import { Hover, LocalPlayer, Net, Render, Sim } from '../ecs/traits';
 import { updateChaseCamera } from './chase';
 
 const VZ = 55;
@@ -43,6 +43,32 @@ describe( 'updateChaseCamera', () => {
     it( 'holds the ship at a constant depth in frame through a vsync beat', () => {
         const deltas = Array.from( { length: MEASURED_FRAMES }, ( _, i ) => ( i % 4 === 3 ? 2 / 60 : STEADY_DT ) );
         expect( swing( fly( deltas ) ) ).toBeLessThan( 1e-9 );
+    } );
+
+    it( 'leaves the cosmetic hover lift visible instead of following it', () => {
+        const world = createWorld();
+        const entity = world.spawn( LocalPlayer, Render, Hover, Sim, Net );
+        const group = entity.get( Render ) as THREE.Group;
+        const cam = new THREE.PerspectiveCamera();
+
+        entity.set( Sim, ( prev ) => ( { ...prev, vz: VZ } ) );
+        for ( let i = 0; i < WARMUP_FRAMES; i++ ) {
+            group.position.z += VZ * STEADY_DT;
+            updateChaseCamera( cam, world, STEADY_DT );
+        }
+        const settledY = cam.position.y;
+
+        const LIFT = 2;
+        const hover = entity.get( Hover ) as { applied: number };
+        for ( let i = 0; i < WARMUP_FRAMES; i++ ) {
+            group.position.z += VZ * STEADY_DT;
+            hover.applied = LIFT;
+            group.position.y = LIFT;
+            updateChaseCamera( cam, world, STEADY_DT );
+        }
+
+        expect( cam.position.y ).toBeCloseTo( settledY, 6 );
+        expect( group.position.y - cam.position.y ).toBeCloseTo( LIFT - settledY, 6 );
     } );
 
     it( 'holds the ship at a constant depth in frame through frame-time jitter', () => {
