@@ -3,7 +3,12 @@ import {
     BLOCK_DEPTH_BIAS_REST,
     BLOCK_DEPTH_MAX,
     BLOCK_DEPTH_MIN,
-    BLOCK_WIDTH_INSET_MAX,
+    BLOCK_SPLIT_GAP_MAX,
+    BLOCK_SPLIT_GAP_MIN,
+    BLOCK_WIDTH_BIAS_PEAK,
+    BLOCK_WIDTH_BIAS_REST,
+    BLOCK_WIDTH_MAX,
+    BLOCK_WIDTH_MIN,
 } from '../constants.js';
 import { hash2, mulberry32 } from './rng.js';
 
@@ -30,8 +35,17 @@ export function blockZSpan(
     return [ z0, z0 + depth ];
 }
 
-export function blockWidthInset( seed: number, i: number, key: number, runWidth: number ): [ number, number ] {
+export function carveRun( seed: number, i: number, key: number, runWidth: number, intensity: number ): number[][] {
     const r = mulberry32( hash2( ( seed ^ SALT_DEPTH ) | 0, Math.imul( i, 0x85ebca6b ) + key ) );
-    const room = runWidth * BLOCK_WIDTH_INSET_MAX;
-    return [ r() * room, r() * room ];
+    const bias = BLOCK_WIDTH_BIAS_REST + ( BLOCK_WIDTH_BIAS_PEAK - BLOCK_WIDTH_BIAS_REST ) * intensity;
+    const out: number[][] = [];
+    let x = r() * Math.min( BLOCK_SPLIT_GAP_MAX, Math.max( 0, runWidth - BLOCK_WIDTH_MIN ) );
+    while ( runWidth - x >= BLOCK_WIDTH_MIN ) {
+        const top = Math.min( BLOCK_WIDTH_MAX, runWidth - x );
+        const w = BLOCK_WIDTH_MIN + ( top - BLOCK_WIDTH_MIN ) * r() ** bias;
+        out.push( [ x, x + w ] );
+        x += w + BLOCK_SPLIT_GAP_MIN + r() * ( BLOCK_SPLIT_GAP_MAX - BLOCK_SPLIT_GAP_MIN );
+    }
+    if ( out.length === 0 ) out.push( [ 0, runWidth ] );
+    return out;
 }

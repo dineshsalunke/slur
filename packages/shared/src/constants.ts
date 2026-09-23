@@ -139,14 +139,20 @@ export const CORRIDOR_W_MIN = 4;
 
 export const WALL_DENSITY_START = 0.28;
 export const WALL_DENSITY_MAX = 0.9;
-export const WALL_NOISE_FZ_LANE = 1.0;
+export const WALL_NOISE_FZ_LANE = 4.0;
 export const WALL_NOISE_FZ_SEG = 1.5;
+export const WALL_RUN_LANES_MIN = 2;
 export const BLOCK_MAX_LANES = 3;
 export const BLOCK_DEPTH_MIN = 3;
 export const BLOCK_DEPTH_MAX = 18;
 export const BLOCK_DEPTH_BIAS_REST = 2.2;
 export const BLOCK_DEPTH_BIAS_PEAK = 0.6;
-export const BLOCK_WIDTH_INSET_MAX = 0.18;
+export const BLOCK_WIDTH_MIN = 4;
+export const BLOCK_WIDTH_MAX = 20;
+export const BLOCK_WIDTH_BIAS_REST = 1.1;
+export const BLOCK_WIDTH_BIAS_PEAK = 0.6;
+export const BLOCK_SPLIT_GAP_MIN = 2;
+export const BLOCK_SPLIT_GAP_MAX = 9;
 
 export const OPEN_BAND_START = 8;
 export const OPEN_BAND_PEAK = 6;

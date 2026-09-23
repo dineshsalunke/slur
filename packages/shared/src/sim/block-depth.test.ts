@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     BLOCK_DEPTH_MIN,
+    BLOCK_WIDTH_MAX,
     blockDepthFor,
     blockZSpan,
+    carveRun,
     isHole,
     procgenDescriptor,
     resolveTrack,
@@ -96,4 +98,43 @@ test( 'a z-span is deterministic and never leaves its segment', () => {
 
 test( 'a shallower segment clamps every tier to fit', () => {
     for ( const u of [ 0.1, 0.5, 0.9 ] ) assert.ok( blockDepthFor( u, 1, 5 ) <= 5 );
+} );
+
+function widths(): number[] {
+    const out: number[] = [];
+    for ( const seed of SEEDS ) {
+        const t = resolveTrack( procgenDescriptor( seed ) );
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
+            for ( const b of t.segmentAt( i ).blocks ) out.push( b.x1 - b.x0 );
+        }
+    }
+    return out;
+}
+
+test( 'no single width dominates the field — walls are not a picket fence', () => {
+    const w = widths();
+    const hist = new Map< number, number >();
+    for ( const x of w ) {
+        const k = Math.round( x * 10 );
+        hist.set( k, ( hist.get( k ) ?? 0 ) + 1 );
+    }
+    const top = Math.max( ...hist.values() ) / w.length;
+    assert.ok( top < 0.1, `${ ( top * 100 ).toFixed( 1 ) }% of blocks share one width — the grid is back` );
+} );
+
+test( 'wide blocks are a real share of the field, not a rarity', () => {
+    const w = widths();
+    const wide = w.filter( ( x ) => x >= 12 ).length / w.length;
+    assert.ok( wide > 0.15, `only ${ ( wide * 100 ).toFixed( 1 ) }% of blocks reach 12u` );
+} );
+
+test( 'a carved run never leaves its lane span and never exceeds BLOCK_WIDTH_MAX', () => {
+    for ( const seed of SEEDS ) {
+        for ( const runWidth of [ 8, 12, 20, 32, 48 ] ) {
+            for ( const part of carveRun( seed, 7, 0, runWidth, 0.5 ) ) {
+                assert.ok( part[ 0 ] >= 0 && part[ 1 ] <= runWidth + 1e-9, `part ${ part } escapes 0..${ runWidth }` );
+                assert.ok( part[ 1 ] - part[ 0 ] <= BLOCK_WIDTH_MAX + 1e-9, `part ${ part } outran BLOCK_WIDTH_MAX` );
+            }
+        }
+    }
 } );

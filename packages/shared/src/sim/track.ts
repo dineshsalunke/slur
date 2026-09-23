@@ -1,5 +1,5 @@
-import { BLOCK_MAX_LANES, CELL, FLICK_WIDTH, WALL_NOISE_FZ_LANE, WALL_NOISE_FZ_SEG } from '../constants.js';
-import { blockWidthInset, blockZSpan } from './block-depth.js';
+import { CELL, FLICK_WIDTH, WALL_NOISE_FZ_LANE, WALL_NOISE_FZ_SEG, WALL_RUN_LANES_MIN } from '../constants.js';
+import { blockZSpan, carveRun } from './block-depth.js';
 import { openCenterX } from './clearance.js';
 import { type Band, bandAt } from './corridor.js';
 import { gapBlocks } from './gap-blocks.js';
@@ -93,24 +93,22 @@ function buildWalls(
     let runStart = 0;
     let runState: 0 | 1 = 0;
     const flush = ( endLane: number ): void => {
-        const [ bz0, bz1 ] = band.pinched
-            ? [ z0, z0 + SEG_LEN ]
-            : blockZSpan( seed, i, runStart, z0, SEG_LEN, intensity );
+        if ( endLane - runStart + 1 < WALL_RUN_LANES_MIN ) return;
         const runX0 = -HALF_WIDTH + runStart * CELL;
         const runX1 = -HALF_WIDTH + ( endLane + 1 ) * CELL;
-        const [ insetLo, insetHi ] = band.pinched ? [ 0, 0 ] : blockWidthInset( seed, i, runStart, runX1 - runX0 );
-        blocks.push( {
-            x0: runX0 + insetLo,
-            x1: runX1 - insetHi,
-            y0: 0,
-            y1: BLOCK_HEIGHT,
-            z0: bz0,
-            z1: bz1,
-        } );
+        if ( band.pinched ) {
+            blocks.push( { x0: runX0, x1: runX1, y0: 0, y1: BLOCK_HEIGHT, z0, z1: z0 + SEG_LEN } );
+            return;
+        }
+        const parts = carveRun( seed, i, runStart, runX1 - runX0, intensity );
+        for ( const [ p, part ] of parts.entries() ) {
+            const [ bz0, bz1 ] = blockZSpan( seed, i, runStart * 8 + p, z0, SEG_LEN, intensity );
+            blocks.push( { x0: runX0 + part[ 0 ], x1: runX0 + part[ 1 ], y0: 0, y1: BLOCK_HEIGHT, z0: bz0, z1: bz1 } );
+        }
     };
     for ( let lane = 0; lane < LANES; lane++ ) {
         const st = laneState( seed, i, lane, band, flick, density );
-        if ( st !== runState || ( runState !== 0 && lane - runStart >= BLOCK_MAX_LANES ) ) {
+        if ( st !== runState ) {
             if ( runState !== 0 ) flush( lane - 1 );
             runState = st;
             runStart = lane;
