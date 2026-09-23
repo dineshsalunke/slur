@@ -34,6 +34,8 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
   first."), label "CLASS · COMET". Reduced-motion: reduced-motion.ts moves to game/scene/, rock-field.tsx holds
   uRockTime at 0 (freezes asteroids in-game too, accepted). workerfour cleared + resumed; still has the exhaust
   glow, the mobile ship and DESIGN.md.
+- QUEUED with workerfour (next after the menu leftovers): design the in-room ship-pick screen (owner request),
+  via impeccable. Plan + claims go to the owner before any build.
 - The workers table below is from ~02:00. Now: workerthree is IDLE, no files. workerfour holds its menu files plus
   rock-field.tsx and game/scene/reduced-motion.ts.
 
