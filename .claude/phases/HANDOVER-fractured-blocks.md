@@ -4,6 +4,19 @@ Lane: **fractured-blocks**. Session of 2026-09-23. Stopped at the context watchd
 Plan: `.claude/phases/2026-09-23-destructible-blocks-plan.md` (`2dafcdf`). Owner said go, via
 slur-supervisor. Lane claimed at the top of issue #214.
 
+## Update 2 (second session): step 2 DONE + /test-level combat (#217) — committed `b6f1f45`
+
+Client prediction as planned (`game/block-state.ts`; `restoreConfirmed()` before replay). Owner
+asked for the same on `/test-level`, with bolts and pickups: shared `combat/combat-step.ts`
+(`canFire`, `aimBolt`, `stepBolts`, `stepPickups`) now drives both `RunRoom` and
+`routes/test-level/local-combat.ts`. Verified in headless Chrome: pickup arms, E fires, a
+placed ship smashed block 5504 and it stopped rendering.
+
+**Owner direction, 2026-09-23:** a broken block must **shatter into pieces that fall off**, not just
+vanish with a spark. So steps 3 and 4 merge: the chunk geometry from step 3 is also the debris. On a
+break, launch the block's 2–3 chunks as pooled instances with velocity, spin and gravity
+(client-only VFX). **Next: step 3 + debris.** Fractured blocks still render as sealed until then.
+
 ## Update (second session): step 1 DONE — committed `523d63c`
 
 Lint fixed. `resolveCollisions` no longer takes `cfg`. `simulate` keeps `_cfg` so its signature does
