@@ -1,78 +1,88 @@
-# Handover — ship hover, and the Freighter speed change that is not a one-line edit
+# Handover — ship hover, and the track contract (both DONE)
 
-Owner asked for two things on 2026-09-23. **Neither is started** — the session ran out of context
-before implementation. This note is the brief, including one finding that changes how the second
-task must be approached.
+Superseded the 2026-09-23 brief of the same name. All three tasks shipped on `dev`; the original
+brief's open questions are answered below rather than left hanging.
 
-## Task 1 — the ship should hover, proportionally to speed
+## Shipped
 
-Owner's words: *"the ship should hover in the air a bit and it will be cool if it hover
-proportional to the speed in some way."*
+| Commit | What |
+|---|---|
+| `1e198a6` | `feat(game): float the ship, higher the faster it goes` |
+| `a27955f` | `feat(track): generate from a contract, never from the ship roster` (ADR-013) |
+| `b998e6c` | `feat(ships): double the Freighter's top speed to 124u/s` |
 
-**The hard constraint: this must be visual-only.** GDD §5.5 locks model-as-hitbox — *"Each class is
-one of our five CC0 models, **uniform-scaled** so its visible box IS its AABB collision footprint —
-you die exactly when the ship touches."* A hover that moves the simulated `y` changes ground
-contact, the grounded rule, jump takeoff and gap death. **Do not touch `Sim.y` or `simulate()`.**
+Gate green throughout: `pnpm typecheck` clean, 324 tests pass (shared 143 · client 177 · server 4),
+`pnpm lint` at its pre-existing 8 warnings.
 
-The place to do it is `syncRenderSystem` in `apps/client/app/game/ecs/systems.ts:18-23`, which
-already writes the interpolated render transform and is where the cosmetic bank lives:
+## 1 — Hover (visual only)
 
-    grp.position.set( lerp( prev.x, s.x, alpha ), lerp( prev.y, s.y, alpha ), lerp( prev.z, s.z, alpha ) );
-    grp.rotation.z = -( s.vx / DEFAULT_TUNING.strafeClamp ) * 0.5;
+`apps/client/app/game/ecs/hover.ts`. `hoverSystem( world, dt )` adds a cosmetic lift to the render
+`Group` **after** `syncRenderSystem` and `remoteInterpSystem` have written positions, so it covers
+local and remote ships in one pass. `Sim.y` and `simulate()` untouched — GDD §5.5 locks model-as-hitbox.
 
-Add a cosmetic y-offset there, driven by `s.vz / maxCruise` the same way the bank is driven by
-`s.vx / strafeClamp`. Note that line uses `DEFAULT_TUNING` rather than the entity's own class — a
-pre-existing bug worth fixing in passing (use `tuningForShip( net.shipId )`, as `chase.ts` does).
+    lift = Hover.base + Hover.speedLift * clamp01( vz / maxCruise )   eased at Hover.follow
+    + sin( phase ) * Hover.bob                                        phase seeded per entity
 
-Open design questions for the owner, none answered yet:
-- Hover only when grounded, or always? A hover that persists mid-jump will read oddly against the
-  jump arc.
-- Does it ease in, or track speed instantly? Instant will jitter with `vz`; a smoothed follow is
-  probably wanted, and the chase-camera fix (`3b50857`) is the cautionary tale about *where* you
-  put the smoothing.
-- Should it be a tunable? Every other feel knob now is — add `Hover.*` to
-  `apps/client/app/dev/tuning-schema.ts` and a panel group, matching `Chase.*` (`4607b2b`).
+Answers to the original brief's open questions: **always on**, not grounded-only (a constant offset
+just raises the jump arc; fading it at takeoff pops). **Eased**, not instant. **Tunable** — `Hover.*`
+on the panel next to `Chase.*`: base 0.35, speedLift 0.9, follow 4, bob 0.06, bobRate 0.8.
 
-## Task 2 — "Freighter max speed should be doubled" ⚠ NOT a data edit
+Remote ships have no `vz` on the wire; speed comes from `dz/dt` over the last two interpolation
+snapshots, no schema change.
 
-Owner's words: *"freighter max speed should be doubled."* The value is
-`packages/shared/src/ship-classes.ts:84`, `maxCruise: 62`. Doubling it to 124 is one character.
+Also fixed in passing (the brief flagged it): `syncRenderSystem` banked every ship by
+`DEFAULT_TUNING.strafeClamp` instead of its own class. Now `tuningForShip( net.shipId )`.
 
-**It would silently change the geometry of every existing track seed.** `packages/shared/src/sim/weave.ts:15-16`:
+**Not yet seen in a browser.** The Chrome extension was not connected this session and a dev stack
+already held `:5173`/`:2567`. Next session should look at `/test-level` and tune the five knobs.
 
-    export const SLOPE_CAP = deriveWeaveSlopeCap( ALL_CLASS_TUNINGS );
-    export const CURV_CAP = deriveWeaveCurvatureCap( ALL_CLASS_TUNINGS, CELL );
+## 2 — The track contract (ADR-013)
 
-Both caps are a **min over the live roster**, and both are functions of `maxCruise` —
-`constants.ts:114` takes `min( strafeClamp / maxCruise )`, and the curvature cap divides by
-`maxCruise²`. Raising the Freighter's number *lowers* both caps, which slackens the weave corridor,
-which changes what every seed generates. `FZ_ROWS` and `WEAVE_PERIOD_ROWS` derive from those caps in
-turn.
+The generator no longer reads ship stats at all. `TRACK_CONTRACT` in `constants.ts`:
+`pacingCruise 55`, and a reference weaver `62 / 65 / 118`. `weave.ts` no longer imports the roster;
+`corridor.ts` and `intensity.ts` no longer read `DEFAULT_TUNING.maxCruise` (which **is** the Fighter's
+tuning object — a second instance of the same bug, not in the original brief).
 
-**This is exactly the finding in `.claude/reports/GDD-DEVIATIONS.md` §1.3**, and this task is the
-first time it costs something real. GDD §0 promises the opposite:
+The owner's reason, which is stronger than the determinism one: *"if the tracks are shaped by ship
+stats then what is the use of asking the user to think about his ship choice"*. A `min` over the
+roster draws every course around the least capable ship.
 
-> *"a track seed must generate the **same geometry forever**. If clearance tracked the live roster,
-> adding/resizing a ship would silently mutate every existing seed's track."*
+**Conformance is a floor, not a match.** `weaveThreadSpeed( t ) = min( strafeClamp / WEAVE_SLOPE_CAP,
+sqrt( strafeAccel · CELL / WEAVE_CURVATURE_CAP ) )` — the fastest speed a class can follow the racing
+line, independent of its own `maxCruise`. A class need only clear `pacingCruise × 0.5 = 27.5u/s`; one
+that is faster than that simply brakes for the weave. `rosterContractFailures()` throws at module load
+of `ship-classes.ts`; exercised against a 5u-wide class and a strafe-12 class, both produce the
+expected message.
 
-So the owner needs a decision **before** the edit lands:
-1. **Accept it** — seeds are roster-versioned, and `/test-level`'s fixed seed 20260921 renders a
-   different track after this change. Then GDD §0's rationale must be rewritten to stop promising
-   permanence.
-2. **Build the fixed ceiling §0 describes** — derive the caps from a contractual constant rather
-   than the roster, so ship balancing stops reshaping tracks. This is the documented design, just
-   never built.
-3. **Check first, then decide** — measure whether doubling actually moves `SLOPE_CAP`/`CURV_CAP`
-   enough to change output. Cheap: compute both caps before and after in a node harness and diff a
-   seed's segments. Do this first regardless; it sizes the problem.
+**The contract numbers are frozen, not chosen** — bit-identical (`Object.is`) to what the roster
+formulas produced, so no existing seed moved. `sim/track-contract.test.ts` pins both caps, `FZ_ROWS`,
+`WEAVE_PERIOD_ROWS` and an FNV-1a digest of the racing line over 4000 rows for seeds 1 / 20260921 /
+0xdeadbeef. **If that test fires, someone reshaped every track in the game** — re-pin only on purpose.
 
-Second, smaller concern: GDD §5.5 lists the Freighter as *"long cruiser — worst weaver (sluggish
-handling), gap-tank"* at 62, below only the Comet's 70. At 124 it becomes by far the fastest ship in
-the game while keeping the tankiest armour (0.4) and the best gap reach — that is not a sidegrade,
-and §5.5's *"Class differences are margin & style, never pass/fail"* stops holding. Worth confirming
-the owner wants a dominant class rather than, say, a Freighter that accelerates poorly to a high
-cap.
+## 3 — Freighter at 124u/s
+
+One line, and it moved zero blocks — the contract working as intended.
+
+    weaveThreadSpeed   69.3u/s (unchanged)    scrub into a weave   44%
+    0 -> top speed     4.1s                   brake 124 -> 69      0.50s
+    hazard warning at full throttle  0.48s    (Fighter: 1.09s)
+
+Straight-line ship that must read the track ahead. **Watch in playtest:** 0.48s of warning against
+0.50s of braking means at full throttle in a dense section it arrives with no margin. If that plays
+as too punishing the lever is `brakeDecel` (110 today, shared with `DEFAULT_TUNING` — the Freighter
+would need its own value).
+
+## Open / next
+
+- **Look at the hover in a browser** and tune `Hover.*`. Nothing else is unverified.
+- **GDD-DEVIATIONS §1.1 is deliberately untouched**: documented `MIN_CLEAR 7u` vs the shipped
+  `MIN_LANE = 2·CELL = 8u`. Correcting it reshapes every seed, so it needs its own owner decision.
+  §1.2 and §1.3 are marked RESOLVED.
+- **GDD §5.5's class table has stale strafe numbers** against the code (doc says Freighter 105,
+  Interceptor 195; code says 118 and 210). Only the Freighter's top-speed cell was corrected here.
+- **Boost still does not exist.** `HeldPower = { none, bolt }`; GDD §5.3 lists Boost as an S5
+  fast-follow. `maxCruise` is currently the only speed ceiling in the game.
 
 ## State
 
-`dev` at `70fafc7`, tree clean, 89 commits ahead of `origin/dev` and unpushed. Nothing in flight.
+`dev` at `b998e6c`, tree clean, 92 commits ahead of `origin/dev` and unpushed. Nothing in flight.
