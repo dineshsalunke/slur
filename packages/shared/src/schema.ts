@@ -103,4 +103,5 @@ export class RunState extends Schema {
 
     @type( { map: Projectile } ) projectiles = new MapSchema< Projectile >();
     @type( { map: 'boolean' } ) pickupTaken = new MapSchema< boolean >();
+    @type( { map: 'boolean' } ) blockBroken = new MapSchema< boolean >();
 }

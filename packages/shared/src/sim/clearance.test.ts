@@ -16,7 +16,7 @@ const Z0 = 200;
 const Z1 = Z0 + SEG_LEN;
 
 function block( x0: number, x1: number, z0: number, z1: number ): Block {
-    return { x0, x1, y0: 0, y1: BLOCK_HEIGHT, z0, z1 };
+    return { x0, x1, y0: 0, y1: BLOCK_HEIGHT, z0, z1, id: 0, kind: 'sealed' };
 }
 
 function makeSegment( blocks: Block[], floors?: FloorSpan[] ): Segment {

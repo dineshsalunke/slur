@@ -7,6 +7,7 @@ import { getStateCallbacks } from '@colyseus/sdk';
 import { ColyseusTestServer } from '@colyseus/testing';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import {
+    type Block,
     COUNTDOWN_SECONDS,
     FIXED_DT,
     HeldPower,
@@ -15,8 +16,10 @@ import {
     type PlayerState,
     pickupLayout,
     ROOM_NAME,
+    resolveTrack,
     START_MESSAGE,
     STUN_SECONDS,
+    TRACK_SEGMENTS,
     toDescriptor,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
@@ -150,6 +153,64 @@ describe( 'RunRoom combat', () => {
 
         assert.deepEqual( removed, added, 'the client is told to remove every bolt it was told to add' );
         assert.equal( room.state.projectiles.size, 0, 'and the server map is drained' );
+    } );
+
+    function firstBlock( room: RunRoom, kind: Block[ 'kind' ] ): Block {
+        const track = resolveTrack( toDescriptor( room.state.descriptor ) );
+        for ( let i = 0; i < TRACK_SEGMENTS; i++ ) {
+            const b = track.segmentAt( i ).blocks.find( ( x ) => x.kind === kind );
+            if ( b ) return b;
+        }
+        assert.fail( `the seeded track has no ${ kind } block` );
+    }
+
+    function aimAt( room: RunRoom, sessionId: string, b: Block ): void {
+        const shooter = playerOf( room, sessionId );
+        shooter.x = ( b.x0 + b.x1 ) / 2;
+        shooter.z = b.z0 - 5;
+        shooter.heldPower = HeldPower.bolt;
+    }
+
+    test( 'a bolt breaks a fractured block, is spent, and the break is synced', async () => {
+        const { room, host } = await racingRoom( 1 );
+        host.onMessage( 'hit', () => {} );
+        const target = firstBlock( room, 'fractured' );
+        aimAt( room, host.sessionId, target );
+
+        host.send( USE_POWERUP_MESSAGE );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        tick( room, 0.1 );
+
+        assert.equal( room.state.blockBroken.get( String( target.id ) ), true, 'the break did not reach state' );
+        assert.equal( room.state.projectiles.size, 0, 'the bolt flew on after breaking the block' );
+    } );
+
+    test( 'a sealed block eats the bolt and stays standing', async () => {
+        const { room, host } = await racingRoom( 1 );
+        host.onMessage( 'hit', () => {} );
+        const target = firstBlock( room, 'sealed' );
+        aimAt( room, host.sessionId, target );
+
+        host.send( USE_POWERUP_MESSAGE );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        tick( room, 0.1 );
+
+        assert.equal( room.state.blockBroken.size, 0, 'a sealed block was broken' );
+        assert.equal( room.state.projectiles.size, 0, 'the bolt flew through a sealed block' );
+    } );
+
+    test( 'returning to the lobby restores every broken block', async () => {
+        const { room, host } = await racingRoom( 1 );
+        host.onMessage( 'hit', () => {} );
+        aimAt( room, host.sessionId, firstBlock( room, 'fractured' ) );
+        host.send( USE_POWERUP_MESSAGE );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        tick( room, 0.1 );
+        assert.equal( room.state.blockBroken.size, 1, 'precondition: one block is broken' );
+
+        ( room as unknown as { resetToLobby(): void } ).resetToLobby();
+
+        assert.equal( room.state.blockBroken.size, 0, 'a broken block survived the reset' );
     } );
 
     test( 'a racer grabs an available pickup and the slot hides', async () => {

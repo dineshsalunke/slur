@@ -1,15 +1,15 @@
 import { type Client, Room } from '@colyseus/core';
 import {
     applyDescriptor,
-    boltHits,
     COLOR_COUNT,
     COUNTDOWN_SECONDS,
     createFixedStep,
+    createSimWorld,
     DEFAULT_SIM_CONFIG,
     FIXED_DT,
     grabPickup,
     HeldPower,
-    type HitShip,
+    hitShipsOf,
     INPUT_MESSAGE,
     type InputMessage,
     isColorId,
@@ -27,10 +27,12 @@ import {
     RunState,
     raceShouldEnd,
     resetPlayerForRace,
+    resolveBolt,
     resolveTrack,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
     type SimConfig,
+    type SimWorld,
     START_MESSAGE,
     START_STAGGER,
     shouldSpectateOnJoin,
@@ -55,6 +57,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     private advance = createFixedStep( FIXED_DT );
 
     private track!: Track;
+
+    private blocks: SimWorld = createSimWorld();
 
     private pickups: Pickup[] = [];
     private pickupRespawn = new Map< string, number >();
@@ -145,7 +149,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             if ( player.connected ) {
                 const input = this.queues.get( sessionId )?.shift();
                 if ( input ) {
-                    simulate( player, input, dt, tuningForShip( player.shipId ), this.track, this.config );
+                    simulate( player, input, dt, tuningForShip( player.shipId ), this.track, this.config, this.blocks );
                     player.lastProcessedInput = input.seq;
                 }
             }
@@ -174,35 +178,32 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     private stepWorld( dt: number ): void {
         stepProjectiles( this.state.projectiles.values(), dt, this.config );
 
-        const ships: HitShip[] = [];
-        this.state.players.forEach( ( p, id ) => {
-            if ( p.spectating ) return;
-            const t = tuningForShip( p.shipId );
-            ships.push( {
-                id,
-                x: p.x,
-                y: p.y,
-                z: p.z,
-                halfW: t.halfW,
-                halfL: t.halfL,
-                dead: p.dead,
-                spectating: false,
-            } );
-        } );
-
+        const ships = hitShipsOf( this.state.players.entries() );
         const spent: string[] = [];
+        const sweep = this.config.boltSpeed * dt;
         this.state.projectiles.forEach( ( bolt, id ) => {
-            for ( const victimId of boltHits( bolt, ships, this.config.boltSpeed * dt, this.config ) ) {
+            const out = resolveBolt( bolt, ships, this.track, this.blocks.broken, sweep, this.config );
+            for ( const victimId of out.victims ) {
                 const v = this.state.players.get( victimId );
                 if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config );
                 this.broadcast( 'hit', { x: bolt.x, y: bolt.y, z: bolt.z, victimId } );
-                spent.push( id );
             }
-            if ( bolt.ttl <= 0 ) spent.push( id );
+            if ( out.block?.kind === 'fractured' ) this.blocks.broken.add( out.block.id );
+            if ( out.block ) this.broadcast( 'hit', { x: bolt.x, y: bolt.y, z: out.block.z0, victimId: '' } );
+            if ( out.spent ) spent.push( id );
         } );
         for ( const id of spent ) this.state.projectiles.delete( id );
 
+        this.mirrorBreaks();
         this.stepPickups( dt );
+    }
+
+    private mirrorBreaks(): void {
+        if ( this.blocks.broken.size === this.state.blockBroken.size ) return;
+        for ( const id of this.blocks.broken ) {
+            const key = String( id );
+            if ( ! this.state.blockBroken.has( key ) ) this.state.blockBroken.set( key, true );
+        }
     }
 
     private stepPickups( dt: number ): void {
@@ -232,6 +233,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     private clearCombat(): void {
         this.state.projectiles.clear();
         this.state.pickupTaken.clear();
+        this.state.blockBroken.clear();
+        this.blocks.broken.clear();
         this.pickupRespawn.clear();
         this.nextProjectileId = 0;
         this.state.players.forEach( ( p ) => {

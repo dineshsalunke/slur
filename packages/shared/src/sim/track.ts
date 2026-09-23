@@ -2,6 +2,7 @@ import { CELL, FLICK_WIDTH, WALL_NOISE_FZ_LANE, WALL_NOISE_FZ_SEG, WALL_RUN_LANE
 import { blockZSpan, carveRun } from './block-depth.js';
 import { openCenterX } from './clearance.js';
 import { type Band, bandAt } from './corridor.js';
+import { placeBlock } from './fracture.js';
 import { gapBlocks } from './gap-blocks.js';
 import { crackCovering, crackFloors, gapFloors, gapOpens } from './gaps.js';
 import { flickRate, intensityAt, spacingSegments, wallDensity } from './intensity.js';
@@ -97,13 +98,15 @@ function buildWalls(
         const runX0 = -HALF_WIDTH + runStart * CELL;
         const runX1 = -HALF_WIDTH + ( endLane + 1 ) * CELL;
         if ( band.pinched ) {
-            blocks.push( { x0: runX0, x1: runX1, y0: 0, y1: BLOCK_HEIGHT, z0, z1: z0 + SEG_LEN } );
+            const box = { x0: runX0, x1: runX1, y0: 0, y1: BLOCK_HEIGHT, z0, z1: z0 + SEG_LEN };
+            blocks.push( placeBlock( seed, i, blocks.length, intensity, box, false ) );
             return;
         }
         const parts = carveRun( seed, i, runStart, runX1 - runX0, intensity );
         for ( const [ p, part ] of parts.entries() ) {
             const [ bz0, bz1 ] = blockZSpan( seed, i, runStart * 8 + p, z0, SEG_LEN, intensity );
-            blocks.push( { x0: runX0 + part[ 0 ], x1: runX0 + part[ 1 ], y0: 0, y1: BLOCK_HEIGHT, z0: bz0, z1: bz1 } );
+            const box = { x0: runX0 + part[ 0 ], x1: runX0 + part[ 1 ], y0: 0, y1: BLOCK_HEIGHT, z0: bz0, z1: bz1 };
+            blocks.push( placeBlock( seed, i, blocks.length, intensity, box ) );
         }
     };
     for ( let lane = 0; lane < LANES; lane++ ) {

@@ -19,13 +19,26 @@ export interface FloorSpan {
     z1?: number;
 }
 
-export interface Block {
+export interface BlockBox {
     x0: number;
     x1: number;
     y0: number;
     y1: number;
     z0: number;
     z1: number;
+}
+
+export type BlockKind = 'sealed' | 'fractured';
+
+export interface Block extends BlockBox {
+    id: number;
+    kind: BlockKind;
+}
+
+export const BLOCK_ID_STRIDE = 64;
+
+export function blockId( segIndex: number, k: number ): number {
+    return segIndex * BLOCK_ID_STRIDE + k;
 }
 
 export type SegmentKind = 'plain' | 'block' | 'gap' | 'finish';

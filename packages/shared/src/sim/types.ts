@@ -44,6 +44,14 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
     };
 }
 
+export interface SimWorld {
+    broken: Set< number >;
+}
+
+export function createSimWorld(): SimWorld {
+    return { broken: new Set() };
+}
+
 function keyTuple< T >() {
     return < U extends readonly ( keyof T )[] >(
         ...keys: [ keyof T ] extends [ U[ number ] ] ? U : readonly [ 'MISSING key →', Exclude< keyof T, U[ number ] > ]

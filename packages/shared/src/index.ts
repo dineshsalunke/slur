@@ -9,6 +9,7 @@ export * from './sim/block-depth.js';
 export * from './sim/clearance.js';
 export * from './sim/corridor.js';
 export * from './sim/fixed-step.js';
+export * from './sim/fracture.js';
 export * from './sim/gap-blocks.js';
 export * from './sim/gap-teeth.js';
 export * from './sim/gaps.js';

@@ -1,6 +1,7 @@
 import { BLOCK_MAX_LANES, CELL, GAP_BLOCK_ATTEMPTS, GAP_BLOCK_RATE_MAX, GAP_BLOCK_RATE_START } from '../constants.js';
 import { blockDepthFor } from './block-depth.js';
 import { passableCorridorWidth } from './clearance.js';
+import { placeBlock } from './fracture.js';
 import { hash2, mulberry32 } from './rng.js';
 import {
     BLOCK_HEIGHT,
@@ -42,14 +43,14 @@ function gapBlockCandidate(
     const half = SEG_LEN / 2;
     const depth = blockDepthFor( r(), intensity, half );
     const bz0 = z0 + half + r() * ( half - depth );
-    return {
+    return placeBlock( seed, i, 0, intensity, {
         x0: -HALF_WIDTH + start * CELL,
         x1: -HALF_WIDTH + ( start + lanes ) * CELL,
         y0: 0,
         y1: BLOCK_HEIGHT,
         z0: bz0,
         z1: bz0 + depth,
-    };
+    } );
 }
 
 export function gapBlocks(

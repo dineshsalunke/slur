@@ -29,6 +29,7 @@ export interface FlightTuning {
 
     bounceBack: number;
     bounceStun: number;
+    smashKeep: number;
 
     deathY: number;
     stepTol: number;
@@ -82,6 +83,7 @@ export const DEFAULT_TUNING: FlightTuning = {
     jumpBuffer: 0.1,
     bounceBack: 9,
     bounceStun: 0.25,
+    smashKeep: 0.45,
     deathY: -6,
     stepTol: 0.3,
     respawnDelay: 1,
@@ -192,6 +194,11 @@ export const BLOCK_WIDTH_BIAS_REST = 1.1;
 export const BLOCK_WIDTH_BIAS_PEAK = 0.6;
 export const BLOCK_SPLIT_GAP_MIN = 2;
 export const BLOCK_SPLIT_GAP_MAX = 9;
+
+export const FRACTURE_RATE_START = 0.15;
+export const FRACTURE_RATE_MAX = 0.35;
+export const FRACTURE_MAX_WIDTH = 12;
+export const FRACTURE_MAX_DEPTH = 12;
 
 export const OPEN_BAND_START = 8;
 export const OPEN_BAND_PEAK = 6;

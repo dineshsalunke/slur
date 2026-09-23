@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT } from '../constants.js';
 import { emptyInput } from './input.js';
-import { BLOCK_HEIGHT, HALF_WIDTH, SEG_LEN, type Segment, type Track } from './space.js';
+import { BLOCK_HEIGHT, type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from './space.js';
 import { simulate } from './step.js';
 import { spawnShip } from './types.js';
 
@@ -25,6 +25,10 @@ function flatTrack( finishSeg: number ): Track {
         anchors: [],
         segmentAtZ: ( z: number ) => seg( Math.floor( z / SEG_LEN ) ),
     };
+}
+
+function sealedBox( x0: number, x1: number, i: number ): Block {
+    return { x0, x1, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN, id: i * 64, kind: 'sealed' };
 }
 
 function trackWithSeg3( seg3: ( i: number ) => Segment ): Track {
@@ -80,7 +84,7 @@ test( 'AABB wing-clip: a cube the ship CENTER misses but its wing overlaps still
             z1: ( i + 1 ) * SEG_LEN,
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [ { x0: 1.0, x1: 5.0, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN } ],
+            blocks: [ sealedBox( 1.0, 5.0, i ) ],
             isFinish: false,
         } ),
     );
@@ -100,7 +104,7 @@ test( 'AABB wing-clear: the same lateral offset with the cube just past the wing
             z1: ( i + 1 ) * SEG_LEN,
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [ { x0: 1.4, x1: 5.4, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN } ],
+            blocks: [ sealedBox( 1.4, 5.4, i ) ],
             isFinish: false,
         } ),
     );
@@ -144,16 +148,7 @@ test( 'ground-level ship stops dead at a full-width cube wall instead of slippin
             z1: ( i + 1 ) * SEG_LEN,
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [
-                {
-                    x0: -HALF_WIDTH,
-                    x1: HALF_WIDTH,
-                    y0: 0,
-                    y1: BLOCK_HEIGHT,
-                    z0: i * SEG_LEN,
-                    z1: ( i + 1 ) * SEG_LEN,
-                },
-            ],
+            blocks: [ sealedBox( -HALF_WIDTH, HALF_WIDTH, i ) ],
             isFinish: false,
         } ),
     );
@@ -174,9 +169,7 @@ test( 'the bounce shoves the ship back off the face and the stun holds control f
             z1: ( i + 1 ) * SEG_LEN,
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [
-                { x0: -HALF_WIDTH, x1: HALF_WIDTH, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN },
-            ],
+            blocks: [ sealedBox( -HALF_WIDTH, HALF_WIDTH, i ) ],
             isFinish: false,
         } ),
     );
@@ -208,16 +201,7 @@ test( 'post-respawn invuln does not let a ship phase through a LATER hazard', ()
             z1: ( i + 1 ) * SEG_LEN,
             kind: 'block',
             floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [
-                {
-                    x0: -HALF_WIDTH,
-                    x1: HALF_WIDTH,
-                    y0: 0,
-                    y1: BLOCK_HEIGHT,
-                    z0: i * SEG_LEN,
-                    z1: ( i + 1 ) * SEG_LEN,
-                },
-            ],
+            blocks: [ sealedBox( -HALF_WIDTH, HALF_WIDTH, i ) ],
             isFinish: false,
         } ),
     );
