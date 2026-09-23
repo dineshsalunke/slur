@@ -19,15 +19,20 @@ shake, and the owner allows two dodges: a jump, or a strafe at the last moment. 
   - ADR-017 now holds the owner's answers: a no-lock fire is WASTED; a block in the dive destroys the
     seeker (and a fractured block with it); only `/test-level` is tunable, and hosted rooms stay on
     `DEFAULT_SIM_CONFIG`.
+- `dfae252` — step 3, the server (`run-room.ts`): `fireSeeker` (lock + aim into `state.seekers`),
+  `stepSeekers` in `stepWorld`, `onSeekerEvent` (hit → seeker stun + `'hit'` + `SEEKER_HIT_MESSAGE`;
+  miss → `SEEKER_MISS_MESSAGE`; blocked → `'hit'` with `victimId ''`), `seekerGate` into
+  `stepPickups`, and `clearCombat` clears seekers. Two new tests: lock + hit stun, and a no-lock fire
+  that expires. Shared is unchanged.
 
 ## State
 
-- Shared: 189 tests pass. `pnpm typecheck` is clean for all three packages. Biome is clean apart from
-  two old line-limit warnings in `sim/step.test.ts` and `sim/track.test.ts`.
-- The server and the client do not use the seeker yet. `stepPickups` defaults to `OPEN_SEEKER_GATE`, so
-  a seeker pickup already grants `HeldPower.seeker` on the server and on `/test-level`. **Firing it
-  today does nothing**: `run-room.ts` fires `aimBolt` on any held power, so a held seeker fires a bolt
-  (`canFire` is true). Step 3 fixes this.
+- Shared: 189 tests pass. Server: 9 tests pass. `pnpm typecheck` is clean for all three packages.
+- Biome: the two old line-limit warnings (`sim/step.test.ts`, `sim/track.test.ts`) plus a NEW one:
+  `run-room.ts` is 323 lines (limit 300; it was 300 before step 3). A split needs a new file (for
+  example `rooms/room-combat.ts`) that is not claimed. The supervisor was asked.
+- The server fires, steps and resolves seekers. The client does not render them yet, and
+  `/test-level` still uses `OPEN_SEEKER_GATE` and does not step seekers.
 - The outcomes are `hit`, `miss`, `blocked` (reported through `onEvent`), and `lost`/`expired` (removed
   silently). `SEEKER_HIT_MESSAGE` and `SEEKER_MISS_MESSAGE` are exported and not used yet.
 - Defaults: speed 120, ramp 0.3s, track-turn 240, turn 40, window time 0.35s / distance 30u, cruise y 10,
@@ -57,18 +62,9 @@ Approved by the supervisor, all free when approved:
 
 ## Next
 
-1. **Step 3, server** (`run-room.ts` + test):
-   - In `USE_POWERUP_MESSAGE`, branch on `p.heldPower`. For a seeker:
-     `lockTarget(p, sessionId, seekerShipsOf(players.entries()), track, blocks.broken, config)`, then
-     `aimSeeker` into `new Seeker()`, then `state.seekers.set(id, s)`.
-   - In `stepWorld`, call `stepSeekers(state.seekers, ships, track, blocks.broken, dt, onEvent, config)`.
-     On `hit`, stun with `stunDurationForShip(v.shipId, config, config.seekerStunS)` and broadcast
-     `'hit'` (spark) + `SEEKER_HIT_MESSAGE`. On `miss`, broadcast `SEEKER_MISS_MESSAGE`. On `blocked`,
-     broadcast `'hit'` with `victimId ''`, then call `mirrorBreaks()`.
-   - Pass `seekerGate(state.players.entries(), ownersOf(state.seekers), config)` to `stepPickups`.
-     Clear `state.seekers` on reset.
-   - Tests: firing a held seeker sets `targetId`; a hit applies the seeker stun.
-2. **Step 4, client pickup.** Split the pickup layout by `pickupPower(id)`: `BoltPickups` gets the bolts,
+1. If the supervisor approves: move the combat methods out of `run-room.ts` to bring it under 300 lines.
+2. **Step 4, client pickup.** The client must register `onMessage` handlers for `SEEKER_HIT_MESSAGE`
+   and `SEEKER_MISS_MESSAGE`, or the SDK may warn on each broadcast `[unmeasured]`. Split the pickup layout by `pickupPower(id)`: `BoltPickups` gets the bolts,
    and a new `SeekerPickups` (canister, M6 shell, `accent()` seam glyph, `BOLT_HOT` rear core) reuses
    `pickupPose`, the pool material and the hover/bob. 4 draws.
 3. **Step 5, in flight.** Client interpolation for `RunState.seekers` (new ECS trait, the same shape as
