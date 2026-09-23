@@ -1,10 +1,11 @@
-import { useFrame } from '@react-three/fiber';
+import { BOLT_SPAWN_AHEAD } from '@slur/shared';
 import { useWorld } from 'koota/react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { useCallback } from 'react';
 import { RENDER_DELAY_MS } from '../ecs/net-systems';
 import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
-import { BOLT_EMISSIVE, BOLT_INTENSITY, boltGeometry, MAX_BOLTS } from './combat-look';
+import { type BoltSink, BoltStreaks } from './bolt-streaks';
+
+const _pos: ProjSnapshot = { t: 0, x: 0, y: 0, z: 0 };
 
 function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
     if ( buffer.length === 0 ) return null;
@@ -14,12 +15,11 @@ function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | 
         const b = buffer[ i + 1 ];
         if ( a.t <= renderTime && b.t >= renderTime ) {
             const t = ( renderTime - a.t ) / ( b.t - a.t || 1 );
-            return {
-                t: renderTime,
-                x: a.x + ( b.x - a.x ) * t,
-                y: a.y + ( b.y - a.y ) * t,
-                z: a.z + ( b.z - a.z ) * t,
-            };
+            _pos.t = renderTime;
+            _pos.x = a.x + ( b.x - a.x ) * t;
+            _pos.y = a.y + ( b.y - a.y ) * t;
+            _pos.z = a.z + ( b.z - a.z ) * t;
+            return _pos;
         }
     }
     return buffer[ buffer.length - 1 ];
@@ -27,41 +27,18 @@ function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | 
 
 export function ProjectileField() {
     const world = useWorld();
-    const ref = useRef< THREE.InstancedMesh | null >( null );
-    const m = useMemo( () => new THREE.Object3D(), [] );
 
-    const boltGeo = useMemo( boltGeometry, [] );
-
-    // Effect justified: brackets a GPU resource's lifetime. boltGeo is `new`'d in useMemo and attached via
-    useEffect( () => () => boltGeo.dispose(), [ boltGeo ] );
-
-    const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
-        ref.current = mesh;
-        if ( mesh ) mesh.count = 0;
-    }, [] );
-
-    useFrame( () => {
-        const mesh = ref.current;
-        if ( ! mesh ) return;
-        const renderTime = performance.now() - RENDER_DELAY_MS;
-        let i = 0;
-        world.query( ProjInterp, NetProjectile ).readEach( ( [ interp ] ) => {
-            if ( i >= MAX_BOLTS ) return;
-            const pos = sampleAt( interp.buffer, renderTime );
-            if ( ! pos ) return;
-            m.position.set( pos.x, pos.y, pos.z );
-            m.updateMatrix();
-            mesh.setMatrixAt( i, m.matrix );
-            i++;
-        } );
-        mesh.count = i;
-        mesh.instanceMatrix.needsUpdate = true;
-    } );
-
-    return (
-        <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX_BOLTS ] }>
-            <primitive object={ boltGeo } attach="geometry" />
-            <meshStandardMaterial emissive={ BOLT_EMISSIVE } emissiveIntensity={ BOLT_INTENSITY } />
-        </instancedMesh>
+    const collect = useCallback(
+        ( sink: BoltSink ) => {
+            const renderTime = performance.now() - RENDER_DELAY_MS;
+            world.query( ProjInterp, NetProjectile ).readEach( ( [ interp ] ) => {
+                const pos = sampleAt( interp.buffer, renderTime );
+                if ( ! pos ) return;
+                sink( pos.x, pos.y, pos.z, pos.z - interp.buffer[ 0 ].z + BOLT_SPAWN_AHEAD );
+            } );
+        },
+        [ world ],
     );
+
+    return <BoltStreaks collect={ collect } />;
 }
