@@ -116,7 +116,6 @@ export function TrackBlocks( { track }: { track: Track } ) {
         const material = blocks.material as THREE.MeshStandardMaterial;
         const normalScale = num( 'Block.normalScale' );
         material.roughness = num( 'Block.roughness' );
-        material.metalness = num( 'Block.metalness' );
         material.envMapIntensity = num( 'Block.envMapIntensity' );
         material.normalScale.set( normalScale, normalScale );
 

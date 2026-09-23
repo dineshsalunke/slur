@@ -1,6 +1,6 @@
-import { GRAPHITE_METALNESS, GRAPHITE_ROUGHNESS } from './graphite';
+import { GRAPHITE_ROUGHNESS } from './graphite';
 
-export const SEALED_BLOCK_METALNESS = GRAPHITE_METALNESS;
+export const SEALED_BLOCK_METALNESS = 0;
 export const SEALED_BLOCK_ROUGHNESS = GRAPHITE_ROUGHNESS;
 export const SEALED_BLOCK_TINT = '#c8dcf0';
 
