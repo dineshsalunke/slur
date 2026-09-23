@@ -14,12 +14,14 @@ export interface BreakEvent {
     y: number;
     z: number;
     kind: number;
+    vz: number;
 }
 
 export interface ShipProbe {
     x: number;
     y: number;
     z: number;
+    vz: number;
 }
 
 let standing = new Set< number >();
@@ -76,7 +78,7 @@ export function noteBroken( b: Block, ship: ShipProbe | undefined ): void {
     const smash = smashedBy( b, ship );
     const x = smash && ship ? Math.min( b.x1, Math.max( b.x0, ship.x ) ) : ( b.x0 + b.x1 ) / 2;
     const y = smash && ship ? Math.min( b.y1, Math.max( b.y0, ship.y ) ) : ( b.y0 + b.y1 ) / 2;
-    breaks.push( { block: b, x, y, z: b.z0, kind: smash ? BREAK_SMASH : BREAK_BOLT } );
+    breaks.push( { block: b, x, y, z: b.z0, kind: smash ? BREAK_SMASH : BREAK_BOLT, vz: smash && ship ? ship.vz : 0 } );
     animating.add( b.id );
 }
 

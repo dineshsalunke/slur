@@ -245,7 +245,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
                     ref={ ( m ) => m && patchFracturedBlock( m, fractureUniforms, false ) }
                 />
             </instancedMesh>
-            <BlockDebris cells={ cells } uniforms={ fractureUniforms } />
+            <BlockDebris track={ track } uniforms={ fractureUniforms } />
             <BlockBurst />
         </Fragment>
     );
