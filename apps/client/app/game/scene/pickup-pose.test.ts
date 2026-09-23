@@ -8,6 +8,11 @@ describe( 'pickupPose', () => {
         expect( pickupPose( true, 0, pose() ).scale ).toBeCloseTo( 1 );
     } );
 
+    it( 'finishes the collect fast enough to read at race speed', () => {
+        expect( PICKUP_COLLECT_S ).toBeGreaterThanOrEqual( 0.11 );
+        expect( PICKUP_COLLECT_S ).toBeLessThanOrEqual( 0.16 );
+    } );
+
     it( 'is fully gone once the collect has played', () => {
         expect( pickupPose( true, PICKUP_COLLECT_S, pose() ).scale ).toBe( 0 );
         expect( pickupPose( true, 3, pose() ).scale ).toBe( 0 );

@@ -1,4 +1,4 @@
-export const PICKUP_COLLECT_S = 0.32;
+export const PICKUP_COLLECT_S = 0.13;
 export const PICKUP_REVEAL_S = 0.5;
 const COLLECT_LIFT = 2.2;
 const COLLECT_SPIN = 10;
