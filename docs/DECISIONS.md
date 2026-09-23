@@ -797,6 +797,73 @@ colour on one kind. The art package rejects red as a hazard code, so the colour 
 `apps/client/app/game/scene/{track-blocks,block-debris,block-breaks,fractured-block-*}` ·
 `docs/GDD.md` §5.2, §5.7. Commits: `523d63c`, `b6f1f45`, `8c9afaf`.
 
+## ADR-016 — A respawn goes to the nearest block-clear point, never into a block
+
+**Date:** 2026-09-23 · **Status:** ACCEPTED (owner, via slur-supervisor) · **Issue:** #216 ·
+**Amends:** ADR-014 ("Invulnerability is unchanged")
+
+### Decision
+
+After a gap death, `respawn()` in `packages/shared/src/sim/step.ts` asks `respawnPoint()` in
+`packages/shared/src/sim/respawn-point.ts` where to put the ship. The search starts at the old point:
+`lastSafeX`, clamped to the deck, and `lastSafeZ - respawnSetback`.
+
+1. At that z, find the open floor runs over the ship's whole footprint, `[z - halfL, z + halfL]`. An open
+   run is floor with every block removed. The runs are intersected over every slice in the footprint, across
+   a segment seam too. This is the same slice arithmetic as `passableCorridorWidth` in `clearance.ts`.
+2. If the hull fits at the anchor x, keep that x. If it does not, move to the nearest x where the hull fits,
+   plus 1e-3. On a tie, take the smaller `|x|`, then the smaller x.
+3. If no x fits, step z back by one ship length (`2 * halfL`) and try again.
+4. The start apron always ends the search. Segments `-LEAD_SEGMENTS` to `START_SAFE - 1` have full floor
+   and no blocks. `respawn-point.test.ts` asserts this.
+
+So the old rule *"a respawn keeps its lateral anchor"* becomes *"a respawn goes to the nearest clear point
+to its anchor"*. On an open deck the two are the same.
+
+### Why the placement ignores smashed blocks
+
+`respawnPoint()` treats every block as solid, a smashed fractured block too. It reads only the `Track`,
+which both ends build from the descriptor (ADR-000). It never reads `world.broken`, because the client's
+predicted broken set can differ from the server's for a tick. The cost: a ship can avoid a block that is
+already gone. That costs a few units of x. It never costs a desync.
+
+### Why the step-back is a ship length, not `CELL`
+
+The plan said *"step z back by CELL"*. `.claude/rules/track-space.md` says: *"`CELL = 4u` … is not a
+runtime unit … The sim never reads it."* The ship length comes from the flight tuning, which the sim
+already reads.
+
+### Options that were rejected
+
+- **Step z back only, at the anchor x.** A long block, or a weave that stays over the anchor, can push the
+  ship far back.
+- **Move x only.** GDD §0 promises a `MIN_CLEAR` run at every z-slice. It does not promise one run across a
+  whole footprint. Step 3 covers that case.
+- **Keep the point and extend invuln.** This was the old behaviour. The player sees the ship inside the
+  block.
+- **A ring buffer of safe points.** This adds synced ship state to `schema.ts` for a rare case.
+- **Respawn at `lastSafeZ`.** `resolveCollisions()` writes `lastSafe` before the block push, so that point
+  can itself be inside a block.
+
+### Amendment to ADR-014
+
+ADR-014 says invuln *"keeps a ship that respawns overlapping geometry from being stunned in place"*. A
+respawn no longer overlaps a block, so invuln is not needed for that case. Invuln still stops a bounce in
+the grace window after a respawn.
+
+### Measured
+
+The full-density probe in `respawn.test.ts` covers 6 seeds, every gap edge and every 2u lane. Before: 15 of
+1,068 gap-death respawns were inside a block. After: 0 of 1,068. x moves on exactly those 15 respawns, by
+0.6u to 6.4u. None of the 1,068 steps z back. A brute-force test over 1,710 points on 3 seeds (365 x moves,
+60 z steps) checks that each chosen point is clear. It also checks that no clear x at that z is nearer the
+anchor.
+
+### Affected
+
+`packages/shared/src/sim/{respawn-point,step,clearance}.ts` ·
+`packages/shared/src/sim/{respawn,respawn-point}.test.ts`. Commit: `5fe5bd8`.
+
 ## ADR-017 — The homing seeker: one at a time, locks what it can see, dodged only late
 
 **Date:** 2026-09-23 · **Status:** PROPOSED (design approved by the owner via slur-supervisor; not built) ·
