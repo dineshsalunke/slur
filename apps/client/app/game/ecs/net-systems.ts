@@ -4,6 +4,7 @@ import type { Predictor } from '../../net/prediction';
 import { blockWorld } from '../block-state';
 import { currentInput } from '../input/keyboard';
 import { localRole } from '../spectator';
+import { sparkIfBounced } from './bounce-spark';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
 
 export function freezeLocalPrev( world: World ): void {
@@ -41,7 +42,11 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        simulate( s, input, dt, tuningForShip( net.shipId ), track, DEFAULT_SIM_CONFIG, blockWorld );
+        const tuning = tuningForShip( net.shipId );
+        const stunBefore = s.stunTimer;
+        const vzBefore = s.vz;
+        simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+        sparkIfBounced( s, stunBefore, vzBefore, dt, tuning );
     } );
 }
 

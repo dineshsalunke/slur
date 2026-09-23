@@ -2,6 +2,7 @@ import { DEFAULT_SIM_CONFIG, simulate, type Track, tuningForShip } from '@slur/s
 import type { World } from 'koota';
 import { blockWorld } from '../block-state';
 import { currentInput } from '../input/keyboard';
+import { sparkIfBounced } from './bounce-spark';
 import { LocalPlayer, Net, Prev, Render, Sim } from './traits';
 
 export function localFlightSystem( world: World, dt: number, track: Track ): void {
@@ -10,7 +11,11 @@ export function localFlightSystem( world: World, dt: number, track: Track ): voi
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        simulate( s, input, dt, tuningForShip( net.shipId ), track, DEFAULT_SIM_CONFIG, blockWorld );
+        const tuning = tuningForShip( net.shipId );
+        const stunBefore = s.stunTimer;
+        const vzBefore = s.vz;
+        simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+        sparkIfBounced( s, stunBefore, vzBefore, dt, tuning );
     } );
 }
 
