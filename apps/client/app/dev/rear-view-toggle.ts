@@ -5,10 +5,6 @@ const listeners = new Set< () => void >();
 
 let shown = true;
 
-function notify(): void {
-    for ( const listener of listeners ) listener();
-}
-
 function subscribe( listener: () => void ): () => void {
     listeners.add( listener );
     return () => {
@@ -16,24 +12,20 @@ function subscribe( listener: () => void ): () => void {
     };
 }
 
-function panelShown(): boolean {
+function rearViewShown(): boolean {
     return shown;
 }
 
-export function togglePanel(): void {
-    shown = ! shown;
-    notify();
-}
-
-export function usePanelShown(): boolean {
-    return useSyncExternalStore( subscribe, panelShown, panelShown );
+export function useRearViewShown(): boolean {
+    return useSyncExternalStore( subscribe, rearViewShown, rearViewShown );
 }
 
 if ( import.meta.env.DEV && typeof window !== 'undefined' ) {
     addEventListener( 'keydown', ( e ) => {
-        if ( e.code !== 'Backquote' || e.repeat || e.metaKey || e.ctrlKey || e.altKey ) return;
+        if ( e.code !== 'KeyR' || e.repeat || e.metaKey || e.ctrlKey || e.altKey ) return;
         if ( typingTarget( e.target ) ) return;
         e.preventDefault();
-        togglePanel();
+        shown = ! shown;
+        for ( const listener of listeners ) listener();
     } );
 }

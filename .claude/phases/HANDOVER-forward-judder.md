@@ -86,7 +86,7 @@ wrong.
 
 Everything here is a per-frame cost that did not exist the night before:
 
-- `980827e` **the rearview** — `apps/client/app/game/scene/rear-view.tsx:44` does
+- `980827e` **the rearview** — `apps/client/app/game/scene/rear-view-pass.tsx:44` does
   `state.gl.render( state.scene, camera )` into a 4× MSAA FBO **every frame**. A second full scene
   render, plus drei `<Hud>`'s own pass, plus bloom. Three scene renders and a postprocess where
   there was one. Loudest suspect, and one `if` away from an A/B.
@@ -103,11 +103,17 @@ Everything here is a per-frame cost that did not exist the night before:
   existed; the meter had been running its `addEffect`/`addAfterEffect` pair every frame and
   reporting to nobody. Shows `fps · cpu · max`, where **`max` is worst frame in the last 500ms** —
   the number that separates "steady 45" from "60 with spikes".
+- `R` unmounts the rearview pass. `RearView` is now a gate over `RearViewPass`, so the FBO, the
+  `useFrame` render and drei `<Hud>` all go away — an A/B of the real cost, not an `if` inside a
+  pass that still runs. Independent of leva, so the panel stays out of the measurement.
 
 ## Next
 
+Tracked as issue #212.
+
 1. Fly `/test-level` and read `max` against the mean. Steady ⇒ look elsewhere. Spiky ⇒ it is this.
-2. A/B the rearview pass. It is the single biggest per-frame item added in the window.
+2. Press `R` and read the meter again. The rearview is the single biggest per-frame item added in
+   the window.
 3. Only if 1 and 2 clear it: instrument per-pass GPU time rather than guessing further.
 
 **Do not measure this in headless Chrome.** SwiftShader is a software rasteriser, so its frame times

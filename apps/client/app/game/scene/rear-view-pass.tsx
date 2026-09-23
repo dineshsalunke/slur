@@ -17,7 +17,7 @@ const REAR_SAMPLES = 4;
 const PASS_PRIORITY = 0.5;
 const HUD_PRIORITY = 2;
 
-export function RearView() {
+export function RearViewPass() {
     const world = useWorld();
     const dpr = useThree( ( state ) => state.viewport.dpr );
 
