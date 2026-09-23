@@ -662,3 +662,71 @@ correcting 8u to 7u is itself a reshape of every seed and wants its own decision
 
 Whether the Freighter's `maxCruise` actually doubles is a balance question, now fully decoupled from track
 geometry: it is a one-line edit to `ship-classes.ts` that no longer moves a single block.
+
+## ADR-014 — A block is solid, not lethal: contact bounces the ship and stuns it
+
+**Date:** 2026-09-23 · **Status:** ACCEPTED (owner) · **Supersedes:** the swept body-kill half of the
+collision rule GDD §5.7 called *"swept body-kill"* · **Leaves standing:** falling below `deathY`
+
+### Decision
+
+Touching an obstacle block no longer derezzes the ship. `resolveCollisions()` pushes the hull out of the
+block along the **shallowest** of its four lateral faces, reverses the velocity into that face to
+`-bounceBack` (9u/s), and raises `stunTimer` to `bounceStun` (0.25s), which the existing stun path already
+turns into frozen control, a blinking hull and the `hit` + `stun` sounds.
+
+Falling is untouched: `y < deathY` still calls `markDead()`, so a **gap is the only death in the game**.
+
+Two new `FlightTuning` fields carry it — `bounceBack` and `bounceStun` — so a class can be given a heavier
+or lighter bounce as a data edit (non-negotiable #6). Both are uniform across the roster today.
+
+`applyLongitudinal()` had to stop clamping `vz` at zero, or the knockback would be erased before it moved
+the ship: the floor is now `-bounceBack`, coast drag pulls `vz` toward zero **from either side**, and the
+brake still bottoms out at 0, so no input can drive a ship backwards.
+
+### Why
+
+The owner's call. A kill-and-reset on every wall touch is the harshest possible answer to the most common
+mistake, and it fights the premise in GDD §1: *"Social & chaotic — the fun is the other humans."* A reset
+removes a player from the race for `respawnDelay` + a 12u re-approach; a bounce keeps them in it, losing
+the thing that actually matters in a race — time and position. It also makes the Bolt read the way GDD §5.4
+already wanted it to: *"Getting hit = disruption (stun, spin, brief control loss), rarely instant death"*.
+
+### Mechanism — five candidates weighed
+
+| Option | Verdict |
+|---|---|
+| **Shallowest-face push-out + velocity reversal** (chosen) | Deterministic, allocation-free, runs inside the existing `resolveCollisions()` pass, and needs no new `SimShip` field — so nothing changes on the wire and prediction reconciles as before. |
+| Swept continuous-contact solve (time-of-impact, resolve at the exact face) | The correct answer for tunnelling, and more work than the defect deserves: the body test already runs after a 60Hz integration step and blocks are ≥ 3u deep, so a 124u/s Freighter moves 2.07u per tick and cannot cross one. |
+| Reflect the full velocity vector about the face normal (elastic bounce) | Rejected with the owner's "hard stop + small shove" answer — a real ricochet at 124u/s throws a player backwards far enough to read as unfair. |
+| Zero the velocity and leave the hull where it is | Leaves the hull *inside* the block: it re-triggers every tick, stun-locking the player against the face. |
+| A hit counter that derezzes on the Nth hit | Keeps a death path, but needs a new schema field, a HUD readout and a balance number — a bigger design than the change asked for. Still open if bouncing proves too cheap. |
+
+The push-out picks the shallowest face rather than the swept entry face. The two agree for the cases that
+matter — a full-width wall hit head-on has a z penetration of a few centimetres against an x penetration of
+33u — and where they disagree, the shallowest face is the *forgiving* reading: a wing that clips 0.3u into
+a pillar is nudged sideways and flies on, which is the glance-off the owner wanted from a graze.
+
+### Invulnerability is unchanged, and is now the only phase-through
+
+`invulnTimer` still suppresses the body response for the post-respawn grace window, and is still spent on
+the first tick clear of every body. It now suppresses a *bounce* rather than a *death*, which keeps a ship
+that respawns overlapping geometry from being stunned in place.
+
+### What this costs
+
+Blocks become cheap. A player who cannot weave can now bulldoze down the track at a cost of roughly
+`bounceStun` + the re-acceleration per hit, where before the track demanded the lane. `sim/track.test.ts`'s
+fairness caps (threadable clearance, `MIN_LANE`) were written against a lethal block and are unaffected in
+letter, but the **pressure** the generator's intensity curve was tuned to apply is now softer everywhere.
+Re-tuning intensity against a non-lethal block is not done here.
+
+### Not decided here
+
+No hit VFX fires on a bounce: `pushHit()` is still only called from the server's bolt-hit message
+(`apps/client/app/net/attach-room-to-world.ts:135`), so a wall hit gets the stun blink and the `hit` sound
+but no spark. Wiring the predicted bounce into `hit-events.ts` is the obvious follow-up.
+
+Whether a bounce should also scrub *lateral* speed, whether armour should scale `bounceStun` the way
+`stunDurationForShip()` scales the bolt stun, and whether breakable blocks (ADR-009) shatter on contact
+instead of bouncing, are all open.

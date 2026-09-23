@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT, type FlightTuning } from '../constants.js';
 import { emptyInput } from './input.js';
-import type { Track } from './space.js';
+import { TRACK_SEGMENTS, type Track } from './space.js';
 import { simulate } from './step.js';
-import { procgenDescriptor, resolveTrack } from './track-provider.js';
+import { resolveTrack } from './track-provider.js';
 import { type SimShip, spawnShip } from './types.js';
 
 const t = DEFAULT_TUNING;
-const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed ) );
+const makeTrack = ( seed: number ): Track =>
+    resolveTrack( { kind: 'procgen', seed, tier: 0, length: TRACK_SEGMENTS, blockDensity: 0 } );
 const SEEDS = [ 1, 7, 13, 28, 42, 57 ];
 const MAX_TICKS = 3600;
 

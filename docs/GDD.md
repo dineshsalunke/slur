@@ -175,7 +175,7 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   placements). Pickup/hazard *layout* is a track anchor; per-anchor *availability* is thin synced state
   (`pickupTaken` generalised); runtime-spawned things (bolts/drops/active hazards) are synced entities. Visuals
   are a separate client-side concern (ADR-002 — the 3-layer model).
-- **Core hazard vocabulary (implemented):** *cube fields* (**un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). Jump answers gaps; blocks are **strafe-or-destroy** — **and the two now overlap**: a gap segment that keeps a floor deck (a crack, or a partial gap) may carry one deadly block on its **landing side**, so crossing it is one decision with two parts — clear the hole *and* be somewhere specific laterally when you land. A **full-width** gap never carries a block: there is nothing to stand on. Block height stays **8u** (above double-jump reach, ADR-007), so a block is never the thing you jump. Threadable clearance is measured over the **combined** floor-and-block result, so the deck a block sits on still keeps a ≥ `MIN_CLEAR` run. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
+- **Core hazard vocabulary (implemented):** *cube fields* (**un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). **A block is solid, not lethal — you bounce off it** (ADR-014): the hit shoves you back off the face and stuns you for a moment, so a block costs time and position while the *gap* keeps the only death in the game. Jump answers gaps; blocks are **strafe-or-destroy** — **and the two now overlap**: a gap segment that keeps a floor deck (a crack, or a partial gap) may carry one block on its **landing side**, so crossing it is one decision with two parts — clear the hole *and* be somewhere specific laterally when you land. A **full-width** gap never carries a block: there is nothing to stand on. Block height stays **8u** (above double-jump reach, ADR-007), so a block is never the thing you jump. Threadable clearance is measured over the **combined** floor-and-block result, so the deck a block sits on still keeps a ≥ `MIN_CLEAR` run. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
 - **⚠ Slow blocks are under review — ADR-009 (PROPOSED, 2026-09-17).** The `docs/art-direction/` direction drops
   slow blocks and instead freezes art for **destructible** blocks. The proposal merges both into a single
   **breakable block** (fractured shell — shoot it to clear the path, or smash through and pay a speed tax),
@@ -226,7 +226,7 @@ Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time
 ### 5.4 Combat & interactions
 - **Server-authoritative hit detection** (never trust client for hits — see TDD / `conventions/netcode.md`).
 - Getting hit = disruption (stun, spin, brief control loss), rarely instant death — deaths should mostly come from the *track* while disrupted. Keeps it funny, not punishing.
-- **As-built (S5):** server-sim bolts (`stepWorld`) → owner-immune AABB hit → `stunTimer` (predicted `SimShip` field) freezes control while momentum coasts → you drift into a hazard and derezz. Client feedback: hit-spark + on-ship stun-flicker + threat-warning HUD. Spin/slow/reverse/blind verbs still open (BC2).
+- **As-built (S5):** server-sim bolts (`stepWorld`) → owner-immune AABB hit → `stunTimer` (predicted `SimShip` field) freezes control while momentum coasts → you drift into a wall and lose the time, or off the deck and derezz. Client feedback: hit-spark + on-ship stun-flicker + threat-warning HUD. Spin/slow/reverse/blind verbs still open (BC2).
 - **Bolt feel (design target — issue #55):** the Bolt is a **near-instant fast projectile**, not literal hitscan — it snaps forward almost immediately, but a short travel window keeps it **dodgeable by weaving** (preserving the agility ⊥ armour axis, §5.5) and keeps the threat cue (threat HUD / #38) meaningful. Near-instant speed **requires swept collision** (segment-vs-AABB per tick) so a fast bolt never tunnels through a short-hulled ship (Comet/Interceptor). Visually it reads as an **elongated energy streak/tracer**, not a sphere. *(Was `BOLT_SPEED 120` u/s + a `sphereGeometry` bolt.)*
 
 ### 5.5 Ship classes (asymmetric) — **LOCKED 5-class matrix (2026-08-09)**
@@ -245,8 +245,8 @@ arbitrary width/depth (ADR-007), and the ship is **≤ 1 cell** wide. **Jump is 
 strafe-or-destroy** — the two mechanics never overlap.
 
 **Model = hitbox (WYSIWYG, LOCKED).** Each class is one of our five CC0 models, **uniform-scaled** so its visible
-box IS its AABB collision footprint — you die exactly when the ship touches. Height is cosmetic (bodies are solid
-ground-up; Y doesn't change kill logic), so all visual flair lives in the vertical/overhang budget and cannot
+box IS its AABB collision footprint — you hit exactly when the ship touches. Height is cosmetic (bodies are solid
+ground-up; Y doesn't change collision logic), so all visual flair lives in the vertical/overhang budget and cannot
 affect fairness. Footprints are **derived from the measured model proportions**, not hand-set. *(Verified
 2026-08-14: each model's rendered box equals its footprint to the millimetre — no node-transform surprises. So
 how **big a ship reads on screen** is set by the **chase-camera framing** (ADD §6) and by the class's footprint
@@ -339,8 +339,8 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Strafe (analog, drifty→snappy) + corridor walls | **LIVE** | walls stop+slide, non-lethal |
 | Jump — variable (tap/hold) + double + coyote/buffer | **LIVE** | derived from a jump-feel spec (GDC "Building a Better Jump") |
 | Track — deterministic from a descriptor; **rhythm-paced generator** (ADR-006): arrangement envelope + discrete slalom/flick + varied gaps | **LIVE** | plain / block / gap / finish; fairness caps asserted in `sim/track.test.ts` |
-| Hazards + collision — **AABB** (footprint = model box), swept land + swept body-kill | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable); generous grounded rule; WYSIWYG |
-| Death → shard-burst VFX → respawn (position-scoped grace) | **LIVE** | 1s derezz, setback + re-approach |
+| Hazards + collision — **AABB** (footprint = model box), swept land + swept body-bounce | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable), hit = bounce + stun (ADR-014); generous grounded rule; WYSIWYG |
+| Death → shard-burst VFX → respawn (position-scoped grace) | **LIVE** | falling only; 1s derezz, setback + re-approach |
 | Netcode — authoritative, predict+reconcile, interp, drop-in | **LIVE** | inputs-not-positions, 60Hz sim / 20Hz patch |
 | **Boost** | **PLANNED (S5 fast-follow)** | *removed from base flight → pickup power-up; v1 shipped Bolt only* |
 | Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine/Shield/Boost/auto-lock = fast-follows |

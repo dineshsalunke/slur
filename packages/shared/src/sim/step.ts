@@ -1,19 +1,23 @@
 import type { FlightTuning } from '../constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
-import { type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
+import { type Block, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
 import type { SimShip } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
 
+const BOUNCE_CLEARANCE = 1e-3;
+
 export function applyLongitudinal( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
     if ( input.throttle > 0 ) s.vz += t.accel * input.throttle * dt;
-    if ( input.brake > 0 ) s.vz -= t.brakeDecel * input.brake * dt;
+    if ( input.brake > 0 ) s.vz = Math.max( 0, s.vz - t.brakeDecel * input.brake * dt );
     if ( input.throttle === 0 && input.brake === 0 ) {
         const d = t.coastDrag * dt;
-        s.vz = s.vz > d ? s.vz - d : 0;
+        if ( s.vz > d ) s.vz -= d;
+        else if ( s.vz < -d ) s.vz += d;
+        else s.vz = 0;
     }
-    s.vz = Math.min( Math.max( s.vz, 0 ), t.maxCruise );
+    s.vz = Math.min( Math.max( s.vz, -t.bounceBack ), t.maxCruise );
 }
 
 export function applyStrafe( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
@@ -152,22 +156,56 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.stunTimer = 0;
 }
 
-function overlapsBlock( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning ): boolean {
+function overlapsBlock( b: Block, s: SimShip, prevY: number, t: FlightTuning ): boolean {
+    return (
+        s.x + t.halfW > b.x0 &&
+        s.x - t.halfW < b.x1 &&
+        s.z + t.halfL > b.z0 &&
+        s.z - t.halfL < b.z1 &&
+        s.y < b.y1 &&
+        prevY + t.stepTol >= b.y0
+    );
+}
+
+interface BlockPush {
+    axis: 'x' | 'z';
+    delta: number;
+}
+
+function shallowestPush( b: Block, s: SimShip, t: FlightTuning ): BlockPush {
+    const candidates: BlockPush[] = [
+        { axis: 'x', delta: b.x0 - ( s.x + t.halfW ) },
+        { axis: 'x', delta: b.x1 - ( s.x - t.halfW ) },
+        { axis: 'z', delta: b.z0 - ( s.z + t.halfL ) },
+        { axis: 'z', delta: b.z1 - ( s.z - t.halfL ) },
+    ];
+    let best = candidates[ 0 ];
+    for ( const c of candidates ) if ( Math.abs( c.delta ) < Math.abs( best.delta ) ) best = c;
+    return best;
+}
+
+function blockPush( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning ): BlockPush | null {
+    let best: BlockPush | null = null;
     for ( const seg of segs ) {
         for ( const b of seg.blocks ) {
-            if (
-                s.x + t.halfW > b.x0 &&
-                s.x - t.halfW < b.x1 &&
-                s.z + t.halfL > b.z0 &&
-                s.z - t.halfL < b.z1 &&
-                s.y < b.y1 &&
-                prevY + t.stepTol >= b.y0
-            ) {
-                return true;
-            }
+            if ( ! overlapsBlock( b, s, prevY, t ) ) continue;
+            const p = shallowestPush( b, s, t );
+            if ( best === null || Math.abs( p.delta ) < Math.abs( best.delta ) ) best = p;
         }
     }
-    return false;
+    return best;
+}
+
+function bounceOffBlock( s: SimShip, push: BlockPush, t: FlightTuning ): void {
+    const dir = push.delta < 0 ? -1 : 1;
+    if ( push.axis === 'x' ) {
+        s.x += push.delta + dir * BOUNCE_CLEARANCE;
+        if ( s.vx * dir < 0 ) s.vx = dir * t.bounceBack;
+    } else {
+        s.z += push.delta + dir * BOUNCE_CLEARANCE;
+        if ( s.vz * dir < 0 ) s.vz = dir * t.bounceBack;
+    }
+    if ( s.stunTimer < t.bounceStun ) s.stunTimer = t.bounceStun;
 }
 
 export function resolveCollisions(
@@ -196,12 +234,9 @@ export function resolveCollisions(
         return;
     }
 
-    const insideBody = overlapsBlock( segs, s, prevY, t );
-    if ( insideBody ) {
-        if ( s.invulnTimer <= 0 ) {
-            markDead( s, t );
-            return;
-        }
+    const push = blockPush( segs, s, prevY, t );
+    if ( push !== null ) {
+        if ( s.invulnTimer <= 0 ) bounceOffBlock( s, push, t );
     } else {
         s.invulnTimer = 0;
     }

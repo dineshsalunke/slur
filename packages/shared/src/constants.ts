@@ -27,6 +27,9 @@ export interface FlightTuning {
     coyoteTime: number;
     jumpBuffer: number;
 
+    bounceBack: number;
+    bounceStun: number;
+
     deathY: number;
     stepTol: number;
     respawnDelay: number;
@@ -77,6 +80,8 @@ export const DEFAULT_TUNING: FlightTuning = {
     maxJumps: 2,
     coyoteTime: 0.1,
     jumpBuffer: 0.1,
+    bounceBack: 9,
+    bounceStun: 0.25,
     deathY: -6,
     stepTol: 0.3,
     respawnDelay: 1,

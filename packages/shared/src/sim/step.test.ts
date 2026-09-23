@@ -41,11 +41,11 @@ function trackWithSeg3( seg3: ( i: number ) => Segment ): Track {
     return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ), anchors: [] };
 }
 
-function cruiseUntilDead( s: ReturnType< typeof spawnShip >, track: Track, ticks = 160 ): void {
+function cruiseUntilHit( s: ReturnType< typeof spawnShip >, track: Track, ticks = 160 ): void {
     s.vz = t.maxCruise;
     const inp = emptyInput();
     inp.throttle = 1;
-    for ( let i = 0; i < ticks && ! s.dead; i++ ) simulate( s, inp, FIXED_DT, t, track );
+    for ( let i = 0; i < ticks && ! s.dead && s.stunTimer === 0; i++ ) simulate( s, inp, FIXED_DT, t, track );
 }
 
 test( 'grounded on a floor resets jumpsUsed and records a safe anchor (jump contract preserved)', () => {
@@ -71,7 +71,7 @@ test( 'fast fall does not tunnel through a floor (swept landing)', () => {
     assert.equal( s.dead, false );
 } );
 
-test( 'AABB wing-clip: a cube the ship CENTER misses but its wing overlaps still kills', () => {
+test( 'AABB wing-clip: a cube the ship CENTER misses but its wing overlaps still hits', () => {
     assert.ok( 0 < 1.0 && 0 + t.halfW > 1.0, 'test setup: centre left of cube, wing overlaps it' );
     const track = trackWithSeg3(
         ( i ): Segment => ( {
@@ -85,12 +85,14 @@ test( 'AABB wing-clip: a cube the ship CENTER misses but its wing overlaps still
         } ),
     );
     const s = spawnShip( 0, SEG_LEN * 2.5 );
-    cruiseUntilDead( s, track );
-    assert.ok( s.dead, 'wing overlap did not kill — collision is still point-sampling the centre' );
-    assert.ok( s.z < SEG_LEN * 4, 'ship passed the whole cube segment without crashing' );
+    cruiseUntilHit( s, track );
+    assert.ok( s.stunTimer > 0, 'wing overlap did not hit — collision is still point-sampling the centre' );
+    assert.equal( s.dead, false, 'a block hit killed instead of bouncing' );
+    assert.ok( s.x + t.halfW <= 1.0 + 1e-3, `wing was not pushed clear of the cube face (x=${ s.x })` );
+    assert.ok( s.z < SEG_LEN * 4, 'ship passed the whole cube segment without touching it' );
 } );
 
-test( 'AABB wing-clear: the same lateral offset with the cube just past the wing does NOT kill', () => {
+test( 'AABB wing-clear: the same lateral offset with the cube just past the wing does NOT hit', () => {
     const track = trackWithSeg3(
         ( i ): Segment => ( {
             index: i,
@@ -103,8 +105,9 @@ test( 'AABB wing-clear: the same lateral offset with the cube just past the wing
         } ),
     );
     const s = spawnShip( 0, SEG_LEN * 2.5 );
-    cruiseUntilDead( s, track, 200 );
-    assert.equal( s.dead, false, 'killed on a clear pass — halfW inflate is too wide' );
+    cruiseUntilHit( s, track, 200 );
+    assert.equal( s.stunTimer, 0, 'hit on a clear pass — halfW inflate is too wide' );
+    assert.equal( s.dead, false, 'killed on a clear pass' );
     assert.ok( s.z > SEG_LEN * 4, 'ship did not make it past the cube segment' );
 } );
 
@@ -133,7 +136,7 @@ test( 'generous grounded: a floor under only PART of the footprint still support
     assert.equal( s.y, 0 );
 } );
 
-test( 'ground-level ship crashes into a full-width cube wall instead of slipping under it', () => {
+test( 'ground-level ship stops dead at a full-width cube wall instead of slipping under it', () => {
     const track = trackWithSeg3(
         ( i ): Segment => ( {
             index: i,
@@ -155,9 +158,46 @@ test( 'ground-level ship crashes into a full-width cube wall instead of slipping
         } ),
     );
     const s = spawnShip( 0, SEG_LEN * 2.5 );
-    cruiseUntilDead( s, track );
-    assert.ok( s.dead, 'ship never crashed — it flew through / slipped under the wall' );
-    assert.ok( s.y > t.deathY, `died by falling through (y=${ s.y }) instead of crashing at the face` );
+    cruiseUntilHit( s, track );
+    assert.ok( s.stunTimer > 0, 'ship never hit the wall — it flew through / slipped under it' );
+    assert.equal( s.dead, false, 'a wall hit killed instead of bouncing' );
+    assert.ok( s.y > t.deathY, `fell through (y=${ s.y }) instead of stopping at the face` );
+    assert.ok( s.z + t.halfL <= SEG_LEN * 3 + 1e-2, `ship sits inside the wall at z=${ s.z }` );
+    assert.ok( s.vz <= 0, `ship kept driving forward into the wall (vz=${ s.vz })` );
+} );
+
+test( 'the bounce shoves the ship back off the face and the stun holds control for a moment', () => {
+    const track = trackWithSeg3(
+        ( i ): Segment => ( {
+            index: i,
+            z0: i * SEG_LEN,
+            z1: ( i + 1 ) * SEG_LEN,
+            kind: 'block',
+            floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
+            blocks: [
+                { x0: -HALF_WIDTH, x1: HALF_WIDTH, y0: 0, y1: BLOCK_HEIGHT, z0: i * SEG_LEN, z1: ( i + 1 ) * SEG_LEN },
+            ],
+            isFinish: false,
+        } ),
+    );
+    const s = spawnShip( 0, SEG_LEN * 2.5 );
+    cruiseUntilHit( s, track );
+    assert.equal( s.vz, -t.bounceBack, 'the hit did not reverse the ship off the face' );
+    assert.equal( s.stunTimer, t.bounceStun, 'the hit did not stun' );
+
+    const zAtHit = s.z;
+    const inp = emptyInput();
+    inp.throttle = 1;
+    simulate( s, inp, FIXED_DT, t, track );
+    assert.ok( s.z < zAtHit, 'the ship did not travel backwards on the tick after the hit' );
+    assert.ok( s.vz < 0, 'throttle beat the stun and cancelled the knockback' );
+
+    for ( let i = 0; i < 20; i++ ) simulate( s, idle, FIXED_DT, t, track );
+    assert.equal( s.stunTimer, 0, 'the stun never ended' );
+    assert.equal( s.vz, 0, 'the knockback never drained away' );
+
+    simulate( s, inp, FIXED_DT, t, track );
+    assert.ok( s.vz > 0, 'control never came back after the stun' );
 } );
 
 test( 'post-respawn invuln does not let a ship phase through a LATER hazard', () => {
@@ -183,9 +223,9 @@ test( 'post-respawn invuln does not let a ship phase through a LATER hazard', ()
     );
     const s = spawnShip( 0, SEG_LEN * 2.2 );
     s.invulnTimer = t.invulnTime;
-    cruiseUntilDead( s, track );
-    assert.ok( s.dead, 'invuln let the ship phase through the wall' );
-    assert.ok( s.z < SEG_LEN * 4, 'ship flew past the wall instead of dying at it' );
+    cruiseUntilHit( s, track );
+    assert.ok( s.stunTimer > 0, 'invuln let the ship phase through the wall' );
+    assert.ok( s.z < SEG_LEN * 4, 'ship flew past the wall instead of bouncing off it' );
 } );
 
 test( 'falling through a gap kills, then respawns at the last safe anchor', () => {
