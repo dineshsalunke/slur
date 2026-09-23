@@ -1,46 +1,60 @@
 import { describe, expect, it } from 'vitest';
 import {
-    FRACTURE_CORE,
+    cellVolume,
+    FRACTURE_ORIENTS,
     FRACTURE_OUTER,
     FRACTURE_WALL,
+    fractureCells,
     fracturedBlockGeometry,
-    fracturedChunks,
-    fracturedDebrisPieces,
-    outlineArea,
+    fractureOrient,
+    fractureSeeds,
 } from './fractured-block-geometry';
 
 describe( 'fractured block geometry', () => {
-    it( 'winds every outline counter-clockwise', () => {
-        const { left, right, core } = fracturedChunks();
-        for ( const chunk of [ left, right, core ] ) expect( outlineArea( chunk.outline ) ).toBeGreaterThan( 0 );
+    it( 'splits the block into about twelve cells', () => {
+        expect( fractureCells() ).toHaveLength( 12 );
+    } );
+
+    it( 'tiles the unit box with no overlap and no hole', () => {
+        const total = fractureCells().reduce( ( sum, c ) => sum + cellVolume( c ), 0 );
+        expect( total ).toBeCloseTo( 1, 6 );
+        for ( const c of fractureCells() ) expect( cellVolume( c ) ).toBeGreaterThan( 0.02 );
+    } );
+
+    it( 'keeps every cell convex', () => {
+        for ( const c of fractureCells() ) {
+            for ( const f of c.faces ) {
+                const d = f.normal.dot( f.points[ 0 ] );
+                for ( const other of c.faces ) {
+                    for ( const p of other.points ) expect( f.normal.dot( p ) - d ).toBeLessThan( 1e-6 );
+                }
+            }
+        }
     } );
 
     it( 'stays inside the unit box', () => {
         const pos = fracturedBlockGeometry().getAttribute( 'position' );
         for ( let i = 0; i < pos.count; i++ ) {
-            expect( Math.abs( pos.getX( i ) ) ).toBeLessThanOrEqual( 0.5 );
-            expect( Math.abs( pos.getY( i ) ) ).toBeLessThanOrEqual( 0.5 );
-            expect( Math.abs( pos.getZ( i ) ) ).toBeLessThanOrEqual( 0.5 );
+            expect( Math.abs( pos.getX( i ) ) ).toBeLessThanOrEqual( 0.5 + 1e-6 );
+            expect( Math.abs( pos.getY( i ) ) ).toBeLessThanOrEqual( 0.5 + 1e-6 );
+            expect( Math.abs( pos.getZ( i ) ) ).toBeLessThanOrEqual( 0.5 + 1e-6 );
         }
     } );
 
-    it( 'breaks the top contour with an open notch', () => {
-        const { left, right } = fracturedChunks();
-        const leftTop = Math.max( ...left.outline.filter( ( p ) => p.y === 0.5 ).map( ( p ) => p.x ) );
-        const rightTop = Math.min( ...right.outline.filter( ( p ) => p.y === 0.5 ).map( ( p ) => p.x ) );
-        expect( rightTop - leftTop ).toBeGreaterThan( 0.4 );
+    it( 'shows several plates on every face, the top included', () => {
+        for ( const axis of [ 'x', 'y', 'z' ] as const ) {
+            for ( const s of [ -0.5, 0.5 ] ) {
+                const plates = fractureCells().filter( ( c ) =>
+                    c.faces.some( ( f ) => f.tag === FRACTURE_OUTER && f.points.every( ( p ) => p[ axis ] === s ) ),
+                );
+                expect( plates.length ).toBeGreaterThanOrEqual( 4 );
+            }
+        }
     } );
 
-    it( 'recesses the core below the top and inside the faces', () => {
-        const { core } = fracturedChunks();
-        expect( Math.max( ...core.outline.map( ( p ) => p.y ) ) ).toBeLessThan( 0.5 );
-        expect( core.depth ).toBeLessThan( 1 );
-    } );
-
-    it( 'tags only outer, wall and core faces', () => {
+    it( 'tags only outer faces and crack walls', () => {
         const tags = new Set( fracturedBlockGeometry().getAttribute( 'aFracture' ).array );
-        const want = [ FRACTURE_OUTER, FRACTURE_WALL, FRACTURE_CORE ].map( Math.fround );
-        expect( [ ...tags ].sort() ).toEqual( want.sort() );
+        expect( [ ...tags ].sort() ).toEqual( [ FRACTURE_OUTER, FRACTURE_WALL ] );
     } );
 
     it( 'faces every triangle along its normal', () => {
@@ -62,10 +76,16 @@ describe( 'fractured block geometry', () => {
         }
     } );
 
-    it( 'centres each debris piece on its own outline', () => {
-        const pieces = fracturedDebrisPieces();
-        expect( pieces ).toHaveLength( 2 );
-        expect( pieces[ 0 ].centre.x ).toBeLessThan( 0 );
-        expect( pieces[ 1 ].centre.x ).toBeGreaterThan( 0 );
+    it( 'stays under the triangle budget', () => {
+        expect( fracturedBlockGeometry().getAttribute( 'position' ).count / 3 ).toBeLessThanOrEqual( 600 );
+    } );
+
+    it( 'builds the same fracture every time', () => {
+        expect( fractureSeeds() ).toEqual( fractureSeeds() );
+    } );
+
+    it( 'picks every orientation from block ids', () => {
+        const seen = new Set( Array.from( { length: 200 }, ( _, id ) => fractureOrient( id ) ) );
+        expect( seen.size ).toBe( FRACTURE_ORIENTS );
     } );
 } );

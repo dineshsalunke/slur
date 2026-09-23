@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { BOLT_SPEED } from '@slur/shared';
 import { useCallback, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
+import { noteBolt } from './block-breaks';
 import { advanceEmbers, type EmberPool, MAX_EMBERS, makeEmberPool, shedEmbers } from './bolt-embers';
 import { buildBoltCoreMaterial, buildBoltSheathMaterial } from './bolt-streak-material';
 import { BOLT_STREAK_LENGTH, boltStreakGeometry, MAX_BOLTS } from './combat-look';
@@ -60,6 +61,7 @@ export function BoltStreaks( { collect }: { collect: ( sink: BoltSink ) => void 
             core.setMatrixAt( frame.count, _o.matrix );
             sheath.setMatrixAt( frame.count, _o.matrix );
             frame.count++;
+            noteBolt( x, y, z );
             shedEmbers( frame.pool, x, y, z, Math.min( length, frame.shed ) );
         },
         [ frame ],

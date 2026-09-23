@@ -6,10 +6,11 @@ import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { blockWorld } from '../block-state';
 import { LocalPlayer, Sim } from '../ecs/traits';
-import { forgetMended, fractureYaw, noteBreak } from './block-breaks';
+import { boltCloseness, endFrame, noteBroken, noteStanding, type ShipProbe } from './block-breaks';
+import { BlockBurst } from './block-burst';
 import { BlockDebris } from './block-debris';
 import { applyBlockMetal } from './block-metal';
-import { fracturedBlockGeometry } from './fractured-block-geometry';
+import { fracturedBlockGeometry, fractureOrient, shareCells } from './fractured-block-geometry';
 import { fracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
 import {
     type BlockDims,
@@ -63,16 +64,24 @@ interface SealedAttributes {
     variation: THREE.InstancedBufferAttribute;
 }
 
+interface FracturedAttributes {
+    block: THREE.InstancedBufferAttribute;
+    glow: THREE.InstancedBufferAttribute;
+}
+
 interface Emit {
     sealed: THREE.InstancedMesh;
     fractured: THREE.InstancedMesh;
     attrs: SealedAttributes;
+    cracked: FracturedAttributes;
     si: number;
     fi: number;
-    fromZ: number;
+    ship: ShipProbe | undefined;
+    preGlow: number;
+    preReach: number;
 }
 
-const _m = new THREE.Object3D();
+const _m = new THREE.Matrix4();
 
 function writeVariation( attrs: SealedAttributes, i: number, x: number, z: number, dims: BlockDims ): void {
     const v = variationFor( x, z, dims );
@@ -95,12 +104,13 @@ function emitSealed( e: Emit, b: Block ): void {
 }
 
 function emitFractured( e: Emit, b: Block ): void {
+    noteStanding( b );
     if ( e.fi >= FRACTURED_LIMIT ) return;
-    _m.position.set( ( b.x0 + b.x1 ) / 2, ( b.y0 + b.y1 ) / 2, ( b.z0 + b.z1 ) / 2 );
-    _m.rotation.set( 0, fractureYaw( b.id ), 0 );
-    _m.scale.set( b.x1 - b.x0, Math.max( 0.05, b.y1 - b.y0 ), b.z1 - b.z0 );
-    _m.updateMatrix();
-    e.fractured.setMatrixAt( e.fi, _m.matrix );
+    const c = boltCloseness( b, e.preReach );
+    _m.makeTranslation( ( b.x0 + b.x1 ) / 2, ( b.y0 + b.y1 ) / 2, ( b.z0 + b.z1 ) / 2 );
+    e.fractured.setMatrixAt( e.fi, _m );
+    e.cracked.block.setXYZW( e.fi, b.x1 - b.x0, Math.max( 0.05, b.y1 - b.y0 ), b.z1 - b.z0, fractureOrient( b.id ) );
+    e.cracked.glow.setX( e.fi, 1 + e.preGlow * c * c );
     e.fi++;
 }
 
@@ -108,17 +118,22 @@ function emitSegment( e: Emit, seg: Segment ): void {
     for ( const b of seg.blocks ) {
         const fractured = b.kind === 'fractured';
         if ( blockWorld.broken.has( b.id ) ) {
-            if ( fractured ) noteBreak( b, e.fromZ );
+            if ( fractured ) noteBroken( b, e.ship );
         } else if ( fractured ) emitFractured( e, b );
         else emitSealed( e, b );
     }
 }
 
-function fracturedGeometry(): THREE.BufferGeometry {
-    const g = fracturedBlockGeometry();
-    const glow = new Float32Array( FRACTURED_LIMIT ).fill( 1 );
-    g.setAttribute( 'aFractureGlow', new THREE.InstancedBufferAttribute( glow, 1 ) );
-    return g;
+function fracturedAttributes( cells: THREE.BufferGeometry ): {
+    geometry: THREE.BufferGeometry;
+    cracked: FracturedAttributes;
+} {
+    const geometry = shareCells( cells );
+    const block = new THREE.InstancedBufferAttribute( new Float32Array( FRACTURED_LIMIT * 4 ), 4 );
+    const glow = new THREE.InstancedBufferAttribute( new Float32Array( FRACTURED_LIMIT ).fill( 1 ), 1 );
+    geometry.setAttribute( 'aBlock', block );
+    geometry.setAttribute( 'aFractureGlow', glow );
+    return { geometry, cracked: { block, glow } };
 }
 
 export function TrackBlocks( { track }: { track: Track } ) {
@@ -146,7 +161,8 @@ export function TrackBlocks( { track }: { track: Track } ) {
         g.setAttribute( 'aSealedVariation', attrs.variation );
         return g;
     }, [ attrs ] );
-    const fractured = useMemo( fracturedGeometry, [] );
+    const cells = useMemo( fracturedBlockGeometry, [] );
+    const fractured = useMemo( () => fracturedAttributes( cells ), [ cells ] );
 
     useFrame( () => {
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
@@ -160,6 +176,9 @@ export function TrackBlocks( { track }: { track: Track } ) {
         uniforms.uSealedWearMax.value = num( 'Block.wear' );
         uniforms.uSealedTexSpan.value = num( 'Block.textureSpan' );
         fractureUniforms.uFractureTexSpan.value = num( 'Block.textureSpan' );
+        fractureUniforms.uFractureGap.value = num( 'Fracture.gap' );
+        fractureUniforms.uFractureIntensity.value = num( 'Fracture.glow' );
+        fractureUniforms.uFractureCoreDepth.value = num( 'Fracture.coreDepth' );
 
         applyBlockMetal( blocks.material as THREE.MeshStandardMaterial );
         applyBlockMetal( cracked.material as THREE.MeshStandardMaterial );
@@ -167,21 +186,35 @@ export function TrackBlocks( { track }: { track: Track } ) {
         const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
         const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );
 
-        emitRef.current ??= { sealed: blocks, fractured: cracked, attrs, si: 0, fi: 0, fromZ: 0 };
+        emitRef.current ??= {
+            sealed: blocks,
+            fractured: cracked,
+            attrs,
+            cracked: fractured.cracked,
+            si: 0,
+            fi: 0,
+            ship: undefined,
+            preGlow: 0,
+            preReach: 1,
+        };
         const e = emitRef.current;
         e.sealed = blocks;
         e.fractured = cracked;
         e.si = 0;
         e.fi = 0;
-        e.fromZ = sim.z;
+        e.ship = sim;
+        e.preGlow = num( 'Fracture.preGlow' );
+        e.preReach = num( 'Fracture.preReach' );
         for ( let i = i0; i <= i1; i++ ) emitSegment( e, track.segmentAt( i ) );
-        forgetMended();
+        endFrame();
         blocks.count = e.si;
         cracked.count = e.fi;
         blocks.instanceMatrix.needsUpdate = true;
         cracked.instanceMatrix.needsUpdate = true;
         attrs.seams.needsUpdate = true;
         attrs.variation.needsUpdate = true;
+        fractured.cracked.block.needsUpdate = true;
+        fractured.cracked.glow.needsUpdate = true;
     } );
 
     return (
@@ -201,7 +234,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
             </instancedMesh>
             <instancedMesh
                 ref={ fracturedRef }
-                geometry={ fractured }
+                geometry={ fractured.geometry }
                 count={ 0 }
                 frustumCulled={ false }
                 args={ [ undefined, undefined, FRACTURED_LIMIT ] }
@@ -209,10 +242,11 @@ export function TrackBlocks( { track }: { track: Track } ) {
                 <meshStandardMaterial
                     { ...SEALED_BLOCK_SURFACE }
                     { ...maps }
-                    ref={ ( m ) => m && patchFracturedBlock( m, fractureUniforms ) }
+                    ref={ ( m ) => m && patchFracturedBlock( m, fractureUniforms, false ) }
                 />
             </instancedMesh>
-            <BlockDebris uniforms={ fractureUniforms } />
+            <BlockDebris cells={ cells } uniforms={ fractureUniforms } />
+            <BlockBurst />
         </Fragment>
     );
 }
