@@ -10,11 +10,13 @@ import {
     type Block,
     COUNTDOWN_SECONDS,
     DEFAULT_SIM_CONFIG,
+    DROP_POWERUP_MESSAGE,
     FIXED_DT,
     HeldPower,
     PHASE,
     PICKUP_RESPAWN_S,
     type PlayerState,
+    POWER_SLOTS,
     pickupLayout,
     ROOM_NAME,
     resolveTrack,
@@ -41,6 +43,14 @@ function playerOf( room: RunRoom, sessionId: string ): PlayerState {
     const p = room.state.players.get( sessionId );
     assert.ok( p, `player ${ sessionId } is present in the room` );
     return p;
+}
+
+function arm( p: PlayerState, ...powers: HeldPower[] ): void {
+    for ( let i = 0; i < POWER_SLOTS; i++ ) p.slots[ i ] = powers[ i ] ?? HeldPower.none;
+}
+
+function rack( p: PlayerState ): number[] {
+    return Array.from( p.slots );
 }
 
 describe( 'RunRoom combat', () => {
@@ -97,7 +107,7 @@ describe( 'RunRoom combat', () => {
         shooter.z = 0;
         victim.x = 0;
         victim.z = 20;
-        shooter.heldPower = HeldPower.bolt;
+        arm( shooter, HeldPower.bolt );
 
         let broadcastHits = 0;
         otherClient.onMessage( 'hit', () => {
@@ -105,11 +115,11 @@ describe( 'RunRoom combat', () => {
         } );
         host.onMessage( 'hit', () => {} );
 
-        host.send( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
 
         assert.equal( room.state.projectiles.size, 1, 'firing spawns exactly one bolt' );
-        assert.equal( shooter.heldPower, HeldPower.none, 'firing empties the single held slot' );
+        assert.equal( shooter.slots[ 0 ], HeldPower.none, 'firing empties the fired slot' );
 
         tick( room, 0.25 );
 
@@ -132,7 +142,7 @@ describe( 'RunRoom combat', () => {
         shooter.z = 0;
         victim.x = 0;
         victim.z = 20;
-        shooter.heldPower = HeldPower.bolt;
+        arm( shooter, HeldPower.bolt );
         host.onMessage( 'hit', () => {} );
         otherClient.onMessage( 'hit', () => {} );
 
@@ -142,7 +152,7 @@ describe( 'RunRoom combat', () => {
         $( host.state ).projectiles.onAdd( ( _bolt, id ) => added.push( id ) );
         $( host.state ).projectiles.onRemove( ( _bolt, id ) => removed.push( id ) );
 
-        host.send( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
         await room.waitForNextPatch();
         await delay( 100 );
@@ -170,7 +180,7 @@ describe( 'RunRoom combat', () => {
         victim.shipId = 'executioner';
         victim.x = 0;
         victim.z = 20;
-        shooter.heldPower = HeldPower.seeker;
+        arm( shooter, HeldPower.seeker );
 
         let seekerHits = 0;
         for ( const c of [ host, otherClient ] ) {
@@ -182,14 +192,14 @@ describe( 'RunRoom combat', () => {
             seekerHits++;
         } );
 
-        host.send( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
 
         assert.equal( room.state.projectiles.size, 0, 'a held seeker does not fire a bolt' );
         assert.equal( room.state.seekers.size, 1, 'firing spawns exactly one seeker' );
         const [ seeker ] = room.state.seekers.values();
         assert.equal( seeker?.targetId, otherClient.sessionId, 'the seeker locks the racer ahead' );
-        assert.equal( shooter.heldPower, HeldPower.none, 'firing empties the single held slot' );
+        assert.equal( shooter.slots[ 0 ], HeldPower.none, 'firing empties the fired slot' );
 
         tick( room, 1 );
 
@@ -208,17 +218,65 @@ describe( 'RunRoom combat', () => {
     test( 'a seeker fired with nothing ahead flies unlocked and is wasted', async () => {
         const { room, host } = await racingRoom( 1 );
         const shooter = playerOf( room, host.sessionId );
-        shooter.heldPower = HeldPower.seeker;
+        arm( shooter, HeldPower.seeker );
 
-        host.send( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
 
         const [ seeker ] = room.state.seekers.values();
         assert.equal( seeker?.targetId, '', 'no racer ahead means no lock' );
-        assert.equal( shooter.heldPower, HeldPower.none, 'the power is spent anyway' );
+        assert.equal( shooter.slots[ 0 ], HeldPower.none, 'the power is spent anyway' );
 
         tick( room, DEFAULT_SIM_CONFIG.seekerTtl + FIXED_DT );
         assert.equal( room.state.seekers.size, 0, 'the unlocked seeker expires' );
+    } );
+
+    test( 'a second seeker is refused while the shooter has one in flight, and its slot is kept', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const shooter = playerOf( room, host.sessionId );
+        arm( shooter, HeldPower.seeker, HeldPower.seeker );
+
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 1 } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+
+        assert.equal( room.state.seekers.size, 1, 'only one seeker flies per shooter' );
+        assert.deepEqual( rack( shooter ), [ HeldPower.none, HeldPower.seeker, HeldPower.none ] );
+
+        tick( room, DEFAULT_SIM_CONFIG.seekerTtl + FIXED_DT );
+        host.send( USE_POWERUP_MESSAGE, { slot: 1 } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+
+        assert.equal( room.state.seekers.size, 1, 'the kept seeker fires once the first is gone' );
+        assert.deepEqual( rack( shooter ), [ HeldPower.none, HeldPower.none, HeldPower.none ] );
+    } );
+
+    test( 'a fire message without a valid slot is ignored', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const shooter = playerOf( room, host.sessionId );
+        arm( shooter, HeldPower.bolt );
+
+        host.send( USE_POWERUP_MESSAGE );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: POWER_SLOTS } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+
+        assert.equal( room.state.projectiles.size, 0, 'no bolt fired' );
+        assert.equal( shooter.slots[ 0 ], HeldPower.bolt, 'the power is kept' );
+    } );
+
+    test( 'dropping a slot empties only that slot and fires nothing', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const shooter = playerOf( room, host.sessionId );
+        arm( shooter, HeldPower.bolt, HeldPower.seeker );
+
+        host.send( DROP_POWERUP_MESSAGE, { slot: 1 } );
+        await room.waitForMessage( DROP_POWERUP_MESSAGE );
+
+        assert.deepEqual( rack( shooter ), [ HeldPower.bolt, HeldPower.none, HeldPower.none ] );
+        assert.equal( room.state.projectiles.size, 0, 'a drop fires no bolt' );
+        assert.equal( room.state.seekers.size, 0, 'a drop fires no seeker' );
     } );
 
     function firstBlock( room: RunRoom, kind: Block[ 'kind' ] ): Block {
@@ -234,7 +292,7 @@ describe( 'RunRoom combat', () => {
         const shooter = playerOf( room, sessionId );
         shooter.x = ( b.x0 + b.x1 ) / 2;
         shooter.z = b.z0 - 5;
-        shooter.heldPower = HeldPower.bolt;
+        arm( shooter, HeldPower.bolt );
     }
 
     test( 'a bolt breaks a fractured block, is spent, and the break is synced', async () => {
@@ -243,7 +301,7 @@ describe( 'RunRoom combat', () => {
         const target = firstBlock( room, 'fractured' );
         aimAt( room, host.sessionId, target );
 
-        host.send( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
         tick( room, 0.1 );
 
@@ -257,7 +315,7 @@ describe( 'RunRoom combat', () => {
         const target = firstBlock( room, 'sealed' );
         aimAt( room, host.sessionId, target );
 
-        host.send( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
         tick( room, 0.1 );
 
@@ -269,7 +327,7 @@ describe( 'RunRoom combat', () => {
         const { room, host } = await racingRoom( 1 );
         host.onMessage( 'hit', () => {} );
         aimAt( room, host.sessionId, firstBlock( room, 'fractured' ) );
-        host.send( USE_POWERUP_MESSAGE );
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
         tick( room, 0.1 );
         assert.equal( room.state.blockBroken.size, 1, 'precondition: one block is broken' );
@@ -279,21 +337,38 @@ describe( 'RunRoom combat', () => {
         assert.equal( room.state.blockBroken.size, 0, 'a broken block survived the reset' );
     } );
 
-    test( 'a racer grabs an available pickup and the slot hides', async () => {
+    test( 'a racer grabs an available pickup into its lowest empty slot and the pickup hides', async () => {
         const { room, host } = await racingRoom( 1 );
         const racer = playerOf( room, host.sessionId );
 
         const [ pickup ] = pickupLayout( toDescriptor( room.state.descriptor ) );
         assert.ok( pickup, 'the seeded layout places at least one pickup' );
 
-        racer.heldPower = HeldPower.none;
+        arm( racer, HeldPower.seeker );
         racer.x = pickup.x;
         racer.z = pickup.z;
 
         tick( room, FIXED_DT );
 
-        assert.equal( racer.heldPower, HeldPower.bolt, 'overlapping an available pickup arms the racer' );
-        assert.equal( room.state.pickupTaken.get( pickup.id ), true, 'the grabbed slot hides' );
+        assert.deepEqual( rack( racer ), [ HeldPower.seeker, HeldPower.bolt, HeldPower.none ] );
+        assert.equal( room.state.pickupTaken.get( pickup.id ), true, 'the grabbed pickup hides' );
+    } );
+
+    test( 'a racer with a full rack skips the pickup and it stays', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const racer = playerOf( room, host.sessionId );
+
+        const [ pickup ] = pickupLayout( toDescriptor( room.state.descriptor ) );
+        assert.ok( pickup, 'the seeded layout places at least one pickup' );
+
+        arm( racer, HeldPower.seeker, HeldPower.seeker, HeldPower.seeker );
+        racer.x = pickup.x;
+        racer.z = pickup.z;
+
+        tick( room, FIXED_DT );
+
+        assert.deepEqual( rack( racer ), [ HeldPower.seeker, HeldPower.seeker, HeldPower.seeker ] );
+        assert.notEqual( room.state.pickupTaken.get( pickup.id ), true, 'the skipped pickup stays available' );
     } );
 
     test( 'a taken pickup slot respawns after PICKUP_RESPAWN_S', async () => {
@@ -303,11 +378,12 @@ describe( 'RunRoom combat', () => {
         const [ pickup ] = pickupLayout( toDescriptor( room.state.descriptor ) );
         assert.ok( pickup, 'the seeded layout places at least one pickup' );
 
-        racer.heldPower = HeldPower.none;
+        arm( racer );
         racer.x = pickup.x;
         racer.z = pickup.z;
         tick( room, FIXED_DT );
         assert.equal( room.state.pickupTaken.get( pickup.id ), true, 'precondition: the slot is taken' );
+        arm( racer, HeldPower.bolt, HeldPower.bolt, HeldPower.bolt );
 
         tick( room, PICKUP_RESPAWN_S + FIXED_DT );
 

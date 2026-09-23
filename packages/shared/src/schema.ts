@@ -1,4 +1,5 @@
-import { MapSchema, Schema, type } from '@colyseus/schema';
+import { ArraySchema, deprecated, MapSchema, Schema, type } from '@colyseus/schema';
+import { emptySlots } from './combat/combat-step.js';
 import type { ProjectileState } from './combat/projectiles.js';
 import type { SeekerState } from './combat/seeker.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
@@ -40,7 +41,8 @@ export class PlayerState extends Schema implements SimShip {
     @type( 'boolean' ) spectating = false;
 
     @type( 'float32' ) stunTimer = 0;
-    @type( 'uint8' ) heldPower = 0;
+    @deprecated() @type( 'uint8' ) heldPower = 0;
+    @type( [ 'uint8' ] ) slots = new ArraySchema< number >( ...emptySlots() );
 }
 
 export class Projectile extends Schema implements ProjectileState {

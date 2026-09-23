@@ -1,6 +1,6 @@
 import type { Track } from '../sim/space.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { BOLT_SPAWN_AHEAD, HeldPower } from './constants.js';
+import { BOLT_SPAWN_AHEAD, HeldPower, POWER_SLOTS } from './constants.js';
 import { grabPickup, type Pickup, pickupPower } from './pickups.js';
 import { type HitShip, type ProjectileState, resolveBolt, stepProjectiles } from './projectiles.js';
 
@@ -8,7 +8,7 @@ export interface Gunner {
     x: number;
     y: number;
     z: number;
-    heldPower: number;
+    slots: number[];
     stunTimer: number;
     dead: boolean;
     spectating: boolean;
@@ -21,15 +21,48 @@ export interface BoltStrike {
     victimId: string;
 }
 
-export interface SeekerGate {
-    allows( r: Gunner ): boolean;
-    granted( r: Gunner ): void;
+export function emptySlots(): number[] {
+    return Array.from( { length: POWER_SLOTS }, () => HeldPower.none );
 }
 
-export const OPEN_SEEKER_GATE: SeekerGate = { allows: () => true, granted: () => {} };
+export function isSlot( slot: unknown ): slot is number {
+    return Number.isInteger( slot ) && ( slot as number ) >= 0 && ( slot as number ) < POWER_SLOTS;
+}
 
-export function canFire( g: Gunner ): boolean {
-    return ! g.spectating && ! g.dead && g.stunTimer <= 0 && g.heldPower !== HeldPower.none;
+export function powerIn( g: Gunner, slot: number ): number {
+    return isSlot( slot ) ? ( g.slots[ slot ] ?? HeldPower.none ) : HeldPower.none;
+}
+
+export function canFire( g: Gunner, slot: number ): boolean {
+    return ! g.spectating && ! g.dead && g.stunTimer <= 0 && powerIn( g, slot ) !== HeldPower.none;
+}
+
+export function seekerReady( ownerId: string, live: Iterable< { ownerId: string } > ): boolean {
+    for ( const s of live ) if ( s.ownerId === ownerId ) return false;
+    return true;
+}
+
+export function spendPower( g: Gunner, slot: number ): number {
+    const power = powerIn( g, slot );
+    if ( power !== HeldPower.none ) g.slots[ slot ] = HeldPower.none;
+    return power;
+}
+
+export function dropPower( g: Gunner, slot: number ): boolean {
+    if ( g.spectating ) return false;
+    return spendPower( g, slot ) !== HeldPower.none;
+}
+
+export function firstEmptySlot( g: Gunner ): number {
+    for ( let i = 0; i < POWER_SLOTS; i++ ) if ( powerIn( g, i ) === HeldPower.none ) return i;
+    return -1;
+}
+
+export function grantPower( g: Gunner, power: number ): boolean {
+    const slot = firstEmptySlot( g );
+    if ( slot < 0 ) return false;
+    g.slots[ slot ] = power;
+    return true;
 }
 
 export function aimBolt(
@@ -67,30 +100,6 @@ export function stepBolts(
     for ( const id of spent ) bolts.delete( id );
 }
 
-export function seekerGate(
-    racers: Iterable< [ string, Gunner ] >,
-    liveOwners: Iterable< string >,
-    cfg: SimConfig = DEFAULT_SIM_CONFIG,
-): SeekerGate {
-    const owners = new Set( liveOwners );
-    if ( cfg.seekerScope === 'shooter' ) {
-        const idOf = new Map< Gunner, string >();
-        for ( const [ id, r ] of racers ) idOf.set( r, id );
-        return {
-            allows: ( r ) => ! owners.has( idOf.get( r ) ?? '' ),
-            granted: () => {},
-        };
-    }
-    let count = owners.size;
-    for ( const [ , r ] of racers ) if ( r.heldPower === HeldPower.seeker ) count++;
-    return {
-        allows: () => count === 0,
-        granted: () => {
-            count++;
-        },
-    };
-}
-
 export function stepPickups(
     racers: Iterable< Gunner >,
     pickups: readonly Pickup[],
@@ -98,15 +107,12 @@ export function stepPickups(
     respawn: Map< string, number >,
     dt: number,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
-    gate: SeekerGate = OPEN_SEEKER_GATE,
 ): void {
     for ( const r of racers ) {
-        if ( r.spectating || r.dead || r.heldPower !== HeldPower.none ) continue;
+        if ( r.spectating || r.dead || firstEmptySlot( r ) < 0 ) continue;
         const pk = pickups.find( ( p ) => ! taken.get( p.id ) && grabPickup( r, p ) );
         if ( ! pk ) continue;
-        const seeker = pickupPower( pk.id, cfg ) === HeldPower.seeker && gate.allows( r );
-        r.heldPower = seeker ? HeldPower.seeker : HeldPower.bolt;
-        if ( seeker ) gate.granted( r );
+        grantPower( r, pickupPower( pk.id, cfg ) );
         taken.set( pk.id, true );
         respawn.set( pk.id, cfg.pickupRespawnS );
     }

@@ -7,6 +7,8 @@ import {
     createFixedStep,
     createSimWorld,
     DEFAULT_SIM_CONFIG,
+    DROP_POWERUP_MESSAGE,
+    dropPower,
     FIXED_DT,
     HeldPower,
     hitShipsOf,
@@ -14,10 +16,13 @@ import {
     type InputMessage,
     isColorId,
     isShipId,
+    isSlot,
     PHASE,
     type Pickup,
     type PlayerInput,
     PlayerState,
+    POWER_SLOTS,
+    type PowerSlotMessage,
     pickupsOf,
     procgenDescriptor,
     RACE_GRACE_SECONDS,
@@ -33,7 +38,6 @@ import {
     type SimWorld,
     START_MESSAGE,
     START_STAGGER,
-    seekerGate,
     seekerShipsOf,
     shouldSpectateOnJoin,
     simulate,
@@ -102,12 +106,18 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             if ( client.sessionId === this.state.hostId && this.state.phase === PHASE.finished ) this.resetToLobby();
         } );
 
-        this.onMessage( USE_POWERUP_MESSAGE, ( client ) => {
+        this.onMessage< PowerSlotMessage >( USE_POWERUP_MESSAGE, ( client, msg ) => {
             if ( this.state.phase !== PHASE.racing ) return;
             const p = this.state.players.get( client.sessionId );
-            if ( ! p || ! canFire( p ) ) return;
+            const slot = msg?.slot;
+            if ( ! p || ! isSlot( slot ) || ! canFire( p, slot ) ) return;
             const ctx = { state: this.state, track: this.track, broken: this.blocks.broken, config: this.config };
-            firePower( ctx, String( this.nextProjectileId++ ), p, client.sessionId );
+            firePower( ctx, String( this.nextProjectileId++ ), p, client.sessionId, slot );
+        } );
+        this.onMessage< PowerSlotMessage >( DROP_POWERUP_MESSAGE, ( client, msg ) => {
+            if ( this.state.phase !== PHASE.racing ) return;
+            const p = this.state.players.get( client.sessionId );
+            if ( p && isSlot( msg?.slot ) ) dropPower( p, msg.slot );
         } );
 
         this.setSimulationInterval( ( deltaMs ) => {
@@ -203,11 +213,6 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             this.pickupRespawn,
             dt,
             this.config,
-            seekerGate(
-                this.state.players.entries(),
-                Array.from( this.state.seekers.values(), ( s ) => s.ownerId ),
-                this.config,
-            ),
         );
     }
 
@@ -228,7 +233,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.pickupRespawn.clear();
         this.nextProjectileId = 0;
         this.state.players.forEach( ( p ) => {
-            p.heldPower = HeldPower.none;
+            for ( let i = 0; i < POWER_SLOTS; i++ ) p.slots[ i ] = HeldPower.none;
         } );
     }
 

@@ -1,4 +1,11 @@
 export const USE_POWERUP_MESSAGE = 'usePowerUp';
+export const DROP_POWERUP_MESSAGE = 'dropPowerUp';
+
+export interface PowerSlotMessage {
+    slot: number;
+}
+
+export const POWER_SLOTS = 3;
 
 export const BOLT_SPEED = 900;
 export const BOLT_TTL = 1.7;
@@ -11,14 +18,12 @@ export const PICKUP_RESPAWN_S = 3;
 export const HeldPower = { none: 0, bolt: 1, seeker: 2 } as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
 
-export type SeekerScope = 'room' | 'shooter';
 export type SeekerWindowMode = 'time' | 'distance';
 
 export const SEEKER_HIT_MESSAGE = 'seekerHit';
 export const SEEKER_MISS_MESSAGE = 'seekerMiss';
 
 export const SEEKER_RATIO = 0.25;
-export const SEEKER_SCOPE: SeekerScope = 'room';
 export const SEEKER_LOCK_RANGE = 600;
 export const SEEKER_SPEED = 120;
 export const SEEKER_RAMP_S = 0.3;

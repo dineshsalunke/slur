@@ -12,6 +12,7 @@ import {
     type SeekerEvent,
     type SeekerState,
     type SimConfig,
+    spendPower,
     stepBolts,
     stepPickups,
     stepSeekers,
@@ -91,15 +92,14 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
         x: s.x,
         y: s.y,
         z: s.z,
-        heldPower: held,
+        slots: [ held, HeldPower.bolt, HeldPower.bolt ],
         stunTimer: s.stunTimer,
         dead: s.dead,
         spectating: false,
     };
-    if ( localCombat.fireQueued && canFire( me ) ) {
-        if ( me.heldPower === HeldPower.seeker ) fireSeeker( me, s.vz, track );
+    if ( localCombat.fireQueued && canFire( me, 0 ) ) {
+        if ( spendPower( me, 0 ) === HeldPower.seeker ) fireSeeker( me, s.vz, track );
         else fireBolt( me );
-        me.heldPower = HeldPower.none;
     }
     localCombat.fireQueued = false;
 
@@ -107,5 +107,5 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
     stepSeekers( localCombat.seekers, [], track, blockWorld.broken, dt, onSeekerEvent, seekerConfig() );
     stepPickups( [ me ], localCombat.pickups, localCombat.taken, localCombat.respawn, dt );
 
-    if ( me.heldPower !== held ) ship.set( Held, { power: me.heldPower } );
+    if ( me.slots[ 0 ] !== held ) ship.set( Held, { power: me.slots[ 0 ] } );
 }

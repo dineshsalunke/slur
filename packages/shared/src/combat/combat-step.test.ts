@@ -9,6 +9,8 @@ import {
     type BoltStrike,
     canFire,
     DEFAULT_SIM_CONFIG,
+    dropPower,
+    emptySlots,
     FIXED_DT,
     type Gunner,
     HALF_WIDTH,
@@ -16,6 +18,8 @@ import {
     type ProjectileState,
     SEG_LEN,
     type Segment,
+    seekerReady,
+    spendPower,
     stepBolts,
     stepPickups,
     type Track,
@@ -48,7 +52,16 @@ function trackWithWall( at: number, kind: Block[ 'kind' ] ): Track {
 }
 
 function gunner( over: Partial< Gunner > = {} ): Gunner {
-    return { x: 0, y: 1, z: 0, heldPower: HeldPower.bolt, stunTimer: 0, dead: false, spectating: false, ...over };
+    return {
+        x: 0,
+        y: 1,
+        z: 0,
+        slots: [ HeldPower.bolt, HeldPower.none, HeldPower.none ],
+        stunTimer: 0,
+        dead: false,
+        spectating: false,
+        ...over,
+    };
 }
 
 function boltBefore( z: number ): ProjectileState {
@@ -56,11 +69,13 @@ function boltBefore( z: number ): ProjectileState {
 }
 
 test( 'only an armed, upright, unstunned racer can fire', () => {
-    assert.ok( canFire( gunner() ) );
-    assert.ok( ! canFire( gunner( { heldPower: HeldPower.none } ) ) );
-    assert.ok( ! canFire( gunner( { stunTimer: 0.1 } ) ) );
-    assert.ok( ! canFire( gunner( { dead: true } ) ) );
-    assert.ok( ! canFire( gunner( { spectating: true } ) ) );
+    assert.ok( canFire( gunner(), 0 ) );
+    assert.ok( ! canFire( gunner(), 1 ), 'an empty slot cannot fire' );
+    assert.ok( ! canFire( gunner(), 3 ), 'there is no fourth slot' );
+    assert.ok( ! canFire( gunner(), 0.5 ) );
+    assert.ok( ! canFire( gunner( { stunTimer: 0.1 } ), 0 ) );
+    assert.ok( ! canFire( gunner( { dead: true } ), 0 ) );
+    assert.ok( ! canFire( gunner( { spectating: true } ), 0 ) );
 } );
 
 test( 'aimBolt spawns the bolt ahead of the gunner with a full ttl', () => {
@@ -103,22 +118,50 @@ test( 'an empty-handed racer grabs a pickup, which respawns after pickupRespawnS
     const pickups = [ { id: 'p', x: 0, y: 1, z: 10 } ];
     const taken = new Map< string, boolean >();
     const respawn = new Map< string, number >();
-    const me = gunner( { z: 10, heldPower: HeldPower.none } );
+    const me = gunner( { z: 10, slots: emptySlots() } );
     stepPickups( [ me ], pickups, taken, respawn, FIXED_DT, { ...DEFAULT_SIM_CONFIG, seekerRatio: 0 } );
-    assert.equal( me.heldPower, HeldPower.bolt );
+    assert.deepEqual( me.slots, [ HeldPower.bolt, HeldPower.none, HeldPower.none ] );
     assert.equal( taken.get( 'p' ), true );
 
-    const other = gunner( { z: 10, heldPower: HeldPower.none } );
+    const other = gunner( { z: 10, slots: emptySlots() } );
     stepPickups( [ other ], pickups, taken, respawn, DEFAULT_SIM_CONFIG.pickupRespawnS / 2 );
-    assert.equal( other.heldPower, HeldPower.none, 'a taken pickup was grabbed again' );
+    assert.deepEqual( other.slots, emptySlots(), 'a taken pickup was grabbed again' );
 
     stepPickups( [], pickups, taken, respawn, DEFAULT_SIM_CONFIG.pickupRespawnS );
     assert.equal( taken.get( 'p' ), false );
     assert.equal( respawn.size, 0 );
 } );
 
-test( 'a racer already holding a power does not take another', () => {
+test( 'a grab fills the lowest empty slot, and a full rack skips the pickup for others', () => {
     const taken = new Map< string, boolean >();
-    stepPickups( [ gunner( { z: 10 } ) ], [ { id: 'p', x: 0, y: 1, z: 10 } ], taken, new Map(), FIXED_DT );
-    assert.equal( taken.get( 'p' ), undefined );
+    const me = gunner( { z: 10, slots: [ HeldPower.seeker, HeldPower.none, HeldPower.bolt ] } );
+    stepPickups( [ me ], [ { id: 'p', x: 0, y: 1, z: 10 } ], taken, new Map(), FIXED_DT, {
+        ...DEFAULT_SIM_CONFIG,
+        seekerRatio: 1,
+    } );
+    assert.deepEqual( me.slots, [ HeldPower.seeker, HeldPower.seeker, HeldPower.bolt ], 'duplicates are allowed' );
+
+    const full = new Map< string, boolean >();
+    stepPickups( [ me ], [ { id: 'q', x: 0, y: 1, z: 10 } ], full, new Map(), FIXED_DT );
+    assert.equal( full.get( 'q' ), undefined, 'a full rack leaves the pickup on the track' );
+} );
+
+test( 'spending or dropping a slot empties only that slot', () => {
+    const me = gunner( { slots: [ HeldPower.bolt, HeldPower.seeker, HeldPower.bolt ] } );
+    assert.equal( spendPower( me, 1 ), HeldPower.seeker );
+    assert.deepEqual( me.slots, [ HeldPower.bolt, HeldPower.none, HeldPower.bolt ] );
+    assert.equal( spendPower( me, 1 ), HeldPower.none, 'an empty slot spends nothing' );
+
+    assert.ok( dropPower( me, 2 ) );
+    assert.deepEqual( me.slots, [ HeldPower.bolt, HeldPower.none, HeldPower.none ] );
+    assert.ok( ! dropPower( me, 7 ) );
+    assert.ok( dropPower( gunner( { stunTimer: 1 } ), 0 ), 'a stunned racer may still drop' );
+    assert.ok( ! dropPower( gunner( { spectating: true } ), 0 ) );
+} );
+
+test( 'a shooter may have one seeker in flight at a time', () => {
+    const live = [ { ownerId: 'a' } ];
+    assert.ok( ! seekerReady( 'a', live ) );
+    assert.ok( seekerReady( 'b', live ) );
+    assert.ok( seekerReady( 'a', [] ) );
 } );

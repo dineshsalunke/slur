@@ -10,7 +10,6 @@ import {
     SEEKER_LOCK_RANGE,
     SEEKER_RAMP_S,
     SEEKER_RATIO,
-    SEEKER_SCOPE,
     SEEKER_SPEED,
     SEEKER_STRIKE_Y,
     SEEKER_STUN_S,
@@ -22,7 +21,6 @@ import {
     SEEKER_WINDOW_MODE,
     SEEKER_WINDOW_S,
     SEEKER_WINDOW_U,
-    type SeekerScope,
     type SeekerWindowMode,
     STUN_SECONDS,
 } from './combat/constants.js';
@@ -34,7 +32,6 @@ export interface SimConfig {
     stunSeconds: number;
     pickupRespawnS: number;
     seekerRatio: number;
-    seekerScope: SeekerScope;
     seekerLockRange: number;
     seekerSpeed: number;
     seekerRampS: number;
@@ -61,7 +58,6 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     stunSeconds: STUN_SECONDS,
     pickupRespawnS: PICKUP_RESPAWN_S,
     seekerRatio: SEEKER_RATIO,
-    seekerScope: SEEKER_SCOPE,
     seekerLockRange: SEEKER_LOCK_RANGE,
     seekerSpeed: SEEKER_SPEED,
     seekerRampS: SEEKER_RAMP_S,
