@@ -25,6 +25,7 @@ lives in its own file beside this one.
 - [Supervisor clears workers via herdr](supervisor-clears-workers-via-herdr.md) — `herdr agent prompt <pane> "/clear"`, then a resume prompt; "stalled" on /clear is success
 - [Rear-view panel looks like geometry](rear-view-panel-looks-like-geometry.md) — the top-centre translucent slab in a /test-level tap is the mirror, not a lintel
 - [Headless game tabs starve the GPU](headless-game-tabs-starve-the-gpu.md) — one extra game tab doubles frame time; DPR 1, mute, kill after use
+- [koota universe reaches the page world](koota-universe-reaches-the-page-world.md) — `universe.worlds` over CDP finds the ship; stage seekers in `localCombat.seekers` while frozen
 - [Measure a homing rule on procgen](measure-a-homing-rule-on-procgen.md) — 30 seeds + a block-avoiding bot + per-phase death log; unit tests missed two collision artifacts
 - [Fog hides emissive past 420u](fog-hides-emissive-past-420u.md) — linear fog 40–420u swallows glow; far signals need `fog:false`; camera far 1000u is the cap
 - [Instanced ref fill needs a geometry prop](instanced-ref-callback-needs-geometry-prop.md) — a JSX geometry child attaches after the ref callback; pass a module-level geometry

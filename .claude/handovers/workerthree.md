@@ -1,4 +1,4 @@
-Agent: workerthree · Lane: homing seeker (#219) · Updated: 2026-09-23 (after a2223ca)
+Agent: workerthree · Lane: homing seeker (#219) · Updated: 2026-09-23 (after 8b51a00)
 
 ## Goal
 
@@ -7,34 +7,39 @@ shake, and has two dodges (jump, or a late strafe). Rule: ADR-017 in `docs/DECIS
 
 ## Done
 
-- `d0b2e61` ADR-017 draft + #219. `5771ee3` shared sim. `dfae252` server. `e656f18` `room-combat.ts`
-  split. `8828f7a` `pickup-instances.tsx`. `cc3debe` pickup canister. `7fcabd4` hosted render
-  (`seeker-field.tsx` → `seeker-bodies.tsx`, `seeker-trail.ts` ring trail). `2ca4bc8` /test-level fired a
-  bolt instead of a seeker: `Armed` replaced by `Held{power}`.
-- `a2223ca` — owner changes: the seeker flies at `seekerFlyY` 2.5 (drawn at sim y, no hover lift), drops
-  to `seekerStrikeY` 0.5 at `seekerDropRate` 12 u/s in the committed window, TTL 20. Path: leg 1 = the
-  LOS line, then the target's recorded (z,x) path (`combat/seeker-trail.ts`, WeakMap, off the wire, 1u
-  step, cap 1024). It homes direct while the box to the target is block-free. Launch LOS widens blocks by
-  `seekerHalf`. The block test sweeps z at the old x, then checks the box at the new x. Blocks are lethal
-  for the whole flight. ADR-017 updated. Removed: cruiseY/climb/diveDz.
+- Earlier: `d0b2e61` ADR-017 + #219 · `5771ee3` sim · `dfae252` server · `e656f18` room-combat split ·
+  `8828f7a` pickup-instances · `cc3debe` canister · `7fcabd4` hosted render · `2ca4bc8` Held{power} ·
+  `a2223ca` fly at 2.5u + breadcrumb path · `edea282` Seeker.flyY tunable.
+- `ddc8285` — `Seeker` panel group in `dev/tuning-panel.tsx` (flyY slider). File released.
+- `911e8ae` — look rebuild in `seeker-look.ts`: `SeekerForm` {half, halfLen, fins, faces}.
+  `SEEKER_FLIGHT` = chamfered square 1.1u × 2.2u, hot core (`#FFE0A0`) on the NOSE, marigold rim + 2
+  bands, dorsal + 2 side fins (top at 0.95u, inside `seekerHalf` 1u, tested). `SEEKER_PICKUP` =
+  near-cube 1.5u × 1.4u, no fins, core on both end faces. `seeker-pickups.tsx` builds both.
+- `eac9e96` — `docs/ART_MATERIALS.md` §7 item 14: the marigold departure, quoting board panels 8 + 9
+  (`docs/art-direction/ingredients/ingredients.png`). File released.
+- `8b51a00` — trail fix after the render check: the trail starts at the body's REAR (skips ring
+  points still inside the body), width 0.5u, width and brightness fall with fade², brightness 1.8,
+  hot-core mix `SEEKER_TRAIL_HEAT` 0.35 at the head.
 
 ## State
 
-- Measured (scratchpad harness, 30 seeds, locked shots): blocked 3/497 (target at 90 u/s), 1/238 (at 110);
-  22/238 expired at 110 (closing 10 u/s). Plain level flight was 30–93% blocked. The bot crashed in
-  many runs (dropped). The wide LOS refused 765 launches vs 621 zero-width.
-- Tests: shared 190, server 9, client 225, all pass. `pnpm typecheck` clean. `pnpm lint`: 7 old warnings.
-- Mutation-checked: disabling path following fails "it follows the path the target flew around a block".
-- `Seeker.*` tunables do NOT exist yet (ADR-017 now says so). Asked the supervisor for
-  `routes/test-level/local-combat.ts` (workertwo's) to pass `{ ...DEFAULT_SIM_CONFIG, seekerFlyY:
-  num('Seeker.flyY') }` to `aimSeeker`/`stepSeekers`.
-- Render check NOT done `[unmeasured]`. The earlier empty `queryFirst(LocalPlayer, Sim)` is probably the
-  HMR-orphan trap: read `.claude/memory/cdp-import-of-tuning-hits-an-hmr-orphan.md` and
-  `drive-the-live-module-not-a-reload.md` first.
+- Render check DONE on a private stack (client :5181, headless Chrome CDP :9341; both killed after).
+  Stills in `.claude/frame-tap-refs/` (gitignored): `seeker-flight-close.png` (going-away body with
+  fins + oncoming nose core), `seeker-flight-side.png` (side profile + taper), `seeker-pickup-face.png`,
+  `seeker-pickup-side.png`.
+- Before 8b51a00 (measured in stills): the 0.75u trail began at the body centre and hid the body and
+  fins from behind; head was near-white. After: body, fins and bands read; trail is marigold.
+- Known artifact: dark chevron seams where trail segments join (open hex cylinders, stepped width).
+- Tests: client 227 pass, `tsc` clean, `pnpm lint` 7 old warnings.
+- STALE DOC: `ART_MATERIALS.md` item 14 still says trail radius 0.75u and 2.5× the bolt head. Now it is
+  0.5u (1.7×) with a fade² taper.
+- Method (worth reusing): koota `universe.worlds` gives the page's world over CDP →
+  `queryFirst(LocalPlayer, Sim)` for the ship; freeze (KeyP), then write seekers straight into
+  `localCombat.seekers` and move them from an in-page rAF loop; SeekerBodies draws them while frozen.
 
 ## Uncommitted
 
-None of mine. Others' files are in the tree (scene/finish-*, monolith-*, `docs/art-direction/*`).
+None of mine.
 
 ## Held files
 
@@ -46,32 +51,27 @@ None of mine. Others' files are in the tree (scene/finish-*, monolith-*, `docs/a
   `routes/test-level/{local-pickup-field,local-power-slot,local-seeker-field}.tsx`,
   `routes/test-level/local-combat.test.ts`, `dev/tuning-schema.ts`, `net/attach-room-to-world.ts`,
   `game/ecs/traits.ts`
-- RELEASED: `game/net-canvas.tsx`, `routes/test-level/test-level-canvas.tsx`,
-  `routes/test-level/local-combat.ts` (borrowed for `edea282`, released again).
+- RELEASED: `dev/tuning-panel.tsx`, `docs/ART_MATERIALS.md`, `game/net-canvas.tsx`,
+  `routes/test-level/test-level-canvas.tsx`, `routes/test-level/local-combat.ts`.
 
 ## Next
 
-0. `edea282`: `Seeker.flyY` in `dev/tuning-schema.ts`. `local-combat.ts` passes `{ ...DEFAULT_SIM_CONFIG,
-   seekerFlyY: num('Seeker.flyY') }` to lockTarget/aimSeeker/stepSeekers. `local-combat.ts` is RELEASED
-   back. **Missing: the panel group.** `dev/tuning-panel.tsx` (not mine) needs `useControls( 'Seeker', {
-   flyY: numberControl( 'Seeker.flyY' ) } )` next to the `'Hover'` block (line ~166). Asked the supervisor
-   for the file.
-1. (done, see 0)
-2. Look rebuild per the owner: square chamfered body, bright core on the NOSE, dorsal + side fins,
-   near-cube pickup, THICK trail in MARIGOLD (not the board's red-orange). Record the marigold departure
-   in `docs/ART_MATERIALS.md` §7 style, quoting the board. Never edit `docs/art-direction/`.
-3. Render check on `/test-level` (the canister must be SEEN).
-4. 3-slot plan for the supervisor (build nothing until the owner approves). OWNER REQUIREMENTS
-   (supervisor, 2026-09-23): (1) any mix in 3 slots, duplicates allowed; the target loadout is 2 seekers + 1
+0. Ask the supervisor for `docs/ART_MATERIALS.md` again. Fix item 14's trail line: radius 0.5u at the
+   head = 1.7× `BOLT_HEAD_RADIUS` (0.3u); width and brightness fall with the square of the fade; the
+   trail leaves the body's rear. Own commit, release.
+1. Owner look review of the four stills (supervisor relays). Possible follow-ups: the segment seams,
+   trail length (12 points × 2u = 24u).
+2. 3-slot plan for the supervisor (build nothing until the owner approves). OWNER REQUIREMENTS
+   (supervisor, 2026-09-23): (1) any mix in 3 slots, duplicates allowed; target loadout 2 seekers + 1
    boost; (2) the player can DROP a slot's pickup to free it (*"I always want seeker and boost. If I pick
-   up something else by accident, I drop it to open the slot."*). The plan must answer: controls for the
-   select/fire/drop slot (keep W/S, A/D, Space, E, M); a dropped pickup vanishes or stays on the track
-   (server-authoritative; a drop is an INPUT, never a position, ADR-000); all 3 full → skip (the pickup stays
-   for others) or lose it; kind random on grab or visible before (if hidden, say the drop is what makes
-   2 seekers + 1 boost reachable); the HUD for 3 slots + the selected slot; does the room-wide one-seeker
-   cap (grants a bolt) stand when a player can hold 2; the schema/wire change + files to claim; file a
+   up something else by accident, I drop it to open the slot."*). The plan must answer: controls for
+   select/fire/drop (keep W/S, A/D, Space, E, M); a dropped pickup vanishes or stays on the track
+   (server-authoritative; a drop is an INPUT, never a position, ADR-000); all 3 full → skip (pickup
+   stays for others) or lose it; kind random on grab or visible before (if hidden, say the drop is what
+   makes 2 seekers + 1 boost reachable); HUD for 3 slots + selected slot; does the room-wide one-seeker
+   cap (grants a bolt) stand when a player can hold 2; schema/wire change + files to claim; file a
    GitHub issue. Send it to the supervisor.
-5. Step 6 audio + LOCKED HUD, step 7 target dummy + tunables, step 8 two-player room + doc rows.
+3. Step 6 audio + LOCKED HUD, step 7 target dummy + tunables, step 8 two-player room + doc rows.
 
 ## Open questions
 
@@ -81,4 +81,4 @@ None of mine. Others' files are in the tree (scene/finish-*, monolith-*, `docs/a
 
 ## Lessons → memory
 
-`.claude/memory/measure-a-homing-rule-on-procgen.md`.
+`.claude/memory/koota-universe-reaches-the-page-world.md`.
