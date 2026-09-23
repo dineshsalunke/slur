@@ -30,3 +30,4 @@ lives in its own file beside this one.
 - [Fog hides emissive past 420u](fog-hides-emissive-past-420u.md) — linear fog 40–420u swallows glow; far signals need `fog:false`; camera far 1000u is the cap
 - [Instanced ref fill needs a geometry prop](instanced-ref-callback-needs-geometry-prop.md) — a JSX geometry child attaches after the ref callback; pass a module-level geometry
 - [procgen segmentAt is uncached](procgen-segmentat-is-uncached.md) — every call rebuilds the segment; memoise the track in a brute-force test (26.8 s → 0.26 s)
+- [Place the ship over CDP](place-the-ship-over-cdp.md) — import the live world, write Sim x/z, freeze; first /test-level fractured block is id 3392 at z 1064
