@@ -61,3 +61,12 @@ worktree stack (pid 34439). Not killed; ask the owner.
 
 - ADR-015 → workertwo (#214). ADR-016 → workerone (if the retune proposal goes ahead).
 - `docs/art-direction/` is read-only for everyone.
+
+## Update — harness live (latest)
+
+- Harness rules live in `CLAUDE.local.md` (git-ignored). Handovers are now `.claude/handovers/<agent>.md`.
+- workerone: cleared and resumed from `handovers/workerone.md` (8ff52bd). HOLDING for the owner: perf code fixes; the #213 retune note plus two issues (graze randomness; pocket trap at seed 1, z≈6019).
+- workertwo: cleared and resumed from `handovers/workertwo.md` (cbf3de6). HOLDING: #214 step 5 is the owner playing it.
+- workerthree: seeker step 2 (shared sim) in progress, UNCOMMITTED in packages/shared/src/combat/*, sim-config.ts, schema.ts, ship-classes.ts, index.ts. Owner answers already sent: no target means the shot is wasted; the dive is destroyed by a block (and destroys it if fractured); only /test-level is tunable.
+- workerfour: blocked on the impeccable plugin (`/plugin install impeccable@impeccable`) or "go without it".
+- Open with the owner: change the watchdog hook text (`~/.claude-personal/hooks/context-watchdog.sh`) so non-lane sessions point at CLAUDE.local.md §5 instead of "tell the user to /clear".
