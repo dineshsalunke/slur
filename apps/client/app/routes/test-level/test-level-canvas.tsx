@@ -8,6 +8,7 @@ import { TuningPanelMount } from '../../dev/tuning-panel-mount';
 import { world } from '../../game/ecs/world';
 import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
+import { FinishFade } from './finish-fade';
 import { LocalBoltField } from './local-bolt-field';
 import { LocalLoop } from './local-loop';
 import { LocalPickupField } from './local-pickup-field';
@@ -53,6 +54,7 @@ export function TestLevelCanvas() {
                     </WorldScene>
                 </Canvas>
                 <TestLevelHud track={ track } />
+                <FinishFade />
             </WorldProvider>
             <TuningPanelMount />
         </Fragment>

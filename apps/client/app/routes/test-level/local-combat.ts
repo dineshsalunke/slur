@@ -49,6 +49,11 @@ function resetFor( track: Track ): void {
     clearBlockState();
 }
 
+export function restartLocalCombat( world: World, track: Track ): void {
+    resetFor( track );
+    for ( const ship of world.query( LocalPlayer, Held ) ) ship.set( Held, { power: HeldPower.none } );
+}
+
 function fireBolt( me: Gunner ): void {
     const bolt: ProjectileState = { x: 0, y: 0, z: 0, ownerId: OWNER, ttl: 0 };
     aimBolt( bolt, me, OWNER );

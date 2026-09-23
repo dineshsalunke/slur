@@ -1,33 +1,22 @@
 import { HALF_WIDTH, type Track } from '@slur/shared';
-import * as THREE from 'three';
+import { Fragment, useMemo } from 'react';
+import { ACCENT_ANCHOR } from './accent';
+import { GATE_FRAME } from './monolith-frame';
+import { MonolithFrames } from './monolith-frames';
 
-const H = 14;
-const W = HALF_WIDTH * 2 + 4;
+const STRIP_Y = 0.06;
+const STRIP_DEPTH = 1.5;
+const STRIP_EMISSIVE = 2;
 
 export function FinishGate( { track }: { track: Track } ) {
+    const gate = useMemo( () => [ { z: track.finishZ, height: GATE_FRAME.height } ], [ track.finishZ ] );
     return (
-        <group position={ [ 0, 0, track.finishZ ] }>
-            { [ -HALF_WIDTH - 1, HALF_WIDTH + 1 ].map( ( x ) => (
-                <mesh key={ x } position={ [ x, H / 2, 0 ] }>
-                    <boxGeometry args={ [ 1.5, H, 1.5 ] } />
-                    <meshStandardMaterial emissive="#39ff14" emissiveIntensity={ 2.4 } />
-                </mesh>
-            ) ) }
-            <mesh position={ [ 0, H, 0 ] }>
-                <boxGeometry args={ [ W, 1.5, 1.5 ] } />
-                <meshStandardMaterial emissive="#39ff14" emissiveIntensity={ 2.4 } />
+        <Fragment>
+            <MonolithFrames frame={ GATE_FRAME } placements={ gate } />
+            <mesh position={ [ 0, STRIP_Y, track.finishZ ] } rotation={ [ -Math.PI / 2, 0, 0 ] }>
+                <planeGeometry args={ [ HALF_WIDTH * 2, STRIP_DEPTH ] } />
+                <meshStandardMaterial color="#0b0d0f" emissive={ ACCENT_ANCHOR } emissiveIntensity={ STRIP_EMISSIVE } />
             </mesh>
-            <mesh position={ [ 0, H / 2, 0 ] }>
-                <planeGeometry args={ [ W - 2, H ] } />
-                <meshStandardMaterial
-                    emissive="#39ff14"
-                    emissiveIntensity={ 0.5 }
-                    color="#0a2a08"
-                    transparent
-                    opacity={ 0.22 }
-                    side={ THREE.DoubleSide }
-                />
-            </mesh>
-        </group>
+        </Fragment>
     );
 }

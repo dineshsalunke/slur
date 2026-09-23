@@ -11,7 +11,7 @@ export interface MonolithTransform {
     rotationZ: number;
 }
 
-const RAIL_OUTER = HALF_WIDTH + RAIL_W;
+export const RAIL_OUTER = HALF_WIDTH + RAIL_W;
 
 export function bodySpan( shape: MonolithShapeConfig ): number {
     return shape.height + shape.below;

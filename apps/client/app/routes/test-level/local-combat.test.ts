@@ -2,7 +2,7 @@ import { HeldPower, pickupPower, pickupsOf, procgenDescriptor, resolveTrack } fr
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { Held, LocalPlayer, Sim } from '../../game/ecs/traits';
-import { localCombat, localCombatSystem, queueFire } from './local-combat';
+import { localCombat, localCombatSystem, queueFire, restartLocalCombat } from './local-combat';
 
 const DT = 1 / 60;
 
@@ -39,5 +39,20 @@ describe( 'test-level local combat', () => {
 
         expect( localCombat.bolts.size ).toBe( 1 );
         expect( localCombat.seekers.size ).toBe( 0 );
+    } );
+
+    it( 'a restart drops the held power and every seeker in flight', () => {
+        const { world, ship, track } = atPickup( HeldPower.seeker );
+        queueFire();
+        localCombatSystem( world, DT, track );
+        ship.set( Held, { power: HeldPower.seeker } );
+        expect( localCombat.seekers.size ).toBe( 1 );
+
+        restartLocalCombat( world, track );
+
+        expect( ship.get( Held )?.power ).toBe( HeldPower.none );
+        expect( localCombat.seekers.size ).toBe( 0 );
+        expect( localCombat.bolts.size ).toBe( 0 );
+        expect( localCombat.taken.size ).toBe( 0 );
     } );
 } );
