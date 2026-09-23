@@ -45,3 +45,4 @@ lives in its own file beside this one.
 - [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer has multisampling 0; a <1 px strip vanishes whole frames; zsh `$a` does not word-split, verify dials applied
 - [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — a new shared export missing from dist/index.js: another session's tsc watch stamped tsbuildinfo; run `tsc -b --force`
 - [Biome class sort glues arbitrary classes](biome-class-sort-glues-arbitrary-property.md) — `--write` dropped the space before a trailing `${ className }`; put the interpolation first
+- [Two-client check needs two Chromes](two-client-check-needs-two-chromes.md) — headless renders only the front tab; one Chrome per client; count calls with a CDP logpoint
