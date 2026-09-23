@@ -1,90 +1,89 @@
-Agent: workerthree · Lane: homing seeker (#219) · Updated: 2026-09-23
+Agent: workerthree · Lane: homing seeker (#219) · Updated: 2026-09-23 (seam at ~155k)
 
 ## Goal
 
 Build the homing seeker: the second held power. It is marigold, locks one visible racer ahead, is hard to
-shake, and the owner allows two dodges: a jump, or a strafe at the last moment. Rule: ADR-017 in
-`docs/DECISIONS.md`.
+shake, and has two dodges (jump, or a late strafe). Rule: ADR-017 in `docs/DECISIONS.md`. The owner has
+since changed three things (see Next): flight height, the art, and 3 power slots.
 
 ## Done
 
-- `d0b2e61` — ADR-017 draft. Issue #219 filed (the RFC).
-- `5771ee3` — step 2, the shared sim: `combat/seeker.ts` (`lockTarget`, `lineOfSight`, `aimSeeker`,
-  `stepSeeker(s)`, `seekerShipsOf`, `inTerminalWindow`), `pickupPower`, `seekerGate`, the `Seeker` schema
-  + `RunState.seekers`, the `SimConfig` seeker fields, `HeldPower.seeker = 2`, and
-  `stunDurationForShip(id, cfg, seconds)`. ADR-017 holds the owner's answers: a no-lock fire is WASTED; a
-  block in the dive destroys the seeker (and a fractured block with it); only `/test-level` is tunable.
-- `dfae252` — step 3, the server: a held seeker locks and launches into `state.seekers`; `stepWorld` steps
-  seekers; hit → seeker stun × (1 − armour) + `'hit'` + `SEEKER_HIT_MESSAGE`; miss →
-  `SEEKER_MISS_MESSAGE`; blocked → `'hit'` with `victimId ''`; `seekerGate` into `stepPickups`; reset
-  clears seekers. Two tests.
-- `e656f18` — split: `rooms/room-combat.ts` holds `firePower` + `resolveSeekerEvent`. Same behaviour.
-- `8828f7a` — `game/scene/pickup-instances.tsx`: the shared pickup loop.
-- `cc3debe` — step 4: `seeker-look.ts` canister, `seeker-pickups.tsx` (`SeekerPickups`,
-  `splitPickupLayout`), both pickup fields split by `pickupPower`.
-- `7fcabd4` — step 5: `attach-room-to-world.ts` mirrors `RunState.seekers` into ECS entities
-  (`ProjInterp` + `NetSeeker{ownerId,targetId}` + `SeekerTrail`). `seeker-field.tsx` (`SeekerField`,
-  mounted in `net-canvas.tsx`) samples with `sampleAt` (now exported from `projectile-field.tsx`) and feeds
-  `seeker-bodies.tsx` (`SeekerBodies({collect})`, sink `(x,y,z,trail)`): the canister (3 instanced
-  parts, `buildSeekerBody` exported from `seeker-pickups.tsx`) turned to the trail heading, a trail of
-  instanced tube segments over a 12-point ring (`seeker-trail.ts`, spacing 2u), and embers (the bolt
-  ember pool). 5 draws, MAX 16. Four ring tests.
+- `d0b2e61` ADR-017 draft + #219. `5771ee3` step 2 shared sim. `dfae252` step 3 server. `e656f18`
+  `rooms/room-combat.ts` split. `8828f7a` `pickup-instances.tsx`. `cc3debe` step 4 pickup canister.
+- `7fcabd4` — step 5: `attach-room-to-world.ts` mirrors `RunState.seekers` into ECS (`ProjInterp` +
+  `NetSeeker{ownerId,targetId}` + `SeekerTrail`). `seeker-field.tsx` (`SeekerField`, mounted in
+  `net-canvas.tsx`) → `seeker-bodies.tsx` (`SeekerBodies({collect})`, sink `(x,y,z,trail)`): 3 canister
+  parts turned to the trail heading, a 12-point ring trail (`seeker-trail.ts`, spacing 2u), embers.
+  5 draws, MAX 16. `sampleAt` is exported from `projectile-field.tsx`; `buildSeekerBody` from
+  `seeker-pickups.tsx`.
+- `2ca4bc8` — owner BUG fix: on `/test-level` a seeker pickup showed and fired as a bolt. Cause: the
+  local ship kept a yes/no `Armed` tag. `Armed` is gone; `Held{power}` (traits.ts) replaces it.
+  `local-combat.ts` fires by power, holds `localCombat.seekers`, runs `stepSeekers` (no ships yet → a
+  wasted fire flies straight). `local-seeker-field.tsx` renders them (mounted in
+  `test-level-canvas.tsx`). `LocalPowerSlot` shows Bolt/Seeker. The hosted `HeldPowerChip` gained
+  `SEEKER`. Test: `routes/test-level/local-combat.test.ts` (2 cases, failed first, now pass).
 
 ## State
 
-- Tests: client 204 pass. `pnpm typecheck` is clean. `pnpm lint`: 7 warnings, none in my files.
-- Nothing seeker-side has been SEEN rendered `[unmeasured]` — neither the pickup canister nor the flying
-  seeker. On `/test-level` (seed 20260921) the first seeker pickups are at z 790 (x −9.6) and z 850
-  (x 8.0).
-- The trail vanishes at once when the server removes a seeker; the impact reads only through the
-  existing `'hit'` burst.
-- The client does not register `SEEKER_HIT_MESSAGE`/`SEEKER_MISS_MESSAGE` handlers yet `[unmeasured]`
-  whether the SDK warns.
-- `/test-level` still uses `OPEN_SEEKER_GATE` and does not step seekers.
-- Defaults: speed 120, ramp 0.3s, track-turn 240, turn 40, window 0.35s / 30u, cruise y 10, strike y 0.5,
-  climb 60, dive 40u, hit band 1.2, half 1, TTL 6s, stun 2.0s, lock range 600, ratio 0.25, scope `'room'`.
-- The owner wants it HARDER TO SHAKE. Every value must be in the dev panel (`dev/tuning-schema.ts`).
+- Tests: client 197 pass (204 − 9 monolith tests cut in workertwo's `f9248ef` + my 2 — inferred from
+  that diff). `pnpm typecheck` clean. `pnpm lint`: 7 old warnings, none mine.
+- Hosted-room "bolt" report `[inferred, not reproduced]`: ADR-017 gate, scope `'room'` — *"When the limit
+  is reached, a seeker pickup **grants a bolt**."* Solo: fire the z 790 seeker, grab the z 850 canister
+  while it flies → bolt. Reported to the supervisor as an owner decision.
+- Render check NOT done `[unmeasured]`. Scratch client on :5175 + headless Chrome on CDP :9334 loaded
+  `/test-level` and the modules `/app/game/ecs/{traits,world}.ts` and
+  `/app/routes/test-level/local-combat.ts`, but `world.queryFirst(LocalPlayer, Sim)` returned nothing
+  (module-instance mismatch, or no ship before GO — not yet known). Both processes were killed. Driver:
+  scratchpad `cdp.mjs` (eval/shot/key) — gone after this session; recreate it.
+- Art read of `docs/art-direction/ingredients/ingredients.png` (the updated board), sent to the
+  supervisor: a SQUARE-section missile (~2.2:1, chamfered corners, gunmetal panels, marigold seams,
+  front collar), bright round core on the NOSE (my canister has it at the rear), dorsal fin + side
+  fins, a short near-cube pickup of the same body, a THICK flame trail ("THICK. TRACKING. INTENSE.").
+  Pickup, projectile and trail all change. Build nothing on the look until the supervisor says so.
 
 ## Uncommitted
 
 None. `docs/art-direction/ingredients/ingredients.png` and `docs/art-direction/monoliths/` are untracked
-and not mine.
+and not mine. `.claude/phases/{INDEX,worklog}.md` are modified and not mine.
 
 ## Held files
-
-Approved by the supervisor:
 
 - shared: `combat/{seeker,constants,pickups,combat-step}.ts` + tests, `schema.ts`, `sim-config.ts`,
   `ship-classes.ts`, `index.ts`
 - server: `rooms/run-room.ts`, `rooms/run-room.test.ts`, `rooms/room-combat.ts`
 - client: `game/scene/{pickup-field,projectile-field,bolt-pickups,pickup-instances}.tsx`,
   `game/scene/seeker-*`, `game/overlays/{threat-hud,held-power-chip}.tsx` + tests, `audio/sfx-map.ts`,
-  `routes/test-level/{local-combat.ts,local-pickup-field.tsx,local-power-slot.tsx}` + new test-level
-  files, `dev/tuning-schema.ts`, `net/attach-room-to-world.ts`, `game/ecs/traits.ts`
-- Released: `game/net-canvas.tsx` (one-line mount, done in `7fcabd4`; workertwo may need it).
-- Not mine: `hit-spark.tsx` (ask first), `dev/*` except `tuning-schema.ts`, `routes/home/*`,
-  `ui/button.tsx`, `ui/panel.tsx`, `lobby/room-list.tsx`, and all of `docs/art-direction/`.
+  `routes/test-level/{local-pickup-field,local-power-slot,local-seeker-field}.tsx`,
+  `routes/test-level/local-combat.test.ts`, `dev/tuning-schema.ts`, `net/attach-room-to-world.ts`,
+  `game/ecs/traits.ts`
+- RELEASED to workertwo (#220): `game/net-canvas.tsx`, `routes/test-level/test-level-canvas.tsx`,
+  `routes/test-level/local-combat.ts`. Ask the supervisor before touching them again.
+- Not mine: `hit-spark.tsx`, `dev/*` except `tuning-schema.ts`, all of `docs/art-direction/`.
 
 ## Next
 
-1. **Step 6, HUD + audio.** `ThreatHud` LOCKED state when a `NetSeeker.targetId` is me, with a
-   seeker-speed window. Chip label SEEKER. Register the seeker message handlers in
-   `attach-room-to-world.ts`. Read `docs/AUDIO.md` + `audio/sfx-map.ts` first. Sounds: pickup, launch,
-   lock pulse, an in-flight loop that grows as it closes, impact, dodge whoosh.
-2. **Step 7, `/test-level`.** `local-combat.ts` runs `stepSeekers` against a stationary target dummy and
-   uses a real `seekerGate`; render with `SeekerBodies` + a local `collect` owning its own
-   `makeSeekerTrail()` rings. **The supervisor requires the pickup canister to be SEEN rendered before
-   the lane closes.** The `Seeker.*` tunables go in `tuning-schema.ts`; the modes are 0/1 numbers
-   mapped to strings. Headless Chrome (DPR 1, muted, killed after use): pickup canister, launch,
-   mid-curve, impact, rear view.
-3. **Step 8.** A two-player hosted room. Then the ART_SCALE_REFERENCE §7 seeker rows and the GDD §5 row.
+1. **OWNER CHANGE — seeker flies at SHIP height** (supervisor message, not yet answered). Owner: *"the
+   seeker has to travel at the same height as the other ships, which i think is around 1 - 2u."*
+   Before changing any code, send the supervisor a short plan:
+   - Read the real ride height from shared constants (`DEFAULT_TUNING` / `DEFAULT_JUMP` in
+     `packages/shared/src/constants.ts`, or wherever the ship's resting y lives) and quote the line.
+   - Say what happens to the cruise-high + dive phase (`seekerCruiseY`, `seekerStrikeY`, `seekerClimb`,
+     `seekerDiveDz`, `cruiseHeight`, `diveBlock` only inside `seekerDiveDz`), and to the jump dodge.
+   - Measure with a sim test how often a level seeker dies on a block before it reaches the target on
+     procgen tracks. Decide whether it must steer around blocks. Otherwise mark it [inferred].
+   - The wasted fire also flies level. Update ADR-017.
+2. Render check on `/test-level` (supervisor requires the canister SEEN): fix the "no ship" query first.
+3. 3-slot plan for the supervisor (build nothing): which slot E fires, what a full grab does,
+   duplicates, HUD layout, files to claim, a new issue number. Hold step-6 HUD work that assumes one
+   slot.
+4. Step 6 audio + LOCKED HUD, step 7 target dummy + tunables, step 8 two-player room + doc rows.
 
 ## Open questions
 
-- A bigger impact burst needs `hit-spark.tsx`. Ask the supervisor first; use the existing burst for now.
-- The board draws the trail red-orange. The owner's marigold rule overrides it. A Claude-side departure
-  note for Codex may be needed (`ART_MATERIALS.md` §7 shape); ask the supervisor whether the owner wants
-  one.
+- Owner: keep "seeker pickup grants a bolt when the gate is shut", switch to scope `'shooter'`, or dim
+  the canister while the gate is shut? The slots design changes this.
+- Supervisor: when to rebuild the look to the square board; is red-orange trail vs marigold resolved?
+- A bigger impact burst needs `hit-spark.tsx` (ask first).
 
 ## Lessons → memory
 
