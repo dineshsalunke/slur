@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-    BLOCK_DEPTHS,
+    BLOCK_DEPTH_MIN,
     blockDepthFor,
     blockZSpan,
     isHole,
@@ -23,17 +23,28 @@ function depths( seed: number ): number[] {
     return out;
 }
 
-test( 'every authored depth tier is emitted somewhere on the track', () => {
+test( 'block depth is continuous, not a menu of a few sizes', () => {
     const seen = new Set< number >();
-    for ( const seed of SEEDS ) for ( const d of depths( seed ) ) seen.add( d );
-    for ( const d of BLOCK_DEPTHS ) assert.ok( seen.has( d ), `depth tier ${ d } never generated` );
+    for ( const seed of SEEDS ) for ( const d of depths( seed ) ) seen.add( Math.round( d * 100 ) );
+    assert.ok( seen.size > 200, `only ${ seen.size } distinct depths — blocks still come in tiers` );
 } );
 
-test( 'no block is deeper than its segment or shallower than the shallowest tier', () => {
-    const min = Math.min( ...BLOCK_DEPTHS );
+test( 'block width is continuous, not snapped to the lane grid', () => {
+    const seen = new Set< number >();
+    for ( const seed of SEEDS ) {
+        const t = resolveTrack( procgenDescriptor( seed ) );
+        for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
+            for ( const b of t.segmentAt( i ).blocks ) seen.add( Math.round( ( b.x1 - b.x0 ) * 100 ) );
+        }
+    }
+    assert.ok( seen.size > 200, `only ${ seen.size } distinct widths — blocks still snap to CELL` );
+} );
+
+test( 'no block is deeper than its segment or shallower than the floor', () => {
+    const min = BLOCK_DEPTH_MIN;
     for ( const seed of SEEDS ) {
         for ( const d of depths( seed ) ) {
-            assert.ok( d >= min - 1e-9, `depth ${ d } below the shallowest tier ${ min }` );
+            assert.ok( d >= min - 1e-9, `depth ${ d } below the floor ${ min }` );
             assert.ok( d <= SEG_LEN + 1e-9, `depth ${ d } outruns SEG_LEN ${ SEG_LEN }` );
         }
     }
@@ -59,13 +70,15 @@ test( 'depth selection is a pure function of the draw and the intensity', () => 
 } );
 
 test( 'deep blocks get commoner as intensity rises', () => {
-    const deepest = Math.max( ...BLOCK_DEPTHS );
-    const share = ( intensity: number ): number => {
-        let n = 0;
-        for ( let k = 0; k < 1000; k++ ) if ( blockDepthFor( k / 1000, intensity, SEG_LEN ) === deepest ) n++;
-        return n / 1000;
+    const mean = ( intensity: number ): number => {
+        let sum = 0;
+        for ( let k = 0; k < 1000; k++ ) sum += blockDepthFor( k / 1000, intensity, SEG_LEN );
+        return sum / 1000;
     };
-    assert.ok( share( 1 ) > share( 0 ), `deepest share ${ share( 1 ) } at peak is not above ${ share( 0 ) } at rest` );
+    assert.ok(
+        mean( 1 ) > mean( 0 ) * 1.5,
+        `mean depth ${ mean( 1 ) } at peak is not well above ${ mean( 0 ) } at rest`,
+    );
 } );
 
 test( 'a z-span is deterministic and never leaves its segment', () => {

@@ -142,9 +142,11 @@ export const WALL_DENSITY_MAX = 0.9;
 export const WALL_NOISE_FZ_LANE = 1.0;
 export const WALL_NOISE_FZ_SEG = 1.5;
 export const BLOCK_MAX_LANES = 3;
-export const BLOCK_DEPTHS = [ 4, 8, 16 ];
-export const BLOCK_DEPTH_WEIGHTS_START = [ 0.5, 0.35, 0.15 ];
-export const BLOCK_DEPTH_WEIGHTS_MAX = [ 0.2, 0.35, 0.45 ];
+export const BLOCK_DEPTH_MIN = 3;
+export const BLOCK_DEPTH_MAX = 18;
+export const BLOCK_DEPTH_BIAS_REST = 2.2;
+export const BLOCK_DEPTH_BIAS_PEAK = 0.6;
+export const BLOCK_WIDTH_INSET_MAX = 0.18;
 
 export const OPEN_BAND_START = 8;
 export const OPEN_BAND_PEAK = 6;

@@ -1,23 +1,19 @@
-import { BLOCK_DEPTH_WEIGHTS_MAX, BLOCK_DEPTH_WEIGHTS_START, BLOCK_DEPTHS } from '../constants.js';
+import {
+    BLOCK_DEPTH_BIAS_PEAK,
+    BLOCK_DEPTH_BIAS_REST,
+    BLOCK_DEPTH_MAX,
+    BLOCK_DEPTH_MIN,
+    BLOCK_WIDTH_INSET_MAX,
+} from '../constants.js';
 import { hash2, mulberry32 } from './rng.js';
 
 const SALT_DEPTH = 0x3d9a7f11 | 0;
 
-function weightAt( k: number, intensity: number ): number {
-    const a = BLOCK_DEPTH_WEIGHTS_START[ k ];
-    const b = BLOCK_DEPTH_WEIGHTS_MAX[ k ];
-    return a + ( b - a ) * intensity;
-}
-
 export function blockDepthFor( u: number, intensity: number, maxDepth: number ): number {
-    let acc = 0;
-    let total = 0;
-    for ( let k = 0; k < BLOCK_DEPTHS.length; k++ ) total += weightAt( k, intensity );
-    for ( let k = 0; k < BLOCK_DEPTHS.length; k++ ) {
-        acc += weightAt( k, intensity ) / total;
-        if ( u < acc ) return Math.min( BLOCK_DEPTHS[ k ], maxDepth );
-    }
-    return Math.min( BLOCK_DEPTHS[ BLOCK_DEPTHS.length - 1 ], maxDepth );
+    const bias = BLOCK_DEPTH_BIAS_REST + ( BLOCK_DEPTH_BIAS_PEAK - BLOCK_DEPTH_BIAS_REST ) * intensity;
+    const t = ( u < 0 ? 0 : u > 1 ? 1 : u ) ** bias;
+    const depth = BLOCK_DEPTH_MIN + ( BLOCK_DEPTH_MAX - BLOCK_DEPTH_MIN ) * t;
+    return Math.min( depth, maxDepth );
 }
 
 export function blockZSpan(
@@ -32,4 +28,10 @@ export function blockZSpan(
     const depth = blockDepthFor( r(), intensity, segLen );
     const z0 = segZ0 + r() * ( segLen - depth );
     return [ z0, z0 + depth ];
+}
+
+export function blockWidthInset( seed: number, i: number, key: number, runWidth: number ): [ number, number ] {
+    const r = mulberry32( hash2( ( seed ^ SALT_DEPTH ) | 0, Math.imul( i, 0x85ebca6b ) + key ) );
+    const room = runWidth * BLOCK_WIDTH_INSET_MAX;
+    return [ r() * room, r() * room ];
 }

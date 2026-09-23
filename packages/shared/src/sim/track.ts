@@ -1,5 +1,5 @@
 import { BLOCK_MAX_LANES, CELL, FLICK_WIDTH, WALL_NOISE_FZ_LANE, WALL_NOISE_FZ_SEG } from '../constants.js';
-import { blockZSpan } from './block-depth.js';
+import { blockWidthInset, blockZSpan } from './block-depth.js';
 import { openCenterX } from './clearance.js';
 import { type Band, bandAt } from './corridor.js';
 import { gapBlocks } from './gap-blocks.js';
@@ -96,9 +96,12 @@ function buildWalls(
         const [ bz0, bz1 ] = band.pinched
             ? [ z0, z0 + SEG_LEN ]
             : blockZSpan( seed, i, runStart, z0, SEG_LEN, intensity );
+        const runX0 = -HALF_WIDTH + runStart * CELL;
+        const runX1 = -HALF_WIDTH + ( endLane + 1 ) * CELL;
+        const [ insetLo, insetHi ] = band.pinched ? [ 0, 0 ] : blockWidthInset( seed, i, runStart, runX1 - runX0 );
         blocks.push( {
-            x0: -HALF_WIDTH + runStart * CELL,
-            x1: -HALF_WIDTH + ( endLane + 1 ) * CELL,
+            x0: runX0 + insetLo,
+            x1: runX1 - insetHi,
             y0: 0,
             y1: BLOCK_HEIGHT,
             z0: bz0,
