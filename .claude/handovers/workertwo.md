@@ -47,6 +47,13 @@ sealed-block-shader, fractured-block-shader, metal, track-materials, track-textu
 
 ## Next
 
+0. **Assigned by supervisor, not started (context seam hit first):** under `prefers-reduced-motion`,
+   the nebula clouds still change shape (workerfour: two menu frames 4 s apart). Hold the nebula/sky
+   time uniform steady under reduced motion, as `rock-field.tsx` does in `303946f`, using
+   `game/scene/reduced-motion.ts`. Steps: find the sky/nebula files that advance the time uniform →
+   send the supervisor the claim before the first write → implement → verify with reduced-motion
+   emulation over CDP (`Emulation.setEmulatedMedia` `prefers-reduced-motion: reduce`; fresh port,
+   DPR 1, muted, kill after; two taps ~4 s apart on the menu should match) → commit → handover.
 1. Wait for the supervisor: workerthree's monolith seam-flicker diagnosis.
 2. Follow-up for whoever holds `track-floor.tsx`: it keeps an inline copy of `applyDeckFinish`. Fold it
    into `deck-finish.ts`.
