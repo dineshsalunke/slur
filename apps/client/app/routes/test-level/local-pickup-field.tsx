@@ -1,6 +1,7 @@
 import { pickupsOf, type Track } from '@slur/shared';
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import { BoltPickups } from '../../game/scene/bolt-pickups';
+import { SeekerPickups, splitPickupLayout } from '../../game/scene/seeker-pickups';
 import { localCombat } from './local-combat';
 
 function isTaken( id: string ): boolean {
@@ -8,6 +9,11 @@ function isTaken( id: string ): boolean {
 }
 
 export function LocalPickupField( { track }: { track: Track } ) {
-    const layout = useMemo( () => pickupsOf( track ), [ track ] );
-    return <BoltPickups layout={ layout } isTaken={ isTaken } />;
+    const layout = useMemo( () => splitPickupLayout( pickupsOf( track ) ), [ track ] );
+    return (
+        <Fragment>
+            <BoltPickups layout={ layout.bolts } isTaken={ isTaken } />
+            <SeekerPickups layout={ layout.seekers } isTaken={ isTaken } />
+        </Fragment>
+    );
 }

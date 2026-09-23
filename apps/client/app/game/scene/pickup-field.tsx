@@ -1,10 +1,11 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import { pickupsOf, type RunState, type Track } from '@slur/shared';
-import { useEffect, useMemo } from 'react';
+import { Fragment, useEffect, useMemo } from 'react';
 import { BoltPickups } from './bolt-pickups';
+import { SeekerPickups, splitPickupLayout } from './seeker-pickups';
 
 export function PickupField( { room, track }: { room: Room< RunState >; track: Track } ) {
-    const layout = useMemo( () => pickupsOf( track ), [ track ] );
+    const layout = useMemo( () => splitPickupLayout( pickupsOf( track ) ), [ track ] );
     const taken = useMemo( () => new Set< string >(), [] );
     const isTaken = useMemo( () => ( id: string ) => taken.has( id ), [ taken ] );
 
@@ -27,5 +28,10 @@ export function PickupField( { room, track }: { room: Room< RunState >; track: T
         };
     }, [ room, taken ] );
 
-    return <BoltPickups layout={ layout } isTaken={ isTaken } />;
+    return (
+        <Fragment>
+            <BoltPickups layout={ layout.bolts } isTaken={ isTaken } />
+            <SeekerPickups layout={ layout.seekers } isTaken={ isTaken } />
+        </Fragment>
+    );
 }
