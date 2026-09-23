@@ -4,6 +4,15 @@ import { BlendFunction, BloomEffect, type EffectComposer as ComposerImpl, ToneMa
 import { useEffect, useMemo, useRef } from 'react';
 import { num } from '../../dev/tuning';
 
+const AUTO_MSAA_MAX_DPR = 2;
+const AUTO_MSAA_SAMPLES = 4;
+
+function msaaSamples( dpr: number ): number {
+    const manual = num( 'Render.msaa' );
+    if ( manual >= 0 ) return manual;
+    return dpr < AUTO_MSAA_MAX_DPR ? AUTO_MSAA_SAMPLES : 0;
+}
+
 export function SceneEffects() {
     const composer = useRef< ComposerImpl >( null );
     const bloom = useMemo( () => new BloomEffect( { blendFunction: BlendFunction.ADD, mipmapBlur: true } ), [] );
@@ -11,11 +20,11 @@ export function SceneEffects() {
     // GPU render targets outlive React's tree: the effect's mip chain must be released by hand.
     useEffect( () => () => bloom.dispose(), [ bloom ] );
 
-    useFrame( () => {
+    useFrame( ( state ) => {
         bloom.intensity = num( 'Bloom.intensity' );
         bloom.luminanceMaterial.threshold = num( 'Bloom.threshold' );
         bloom.luminanceMaterial.smoothing = num( 'Bloom.smoothing' );
-        const samples = num( 'Render.msaa' );
+        const samples = msaaSamples( state.gl.getPixelRatio() );
         if ( composer.current && composer.current.multisampling !== samples ) composer.current.multisampling = samples;
     } );
 
