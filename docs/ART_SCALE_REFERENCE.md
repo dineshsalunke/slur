@@ -37,7 +37,7 @@ This is the single correction that matters most. Consequences for art direction:
 | Track thickness (visual) | *free* | — | **not a sim constant.** The sim floor is a plane; thickness is pure art. Board 07's "1u" is a legal choice, not a requirement. |
 | Authoring snap grid | **4u** | `CELL` | design-time only. The sim is continuous float-AABB; **never quantize art to this at runtime** |
 | Edge rail width (x) | **2u** | `RAIL_W` | sits **outboard**: inner face at ±32, outer face at ±34 |
-| Edge rail height (y) | **0u above deck** | — | the rail top face is **coplanar with the deck top**. It never stands proud. Its box drops `SLAB_THICKNESS` below |
+| Edge rail height (y) | **0u metal · 0.125u strip** | `RAIL_LIP_H` | the metal top face is **coplanar with the deck top**. Only the emissive strip stands proud, as a 0.25u × 0.125u lip. Its inboard face turns the strip toward the camera: a flat strip was sub-pixel from the chase camera and barely bloomed (#229). The box drops `SLAB_THICKNESS` below |
 | Rail slab depth (y) | **24u** | `SLAB_THICKNESS` | shared with the deck slab, so rail and deck present one underside |
 | Emissive share of the rail | **12.5%** | `RAIL_EMISSIVE_SHARE` | of `RAIL_W`, centred on the top face → **0.25u** marigold at 2u |
 | Rail metal margin (x) | **0.875u** | `RAIL_MARGIN` | `RAIL_W × (1 − RAIL_EMISSIVE_SHARE) / 2`, one each side of the strip |

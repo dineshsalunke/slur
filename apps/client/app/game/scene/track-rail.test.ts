@@ -2,7 +2,7 @@ import { HALF_WIDTH, SEG_LEN } from '@slur/shared';
 import type * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { buildSpanGeometry } from './track-floor';
-import { RAIL_EMISSIVE_SHARE, RAIL_MARGIN, RAIL_W, SLAB_THICKNESS } from './track-geometry';
+import { RAIL_EMISSIVE_SHARE, RAIL_LIP_H, RAIL_MARGIN, RAIL_W, SLAB_THICKNESS } from './track-geometry';
 import { buildRailGeometry } from './track-rail';
 import type { RailRun } from './track-rails';
 
@@ -42,16 +42,25 @@ describe( 'ADR-012 — no drawn element takes playable width', () => {
 } );
 
 describe( 'the rail is a flush box outboard of the deck', () => {
-    it( 'never rises above the deck, and drops the full slab thickness', () => {
-        const p = buildRailGeometry( runs( -1, 1 ) ).getAttribute( 'position' );
+    it( 'keeps the metal flush with the deck, and drops the full slab thickness', () => {
+        const geo = buildRailGeometry( runs( -1, 1 ) );
+        const p = geo.getAttribute( 'position' );
+        const metal = geo.groups[ 0 ];
         let highest = -Infinity;
         let lowest = Infinity;
-        for ( let i = 0; i < p.count; i++ ) {
+        for ( let i = metal.start; i < metal.start + metal.count; i++ ) {
             highest = Math.max( highest, p.getY( i ) );
             lowest = Math.min( lowest, p.getY( i ) );
         }
         expect( highest ).toBe( 0 );
         expect( lowest ).toBe( -SLAB_THICKNESS );
+    } );
+
+    it( 'lets only the strip stand proud, by exactly the lip height', () => {
+        const p = buildRailGeometry( runs( -1, 1 ) ).getAttribute( 'position' );
+        let highest = -Infinity;
+        for ( let i = 0; i < p.count; i++ ) highest = Math.max( highest, p.getY( i ) );
+        expect( highest ).toBeCloseTo( RAIL_LIP_H );
     } );
 
     it( 'spans the full rail width from the track edge outward', () => {
@@ -76,7 +85,7 @@ describe( 'the rail is a flush box outboard of the deck', () => {
 describe( 'the emissive strip takes its share of the top face, centred', () => {
     it( 'lights its share of the width and leaves a metal margin each side', () => {
         const geo = buildRailGeometry( runs( 1 ) );
-        const strip = spread( xsAt( geo, 0, true, 1 ) );
+        const strip = spread( xsAt( geo, RAIL_LIP_H, true, 1 ) );
 
         expect( strip.min ).toBeCloseTo( HALF_WIDTH + RAIL_MARGIN );
         expect( strip.max ).toBeCloseTo( HALF_WIDTH + RAIL_W - RAIL_MARGIN );
@@ -85,10 +94,24 @@ describe( 'the emissive strip takes its share of the top face, centred', () => {
 
     it( 'mirrors the strip on the left side', () => {
         const geo = buildRailGeometry( runs( -1 ) );
-        const strip = spread( xsAt( geo, 0, true, 1 ) );
+        const strip = spread( xsAt( geo, RAIL_LIP_H, true, 1 ) );
 
         expect( strip.max ).toBeCloseTo( -HALF_WIDTH - RAIL_MARGIN );
         expect( strip.min ).toBeCloseTo( -HALF_WIDTH - RAIL_W + RAIL_MARGIN );
+    } );
+
+    it.each( [ -1, 1 ] )( 'turns a lit face toward the track centre on side %i', ( s ) => {
+        const geo = buildRailGeometry( runs( s ) );
+        const p = geo.getAttribute( 'position' );
+        const n = geo.getAttribute( 'normal' );
+        const g = geo.groups[ 1 ];
+        const ys: number[] = [];
+        for ( let i = g.start; i < g.start + g.count; i++ ) {
+            if ( n.getX( i ) * s > -0.9 ) continue;
+            expect( p.getX( i ) ).toBeCloseTo( s * ( HALF_WIDTH + RAIL_MARGIN ) );
+            ys.push( p.getY( i ) );
+        }
+        expect( spread( ys ) ).toEqual( { min: 0, max: RAIL_LIP_H } );
     } );
 
     it( 'hands every other face to the metal group', () => {

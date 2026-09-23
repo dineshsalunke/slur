@@ -16,6 +16,7 @@ export const SLAB_THICKNESS = 24;
 
 export const RAIL_W = 2.0;
 export const RAIL_EMISSIVE_SHARE = 0.125;
+export const RAIL_LIP_H = 0.125;
 export const RAIL_MARGIN = ( RAIL_W * ( 1 - RAIL_EMISSIVE_SHARE ) ) / 2;
 
 export function isOuterEdge( x: number ): boolean {

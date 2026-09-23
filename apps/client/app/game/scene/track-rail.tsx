@@ -13,6 +13,7 @@ import {
     FORWARD,
     packGeometry,
     pushQuad,
+    RAIL_LIP_H,
     RAIL_MARGIN,
     RAIL_W,
     SLAB_THICKNESS,
@@ -46,7 +47,13 @@ export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
         pushQuad( metalPos, metalUv, [ a0, b, z0 ], [ a3, b, z0 ], [ a3, t, z0 ], [ a0, t, z0 ], 'xy', BACKWARD );
         pushQuad( metalPos, metalUv, [ a0, b, z1 ], [ a3, b, z1 ], [ a3, t, z1 ], [ a0, t, z1 ], 'xy', FORWARD );
 
-        pushQuad( stripPos, stripUv, [ a1, t, z0 ], [ a1, t, z1 ], [ a2, t, z1 ], [ a2, t, z0 ], 'xz', UP );
+        const inward: V3 = [ -s, 0, 0 ];
+        const h = t + RAIL_LIP_H;
+        pushQuad( stripPos, stripUv, [ a1, h, z0 ], [ a1, h, z1 ], [ a2, h, z1 ], [ a2, h, z0 ], 'xz', UP );
+        pushQuad( stripPos, stripUv, [ a1, t, z0 ], [ a1, h, z0 ], [ a1, h, z1 ], [ a1, t, z1 ], 'zy', inward );
+        pushQuad( stripPos, stripUv, [ a2, t, z0 ], [ a2, h, z0 ], [ a2, h, z1 ], [ a2, t, z1 ], 'zy', outward );
+        pushQuad( stripPos, stripUv, [ a1, t, z0 ], [ a2, t, z0 ], [ a2, h, z0 ], [ a1, h, z0 ], 'xy', BACKWARD );
+        pushQuad( stripPos, stripUv, [ a1, t, z1 ], [ a2, t, z1 ], [ a2, h, z1 ], [ a1, h, z1 ], 'xy', FORWARD );
     }
 
     const geo = packGeometry( [ ...metalPos, ...stripPos ], [ ...metalUv, ...stripUv ] );
