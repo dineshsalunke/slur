@@ -895,6 +895,42 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       wall has something to be lit by and the plates read. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
       `Env.*` tunables; nothing is frozen until the owner gates §4 criterion 2 against this set.
 
+17. **Heavy fracture, travelling rock, meteor strikes, and a neutral graphite — 2026-09-24 (#234),
+    provisional.** Owner's words: *"the meteors should have velocity rather than swing around"*,
+    *"the meteors may collide with the track and fracture and debris bounce off around the track"*,
+    and the fractured block *"looks like styrofoam box in 0.8g bouncing around right now rather than
+    something with immense weight"*. The owner chose the direction called impact theatre, visual only.
+
+    - **Fragments are rigid bodies and they come to rest on the deck.** This reverses item 15,
+      departure 3. Each piece has its own hull, inertia, gravity, restitution and friction. The pieces
+      land on the deck and on standing blocks, bounce off block sides, and fall through gaps. They
+      keep their size. The piece near the hit gets the most speed. The far side slumps.
+    - **The block breaks into 18 cells, not 12.** Eight are coarse. Ten are small shards in a cluster
+      near one face, so the break reads as stone that failed at a point. The 8 orientations move the
+      cluster from block to block.
+    - **Fresh fracture walls cool.** The M7 flare on the walls fades in about 0.7 s. Item 15 said
+      *"The walls flare and then fade"*. That is unchanged. Only the rate is set.
+    - **M5 is warmer and craggier.** The base colour moves from `#4a525a` to `#524c47`. The
+      reference rock is warm dark stone, not blue-grey. Each rock gets rounded knobs that meet in
+      crevices, so the silhouette reads as a clump of boulders, as in `action-lighting.png`.
+    - **Rocks travel on straight lines.** Each rock moves at a constant velocity, tangent to its
+      orbit radius. Its placed position is therefore its nearest approach to the track. It
+      dissolves at the ends of its travel cycle.
+    - **Meteor strikes.** Seeded rocks fly into the deck ahead of the player, with a heat trail.
+      At contact there is a flash, sparks, a short point light, a camera shake, a soot and ember
+      scorch, and hot rock chunks. Hot chunks glow in their crevices only. This is the one M5
+      emissive outside *"rare veins"*. It is an event, not a rock type, and it cools in under a
+      second. The strikes do not touch the sim (#235 designs a sim hazard).
+    - **`Metal.baseColor` moves from `#7c8590` to `#7d7a75`.** The old value is blue-grey, and the
+      deck read slate-blue against the reference's neutral graphite. Item 12 made this one value for
+      deck, rail and ship hulls. It stays one value.
+    - **Deck wear is wider.** More finish patches and scuffs, with a wider roughness range, and more
+      value mottle. Item 16 said the wear was invisible at roughness 0.40.
+
+    **Departures from package wording.** M5 says *"Emissive | rare marigold veins at environmental
+    intensity"*. Hot meteor chunks add a short-lived emissive at impact. Item 15 said *"There is no
+    point light"* for a block break. That stays true. A meteor impact has one.
+
 ## 8. Review log
 
 **Revision 6 → 7, one metal, and ship contact shadows (2026-09-23).** No family definition changes —

@@ -201,7 +201,9 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 | Obstacle blocks (both states) | procedural geometry | **~100%** |
 | Track pillars | **BUILT** — one instanced chamfered box, mirrored pairs (ADR-018) | **done** |
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
-| Asteroids (Angular · Plate · Broken) | **BUILT** — displaced icosahedron with planar cuts, three streamed bands, shader spin and drift, triplanar CC0 rock maps (see below) | **done** |
+| Asteroids (Angular · Plate · Broken) | **BUILT** — displaced icosahedron with planar cuts and boulder knobs, three streamed bands, shader spin and straight-line travel, triplanar CC0 rock maps (see below) | **done** |
+| Meteor strikes | **BUILT** — seeded strikes ahead of the player: heat trail, flash, point light, camera shake, scorch, rigid-body rock chunks. Visual only (`ART_MATERIALS.md` §7 item 17, #235 for a sim hazard) | **done** |
+| Block fracture | **BUILT** — 18 Voronoi cells, CPU rigid bodies that land, bounce and rest on the deck (`ART_MATERIALS.md` §7 item 17) | **done** |
 | Nebula sky | **BUILT** — domain-warped fBm and Worley noise baked to a cubemap, composited live, and the source of the IBL and the key light (see below) | **done** |
 | Planets / moons | **BUILT** — analytic discs in the sky pass: terminator, lit limb, noise-volume relief; one large planet for Deep Space, two small moons for Nebula (`Sky.planet*`, `Sky.moons`) | **done** |
 | Pickups | procedural — low-poly geometric icons | high |
