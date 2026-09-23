@@ -11,6 +11,7 @@ import { WorldScene } from '../../game/scene/world-scene';
 import { LocalBoltField } from './local-bolt-field';
 import { LocalLoop } from './local-loop';
 import { LocalPickupField } from './local-pickup-field';
+import { LocalSeekerField } from './local-seeker-field';
 import { LocalShip } from './local-ship';
 import { TestLevelHud } from './test-level-hud';
 
@@ -46,6 +47,7 @@ export function TestLevelCanvas() {
                         <LocalLoop track={ track } />
                         <LocalPickupField track={ track } />
                         <LocalBoltField />
+                        <LocalSeekerField />
                         <RearView />
                         <FrameTap />
                     </WorldScene>

@@ -3,7 +3,7 @@ import { HeldPower, type RunState } from '@slur/shared';
 import { useEffect, useState } from 'react';
 import { HudPanel } from '../../ui/hud-panel';
 
-const LABEL: Record< number, string > = { [ HeldPower.bolt ]: 'BOLT' };
+const LABEL: Record< number, string > = { [ HeldPower.bolt ]: 'BOLT', [ HeldPower.seeker ]: 'SEEKER' };
 
 export function HeldPowerChip( { room }: { room: Room< RunState > } ) {
     const [ held, setHeld ] = useState< number >( HeldPower.none );
