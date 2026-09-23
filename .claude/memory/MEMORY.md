@@ -18,3 +18,4 @@ lives in its own file beside this one.
 - [Freeze the sim to A/B a light](freeze-the-sim-to-ab-a-light.md) — KeyP holds the camera, but freeze at the SPAWN pose; a timed flight drifts (SSIM 0.906)
 - [Probe by feature, not by pixel](probe-by-feature-not-by-pixel.md) — find the surface from its own emissive each frame; the bright deck line is the rim cord, not the rail
 - [Monoliths are metal now](monoliths-are-metal-now.md) — moved onto the block texture, softening a named hazard/scenery readability split; owner-accepted, re-gate still unrun
+- [Drive the live module, do not reload](drive-the-live-module-not-a-reload.md) — import the page's own module over CDP and call `setNum`; the camera never moves between A/B frames

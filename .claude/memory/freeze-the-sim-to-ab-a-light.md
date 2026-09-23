@@ -27,4 +27,9 @@ socket after the reload; the pre-reload session stops answering. If `Runtime.eva
 tap reports "nobody answered", the browser is wedged: `pkill -f "remote-debugging-port=<port>"` and
 relaunch. Input is read from `e.code`, so a synthetic `new KeyboardEvent('keydown', {code:'KeyW'})`
 works — but a strafe of even 1.1s off the spawn pose throws the ship off the deck edge.
+**Superseded for tunable A/Bs (2026-09-23):** freezing is no longer the answer — the page can
+import its own live module graph over CDP and call `setNum` with **no reload at all**, which is
+bit-identical run to run (SSIM 0.99992). See [[drive-the-live-module-not-a-reload]]. Freezing still
+matters when you need the ship held somewhere specific.
+
 Related: [[headless-chrome-for-frame-taps]], [[eyeballing-a-tap-lies-about-brightness]].
