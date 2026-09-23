@@ -868,6 +868,31 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     3. The fragments do not come to rest on the deck. They shrink to nothing in the air, at about 0.9s.
        The board shows only a few fragments at *"CLEAR"*, and it does not show where they land.
 
+16. **Monoliths and blocks go back to a dielectric finish; the deck goes satin; the plates are
+    4u × 16u — 2026-09-23 (#224), provisional.** Measured against `action-lighting.png` with the
+    nebula cube as the only environment. Item 12's `1.0 / 0.25` on monoliths and blocks rendered them
+    as black mirrors: a conductor has no diffuse term, and the cube's side faces hold only the dark
+    nebula and the ground disc, so a wall reflects nothing. The reference shows both as matte dark
+    stone with visible grain and a lit face against a shadow face.
+
+    - **Monoliths: metalness 0.15, roughness 0.75.** That is M3 as written (*"Metalness | 0.0"*,
+      *"Roughness | 0.75 – 0.90"*) with a little conductor left for the marigold band, and it undoes
+      the material half of item 11 while keeping its `Metal046B` maps. `Monolith.textureSpan` goes
+      from 2 to 8 so the panel division reads at monolith scale instead of dissolving into noise.
+    - **Blocks: metalness 0.15, roughness 0.75.** M2's *"Metalness | 0.0"* and its stated reason,
+      *"it keeps the block from going black when there is little for a conductor to reflect"*, were
+      right. This reopens the finish line between block and deck that item 12 closed.
+    - **Deck and rail: roughness 0.40.** Inside M1's *"0.35 – 0.50"*. The reference's rail reflections
+      are soft streaks, not edges, and the wear is invisible at 0.25 because the reflection is too
+      sharp to interrupt.
+    - **Plates 4u × 16u, straight bond.** Revision 5 decided this; the texture was still authored as
+      four 4u rows, so the engine drew 4u × 4u tiles. One row per 16u span now.
+    - **Fog 100 – 1500.** At 420 the far monolith frames took the nebula's horizon colour and read
+      as pale grey against a dark sky; the reference keeps them dark at every distance.
+    - **Cold fill 0.30 and the directional fill 0.70,** so a dielectric wall has something to be lit
+      by. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
+      `Env.*` tunables; nothing is frozen until the owner gates §4 criterion 2 against this set.
+
 ## 8. Review log
 
 **Revision 6 → 7, one metal, and ship contact shadows (2026-09-23).** No family definition changes —

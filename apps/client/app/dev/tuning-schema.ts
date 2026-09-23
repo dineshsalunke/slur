@@ -1,7 +1,14 @@
 import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import { ACCENT_ANCHOR } from '../game/scene/accent';
 import { ROCK_ALBEDO } from '../game/scene/asteroid-surface';
-import { METAL_BASE_COLOR, METAL_MAP_TINT, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
+import {
+    METAL_BASE_COLOR,
+    METAL_MAP_TINT,
+    METAL_METALNESS,
+    METAL_ROUGHNESS,
+    STONE_METALNESS,
+    STONE_ROUGHNESS,
+} from '../game/scene/metal';
 import { NEBULA_PRESET } from '../game/scene/nebula-presets';
 
 interface NumberTunable {
@@ -26,7 +33,7 @@ export const NUMBER_TUNABLES = {
     'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
 
     'Env.skyIntensity': { value: 0.6, min: 0, max: 5, step: 0.01, rebuild: false },
-    'Env.fillIntensity': { value: 0.14, min: 0, max: 2, step: 0.01, rebuild: false },
+    'Env.fillIntensity': { value: 0.3, min: 0, max: 2, step: 0.01, rebuild: false },
     'Env.groundIntensity': { value: 0.5, min: 0, max: 5, step: 0.01, rebuild: false },
     'Env.bandIntensity': { value: 0.1, min: 0, max: 4, step: 0.05, rebuild: false },
     'Env.bandHeight': { value: 5, min: 0.5, max: 60, step: 0.5, rebuild: false },
@@ -43,12 +50,12 @@ export const NUMBER_TUNABLES = {
     'NearFill.height': { value: 3, min: -5, max: 20, step: 0.5, rebuild: false },
     'NearFill.distance': { value: 45, min: 5, max: 200, step: 1, rebuild: false },
 
-    'Fill.intensity': { value: 0.35, min: 0, max: 3, step: 0.01, rebuild: false },
+    'Fill.intensity': { value: 0.7, min: 0, max: 3, step: 0.01, rebuild: false },
     'Fill.elevation': { value: 35, min: -20, max: 89, step: 1, rebuild: false },
     'Fill.azimuth': { value: 25, min: -90, max: 90, step: 1, rebuild: false },
 
-    'Fog.near': { value: 40, min: 0, max: 900, step: 5, rebuild: false },
-    'Fog.far': { value: 420, min: 50, max: 2000, step: 10, rebuild: false },
+    'Fog.near': { value: 100, min: 0, max: 900, step: 5, rebuild: false },
+    'Fog.far': { value: 1500, min: 50, max: 2000, step: 10, rebuild: false },
 
     'Deck.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Deck.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
@@ -65,17 +72,17 @@ export const NUMBER_TUNABLES = {
     'Rail.railEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
     'Rail.rimEmissive': { value: 2, min: 0, max: 30, step: 0.05, rebuild: false },
 
-    'Monolith.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
-    'Monolith.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
+    'Monolith.metalness': { value: STONE_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Monolith.roughness': { value: STONE_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
     'Monolith.envMapIntensity': { value: 1.55, min: 0, max: 6, step: 0.05, rebuild: false },
-    'Monolith.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
+    'Monolith.textureSpan': { value: 8, min: 0.25, max: 16, step: 0.05, rebuild: false },
     'Monolith.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
     'Block.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
     'Block.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
-    'Block.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
-    'Block.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Block.roughness': { value: STONE_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
+    'Block.metalness': { value: STONE_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Block.envMapIntensity': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
     'Block.seamEmissive': { value: 6, min: 0, max: 20, step: 0.05, rebuild: false },
     'Block.wear': { value: 0.6, min: 0, max: 1, step: 0.01, rebuild: false },
