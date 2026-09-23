@@ -46,18 +46,31 @@ None of mine. Others' files are in the tree (scene/finish-*, monolith-*, `docs/a
   `routes/test-level/{local-pickup-field,local-power-slot,local-seeker-field}.tsx`,
   `routes/test-level/local-combat.test.ts`, `dev/tuning-schema.ts`, `net/attach-room-to-world.ts`,
   `game/ecs/traits.ts`
-- RELEASED to workertwo: `game/net-canvas.tsx`, `routes/test-level/test-level-canvas.tsx`,
-  `routes/test-level/local-combat.ts`.
+- RELEASED: `game/net-canvas.tsx`, `routes/test-level/test-level-canvas.tsx`,
+  `routes/test-level/local-combat.ts` (borrowed for `edea282`, released again).
 
 ## Next
 
-1. `Seeker.flyY` tunable once the supervisor clears `local-combat.ts` (or workertwo adds it).
+0. `edea282`: `Seeker.flyY` in `dev/tuning-schema.ts`. `local-combat.ts` passes `{ ...DEFAULT_SIM_CONFIG,
+   seekerFlyY: num('Seeker.flyY') }` to lockTarget/aimSeeker/stepSeekers. `local-combat.ts` is RELEASED
+   back. **Missing: the panel group.** `dev/tuning-panel.tsx` (not mine) needs `useControls( 'Seeker', {
+   flyY: numberControl( 'Seeker.flyY' ) } )` next to the `'Hover'` block (line ~166). Asked the supervisor
+   for the file.
+1. (done, see 0)
 2. Look rebuild per the owner: square chamfered body, bright core on the NOSE, dorsal + side fins,
    near-cube pickup, THICK trail in MARIGOLD (not the board's red-orange). Record the marigold departure
    in `docs/ART_MATERIALS.md` §7 style, quoting the board. Never edit `docs/art-direction/`.
 3. Render check on `/test-level` (the canister must be SEEN).
-4. 3-slot plan for the supervisor (build nothing): which slot E fires, a full grab, duplicates, HUD, files,
-   a new issue.
+4. 3-slot plan for the supervisor (build nothing until the owner approves). OWNER REQUIREMENTS
+   (supervisor, 2026-09-23): (1) any mix in 3 slots, duplicates allowed; the target loadout is 2 seekers + 1
+   boost; (2) the player can DROP a slot's pickup to free it (*"I always want seeker and boost. If I pick
+   up something else by accident, I drop it to open the slot."*). The plan must answer: controls for the
+   select/fire/drop slot (keep W/S, A/D, Space, E, M); a dropped pickup vanishes or stays on the track
+   (server-authoritative; a drop is an INPUT, never a position, ADR-000); all 3 full → skip (the pickup stays
+   for others) or lose it; kind random on grab or visible before (if hidden, say the drop is what makes
+   2 seekers + 1 boost reachable); the HUD for 3 slots + the selected slot; does the room-wide one-seeker
+   cap (grants a bolt) stand when a player can hold 2; the schema/wire change + files to claim; file a
+   GitHub issue. Send it to the supervisor.
 5. Step 6 audio + LOCKED HUD, step 7 target dummy + tunables, step 8 two-player room + doc rows.
 
 ## Open questions
