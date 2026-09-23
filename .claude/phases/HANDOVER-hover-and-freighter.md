@@ -10,6 +10,7 @@ brief's open questions are answered below rather than left hanging.
 | `1e198a6` | `feat(game): float the ship, higher the faster it goes` |
 | `a27955f` | `feat(track): generate from a contract, never from the ship roster` (ADR-013) |
 | `b998e6c` | `feat(ships): double the Freighter's top speed to 124u/s` |
+| `a50049f` | `fix(camera): stop the chase camera cancelling the ship hover` |
 
 Gate green throughout: `pnpm typecheck` clean, 324 tests pass (shared 143 · client 177 · server 4),
 `pnpm lint` at its pre-existing 8 warnings.
@@ -72,9 +73,35 @@ Straight-line ship that must read the track ahead. **Watch in playtest:** 0.48s 
 as too punishing the lever is `brakeDecel` (110 today, shared with `DEFAULT_TUNING` — the Freighter
 would need its own value).
 
-## Open / next
+## 4 — The hover was invisible, and why (`a50049f`)
 
-- **Look at the hover in a browser** and tune `Hover.*`. Nothing else is unverified.
+Seen in a browser at last, on `/test-level` — which spawns `DEFAULT_SHIP = 'split-crown'`, the
+Freighter, so §3's class is the one on screen.
+
+**The lift did nothing to the ship you fly.** `hoverSystem` wrote it into the render `Group`; then,
+the same frame, `updateChaseCamera` read that already-lifted `Group` for *both* its height and its
+look-at target (`camera/chase.ts` — `cam.position.y += ( p.y + Chase.height - cam.position.y ) * k`
+and `cam.lookAt( p.x, p.y + Chase.lookAtLift, … )`). The camera rose by exactly the lift. Proof: at
+`Hover.base = 4`, a lift taller than the hull, the ship rendered at an unchanged screen position and
+size — only the deck perspective steepened. Remote ships were always right; the camera follows only
+one ship.
+
+`Hover` now carries `applied` — the offset `hoverSystem` actually wrote — and the chase, lobby and
+spectator cameras all aim at `p.y - applied`. **Five options were weighed** (see the commit body for
+the choice): record the offset on the trait · re-derive an interpolated sim `y` in the camera ·
+move the hover to a child `Group` under `Render` · follow `Sim.y` raw · leave the camera and sell the
+hover through the shadow alone. Recording it on the trait was taken because it is the only one that
+fixes the camera *and* keeps the shadow's response — `ship-shadow.tsx` derives `height = y - floor`,
+so the lift spreads, fades and blurs the blob, and that is the cue that sells a hovering ship.
+
+`chase.test.ts` pins it: the test fails on the old camera by exactly the injected 2u lift.
+
+**The five knobs are now worth tuning, and were not before** — at the shipped defaults the ship sits
+just off the deck at rest and climbs legibly toward top speed. Whether `base 0.35 / speedLift 0.9` is
+the right amount is an owner's aesthetic call, not a bug. `Chase.height` is worth a second look
+alongside them: the camera now sits up to 1.25u lower relative to the ship at top speed than it did.
+
+## Open / next
 - **GDD-DEVIATIONS §1.1 is deliberately untouched**: documented `MIN_CLEAR 7u` vs the shipped
   `MIN_LANE = 2·CELL = 8u`. Correcting it reshapes every seed, so it needs its own owner decision.
   §1.2 and §1.3 are marked RESOLVED.
@@ -85,4 +112,11 @@ would need its own value).
 
 ## State
 
-`dev` at `b998e6c`, tree clean, 92 commits ahead of `origin/dev` and unpushed. Nothing in flight.
+`dev` at `a50049f`, unpushed. Gate green: `pnpm typecheck` clean, **329** tests pass (shared 143 ·
+client 182 · server 4 — up 5 on this session's new `hover.test.ts` and the camera regression test),
+`pnpm lint` back at its pre-existing 8 warnings.
+
+**The working tree is not clean, and none of it is this work.** A concurrent session (`workerone`)
+holds uncommitted ship-shadow and metal-material changes in this shared checkout — `ship-shadow.tsx`
+and `metal.ts` are new, `graphite.ts` is deleted, and `tuning-schema.ts` / `tuning-panel.tsx` /
+several `scene/` files are modified. `a50049f` was staged file-by-file to leave all of it alone.
