@@ -31,3 +31,4 @@ lives in its own file beside this one.
 - [Instanced ref fill needs a geometry prop](instanced-ref-callback-needs-geometry-prop.md) — a JSX geometry child attaches after the ref callback; pass a module-level geometry
 - [procgen segmentAt is uncached](procgen-segmentat-is-uncached.md) — every call rebuilds the segment; memoise the track in a brute-force test (26.8 s → 0.26 s)
 - [Place the ship over CDP](place-the-ship-over-cdp.md) — import the live world, write Sim x/z, freeze; first /test-level fractured block is id 3392 at z 1064
+- [Step the R3F clock for timed taps](step-the-r3f-clock-for-timed-taps.md) — frameloop 'never' + `advance(t)` gives exact VFX ages; import the page's `?t=` module URLs
