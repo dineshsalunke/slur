@@ -1,13 +1,13 @@
 import { type FloorSpan, type Segment, spanHasZ, spanZ0, spanZ1 } from './space.js';
 
-type Run = [ number, number ];
+export type Run = [ number, number ];
 
 const SLICE_EPS = 1e-3;
 
-function sliceCentres( seg: Segment ): number[] {
-    const bounds: number[] = [ seg.z0, seg.z1 ];
+export function sliceCentres( seg: Segment, z0 = seg.z0, z1 = seg.z1 ): number[] {
+    const bounds: number[] = [ z0, z1 ];
     const edge = ( z: number ): void => {
-        if ( z > seg.z0 + SLICE_EPS && z < seg.z1 - SLICE_EPS ) bounds.push( z );
+        if ( z > z0 + SLICE_EPS && z < z1 - SLICE_EPS ) bounds.push( z );
     };
     for ( const b of seg.blocks ) {
         edge( b.z0 );
@@ -38,7 +38,7 @@ function wallsOnSlice( seg: Segment, f: FloorSpan, zc: number ): Run[] {
     return walls;
 }
 
-function openRunsAtSlice( seg: Segment, zc: number ): Run[] {
+export function openRunsAtSlice( seg: Segment, zc: number ): Run[] {
     const runs: Run[] = [];
     for ( const f of seg.floors ) {
         if ( ! spanHasZ( seg, f, zc ) ) continue;
@@ -53,7 +53,7 @@ function openRunsAtSlice( seg: Segment, zc: number ): Run[] {
     return runs;
 }
 
-function intersectRuns( a: Run[], b: Run[] ): Run[] {
+export function intersectRuns( a: Run[], b: Run[] ): Run[] {
     const out: Run[] = [];
     for ( const [ a0, a1 ] of a ) {
         for ( const [ b0, b1 ] of b ) {

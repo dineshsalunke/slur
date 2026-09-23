@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT, type FlightTuning } from '../constants.js';
 import { emptyInput } from './input.js';
+import { respawnPoint } from './respawn-point.js';
 import { isFullSpan, isHole, START_SAFE, TRACK_SEGMENTS, type Track } from './space.js';
 import { simulate } from './step.js';
 import { resolveTrack } from './track-provider.js';
@@ -172,7 +173,7 @@ test( 'on a track with blocks, every seed still has gap deaths to probe', () => 
     }
 } );
 
-test( 'on a track with blocks, a gap death respawns alive, grounded, behind, and on its safe anchor', () => {
+test( 'on a track with blocks, a gap death respawns alive, grounded, behind, and at the nearest clear point to its anchor', () => {
     for ( const r of gapProbes() ) {
         assert.equal( r.respawn.grounded, true, `${ r.label }: respawned airborne` );
         assert.ok( r.respawn.y >= t.deathY, `${ r.label }: respawned below the kill plane` );
@@ -181,22 +182,24 @@ test( 'on a track with blocks, a gap death respawns alive, grounded, behind, and
             r.respawn.z < r.death.z,
             `${ r.label }: respawned at z=${ r.respawn.z }, not behind z=${ r.death.z }`,
         );
-        assert.equal( r.respawn.x, r.death.lastSafeX, `${ r.label }: respawn ignored the safe lateral anchor` );
+        assert.deepEqual(
+            { x: r.respawn.x, z: r.respawn.z },
+            respawnPoint( r.track, r.death.lastSafeX, r.death.lastSafeZ - t.respawnSetback, t ),
+            `${ r.label }: respawn did not use the nearest clear point to its safe anchor`,
+        );
         assert.equal( r.nextTick.dead, false, `${ r.label }: died again one tick after respawning` );
         assert.equal( r.nextTick.stunTimer, 0, `${ r.label }: bounced one tick after respawning` );
     }
 } );
 
-test( 'a respawn that lands inside a block phases out of it under invuln instead of bouncing', () => {
-    const inside = gapProbes().filter( ( p ) => overlapsBlock( p.track, p.respawn ) );
-    assert.ok( inside.length > 0, 'no probe respawned inside a block, so this test proves nothing; change the seeds' );
-    for ( const r of inside ) {
-        const s = { ...r.respawn };
-        for ( let i = 0; overlapsBlock( r.track, s ); i++ ) {
-            assert.ok( s.invulnTimer > 0, `${ r.label }: invuln ran out while the ship was still inside the block` );
-            assert.equal( s.dead, false, `${ r.label }: died while phasing out of the block` );
-            simulate( s, { ...emptyInput(), throttle: 1, seq: i }, FIXED_DT, t, r.track );
-            assert.equal( s.stunTimer, 0, `${ r.label }: the block bounced a ship that respawned inside it` );
-        }
-    }
+test( 'no gap-death respawn on a track with blocks lands inside a block', () => {
+    const inside = gapProbes()
+        .filter( ( p ) => overlapsBlock( p.track, p.respawn ) )
+        .map( ( p ) => p.label );
+    assert.deepEqual( inside, [], `${ inside.length } of ${ gapProbes().length } respawns landed inside a block` );
+} );
+
+test( 'some gap death on a track with blocks needs the lane shift, so the probe exercises it', () => {
+    const shifted = gapProbes().filter( ( p ) => p.respawn.x !== p.death.lastSafeX );
+    assert.ok( shifted.length > 0, 'no respawn left its safe anchor, so the lane shift is untested; change the seeds' );
 } );

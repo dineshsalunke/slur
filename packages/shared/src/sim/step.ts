@@ -1,6 +1,7 @@
 import type { FlightTuning } from '../constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
+import { respawnPoint } from './respawn-point.js';
 import { type Block, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
 import type { SimShip, SimWorld } from './types.js';
 
@@ -137,16 +138,10 @@ function markDead( s: SimShip, t: FlightTuning ): void {
 
 function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.dead = false;
-    const limit = deckLimit( t );
-    s.x = Math.min( limit, Math.max( -limit, s.lastSafeX ) );
-    let z = s.lastSafeZ - t.respawnSetback;
-    let floorY = floorUnder( track.segmentAtZ( z ), s.x, z, Number.POSITIVE_INFINITY, t.stepTol );
-    if ( floorY === null ) {
-        z = s.lastSafeZ;
-        floorY = floorUnder( track.segmentAtZ( z ), s.x, z, Number.POSITIVE_INFINITY, t.stepTol ) ?? 0;
-    }
-    s.z = z;
-    s.y = floorY;
+    const p = respawnPoint( track, s.lastSafeX, s.lastSafeZ - t.respawnSetback, t );
+    s.x = p.x;
+    s.z = p.z;
+    s.y = floorUnder( track.segmentAtZ( p.z ), p.x, p.z, Number.POSITIVE_INFINITY, t.stepTol ) ?? 0;
     s.vx = 0;
     s.vy = 0;
     s.vz = t.respawnVz;
