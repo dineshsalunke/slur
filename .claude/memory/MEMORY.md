@@ -33,3 +33,4 @@ lives in its own file beside this one.
 - [Place the ship over CDP](place-the-ship-over-cdp.md) — import the live world, write Sim x/z, freeze; first /test-level fractured block is id 3392 at z 1064
 - [Step the R3F clock for timed taps](step-the-r3f-clock-for-timed-taps.md) — frameloop 'never' + `advance(t)` gives exact VFX ages; import the page's `?t=` module URLs
 - [@deprecated breaks reflection decoding](deprecated-breaks-reflection-decoding.md) — the client decodes by reflection; a deprecated field shifts later indexes. Keep dead fields plain
+- [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + a gap-aware bot; races stop at 180 s; reverse through a pickup for a duplicate
