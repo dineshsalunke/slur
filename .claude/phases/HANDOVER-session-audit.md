@@ -11,6 +11,7 @@ Session of 2026-09-23 (`slur-supervisor`). Everything below is committed; the tr
 | `3b50857` | **The forward judder fix** — chase camera copies z exactly + `chase.test.ts` |
 | `7c1dcf2` | Handover rewrite for the judder |
 | `c3efa3a` | Three audit reports, 11 handovers archived, INDEX + backlog corrections |
+| `4607b2b` | Chase camera on the tuning panel (8 knobs, backtick) |
 
 ## The judder, and why three sessions missed it
 
@@ -24,6 +25,18 @@ numbers.
 
 The lesson worth keeping: the note already contained the fact that was the answer, written down as
 a clue about *where to look* rather than as the cause.
+
+## The camera is now tunable
+
+Eight `Chase.*` knobs under a "Chase camera" group — back, backStretch, height, lookAhead,
+lookAtLift, fov, fovStretch, follow. Backtick opens the panel. `chase.ts` reads them per frame via
+`num()`; the module constants are gone.
+
+Two of them have never been tried: `backStretch` and `fovStretch` both ship at 0, and they are the
+speed-stretch levers ADD §6's framing discussion is actually about. Worth a flight.
+
+The judder fix is intact — z stays an exact copy, only the follow *distance* smooths, so changing
+`Chase.back` live eases in rather than snapping.
 
 ## Open, in priority order
 
