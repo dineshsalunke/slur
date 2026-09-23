@@ -12,6 +12,7 @@ Session of 2026-09-23 (`slur-supervisor`). Everything below is committed; the tr
 | `7c1dcf2` | Handover rewrite for the judder |
 | `c3efa3a` | Three audit reports, 11 handovers archived, INDEX + backlog corrections |
 | `4607b2b` | Chase camera on the tuning panel (8 knobs, backtick) |
+| `e64943c` | **The owner's flown camera + environment defaults** |
 
 ## The judder, and why three sessions missed it
 
@@ -32,8 +33,19 @@ Eight `Chase.*` knobs under a "Chase camera" group — back, backStretch, height
 lookAtLift, fov, fovStretch, follow. Backtick opens the panel. `chase.ts` reads them per frame via
 `num()`; the module constants are gone.
 
-Two of them have never been tried: `backStretch` and `fovStretch` both ship at 0, and they are the
-speed-stretch levers ADD §6's framing discussion is actually about. Worth a flight.
+`backStretch` and `fovStretch` still ship at 0 and have never been tried. They are the speed-stretch
+levers ADD §6's framing discussion is actually about. Worth a flight.
+
+**The owner flew it and the numbers landed (`e64943c`).** back 12→14, height 5→4, lookAhead 14→17,
+lookAtLift 1→3, plus four environment values (Environment.intensity 1→1.2, sky 0.4→0.6, ground
+0.22→0.5, band 0.4→0.5).
+
+**This supersedes ADD §6 and is not in the deviations report** — it was not a deviation when that
+report was written. §6's first pass argued to *"pull the ship bigger + higher via the other three
+levers — shorter look-ahead, tighter base FOV, closer trail, lifted aim"*. The flown result goes the
+**opposite** way on trail and look-ahead and agrees only on lift. Fold that into ADD §6 when someone
+next touches it: the section's reasoning is now superseded by a flown result rather than an argued
+one.
 
 The judder fix is intact — z stays an exact copy, only the follow *distance* smooths, so changing
 `Chase.back` live eases in rather than snapping.
