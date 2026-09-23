@@ -7,7 +7,9 @@ import { BOLT_HOT } from './combat-look';
 import {
     MAX_SEEKERS,
     SEEKER_EMBER_SPAN,
+    SEEKER_FLIGHT,
     SEEKER_TRAIL_BRIGHT,
+    SEEKER_TRAIL_HEAT,
     SEEKER_TRAIL_WIDTH,
     seekerTrailSegmentGeometry,
 } from './seeker-look';
@@ -66,29 +68,35 @@ function writeSegment(
     const len = _dir.length();
     if ( len < 1e-3 || frame.segments >= MAX_SEGMENTS ) return;
     _dir.divideScalar( len );
-    const w = SEEKER_TRAIL_WIDTH * fade;
+    const w = SEEKER_TRAIL_WIDTH * fade * fade;
     _o.position.set( ax, ay, az );
     _o.quaternion.setFromUnitVectors( FORWARD, _dir );
     _o.scale.set( w, w, len );
     _o.updateMatrix();
     mesh.setMatrixAt( frame.segments, _o.matrix );
     _c.copy( accent() )
-        .lerp( HOT, fade * fade )
-        .multiplyScalar( SEEKER_TRAIL_BRIGHT * fade );
+        .lerp( HOT, SEEKER_TRAIL_HEAT * fade * fade )
+        .multiplyScalar( SEEKER_TRAIL_BRIGHT * fade * fade );
     mesh.setColorAt( frame.segments, _c );
     frame.segments++;
 }
 
 function writeTrail( frame: Frame, mesh: THREE.InstancedMesh, x: number, y: number, z: number, r: SeekerTrailRing ) {
-    let px = x;
-    let py = y;
-    let pz = z;
+    let px = x - r.hx * SEEKER_FLIGHT.halfLen;
+    let py = y - r.hy * SEEKER_FLIGHT.halfLen;
+    let pz = z - r.hz * SEEKER_FLIGHT.halfLen;
+    let started = false;
     for ( let k = 0; k < r.count; k++ ) {
         const i = trailIndex( r, k );
-        writeSegment( frame, mesh, px, py, pz, r.x[ i ], r.y[ i ], r.z[ i ], 1 - k / TRAIL_POINTS );
-        px = r.x[ i ];
-        py = r.y[ i ];
-        pz = r.z[ i ];
+        const qx = r.x[ i ];
+        const qy = r.y[ i ];
+        const qz = r.z[ i ];
+        if ( ! started && ( qx - px ) * r.hx + ( qy - py ) * r.hy + ( qz - pz ) * r.hz >= 0 ) continue;
+        started = true;
+        writeSegment( frame, mesh, px, py, pz, qx, qy, qz, 1 - k / TRAIL_POINTS );
+        px = qx;
+        py = qy;
+        pz = qz;
     }
 }
 
