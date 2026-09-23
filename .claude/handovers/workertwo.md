@@ -48,7 +48,15 @@ fractured-block-shader.ts, block-debris.tsx, block-breaks.ts, block-burst.tsx, t
 
 ## Next
 
-1. The owner judges the stills at race speed (the ADR-015 gate).
+0. NEW LANE assigned by the supervisor at ~21:45, NOT STARTED (context seam): fix the sky-work review
+   findings (#221 + #224, merged as `81f9462`, issue #215). Read
+   `.claude/phases/2026-09-23-review-pr-221-224.md` first and verify each finding before fixing. Order:
+   rear-view uniforms in main-camera view space (rail-glow.ts, rock-field.tsx, rear-view-pass.tsx) ·
+   rail glow ignores rail gaps · ADD.md:258 rock-texture claim · ADD.md:191 planet/moon counts ·
+   `.gitignore` `.tmp/` (ASK first: `.tmp/dev.log` depends on it) · nebula-shaders.ts:171 fwidth after
+   a divergent return · measure sky bake time at DPR 1. Also: a before/after darkness still pair
+   (036645c vs dev), with no fix. File an issue first and claim the files. Own stack on 5183/2577. Never kill :5173/:2567.
+1. #222: the owner judges the stills at race speed (the ADR-015 gate).
 2. If asked: fix the one-frame hole (spawn the debris in the same frame as the break).
 3. If asked: set debris `mesh.count` to the live count so free slots are not drawn.
 4. Test mend-cancel.
