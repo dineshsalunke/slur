@@ -43,6 +43,7 @@ function skyControls() {
 export function TuningPanel() {
     useControls( 'Render', {
         dpr: numberControl( 'Render.dpr' ),
+        msaa: numberControl( 'Render.msaa' ),
         device: { value: String( devicePixelRatio ), editable: false },
     } );
 
