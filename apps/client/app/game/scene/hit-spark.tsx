@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { ACCENT_ANCHOR } from './accent';
 import { drainHits } from './hit-events';
 
 const MAX = 200;
@@ -10,13 +11,17 @@ const LIFE_MAX = 0.4;
 const SPEED = 22;
 const UP_BIAS = 2;
 const DRAG = 4;
-const GRAV = 6;
-const SIZE = 0.15;
-const BRIGHT = 3.2;
+const GRAV = 12;
+const WIDTH = 0.045;
+const STREAK_S = 0.035;
+const BRIGHT = 4;
 
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
-const SPARK = new THREE.Color( '#a8ffff' );
+const _dir = new THREE.Vector3();
+const FORWARD = new THREE.Vector3( 0, 0, 1 );
+const ENERGY_CORE = new THREE.Color( '#FFFBE7' );
+const SPARK = new THREE.Color( ACCENT_ANCHOR );
 
 interface Spark {
     active: boolean;
@@ -78,6 +83,26 @@ function initPool( mesh: THREE.InstancedMesh ): void {
     }
 }
 
+function placeStreak( mesh: THREE.InstancedMesh, i: number, p: Spark, f: number ): void {
+    _dir.set( p.vx, p.vy, p.vz );
+    const speed = _dir.length();
+    if ( speed > 1e-4 ) _o.quaternion.setFromUnitVectors( FORWARD, _dir.divideScalar( speed ) );
+    const w = WIDTH * ( 0.5 + 0.5 * f );
+    const len = Math.max( w, speed * STREAK_S );
+    _o.position.set( p.x, p.y, p.z ).addScaledVector( _dir, -0.5 * len );
+    _o.scale.set( w, w, len );
+    _o.updateMatrix();
+    mesh.setMatrixAt( i, _o.matrix );
+    const b = BRIGHT * f * f;
+    mesh.setColorAt(
+        i,
+        _c
+            .copy( ENERGY_CORE )
+            .lerp( SPARK, 1 - f )
+            .multiplyScalar( b ),
+    );
+}
+
 function advanceSparks( mesh: THREE.InstancedMesh, pool: Spark[], dt: number ): void {
     const damp = Math.max( 0, 1 - DRAG * dt );
     for ( let i = 0; i < MAX; i++ ) {
@@ -96,15 +121,9 @@ function advanceSparks( mesh: THREE.InstancedMesh, pool: Spark[], dt: number ): 
         p.x += p.vx * dt;
         p.y += p.vy * dt;
         p.z += p.vz * dt;
-        const f = p.life / p.maxLife;
-        const s = SIZE * ( 0.35 + 0.75 * f );
-        _o.position.set( p.x, p.y, p.z );
-        _o.scale.set( s, s, s );
-        _o.updateMatrix();
-        mesh.setMatrixAt( i, _o.matrix );
-        const b = BRIGHT * f * f;
-        mesh.setColorAt( i, _c.setRGB( SPARK.r * b, SPARK.g * b, SPARK.b * b ) );
+        placeStreak( mesh, i, p, p.life / p.maxLife );
     }
+    _o.quaternion.identity();
     mesh.instanceMatrix.needsUpdate = true;
     if ( mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;
 }
