@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-24T00:00:00Z",
+  "title": "Design System: SLUR",
+  "extensions": {
+    "colorMeta": {
+      "marigold": { "role": "primary", "displayName": "Marigold", "canonical": "#f59a24", "tonalRamp": ["oklch(15% 0.04 65)", "oklch(26% 0.07 65)", "oklch(37% 0.10 65)", "oklch(48% 0.13 65)", "oklch(60% 0.15 65)", "oklch(72% 0.16 65)", "oklch(84% 0.11 70)", "oklch(95% 0.04 75)"] },
+      "core": { "role": "primary", "displayName": "Core", "canonical": "#ffe0a0", "tonalRamp": ["oklch(15% 0.03 80)", "oklch(26% 0.05 80)", "oklch(37% 0.07 80)", "oklch(48% 0.08 80)", "oklch(60% 0.09 80)", "oklch(72% 0.09 80)", "oklch(84% 0.09 80)", "oklch(95% 0.04 82)"] },
+      "void": { "role": "neutral", "displayName": "Void", "canonical": "#05060a", "tonalRamp": ["oklch(15% 0.01 270)", "oklch(26% 0.01 270)", "oklch(37% 0.01 270)", "oklch(48% 0.01 270)", "oklch(60% 0.01 270)", "oklch(72% 0.01 270)", "oklch(84% 0.01 270)", "oklch(95% 0.005 270)"] },
+      "deep": { "role": "neutral", "displayName": "Deep Space", "canonical": "#0a1117", "tonalRamp": ["oklch(15% 0.015 240)", "oklch(26% 0.02 240)", "oklch(37% 0.02 240)", "oklch(48% 0.02 240)", "oklch(60% 0.02 240)", "oklch(72% 0.015 240)", "oklch(84% 0.01 240)", "oklch(95% 0.005 240)"] },
+      "space": { "role": "neutral", "displayName": "Space Grey", "canonical": "#162028", "tonalRamp": ["oklch(15% 0.02 235)", "oklch(26% 0.02 235)", "oklch(37% 0.02 235)", "oklch(48% 0.02 235)", "oklch(60% 0.02 235)", "oklch(72% 0.015 235)", "oklch(84% 0.01 235)", "oklch(95% 0.005 235)"] },
+      "readout": { "role": "neutral", "displayName": "Readout White", "canonical": "#eceff2", "tonalRamp": ["oklch(15% 0.005 250)", "oklch(26% 0.005 250)", "oklch(37% 0.005 250)", "oklch(48% 0.005 250)", "oklch(60% 0.005 250)", "oklch(72% 0.005 250)", "oklch(84% 0.005 250)", "oklch(95% 0.005 250)"] },
+      "readout-dim": { "role": "neutral", "displayName": "Readout Dim", "canonical": "#8b929b", "tonalRamp": ["oklch(15% 0.01 255)", "oklch(26% 0.01 255)", "oklch(37% 0.01 255)", "oklch(48% 0.01 255)", "oklch(60% 0.015 255)", "oklch(72% 0.01 255)", "oklch(84% 0.01 255)", "oklch(95% 0.005 255)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The one uppercase tagline over the backdrop; max 16ch, balanced." },
+      "wordmark": { "displayName": "Wordmark", "purpose": "The small, widely tracked SLUR mark, top left." },
+      "title": { "displayName": "Title", "purpose": "The value a control holds: ship name (uppercase, 0.14em), chip host name (15px, untracked)." },
+      "body": { "displayName": "Body", "purpose": "The one-line pitch (max 60ch) and the input value." },
+      "button": { "displayName": "Button", "purpose": "The primary action label, uppercase." },
+      "label": { "displayName": "Label", "purpose": "Uppercase field labels in Readout Dim; section headings over the backdrop use it at 12px." },
+      "meta": { "displayName": "Meta", "purpose": "Uppercase stat readouts: ship class, racer count and phase, key-hint words." }
+    },
+    "shadows": [
+      { "name": "strip", "value": "0 -14px 36px rgba(10, 17, 23, 0.55)", "purpose": "Upward lift of the lower-third strip over the backdrop." },
+      { "name": "cta", "value": "0 6px 18px rgba(245, 154, 36, 0.3)", "purpose": "Marigold glow under the primary button, hover only." },
+      { "name": "text-readout", "value": "0 2px 5px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.8)", "purpose": "Legibility drop on type laid directly over the 3D backdrop." }
+    ],
+    "motion": [
+      { "name": "state", "value": "150ms ease-out", "purpose": "Colour, border, shadow and translate transitions on controls." },
+      { "name": "edge-sweep", "value": "320ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The marigold rule under the ship name scales in from the side of travel on each ship change. Off under reduced motion." },
+      { "name": "pulse-dot", "value": "1.8s ease-in-out infinite", "purpose": "The live-runs square pulses between full and 35% opacity. Off under reduced motion." },
+      { "name": "ship-bank", "value": "damped spring (stiffness 60, damping 9)", "purpose": "The backdrop ship banks into a ship change. Off under reduced motion, with cruise, bob, asteroid and nebula motion." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one marigold fill per screen: HOST.",
+      "html": "<button class=\"ds-btn-primary\">HOST <svg viewBox=\"0 0 10 16\" width=\"10\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 2 L8 8 L2 14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\"/></svg></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 12px; height: 44px; padding: 0 28px; border: 0; border-radius: 0; background: var(--color-marigold); color: var(--color-deep); font-family: var(--font-readout); font-size: 14px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: background-color 150ms ease-out, box-shadow 150ms ease-out, translate 150ms ease-out; } .ds-btn-primary:hover { box-shadow: var(--shadow-cta); } .ds-btn-primary:active { background: var(--color-core); translate: 0 1px; } .ds-btn-primary:focus-visible { background: var(--color-core); outline: 2px solid var(--color-core); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.7; cursor: wait; }"
+    },
+    {
+      "name": "Call Sign Field",
+      "kind": "input",
+      "refersTo": "input-callsign",
+      "description": "Square Deep Space field with a label above; marigold caret and focus border.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-label\" for=\"ds-callsign\">Call sign</label><input id=\"ds-callsign\" class=\"ds-input\" placeholder=\"Racer\" maxlength=\"16\"></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; } .ds-label { font-family: var(--font-readout); font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-readout-dim); } .ds-input { height: 44px; padding: 0 14px; border: 1px solid color-mix(in oklab, var(--color-readout) 20%, transparent); border-radius: 0; background: var(--color-deep); color: var(--color-readout); caret-color: var(--color-marigold); font-family: var(--font-readout); font-size: 16px; outline: none; transition: border-color 150ms; } .ds-input::placeholder { color: var(--color-readout-dim); } .ds-input:hover { border-color: color-mix(in oklab, var(--color-readout) 40%, transparent); } .ds-input:focus-visible { border-color: var(--color-marigold); }"
+    },
+    {
+      "name": "Ship Picker",
+      "kind": "custom",
+      "refersTo": "ship-picker",
+      "description": "The signature stepper: chevrons around the ship name, a 1px marigold rule that sweeps on change.",
+      "html": "<fieldset class=\"ds-picker\"><legend class=\"ds-picker-legend\"><span>Ship</span><span class=\"ds-picker-class\">Class · Freighter</span></legend><div class=\"ds-picker-bar\"><button type=\"button\" class=\"ds-step\" aria-label=\"Previous ship\"><svg viewBox=\"0 0 10 16\" width=\"10\" height=\"14\" style=\"transform: scaleX(-1)\"><path d=\"M2 2 L8 8 L2 14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\"/></svg></button><output class=\"ds-picker-name\">Split Crown<span class=\"ds-picker-rule\"></span></output><button type=\"button\" class=\"ds-step\" aria-label=\"Next ship\"><svg viewBox=\"0 0 10 16\" width=\"10\" height=\"14\"><path d=\"M2 2 L8 8 L2 14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\"/></svg></button></div></fieldset>",
+      "css": ".ds-picker { margin: 0; padding: 0; border: 0; min-width: 0; } .ds-picker-legend { display: flex; justify-content: space-between; gap: 12px; width: 100%; margin-bottom: 6px; padding: 0; font-family: var(--font-readout); font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-readout-dim); } .ds-picker-class { font-weight: 400; letter-spacing: 0.16em; } .ds-picker-bar { display: flex; align-items: stretch; border: 1px solid color-mix(in oklab, var(--color-readout) 20%, transparent); background: var(--color-deep); } .ds-step { display: grid; place-items: center; height: 44px; width: 40px; flex: none; border: 0; background: none; color: var(--color-readout-dim); cursor: pointer; transition: color 150ms; } .ds-step:hover, .ds-step:focus-visible { color: var(--color-readout); } .ds-step:focus-visible { outline: 2px solid var(--color-readout); outline-offset: -2px; } .ds-picker-name { position: relative; display: grid; place-items: center; flex: 1; min-width: 12ch; padding: 0 8px; font-family: var(--font-readout); font-size: 16px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-readout); } .ds-picker-rule { position: absolute; left: 12px; right: 12px; bottom: 6px; height: 1px; background: var(--color-marigold); transform-origin: left; animation: ds-sweep 320ms cubic-bezier(0.16, 1, 0.3, 1); } @keyframes ds-sweep { from { transform: scaleX(0); } } @media (prefers-reduced-motion: reduce) { .ds-picker-rule { animation: none; } }"
+    },
+    {
+      "name": "Live Run Chip",
+      "kind": "chip",
+      "refersTo": "room-chip",
+      "description": "A submit chip for one live room: host, racer count and phase, and a Join or Spectate action.",
+      "html": "<button class=\"ds-chip\"><span class=\"ds-chip-host\">Maya's run</span><span class=\"ds-chip-action\">Spectate</span><span class=\"ds-chip-meta\">3 racers · <span class=\"ds-chip-live\">Racing</span></span></button>",
+      "css": ".ds-chip { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 20px; min-width: 208px; padding: 10px 16px; border: 1px solid color-mix(in oklab, var(--color-readout) 15%, transparent); border-radius: 0; background: color-mix(in oklab, var(--color-deep) 85%, transparent); text-align: left; font-family: var(--font-readout); cursor: pointer; transition: border-color 150ms; } .ds-chip-host { font-size: 15px; font-weight: 600; color: var(--color-readout); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-chip-action { grid-row: span 2; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-readout-dim); transition: color 150ms; } .ds-chip-meta { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-readout-dim); } .ds-chip-live { color: var(--color-readout); } .ds-chip:hover, .ds-chip:focus-visible { border-color: var(--color-marigold); } .ds-chip:hover .ds-chip-action, .ds-chip:focus-visible .ds-chip-action { color: var(--color-marigold); } .ds-chip:focus-visible { outline: 2px solid var(--color-readout); outline-offset: -4px; } .ds-chip:disabled { opacity: 0.6; cursor: wait; }"
+    },
+    {
+      "name": "Key Hint",
+      "kind": "custom",
+      "refersTo": "key-cap",
+      "description": "Square keycaps with an action word, at the right end of the strip.",
+      "html": "<dl class=\"ds-keys\"><div class=\"ds-key\"><dt class=\"ds-caps\"><kbd class=\"ds-cap\">A</kbd><kbd class=\"ds-cap\">D</kbd></dt><dd>Ship</dd></div><div class=\"ds-key\"><dt class=\"ds-caps\"><kbd class=\"ds-cap\">Enter</kbd></dt><dd>Host</dd></div></dl>",
+      "css": ".ds-keys { display: flex; align-items: center; gap: 20px; margin: 0; font-family: var(--font-readout); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-readout-dim); } .ds-key { display: flex; align-items: center; gap: 6px; } .ds-key dd { margin: 0; } .ds-caps { display: flex; gap: 4px; } .ds-cap { display: grid; place-items: center; height: 24px; min-width: 24px; padding: 0 6px; border: 1px solid color-mix(in oklab, var(--color-readout) 25%, transparent); font-family: var(--font-readout); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--color-readout); }"
+    },
+    {
+      "name": "Menu Strip",
+      "kind": "nav",
+      "refersTo": "menu-strip",
+      "description": "The lower third: a Space Grey bar with a hairline top edge and an upward shadow, holding the 44px control line.",
+      "html": "<form class=\"ds-strip\"><div class=\"ds-strip-row\"><div class=\"ds-strip-slot\">Call sign</div><div class=\"ds-strip-slot\">Ship</div><button type=\"button\" class=\"ds-strip-host\">HOST</button></div></form>",
+      "css": ".ds-strip { padding: 20px 40px; border-top: 1px solid color-mix(in oklab, var(--color-readout) 15%, transparent); background: var(--color-space); box-shadow: var(--shadow-strip); font-family: var(--font-readout); color: var(--color-readout); } .ds-strip-row { display: grid; grid-template-columns: 15rem 17rem auto; align-items: end; gap: 24px; } .ds-strip-slot { height: 44px; display: flex; align-items: center; padding: 0 14px; border: 1px solid color-mix(in oklab, var(--color-readout) 20%, transparent); background: var(--color-deep); color: var(--color-readout-dim); font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; } .ds-strip-host { height: 44px; padding: 0 28px; border: 0; background: var(--color-marigold); color: var(--color-deep); font-family: var(--font-readout); font-size: 14px; font-weight: 700; letter-spacing: 0.2em; cursor: pointer; } .ds-strip-host:focus-visible { background: var(--color-core); outline: 2px solid var(--color-core); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Broadcast Lower Third",
+    "overview": "The menu is the game already running. A live cruise shot of the real track fills the screen: the game's own deck, fog, asteroids and nebula, with the player's chosen ship flying it. The interface is a race-broadcast graphic laid over that shot. It is a dark, square-cut strip across the bottom, tight uppercase labels, stat-style readouts, and one sweeping marigold rule. It is not a poster in front of the game. Nothing covers the world except a low scrim that gives the type something to sit on.\n\n\"Cold Space. Warm Energy.\" The cold is graphite and near-black, taken from the scene itself. The warmth is one colour, marigold, spent only where the player acts. The density is low. There are three controls, one primary action, and a row of live-run chips. Everything is legible at a glance from across an office. The look is TRON-influenced and not TRON-literal. It uses hard edges and a single energy colour. It does not use neon outlines, glass panels or cyan glow.\n\nThe DOM overlay and the R3F canvas are separate layers. Tailwind styles only the DOM. The scene's look lives in the scene code.",
+    "keyCharacteristics": [
+      "A full-bleed live 3D backdrop is the hero. The DOM is a lower third over it.",
+      "One warm colour (marigold) on a cold graphite field.",
+      "One typeface, Chakra Petch, for every piece of menu type.",
+      "Zero corner radius. There are 1px hairlines and no glass.",
+      "A 44px control line. All strip controls share one height and one baseline.",
+      "Motion is small and purposeful: a rule that sweeps, a ship that banks, a live dot that pulses. All of it stops under reduced motion."
+    ],
+    "rules": [
+      { "name": "The One Warm Voice Rule", "body": "Marigold marks where the player acts, and only there. Use it on the primary control, the active selection, the caret, the focused field and the hovered chip. It is never a background wash, a decorative border or a heading colour. Core appears only on a pressed or focused primary.", "section": "colors" },
+      { "name": "The Neutral Readout Rule", "body": "Menu text is Readout White or Readout Dim. Do not use the cooler panel whites (`--color-hud`, `--color-fg`) on this surface.", "section": "colors" },
+      { "name": "The One Face Rule", "body": "Every piece of menu type is Chakra Petch. The system sans on `body` is an inherited default, and the menu overrides it at its root.", "section": "typography" },
+      { "name": "The Readout-Over-World Rule", "body": "Type laid directly on the backdrop carries `text-shadow-readout` (a dark 5px drop plus a 2px halo). The scrim darkens the lower 60% of the screen. Together they keep text at WCAG AA however bright the scene gets. Type inside the strip does not need the shadow.", "section": "typography" },
+      { "name": "The Flat Overlay Rule", "body": "UI surfaces are flat at rest. Glow appears only as a response to hover on the primary. There is no glass and no backdrop-blur.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do let the live game world be the hero. Keep the top of the screen open and put UI in the lower third.",
+      "Do spend Marigold only on the element the player acts on. Use Core only for a pressed or focused primary.",
+      "Do set all menu type in Chakra Petch through `font-readout`, and give type over the backdrop `text-shadow-readout`.",
+      "Do keep every control on the 44px line, square-cut, with 1px Readout-alpha hairlines.",
+      "Do reference `@theme` tokens for every colour, shadow and text shadow. A brand colour appears literally only in `app/app.css`.",
+      "Do give every motion a reduced-motion state that stops it."
+    ],
+    "donts": [
+      "Don't style the canvas with Tailwind, or add DOM panels that hide the world behind them.",
+      "Don't round the corners of menu surfaces or controls.",
+      "Don't add glass, backdrop-blur or cyan glow to a readout-world surface.",
+      "Don't add a second warm accent or a second typeface to the menu.",
+      "Don't use a raw hex or rgba in a `className`."
+    ]
+  }
+}
