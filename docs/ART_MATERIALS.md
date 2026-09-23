@@ -901,9 +901,10 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       finish keys. The block shader samples in world units, so the plate joints on a block line up with
       the deck grid.
     - Monoliths use `monolithSurface()`. It is the deck material with its own plate size,
-      `Monolith.plate`. The default is 4, the same as `Deck.plate`. At 0 the texture has no plate joints
-      and no per-plate value change. The brushed grain and the wear stay. The owner has not yet chosen
-      between 4 and 0.
+      `Monolith.plate`. The default is 2 (owner, 2026-09-24), half of `Deck.plate`, so a monolith
+      shows a finer grid than the deck. At 0 the texture has no plate joints and no per-plate value
+      change. The brushed grain and the wear stay. A plate size different from the deck's costs one
+      extra texture bake at load: about 60 ms, measured on a cold headless load.
     - Monoliths and the finish-gate body get the deck's rail glow. Blocks do not, on the owner's
       instruction.
     - The `Metal046B` maps are deleted. So are item 12's `Metal.mapTint` key and the `Block.*` and
