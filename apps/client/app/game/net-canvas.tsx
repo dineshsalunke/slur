@@ -12,8 +12,8 @@ import { Held, LocalPlayer } from './ecs/traits';
 import { world } from './ecs/world';
 import { attachKeyboard } from './input/keyboard';
 import { handlePowerKey } from './input/power-select';
+import { NetHud } from './net-hud';
 import { NetLoop } from './net-loop';
-import { NetPowerRack } from './net-power-rack';
 import { CANVAS_GL } from './scene/canvas-gl';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
@@ -64,7 +64,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                     <RemoteEngineAudio />
                 </WorldScene>
             </Canvas>
-            <NetPowerRack />
+            <NetHud track={ track } />
             <TuningPanelMount />
         </WorldProvider>
     );

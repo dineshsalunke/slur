@@ -99,7 +99,7 @@ vi.mock( '@colyseus/sdk', () => ( {
     },
 } ) );
 
-const counts = vi.hoisted( () => ( { LeaveGuard: 0, RaceHud: 0, SpecTag: 0, Roster: 0 } ) );
+const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0 } ) );
 
 vi.mock( './spec-tag', async ( importOriginal ) => {
     const actual = await importOriginal< typeof import('./spec-tag') >();
@@ -127,16 +127,6 @@ vi.mock( './leave-guard', async ( importOriginal ) => {
         LeaveGuard: ( props: Parameters< typeof actual.LeaveGuard >[ 0 ] ) => {
             counts.LeaveGuard += 1;
             return actual.LeaveGuard( props );
-        },
-    };
-} );
-
-vi.mock( './race-hud', async ( importOriginal ) => {
-    const actual = await importOriginal< typeof import('./race-hud') >();
-    return {
-        RaceHud: ( props: Parameters< typeof actual.RaceHud >[ 0 ] ) => {
-            counts.RaceHud += 1;
-            return actual.RaceHud( props );
         },
     };
 } );
@@ -177,7 +167,6 @@ beforeEach( () => {
         z: 0,
     } );
     counts.LeaveGuard = 0;
-    counts.RaceHud = 0;
     counts.SpecTag = 0;
     counts.Roster = 0;
     send.mockClear();
@@ -194,16 +183,14 @@ afterEach( async () => {
 } );
 
 describe( 'Overlays subscription boundary (#91)', () => {
-    it( 'lets an elapsed patch reach RaceHud without re-rendering LeaveGuard', async () => {
+    it( 'does not re-render LeaveGuard on an elapsed patch', async () => {
         await mountOverlays();
         counts.LeaveGuard = 0;
-        counts.RaceHud = 0;
 
         await act( async () => {
             bus.emitRoot( 'elapsed', 1.5 );
         } );
 
-        expect( counts.RaceHud ).toBeGreaterThan( 0 );
         expect( counts.LeaveGuard ).toBe( 0 );
     } );
 
@@ -218,16 +205,18 @@ describe( 'Overlays subscription boundary (#91)', () => {
         expect( counts.LeaveGuard ).toBeGreaterThan( 0 );
     } );
 
-    it( 'lets a per-player patch reach RaceHud without re-rendering LeaveGuard', async () => {
+    it( 'mounts the spectator bar when self turns spectator, without re-rendering LeaveGuard', async () => {
         await mountOverlays();
         counts.LeaveGuard = 0;
-        counts.RaceHud = 0;
+        expect( container.textContent ).not.toContain( 'Spectating' );
 
         await act( async () => {
+            const self = bus.state.players.get( 'self' );
+            if ( self ) self.spectating = true;
             bus.emitPlayerChange();
         } );
 
-        expect( counts.RaceHud ).toBeGreaterThan( 0 );
+        expect( container.textContent ).toContain( 'Spectating' );
         expect( counts.LeaveGuard ).toBe( 0 );
     } );
 } );

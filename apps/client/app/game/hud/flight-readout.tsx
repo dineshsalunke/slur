@@ -5,19 +5,23 @@ import { useEffect, useRef } from 'react';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import { clockText, progressText, rankText, speedText } from './readout-format';
 
+export interface Standing {
+    rank: number;
+    field: number;
+}
+
 export function FlightReadout( {
     track,
-    rank,
-    field,
+    standing,
     clock,
 }: {
     track: Track;
-    rank: number;
-    field: number;
+    standing: () => Standing;
     clock: () => number;
 } ) {
     const world = useWorld();
     const speedRef = useRef< HTMLSpanElement >( null );
+    const rankRef = useRef< HTMLSpanElement >( null );
     const progressRef = useRef< HTMLSpanElement >( null );
     const clockRef = useRef< HTMLSpanElement >( null );
 
@@ -26,11 +30,13 @@ export function FlightReadout( {
         return addEffect( () => {
             const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
             if ( ! sim ) return;
+            const { rank, field } = standing();
             if ( speedRef.current ) speedRef.current.textContent = speedText( sim.vz );
+            if ( rankRef.current ) rankRef.current.textContent = rankText( rank, field );
             if ( progressRef.current ) progressRef.current.textContent = progressText( sim.z, track.finishZ );
             if ( clockRef.current ) clockRef.current.textContent = clockText( clock() );
         } );
-    }, [ world, track, clock ] );
+    }, [ world, track, standing, clock ] );
 
     return (
         <div className="absolute bottom-0 left-0 flex flex-col gap-[0.55em]">
@@ -44,7 +50,7 @@ export function FlightReadout( {
                 </span>
             </div>
             <div className="flex items-baseline gap-[1.6em] text-[clamp(11px,1.95vh,19px)] leading-none font-semibold tracking-[0.14em] tabular-nums">
-                <span>{ rankText( rank, field ) }</span>
+                <span ref={ rankRef } />
                 <span ref={ progressRef } />
                 <span ref={ clockRef } />
             </div>

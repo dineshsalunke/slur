@@ -14,7 +14,7 @@ export function AudioToggle() {
             aria-pressed={ muted }
             aria-label={ muted ? 'Unmute audio' : 'Mute audio' }
             title={ muted ? 'Unmute (M)' : 'Mute (M)' }
-            className={ `pointer-events-auto fixed bottom-4 left-4 z-20 cursor-pointer rounded-[5px] border bg-void/72 px-2.5 py-1.5 text-[16px] leading-none backdrop-blur-[3px] ${
+            className={ `pointer-events-auto cursor-pointer rounded-[5px] border bg-void/72 px-2.5 py-1.5 text-[16px] leading-none backdrop-blur-[3px] ${
                 muted ? 'border-magenta/60 opacity-70' : 'border-cyan/55 shadow-hud'
             }` }
         >
