@@ -88,3 +88,14 @@ and not mine. `.claude/phases/{INDEX,worklog}.md` are modified and not mine.
 ## Lessons → memory
 
 None.
+
+## Late update (after e9ef6c2) — supervisor order and owner art decision
+
+- **Order:** (1) the ship-height plan to the supervisor, then (2) rebuild the look, (3) render check,
+  (4) 3-slot plan.
+- **Owner art decision:** the trail stays MARIGOLD, not the board's red-orange. Otherwise follow the
+  board: square chamfered body, bright core on the NOSE, dorsal + side fins, a near-cube pickup, and a
+  THICK trail (much wider than the bolt streak). Record the marigold departure in
+  `docs/ART_MATERIALS.md` (Claude-owned, §7 decisions + departures shape, quote the board). Never
+  in `docs/art-direction/`.
+- workertwo has since edited `local-combat.ts` (added `restartLocalCombat`). It is theirs now.
