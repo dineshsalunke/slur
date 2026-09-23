@@ -40,4 +40,5 @@ lives in its own file beside this one.
 - [Count draw calls without repo edits](count-draw-calls-without-repo-edits.md) — CDP-inject a WebGL + rAF wrapper; exact draws on any route, ms is JS only
 - [Owner may waive issue filing](owner-may-waive-issue-filing.md) — when the owner says "no issue, go ahead", brief the worker to build without one
 - [MSAA edge samples extrapolate varyings](msaa-edge-samples-extrapolate-varyings.md) — `pow` on an unclamped varying goes NaN at MSAA, and bloom turns the frame black; clamp the base
+- [Narrow headless captures need a CDP viewport](narrow-headless-captures-need-cdp-viewport.md) — `--window-size=390` crops a wider layout; use `setDeviceMetricsOverride` and probe scrollWidth
 - [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer has multisampling 0; a <1 px strip vanishes whole frames; zsh `$a` does not word-split, verify dials applied
