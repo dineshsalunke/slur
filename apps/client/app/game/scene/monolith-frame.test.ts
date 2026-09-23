@@ -1,7 +1,9 @@
 import { HALF_WIDTH } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
+import { monolithLayout } from './arch-field';
+import { PILLAR, PILLAR_FIELD } from './monolith-config';
 import { ARCH_FRAME, type FrameConfig, frameParts, GATE_FRAME, legShape, lintelWidth } from './monolith-frame';
-import { RAIL_OUTER } from './monolith-transforms';
+import { bodyTransform, RAIL_OUTER } from './monolith-transforms';
 
 const MIN_INNER_FACE = 56;
 
@@ -52,6 +54,28 @@ describe.each( [
         expect( parts.legs ).toHaveLength( 4 );
         expect( parts.seams ).toHaveLength( 4 );
         expect( parts.lintels ).toHaveLength( 2 );
+    } );
+} );
+
+describe( 'ARCH_FRAME', () => {
+    it( 'keeps the 112u opening with bulky 32u legs', () => {
+        expect( ARCH_FRAME.opening ).toBe( 112 );
+        expect( ARCH_FRAME.legWidth ).toBe( 32 );
+        expect( ARCH_FRAME.depth ).toBe( 32 );
+    } );
+
+    it( 'leaves no pillar piercing an arch leg', () => {
+        const layout = monolithLayout( 8400, PILLAR_FIELD );
+        const legs = frameParts( ARCH_FRAME, layout.arches ).legs;
+        for ( const pillar of layout.pillars.map( ( p ) => bodyTransform( PILLAR, p ) ) ) {
+            for ( const leg of legs ) {
+                const overlapX =
+                    Math.abs( pillar.position[ 0 ] - leg.position[ 0 ] ) < ( pillar.scale[ 0 ] + leg.scale[ 0 ] ) / 2;
+                const overlapZ =
+                    Math.abs( pillar.position[ 2 ] - leg.position[ 2 ] ) < ( pillar.scale[ 2 ] + leg.scale[ 2 ] ) / 2;
+                expect( overlapX && overlapZ ).toBe( false );
+            }
+        }
     } );
 } );
 

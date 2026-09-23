@@ -37,9 +37,9 @@ export const GATE_FRAME: FrameConfig = {
 export const ARCH_FRAME: FrameConfig = {
     height: 150,
     opening: 112,
-    legWidth: 16,
-    lintel: 20,
-    depth: 16,
+    legWidth: 32,
+    lintel: 40,
+    depth: 32,
     below: 60,
     overhang: 0,
     chamfer: 0.45,
