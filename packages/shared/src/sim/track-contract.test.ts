@@ -29,15 +29,15 @@ test( 'every ship class can follow the racing line well above the contract floor
 } );
 
 test( 'a ship faster than the contract brakes for the weave instead of reshaping it', () => {
-    const fast = { ...SHIP_CLASSES.freighter.tuning, maxCruise: 124 };
-    const thread = weaveThreadSpeed( fast );
+    const freighter = SHIP_CLASSES.freighter.tuning;
+    const thread = weaveThreadSpeed( freighter );
     assert.equal(
         thread,
-        weaveThreadSpeed( SHIP_CLASSES.freighter.tuning ),
+        weaveThreadSpeed( { ...freighter, maxCruise: freighter.maxCruise * 3 } ),
         'how fast a ship can follow the line must not depend on its top speed',
     );
-    assert.ok( thread < fast.maxCruise, 'a 124u/s freighter should have to lift off the throttle for the weave' );
-    assert.deepEqual( rosterContractFailures( [ { id: 'fast-freighter', tuning: fast } ] ), [] );
+    assert.ok( thread < freighter.maxCruise, 'the Freighter should have to lift off the throttle for the weave' );
+    assert.deepEqual( rosterContractFailures( [ { id: 'freighter', tuning: freighter } ] ), [] );
 } );
 
 function weaveDigest( seed: number, rows: number ): number {

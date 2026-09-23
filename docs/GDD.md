@@ -282,7 +282,13 @@ server (the netcode "one shared `simulate()`" requirement). Model/scale live cli
 | **Fighter** | 55 | 40 | 150 / 80 | 8 (neutral) | 3.2 / 2 |
 | Comet | **70** | 52 | 165 / 85 | 4 (drifty) | 2.8 / 2 |
 | Phantom | 50 | 38 | 135 / 75 | 8 (neutral) | 4.2 / **3** |
-| Freighter | 62 | 30 | 105 / 65 | 5 (drifty) | 3.6 / 2 |
+| Freighter | **124** | 30 | 105 / 65 | 5 (drifty) | 3.6 / 2 |
+
+The Freighter's top speed is **not** a top speed it can use everywhere. It follows the racing line at
+**69.3u/s** (`weaveThreadSpeed`), so holding 124 costs it a **44% scrub** into every weave, and at full throttle
+a mid-difficulty hazard gives it **0.48s** of warning against **0.50s** of braking. It is a straight-line ship
+that must read the track ahead — top speed for the open sections, paid for in the dense ones. Raised 62 → 124 on
+2026-09-23; under ADR-013 this moved **no track geometry**.
 
 **Two governing constraints (why the matrix stays fair):**
 1. **Widest class ≤ 1 cell** (`MAX_SHIP_WIDTH`; widest is now Fighter 0.65c) and the generator **guarantees a
@@ -290,10 +296,12 @@ server (the netcode "one shared `simulate()`" requirement). Model/scale live cli
    every legal ship threads with margin. See §0 for the full contract + the roster-conformance assertion.
    (Replaces the old `MIN_CORRIDOR 6` / "≥2 lanes = 8u".) NB: the Freighter's *weave* penalty comes from its
    sluggish strafe, not a wide hitbox — so its footprint stays ≤ contract while it remains the longest (gap-tank).
-2. **One shared server-authoritative track for all players (drop-in)**, so it is generated to the **least-capable
-   class per hazard**: gaps sized for the worst gap-clearer (short Interceptor/Comet — offset by their speed),
-   corridors for the widest (Freighter). **Class differences are margin & style, never pass/fail** — this caps
-   how far jump may vary (no sub-3.0 jumper), so a Freighter on a gap-heavy seed is never simply dead.
+2. **One shared server-authoritative track for all players (drop-in)**, generated to the **contract**, never to
+   the roster (ADR-013). It is sized for `TRACK_CONTRACT`'s reference weaver and pacing speed; each class is only
+   *asserted* to clear the floor. A track shaped by the least-capable live ship would cancel out ship choice —
+   the course would already have been drawn around the ship you did not pick. **Class differences are margin &
+   style, never pass/fail** — the floor (`weaveThreadSpeed ≥ 27.5u/s`, no sub-3.0 jumper) is what keeps a
+   Freighter on a gap-heavy seed from being simply dead, not a track that bends to it.
 
 **Emergent identity (not hand-tuned):** gap skill falls out of **length** (generous grounded rule — a longer ship
 takes off later and lands earlier, so it clears gaps more forgivingly), weave skill out of **width**. The short

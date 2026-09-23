@@ -81,7 +81,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
         armour: 0.4,
         tuning: {
             ...DEFAULT_TUNING,
-            maxCruise: 62,
+            maxCruise: 124,
             accel: 30,
             strafeAccel: 118,
             strafeClamp: 65,
