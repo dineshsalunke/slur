@@ -176,13 +176,13 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   (`pickupTaken` generalised); runtime-spawned things (bolts/drops/active hazards) are synced entities. Visuals
   are a separate client-side concern (ADR-002 — the 3-layer model).
 - **Core hazard vocabulary (implemented):** *cube fields* (**un-jumpable** pillars — strafe-weave) and *gaps* (fall = death/respawn — jump), plus *pads* (forced-flat breather/landing). **A block is solid, not lethal — you bounce off it** (ADR-014): the hit shoves you back off the face and stuns you for a moment, so a block costs time and position while the *gap* keeps the only death in the game. Jump answers gaps; blocks are **strafe-or-destroy** — **and the two now overlap**: a gap segment that keeps a floor deck (a crack, or a partial gap) may carry one block on its **landing side**, so crossing it is one decision with two parts — clear the hole *and* be somewhere specific laterally when you land. A **full-width** gap never carries a block: there is nothing to stand on. Block height stays **8u** (above double-jump reach, ADR-007), so a block is never the thing you jump. Threadable clearance is measured over the **combined** floor-and-block result, so the deck a block sits on still keeps a ≥ `MIN_CLEAR` run. The fuller candidate menu (teleports, pads, fields, switches, destructibles, forks…) is catalogued in **§5.7**.
-- **⚠ Slow blocks are under review — ADR-009 (PROPOSED, 2026-09-17).** The `docs/art-direction/` direction drops
-  slow blocks and instead freezes art for **destructible** blocks. The proposal merges both into a single
-  **breakable block** (fractured shell — shoot it to clear the path, or smash through and pay a speed tax),
-  replacing the slow primitive; three primitives remain (gaps · deadly · breakable). **Slow blocks stay live
-  in the generator until that ADR is accepted.** It is gated on a readability test (can you tell sealed from
-  fractured at 55 u/s?) and carries a real cost — it converts a free seed-derived primitive into networked
-  mutable state. See `docs/DECISIONS.md` ADR-009.
+- **Fractured blocks (implemented, ADR-015 amending ADR-009).** A block is **sealed** or **fractured**. A
+  fractured block has a cracked shell with marigold energy inside. Shoot it with one bolt to break it, or
+  fly through it and keep 45% of your forward speed. A sealed block bounces you (ADR-014) and stops a bolt.
+  So the cost order is: weave (free) < shoot (a bolt) < smash (~0.2s) < bounce (~1.45s). The fracture rate
+  rises with track intensity, from 15% to 35%. Broken state is networked (`RunState.blockBroken`) and lasts
+  for the run. Three primitives remain: gaps · sealed · fractured. Slow blocks are gone. The readability gate
+  (can you tell sealed from fractured at 55 u/s?) is still open. See `docs/DECISIONS.md` ADR-015.
 - **Locked constraints:** straight ribbon · strafe-only lateral · no autonomous moving geometry ·
   impulse-only verticality. Stated once, in full, in **§5.7** — they bound the whole mechanic catalog, not
   just the track.
@@ -393,7 +393,7 @@ render only). Implement one at a time; the BC changes are called out so they're 
 | **Launch pads** | B | BC6-imp | Impart upward `vy` (pop over a wall / reach an air pickup); you land on the flat floor. |
 | **Wind / push zones** | B | BC5 | Zone applying a constant lateral (or fore/aft) force — fight the drift while weaving. |
 | **Switches → route hazards** | B | BC3-trig | Passing/shooting a switch arms or opens something downstream (drop a gate, open a gap, arm a hazard). Co-op or troll (arm it as a rival nears). *(user-favored)* |
-| **Destructible cubes** | B | BC1 | Cube with HP; shoot to clear a path (or leave it as a wall for chasers). Networked destroyed-state. |
+| **Destructible cubes** | B | BC1 | **Built as fractured blocks (ADR-015).** No HP: one bolt breaks one. Shoot it to clear a path, smash through it for a speed tax, or leave it as a wall for chasers. Networked broken state. |
 | **Shrinking track** | B | BC7-lite | `HALF_WIDTH` narrows over a section (fewer lanes) → escalating weave crescendo. |
 | **Split paths / forks** | R | BC7-lite | Ribbon branches into parallel straight lanes (risky-short vs safe-long), then rejoins. Route choice, no turning. |
 | **Fog / vision zones** | M | ⚡ render | Reduced draw distance in a band → react later. Render-only, but seed/level-driven so all clients agree where. |

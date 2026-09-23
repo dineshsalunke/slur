@@ -4,6 +4,17 @@ Lane: **fractured-blocks**. Session of 2026-09-23. Stopped at the context watchd
 Plan: `.claude/phases/2026-09-23-destructible-blocks-plan.md` (`2dafcdf`). Owner said go, via
 slur-supervisor. Lane claimed at the top of issue #214.
 
+## Update 4 (fourth session): step 6 DONE; step 5 waits on the owner
+
+- The fps drop was not this lane: workerone cleared `8c9afaf`. Cause: agents' headless Chrome tabs
+  contending for the GPU, plus DPR 2 fill cost. New rule: headless Chrome gets
+  `--force-device-scale-factor=1 --mute-audio` and is killed when the measurement ends.
+- Side task for the supervisor: the dev panel's **Render → dpr** slider (`248096d`), live on both canvases.
+- Step 6: ADR-015 in `docs/DECISIONS.md`; ADR-009 status now points at it; GDD §5.2 bullet and §5.7
+  row rewritten; INDEX has the plan row and a LIVE entry for this handover.
+- **Next: step 5.** The owner plays `/test-level` at race speed and judges sealed vs fractured. Then a
+  hosted room: smash one, shoot one. Record the verdict in ADR-015's "Readability gate" section.
+
 ## Update 3 (third session): step 3 + debris DONE — committed `8c9afaf`
 
 - `fractured-block-geometry.ts`: hand-built extrusion (not `ExtrudeGeometry`, so each edge carries its

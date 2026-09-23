@@ -373,8 +373,8 @@ then-current ADD on colour hierarchy.
 
 ## ADR-009 — Merge slow blocks and destructible blocks into one *breakable block* primitive
 
-**Date:** 2026-09-17 · **Status:** **PROPOSED** — gated on the readability test below. Do not build until
-that gate passes.
+**Date:** 2026-09-17 · **Status:** **ACCEPTED with amendments by ADR-015** (2026-09-23). Slow blocks are
+gone and blocks bounce (ADR-014). The readability gate below is still open.
 
 **Context.** ADR-006 names three core primitives: gaps + deadly blocks + **slow blocks**, with slow blocks
 as "grace-notes on the line". They are live in the generator today (`SLOW_GRACE_START/MAX`, `SALT_DRAG`).
@@ -730,3 +730,69 @@ but no spark. Wiring the predicted bounce into `hit-events.ts` is the obvious fo
 Whether a bounce should also scrub *lateral* speed, whether armour should scale `bounceStun` the way
 `stunDurationForShip()` scales the bolt stun, and whether breakable blocks (ADR-009) shatter on contact
 instead of bouncing, are all open.
+
+---
+
+## ADR-015 — Accept ADR-009 as one fractured block kind, amended for ADR-014
+
+**Date:** 2026-09-23 · **Status:** ACCEPTED (owner, via slur-supervisor) · **Issue:** #214 ·
+**Amends:** ADR-009 · **Readability gate:** NOT YET RUN (see below)
+
+### Decision
+
+A block has a `kind`: `'sealed'` or `'fractured'`. `placeBlock()` in
+`packages/shared/src/sim/fracture.ts` picks the kind from a hash of the block id. The fracture rate goes
+from `FRACTURE_RATE_START` (0.15) to `FRACTURE_RATE_MAX` (0.35) as the track intensity rises. A block wider
+or deeper than 12u (`FRACTURE_MAX_WIDTH`, `FRACTURE_MAX_DEPTH`) is always sealed. A pinched wall is always
+sealed.
+
+- **Sealed** blocks bounce the ship (ADR-014). They also stop a bolt.
+- **Fractured** blocks break. One bolt breaks one block. There is no block HP.
+- **Smash:** a ship that flies into a standing fractured block breaks it and keeps `smashKeep` (0.45) of
+  its `vz`. There is no stun. An invulnerable ship passes through and does not break the block.
+- A broken block stays broken for the run. `RunState.blockBroken` holds the broken ids. A race reset
+  clears it.
+- The client predicts a smash. `reconcile()` restores the confirmed broken set before it replays inputs.
+- On the client, a broken fractured block splits into its two chunks. The chunks fall, then disappear.
+  This is VFX only. The sim does not know about the chunks.
+
+### Two amendments to ADR-009
+
+1. **Slow blocks are gone.** ADR-009 merges two primitives. Slow blocks left the sim on 2026-09-22, so there
+   is only one primitive to add. The three primitives are now: gaps, sealed blocks, fractured blocks.
+2. **Blocks do not kill.** ADR-009 calls sealed blocks *"deadly — kills on contact"*. ADR-014 replaced
+   that with a bounce. So the tax is measured against the bounce, not against death. The rule is:
+   **weave (free) < shoot (costs a bolt) < smash (about 0.2s) < bounce (about 1.45s, measured in #213)**.
+   The smash number is calculated from `DEFAULT_TUNING`. Nobody has played it yet.
+
+ADR-009 cost 3 still holds: `passableCorridorWidth` counts a fractured block as solid. No slice may need a
+break to be threadable.
+
+### Why a smash has no throttle-suppression window
+
+The plan wanted a short window after a smash where the throttle does not work. That window is not built.
+Keeping 45% of `vz` already costs less than a bounce and more than a clean weave. A window needs a new
+`SimShip` field and a new schema field. It adds nothing to the order above.
+
+### Readability gate — open
+
+ADR-009 says: *"at 55 u/s on the real chase camera: can a player reliably tell sealed from fractured with
+enough time to react?"* In headless Chrome on `/test-level`, the crack reads at about 20u to 50u. The
+owner has not judged it at race speed. The misread cost is now a bounce, not a death, so the gate is
+softer than ADR-009 assumed. It still applies. If it fails, the fallback is ADR-009's option (a): a support
+colour on one kind. The art package rejects red as a hazard code, so the colour must come from
+`docs/ART_MATERIALS.md`.
+
+### Open with the owner
+
+1. **Do sealed blocks stop a bolt?** Built as yes. It is one line in `apps/server/src/rooms/run-room.ts`.
+2. **Does the Freighter smash cheap?** Built as one `smashKeep` for all classes. A per-class value is a
+   data edit in `FlightTuning` (non-negotiable #6).
+
+### Affected
+
+`packages/shared/src/sim/{space,fracture,step,track,gap-blocks}.ts` ·
+`packages/shared/src/combat/projectiles.ts` · `packages/shared/src/schema.ts` ·
+`apps/server/src/rooms/run-room.ts` · `apps/client/app/game/block-state.ts` ·
+`apps/client/app/game/scene/{track-blocks,block-debris,block-breaks,fractured-block-*}` ·
+`docs/GDD.md` §5.2, §5.7. Commits: `523d63c`, `b6f1f45`, `8c9afaf`.
