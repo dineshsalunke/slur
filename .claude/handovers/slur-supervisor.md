@@ -42,7 +42,9 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 
 ## File queues
 
-- docs/DECISIONS.md and docs/ART_MATERIALS.md: workerthree holds both now. Nobody is queued next.
+- docs/DECISIONS.md and docs/ART_MATERIALS.md: FREE. workerthree released both: item 14 `555862d`,
+  ADR-017 amendment `1081809`. workerthree keeps docs/GDD.md for the §5.3 slot and controls update in its
+  #223 client slice (now building).
 - Next free ADR number: ADR-019.
 
 ## Notes
