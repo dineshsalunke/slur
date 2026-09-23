@@ -5,7 +5,14 @@ import { num } from '../../dev/tuning';
 import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
-import { bodySpan, bodyTransform, type MonolithTransform, seamTransform, shapeProfile } from './monolith-transforms';
+import {
+    bodySpan,
+    bodyTransform,
+    type MonolithTransform,
+    placedShape,
+    seamTransform,
+    shapeProfile,
+} from './monolith-transforms';
 import { useSealedBlockMaps } from './sealed-block-texture';
 import { TEX_SPAN_X } from './track-texture';
 
@@ -59,14 +66,14 @@ export function MonolithGroup( {
 
     const fillBodies = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
-            if ( mesh ) fill( mesh, placements, ( p ) => bodyTransform( shape, p ) );
+            if ( mesh ) fill( mesh, placements, ( p ) => bodyTransform( placedShape( shape, p ), p ) );
         },
         [ placements, shape ],
     );
 
     const fillSeams = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
-            if ( mesh ) fill( mesh, placements, ( p ) => seamTransform( shape, p ) );
+            if ( mesh ) fill( mesh, placements, ( p ) => seamTransform( placedShape( shape, p ), p ) );
         },
         [ placements, shape ],
     );

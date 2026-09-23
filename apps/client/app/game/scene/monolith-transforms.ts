@@ -13,6 +13,16 @@ export interface MonolithTransform {
 
 const RAIL_OUTER = HALF_WIDTH + RAIL_W;
 
+export function placedShape( shape: MonolithShapeConfig, placement: MonolithPlacement ): MonolithShapeConfig {
+    return {
+        ...shape,
+        width: shape.width * placement.scaleW,
+        height: shape.height * placement.scaleH,
+        depth: shape.depth * placement.scaleD,
+        gap: shape.gap + placement.push,
+    };
+}
+
 export function bodySpan( shape: MonolithShapeConfig ): number {
     return shape.height + shape.below;
 }

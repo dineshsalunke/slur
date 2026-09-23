@@ -21,7 +21,7 @@ function groupByShape(
 
 export function Monoliths( { track, config = MONOLITH_FIELD }: { track: Track; config?: MonolithFieldConfig } ) {
     const groups = useMemo( () => {
-        const placements = monolithField( track.finishZ, config.spacingCalm, config.spacingIntense );
+        const placements = monolithField( track.finishZ, config );
         return groupByShape( placements, config.shapes );
     }, [ track.finishZ, config ] );
 

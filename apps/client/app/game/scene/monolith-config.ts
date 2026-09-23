@@ -27,10 +27,22 @@ export interface MonolithShapeConfig {
     seam: MonolithSeamConfig;
 }
 
+export interface MonolithRange {
+    min: number;
+    max: number;
+}
+
 export interface MonolithFieldConfig {
     shapes: readonly MonolithShapeName[];
     spacingCalm: number;
     spacingIntense: number;
+    spacing: MonolithRange;
+    width: MonolithRange;
+    height: MonolithRange;
+    depth: MonolithRange;
+    sidePhase: number;
+    dropRate: number;
+    pushMax: number;
 }
 
 export const EDGE_SEAM: MonolithSeamConfig = {
@@ -60,7 +72,14 @@ export const MONOLITH_SHAPES: Record< MonolithShapeName, MonolithShapeConfig > =
 };
 
 export const MONOLITH_FIELD: MonolithFieldConfig = {
-    shapes: [ 'box' ],
+    shapes: [ 'box', 'obelisk' ],
     spacingCalm: 400,
     spacingIntense: 200,
+    spacing: { min: 0.55, max: 1.6 },
+    width: { min: 0.55, max: 1.9 },
+    height: { min: 0.5, max: 2.2 },
+    depth: { min: 0.6, max: 1.8 },
+    sidePhase: 0.47,
+    dropRate: 0.14,
+    pushMax: 30,
 };

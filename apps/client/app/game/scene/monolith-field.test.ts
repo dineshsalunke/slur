@@ -1,5 +1,6 @@
-import { intensityAt, SEG_LEN, START_SAFE } from '@slur/shared';
+import { SEG_LEN, START_SAFE } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
+import { MONOLITH_FIELD } from './monolith-config';
 import { MIN_SPACING, monolithField, monolithSpacing } from './monolith-field';
 
 describe( 'monolithSpacing', () => {
@@ -15,40 +16,76 @@ describe( 'monolithSpacing', () => {
 } );
 
 describe( 'monolithField', () => {
-    const field = monolithField( 8000, 140, 36 );
+    const config = { ...MONOLITH_FIELD, spacingCalm: 140, spacingIntense: 36 };
+    const field = monolithField( 8000, config );
+    const zs = ( side: number ) => field.filter( ( p ) => p.side === side ).map( ( p ) => p.z );
 
-    it( 'emits a matched pair at every z', () => {
-        expect( field.length % 2 ).toBe( 0 );
-        for ( let i = 0; i < field.length; i += 2 ) {
-            expect( field[ i ].z ).toBe( field[ i + 1 ].z );
-            expect( field[ i ].side ).toBe( -1 );
-            expect( field[ i + 1 ].side ).toBe( 1 );
-        }
+    it( 'never puts a monolith opposite another — the two sides are not mirrored', () => {
+        const left = new Set( zs( -1 ) );
+        const paired = zs( 1 ).filter( ( z ) => left.has( z ) );
+        expect( paired ).toEqual( [] );
     } );
 
     it( 'starts past the safe zone and stays inside the track', () => {
-        expect( field[ 0 ].z ).toBe( START_SAFE * SEG_LEN );
+        expect( Math.min( ...zs( -1 ) ) ).toBe( START_SAFE * SEG_LEN );
         for ( const p of field ) expect( p.z ).toBeLessThan( 8000 );
     } );
 
-    it( 'advances monotonically', () => {
-        const zs = field.filter( ( p ) => p.side === -1 ).map( ( p ) => p.z );
-        for ( let i = 1; i < zs.length; i++ ) expect( zs[ i ] ).toBeGreaterThan( zs[ i - 1 ] );
+    it( 'advances monotonically down each side', () => {
+        for ( const side of [ -1, 1 ] ) {
+            const z = zs( side );
+            for ( let i = 1; i < z.length; i++ ) expect( z[ i ] ).toBeGreaterThan( z[ i - 1 ] );
+        }
     } );
 
     it( 'packs monoliths tighter through a peak than through a trough', () => {
-        const zs = field.filter( ( p ) => p.side === -1 ).map( ( p ) => p.z );
+        const z = zs( -1 );
         const gapNear = ( target: number ) => {
             let best = 0;
-            for ( let i = 0; i < zs.length - 1; i++ ) {
-                if ( Math.abs( zs[ i ] - target ) < Math.abs( zs[ best ] - target ) ) best = i;
+            for ( let i = 0; i < z.length - 1; i++ ) {
+                if ( Math.abs( z[ i ] - target ) < Math.abs( z[ best ] - target ) ) best = i;
             }
-            return zs[ best + 1 ] - zs[ best ];
+            return z[ best + 1 ] - z[ best ];
         };
         expect( gapNear( 7200 ) ).toBeLessThan( gapNear( 6000 ) );
     } );
 
+    it( 'gives no two monoliths the same silhouette', () => {
+        const seen = new Set( field.map( ( p ) => `${ p.scaleW.toFixed( 3 ) }:${ p.scaleH.toFixed( 3 ) }` ) );
+        expect( seen.size ).toBeGreaterThan( field.length * 0.9 );
+    } );
+
+    it( 'spreads every size axis across its configured range', () => {
+        const spread = ( pick: ( z: ( typeof field )[ number ] ) => number, range: { min: number; max: number } ) => {
+            const vs = field.map( pick );
+            const reach = Math.max( ...vs ) - Math.min( ...vs );
+            expect( reach ).toBeGreaterThan( ( range.max - range.min ) * 0.8 );
+            for ( const v of vs ) {
+                expect( v ).toBeGreaterThanOrEqual( range.min );
+                expect( v ).toBeLessThanOrEqual( range.max );
+            }
+        };
+        spread( ( p ) => p.scaleW, config.width );
+        spread( ( p ) => p.scaleH, config.height );
+        spread( ( p ) => p.scaleD, config.depth );
+    } );
+
+    it( 'stands some monoliths back off the rail', () => {
+        const pushes = field.map( ( p ) => p.push );
+        expect( Math.max( ...pushes ) ).toBeGreaterThan( config.pushMax * 0.8 );
+        expect( Math.min( ...pushes ) ).toBeLessThan( config.pushMax * 0.2 );
+    } );
+
+    it( 'leaves gaps in the colonnade', () => {
+        const dense = monolithField( 8000, { ...config, dropRate: 0 } );
+        expect( field.length ).toBeLessThan( dense.length );
+    } );
+
+    it( 'is deterministic for a given config', () => {
+        expect( monolithField( 8000, config ) ).toEqual( field );
+    } );
+
     it( 'terminates on a degenerate spacing request', () => {
-        expect( monolithField( 800, 0, 0 ).length ).toBeGreaterThan( 0 );
+        expect( monolithField( 800, { ...config, spacingCalm: 0, spacingIntense: 0 } ).length ).toBeGreaterThan( 0 );
     } );
 } );
