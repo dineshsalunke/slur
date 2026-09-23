@@ -101,7 +101,6 @@ export function TuningPanel() {
 
     useControls( 'Metal', {
         baseColor: colorControl( 'Metal.baseColor' ),
-        mapTint: colorControl( 'Metal.mapTint' ),
     } );
 
     useControls( 'Shadow', {
@@ -139,11 +138,6 @@ export function TuningPanel() {
     } );
 
     useControls( 'Block', {
-        textureSpan: numberControl( 'Block.textureSpan' ),
-        normalScale: numberControl( 'Block.normalScale' ),
-        roughness: numberControl( 'Block.roughness' ),
-        metalness: numberControl( 'Block.metalness' ),
-        envMapIntensity: numberControl( 'Block.envMapIntensity' ),
         seamEmissive: numberControl( 'Block.seamEmissive' ),
         wear: numberControl( 'Block.wear' ),
     } );

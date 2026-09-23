@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { accentDerived } from './accent';
-import { SEALED_BLOCK_TEXTURE_SPAN } from './sealed-block-texture';
+import { TEX_SPAN_X } from './track-texture';
 
 export const FRACTURE_CORE_HEX = '#FFE0A0';
 export const FRACTURE_ROUGHNESS = 0.8;
@@ -37,7 +37,7 @@ export function fracturedBlockUniforms(): FracturedBlockUniforms {
         uFractureCoreDepth: { value: 1 },
         uFractureRoughness: { value: FRACTURE_ROUGHNESS },
         uFractureDarken: { value: FRACTURE_DARKEN },
-        uFractureTexSpan: { value: SEALED_BLOCK_TEXTURE_SPAN },
+        uFractureTexSpan: { value: TEX_SPAN_X },
         uFractureGap: { value: 0 },
         uBreakTime: { value: 0 },
         uBreakLife: { value: 1 },

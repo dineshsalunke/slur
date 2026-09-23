@@ -3,11 +3,12 @@ import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
+import { applyDeckFinish } from './deck-finish';
 import type { MonolithShapeConfig } from './monolith-config';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
 import { bodySpan, type MonolithTransform, shapeProfile } from './monolith-transforms';
 import { patchRailGlow, type RailMask, railGlowUniforms, updateRailGlow } from './rail-glow';
-import { cleanToMapRoughness, floorSurface } from './track-materials';
+import { floorSurface } from './track-materials';
 
 const scratch = new THREE.Object3D();
 const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } );
@@ -23,14 +24,6 @@ function fill( mesh: THREE.InstancedMesh, transforms: readonly MonolithTransform
     }
     mesh.instanceMatrix.needsUpdate = true;
     mesh.computeBoundingSphere();
-}
-
-function applyDeckFinish( mat: THREE.MeshStandardMaterial ): void {
-    mat.metalness = num( 'Deck.metalness' );
-    mat.roughness = cleanToMapRoughness( num( 'Deck.roughness' ) );
-    mat.envMapIntensity = num( 'Deck.envMapIntensity' );
-    const scale = num( 'Deck.normalScale' );
-    mat.normalScale.set( scale, scale );
 }
 
 export function MonolithGroup( {

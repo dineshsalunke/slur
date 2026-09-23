@@ -4,12 +4,13 @@ import { useWorld } from 'koota/react';
 import { Fragment, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
+import { useRebuildToken } from '../../dev/use-rebuild-token';
 import { blockWorld } from '../block-state';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import { boltCloseness, endFrame, noteBroken, noteStanding, type ShipProbe } from './block-breaks';
 import { BlockBurst } from './block-burst';
 import { BlockDebris } from './block-debris';
-import { applyBlockMetal } from './block-metal';
+import { applyDeckFinish, deckTextureSpan } from './deck-finish';
 import { fracturedBlockGeometry, fractureOrient, shareCells } from './fractured-block-geometry';
 import { fracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
 import {
@@ -19,9 +20,7 @@ import {
     SEALED_BLOCK_UNIT_DIMS,
     sealedBlockGeometry,
 } from './sealed-block-geometry';
-import { SEALED_BLOCK_SURFACE } from './sealed-block-material';
 import { patchSealedBlock, sealedBlockUniforms } from './sealed-block-shader';
-import { useSealedBlockMaps } from './sealed-block-texture';
 import {
     SEALED_BLOCK_MAX_SEAMS,
     SEALED_BLOCK_SEAM_WIDTH,
@@ -31,6 +30,7 @@ import {
     sealedBlockWearSeed,
 } from './sealed-block-variation';
 import { AHEAD, BACK, put } from './track-instancing';
+import { floorSurface } from './track-materials';
 
 const BLOCK_LIMIT = 320;
 const FRACTURED_LIMIT = 160;
@@ -141,7 +141,8 @@ export function TrackBlocks( { track }: { track: Track } ) {
     const blockRef = useRef< THREE.InstancedMesh | null >( null );
     const fracturedRef = useRef< THREE.InstancedMesh | null >( null );
     const emitRef = useRef< Emit | null >( null );
-    const maps = useSealedBlockMaps();
+    const rebuild = useRebuildToken();
+    const surface = useMemo( floorSurface, [ rebuild ] );
 
     const uniforms = useMemo( () => sealedBlockUniforms(), [] );
     const fractureUniforms = useMemo( () => fracturedBlockUniforms(), [] );
@@ -174,14 +175,15 @@ export function TrackBlocks( { track }: { track: Track } ) {
         uniforms.uSealedSeamWidth.value = SEALED_BLOCK_SEAM_WIDTH;
         uniforms.uSealedSeamIntensity.value = num( 'Block.seamEmissive' );
         uniforms.uSealedWearMax.value = num( 'Block.wear' );
-        uniforms.uSealedTexSpan.value = num( 'Block.textureSpan' );
-        fractureUniforms.uFractureTexSpan.value = num( 'Block.textureSpan' );
+        const span = deckTextureSpan( surface.map );
+        uniforms.uSealedTexSpan.value = span;
+        fractureUniforms.uFractureTexSpan.value = span;
         fractureUniforms.uFractureGap.value = num( 'Fracture.gap' );
         fractureUniforms.uFractureIntensity.value = num( 'Fracture.glow' );
         fractureUniforms.uFractureCoreDepth.value = num( 'Fracture.coreDepth' );
 
-        applyBlockMetal( blocks.material as THREE.MeshStandardMaterial );
-        applyBlockMetal( cracked.material as THREE.MeshStandardMaterial );
+        applyDeckFinish( blocks.material as THREE.MeshStandardMaterial );
+        applyDeckFinish( cracked.material as THREE.MeshStandardMaterial );
 
         const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
         const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );
@@ -226,11 +228,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
                 frustumCulled={ false }
                 args={ [ undefined, undefined, BLOCK_LIMIT ] }
             >
-                <meshStandardMaterial
-                    { ...SEALED_BLOCK_SURFACE }
-                    { ...maps }
-                    ref={ ( m ) => m && patchSealedBlock( m, uniforms ) }
-                />
+                <meshStandardMaterial { ...surface } ref={ ( m ) => m && patchSealedBlock( m, uniforms ) } />
             </instancedMesh>
             <instancedMesh
                 ref={ fracturedRef }
@@ -240,8 +238,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
                 args={ [ undefined, undefined, FRACTURED_LIMIT ] }
             >
                 <meshStandardMaterial
-                    { ...SEALED_BLOCK_SURFACE }
-                    { ...maps }
+                    { ...surface }
                     ref={ ( m ) => m && patchFracturedBlock( m, fractureUniforms, false ) }
                 />
             </instancedMesh>

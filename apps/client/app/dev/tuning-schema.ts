@@ -1,7 +1,7 @@
 import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import { ACCENT_ANCHOR } from '../game/scene/accent';
 import { ROCK_ALBEDO } from '../game/scene/asteroid-surface';
-import { METAL_BASE_COLOR, METAL_MAP_TINT, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
+import { METAL_BASE_COLOR, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
 import { NEBULA_PRESET } from '../game/scene/nebula-presets';
 
 interface NumberTunable {
@@ -67,11 +67,6 @@ export const NUMBER_TUNABLES = {
 
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
-    'Block.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
-    'Block.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
-    'Block.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
-    'Block.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
-    'Block.envMapIntensity': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
     'Block.seamEmissive': { value: 6, min: 0, max: 20, step: 0.05, rebuild: false },
     'Block.wear': { value: 0.6, min: 0, max: 1, step: 0.01, rebuild: false },
 
@@ -195,7 +190,6 @@ export const COLOR_TUNABLES = {
     'Fill.color': { value: '#bcc0c4', rebuild: false },
     'Rock.color': { value: ROCK_ALBEDO, rebuild: false },
     'Metal.baseColor': { value: METAL_BASE_COLOR, rebuild: true },
-    'Metal.mapTint': { value: METAL_MAP_TINT, rebuild: false },
     'Shadow.color': { value: '#01040a', rebuild: false },
     'Exhaust.hot': { value: '#fff1dc', rebuild: false },
     'Exhaust.cool': { value: ACCENT_ANCHOR, rebuild: false },

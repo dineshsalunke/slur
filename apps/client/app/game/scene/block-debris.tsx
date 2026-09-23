@@ -2,14 +2,14 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
+import { useRebuildToken } from '../../dev/use-rebuild-token';
 import { type BreakEvent, drainBreaks, drainMends, settled } from './block-breaks';
 import { queueBurst } from './block-burst';
-import { applyBlockMetal } from './block-metal';
+import { applyDeckFinish } from './deck-finish';
 import { fractureOrient, shareCells } from './fractured-block-geometry';
 import { type FracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
 import { pushHit } from './hit-events';
-import { SEALED_BLOCK_SURFACE } from './sealed-block-material';
-import { useSealedBlockMaps } from './sealed-block-texture';
+import { floorSurface } from './track-materials';
 
 const SLOTS = 16;
 
@@ -101,7 +101,8 @@ function tune( u: FracturedBlockUniforms, now: number ): void {
 }
 
 export function BlockDebris( { cells, uniforms }: { cells: THREE.BufferGeometry; uniforms: FracturedBlockUniforms } ) {
-    const maps = useSealedBlockMaps();
+    const rebuild = useRebuildToken();
+    const surface = useMemo( floorSurface, [ rebuild ] );
     const debris = useMemo( () => buildDebris( cells ), [ cells ] );
     const meshRef = useRef< THREE.InstancedMesh | null >( null );
 
@@ -110,7 +111,7 @@ export function BlockDebris( { cells, uniforms }: { cells: THREE.BufferGeometry;
         if ( ! mesh ) return;
         const now = state.clock.elapsedTime;
         tune( uniforms, now );
-        applyBlockMetal( mesh.material as THREE.MeshStandardMaterial );
+        applyDeckFinish( mesh.material as THREE.MeshStandardMaterial );
         drainMends( ( id ) => mend( debris, id ) );
         drainBreaks( ( e ) => spawn( debris, mesh, e, now, uniforms.uBreakLife.value ) );
         mesh.count = expire( debris, now ) ? SLOTS : 0;
@@ -124,11 +125,7 @@ export function BlockDebris( { cells, uniforms }: { cells: THREE.BufferGeometry;
             frustumCulled={ false }
             args={ [ undefined, undefined, SLOTS ] }
         >
-            <meshStandardMaterial
-                { ...SEALED_BLOCK_SURFACE }
-                { ...maps }
-                ref={ ( m ) => m && patchFracturedBlock( m, uniforms, true ) }
-            />
+            <meshStandardMaterial { ...surface } ref={ ( m ) => m && patchFracturedBlock( m, uniforms, true ) } />
         </instancedMesh>
     );
 }

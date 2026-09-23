@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { accentDerived } from './accent';
 import { SEALED_BLOCK_BEVEL, SEALED_BLOCK_UNIT_BEVEL } from './sealed-block-geometry';
-import { SEALED_BLOCK_TEXTURE_SPAN } from './sealed-block-texture';
 import {
     SEALED_BLOCK_SEAM_WIDTH,
     SEALED_BLOCK_WEAR,
@@ -9,6 +8,7 @@ import {
     SEALED_BLOCK_WEAR_ROUGHNESS,
 } from './sealed-block-variation';
 import { MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
+import { TEX_SPAN_X } from './track-texture';
 
 export interface SealedBlockUniforms {
     uSealedBevel: { value: number };
@@ -43,7 +43,7 @@ export function sealedBlockUniforms(): SealedBlockUniforms {
         uSealedWearMax: { value: 0 },
         uSealedWearColor: { value: new THREE.Color( SEALED_BLOCK_WEAR_COLOR ).convertSRGBToLinear() },
         uSealedWearRoughness: { value: SEALED_BLOCK_WEAR_ROUGHNESS },
-        uSealedTexSpan: { value: SEALED_BLOCK_TEXTURE_SPAN },
+        uSealedTexSpan: { value: TEX_SPAN_X },
     };
 }
 
