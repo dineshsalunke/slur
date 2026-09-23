@@ -144,6 +144,17 @@ export function TuningPanel() {
         cool: colorControl( 'Exhaust.cool' ),
     } );
 
+    useControls( 'Chase camera', {
+        back: numberControl( 'Chase.back' ),
+        backStretch: numberControl( 'Chase.backStretch' ),
+        height: numberControl( 'Chase.height' ),
+        lookAhead: numberControl( 'Chase.lookAhead' ),
+        lookAtLift: numberControl( 'Chase.lookAtLift' ),
+        fov: numberControl( 'Chase.fov' ),
+        fovStretch: numberControl( 'Chase.fovStretch' ),
+        follow: numberControl( 'Chase.follow' ),
+    } );
+
     useControls( 'Engine light', {
         intensity: numberControl( 'EngineLight.intensity' ),
         distance: numberControl( 'EngineLight.distance' ),

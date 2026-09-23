@@ -85,6 +85,15 @@ export const NUMBER_TUNABLES = {
     'Groove.darkening': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.cavity': { value: 0.3, min: 0, max: 1, step: 0.01, rebuild: true },
 
+    'Chase.back': { value: 12, min: 2, max: 40, step: 0.5, rebuild: false },
+    'Chase.backStretch': { value: 0, min: 0, max: 20, step: 0.5, rebuild: false },
+    'Chase.height': { value: 5, min: 0, max: 25, step: 0.1, rebuild: false },
+    'Chase.lookAhead': { value: 14, min: 0, max: 60, step: 0.5, rebuild: false },
+    'Chase.lookAtLift': { value: 1, min: -5, max: 15, step: 0.1, rebuild: false },
+    'Chase.fov': { value: 70, min: 40, max: 120, step: 1, rebuild: false },
+    'Chase.fovStretch': { value: 0, min: 0, max: 40, step: 0.5, rebuild: false },
+    'Chase.follow': { value: 20, min: 1, max: 60, step: 0.5, rebuild: false },
+
     'RearView.fov': { value: 36, min: 15, max: 100, step: 1, rebuild: false },
     'RearView.lift': { value: 3, min: 0, max: 12, step: 0.1, rebuild: false },
     'RearView.tilt': { value: 4, min: -20, max: 30, step: 0.5, rebuild: false },

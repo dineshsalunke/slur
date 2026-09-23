@@ -80,20 +80,25 @@ The phase index records this as an *"open departure, unresolved"* and cites the 
 **The index is itself stale on this number** — the value today is `GRAPHITE_METALNESS`, 0.9. Either
 way it is not the 0.0 the materials sheet specifies.
 
-### 2.3 Camera knobs are not commented and not live-tunable
+### 2.3 Camera knobs — half fixed 2026-09-23, half will stay false
 
 ADD §6:
 
 > *"Knobs are named + commented in `apps/client/app/game/camera/chase.ts` (`CHASE`), live-tunable."*
 
-Two of the three claims are false:
+When this report was written, two of the three claims were false. One has since been made true.
 
-- **Not commented.** `chase.ts` contains zero comments — correctly, because non-negotiable #14 bans
-  them. The ADD sentence asks for something the build rules forbid.
-- **Not live-tunable.** No `Chase`/`CHASE` entry exists in `apps/client/app/dev/tuning-schema.ts`.
-  The constants are module-level `const`s requiring a code edit and reload.
+- **Live-tunable — now correct.** Eight `Chase.*` entries were added to
+  `apps/client/app/dev/tuning-schema.ts` and a "Chase camera" group to `tuning-panel.tsx`;
+  `chase.ts` reads them per frame through `num()`, the same way `rear-view-camera.ts` already did.
+  Backtick opens the panel.
+- **Commented — still false, and should stay false.** `chase.ts` contains zero comments, correctly,
+  because non-negotiable #14 bans them outside `setTimeout`/`setInterval`/`useEffect`. **The ADD
+  sentence asks for something the build rules forbid, so the ADD is what should change here, not the
+  file.**
 
-Named is true — `CHASE_BACK`, `CHASE_HEIGHT`, `CHASE_LOOK_AHEAD` and friends.
+Named is true — the knobs are now named as tunable paths (`Chase.back`, `Chase.height`,
+`Chase.lookAhead` …) rather than module constants.
 
 This section is additionally out of date as of commit `3b50857` (2026-09-23), which changed the
 camera's z from a smoothed follow to an exact copy with a smoothed follow *distance*, to fix the
