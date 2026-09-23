@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const CUTS = 6;
+const KNOBS = 34;
+const KNOB_RADIUS: readonly [ number, number ] = [ 0.24, 0.55 ];
+const KNOB_HEIGHT: readonly [ number, number ] = [ 0.08, 0.22 ];
 
 function hash( n: number ): number {
     let h = Math.imul( n ^ 0x2c1b_3c6d, 0x297a_2d39 );
@@ -71,6 +74,44 @@ function cutsFor( seed: number ): Cut[] {
     return cuts;
 }
 
+interface Knob {
+    x: number;
+    y: number;
+    z: number;
+    radius: number;
+    reach: number;
+    height: number;
+}
+
+function knobsFor( seed: number ): Knob[] {
+    const knobs: Knob[] = [];
+    for ( let i = 0; i < KNOBS; i++ ) {
+        const theta = hash( seed + i * 31 + 1 ) * Math.PI * 2;
+        const phi = Math.acos( hash( seed + i * 31 + 2 ) * 2 - 1 );
+        const radius = KNOB_RADIUS[ 0 ] + hash( seed + i * 31 + 3 ) * ( KNOB_RADIUS[ 1 ] - KNOB_RADIUS[ 0 ] );
+        knobs.push( {
+            x: Math.sin( phi ) * Math.cos( theta ),
+            y: Math.cos( phi ),
+            z: Math.sin( phi ) * Math.sin( theta ),
+            radius,
+            reach: Math.cos( radius ),
+            height: KNOB_HEIGHT[ 0 ] + hash( seed + i * 31 + 4 ) * ( KNOB_HEIGHT[ 1 ] - KNOB_HEIGHT[ 0 ] ),
+        } );
+    }
+    return knobs;
+}
+
+function knobLift( knobs: readonly Knob[], v: THREE.Vector3 ): number {
+    let lift = 0;
+    for ( const k of knobs ) {
+        const d = v.x * k.x + v.y * k.y + v.z * k.z;
+        if ( d <= k.reach ) continue;
+        const a = Math.acos( Math.min( 1, d ) ) / k.radius;
+        lift = Math.max( lift, k.height * Math.sqrt( 1 - a * a ) );
+    }
+    return lift;
+}
+
 export function asteroidGeometry( seed: number, detail: number ): THREE.BufferGeometry {
     const ico = new THREE.IcosahedronGeometry( 1, detail );
     ico.deleteAttribute( 'normal' );
@@ -79,13 +120,14 @@ export function asteroidGeometry( seed: number, detail: number ): THREE.BufferGe
     ico.dispose();
 
     const cuts = cutsFor( seed );
+    const knobs = knobsFor( seed );
     const position = geometry.getAttribute( 'position' ) as THREE.BufferAttribute;
     const v = new THREE.Vector3();
 
     for ( let i = 0; i < position.count; i++ ) {
         v.fromBufferAttribute( position, i ).normalize();
         const lumps = billow( seed, v.x * 1.6 + 3, v.y * 1.6 + 7, v.z * 1.6 + 11 );
-        v.multiplyScalar( 0.72 + lumps * 0.5 );
+        v.multiplyScalar( 0.66 + lumps * 0.42 + knobLift( knobs, v ) );
         for ( const cut of cuts ) {
             const d = v.x * cut.nx + v.y * cut.ny + v.z * cut.nz;
             if ( d > cut.depth ) {
