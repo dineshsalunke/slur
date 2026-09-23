@@ -8,5 +8,31 @@ export const BOLT_SPAWN_AHEAD = 3;
 export const STUN_SECONDS = 1.2;
 export const PICKUP_RESPAWN_S = 3;
 
-export const HeldPower = { none: 0, bolt: 1 } as const;
+export const HeldPower = { none: 0, bolt: 1, seeker: 2 } as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
+
+export type SeekerScope = 'room' | 'shooter';
+export type SeekerWindowMode = 'time' | 'distance';
+
+export const SEEKER_HIT_MESSAGE = 'seekerHit';
+export const SEEKER_MISS_MESSAGE = 'seekerMiss';
+
+export const SEEKER_RATIO = 0.25;
+export const SEEKER_SCOPE: SeekerScope = 'room';
+export const SEEKER_LOCK_RANGE = 600;
+export const SEEKER_SPEED = 120;
+export const SEEKER_RAMP_S = 0.3;
+export const SEEKER_TRACK_TURN = 240;
+export const SEEKER_TURN = 40;
+export const SEEKER_WINDOW_MODE: SeekerWindowMode = 'time';
+export const SEEKER_WINDOW_S = 0.35;
+export const SEEKER_WINDOW_U = 30;
+export const SEEKER_CRUISE_Y = 10;
+export const SEEKER_STRIKE_Y = 0.5;
+export const SEEKER_CLIMB = 60;
+export const SEEKER_DIVE_DZ = 40;
+export const SEEKER_HIT_BAND = 1.2;
+export const SEEKER_HALF = 1;
+export const SEEKER_TTL = 6;
+export const SEEKER_STUN_S = 2;
+export const SEEKER_SPAWN_AHEAD = 3;

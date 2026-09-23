@@ -1,5 +1,6 @@
 import { MapSchema, Schema, type } from '@colyseus/schema';
 import type { ProjectileState } from './combat/projectiles.js';
+import type { SeekerState } from './combat/seeker.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
 import { FULL_DENSITY } from './sim/space.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
@@ -48,6 +49,17 @@ export class Projectile extends Schema implements ProjectileState {
     @type( 'float32' ) z = 0;
     @type( 'string' ) ownerId = '';
     @type( 'float32' ) ttl = 0;
+}
+
+export class Seeker extends Schema implements SeekerState {
+    @type( 'float32' ) x = 0;
+    @type( 'float32' ) y = 0;
+    @type( 'float32' ) z = 0;
+    @type( 'float32' ) vz = 0;
+    @type( 'string' ) ownerId = '';
+    @type( 'string' ) targetId = '';
+    @type( 'float32' ) ttl = 0;
+    @type( 'boolean' ) committed = false;
 }
 
 export class TrackDescriptorState extends Schema {
@@ -104,4 +116,5 @@ export class RunState extends Schema {
     @type( { map: Projectile } ) projectiles = new MapSchema< Projectile >();
     @type( { map: 'boolean' } ) pickupTaken = new MapSchema< boolean >();
     @type( { map: 'boolean' } ) blockBroken = new MapSchema< boolean >();
+    @type( { map: Seeker } ) seekers = new MapSchema< Seeker >();
 }

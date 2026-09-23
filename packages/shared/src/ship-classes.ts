@@ -125,8 +125,12 @@ export function armourForShip( id: string ): number {
     return classOfShip( id ).armour;
 }
 
-export function stunDurationForShip( id: string, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
-    return cfg.stunSeconds * ( 1 - armourForShip( id ) );
+export function stunDurationForShip(
+    id: string,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+    seconds: number = cfg.stunSeconds,
+): number {
+    return seconds * ( 1 - armourForShip( id ) );
 }
 
 export const ALL_CLASS_TUNINGS: FlightTuning[] = Object.values( SHIP_CLASSES ).map( ( c ) => c.tuning );

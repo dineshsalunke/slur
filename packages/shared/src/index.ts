@@ -2,6 +2,7 @@ export * from './combat/combat-step.js';
 export * from './combat/constants.js';
 export * from './combat/pickups.js';
 export * from './combat/projectiles.js';
+export * from './combat/seeker.js';
 export * from './constants.js';
 export * from './race/director.js';
 export * from './schema.js';

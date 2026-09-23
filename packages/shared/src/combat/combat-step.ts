@@ -1,7 +1,7 @@
 import type { Track } from '../sim/space.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { BOLT_SPAWN_AHEAD, HeldPower } from './constants.js';
-import { grabPickup, type Pickup } from './pickups.js';
+import { grabPickup, type Pickup, pickupPower } from './pickups.js';
 import { type HitShip, type ProjectileState, resolveBolt, stepProjectiles } from './projectiles.js';
 
 export interface Gunner {
@@ -20,6 +20,13 @@ export interface BoltStrike {
     z: number;
     victimId: string;
 }
+
+export interface SeekerGate {
+    allows( r: Gunner ): boolean;
+    granted( r: Gunner ): void;
+}
+
+export const OPEN_SEEKER_GATE: SeekerGate = { allows: () => true, granted: () => {} };
 
 export function canFire( g: Gunner ): boolean {
     return ! g.spectating && ! g.dead && g.stunTimer <= 0 && g.heldPower !== HeldPower.none;
@@ -60,6 +67,30 @@ export function stepBolts(
     for ( const id of spent ) bolts.delete( id );
 }
 
+export function seekerGate(
+    racers: Iterable< [ string, Gunner ] >,
+    liveOwners: Iterable< string >,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+): SeekerGate {
+    const owners = new Set( liveOwners );
+    if ( cfg.seekerScope === 'shooter' ) {
+        const idOf = new Map< Gunner, string >();
+        for ( const [ id, r ] of racers ) idOf.set( r, id );
+        return {
+            allows: ( r ) => ! owners.has( idOf.get( r ) ?? '' ),
+            granted: () => {},
+        };
+    }
+    let count = owners.size;
+    for ( const [ , r ] of racers ) if ( r.heldPower === HeldPower.seeker ) count++;
+    return {
+        allows: () => count === 0,
+        granted: () => {
+            count++;
+        },
+    };
+}
+
 export function stepPickups(
     racers: Iterable< Gunner >,
     pickups: readonly Pickup[],
@@ -67,12 +98,15 @@ export function stepPickups(
     respawn: Map< string, number >,
     dt: number,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
+    gate: SeekerGate = OPEN_SEEKER_GATE,
 ): void {
     for ( const r of racers ) {
         if ( r.spectating || r.dead || r.heldPower !== HeldPower.none ) continue;
         const pk = pickups.find( ( p ) => ! taken.get( p.id ) && grabPickup( r, p ) );
         if ( ! pk ) continue;
-        r.heldPower = HeldPower.bolt;
+        const seeker = pickupPower( pk.id, cfg ) === HeldPower.seeker && gate.allows( r );
+        r.heldPower = seeker ? HeldPower.seeker : HeldPower.bolt;
+        if ( seeker ) gate.granted( r );
         taken.set( pk.id, true );
         respawn.set( pk.id, cfg.pickupRespawnS );
     }
