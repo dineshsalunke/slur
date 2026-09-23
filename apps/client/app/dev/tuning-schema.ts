@@ -1,7 +1,8 @@
 import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import { ACCENT_ANCHOR } from '../game/scene/accent';
-import { BACKDROP_HORIZON } from '../game/scene/backdrop';
+import { ROCK_ALBEDO } from '../game/scene/asteroid-surface';
 import { METAL_BASE_COLOR, METAL_MAP_TINT, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
+import { NEBULA_PRESET } from '../game/scene/nebula-presets';
 
 interface NumberTunable {
     value: number;
@@ -25,16 +26,13 @@ export const NUMBER_TUNABLES = {
     'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
 
     'Env.skyIntensity': { value: 0.6, min: 0, max: 5, step: 0.01, rebuild: false },
+    'Env.fillIntensity': { value: 0.14, min: 0, max: 2, step: 0.01, rebuild: false },
     'Env.groundIntensity': { value: 0.5, min: 0, max: 5, step: 0.01, rebuild: false },
-    'Env.bandIntensity': { value: 0.5, min: 0, max: 4, step: 0.05, rebuild: false },
+    'Env.bandIntensity': { value: 0.1, min: 0, max: 4, step: 0.05, rebuild: false },
     'Env.bandHeight': { value: 5, min: 0.5, max: 60, step: 0.5, rebuild: false },
 
-    'RailLight.intensity': { value: 3, min: 0, max: 200, step: 0.5, rebuild: false },
-    'RailLight.span': { value: 60, min: 4, max: 400, step: 1, rebuild: false },
-    'RailLight.thickness': { value: 0.6, min: 0.05, max: 8, step: 0.05, rebuild: false },
+    'RailLight.intensity': { value: 6, min: 0, max: 30, step: 0.1, rebuild: false },
     'RailLight.lift': { value: 0.6, min: 0, max: 12, step: 0.05, rebuild: false },
-    'RailLight.stride': { value: 55, min: 4, max: 400, step: 1, rebuild: false },
-    'RailLight.offset': { value: 10, min: -120, max: 240, step: 1, rebuild: false },
 
     'Bloom.intensity': { value: 1.2, min: 0, max: 5, step: 0.05, rebuild: false },
     'Bloom.threshold': { value: 0.6, min: 0, max: 2, step: 0.01, rebuild: false },
@@ -152,16 +150,55 @@ export const NUMBER_TUNABLES = {
     'EngineLight.distance': { value: 14, min: 1, max: 80, step: 0.5, rebuild: false },
     'EngineLight.back': { value: 3.4, min: 0, max: 14, step: 0.1, rebuild: false },
     'EngineLight.lift': { value: 0.5, min: -2, max: 6, step: 0.05, rebuild: false },
+
+    'Sky.seed': { value: NEBULA_PRESET.seed, min: 0, max: 99, step: 1, rebuild: false },
+    'Sky.scale': { value: NEBULA_PRESET.scale, min: 0.5, max: 6, step: 0.05, rebuild: false },
+    'Sky.warp': { value: NEBULA_PRESET.warp, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Sky.bandTilt': { value: NEBULA_PRESET.bandTilt, min: 0, max: 180, step: 1, rebuild: false },
+    'Sky.bandOffset': { value: NEBULA_PRESET.bandOffset, min: -1, max: 1, step: 0.01, rebuild: false },
+    'Sky.bandWidth': { value: NEBULA_PRESET.bandWidth, min: 0.05, max: 1, step: 0.01, rebuild: false },
+    'Sky.density': { value: NEBULA_PRESET.density, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.voids': { value: NEBULA_PRESET.voids, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.dust': { value: NEBULA_PRESET.dust, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.hue': { value: NEBULA_PRESET.hue, min: 0, max: 360, step: 1, rebuild: false },
+    'Sky.saturation': { value: NEBULA_PRESET.saturation, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.brightness': { value: NEBULA_PRESET.brightness, min: 0, max: 4, step: 0.01, rebuild: false },
+    'Sky.voidDepth': { value: NEBULA_PRESET.voidDepth, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.clumps': { value: NEBULA_PRESET.clumps, min: 0.3, max: 0.95, step: 0.01, rebuild: false },
+    'Sky.dustOpacity': { value: NEBULA_PRESET.dustOpacity, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.rim': { value: NEBULA_PRESET.rim, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Sky.planetSize': { value: NEBULA_PRESET.planetSize, min: 0, max: 60, step: 0.5, rebuild: false },
+    'Sky.planetAzimuth': { value: NEBULA_PRESET.planetAzimuth, min: -90, max: 90, step: 1, rebuild: false },
+    'Sky.planetElevation': { value: NEBULA_PRESET.planetElevation, min: -30, max: 80, step: 1, rebuild: false },
+    'Sky.planetPhase': { value: NEBULA_PRESET.planetPhase, min: 0, max: 180, step: 1, rebuild: false },
+    'Sky.planetTilt': { value: NEBULA_PRESET.planetTilt, min: -180, max: 180, step: 1, rebuild: false },
+    'Sky.planetLight': { value: NEBULA_PRESET.planetLight, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Sky.planetGlow': { value: NEBULA_PRESET.planetGlow, min: 0, max: 4, step: 0.05, rebuild: false },
+    'Sky.planetRelief': { value: NEBULA_PRESET.planetRelief, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Sky.moons': { value: NEBULA_PRESET.moons, min: 0, max: 2, step: 1, rebuild: false },
+    'Sky.moonSize': { value: NEBULA_PRESET.moonSize, min: 0.2, max: 6, step: 0.1, rebuild: false },
+    'Sky.motion': { value: NEBULA_PRESET.motion, min: 0, max: 4, step: 0.05, rebuild: false },
+    'Sky.environment': { value: NEBULA_PRESET.environment, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Sky.keyLight': { value: NEBULA_PRESET.keyLight, min: 0, max: 8, step: 0.05, rebuild: false },
+
+    'Rock.textureScale': { value: 1, min: 0.2, max: 4, step: 0.05, rebuild: false },
+    'Rock.normalScale': { value: 2.5, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Rock.roughness': { value: 1, min: 0.1, max: 1.5, step: 0.01, rebuild: false },
+    'Rock.detail': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Rock.spin': { value: 3.35, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Rock.drift': { value: 6, min: 0, max: 6, step: 0.05, rebuild: false },
+
+    'Ship.envMapIntensity': { value: 0.45, min: 0, max: 3, step: 0.05, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
-    'Env.skyColor': { value: '#97979a', rebuild: false },
+    'Env.fillColor': { value: '#8d96a3', rebuild: false },
     'Env.groundColor': { value: '#343639', rebuild: false },
     'Env.bandColor': { value: ACCENT_ANCHOR, rebuild: false },
     'NearFill.color': { value: '#ffb964', rebuild: false },
     'RailLight.color': { value: ACCENT_ANCHOR, rebuild: false },
     'Fill.color': { value: '#bcc0c4', rebuild: false },
-    'Fog.color': { value: BACKDROP_HORIZON, rebuild: false },
+    'Rock.color': { value: ROCK_ALBEDO, rebuild: false },
     'Metal.baseColor': { value: METAL_BASE_COLOR, rebuild: true },
     'Metal.mapTint': { value: METAL_MAP_TINT, rebuild: false },
     'Shadow.color': { value: '#01040a', rebuild: false },

@@ -35,7 +35,7 @@ export const FLANK_BAND: AsteroidBand = {
     spacing: 12,
     density: 1,
     variants: 3,
-    detail: 2,
+    detail: 6,
     limit: 176,
 };
 
@@ -51,7 +51,7 @@ export const MID_BAND: AsteroidBand = {
     spacing: 16,
     density: 1,
     variants: 2,
-    detail: 2,
+    detail: 5,
     limit: 132,
 };
 
@@ -67,8 +67,15 @@ export const BELT_BAND: AsteroidBand = {
     spacing: 20,
     density: 1,
     variants: 2,
-    detail: 2,
+    detail: 4,
     limit: 112,
 };
 
 export const ASTEROID_BANDS: readonly AsteroidBand[] = [ FLANK_BAND, MID_BAND, BELT_BAND ];
+
+export const ROCK_FAR = 950;
+
+export function bandAhead( band: AsteroidBand, ahead: number ): number {
+    const reach = band.outerRadius + band.maxSize / 2;
+    return Math.min( ahead, Math.sqrt( Math.max( 0, ROCK_FAR * ROCK_FAR - reach * reach ) ) );
+}

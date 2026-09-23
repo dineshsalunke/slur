@@ -2,10 +2,10 @@ import { Canvas } from '@react-three/fiber';
 import { resolveTrack, type TrackDescriptor } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, useMemo } from 'react';
-import * as THREE from 'three';
 import { FrameTap } from '../../dev/frame-tap';
 import { TuningPanelMount } from '../../dev/tuning-panel-mount';
 import { world } from '../../game/ecs/world';
+import { CANVAS_GL } from '../../game/scene/canvas-gl';
 import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
 import { FinishFade } from './finish-fade';
@@ -39,7 +39,7 @@ export function TestLevelCanvas() {
         <Fragment>
             <WorldProvider world={ world }>
                 <Canvas
-                    gl={ { toneMapping: THREE.NeutralToneMapping } }
+                    gl={ CANVAS_GL }
                     style={ { position: 'fixed', inset: 0 } }
                     camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
                 >

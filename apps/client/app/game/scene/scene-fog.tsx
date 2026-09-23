@@ -1,21 +1,16 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
-import { col, num } from '../../dev/tuning';
+import { num } from '../../dev/tuning';
+import { NEBULA_HORIZON } from './nebula-baker';
 
 export function SceneFog() {
-    const fog = useMemo( () => new THREE.Fog( col( 'Fog.color' ), num( 'Fog.near' ), num( 'Fog.far' ) ), [] );
-    const applied = useRef( col( 'Fog.color' ) );
+    const fog = useMemo( () => new THREE.Fog( NEBULA_HORIZON, num( 'Fog.near' ), num( 'Fog.far' ) ), [] );
 
     useFrame( () => {
         fog.near = num( 'Fog.near' );
         fog.far = num( 'Fog.far' );
-
-        const next = col( 'Fog.color' );
-        if ( next !== applied.current ) {
-            fog.color.set( next );
-            applied.current = next;
-        }
+        fog.color.copy( NEBULA_HORIZON );
     } );
 
     return <primitive object={ fog } attach="fog" />;
