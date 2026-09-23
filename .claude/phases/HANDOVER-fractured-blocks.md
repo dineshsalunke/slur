@@ -4,7 +4,17 @@ Lane: **fractured-blocks**. Session of 2026-09-23. Stopped at the context watchd
 Plan: `.claude/phases/2026-09-23-destructible-blocks-plan.md` (`2dafcdf`). Owner said go, via
 slur-supervisor. Lane claimed at the top of issue #214.
 
-## State: shared + server done, tested, NOT committed — lint fails
+## Update (second session): step 1 DONE — committed `523d63c`
+
+Lint fixed. `resolveCollisions` no longer takes `cfg`. `simulate` keeps `_cfg` so its signature does
+not change. Bolt resolution moved to shared: `hitShipsOf()` + `resolveBolt()` in
+`combat/projectiles.ts`. `run-room.ts` is 295 non-blank lines (limit 300). Gate green: shared
+155/155, server 7/7, client 182/182, typecheck + build clean. Lint has 0 errors. Its 7 warnings are
+not from this lane. **Resume at step 2 (client prediction).** workerone holds the #213 leftovers
+(`hit-events.ts`, `hit-spark.tsx`, `respawn.test.ts`). Copy the hit-spark pattern into a new file.
+Do not edit theirs.
+
+## State at the first stop: shared + server done, tested, NOT committed — lint fails
 
 **Uncommitted, all mine** (nobody else was in these files; confirm with `git diff` before staging):
 
