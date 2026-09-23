@@ -24,8 +24,8 @@ and memory are done. Waiting on the owner's `Monolith.plate` default and workert
 - Stills (git-ignored), x 0 z 75, frozen, clean origin: `.claude/frame-tap-refs/228-monolith-plate-4.png`
   (grid on pillars) and `228-monolith-plate-0.png` (plain brushed pillars; deck unchanged).
 - Bake: 22.6–29.8 ms per `surfaceMaps` build, headless, 4 samples. No extra bake at default.
-- §7 item 12 of `ART_MATERIALS.md` still describes `Metal.mapTint` as live. Item 16 records its
-  deletion; item 12's text is not edited.
+- `d54e4ef`: §7 item 12 of `ART_MATERIALS.md` has a superseded-in-part note (`Metal.mapTint` deleted,
+  per item 16).
 - No scratch servers or Chrome running.
 
 ## Uncommitted
