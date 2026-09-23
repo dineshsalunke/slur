@@ -27,6 +27,16 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
   metrics in `packages/shared/src/pacing/`. Owner: YES, plan a jump contract in step 2.
 - Memory `owner-may-waive-issue-filing.md` (`1a4f219`).
 
+- LATER (~02:30): MSAA auto landed `64718c9` (owner pick "4 at DPR < 2 only"). Render.msaa default -1 = auto,
+  0..4 forces. The owner found that DPR 2 alone clears the flicker. workerthree lane DONE, no files held.
+- Menu landed `f23ef50` + memory `6c5a61d`. Owner copy picks sent to workerfour: pitch P1 ("Host a room, send your
+  crew the link, and drop into the next round."), room list L1 (no count at 0; "Nobody's racing yet. Be the
+  first."), label "CLASS · COMET". Reduced-motion: reduced-motion.ts moves to game/scene/, rock-field.tsx holds
+  uRockTime at 0 (freezes asteroids in-game too, accepted). workerfour cleared + resumed; still has the exhaust
+  glow, the mobile ship and DESIGN.md.
+- The workers table below is from ~02:00. Now: workerthree is IDLE, no files. workerfour holds its menu files plus
+  rock-field.tsx and game/scene/reduced-motion.ts.
+
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
