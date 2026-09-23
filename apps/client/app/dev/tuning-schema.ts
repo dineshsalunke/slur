@@ -54,8 +54,8 @@ export const NUMBER_TUNABLES = {
     'Fill.elevation': { value: 35, min: -20, max: 89, step: 1, rebuild: false },
     'Fill.azimuth': { value: 25, min: -90, max: 90, step: 1, rebuild: false },
 
-    'Fog.near': { value: 100, min: 0, max: 900, step: 5, rebuild: false },
-    'Fog.far': { value: 1500, min: 50, max: 2000, step: 10, rebuild: false },
+    'Fog.near': { value: 700, min: 0, max: 1000, step: 5, rebuild: false },
+    'Fog.far': { value: 1000, min: 50, max: 2000, step: 10, rebuild: false },
 
     'Deck.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Deck.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
