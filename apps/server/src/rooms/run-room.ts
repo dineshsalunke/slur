@@ -40,15 +40,14 @@ import {
     START_STAGGER,
     seekerShipsOf,
     shouldSpectateOnJoin,
-    simulate,
     stepBolts,
     stepPickups,
     stepSeekers,
     stunDurationForShip,
     type Track,
-    tuningForShip,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
+import { type RaceWorld, stepRacer } from './room-bounce.js';
 import { firePower, resolveSeekerEvent } from './room-combat.js';
 
 const RECONNECT_SECONDS = 20;
@@ -146,6 +145,10 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         }
     }
 
+    private raceWorld(): RaceWorld {
+        return { track: this.track, config: this.config, blocks: this.blocks };
+    }
+
     private stepRace( dt: number ): void {
         let racerCount = 0;
         let finishedCount = 0;
@@ -154,10 +157,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             racerCount++;
             if ( player.connected ) {
                 const input = this.queues.get( sessionId )?.shift();
-                if ( input ) {
-                    simulate( player, input, dt, tuningForShip( player.shipId ), this.track, this.config, this.blocks );
-                    player.lastProcessedInput = input.seq;
-                }
+                if ( input )
+                    stepRacer( this.raceWorld(), player, sessionId, input, dt, ( t, m ) => this.broadcast( t, m ) );
             }
             if ( player.finished ) {
                 if ( player.finishTime === 0 ) player.finishTime = this.state.elapsed;

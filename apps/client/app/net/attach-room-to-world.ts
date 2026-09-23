@@ -1,5 +1,7 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import {
+    BOUNCE_MESSAGE,
+    type BounceMessage,
     INPUT_MESSAGE,
     type PlayerState,
     type ProjectileState,
@@ -10,6 +12,7 @@ import {
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
 import { clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
+import { sparkAt } from '../game/ecs/bounce-spark';
 import {
     Held,
     Hover,
@@ -197,6 +200,10 @@ export function attachRoomToWorld(
         pushHit( { x: m.x, y: m.y, z: m.z } );
     } );
 
+    const offBounce = room.onMessage( BOUNCE_MESSAGE, ( m: BounceMessage ) => {
+        if ( m.victimId !== room.sessionId ) sparkAt( m );
+    } );
+
     // Wall clock, not useFrame: sends must hold 30Hz when a backgrounded tab throttles rAF.
     const timer = setInterval( () => {
         const inputs = predictor.drainUnsent();
@@ -213,6 +220,7 @@ export function attachRoomToWorld(
         offSeekerAdd();
         offSeekerRemove();
         offHit();
+        offBounce();
         offBreak();
         offUnbreak();
         clearBlockState();

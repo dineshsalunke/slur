@@ -8,13 +8,17 @@ import { ColyseusTestServer } from '@colyseus/testing';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import {
     type Block,
+    BOUNCE_MESSAGE,
+    type BounceMessage,
     COUNTDOWN_SECONDS,
     DEFAULT_SIM_CONFIG,
     DROP_POWERUP_MESSAGE,
+    emptyInput,
     FIXED_DT,
     HeldPower,
     PHASE,
     PICKUP_RESPAWN_S,
+    type PlayerInput,
     type PlayerState,
     POWER_SLOTS,
     pickupLayout,
@@ -129,6 +133,34 @@ describe( 'RunRoom combat', () => {
 
         await delay( 100 );
         assert.equal( broadcastHits, 1, "the impact broadcasts one 'hit' for the cosmetic spark" );
+    } );
+
+    test( 'a block bounce broadcasts one bounce message per contact, naming the victim', async () => {
+        const { room, connections, host } = await racingRoom( 2 );
+        const [ , otherClient ] = connections;
+        assert.ok( otherClient, 'the second client connected' );
+        const b = firstBlock( room, 'sealed' );
+        const racer = playerOf( room, host.sessionId );
+        racer.x = ( b.x0 + b.x1 ) / 2;
+        racer.z = b.z0 - 4;
+        racer.vz = 40;
+
+        const seen: BounceMessage[] = [];
+        otherClient.onMessage( BOUNCE_MESSAGE, ( m: BounceMessage ) => {
+            seen.push( m );
+        } );
+        host.onMessage( BOUNCE_MESSAGE, () => {} );
+
+        const queue = ( room as unknown as { queues: Map< string, PlayerInput[] > } ).queues.get( host.sessionId );
+        assert.ok( queue, 'the racer has an input queue' );
+        for ( let i = 0; i < 6; i++ ) queue.push( { ...emptyInput( i ), throttle: 1 } );
+        tick( room, 6 * FIXED_DT );
+
+        assert.ok( racer.stunTimer > 0, 'the racer bounced off the block' );
+        await delay( 100 );
+        assert.equal( seen.length, 1, 'one contact broadcasts one bounce' );
+        assert.equal( seen[ 0 ]?.victimId, host.sessionId );
+        assert.ok( Math.abs( ( seen[ 0 ]?.z ?? 0 ) - b.z0 ) < 1, 'the contact sits on the block face' );
     } );
 
     test( 'every bolt the client is told to add, it is later told to remove', async () => {

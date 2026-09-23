@@ -14,6 +14,7 @@ export * from './race/director.js';
 export * from './schema.js';
 export * from './ship-classes.js';
 export * from './sim/block-depth.js';
+export * from './sim/bounce-contact.js';
 export * from './sim/clearance.js';
 export * from './sim/corridor.js';
 export * from './sim/fixed-step.js';
