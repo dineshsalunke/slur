@@ -22,7 +22,7 @@ export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
     return out;
 }
 
-function buildSeekerBody(): PickupPart[] {
+export function buildSeekerBody(): PickupPart[] {
     const glyph = new THREE.MeshStandardMaterial( { color: '#000000', emissiveIntensity: PICKUP_GLYPH_INTENSITY } );
     glyph.emissive = accent();
     return [

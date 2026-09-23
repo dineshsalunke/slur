@@ -46,3 +46,12 @@ export function seekerCanisterCoreGeometry(): THREE.BufferGeometry {
         .rotateY( Math.PI )
         .translate( 0, 0, -HALF_LEN + RECESS - 0.005 );
 }
+
+export const MAX_SEEKERS = 16;
+export const SEEKER_TRAIL_WIDTH = 0.32;
+export const SEEKER_TRAIL_BRIGHT = 4;
+export const SEEKER_EMBER_SPAN = 0.6;
+
+export function seekerTrailSegmentGeometry(): THREE.BufferGeometry {
+    return new THREE.CylinderGeometry( 1, 1, 1, 6, 1, true ).rotateX( Math.PI / 2 ).translate( 0, 0, 0.5 );
+}

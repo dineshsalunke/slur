@@ -1,6 +1,7 @@
 import { DEFAULT_SHIP, spawnShip } from '@slur/shared';
 import { trait } from 'koota';
 import * as THREE from 'three';
+import { makeSeekerTrail } from '../scene/seeker-trail';
 
 export const Sim = trait( () => spawnShip() );
 
@@ -38,3 +39,7 @@ export interface ProjSnapshot {
     z: number;
 }
 export const ProjInterp = trait( () => ( { buffer: [] as ProjSnapshot[] } ) );
+
+export const NetSeeker = trait( { ownerId: '', targetId: '' } );
+
+export const SeekerTrail = trait( makeSeekerTrail );

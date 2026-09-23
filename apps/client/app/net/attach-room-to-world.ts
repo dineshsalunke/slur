@@ -1,5 +1,12 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { INPUT_MESSAGE, type PlayerState, type ProjectileState, type RunState, type Track } from '@slur/shared';
+import {
+    INPUT_MESSAGE,
+    type PlayerState,
+    type ProjectileState,
+    type RunState,
+    type SeekerState,
+    type Track,
+} from '@slur/shared';
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
 import { clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
@@ -9,10 +16,12 @@ import {
     LocalPlayer,
     Net,
     NetProjectile,
+    NetSeeker,
     Prev,
     ProjInterp,
     Remote,
     Render,
+    SeekerTrail,
     Sim,
 } from '../game/ecs/traits';
 import { pushHit } from '../game/scene/hit-events';
@@ -47,11 +56,19 @@ function pushRemote( ent: Entity, p: PlayerState ): void {
     if ( interp.buffer.length > 120 ) interp.buffer.shift();
 }
 
-function pushProjectile( ent: Entity, proj: ProjectileState ): void {
+function pushProjectile( ent: Entity, proj: ProjectileState | SeekerState ): void {
     const pi = ent.get( ProjInterp );
     if ( ! pi ) return;
     pi.buffer.push( { t: performance.now(), x: proj.x, y: proj.y, z: proj.z } );
     if ( pi.buffer.length > 30 ) pi.buffer.shift();
+}
+
+function pushSeeker( ent: Entity, s: SeekerState ): void {
+    pushProjectile( ent, s );
+    const cur = ent.get( NetSeeker );
+    if ( cur && ( cur.ownerId !== s.ownerId || cur.targetId !== s.targetId ) ) {
+        ent.set( NetSeeker, { ownerId: s.ownerId, targetId: s.targetId } );
+    }
 }
 
 function spawnPlayer(
@@ -73,8 +90,10 @@ export function attachRoomToWorld(
     const $ = getStateCallbacks( room );
     const byId = new Map< string, Entity >();
     const projById = new Map< string, Entity >();
+    const seekerById = new Map< string, Entity >();
     const perPlayer = new Map< string, () => void >();
     const perProjectile = new Map< string, () => void >();
+    const perSeeker = new Map< string, () => void >();
 
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
         runPhase.value = v;
@@ -132,6 +151,27 @@ export function attachRoomToWorld(
         }
     } );
 
+    const offSeekerAdd = $( room.state ).seekers.onAdd( ( s, id ) => {
+        const e = world.spawn( ProjInterp, NetSeeker( { ownerId: s.ownerId, targetId: s.targetId } ), SeekerTrail );
+        seekerById.set( id, e );
+        pushProjectile( e, s );
+        const offSeekerChange = $( s ).onChange( () => {
+            const ent = seekerById.get( id );
+            if ( ent ) pushSeeker( ent, s );
+        } );
+        perSeeker.set( id, offSeekerChange );
+    } );
+
+    const offSeekerRemove = $( room.state ).seekers.onRemove( ( _s, id ) => {
+        perSeeker.get( id )?.();
+        perSeeker.delete( id );
+        const e = seekerById.get( id );
+        if ( e ) {
+            e.destroy();
+            seekerById.delete( id );
+        }
+    } );
+
     const offBreak = $( room.state ).blockBroken.onAdd( ( _v, key ) => confirmBreak( Number( key ) ) );
     const offUnbreak = $( room.state ).blockBroken.onRemove( ( _v, key ) => unconfirmBreak( Number( key ) ) );
 
@@ -152,17 +192,23 @@ export function attachRoomToWorld(
         offRemove();
         offProjAdd();
         offProjRemove();
+        offSeekerAdd();
+        offSeekerRemove();
         offHit();
         offBreak();
         offUnbreak();
         clearBlockState();
         for ( const off of perPlayer.values() ) off();
         for ( const off of perProjectile.values() ) off();
+        for ( const off of perSeeker.values() ) off();
         for ( const e of byId.values() ) e.destroy();
         for ( const e of projById.values() ) e.destroy();
+        for ( const e of seekerById.values() ) e.destroy();
         perPlayer.clear();
         perProjectile.clear();
+        perSeeker.clear();
         byId.clear();
         projById.clear();
+        seekerById.clear();
     };
 }

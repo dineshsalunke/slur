@@ -7,7 +7,7 @@ import { type BoltSink, BoltStreaks } from './bolt-streaks';
 
 const _pos: ProjSnapshot = { t: 0, x: 0, y: 0, z: 0 };
 
-function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
+export function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
     if ( buffer.length === 0 ) return null;
     if ( renderTime <= buffer[ 0 ].t ) return buffer[ 0 ];
     for ( let i = 0; i < buffer.length - 1; i++ ) {
