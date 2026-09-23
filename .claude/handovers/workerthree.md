@@ -55,6 +55,24 @@ none
 
 ## Next
 
+0. NEW OWNER TASK from the supervisor (not started, nothing claimed yet): remove the one-seeker-in-flight
+   cap so a racer can fire seekers back to back. Owner: *"i would like to fire seeker's back to back if
+   required."* It reverses the DECISIONS #223 amendment bullet *"The cap moves to fire time. Each shooter
+   can have one seeker in flight."*
+   - Code: `seekerReady()` at `packages/shared/src/combat/combat-step.ts:40`, its test at
+     `combat-step.test.ts:162`. Find every caller: server `room-combat.ts` `firePower`, client
+     prediction, `/test-level` local-combat, and any "fire refused" HUD path. Delete the gate. Add no
+     new gate.
+   - Report (measure, do not assume): (1) the client renders at most `MAX_SEEKERS = 16`
+     (`seeker-look.ts`; `seeker-bodies.tsx` drops extras). Size it and the trail segments against room
+     max × POWER_SLOTS, or say why not. (2) Do two seekers fired back to back at one target overlap
+     at SEEKER_SPAWN_AHEAD, or collide with each other or with each other's trails? (3) Is any audio or VFX
+     keyed per owner, on the assumption of one seeker each?
+   - Process: file a GitHub issue first. Send the supervisor the claim list before the first write.
+     Add a DECISIONS amendment that quotes the bullet it replaces. Run shared, server and client tests,
+     typecheck and lint. Live check: 2–3 seekers back to back in /test-level, and in a hosted room if
+     possible (see memory `drive-a-hosted-room-over-cdp.md`; the reverse-through-a-pickup trick gives
+     duplicates). Commit by pathspec. Report the SHAs to the supervisor.
 1. Apply the owner's answer on the class keys. It now covers both /test-level and the hosted-room dev
    swap in `net-canvas.tsx`.
 2. If wanted: a refused-fire cue (owner or supervisor call).
