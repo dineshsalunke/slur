@@ -1,7 +1,6 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
 import type { ReactNode } from 'react';
-import { LABEL } from '../../ui/field-label';
 import { useRunView } from '../net/use-run-view';
 
 export function RoomTitle( { room, children }: { room: Room< RunState >; children: ReactNode } ) {
@@ -19,7 +18,7 @@ export function RoomTitle( { room, children }: { room: Room< RunState >; childre
                 { title }
             </h2>
             <div className="flex flex-wrap items-center gap-4">
-                <p className={ `m-0 flex items-center gap-2 ${ LABEL } text-[12px] text-readout text-shadow-readout` }>
+                <p className="m-0 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-readout text-shadow-readout">
                     <span aria-hidden="true" className="size-1.5 bg-marigold" />
                     Lobby · { count } { count === 1 ? 'racer' : 'racers' }
                 </p>

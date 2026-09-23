@@ -31,7 +31,7 @@ export function LobbyOverlay( { room }: { room: Room< RunState > } ) {
 
                 <div className="flex min-w-0 items-end gap-6 px-5 sm:px-10">
                     <SpecTag className="hidden flex-none sm:block" />
-                    <Roster room={ room } className="mb-5 min-w-0 sm:ml-auto" />
+                    <Roster room={ room } className="mb-5 min-w-0 max-sm:-mx-5 max-sm:px-5 sm:ml-auto" />
                 </div>
 
                 <section
