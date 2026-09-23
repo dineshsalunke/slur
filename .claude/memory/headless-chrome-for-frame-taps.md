@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: fe21d7b6-4f47-431b-89f6-c97c1b7f4032
-  modified: 2026-09-22T20:36:39.099Z
+  modified: 2026-09-23T12:16:29.023Z
 ---
 
 To look at a rendered SLUR frame, launch a **separate headless Chrome** on the dev-server URL and
@@ -14,10 +14,16 @@ To look at a rendered SLUR frame, launch a **separate headless Chrome** on the d
 ```
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
   --user-data-dir=<scratchpad>/chrome-profile --window-size=1600,900 \
-  --remote-debugging-port=9333 --enable-unsafe-swiftshader <url>/test-level &
+  --remote-debugging-port=9333 --enable-unsafe-swiftshader \
+  --force-device-scale-factor=1 --mute-audio <url>/test-level &
 
 curl -s '<url>/__frame-tap/?name=shot&warmup=60&frames=3&timeout=40000'
 ```
+
+**Rule (supervisor, 2026-09-23):** always pass `--force-device-scale-factor=1 --mute-audio`, and kill
+the Chrome as soon as the measurement ends. Never leave a game tab rendering. Also kill any scratch
+dev server you started. The owner's sudden drop below 15 fps was GPU contention from agents'
+leftover headless tabs plus DPR 2 fill cost. It was not a commit.
 
 It writes `.claude/frame-tap-refs/shot.png`, which `Read` renders. `--enable-unsafe-swiftshader` is
 what gets WebGL up with no GPU context. Only one page may answer — the plugin refuses two.
