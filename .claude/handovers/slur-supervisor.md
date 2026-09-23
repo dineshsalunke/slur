@@ -36,6 +36,9 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 
 ## Open owner decisions (newest first)
 
+E. **Monolith material (NEW, assigned to workertwo).** Owner: the monolith texture adds little. Options:
+   (A) drop the albedo map and use the deck colour; (B) monoliths use the deck material. workertwo builds a
+   live switch plus stills (current, A, B). The owner picks; then clean up and update ART_MATERIALS/ADD.
 A. **Darkness stills for #224** (blocks/ships/rails read darker: Env.bandIntensity 0.5 → 0.1, no local
    rail spill). workertwo needs a WORKTREE for the before (036645c) vs after (dev) pair. Approve?
 B. **Sky bake stall**: measured ~145 ms per re-bake at DPR 1 (ANGLE Metal, M1 Pro), on the first race
