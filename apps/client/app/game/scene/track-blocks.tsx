@@ -3,7 +3,7 @@ import { SEG_LEN, type Segment, type Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { num } from '../../dev/tuning';
+import { col, num } from '../../dev/tuning';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import {
     type BlockDims,
@@ -115,6 +115,8 @@ export function TrackBlocks( { track }: { track: Track } ) {
 
         const material = blocks.material as THREE.MeshStandardMaterial;
         const normalScale = num( 'Block.normalScale' );
+        material.color.set( col( 'Metal.mapTint' ) );
+        material.metalness = num( 'Block.metalness' );
         material.roughness = num( 'Block.roughness' );
         material.envMapIntensity = num( 'Block.envMapIntensity' );
         material.normalScale.set( normalScale, normalScale );

@@ -82,13 +82,28 @@ export function TuningPanel() {
         color: colorControl( 'Fog.color' ),
     } );
 
+    useControls( 'Metal', {
+        baseColor: colorControl( 'Metal.baseColor' ),
+        mapTint: colorControl( 'Metal.mapTint' ),
+    } );
+
+    useControls( 'Shadow', {
+        color: colorControl( 'Shadow.color' ),
+        opacity: numberControl( 'Shadow.opacity' ),
+        size: numberControl( 'Shadow.size' ),
+        spread: numberControl( 'Shadow.spread' ),
+        softness: numberControl( 'Shadow.softness' ),
+        blur: numberControl( 'Shadow.blur' ),
+        reach: numberControl( 'Shadow.reach' ),
+        lift: numberControl( 'Shadow.lift' ),
+    } );
+
     useControls( 'Deck', {
         metalness: numberControl( 'Deck.metalness' ),
         roughness: numberControl( 'Deck.roughness' ),
         envMapIntensity: numberControl( 'Deck.envMapIntensity' ),
         normalScale: numberControl( 'Deck.normalScale' ),
         plate: numberControl( 'Deck.plate' ),
-        plateColor: colorControl( 'Deck.plateColor' ),
         seamEmissive: numberControl( 'Deck.seamEmissive' ),
     } );
 
@@ -98,7 +113,6 @@ export function TuningPanel() {
         envMapIntensity: numberControl( 'Rail.envMapIntensity' ),
         normalScale: numberControl( 'Rail.normalScale' ),
         plate: numberControl( 'Rail.plate' ),
-        plateColor: colorControl( 'Rail.plateColor' ),
         railEmissive: numberControl( 'Rail.railEmissive' ),
         rimEmissive: numberControl( 'Rail.rimEmissive' ),
     } );

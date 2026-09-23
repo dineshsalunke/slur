@@ -18,6 +18,13 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
+> **Revision 7** — 2026-09-23. **One metal across every metal surface: metalness 1.0, roughness 0.25,
+> and a single tuneable base colour.** Metalness 1.0 closes the §7 item 9 departure and is M1 as
+> written; roughness 0.25 sits below both M1's and M2's floors and is a tuned override, not a new
+> range; obstacle blocks lose the dielectric coat §7 item 1 selected them for, removing a
+> finish-based separation from the deck. §4 criterion 2 is now ungated against two stacked changes
+> (this and rev. 6). Details and the engine keys: §7 item 12.
+>
 > **Revision 6** — 2026-09-23. **Monoliths move off M3 onto the block metal family.** The engine-side
 > monolith texture (a procedural panel canvas whose tiling read poorly) is replaced with the same
 > `Metal046B` photographic maps §7 item 1 assigned to obstacle blocks (M2), driven by a `textureSpan`/
@@ -760,7 +767,46 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     finish (M2 uses a dielectric coat; a bare-conductor variant would already read differently), or
     texture scale, before reaching for a second image texture.
 
+12. **One base colour, one metalness and one roughness across every metal surface — `1.0` / `0.25`.**
+    Owner's call, 2026-09-23, made against the `cruise-lighting.png` golden reference. Three changes,
+    all in `apps/client/app/game/scene/metal.ts` (which replaces `graphite.ts`):
+
+    **Metalness 1.0 — this closes a departure.** §7 item 9 recorded `FLOOR_METALNESS` at 0.75 against
+    M1's *"bare conductor — exposed dark metal | Metalness | 1.0 |"*; the engine had since drifted to
+    0.9 for deck, rail and monolith. All metal surfaces are now 1.0, which is M1 as written. Item 9's
+    departure is resolved, not extended.
+
+    **Roughness 0.25 — this opens one.** M1 specifies `Roughness | 0.35 – 0.50 |` and M2 specifies
+    `0.45 – 0.60`. 0.25 is below both floors. The owner selected it against the reference frame; the
+    number was not derived from this sheet and is not proposed as a new range for it. M1's own warning
+    — *"Roughness is the knob — if the deck starts reflecting recognisable [detail]"* — is the failure
+    mode to watch, and §4's readability criteria have **not** been re-gated at 0.25. Treat the range
+    rows in M1 and M2 as the standing spec and this as a tuned override pending that gate.
+
+    **Obstacle blocks lose their dielectric coat.** M2 specifies `Metalness | 0.0 |` and §7 item 1
+    chose coated metal *specifically* so that "a coated dielectric block and a bare metal deck" would
+    separate by finish rather than value. Sweeping every metal to 1.0 removes that finish line: blocks
+    and deck now differ only in texture, normal scale and seam intensity. This is the same class of
+    readability loss §7 item 11 flagged for monoliths, and it compounds with it — §4 criterion 2 now
+    has two unreconciled changes behind it, both ungated. The engine's `SEALED_BLOCK_METALNESS` moves
+    `0 → 1.0` and `SEALED_BLOCK_TINT` (`#c8dcf0`) is folded into the shared tint.
+
+    **What "consistent base colour" means in the engine.** Two tuning keys, because the metals divide
+    by how colour reaches them. `Metal.baseColor` (default `#7c8590`, the former `GRAPHITE_ALBEDO`)
+    is the literal albedo for the procedurally-drawn metals — deck plates, rail plates, ship hulls.
+    `Metal.mapTint` (default `#ffffff`) multiplies the `Metal046B` photographic albedo on blocks and
+    monoliths, where a mid-grey base colour would darken rather than set the value. Collapsing them
+    into one key would mean two different operations under one name. Neither is a colour *decision* —
+    both default to what already shipped.
+
 ## 8. Review log
+
+**Revision 6 → 7, one metal, and ship contact shadows (2026-09-23).** No family definition changes —
+M1's and M2's tables stand as written. §7 gains item 12: metalness sweeps to 1.0 (closing item 9's
+departure), roughness to 0.25 (opening a new one, below both M1's and M2's floors), and obstacle
+blocks lose the dielectric coat that §7 item 1 chose them for. The §4 criterion-2 re-gate already
+outstanding from item 11 now covers both changes. Ship contact shadows are a lighting-rig addition,
+not a surface one, and are recorded in the phase notes rather than here.
 
 **Revision 5 → 6, monoliths onto M2 (2026-09-23).** §0's Axis 1 table moves monoliths from the World row
 to the Playable row for material class only; a new note under the table and under M3/M4 explains Axis 2

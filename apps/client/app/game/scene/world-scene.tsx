@@ -40,7 +40,7 @@ export function WorldScene( {
             <HitSpark />
             <TrackView track={ track } />
             <FinishGate track={ track } />
-            <Ships />
+            <Ships track={ track } />
             { children }
             <SceneEffects />
         </Fragment>

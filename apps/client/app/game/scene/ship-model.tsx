@@ -3,10 +3,11 @@ import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import type * as THREE from 'three';
+import { col } from '../../dev/tuning';
 import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
 import { guardLfsPointer } from './gltf-lfs-guard';
-import { GRAPHITE_ALBEDO, GRAPHITE_METALNESS, GRAPHITE_ROUGHNESS } from './graphite';
+import { METAL_METALNESS, METAL_ROUGHNESS } from './metal';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 
 for ( const v of Object.values( SHIP_VISUALS ) ) {
@@ -79,12 +80,27 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
     mat.needsUpdate = true;
 }
 
-function applyGraphite( mat: THREE.Material ): void {
+function hullMaterial( mat: THREE.Material ): THREE.MeshStandardMaterial | null {
     const std = mat as THREE.MeshStandardMaterial;
-    if ( ! std.isMeshStandardMaterial || std.emissive.getHex() !== 0 ) return;
-    std.color.set( GRAPHITE_ALBEDO );
-    std.metalness = GRAPHITE_METALNESS;
-    std.roughness = GRAPHITE_ROUGHNESS;
+    if ( ! std.isMeshStandardMaterial || std.emissive.getHex() !== 0 ) return null;
+    std.metalness = METAL_METALNESS;
+    std.roughness = METAL_ROUGHNESS;
+    return std;
+}
+
+function collectHulls( grp: THREE.Group, uniforms: DissolveUniforms ): THREE.MeshStandardMaterial[] {
+    const hulls: THREE.MeshStandardMaterial[] = [];
+    grp.traverse( ( o ) => {
+        const mesh = o as THREE.Mesh;
+        if ( ! mesh.isMesh ) return;
+        const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
+        for ( const mat of mats ) {
+            const hull = hullMaterial( mat );
+            if ( hull ) hulls.push( hull );
+            patchDissolve( mat, uniforms );
+        }
+    } );
+    return hulls;
 }
 
 function isDead( entity: Entity ): boolean {
@@ -99,6 +115,7 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
     const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
     const patched = useRef( false );
+    const hulls = useRef< THREE.MeshStandardMaterial[] >( [] );
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
@@ -114,17 +131,11 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
         const grp = cloneRef.current;
         if ( ! grp ) return;
         if ( ! patched.current ) {
-            grp.traverse( ( o ) => {
-                const mesh = o as THREE.Mesh;
-                if ( ! mesh.isMesh ) return;
-                const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
-                for ( const mat of mats ) {
-                    applyGraphite( mat );
-                    patchDissolve( mat, uniforms );
-                }
-            } );
+            hulls.current = collectHulls( grp, uniforms );
             patched.current = true;
         }
+        const base = col( 'Metal.baseColor' );
+        for ( const hull of hulls.current ) hull.color.set( base );
         const target = isDead( entity ) ? 1 : 0;
         const u = uniforms.uDissolve;
         const step = delta / DISSOLVE_DURATION;

@@ -609,9 +609,9 @@ function grooveParams(): Omit< SurfaceParams, 'plate' | 'base' > {
 }
 
 export function deckSurfaceParams(): SurfaceParams {
-    return { plate: num( 'Deck.plate' ), base: col( 'Deck.plateColor' ), ...grooveParams() };
+    return { plate: num( 'Deck.plate' ), base: col( 'Metal.baseColor' ), ...grooveParams() };
 }
 
 export function railSurfaceParams(): SurfaceParams {
-    return { plate: num( 'Rail.plate' ), base: col( 'Rail.plateColor' ), ...grooveParams() };
+    return { plate: num( 'Rail.plate' ), base: col( 'Metal.baseColor' ), ...grooveParams() };
 }

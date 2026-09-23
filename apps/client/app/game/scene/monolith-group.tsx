@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { num } from '../../dev/tuning';
+import { col, num } from '../../dev/tuning';
 import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
@@ -81,6 +81,7 @@ export function MonolithGroup( {
     useFrame( () => {
         const body = bodyRef.current;
         if ( body ) {
+            body.color.set( col( 'Metal.mapTint' ) );
             body.metalness = num( 'Monolith.metalness' );
             body.roughness = num( 'Monolith.roughness' );
             body.envMapIntensity = num( 'Monolith.envMapIntensity' );
