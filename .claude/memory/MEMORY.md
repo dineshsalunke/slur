@@ -22,3 +22,4 @@ lives in its own file beside this one.
 - [Freeze does not stop asteroid drift](freeze-does-not-stop-asteroid-drift.md) — a two-tap diff is contaminated frame-wide; for presence, force an alien colour and scan one tap
 - [CDP import of tuning hits an HMR orphan](cdp-import-of-tuning-hits-an-hmr-orphan.md) — setNum/setCol silently reach a second module instance, not the page; pin uniforms instead
 - [Frame tap may answer from another tab](frame-tap-may-answer-from-another-tab.md) — screenshot the tab you drive over CDP when the reading must match state you just set
+- [Supervisor clears workers via herdr](supervisor-clears-workers-via-herdr.md) — `herdr agent prompt <pane> "/clear"`, then a resume prompt; "stalled" on /clear is success
