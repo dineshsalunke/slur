@@ -37,3 +37,4 @@ lives in its own file beside this one.
 - [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + a gap-aware bot; races stop at 180 s; reverse through a pickup for a duplicate
 - [Thin emissive needs pixel coverage](thin-emissive-needs-pixel-coverage.md) — bloom follows lit-pixel area; an edge-on 0.25u strip is 1 px and barely blooms even at lum 0.85
 - [Count draw calls without repo edits](count-draw-calls-without-repo-edits.md) — CDP-inject a WebGL + rAF wrapper; exact draws on any route, ms is JS only
+- [Owner may waive issue filing](owner-may-waive-issue-filing.md) — when the owner says "no issue, go ahead", brief the worker to build without one
