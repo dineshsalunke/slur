@@ -63,7 +63,7 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                             Race your friends. Wreck their run.
                         </h2>
                         <p className="m-0 mt-3 max-w-[60ch] text-[16px] leading-[1.5] text-readout text-shadow-readout">
-                            Host a room, share the code with your crew, and drop into the next round.
+                            Host a room, send your crew the link, and drop into the next round.
                         </p>
                     </section>
                     <RoomList form={ MENU_FORM } />

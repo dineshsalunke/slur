@@ -42,7 +42,7 @@ export function ShipPicker() {
         <fieldset className="m-0 min-w-0 border-0 p-0">
             <legend className={ `float-left mb-1.5 w-full ${ LABEL } flex` }>
                 <span>Ship</span>
-                <span className="font-normal tracking-[0.16em]">{ SHIP_CLASSES[ hull.classId ].name }</span>
+                <span className="font-normal tracking-[0.16em]">Class · { SHIP_CLASSES[ hull.classId ].name }</span>
             </legend>
             <div className="clear-left flex items-stretch border border-readout/20 bg-deep">
                 <button type="button" aria-label="Previous ship" className={ STEP } onClick={ () => cycleShip( -1 ) }>

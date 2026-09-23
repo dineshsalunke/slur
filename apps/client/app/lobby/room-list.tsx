@@ -20,12 +20,12 @@ export function RoomList( { form }: { form: string } ) {
                 className="m-0 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.22em] text-readout-dim text-shadow-readout"
             >
                 <span className="pulse-dot h-1.5 w-1.5 bg-readout" aria-hidden="true" />
-                Live runs · { rooms.length }
+                Live runs{ rooms.length > 0 ? ` · ${ rooms.length }` : '' }
             </h3>
 
             { rooms.length === 0 ? (
                 <p className="m-0 text-[15px] text-readout text-shadow-readout">
-                    No runs yet. Host one and send your crew the link.
+                    Nobody&apos;s racing yet. Be the first.
                 </p>
             ) : (
                 <ul className="m-0 -mx-5 flex list-none gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0">
