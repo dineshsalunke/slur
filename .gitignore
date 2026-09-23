@@ -67,3 +67,6 @@ scratchpad/
 # Frame-tap output: scratch renders written by the dev-server tap plugin, one
 # per `curl /__frame-tap`. Overwritten every tap and never reviewed as history.
 /.claude/frame-tap-refs/
+
+# Personal multi-agent harness instructions (loaded by every local session)
+CLAUDE.local.md
