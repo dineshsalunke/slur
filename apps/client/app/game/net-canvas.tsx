@@ -12,7 +12,6 @@ import { Held, LocalPlayer } from './ecs/traits';
 import { world } from './ecs/world';
 import { attachKeyboard } from './input/keyboard';
 import { handlePowerKey } from './input/power-select';
-import { NetDebugHud } from './net-debug-hud';
 import { NetLoop } from './net-loop';
 import { NetPowerRack } from './net-power-rack';
 import { CANVAS_GL } from './scene/canvas-gl';
@@ -66,7 +65,6 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                 </WorldScene>
             </Canvas>
             <NetPowerRack />
-            { import.meta.env.DEV && <NetDebugHud track={ track } /> }
             <TuningPanelMount />
         </WorldProvider>
     );

@@ -3,7 +3,7 @@ import { typingTarget } from './typing-target';
 
 const listeners = new Set< () => void >();
 
-let shown = true;
+let shown = false;
 
 function notify(): void {
     for ( const listener of listeners ) listener();
