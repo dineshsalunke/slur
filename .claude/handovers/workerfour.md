@@ -41,6 +41,15 @@ None of mine. `.claude/agents/`, `.claude/skills/` and `packages/shared/src/paci
 
 ## Next
 
+Supervisor order on resume (seam ack after 1a10a53):
+
+0. FIRST: draft replacement copy for the "share the code" pitch and the "LIVE RUNS · 0" label. Send
+   the drafts to slur-supervisor. Build nothing for this until the owner approves.
+0b. The claim on `game/scene/rock-field.tsx` and `asteroid-band.tsx` for reduced motion is CLEAR. Do
+   item 3 below after the drafts.
+
+Then, in this order:
+
 1. Fix 6: find out why the menu ship shows no exhaust plume or engine glow. `exhaustDrive` should read
    0.6: `Sim.vz = maxCruise * 0.6` in `landing-rig.tsx`. Check the `ExhaustField` query `Render, Net`
    and `exhaustPorts(shipId)`. Also check whether the fixed-step rig ordering zeroes it.
