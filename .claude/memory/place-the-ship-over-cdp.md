@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: 3d988b1b-080e-4846-ab16-4f25afcbebee
-  modified: 2026-09-23T15:04:49.394Z
+  modified: 2026-09-23T18:28:58.224Z
 ---
 
 On a **freshly loaded** `/test-level` tab (no HMR yet), this reaches the page's own ECS and moves the
@@ -21,6 +21,11 @@ const p = e.get(t.Prev); p.x = X; p.z = Z;
 
 Then wait about 3s for the chase camera to settle, send `KeyP` to freeze, and screenshot the tab over
 CDP.
+
+**A second placement needs an unfreeze** (verified 2026-09-23, #227). While KeyP is on, a new Sim x/z
+does not move the camera. Send KeyP, rewrite Sim and Prev every frame for ~90 `advance()` steps
+([[step-the-r3f-clock-for-timed-taps]]), then KeyP again. To reach a patched material's uniforms from
+the page, use `gl.properties.get(material).uniforms`.
 
 **Finding the target:** the track is deterministic. Resolve it in node from
 `packages/shared/dist/index.js` with the descriptor in `routes/test-level/test-level-canvas.tsx`
