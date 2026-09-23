@@ -228,6 +228,19 @@ The ‹ NAME › stepper is the one interaction the menu is built around.
 ### Menu Strip (signature)
 The lower third itself: a full-width Space Grey bar with a 1px Readout/15 top edge and the upward `shadow-strip`. Padding is 16px × 20px, or 20px × 40px from `sm`. It holds the call sign, ship picker, primary and key hint on one 44px control line. Form errors appear below as 14px Readout White text and take no space when empty.
 
+### Lobby (in-room)
+The room before GO uses the same lower third over the live track. It shows the run, not the pitch.
+- **Header:** the wordmark on the left and a ghost Leave on the right. Leave is square, 36px tall, with a Readout/25 border on Deep Space at 60%, and 600 12px 0.2em uppercase type.
+- **Run title:** "Your run" for the host, "<host>'s run" for a guest. It is 700 uppercase, clamp(30px, 3.6vw, 46px), with `text-shadow-readout`. Below it are a 6px square Marigold dot, "Lobby · N racers" (600 12px 0.22em uppercase, Readout White) and the Copy-link chip.
+- **Copy-link chip:** Deep Space at 85%, a 1px Readout/20 border, 32px tall. It shows "Copy link" plus the room path in Readout Dim. After a click it reads "Copied" until it loses focus. There is no timer.
+- **Spec tag:** 17rem wide, on the strip's top edge. It has a Deep Space fill and a Readout/15 border with no bottom edge. It shows the class name (700 22px uppercase), a "Class" label and four stat rows. Each row is a label and a 4px bar with a Marigold fill. It is hidden below `sm`, where the ship legend shows the class instead.
+- **Roster chips:** right-aligned in the same row, 20px above the strip. Each chip has a 10px square in the player's colour, the name (600 15px), word tags (YOU in Readout White, HOST or Spectating in Readout Dim, 700 11px 0.2em) and the ship name in Meta. Your own chip has a Readout/45 border. A disconnected racer is at 40% opacity with " · reconnecting". Below `sm` the row bleeds to the screen edge and scrolls sideways with no scrollbar.
+- **Strip grid:** 17rem, auto, auto, then a flexible column from `lg`. The columns hold the ship picker, the colour swatches, the start control and the key hint.
+- **Colour swatches:** 12 square 22px swatches in a 6×2 grid. The selected swatch has a 2px Readout White outline at a 2px offset. The swatch colours are the player palette in `game/colors.ts`, applied as inline background. They are not brand colours.
+- **Start control:** the host sees the marigold Go button with a chevron. A guest sees "Waiting for <host>" (600 15px) over "The host starts the run" in Meta.
+- **Keys:** A/D and the arrows cycle the ship. A bare Enter starts the run for the host only. The key hint shows [A D] Ship, plus [Enter] Go for the host.
+- **Audio toggle:** hidden in the lobby, because it would sit over the strip. M still mutes.
+
 ## Do's and Don'ts
 
 ### Do:
