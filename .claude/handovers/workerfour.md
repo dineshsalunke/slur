@@ -1,61 +1,64 @@
-Agent: workerfour · Lane: main-menu rework (no issue number yet) · Updated: 2026-09-24
+Agent: workerfour · Lane: main-menu rework (no issue; the owner waived it) · Updated: 2026-09-24 ~02:05
 
 ## Goal
 
-Rework the main menu (`/`) to match `docs/art-direction/golden-reference/cruise-lighting.png`, using the
-impeccable skill. The owner must approve the plan before any build.
+Rework the main menu (`/`) into the approved "Broadcast lower third" over the live game world, with the
+impeccable skill. The build ends with the finish review, then DESIGN.md.
 
 ## Done
 
-- No code commits. Planning only.
-- Impeccable init: the owner's answers are in `apps/client/PRODUCT.md` (untracked).
-- Layout round: the owner locked **Broadcast lower third** (seed `31489d20`, code-led). The direction
-  contract is in `apps/client/.impeccable/surfaces/app-routes-home-tsx.md` (untracked).
-- Plan and file claims sent to slur-supervisor (msg `037530a0`). Awaiting owner approval.
+- `f23ef50` feat(menu): lower third, ship picker, key hint, room chips, clientAction host/join that sends
+  `SET_CLASS_MESSAGE`, game-scene backdrop, palette tokens. Also commits `PRODUCT.md`, `.impeccable/**`
+  and the review captures.
+- `6c5a61d` memory: check-the-cdp-port-is-yours (plus workerthree's MEMORY.md line).
+- Backdrop prototypes were reported to the supervisor. (b) game-scene was chosen and accepted.
 
 ## State
 
-- Current menu: 13 draws/frame, JS 0.30 ms median, 0.50 ms p95 (headless, SwiftShader).
-- `/test-level` full WorldScene: 116 draws/frame, JS 1.1 ms median.
-- Cyan on the menu: drei Grid `sectionColor="#1fa8c8"`; `ui/button.tsx` primary `bg-cyan`; `ui/panel.tsx`
-  wedge; call-sign `focus:border-cyan`; `lobby/room-list.tsx:44` `text-cyan`.
-- `ui/button.tsx` and `ui/panel.tsx` are imported only by `call-sign-console.tsx` and `room-list.tsx`.
-- The server accepts `SET_CLASS_MESSAGE` only in `PHASE.lobby` (`apps/server/src/rooms/run-room.ts:92`).
-- The HUD face is Chakra Petch (`--font-readout`, `app/app.css:42`).
-- The owner typed `/impeccable install`. That is not a command. It was not run; the owner was asked
-  what they meant.
+- Prototypes: (a) lean was 24 draws at 0.3 ms JS median. (b) game was 37 draws at 0.6 ms. The old menu
+  was 13, `/test-level` is 116.
+- The supervisor accepted 37 draws, which is 2.8x the old menu and past my own "about 2x" bar, because
+  (a) fails PRODUCT.md principle 2.
+- Final build: 37 to 43 draws, 0.6 to 1.0 ms JS median, across runs. The spread is [unmeasured cause];
+  I suspect the monoliths in view.
+- End to end on a private stack: the A key picked bob, Enter hosted, and the server player had
+  `shipId: "bob"` and `name: "Tester"`. A second tab showed the chip "Tester's run".
+- No horizontal scroll at 390px. The impeccable detector found nothing. 244 vitest tests pass. The build
+  passes. Lint is clean for `apps/client`. The repo-wide biome errors all come from the untracked
+  `.claude/skills/`.
+- Finish review verdict: **ship-after-fixes**. Applied: 1 (Enter on body submits), 2 (error text is not
+  core), 3 partial (portrait camera pitch), 5 (chip focus ring inset), 7 (flat keycaps).
+- The monolith far-seam flicker is workerthree's. Do not work around it in the menu.
 
 ## Uncommitted
 
-- `apps/client/PRODUCT.md`, `apps/client/.impeccable/**`: impeccable artefacts. Commit only on the
-  owner's word.
-- `.claude/agents/`, `.claude/skills/`: from the plugin install, not mine.
+None of mine. `.claude/agents/`, `.claude/skills/` and `packages/shared/src/pacing/` are not mine.
 
 ## Held files
 
-Granted by the supervisor: `ui/button.tsx`, `ui/panel.tsx`, `lobby/room-list.tsx`. Claimed pending
-approval: `routes/home.tsx`, `routes/home/*` (plus new `ship-picker.tsx`, `key-hint.tsx`,
-`menu-ship.ts`).
+`routes/home.tsx`, `routes/home/*`, `ui/button.tsx`, `ui/scrim.tsx`, `lobby/room-list.tsx`, `app.css`
+(tokens only). `ui/panel.tsx` was deleted.
 
 ## Next
 
-1. Wait for the owner's approval through the supervisor.
-2. Rerun `impeccable context --target apps/client/app/routes/home.tsx` from `apps/client`. Read
-   `.claude/skills/impeccable/reference/craft-floor.md` before the first UI edit.
-3. Build two throwaway backdrops in `landing-scene.tsx`: (a) lean hand-built; (b) GameEnvironment +
-   TrackView + SceneEffects over a short `resolveTrack()` track. Measure both with the probe (memory
-   `count-draw-calls-without-repo-edits`). Report both to the supervisor and pick one.
-4. Build the lower-third DOM layer, the ship picker and the key hint. Change the cyan to the approved
-   look. Send `SET_CLASS_MESSAGE` after host/join.
-5. Run `impeccable detect --json`, take desktop + mobile captures into `apps/client/.impeccable/review/`,
-   run the finish reviewer, then the documenter (DESIGN.md).
+1. Fix 6: find out why the menu ship shows no exhaust plume or engine glow. `exhaustDrive` should read
+   0.6: `Sim.vz = maxCruise * 0.6` in `landing-rig.tsx`. Check the `ExhaustField` query `Render, Net`
+   and `exhaustPorts(shipId)`. Also check whether the fixed-step rig ordering zeroes it.
+2. Fix 3, rest: on mobile the ship still sits behind the headline
+   (`.impeccable/review/mobile.png`). Options: push the ship higher, or shrink the headline on portrait.
+3. Fix 4 (asteroids ignore reduced motion) is in `game/scene/rock-field.tsx:41-43` and maybe
+   `asteroid-band.tsx:54`. These are not my files. Ask the supervisor for a claim or hand it on.
+4. Run the `impeccable-finish-reviewer` again for a short confirm round, then the
+   `impeccable-documenter` for `apps/client/DESIGN.md`, and commit it by pathspec.
 
 ## Open questions
 
-- Owner: what did `/impeccable install` mean? Options: `hooks on`, `doctor`, or `npx impeccable update`.
-- Owner: commit the impeccable artefacts (`PRODUCT.md`, `.impeccable/`)?
-- Supervisor: file a GitHub issue for this lane (CONTRIBUTING requires one before build).
+- Owner (copy, not changed): the pitch says "share the code", but there is no room code. The empty state
+  says "send your crew the link". "LIVE RUNS · 0" repeats the "No runs yet" line. The class name
+  ("COMET") above the picker can read as a second ship name.
+- Supervisor: a claim on `rock-field.tsx`/`asteroid-band.tsx` for reduced motion, or give it to the
+  owner of that lane.
 
 ## Lessons → memory
 
-`.claude/memory/count-draw-calls-without-repo-edits.md`
+`.claude/memory/check-the-cdp-port-is-yours.md` (6c5a61d).
