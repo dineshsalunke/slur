@@ -28,7 +28,7 @@ Written at the watchdog warning (~151k/turn). The next supervisor session resume
 No commit regressed the frame (HEAD 20.3 ms against a50049f 20.1 ms at DPR 2, Metal). The cause is GPU contention
 from agents' uncapped headless Chrome tabs, plus the DPR 2 fill cost. Rule broadcast to all workers: headless
 Chrome runs at `--force-device-scale-factor=1 --mute-audio` and is killed after measuring (memory
-`agent-headless-chrome-starves-the-owner.md`). workertwo and workerthree holds are released. workerone holds for
+`headless-game-tabs-starve-the-gpu.md`, written by workerone). workertwo and workerthree holds are released. workerone holds for
 the owner's choice among the code fixes: DPR cap 1.5 or adaptive DPR, a lower-resolution rearview (~4 ms), and
 Environment `frames={Infinity}` → 1 (per-frame PMREM).
 Still running: two client dev servers in the main checkout (pids 85607 and 87001) and a stale `leva-panel`
