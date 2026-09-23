@@ -1,4 +1,4 @@
-Agent: workertwo · Lane: monolith gate + arch, finish reset (#220); #214 parked · Updated: 2026-09-23, ~20:10
+Agent: workertwo · Lane: monolith gate + arch, finish reset (#220); #214 parked · Updated: 2026-09-23, ~20:40
 
 ## Goal
 
@@ -7,30 +7,25 @@ after the finish with a fade. #214 stays parked on the owner's eyes-on check.
 
 ## Done
 
-- `921ee24` — #220 steps 1–5 in full.
-  - `MonolithGroup` takes `shape` + `bodies` + `seams` transforms and skips the seam mesh when `seams` is empty.
-  - `monolith-frame.ts`: `FrameConfig`, `GATE_FRAME`, `ARCH_FRAME`, `legShape`, `lintelShape`, `frameParts`.
-    `RAIL_OUTER` is now exported from `monolith-transforms.ts`.
-  - `monolith-frames.tsx`: `MonolithFrames` (legs + lintels, two instanced groups).
-  - `arch-field.ts`: `archRows`, `archHeight`, `monolithLayout`. `monolith-field.ts` gained `intensityAtZ`
-    and `pillarPairs`.
-  - `finish-gate.tsx`: GATE frame + marigold floor strip at `finishZ`, still mounted in `WorldScene`.
-  - `finish-reset.ts` (pure stepper + singleton), `finish-fade.tsx` (z-30 black div, covers the HUD),
-    `run-clock.ts` `restartRunClock`, `local-combat.ts` `restartLocalCombat` (clears Held + seekers + bolts +
-    pickups + blocks), `local-loop.tsx` `restartTestRun`. The fade is mounted in `TestLevelCanvas`.
-  - The NN-13 weighing (the DOM overlay won) is in the commit body.
+- `58bb6e6` — owner follow-up: bulkier arches. `ARCH_FRAME` legs 16→32u, depth 16→32u, lintel 20→40u (scaled
+  to match; the still looks right). The opening stays 112u, so the legs grow outward (inner face 56u, outer
+  88u). A new test in `monolith-frame.test.ts` proves no pillar overlaps an arch leg.
+- `921ee24` — #220 steps 1–5 in full: `MonolithGroup` takes transforms, `monolith-frame.ts`,
+  `monolith-frames.tsx`, `arch-field.ts`, the gate in `finish-gate.tsx`, and the reset (`finish-reset.ts`,
+  `finish-fade.tsx` z-30, `restartRunClock`, `restartLocalCombat`, `restartTestRun` in `local-loop.tsx`).
+  The NN-13 weighing is in the commit body.
 - `f9248ef` — pillars. Earlier #214 SHAs: `523d63c`, `b6f1f45`, `8c9afaf`, `248096d`, `215159e`.
 
 ## State
 
-- At `921ee24`: client vitest 219/219 (32 files), tsc clean, `pnpm lint` clean.
-- Headless /test-level, scratch port 5186, DPR 1:
-  - The gate stands at z 8400 = finishZ.
-  - The mid-fade frame darkens the scene and the HUD.
-  - After the fade: z 0, vz 0, finished false, Held 0, phase idle, clock 00:01.
-  - Chrome and the scratch server were killed.
-- Arches at 25/50/75% were not shot on screen [unmeasured visually]. Tests cover their placement.
-- A gate seam is sub-pixel at 450u and farther [inferred from a 0.5u seam width]. It shows up close.
+- At `58bb6e6`: client vitest 221/221, tsc clean, biome clean on the touched files.
+- Headless /test-level, scratch port 5186, DPR 1, killed after:
+  - Arches stand at z 2071 / 4194 / 6156, heights 200 / 189 / 173u.
+  - The arch at z 4194, shot from 260u and 600u: the legs read bulky, seams show on the inner faces, and the
+    lintel is in proportion.
+- The gate is unchanged (legs 24u, depth 24u, 200u tall). The arches are now bulkier than the gate, and the
+  tallest arch (200u) is as tall as the gate.
+- There are no `Arch.*` tunables in `dev/tuning-schema.ts`. The sizes are constants.
 
 ## Uncommitted
 
@@ -38,21 +33,22 @@ None of mine. (`docs/art-direction/**` untracked files belong to ChatGPT. Never 
 
 ## Held files
 
-Release all #220 claims back to the supervisor. No file is held.
+None. The follow-up claim (`monolith-frame.ts` + test) is released.
 
 ## Next
 
-1. The owner plays /test-level: flies through an arch and the gate and watches the reset.
-2. Tuning is possible if the owner asks: arch/gate sizes are constants in `monolith-frame.ts`, `ARCH_GROWTH`
-   in `arch-field.ts`, and the fade times in `finish-reset.ts`.
-3. #214 step 5 whenever the owner plays it.
+1. Wait for the owner's decision on the gate bump (open question 1). If approved, edit `GATE_FRAME` in
+   `monolith-frame.ts`, then take a headless still at finishZ − 450 and finishZ − 900.
+2. #214 step 5 whenever the owner plays it.
 
 ## Open questions
 
-1. #214: do sealed blocks stop a bolt (built as yes)? One `smashKeep` for every class? A marigold ember burst
+1. Gate bump proposal, not built: legs 40u, depth 40u, lintel 48u, overhang 8u, height 240u. This keeps the
+   gate the boldest and tallest frame.
+2. Gate seam: the pillar `EDGE_SEAM` is 0.5u wide. From 450u and farther it is sub-pixel [inferred]. Should it
+   be wider or brighter?
+3. #214: do sealed blocks stop a bolt (built as yes)? One `smashKeep` for every class? A marigold ember burst
    on a break?
-2. #220: should the gate seam be wider or brighter so it reads from far away? Today it is the pillar
-   `EDGE_SEAM`, 0.5u wide.
 
 ## Lessons → memory
 
