@@ -82,7 +82,7 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
      **Still owed: the flythrough gate** — the headless frame tap only proves the start-line view.
   4. [ ] **Block height is the last fixed axis** — every block exactly 8u. Gated: the vertical-reach check
      is still missing from the validator, and GDD §0 puts 8u *"above double-jump reach on purpose"*. Build
-     the check before varying it. Carried from `.claude/phases/HANDOVER-corridor-closing.md`.
+     the check before varying it. Carried from `HANDOVER-corridor-closing.md`, now folded into `.claude/phases/worklog.md` (Legacy handovers; `git show 11b74ca:.claude/phases/archive/HANDOVER-corridor-closing.md`).
   **Budget note:** the carve freed a lot of headroom — worst case per streaming window went **224 → 136**
   against `BLOCK_LIMIT` 320 (measured, 9 seeds). The handover's "headroom is thinner than it looks" warning
   no longer holds, so `WALL_DENSITY_MAX` or a smaller `BLOCK_SPLIT_GAP_MIN` are affordable if the field
