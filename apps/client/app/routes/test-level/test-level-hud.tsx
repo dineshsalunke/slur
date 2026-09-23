@@ -13,7 +13,7 @@ export function TestLevelHud( { track }: { track: Track } ) {
             <RosterPanel connected={ FIXTURE_FIELD } entries={ FIXTURE_ROSTER } />
             <FlightReadout track={ track } rank={ FIXTURE_RANK } field={ FIXTURE_FIELD } clock={ testRunSeconds } />
             <PowerRack />
-            <div className="absolute inset-x-0 top-0 flex justify-center">
+            <div className="absolute inset-x-0 bottom-0 flex justify-center">
                 <FpsReadout />
             </div>
         </HudLayer>
