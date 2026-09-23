@@ -50,6 +50,14 @@ fractured-block-shader, metal}`, `apps/client/app/dev/{tuning-schema, tuning-pan
 
 ## Next
 
+0. **Approved (supervisor, owner request):** a `Monolith.plate` tunable. Default = `Deck.plate` (4); 0 = no
+   plate lines, deck finish kept. Claim adds `track-materials.ts` (a `monolithSurface()` beside
+   `floorSurface()`, reusing the private `plateSurface`) and `track-texture.ts` only if needed. First check
+   whether `jointWidth: 0` in `SurfaceParams` really paints no grooves [inferred, unverified]. If it
+   leaves any line, add a no-joints flag to the painter. `surfaceMaps()` is cached by params key, so a
+   distinct plate size costs one extra bake; measure it. Add the tunable to `tuning-schema.ts` and
+   `tuning-panel.tsx`, and wire it into `monolith-group.tsx` in place of `floorSurface`. Take a still
+   at x 0 z 75.
 1. `docs/ART_MATERIALS.md` §7: add item 12, a decisions + departures entry. Quote §M2: *"The separation
    from the deck is finish, not value. A coated dielectric block and a bare metal deck respond to the
    same light in visibly different ways"*. Record that blocks and monoliths now use the deck material
