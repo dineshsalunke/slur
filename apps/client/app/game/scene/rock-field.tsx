@@ -49,10 +49,6 @@ export function RockField() {
         uniforms.uRockKeyDir.value.copy( NEBULA_LIGHT.direction ).transformDirection( state.camera.matrixWorldInverse );
         uniforms.uRockKeyColor.value.copy( NEBULA_LIGHT.color ).multiplyScalar( num( 'Sky.keyLight' ) );
         material.envMapIntensity = num( 'Sky.environment' );
-        if ( material.envMap !== NEBULA_LIGHT.environment ) {
-            material.envMap = NEBULA_LIGHT.environment;
-            material.needsUpdate = true;
-        }
         const rock = col( 'Rock.color' );
         if ( rock !== color.current ) {
             color.current = rock;

@@ -125,6 +125,12 @@ uniform float uRimStrength;
 uniform float uClumpEdge;
 uniform float uTime;
 uniform float uFlow;
+uniform vec3 uPlanetDir;
+uniform float uPlanetSin;
+uniform vec3 uPlanetSun;
+uniform float uPlanetLight;
+uniform vec3 uMoonDir[ 2 ];
+uniform float uMoonSin[ 2 ];
 
 ${ NEBULA_NOISE_GLSL }
 
@@ -144,6 +150,35 @@ float nbStars( vec3 d, float cells, float cut, float twinkle ) {
 	float r = length( d - centre * ( dot( d, centre ) / dot( centre, centre ) ) ) * cells;
 	float flicker = 1.0 - twinkle * ( 0.5 + 0.5 * sin( uTime * ( 1.5 + h.z * 3.0 ) + h.y * 40.0 ) );
 	return exp( - r * r * 16.0 ) * pow( h.y, 6.0 ) * flicker;
+}
+
+vec4 nbGlobe( vec3 d, vec3 centre, float sinR, float seed, float detail ) {
+	if ( sinR <= 0.0 ) return vec4( 0.0 );
+	float cosA = dot( d, centre );
+	if ( cosA <= 0.0 ) return vec4( 0.0 );
+	vec3 v = d - centre * cosA;
+	float len = length( v );
+	float r = len / sinR;
+	float edge = max( fwidth( r ), 0.002 );
+	float cover = 1.0 - smoothstep( 1.0 - edge, 1.0 + edge, r );
+	if ( cover <= 0.0 ) return vec4( 0.0 );
+	r = min( r, 1.0 );
+	vec3 u = v / max( len, 1e-6 );
+	float z = sqrt( 1.0 - r * r );
+	vec3 n = u * r - centre * z;
+	float ndl = dot( n, uPlanetSun );
+	float day = smoothstep( -0.05, 0.5, ndl );
+	vec3 sp = n * detail * 0.25 + seed;
+	float coarse = texture( uNoise, sp ).r;
+	float ridges = 1.0 - abs( texture( uNoise, sp * 2.7 + 0.13 ).g * 2.0 - 1.0 );
+	float grain = texture( uNoise, sp * 7.0 + 0.61 ).b;
+	float relief = coarse * 0.45 + ridges * ridges * 0.35 + grain * 0.2;
+	float albedo = mix( 0.02, 0.22, relief );
+	float limb = pow( r, 16.0 ) * clamp( ndl * 2.0 + 0.5, 0.0, 1.0 );
+	float terminatorGlow = pow( r, 5.0 ) * 0.03 * day;
+	vec3 body = uRim * ( albedo * ( day * max( ndl, 0.0 ) + 0.1 ) + terminatorGlow ) + uDeep * 1.5;
+	vec3 c = ( body + uRim * limb * 0.3 ) * uPlanetLight;
+	return vec4( c, cover );
 }
 
 vec3 nebulaShade( vec3 d ) {
@@ -184,6 +219,13 @@ vec3 nebulaShade( vec3 d ) {
 	c += uRim * ( rim + 0.3 * rimGlow ) * uRimStrength * uBrightness * 0.6 * ( 0.4 + glow );
 	float stars = nbStars( d, 700.0, 0.985, 0.3 ) + nbStars( d, 160.0, 0.996, 0.5 ) * 1.6;
 	c += vec3( 0.85, 0.9, 1.0 ) * stars * ( 1.0 - clump ) * 2.0;
+
+	vec4 globe = nbGlobe( d, uPlanetDir, uPlanetSin, 3.1, 6.0 );
+	c = mix( c, globe.rgb, globe.a );
+	for ( int i = 0; i < 2; i++ ) {
+		vec4 moon = nbGlobe( d, uMoonDir[ i ], uMoonSin[ i ], 7.0 + float( i ) * 5.3, 14.0 );
+		c = mix( c, moon.rgb, moon.a );
+	}
 	return 0.56 - 0.56 * exp( - c / 0.56 );
 }
 `;
@@ -206,12 +248,13 @@ void main() {
 `;
 
 export const NEBULA_LIGHT_FRAGMENT = `
+uniform float uEnvGain;
 varying vec3 vDir;
 
 ${ NEBULA_SHADE }
 
 void main() {
-	gl_FragColor = vec4( nebulaShade( normalize( vDir ) ), 1.0 );
+	gl_FragColor = vec4( nebulaShade( normalize( vDir ) ) * uEnvGain, 1.0 );
 }
 `;
 

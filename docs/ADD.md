@@ -203,7 +203,7 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
 | Asteroids (Angular · Plate · Broken) | **BUILT** — displaced icosahedron with planar cuts, three streamed bands, shader spin and drift, triplanar CC0 rock maps (see below) | **done** |
 | Nebula sky | **BUILT** — domain-warped fBm and Worley noise baked to a cubemap, composited live, and the source of the IBL and the key light (see below) | **done** |
-| Planets / moons | procedural — sphere + gradient/terminator shading | high |
+| Planets / moons | **BUILT** — analytic discs in the sky pass: terminator, lit limb, noise-volume relief; one large planet for Deep Space, two small moons for Nebula (`Sky.planet*`, `Sky.moons`) | **done** |
 | Pickups | procedural — low-poly geometric icons | high |
 | **Ships** | **keep the authored Quaternius CC0 models** — already integrated, WYSIWYG-locked (GDD §5.5) | — |
 
@@ -237,12 +237,22 @@ per-pixel hash noise, which was ALU-bound at DPR 2). Motion is a two-phase shear
 faster near the crest, plus a brightness stream that travels along the crest and star twinkle. The sky
 box follows the camera with no parallax term: a strafe offset on a sky layer reads as a rotation, so the
 asteroids carry all parallax. Sky output is soft-knee limited to 0.56 linear, under the bloom threshold.
-The same fields also go into a 128² cube that is PMREM-filtered. The asteroids use that cube as their env
-map, so the rocks reflect the sky that the player sees. The track keeps the authored `SceneEnvironment`
-IBL. A 64×32 probe measures two values: the horizon colour (`NEBULA_HORIZON`, which the scene fog
-follows) and the direction and colour of the rock key light. The `Nebula` and `Deep Space` presets on the
-`/test-level` panel make the two sky families from one parameter set. Measured sky-only cost, M3 Pro,
-1600×900: 0.62 ms at DPR 1, 1.05 ms at DPR 2.
+The same shade also goes into a 128² cube, with a ground disc and a thin marigold band at the horizon,
+and that cube is PMREM-filtered into `scene.environment`. **The sky lights the scene.** Deck, rails,
+monoliths, blocks, ships and rocks all reflect the sky the player sees; the flat grey gradient IBL is
+gone. The cube re-renders only when a sky or `Env.*` tunable changes, never per frame. A 64×32 probe
+measures two values: the horizon colour (`NEBULA_HORIZON`, which the scene fog follows) and the
+direction and colour of the rock key light. The `Nebula` and `Deep Space` presets on the `/test-level`
+panel make the two sky families from one parameter set. Measured sky-only cost, M3 Pro, 1600×900:
+0.62 ms at DPR 1, 1.05 ms at DPR 2.
+
+**Planets are analytic, not meshes.** Each is a disc test in the same sky pass: the direction's offset
+from the planet centre gives a sphere normal, a sun direction (`Sky.planetPhase` around the view axis,
+`Sky.planetTilt` around the planet) gives the terminator, `pow( r, 16 )` gives the lit limb, and three
+reads of the noise volume give relief. The planets are in the light cube too, so a large Deep Space
+planet contributes to the IBL. The rail lights are six rectangular area lights; a smooth metal deck
+mirrors them at grazing angles, so their intensity is the one lighting value that floods the whole far
+deck orange when set high. It sits at 0.35 for the controlled halos the cruise board shows.
 
 **The rock maps are the only bitmaps in the pipeline.** They are `public/textures/dark-rock-*.jpg`, Poly
 Haven `dark_rock` (CC0), 1k. The asteroid shader uses the luminance of the diffuse map, tinted to

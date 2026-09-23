@@ -47,7 +47,6 @@ export function TuningPanel() {
     } );
 
     useControls( 'Environment', {
-        skyColor: colorControl( 'Env.skyColor' ),
         skyIntensity: numberControl( 'Env.skyIntensity' ),
         groundColor: colorControl( 'Env.groundColor' ),
         groundIntensity: numberControl( 'Env.groundIntensity' ),

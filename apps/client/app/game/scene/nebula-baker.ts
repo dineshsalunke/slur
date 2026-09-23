@@ -1,7 +1,10 @@
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
+import { NebulaEnvShell } from './nebula-env-shell';
 import { createNoiseVolume } from './nebula-noise-volume';
+import { applyPlanets, planetUniforms } from './nebula-planets';
 import { SKY_BAKE_KEYS, SKY_LOOK_KEYS, type SkyKey } from './nebula-presets';
+import { measureProbe, PROBE_H, PROBE_W, type ProbeResult } from './nebula-probe';
 import {
     NEBULA_BACKGROUND_FRAGMENT,
     NEBULA_BAKE_FRAGMENT,
@@ -13,13 +16,7 @@ import {
 
 const FIELD_FACE = 1024;
 const LIGHT_FACE = 128;
-const PROBE_W = 64;
-const PROBE_H = 32;
-const HORIZON_HALF_SPAN = 3;
 const BACKGROUND_SCALE = 100;
-const KEY_LIFT = 1.4;
-const KEY_DEPTH = 0.35;
-const KEY_TINT = 0.45;
 const DEG = Math.PI / 180;
 
 export const NEBULA_HORIZON = new THREE.Color( 0, 0, 0 );
@@ -30,12 +27,11 @@ export const NEBULA_LIGHT = {
     color: new THREE.Color( 1, 1, 1 ),
 };
 
-const SRGB_TO_LINEAR = Float32Array.from( { length: 256 }, ( _, i ) => {
-    const c = i / 255;
-    return c <= 0.04045 ? c / 12.92 : ( ( c + 0.055 ) / 1.055 ) ** 2.4;
-} );
-
-const _color = new THREE.Color();
+const NEBULA_PROBE: ProbeResult = {
+    horizon: NEBULA_HORIZON,
+    direction: NEBULA_LIGHT.direction,
+    color: NEBULA_LIGHT.color,
+};
 
 function sky( key: SkyKey ): number {
     return num( `Sky.${ key }` );
@@ -53,14 +49,6 @@ function readInto( keys: readonly SkyKey[], state: Float64Array ): boolean {
     return changed;
 }
 
-function cubeScene( material: THREE.ShaderMaterial ): THREE.Scene {
-    const scene = new THREE.Scene();
-    const mesh = new THREE.Mesh( new THREE.BoxGeometry( 2, 2, 2 ), material );
-    mesh.frustumCulled = false;
-    scene.add( mesh );
-    return scene;
-}
-
 function cubeMaterial( fragmentShader: string, uniforms: Record< string, THREE.IUniform > ): THREE.ShaderMaterial {
     return new THREE.ShaderMaterial( {
         vertexShader: NEBULA_CUBE_VERTEX,
@@ -70,6 +58,13 @@ function cubeMaterial( fragmentShader: string, uniforms: Record< string, THREE.I
         depthTest: false,
         depthWrite: false,
     } );
+}
+
+function skyBox( material: THREE.ShaderMaterial ): THREE.Mesh {
+    const mesh = new THREE.Mesh( new THREE.BoxGeometry( 2, 2, 2 ), material );
+    mesh.frustumCulled = false;
+    mesh.renderOrder = -1000;
+    return mesh;
 }
 
 export class NebulaBaker {
@@ -86,7 +81,6 @@ export class NebulaBaker {
     private readonly lightCube = new THREE.WebGLCubeRenderTarget( LIGHT_FACE, {
         type: THREE.HalfFloatType,
         generateMipmaps: false,
-        depthBuffer: false,
     } );
     private readonly probeTarget = new THREE.WebGLRenderTarget( PROBE_W, PROBE_H, {
         type: THREE.UnsignedByteType,
@@ -113,8 +107,10 @@ export class NebulaBaker {
         uVoids: { value: 0.5 },
         uDust: { value: 0.5 },
     };
+    private readonly planets = planetUniforms();
     private readonly shadeUniforms = {
         ...this.bandUniforms,
+        ...this.planets,
         uFields: { value: this.fields.texture },
         uNoise: { value: this.noise },
         uCloud: { value: new THREE.Color() },
@@ -136,10 +132,6 @@ export class NebulaBaker {
     };
 
     private readonly bakeMaterial = cubeMaterial( NEBULA_BAKE_FRAGMENT, this.bakeUniforms );
-    private readonly lightMaterial = cubeMaterial( NEBULA_LIGHT_FRAGMENT, {
-        ...this.shadeUniforms,
-        ...this.stillUniforms,
-    } );
     private readonly backgroundMaterial = cubeMaterial( NEBULA_BACKGROUND_FRAGMENT, {
         ...this.shadeUniforms,
         ...this.liveUniforms,
@@ -151,23 +143,32 @@ export class NebulaBaker {
         depthTest: false,
         depthWrite: false,
     } );
+    private readonly lightMaterial: THREE.ShaderMaterial;
 
-    private readonly bakeScene = cubeScene( this.bakeMaterial );
-    private readonly lightScene = cubeScene( this.lightMaterial );
+    private readonly bakeScene = new THREE.Scene().add( skyBox( this.bakeMaterial ) );
+    private readonly lightScene = new THREE.Scene();
     private readonly probeScene = new THREE.Scene();
+    private readonly shell: NebulaEnvShell;
 
     private readonly bakeState = new Float64Array( SKY_BAKE_KEYS.length ).fill( Number.NaN );
     private readonly lookState = new Float64Array( SKY_LOOK_KEYS.length ).fill( Number.NaN );
 
     constructor() {
-        this.background = new THREE.Mesh( new THREE.BoxGeometry( 2, 2, 2 ), this.backgroundMaterial );
-        this.background.frustumCulled = false;
-        this.background.renderOrder = -1000;
+        this.background = skyBox( this.backgroundMaterial );
         this.background.scale.setScalar( BACKGROUND_SCALE );
         this.background.onBeforeRender = ( _renderer, _scene, camera ) => {
             this.background.position.setFromMatrixPosition( camera.matrixWorld );
             this.background.updateMatrixWorld();
         };
+
+        const gain = { value: 1 };
+        this.lightMaterial = cubeMaterial( NEBULA_LIGHT_FRAGMENT, {
+            ...this.shadeUniforms,
+            ...this.stillUniforms,
+            uEnvGain: gain,
+        } );
+        this.shell = new NebulaEnvShell( this.lightScene, skyBox( this.lightMaterial ), gain );
+
         const probe = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), this.probeMaterial );
         probe.frustumCulled = false;
         this.probeScene.add( probe );
@@ -182,6 +183,10 @@ export class NebulaBaker {
         }
         if ( readInto( SKY_LOOK_KEYS, this.lookState ) ) {
             this.applyLook();
+            relit = true;
+        }
+        if ( this.shell.read() ) {
+            this.shell.apply();
             relit = true;
         }
         if ( relit ) this.relight( renderer );
@@ -200,6 +205,7 @@ export class NebulaBaker {
         this.envTarget = null;
         this.pmrem?.dispose();
         this.pmrem = null;
+        this.shell.dispose();
         for ( const m of [ this.bakeMaterial, this.lightMaterial, this.backgroundMaterial, this.probeMaterial ] ) {
             m.dispose();
         }
@@ -240,6 +246,7 @@ export class NebulaBaker {
         u.uDustOpacity.value = sky( 'dustOpacity' );
         u.uRimStrength.value = sky( 'rim' );
         u.uClumpEdge.value = sky( 'clumps' );
+        applyPlanets( this.planets );
     }
 
     private relight( renderer: THREE.WebGLRenderer ): void {
@@ -253,60 +260,6 @@ export class NebulaBaker {
         renderer.render( this.probeScene, this.probeCamera );
         renderer.readRenderTargetPixels( this.probeTarget, 0, 0, PROBE_W, PROBE_H, this.probePixels );
         renderer.setRenderTarget( previous );
-        this.measure();
-    }
-
-    private measure(): void {
-        const px = this.probePixels;
-        let hr = 0;
-        let hg = 0;
-        let hb = 0;
-        let hn = 0;
-        let kx = 0;
-        let ky = 0;
-        let kz = 0;
-        let kr = 0;
-        let kg = 0;
-        let kb = 0;
-        const midRow = PROBE_H / 2;
-        const midCol = PROBE_W / 2;
-
-        for ( let row = 0; row < PROBE_H; row++ ) {
-            const lat = ( ( row + 0.5 ) / PROBE_H - 0.5 ) * Math.PI;
-            const cosLat = Math.cos( lat );
-            for ( let col = 0; col < PROBE_W; col++ ) {
-                const lon = ( ( col + 0.5 ) / PROBE_W - 0.5 ) * Math.PI * 2;
-                const i = ( row * PROBE_W + col ) * 4;
-                const r = SRGB_TO_LINEAR[ px[ i ] ];
-                const g = SRGB_TO_LINEAR[ px[ i + 1 ] ];
-                const b = SRGB_TO_LINEAR[ px[ i + 2 ] ];
-                const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                const w = lum * lum * cosLat;
-                kx += w * cosLat * Math.sin( lon );
-                ky += w * Math.sin( lat );
-                kz += w * cosLat * Math.cos( lon );
-                kr += w * r;
-                kg += w * g;
-                kb += w * b;
-                if ( ( row === midRow - 1 || row === midRow ) && Math.abs( col + 0.5 - midCol ) <= HORIZON_HALF_SPAN ) {
-                    hr += r;
-                    hg += g;
-                    hb += b;
-                    hn++;
-                }
-            }
-        }
-
-        NEBULA_HORIZON.setRGB( hr / hn, hg / hn, hb / hn, THREE.LinearSRGBColorSpace );
-
-        const len = Math.hypot( kx, ky, kz );
-        if ( len > 0 ) {
-            NEBULA_LIGHT.direction.set( kx / len, ky / len + KEY_LIFT, ( kz / len ) * KEY_DEPTH ).normalize();
-        }
-        const peak = Math.max( kr, kg, kb );
-        if ( peak > 0 ) {
-            _color.setRGB( kr / peak, kg / peak, kb / peak );
-            NEBULA_LIGHT.color.setRGB( 1, 1, 1 ).lerp( _color, KEY_TINT );
-        }
+        measureProbe( this.probePixels, NEBULA_PROBE );
     }
 }
