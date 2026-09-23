@@ -36,7 +36,9 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
   glow, the mobile ship and DESIGN.md.
 - QUEUED with workerfour (next after the menu leftovers): design the in-room ship-pick screen (owner request),
   via impeccable. Plan + claims go to the owner before any build. The screen is game/overlays/lobby-overlay.tsx.
-  Link joiners skip home.tsx, so the saved ship pick is not sent (grep only); the plan must cover that.
+  CORRECTION: a /game/:id link does not join at all (routes/game/route.tsx:13-14 redirects to /). The owner
+  APPROVED the plan (comps first) AND deep-link join (a). workerfour claims: lobby-overlay, roster, ship-card,
+  overlays.test, net-canvas, the ship-picker/choice move, routes/game/route.tsx, net/matchmaking.ts. NEXT: relay the comps.
 - Copy picks landed `1f1eb0b`. The exhaust nozzles for 4 ships (exhaust-ports.ts has split-crown only) are PARKED by the owner.
 - The workers table below is from ~02:00. Now: workerthree is IDLE, no files. workerfour holds its menu files plus
   rock-field.tsx and game/scene/reduced-motion.ts.
