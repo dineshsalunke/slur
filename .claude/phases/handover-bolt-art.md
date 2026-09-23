@@ -9,13 +9,11 @@
 - `scene/bolt-streaks.tsx`, `bolt-streak-material.ts`, `bolt-embers.ts` — an additive streak (core + sheath) and shed embers. Used by `projectile-field.tsx` and `local-bolt-field.tsx`.
 - `scene/combat-look.ts` — the shape and intensity constants. The cyan constant is gone.
 
-## Status: ON HOLD
+## Status: idle, awaiting owner assignment
 
-The supervisor paused this lane. The owner reported a drop below 15 fps, and workerone is measuring. The bolt art is a suspect.
+The fps scare is cleared. workerone measured it: no commit regressed the frame. The track has about 130 pickups, so the per-frame `BoltPickups` rewrite is cheap. The drop came from agents' headless Chrome tabs contending for the GPU at DPR 2. Rule: [[headless-game-tabs-starve-the-gpu]].
 
-**Prime suspect (inferred, not measured):** `BoltPickups` rewrites every pickup instance every frame: 4 instanced meshes, each with a full buffer upload. `pickupsOf()` returns one pickup per non-hole segment (`packages/shared/src/sim/track.ts:159`), so a long track means hundreds to thousands of instances. The old field only wrote when a pickup was taken.
-
-**Likely fix:** animate only the pickups inside a z-window around the camera. Set `mesh.count`, or write only the dirty range. Also skip the ember buffer uploads when no ember is live.
+The collect animation was cut from 0.32s to 0.13s in `9017e0f` (owner request), so it plays in front of the chase camera. The respawn grow-in is still 0.5s.
 
 ## Open
 
