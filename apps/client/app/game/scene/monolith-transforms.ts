@@ -1,5 +1,5 @@
 import { HALF_WIDTH } from '@slur/shared';
-import type { MonolithShapeConfig, MonolithShapeName } from './monolith-config';
+import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import type { MonolithProfile } from './monolith-geometry';
 import { RAIL_W } from './track-geometry';
@@ -12,16 +12,6 @@ export interface MonolithTransform {
 }
 
 const RAIL_OUTER = HALF_WIDTH + RAIL_W;
-
-export function placedShape( shape: MonolithShapeConfig, placement: MonolithPlacement ): MonolithShapeConfig {
-    return {
-        ...shape,
-        width: shape.width * placement.scaleW,
-        height: shape.height * placement.scaleH,
-        depth: shape.depth * placement.scaleD,
-        gap: shape.gap + placement.push,
-    };
-}
 
 export function bodySpan( shape: MonolithShapeConfig ): number {
     return shape.height + shape.below;
@@ -81,9 +71,4 @@ export function seamTransform( shape: MonolithShapeConfig, placement: MonolithPl
         rotationY: onCorner ? Math.atan2( -alignSign, outX ) : 0,
         rotationZ: -Math.atan( lean ),
     };
-}
-
-export function shapeAt( z: number, side: number, shapes: readonly MonolithShapeName[] ): MonolithShapeName {
-    const h = Math.imul( Math.round( z ) ^ ( side > 0 ? 0x9e3779b9 : 0x85ebca6b ), 0x27d4eb2d ) >>> 0;
-    return shapes[ ( h >>> 13 ) % shapes.length ];
 }

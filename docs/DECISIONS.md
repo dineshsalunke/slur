@@ -880,3 +880,37 @@ owner accepted this for now.
 `apps/client/app/game/overlays/{threat-hud,held-power-chip}.tsx` · `apps/client/app/audio/sfx-map.ts` ·
 `apps/client/app/routes/test-level/*` · `apps/client/app/dev/tuning-schema.ts` ·
 `docs/GDD.md` §5 · `docs/ART_SCALE_REFERENCE.md` §7.
+
+---
+
+## ADR-018 — The columns beside the track are pillars: equal, square, mirrored, evenly spaced
+
+**Date:** 2026-09-23 · **Status:** Accepted (owner, via slur-supervisor) · **Reverses:** the intent of
+`568c523` *"every monolith gets its own size, and the two sides stop mirroring"* (no ADR recorded it)
+
+### Decision
+
+The owner: *"we want these monoliths to be of equal width and height (we had decided 50u) both on each
+side and evenly place, these are the pillars holding the track, that is the idea."*
+
+- **Size.** Every pillar is the box the owner tuned in `3d724d8`: *"height 50u, width and depth 12u,
+  flush to the rail"*. The owner confirmed this reading ("50u" is the height, and the footprint is a
+  12u square). There are no per-pillar multipliers and no obelisk.
+- **Placement.** Pillars stand in mirrored pairs at the same z. The pitch keeps the decided
+  `intensityAt` lerp, *"calm spacing 400, intense 200"* (`3d724d8`). The owner chose this over a
+  constant pitch. There is no per-side phase, no jitter, no dropped row and no push off the rail.
+- **Variety** belongs to the other props (obelisk, gate, arch, asteroids), never to the pillars. An arch
+  (#220) replaces the whole pillar pair nearest its z. It does not move or drop the pairs around it.
+
+### Rejected alternatives
+
+- **Keep `568c523`'s variety.** It read as "alternating and not square, different sizes" (owner). The
+  colonnade stopped reading as structure.
+- **A 50u × 50u footprint.** Four times the recorded width. A pair of them would be a wall beside the
+  deck.
+- **A constant pitch.** It was offered. The owner kept the decided intensity lerp.
+
+### Affected
+
+`apps/client/app/game/scene/{monolith-config,monolith-field,monolith-transforms,monolith-group,monoliths}` ·
+`docs/ADD.md` §4.

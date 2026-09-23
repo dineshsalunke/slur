@@ -96,6 +96,7 @@ bearing readability contract of the marigold-primary system:
 |---|---|---|
 | **Deadly block** | sealed, solid, monolithic mass; sparse functional seams | fractured |
 | **Breakable block** | visibly fractured shell, internal marigold energy through the cracks | sealed |
+| **Track pillar** | one identical square column, repeated in mirrored pairs flush to the rail — it holds the track up | varied in size, shape or spacing |
 | **Environment monolith** | huge (200–400u), background-scale, framing — never track-adjacent mass | mistakable for a hazard |
 | **Track boundary** | continuous marigold edge channel | matched by any decorative seam |
 | **Pickup** | floating geometric icon, rotating, distinct silhouette per type | static |
@@ -109,6 +110,19 @@ bearing readability contract of the marigold-primary system:
   block metal family** (`docs/ART_MATERIALS.md` rev. 6, 2026-09-23) — hazard-vs-scenery separation for
   monoliths now rests on scale and placement alone (the row below), not material. Planets and moons stay
   cold and desaturated — **no marigold surface colour by default**.
+- **Track pillars (ADR-018).** The columns beside the deck are **the pillars that hold the track up**.
+  They are not scenery monoliths, and the rule for them is fixed:
+  - **Equal size.** Every pillar is the same box: a square **12u × 12u** footprint, **50u** tall above the
+    deck, and sunk 60u below it. There is no taper, no obelisk and no per-pillar scale.
+  - **Mirrored.** Pillars stand in pairs, one each side, at the same z. One side never runs out of step
+    with the other.
+  - **Flush to the rail.** The inner face touches the rail's outer edge. No pillar stands back.
+  - **Evenly spaced.** No row is dropped and no spacing is jittered. The pitch follows `intensityAt(z)`
+    from **400u** (calm) to **200u** (intense). That is the only variation, and it is the same on both
+    sides.
+  - **Variety belongs to other props, never to the pillars.** Obelisks, gates, arches and asteroids carry
+    the silhouette variety. An arch (#220) takes the place of a whole pillar pair at that pair's z. It
+    never shifts or drops the pairs around it.
 - **Geometry stays angular** — hard edges, chamfered corners, trapezoidal/hex forms. Roundness is reserved
   for **lights** (status pips, glows), never structural panels.
 - Minimal texture detail; the "detail" is light, motion, and trails.
@@ -185,6 +199,7 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 | Edge channels | procedural **sweep of a 2D cross-section** along z (the ribbon never turns, so a sweep is a quad strip per profile segment — no `ExtrudeGeometry`, no authored mesh). Shell and glow as **separate geometries** so the one emissive face is tunable without touching the shell | **~100%** |
 | Gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
 | Obstacle blocks (both states) | procedural geometry | **~100%** |
+| Track pillars | **BUILT** — one instanced chamfered box, mirrored pairs (ADR-018) | **done** |
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
 | Asteroids (Angular · Plate · Broken) | procedural — convex hull over jittered points, flat-shaded | **~90%** |
 | Planets / moons | procedural — sphere + gradient/terminator shading | high |

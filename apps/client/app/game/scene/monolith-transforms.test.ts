@@ -1,22 +1,13 @@
 import { HALF_WIDTH } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import type { MonolithShapeConfig } from './monolith-config';
-import { MONOLITH_SHAPES } from './monolith-config';
+import { PILLAR } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
-import {
-    bodySpan,
-    bodyTransform,
-    innerFaceX,
-    placedShape,
-    seamTransform,
-    shapeAt,
-    shapeProfile,
-    taperAt,
-} from './monolith-transforms';
+import { bodySpan, bodyTransform, innerFaceX, seamTransform, shapeProfile, taperAt } from './monolith-transforms';
 import { RAIL_W } from './track-geometry';
 
-const box = MONOLITH_SHAPES.box;
-const obelisk = MONOLITH_SHAPES.obelisk;
+const box = PILLAR;
+const obelisk: MonolithShapeConfig = { ...PILLAR, taper: 0.62 };
 const bevel = box.chamfer / 2;
 
 function withSeam( shape: MonolithShapeConfig, seam: Partial< MonolithShapeConfig[ 'seam' ] > ): MonolithShapeConfig {
@@ -24,7 +15,7 @@ function withSeam( shape: MonolithShapeConfig, seam: Partial< MonolithShapeConfi
 }
 
 function at( z: number, side: number ): MonolithPlacement {
-    return { z, side, scaleW: 1, scaleH: 1, scaleD: 1, push: 0 };
+    return { z, side };
 }
 
 describe( 'bodyTransform', () => {
@@ -40,6 +31,23 @@ describe( 'bodyTransform', () => {
         const t = bodyTransform( box, at( 0, 1 ) );
         expect( t.position[ 1 ] + t.scale[ 1 ] / 2 ).toBeCloseTo( box.height );
         expect( t.position[ 1 ] - t.scale[ 1 ] / 2 ).toBeCloseTo( -box.below );
+    } );
+
+    it( 'mirrors a pair exactly across the track', () => {
+        const right = bodyTransform( box, at( 300, 1 ) );
+        const left = bodyTransform( box, at( 300, -1 ) );
+        expect( left.position ).toEqual( [ -right.position[ 0 ], right.position[ 1 ], right.position[ 2 ] ] );
+        expect( left.scale ).toEqual( right.scale );
+    } );
+} );
+
+describe( 'PILLAR', () => {
+    it( 'is a square 12u footprint, 50u tall, untapered', () => {
+        expect( PILLAR.width ).toBe( 12 );
+        expect( PILLAR.depth ).toBe( 12 );
+        expect( PILLAR.height ).toBe( 50 );
+        expect( PILLAR.taper ).toBe( 1 );
+        expect( PILLAR.gap ).toBe( 0 );
     } );
 } );
 
@@ -118,53 +126,8 @@ describe( 'seamTransform', () => {
     } );
 } );
 
-describe( 'shapeAt', () => {
-    it( 'is deterministic and uses every shape in the mix', () => {
-        const seen = new Set< string >();
-        for ( let z = 0; z < 4000; z += 137 ) {
-            for ( const side of [ -1, 1 ] ) {
-                const name = shapeAt( z, side, [ 'box', 'obelisk' ] );
-                expect( shapeAt( z, side, [ 'box', 'obelisk' ] ) ).toBe( name );
-                seen.add( name );
-            }
-        }
-        expect( seen.size ).toBe( 2 );
-    } );
-
-    it( 'honours a single-shape mix', () => {
-        expect( shapeAt( 999, -1, [ 'obelisk' ] ) ).toBe( 'obelisk' );
-    } );
-} );
-
 describe( 'bodySpan', () => {
     it( 'is the height above plus the skirt below', () => {
         expect( bodySpan( box ) ).toBe( box.height + box.below );
-    } );
-} );
-
-describe( 'placedShape', () => {
-    const varied = { z: 0, side: 1, scaleW: 1.5, scaleH: 0.5, scaleD: 1.8, push: 12 };
-
-    it( 'scales each axis independently and stands the monolith back off the rail', () => {
-        const s = placedShape( box, varied );
-        expect( s.width ).toBeCloseTo( box.width * 1.5 );
-        expect( s.height ).toBeCloseTo( box.height * 0.5 );
-        expect( s.depth ).toBeCloseTo( box.depth * 1.8 );
-        expect( innerFaceX( s ) ).toBeCloseTo( innerFaceX( box ) + 12 );
-    } );
-
-    it( 'keeps the base buried, so a shorter monolith does not float', () => {
-        const t = bodyTransform( placedShape( box, varied ), varied );
-        expect( t.position[ 1 ] - t.scale[ 1 ] / 2 ).toBeCloseTo( -box.below );
-        expect( t.position[ 1 ] + t.scale[ 1 ] / 2 ).toBeCloseTo( box.height * 0.5 );
-    } );
-
-    it( 'carries the seam onto the resized face', () => {
-        const s = placedShape( box, varied );
-        expect( seamTransform( s, varied ).position[ 0 ] ).toBeCloseTo( innerFaceX( s ) + bevel );
-    } );
-
-    it( 'leaves a neutral placement identical to the shape', () => {
-        expect( placedShape( box, at( 0, 1 ) ) ).toEqual( box );
     } );
 } );
