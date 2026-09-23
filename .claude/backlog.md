@@ -26,11 +26,13 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
      *"const lanes = 1 + Math.floor( r() * BLOCK_MAX_LANES );"* and line 44 *"x0: -HALF_WIDTH + start * CELL"*.
      Measured, 9 seeds: 157 blocks, **exactly 3 distinct widths — 4, 8, 12**. Same fix, but it must re-check
      `passableCorridorWidth` because gap decks are narrow to begin with.
-  3. [ ] **Every monolith in the field is the same object** — `monolith-config.ts` has one shape
-     (`shapes: [ 'box' ]`, `width: 12, depth: 12, height: 50`) and `monolith-field.ts:19` pushes
-     `{ z, side: -1 }, { z, side: 1 }` — mirrored pairs at the same z, spacing a pure function of intensity
-     with no jitter, each at a fixed distance from the rail. That is the tall slab colonnade in the
-     mid-distance. Wants per-monolith size jitter, a z-offset between the sides, and dropped ones.
+  3. [x] **Every monolith in the field was the same object** — `568c523`. One shape (`shapes: [ 'box' ]`,
+     `width: 12, depth: 12, height: 50`) and mirrored pairs pushed at the same z with no spacing jitter.
+     Each side now walks its own sequence, phase-offset by half a spacing; spacing takes a 0.55–1.6
+     jitter; one in seven is dropped; each monolith draws its own width/height/depth multiplier and a
+     push back off the rail; the unused `obelisk` shape joined the mix. Sizing rides the instance
+     transform through a new `placedShape`, so instancing and the seam are unchanged.
+     **Still owed: the flythrough gate** — the headless frame tap only proves the start-line view.
   4. [ ] **Block height is the last fixed axis** — every block exactly 8u. Gated: the vertical-reach check
      is still missing from the validator, and GDD §0 puts 8u *"above double-jump reach on purpose"*. Build
      the check before varying it. Carried from `.claude/phases/HANDOVER-corridor-closing.md`.
