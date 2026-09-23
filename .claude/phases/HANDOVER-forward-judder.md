@@ -37,10 +37,25 @@ The rate does not matter. A steady 50fps is as smooth as a steady 120.
 **Block-instance overflow.** Worst streaming window is 124–129 blocks against `BLOCK_LIMIT` 320
 across seeds 1234 / 12345 / 7.
 
-**Segment generation cost.** `makeProcgenTrack` never caches — `packages/shared/src/sim/track.ts:168`,
-*"const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length, density );"* — and
-`TrackBlocks` calls it for all 58 window segments every frame. Timed at **0.154 ms/frame**, 3.3 µs
-per segment. Not worth fixing for this bug.
+**Segment generation cost — the owner's own hypothesis, tested twice.** `makeProcgenTrack` never
+caches — `packages/shared/src/sim/track.ts:168`, *"const segmentAt = ( i: number ): Segment =>
+buildSegment( seed, i, length, density );"* — so `TrackBlocks` regenerates all 58 window segments
+every frame. The first pass reported only a mean (0.154 ms/frame), which would have hidden GC
+spikes. Re-measured on the real `/test-level` descriptor over 3000 frames, with the tail:
+
+```
+mean 0.135   p50 0.123   p99 0.237   max 0.328 ms
+frames over 2ms: 0, over 5ms: 0
+heap grew 1.6 MB across the run
+```
+
+No spikes, no GC cliff, almost no garbage. Not the judder. Caching `segmentAt` is still worth doing
+one day on principle, but it will not fix this.
+
+**The rest of the track path.** Floor, seams, rails, rim, monoliths and asteroids all `useMemo` their
+geometry on `[ track ]` — built once, never per frame. Consistent with
+[[blocks-are-the-only-streamed-geometry]]. The generation work of 2026-09-22/23 made the track
+*content* heavier (more and larger blocks to draw) but did not add per-frame CPU.
 
 ## What is left, and why the axis split does not rule it out
 
