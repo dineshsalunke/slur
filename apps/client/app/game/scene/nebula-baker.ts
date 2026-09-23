@@ -13,6 +13,7 @@ import {
     NEBULA_PROBE_FRAGMENT,
     NEBULA_PROBE_VERTEX,
 } from './nebula-shaders';
+import { prefersReducedMotion } from './reduced-motion';
 
 const FIELD_FACE = 1024;
 const LIGHT_FACE = 128;
@@ -70,6 +71,7 @@ function skyBox( material: THREE.ShaderMaterial ): THREE.Mesh {
 export class NebulaBaker {
     readonly background: THREE.Mesh;
 
+    private readonly still = prefersReducedMotion();
     private readonly noise = createNoiseVolume();
     private readonly fields = new THREE.WebGLCubeRenderTarget( FIELD_FACE, {
         type: THREE.UnsignedByteType,
@@ -193,7 +195,7 @@ export class NebulaBaker {
         }
         if ( relit ) this.relight( renderer );
 
-        this.liveUniforms.uTime.value = elapsed;
+        this.liveUniforms.uTime.value = this.still ? 0 : elapsed;
         this.liveUniforms.uFlow.value = sky( 'motion' );
     }
 
