@@ -35,7 +35,9 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
   uRockTime at 0 (freezes asteroids in-game too, accepted). workerfour cleared + resumed; still has the exhaust
   glow, the mobile ship and DESIGN.md.
 - QUEUED with workerfour (next after the menu leftovers): design the in-room ship-pick screen (owner request),
-  via impeccable. Plan + claims go to the owner before any build.
+  via impeccable. Plan + claims go to the owner before any build. The screen is game/overlays/lobby-overlay.tsx.
+  Link joiners skip home.tsx, so the saved ship pick is not sent (grep only); the plan must cover that.
+- Copy picks landed `1f1eb0b`. The exhaust nozzles for 4 ships (exhaust-ports.ts has split-crown only) are PARKED by the owner.
 - The workers table below is from ~02:00. Now: workerthree is IDLE, no files. workerfour holds its menu files plus
   rock-field.tsx and game/scene/reduced-motion.ts.
 
