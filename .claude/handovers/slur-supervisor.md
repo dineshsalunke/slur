@@ -22,7 +22,7 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | perf + #213 parked | Idle, waiting on owner decisions 1 and 2 below | none |
-| workertwo | w2P:pF | #220 monolith gate/arches | Landed: pillars `f9248ef` (ADR-018, ADD §4), gate + arches + /test-level finish reset `921ee24`, bulky arches `58bb6e6`. NOW BUILDING the owner-APPROVED **distinct finish gate A + B + C**: (A) a gameplay-tier M7 inner outline, which replaces the 0.5u seam question; (B) the gate bump to legs 40, depth 40, lintel 48, height 240; (C) a ~12u floor finish band. D and E are rejected. The ART_MATERIALS.md departure: the finish gate is at gameplay tier. Stills at finishZ −450/−900/−2000. | finish-gate.tsx, monolith-frame.ts(+test), finish-outline.tsx (new), docs/ART_MATERIALS.md |
+| workertwo | w2P:pF | none (#220 done) | Landed: pillars `f9248ef`, gate + arches `921ee24`, bulky arches `58bb6e6`, distinct finish gate A+B+C `c36518a` (the finish glow sets fog:false; the 1000u far plane caps how far the finish reads). Cleared and resumed a third time (`740f5b3`). IDLE, waiting for the owner to pick its next lane: the #220 follow-ups or #216. | none |
 | workerthree | w2P:pG | #219 homing seeker | Landed: breadcrumb homing at 2.5u `a2223ca` (0.6% blocked at 90 u/s, 9% expired at 110 u/s), `Seeker.flyY` tunable `edea282`. Cleared and resumed a third time (`6c08dc4`). Cleared for `dev/tuning-panel.tsx` (the Seeker.flyY slider). Then the look rebuild (square chamfered body, core on the NOSE, fins, near-cube pickup, THICK trail in MARIGOLD, departure recorded in ART_MATERIALS.md), then the render check, then the 3-slot plan. | combat/seeker.ts(+test), combat/constants.ts, sim-config.ts, rooms/room-combat.ts, dev/tuning-schema.ts, DECISIONS ADR-017, seeker-look.ts, seeker-bodies.tsx |
 | workerfour | w2P:pH | main menu to match cruise-lighting.png | Blocked on the impeccable plugin | ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/* |
 
@@ -39,6 +39,11 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
   `queryFirst(LocalPlayer, Sim)` returning nothing (possibly the HMR-orphan trap, see memory).
 
 ## Open owner decisions
+
+- **#220 follow-ups (workertwo):** (a) should the finish read past 1000u (a larger far plane for the whole
+  scene, or a beacon)? (b) keep, drop or raise the floor checker (a few pixels tall at a 4u eye height)?
+  (c) `Monolith.seamEmissive` defaults to 2, equal to the gameplay reference; ART_MATERIALS.md §3 caps
+  environmental glow at ≤ 0.25 of it. Next lane for workertwo: these, or #216.
 
 1. Perf fix (workerone): cap DPR at 1.5 or make it adaptive · a lower-resolution rearview (~4 ms) ·
    Environment `frames` 1.
