@@ -22,21 +22,16 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #216 respawn inside a block (perf + #213 parked) | Owner APPROVED the plan: the nearest block-clear lane at the setback z; fallback steps z back by CELL; ends at the start apron; ignores world.broken; ADR-016. Baseline was 15/1068. Building. | sim/step.ts, sim/respawn-point.ts (new), sim/clearance.ts, sim/respawn.test.ts, sim/respawn-point.test.ts (new), docs/DECISIONS.md (first in queue) |
-| workertwo | w2P:pF | destructible block rebuild to blocks.png (issue pending) | #220 done `c36518a`. Owner APPROVED the plan with the supervisor defaults: pre-glow on an inbound bolt; ~12 Voronoi cells; chunks vanish mid-air; debris is VFX only; the sealed block is out of scope; the flash is bloom only; the #214 Qs stay open. Building. | scene/fractured-block-geometry.ts(+test), fractured-block-shader.ts, block-debris.tsx, block-breaks.ts, block-burst.tsx (new), track-blocks.tsx (fractured path), game/block-state.ts. QUEUED: ART_MATERIALS.md (after workerthree), DECISIONS.md (after workerone) |
-| workerthree | w2P:pG | #219 homing seeker | Landed: breadcrumb homing at 2.5u `a2223ca` (0.6% blocked at 90 u/s, 9% expired at 110 u/s), `Seeker.flyY` tunable `edea282`. Cleared and resumed a third time (`6c08dc4`). Cleared for `dev/tuning-panel.tsx` (the Seeker.flyY slider). Then the look rebuild (square chamfered body, core on the NOSE, fins, near-cube pickup, THICK trail in MARIGOLD, departure recorded in ART_MATERIALS.md), then the render check, then the 3-slot plan. | combat/seeker.ts(+test), combat/constants.ts, sim-config.ts, rooms/room-combat.ts, dev/tuning-schema.ts, DECISIONS ADR-017, seeker-look.ts, seeker-bodies.tsx |
+| workertwo | w2P:pF | #222 destructible block rebuild to blocks.png | #220 done `c36518a`. Owner APPROVED the plan with the supervisor defaults: pre-glow on an inbound bolt; ~12 Voronoi cells; chunks vanish mid-air; debris is VFX only; the sealed block is out of scope; the flash is bloom only; the #214 Qs stay open. Building. | scene/fractured-block-geometry.ts(+test), fractured-block-shader.ts, block-debris.tsx, block-breaks.ts, block-burst.tsx (new), track-blocks.tsx (fractured path), game/block-state.ts, bolt-streaks.tsx (one noteBolt call), ART_MATERIALS.md (passed after e2096cd). dev/tuning-schema.ts (released to it by workerthree). QUEUED: DECISIONS.md (after workerone) |
+| workerthree | w2P:pG | #219 seeker, then #223 3 slots | Landed: breadcrumb homing `a2223ca`, flyY tunable `edea282` + slider `ddc8285`, look `911e8ae`, trail fix `8b51a00`, ART_MATERIALS item 14 `eac9e96`/`e2096cd`. Cleared and resumed 4 times (last `9613ecf`). NOW: the owner's seeker feedback: 4x length (2.2 → ~8.8u, visual only preferred) + a fin on each of 4 faces, then new stills. THEN #223, APPROVED with all recommendations: 1/2/3 select, Q cycles, E fires, X drops; a dropped power vanishes; full slots skip the pickup; the seeker cap moves to fire time, one per shooter; bolt + seeker only (boost is #20, later). | combat/*, sim-config.ts, schema.ts, rooms/room-combat.ts, seeker-*, and for #223: game/net-canvas.tsx, overlays/overlays.tsx, audio/bind-room-audio.ts, test-level/{local-combat.ts, local-ship.tsx}, game/input/ (new), docs/GDD.md. QUEUED: DECISIONS.md (ADR-017 amendment, third in line) |
 | workerfour | w2P:pH | main menu to match cruise-lighting.png | Blocked on the impeccable plugin | ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/* |
 
 ## Pending decisions from workers
 
-- **Owner decision (#219):** a seeker pickup grants a BOLT while the room's one seeker is still in flight
-  (ADR-017, scope 'room'). Keep this, change the scope to 'shooter', or dim the pickup? The 3-slot design
-  may settle it.
-- **3 power-up slots:** owner request. workerthree plans it after the seeker look: which slot E fires,
-  what happens when all slots are full, duplicates, HUD layout, a new issue. HUD work that assumes one
-  slot is on hold. Owner requirements sent to workerthree (2026-09-23): the player fills the slots with
-  any mix, duplicates allowed (target loadout 2 seekers + 1 boost), and can DROP a slot's pickup to free it.
-- **Render check:** the seeker has not been seen rendered yet. The earlier failure was
-  `queryFirst(LocalPlayer, Sim)` returning nothing (possibly the HMR-orphan trap, see memory).
+- **DECISIONS.md queue:** workerone (ADR-016, #216) → workertwo (ADR-015 amendment, #222) → workerthree
+  (ADR-017 amendment, #223). One append per commit; each releases it to the next through the supervisor.
+- **Seeker fins:** read "fins on each side" as 4 fins (top, bottom, left, right). The owner has not
+  confirmed that reading.
 
 ## Open owner decisions
 
