@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-23, ~23:58
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~02:00
 
 ## Goal
 
@@ -7,70 +7,55 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 
 ## Done this session
 
-- Seeker pickup 3x longer, a 4.2u bar (workerthree `3bc2605`). Pushed.
-- #226 seekers fire back to back: the per-shooter cap is removed and MAX_SEEKERS goes 16 → 48 (workerthree `eae791d`). Pushed.
-- Sky PRs: workerfive reviewed them statically. Findings are in `.claude/phases/2026-09-23-review-pr-221-224.md` (`8de9063`).
-  Mahendra rebased #224 onto dev, so it already contained #221. I merged #224 on local dev (`81f9462`):
-  typecheck clean, tests 201/241/14 pass, lint 0 errors. Pushed; GitHub shows #224 MERGED. #221 is CLOSED
-  with a comment (landed through #224). Merging #221 as well would have conflicted in 6 files.
-  NOTE: my `gh pr merge` was DENIED by the auto-mode classifier ("Merge Without Review"). A local merge
-  plus checks plus a push worked, after the owner asked explicitly.
-- #227 sky review fixes (workertwo `c99c40d`): rail glow and rock key moved to world space, which fixes
-  the rear-view mirror; rail glow gated to rail runs; fwidth moved above the early return; ADD.md
-  corrected. `.gitignore` `.tmp/` KEPT (my call; the dev log uses it).
-- `/test-level` frame meter moved from top centre to bottom centre (`0a1ac63`, my edit to workerthree's
-  held file; workerthree told).
-- Killed 4 stale dev stacks at the owner's request. A fresh `pnpm dev` runs DETACHED (nohup) on
-  :5173/:2567 and logs to `.tmp/dev.log`. It belongs to the owner: never kill it.
-- workerfive was killed by the owner (lane done). It is no longer in the pane list.
-- Memory `pane-percent-is-of-one-million.md` (`8eae23a`).
+- #228 deck material on monoliths and blocks (owner pick B). workertwo: `81c2b76` monoliths, `9688d40` blocks,
+  `f6e9874` Monolith.plate tunable (0 = no joints), `fd818e6` default 2 (owner), docs `321a65f` + `d54e4ef`.
+  Owner calls: no Block.* value dial; no rail glow on blocks for now. Plate 2 costs one extra bake ≈ 60 ms
+  (swiftshader; the first-race-frame landing in a hosted room is [unmeasured]).
+- #229 rail flow-seam bloom: owner picked the inboard lip. workerthree `db2660c`, a 0.125u lip. Halo +79 → +123.
+  OPEN for the owner: the core leans yellow (255,210,54). A small Rail.railEmissive drop is offered. No answer yet.
+- Monolith seam flicker: cause = sub-pixel dropout, no AA (composer multisampling 0 since a2c4f8d). Owner
+  picked MSAA. workerthree is building the Render.msaa 0/2/4 tunable (default 4) in scene-effects.tsx,
+  tuning-schema.ts, tuning-panel.tsx. MSAA 4 exposed NaN → black frames from `pow(1-vAxial)` in
+  exhaust-material.ts and bolt-streak-material.ts. Clamp fix CLEARED, in progress. The owner reads the frame
+  meter at DPR 2, 0 vs 4, to pick the final default.
+- Main menu (workerfour): owner locked the "broadcast lower third" layout (impeccable). Plan approved, NO GitHub
+  issue (owner waived). Backdrop (b), the game scene with no blocks: 37 draws, 0.6 ms (accepted, 2.8× the old menu).
+  Impeccable artefacts (PRODUCT.md, .impeccable/, DESIGN.md) ARE to be committed (owner). Extra claims
+  cleared: app.css (tokens only), ui/scrim.tsx.
+- Track pacing (workerone): owner answers: rules + generator composes; time axis (TRACK_CONTRACT.pacingCruise);
+  a dev route first, deployable later for hand-authored levels. Design note approved: `/pacing/:seed?`, SVG,
+  metrics in `packages/shared/src/pacing/`. Owner: YES, plan a jump contract in step 2.
+- Memory `owner-may-waive-issue-filing.md` (`1a4f219`).
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none | IDLE (~14%, clear before a real lane). #216 done. Proposed for TRACK GENERATION. | none |
-| workertwo | w2P:pF | #227 sky fixes | DONE `c99c40d`, handover `a7f3333`. Cleared + resumed; waits on owner answers below. | the #222 files (see its handover); #227 files released on commit |
-| workerthree | w2P:pG | none | IDLE (~11%). #226 done `eae791d`, handover `9b66fb3`. | seeker-*, combat/*, test-level local-* + test-level-hud.tsx, hud/power-*, net-canvas.tsx … (see its handover) |
-| workerfour | w2P:pH | main menu to match cruise-lighting.png | Blocked on the impeccable plugin | ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/* |
+| workerone | w2P:pD | pacing board step 1 | BUILDING (cleared + briefed this session) | packages/shared/src/pacing/*, shared index.ts (1 line), client routes.ts (1 line), routes/pacing/* |
+| workertwo | w2P:pF | #228 done | IDLE, handover b33cc0a | none now (monolith-group.tsx released: the flicker fix went to MSAA, not the seam material) |
+| workerthree | w2P:pG | MSAA + NaN clamp | BUILDING | scene-effects.tsx, tuning-schema.ts, tuning-panel.tsx, exhaust-material.ts, bolt-streak-material.ts |
+| workerfour | w2P:pH | main menu | BUILDING (uncommitted files in the tree are its own) | routes/home.tsx, routes/home/*, ui/button.tsx, ui/panel.tsx, ui/scrim.tsx, lobby/room-list.tsx, app.css, apps/client/PRODUCT.md, apps/client/.impeccable/** |
 
-## Open owner decisions (newest first)
+## Open owner decisions
 
-E. **Monolith material #228: AWAITING THE OWNER'S PICK.** Switch `Monolith.surface` (0 current / 1 A deck
-   colour, no albedo / 2 B deck material) is committed in `ba17a58`, default 0. Stills are in
-   `.claude/frame-tap-refs/228-{current-metal,a-flat-deck-colour,b-deck-material}.png`, all sent to the
-   owner. B: the plate grid continues up the pillars, the rail glow lights their inner feet, and the
-   finish arches get no glow. workertwo is cleared, resumed and idle (handover `3d393d6`). On the pick:
-   make it the default, remove the switch, update ART_MATERIALS/ADD.
-A. **Darkness stills for #224** (blocks/ships/rails read darker: Env.bandIntensity 0.5 → 0.1, no local
-   rail spill). workertwo needs a WORKTREE for the before (036645c) vs after (dev) pair. Approve?
-B. **Sky bake stall**: measured ~145 ms per re-bake at DPR 1 (ANGLE Metal, M1 Pro), on the first race
-   frame and on any Sky.* bake-key change. First-frame shader compile not measured. Acceptable?
-C. **Seeker spacing**: seekers fired on consecutive frames spawn ~2u apart (body 8.8u) and draw as one
-   stacked shape. Space them apart (a short refire delay), or leave them stacked?
-D. **#221 bake number / Mahendra**: nothing posted on GitHub about the review findings (owner not asked).
-1. **TRACK GENERATION (owner focus).** The owner wants to clarify first: ASK WHAT THEY WANT TO CLARIFY
-   before writing any brief. Context: ADR-006, ADR-007, ADR-013, ADR-014, GDD §0, issues #34 and #24.
-   Proposed worker: workerone (clear it first).
-2. Rule fix: `@deprecated()` breaks reflection decoding. Wrong advice at `.claude/rules/colyseus-state.md:15`
-   and `conventions/colyseus.md:157`. Awaiting owner approval of workerthree's wording.
-3. #223 key clash (Shift+1..5 built as the interim) and a cue when a fire is refused. Refusal is now
-   mostly moot after #226 (only stun still refuses).
-4. #216 departure (step back one ship length, not CELL); #220 follow-ups; #214 questions; older perf items.
+1. Rail seam lip colour leans yellow: drop Rail.railEmissive a little? (asked, unanswered)
+2. MSAA default: owner reads the meter at DPR 2 once workerthree says it is ready.
+3. Untracked `.claude/agents/` and `.claude/skills/` from the impeccable install: commit or ignore? (not asked yet)
+4. Older, still open: #224 darkness stills (worktree was refused for the #228 before/after, so ask again only if needed);
+   sky bake 145 ms; seeker spacing; `@deprecated` rule-wording fix; #223 key clash; #216 departure.
 
 ## Uncommitted
 
-none (this handover commits by path).
+none of mine (this handover commits by path). The tree holds workerfour's menu files and workerthree's MSAA edits.
 
-## File queues
+## Next
 
-- docs/DECISIONS.md and docs/ART_MATERIALS.md: FREE. Next free ADR number: ADR-019.
-
-## Notes
-
-- dev is 4 commits ahead of origin at this writing (`8eae23a`, `0a1ac63`, `c99c40d`, `a7f3333`), plus this handover. Push when the owner says.
-- The worklog header reads `Last summarised: e656f18`.
+1. Relay workerthree's MSAA-ready message → ask the owner to read the meter; then set the default.
+2. Relay the workerone board route + still to the owner.
+3. Relay workerfour's finished menu; make sure the impeccable artefacts are committed.
+4. Tell workertwo it is released (no seam-material edit needed), or give it a new lane.
 
 ## Lessons → memory
 
-`pane-percent-is-of-one-million.md`: a worker's bar at 15% is already the 150k warning.
+`owner-may-waive-issue-filing.md`. workerfour wrote `check-the-cdp-port-is-yours.md` (a CDP probe drove
+another agent's headless Chrome because the port was taken).
