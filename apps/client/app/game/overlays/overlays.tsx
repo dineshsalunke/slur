@@ -17,7 +17,7 @@ export function Overlays() {
     return (
         <Fragment>
             <LeaveGuard phase={ phase } />
-            <AudioToggle />
+            { phase !== PHASE.lobby && <AudioToggle /> }
 
             { ( phase === PHASE.countdown || phase === PHASE.racing ) && (
                 <div className="fixed top-4 left-4 z-[26]">

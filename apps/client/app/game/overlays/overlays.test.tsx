@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 
-import { PHASE } from '@slur/shared';
+import { PHASE, SET_CLASS_MESSAGE, START_MESSAGE } from '@slur/shared';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomProvider } from '../../net/room-context';
+import { currentShip } from '../../ship/ship-choice';
 import { Overlays } from './overlays';
 
 const bus = vi.hoisted( () => {
@@ -60,6 +61,7 @@ const bus = vi.hoisted( () => {
             state.phase = 2;
             state.elapsed = 0;
             state.countdown = 0;
+            state.hostId = 'self';
             state.players = new Map();
         },
     };
@@ -97,7 +99,27 @@ vi.mock( '@colyseus/sdk', () => ( {
     },
 } ) );
 
-const counts = vi.hoisted( () => ( { LeaveGuard: 0, RaceHud: 0 } ) );
+const counts = vi.hoisted( () => ( { LeaveGuard: 0, RaceHud: 0, SpecTag: 0, Roster: 0 } ) );
+
+vi.mock( './spec-tag', async ( importOriginal ) => {
+    const actual = await importOriginal< typeof import('./spec-tag') >();
+    return {
+        SpecTag: ( props: Parameters< typeof actual.SpecTag >[ 0 ] ) => {
+            counts.SpecTag += 1;
+            return actual.SpecTag( props );
+        },
+    };
+} );
+
+vi.mock( './roster', async ( importOriginal ) => {
+    const actual = await importOriginal< typeof import('./roster') >();
+    return {
+        Roster: ( props: Parameters< typeof actual.Roster >[ 0 ] ) => {
+            counts.Roster += 1;
+            return actual.Roster( props );
+        },
+    };
+} );
 
 vi.mock( './leave-guard', async ( importOriginal ) => {
     const actual = await importOriginal< typeof import('./leave-guard') >();
@@ -119,7 +141,8 @@ vi.mock( './race-hud', async ( importOriginal ) => {
     };
 } );
 
-const room = { sessionId: 'self', state: bus.state } as never;
+const send = vi.fn();
+const room = { sessionId: 'self', state: bus.state, send } as never;
 
 let container: HTMLDivElement;
 let root: Root;
@@ -155,6 +178,9 @@ beforeEach( () => {
     } );
     counts.LeaveGuard = 0;
     counts.RaceHud = 0;
+    counts.SpecTag = 0;
+    counts.Roster = 0;
+    send.mockClear();
     container = document.createElement( 'div' );
     document.body.append( container );
     root = createRoot( container );
@@ -203,5 +229,53 @@ describe( 'Overlays subscription boundary (#91)', () => {
 
         expect( counts.RaceHud ).toBeGreaterThan( 0 );
         expect( counts.LeaveGuard ).toBe( 0 );
+    } );
+} );
+
+describe( 'Lobby overlay subscription boundary', () => {
+    it( 'lets a per-player patch reach Roster without re-rendering SpecTag', async () => {
+        bus.state.phase = PHASE.lobby;
+        await mountOverlays();
+        counts.SpecTag = 0;
+        counts.Roster = 0;
+
+        await act( async () => {
+            bus.emitPlayerChange();
+        } );
+
+        expect( counts.Roster ).toBeGreaterThan( 0 );
+        expect( counts.SpecTag ).toBe( 0 );
+    } );
+
+    it( 'cycles the ship on D, re-rendering SpecTag but not Roster, and sends the new ship', async () => {
+        bus.state.phase = PHASE.lobby;
+        await mountOverlays();
+        counts.SpecTag = 0;
+        counts.Roster = 0;
+
+        await act( async () => {
+            document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'KeyD', bubbles: true } ) );
+        } );
+
+        expect( counts.SpecTag ).toBeGreaterThan( 0 );
+        expect( counts.Roster ).toBe( 0 );
+        expect( send ).toHaveBeenCalledWith( SET_CLASS_MESSAGE, currentShip().id );
+    } );
+
+    it( 'starts the run on a bare Enter for the host only', async () => {
+        bus.state.phase = PHASE.lobby;
+        await mountOverlays();
+
+        await act( async () => {
+            document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'Enter', bubbles: true } ) );
+        } );
+        expect( send ).toHaveBeenCalledWith( START_MESSAGE );
+
+        send.mockClear();
+        bus.state.hostId = 'other';
+        await act( async () => {
+            document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'Enter', bubbles: true } ) );
+        } );
+        expect( send ).not.toHaveBeenCalledWith( START_MESSAGE );
     } );
 } );

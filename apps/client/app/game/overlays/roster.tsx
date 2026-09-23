@@ -1,33 +1,43 @@
-import { ColorDot } from '../../ui/color-dot';
-import { Tag } from '../../ui/tag';
+import type { Room } from '@colyseus/sdk';
+import { isShipId, type RunState, SHIPS } from '@slur/shared';
 import { colorHex } from '../colors';
-import type { PlayerView } from '../net/use-run-view';
+import { useRunView } from '../net/use-run-view';
 
-export function Roster( { players, hostId, selfId }: { players: PlayerView[]; hostId: string; selfId: string } ) {
+const TAG = 'text-[11px] font-bold uppercase tracking-[0.2em]';
+
+export function Roster( { room, className = '' }: { room: Room< RunState >; className?: string } ) {
+    const view = useRunView( room );
+
     return (
-        <ul className="m-0 flex list-none flex-col gap-1 p-0">
-            { players.map( ( p ) => (
-                <li
-                    key={ p.id }
-                    className={ `flex items-center gap-2 text-[13px] ${ p.connected ? '' : 'opacity-40' }` }
-                >
-                    <ColorDot hex={ colorHex( p.colorId ) } />
-                    <span className="flex-auto overflow-hidden text-ellipsis whitespace-nowrap">
-                        { p.name || 'Racer' }
-                    </span>
-                    { p.id === hostId && <Tag variant="host">★</Tag> }
-                    { p.id === selfId && <Tag>YOU</Tag> }
-                    { p.spectating && <Tag variant="spec">SPECTATING</Tag> }
-                    <span className="text-[10px] uppercase tracking-[1px] opacity-60">{ p.shipId }</span>
-                </li>
-            ) ) }
-            { players.length === 0 && (
-                <li className="flex items-center gap-2 text-[13px] opacity-40">
-                    <span className="flex-auto overflow-hidden text-ellipsis whitespace-nowrap">
-                        Waiting for racers…
-                    </span>
-                </li>
-            ) }
+        <ul
+            aria-label="Racers"
+            className={ `${ className } m-0 flex list-none gap-2 overflow-x-auto p-0 [scrollbar-width:none]` }
+        >
+            { view.players.map( ( p ) => {
+                const self = p.id === view.selfId;
+                return (
+                    <li
+                        key={ p.id }
+                        className={ `flex flex-none items-center gap-2.5 border bg-deep/85 px-3 py-2 ${ self ? 'border-readout/45' : 'border-readout/15' } ${ p.connected ? '' : 'opacity-40' }` }
+                    >
+                        <span
+                            aria-hidden="true"
+                            className="size-2.5 flex-none"
+                            style={ { background: colorHex( p.colorId ) } }
+                        />
+                        <span className="max-w-[14ch] truncate text-[15px] font-semibold text-readout">
+                            { p.name || 'Racer' }
+                            { p.connected ? '' : ' · reconnecting' }
+                        </span>
+                        { self && <span className={ `${ TAG } text-readout` }>You</span> }
+                        { p.id === view.hostId && <span className={ `${ TAG } text-readout-dim` }>Host</span> }
+                        { p.spectating && <span className={ `${ TAG } text-readout-dim` }>Spectating</span> }
+                        <span className="text-[12px] uppercase tracking-[0.16em] text-readout-dim">
+                            { isShipId( p.shipId ) ? SHIPS[ p.shipId ].name : p.shipId }
+                        </span>
+                    </li>
+                );
+            } ) }
         </ul>
     );
 }
