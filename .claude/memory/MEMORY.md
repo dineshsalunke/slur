@@ -41,4 +41,5 @@ lives in its own file beside this one.
 - [Owner may waive issue filing](owner-may-waive-issue-filing.md) — when the owner says "no issue, go ahead", brief the worker to build without one
 - [MSAA edge samples extrapolate varyings](msaa-edge-samples-extrapolate-varyings.md) — `pow` on an unclamped varying goes NaN at MSAA, and bloom turns the frame black; clamp the base
 - [Narrow headless captures need a CDP viewport](narrow-headless-captures-need-cdp-viewport.md) — `--window-size=390` crops a wider layout; use `setDeviceMetricsOverride` and probe scrollWidth
+- [A sweep that hits its bound fakes a reading](a-sweep-that-hits-its-bound-fakes-a-reading.md) — a window equal to the scan range is clipped; test no-input first; a jump pilot never re-presses from the floor
 - [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer has multisampling 0; a <1 px strip vanishes whole frames; zsh `$a` does not word-split, verify dials applied
