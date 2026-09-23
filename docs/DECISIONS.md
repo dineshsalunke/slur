@@ -990,7 +990,8 @@ says *"At most one seeker exists, held or in flight … When the limit is reache
   limit. A seeker pickup always grants a seeker. A fire refused by the cap spends nothing, and the slot
   keeps its seeker.
 - **Wire.** `PlayerState.slots` is an `ArraySchema<uint8>` appended after `heldPower`. `heldPower` is
-  `@deprecated()`. `USE_POWERUP` carries `{ slot }`. A new `DROP_POWERUP` carries `{ slot }`. A message
+  a plain unused `uint8`. It is not `@deprecated()`: the client decodes by reflection, and a deprecated
+  field moves `slots` one index down on the client (fixed in `c362fab`). `USE_POWERUP` carries `{ slot }`. A new `DROP_POWERUP` carries `{ slot }`. A message
   with no valid slot is ignored. `seekerScope` and `seekerGate` are removed.
 
 Commit: `eb4c381` (shared + server). The client slice follows.
