@@ -66,6 +66,7 @@ export const NUMBER_TUNABLES = {
     'Rail.rimEmissive': { value: 2, min: 0, max: 30, step: 0.05, rebuild: false },
 
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
+    'Monolith.plate': { value: 4, min: 0, max: 24, step: 1, rebuild: true },
 
     'Block.seamEmissive': { value: 6, min: 0, max: 20, step: 0.05, rebuild: false },
     'Block.wear': { value: 0.6, min: 0, max: 1, step: 0.01, rebuild: false },

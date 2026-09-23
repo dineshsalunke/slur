@@ -135,6 +135,7 @@ export function TuningPanel() {
 
     useControls( 'Monolith', {
         seamEmissive: numberControl( 'Monolith.seamEmissive' ),
+        plate: numberControl( 'Monolith.plate' ),
     } );
 
     useControls( 'Block', {

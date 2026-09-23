@@ -3,6 +3,7 @@ import { num } from '../../dev/tuning';
 import { ACCENT_ANCHOR } from './accent';
 import {
     deckSurfaceParams,
+    monolithSurfaceParams,
     NORMAL_SIGN_X,
     NORMAL_SIGN_Y,
     ROUGHNESS_MAP_BASE,
@@ -28,6 +29,15 @@ function plateSurface( params: SurfaceParams, clean: number, metalness: number, 
 export function floorSurface() {
     return plateSurface(
         deckSurfaceParams(),
+        num( 'Deck.roughness' ),
+        num( 'Deck.metalness' ),
+        num( 'Deck.normalScale' ),
+    );
+}
+
+export function monolithSurface() {
+    return plateSurface(
+        monolithSurfaceParams(),
         num( 'Deck.roughness' ),
         num( 'Deck.metalness' ),
         num( 'Deck.normalScale' ),

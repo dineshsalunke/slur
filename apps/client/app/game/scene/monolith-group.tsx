@@ -8,7 +8,7 @@ import type { MonolithShapeConfig } from './monolith-config';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
 import { bodySpan, type MonolithTransform, shapeProfile } from './monolith-transforms';
 import { patchRailGlow, type RailMask, railGlowUniforms, updateRailGlow } from './rail-glow';
-import { floorSurface } from './track-materials';
+import { monolithSurface } from './track-materials';
 
 const scratch = new THREE.Object3D();
 const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } );
@@ -38,7 +38,7 @@ export function MonolithGroup( {
     railMask?: RailMask;
 } ) {
     const rebuild = useRebuildToken();
-    const surface = useMemo( floorSurface, [ rebuild ] );
+    const surface = useMemo( monolithSurface, [ rebuild ] );
     const glow = useMemo( railGlowUniforms, [] );
 
     const bodyRef = useRef< THREE.MeshStandardMaterial | null >( null );

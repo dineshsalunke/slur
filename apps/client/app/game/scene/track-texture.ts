@@ -56,6 +56,7 @@ const CAVITY_BEVEL_LIFT = 0.37;
 export interface SurfaceParams {
     plate: number;
     base: string;
+    joints: boolean;
     jointWidth: number;
     wallTilt: number;
     bevelShare: number;
@@ -146,6 +147,7 @@ function eachJoint(
     longitudinal: ( centrePx: number ) => void,
     transverse: ( centrePx: number ) => void,
 ): void {
+    if ( ! c.joints ) return;
     for ( let i = 0; i < COLS; i++ ) longitudinal( i * c.plateW );
     for ( let i = 0; i < ROWS; i++ ) transverse( i * c.plateL );
 }
@@ -191,7 +193,7 @@ function paintMottle( c: Ctx, ctx: CanvasRenderingContext2D ): void {
 function paintAlbedo( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     for ( let row = 0; row < ROWS; row++ ) {
         for ( let column = 0; column < COLS; column++ ) {
-            ctx.fillStyle = shade( c, plateValue( column, row ) );
+            ctx.fillStyle = shade( c, c.joints ? plateValue( column, row ) : 1 );
             ctx.fillRect( column * c.plateW, row * c.plateL, c.plateW, c.plateL );
         }
     }
@@ -598,6 +600,7 @@ export function surfaceMaps( p: SurfaceParams ): TrackSurfaceMaps {
 
 function grooveParams(): Omit< SurfaceParams, 'plate' | 'base' > {
     return {
+        joints: true,
         jointWidth: num( 'Groove.width' ),
         wallTilt: num( 'Groove.wallTilt' ),
         bevelShare: num( 'Groove.bevelShare' ),
@@ -610,6 +613,11 @@ function grooveParams(): Omit< SurfaceParams, 'plate' | 'base' > {
 
 export function deckSurfaceParams(): SurfaceParams {
     return { plate: num( 'Deck.plate' ), base: col( 'Metal.baseColor' ), ...grooveParams() };
+}
+
+export function monolithSurfaceParams(): SurfaceParams {
+    const plate = num( 'Monolith.plate' );
+    return { ...deckSurfaceParams(), plate: plate > 0 ? plate : num( 'Deck.plate' ), joints: plate > 0 };
 }
 
 export function railSurfaceParams(): SurfaceParams {
