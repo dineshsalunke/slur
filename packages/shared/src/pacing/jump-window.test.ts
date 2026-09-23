@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import {
     airDistance,
     buildGrid,
+    clearsGap,
     DEFAULT_TUNING,
     freezeTrack,
     HALF_WIDTH,
@@ -51,6 +52,15 @@ test( 'a full-width hole is a forced jump, measured on the column the path flew'
     assert.equal( gap.holeLen, 16 );
     assert.ok( gap.single !== null && gap.double !== null );
     assert.ok( gap.double.seconds >= gap.single.seconds );
+    assert.ok( gap.double.from > -90, `double window starts ${ gap.double.from }u out, at the scan edge` );
+    assert.equal( gap.slot, false );
+} );
+
+test( 'a double jump presses once in the air, never again from the floor', () => {
+    const lip = 3 * SEG_LEN;
+    const early = lip - 80;
+    const exit = lip + 16 + DEFAULT_TUNING.halfL + 2;
+    assert.equal( clearsGap( holeTrack( 16 ), DEFAULT_TUNING, 0, early, exit, 'double' ), false );
 } );
 
 test( 'a hole with floor beside it is optional', () => {
@@ -61,4 +71,19 @@ test( 'a hole with floor beside it is optional', () => {
     const grid = buildGrid( frozen );
     const [ gap ] = measureGaps( frozen, grid, referencePath( grid, TRACK_CONTRACT.pacingCruise, 30 ), DEFAULT_TUNING );
     assert.equal( gap.forced, false );
+} );
+
+test( 'a hole the hull spans is rolled over, and gets no takeoff window', () => {
+    const frozen = freezeTrack( holeTrack( 2 ) );
+    const grid = buildGrid( frozen );
+    const [ gap ] = measureGaps( frozen, grid, referencePath( grid, TRACK_CONTRACT.pacingCruise, 30 ), DEFAULT_TUNING );
+    assert.equal( gap.rolls, true );
+    assert.equal( gap.single, null );
+    const [ deep ] = measureGaps(
+        freezeTrack( holeTrack( 16 ) ),
+        buildGrid( freezeTrack( holeTrack( 16 ) ) ),
+        referencePath( buildGrid( freezeTrack( holeTrack( 16 ) ) ), TRACK_CONTRACT.pacingCruise, 30 ),
+        DEFAULT_TUNING,
+    );
+    assert.equal( deep.rolls, false );
 } );

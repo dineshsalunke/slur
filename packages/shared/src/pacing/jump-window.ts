@@ -2,7 +2,7 @@ import type { FlightTuning } from '../constants.js';
 import type { PlayerInput } from '../sim/input.js';
 import { SEG_LEN, type Segment, type Track } from '../sim/space.js';
 import { simulate } from '../sim/step.js';
-import { spawnShip } from '../sim/types.js';
+import { type SimShip, spawnShip } from '../sim/types.js';
 import {
     CELL_AIR,
     CELL_GROUND,
@@ -15,7 +15,7 @@ import {
 } from './grid.js';
 import type { ReferencePath } from './reference-path.js';
 
-export type JumpMode = 'single' | 'double';
+export type JumpMode = 'none' | 'single' | 'double';
 
 export interface TakeoffWindow {
     from: number;
@@ -29,6 +29,8 @@ export interface PacingGap {
     z0: number;
     z1: number;
     forced: boolean;
+    slot: boolean;
+    rolls: boolean;
     jumped: boolean;
     x: number;
     lipZ: number;
@@ -41,46 +43,69 @@ const DT = 1 / 60;
 const RUNUP = 12;
 const DOUBLE_PRESS_Y = 0.6;
 const MAX_TICKS = 600;
-const SCAN_BEFORE = 48;
+const SCAN_BEFORE = 96;
 const SCAN_AFTER = 8;
 const REFINE_STEPS = 7;
 
 interface JumpPilot {
     input: PlayerInput;
     fired: boolean;
+    airborne: boolean;
+    done: boolean;
     released: boolean;
+    second: boolean;
 }
 
-function steer( p: JumpPilot, mode: JumpMode, z: number, takeoffZ: number, y: number, vy: number ): void {
-    if ( ! p.fired ) {
-        if ( z >= takeoffZ ) {
-            p.fired = true;
-            p.input.jump = true;
-        }
-        return;
-    }
-    if ( mode === 'single' ) return;
+function newPilot(): JumpPilot {
+    return {
+        input: { seq: 0, throttle: 1, brake: 0, strafe: 0, jump: false },
+        fired: false,
+        airborne: false,
+        done: false,
+        released: false,
+        second: false,
+    };
+}
+
+function steerDouble( p: JumpPilot, s: SimShip ): void {
     if ( ! p.released ) {
-        if ( vy <= 0 ) {
+        if ( s.vy <= 0 ) {
             p.released = true;
             p.input.jump = false;
         }
         return;
     }
-    p.input.jump = y < DOUBLE_PRESS_Y && vy < 0;
+    if ( ! p.second && s.y < DOUBLE_PRESS_Y && s.vy < 0 ) {
+        p.second = true;
+        p.input.jump = true;
+    }
+}
+
+function steer( p: JumpPilot, mode: JumpMode, s: SimShip, takeoffZ: number ): void {
+    if ( mode === 'none' || p.done ) return;
+    if ( ! p.fired ) {
+        if ( s.z >= takeoffZ ) {
+            p.fired = true;
+            p.input.jump = true;
+        }
+        return;
+    }
+    if ( ! s.grounded ) p.airborne = true;
+    else if ( p.airborne ) {
+        p.done = true;
+        p.input.jump = false;
+        return;
+    }
+    if ( mode === 'double' ) steerDouble( p, s );
 }
 
 export function airDistance( tuning: FlightTuning, mode: JumpMode ): number {
     const s = spawnShip( 0, 0 );
     s.vz = tuning.maxCruise;
-    const pilot: JumpPilot = {
-        input: { seq: 0, throttle: 1, brake: 0, strafe: 0, jump: false },
-        fired: false,
-        released: false,
-    };
+    const pilot = newPilot();
     let z0: number | null = null;
     for ( let n = 0; n < MAX_TICKS; n++ ) {
-        steer( pilot, mode, s.z, 0, s.y, s.vy );
+        steer( pilot, mode, s, 0 );
         simulate( s, pilot.input, DT, tuning );
         if ( z0 === null && ! s.grounded ) z0 = s.z;
         if ( z0 !== null && s.grounded ) return s.z - z0;
@@ -116,16 +141,12 @@ export function clearsGap(
 ): boolean {
     const s = spawnShip( x, takeoffZ - RUNUP );
     s.vz = tuning.maxCruise;
-    const pilot: JumpPilot = {
-        input: { seq: 0, throttle: 1, brake: 0, strafe: 0, jump: false },
-        fired: false,
-        released: false,
-    };
+    const pilot = newPilot();
     for ( let n = 0; n < MAX_TICKS; n++ ) {
-        steer( pilot, mode, s.z, takeoffZ, s.y, s.vy );
+        steer( pilot, mode, s, takeoffZ );
         simulate( s, pilot.input, DT, tuning, track );
         if ( s.dead ) return false;
-        if ( s.z >= exitZ && s.grounded ) return pilot.fired;
+        if ( s.z >= exitZ && s.grounded ) return mode === 'none' || pilot.fired;
     }
     return false;
 }
@@ -248,33 +269,41 @@ export function measureGaps(
         const z1 = ( i1 + 1 ) * SEG_LEN;
         const k0 = Math.round( z0 / PACING_DZ );
         const k1 = Math.min( Math.round( z1 / PACING_DZ ), grid.count );
-        let jumpK = -1;
-        for ( let k = k0; k < k1; k++ ) {
-            if ( path.air[ k ] === 1 ) {
-                jumpK = k;
-                break;
-            }
-        }
+        const jumpK = firstAir( path.air, k0, k1 );
         const jumped = jumpK >= 0;
         const hole = jumped ? holeAt( grid, nearestColumn( path.x[ jumpK ] ), k0, k1 ) : deepestHole( grid, k0, k1 );
         const forced = ! groundThreads( grid, k0, k1, path.maxStep );
-        const base = { i0, i1, z0, z1, forced, jumped };
-        if ( hole === null ) {
-            out.push( { ...base, x: 0, lipZ: z0, holeLen: 0, single: null, double: null } );
-            continue;
-        }
-        const x = columnX( hole.j );
-        const lipZ = sampleZ( hole.k0 ) - PACING_DZ / 2;
-        const holeLen = hole.len * PACING_DZ;
-        const holeEnd = lipZ + holeLen;
-        out.push( {
-            ...base,
-            x,
-            lipZ,
-            holeLen,
-            single: takeoffWindow( bare, tuning, x, lipZ, holeEnd, 'single' ),
-            double: takeoffWindow( bare, tuning, x, lipZ, holeEnd, 'double' ),
-        } );
+        const slot = ! forced && i1 > i0 && hole !== null && hole.len >= k1 - k0 - 1;
+        const base = { i0, i1, z0, z1, forced, slot, jumped };
+        if ( hole === null ) out.push( { ...base, ...NO_HOLE, lipZ: z0 } );
+        else if ( slot ) out.push( { ...base, ...holeShape( hole ), rolls: false, single: null, double: null } );
+        else out.push( { ...base, ...measureHole( bare, tuning, hole ) } );
     }
     return out;
+}
+
+const NO_HOLE = { x: 0, holeLen: 0, rolls: true, single: null, double: null };
+
+function holeShape( hole: Hole ): { x: number; lipZ: number; holeLen: number } {
+    return { x: columnX( hole.j ), lipZ: sampleZ( hole.k0 ) - PACING_DZ / 2, holeLen: hole.len * PACING_DZ };
+}
+
+function firstAir( air: Uint8Array, k0: number, k1: number ): number {
+    for ( let k = k0; k < k1; k++ ) if ( air[ k ] === 1 ) return k;
+    return -1;
+}
+
+function measureHole( bare: Track, tuning: FlightTuning, hole: Hole ) {
+    const { x, lipZ, holeLen } = holeShape( hole );
+    const holeEnd = lipZ + holeLen;
+    const rolls = clearsGap( bare, tuning, x, lipZ, holeEnd + tuning.halfL + 2, 'none' );
+    if ( rolls ) return { x, lipZ, holeLen, rolls, single: null, double: null };
+    return {
+        x,
+        lipZ,
+        holeLen,
+        rolls,
+        single: takeoffWindow( bare, tuning, x, lipZ, holeEnd, 'single' ),
+        double: takeoffWindow( bare, tuning, x, lipZ, holeEnd, 'double' ),
+    };
 }
