@@ -4,6 +4,29 @@ Lane: **fractured-blocks**. Session of 2026-09-23. Stopped at the context watchd
 Plan: `.claude/phases/2026-09-23-destructible-blocks-plan.md` (`2dafcdf`). Owner said go, via
 slur-supervisor. Lane claimed at the top of issue #214.
 
+## Update 3 (third session): step 3 + debris DONE — committed `8c9afaf`
+
+- `fractured-block-geometry.ts`: hand-built extrusion (not `ExtrudeGeometry`, so each edge carries its
+  own `aFracture` tag: 0 outer, 0.35 crack wall, 1 core). Two chunks split by a jagged crack with a V
+  notch 0.26 of the height deep; right outer top corner chipped; core recessed (depth 0.9, top 0.3).
+  `fracturedDebrisPieces()` gives each chunk re-centred on its own outline.
+- `fractured-block-shader.ts`: world-free local UV projection (stable while debris tumbles), crack
+  faces darkened ×0.35, roughness → 0.75, emissive = accent × 3.5 × `aFracture` × `aFractureGlow`.
+- `track-blocks.tsx`: one segment loop feeds both meshes; per-block yaw 0/π from `fractureYaw(id)`.
+  Broken fractured blocks go to `block-breaks.ts` (`seen` set; spawn only within 400u ahead;
+  `forgetMended()` drops ids no longer broken, so a mispredicted or reset break can fire again).
+- `block-debris.tsx`: two pooled instanced meshes (24 each), 1.4s life, gravity, one floor bounce,
+  shrink over the last 55%, glow fades f². `block-metal.ts` holds the shared per-frame metal tuning.
+- Seen in headless Chrome on `/test-level` (CDP: move `Sim`, KeyP freeze, add ids to
+  `blockWorld.broken`): crack reads at ~20–50u; debris splits and falls. **Not yet judged at race
+  speed by the owner** (ADR-009 gate). No marigold ember burst yet — the chunks' crack glow is the
+  only flash; add one only if the owner wants more.
+- Gate: client tests 197/197, my files lint-clean, comment ratchet OK. `pnpm build`/client typecheck
+  not green **because of workerthree's in-progress `bolt-streaks.tsx`** (missing export), not this lane.
+
+**Next:** step 5 (owner looks at it at race speed; then a hosted room: smash one, shoot one) and
+step 6 (docs: ADR-015, GDD §5.7, INDEX).
+
 ## Update 2 (second session): step 2 DONE + /test-level combat (#217) — committed `b6f1f45`
 
 Client prediction as planned (`game/block-state.ts`; `restoreConfirmed()` before replay). Owner
