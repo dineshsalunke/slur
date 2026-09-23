@@ -1,34 +1,34 @@
-Agent: workerthree · Lane: composer MSAA dev tunable (no issue, waived) · Updated: 2026-09-24 ~02:30
+Agent: workerthree · Lane: #213 leftovers → #233 (+ #231, #232 filed) · Updated: 2026-09-24 ~02:35
 
 ## Goal
 
-Composer MSAA as a dev tunable. Owner pick: 4 samples when the effective DPR is below 2, and 0 at DPR 2
-and above. The tunable also fixes the far monolith-seam flicker. Lane complete.
+Close the #213 leftovers: remote bounce spark, spark look, off-palette death burst, ADR-014 as-built
+note, and issues for graze randomness and the pocket trap. Lane complete.
 
 ## Done
 
-- 0bf4e88: fix(vfx). Clamp the pow base in `exhaust-material.ts` and `bolt-streak-material.ts`. MSAA edge
-  samples extrapolated `vAxial` past 1, and `pow` of the negative base wrote NaN. The whole frame went black.
-- 31d870e: feat(render). `Render.msaa` tunable (schema + Render panel). `SceneEffects` sets
-  `composer.multisampling` through the EffectComposer ref each frame. There is no remount.
-- 64718c9: feat(render). Auto mode. `Render.msaa` default is -1 (auto): 4 samples when
-  `gl.getPixelRatio() < 2`, else 0. Values 0..4 force that sample count (manual override kept).
+- Issues filed: #231 (graze randomness), #232 (pocket trap, seed 1 z≈6019), #233 (items 1-3).
+- 1ccc673: docs(adr). ADR-014 as-built. workerone's bot numbers are marked as theirs (head-on 1.45 s,
+  graze 0.97 s, old death 1.50 s). No retune. The stale "no spark on a bounce" line is replaced.
+- 0dd9b97: fix(scene). Death burst owner pick B. Local #FFFBE7 → marigold, remote #FFB52E → marigold.
+- 56dc932: fix(scene). Hit spark owner pick W0.07 / B6.
+- c21a50b: feat(net). Owner pick 1a. The server broadcasts 'bounce' and remote victims spark. Shared
+  `bounceContact()`, server `room-bounce.ts` `stepRacer()`, client `sparkAt()`.
 
 ## State
 
-- All numbers are headless swiftshader, canvas 1600×726.
-- DPR 1, auto → 4 samples, 0/120 black frames, 0 seam drops (min ratio 0.87–0.88, frame jump
-  0.053/0.055).
-- DPR 2 (CDP-emulated, then reset) auto → 0 samples, composer 3200×1452. Manual 2 → 2 samples.
-- MSAA 0 baseline for comparison: seam drops 9 L / 12 R, min ratio 0.45/0.41.
-- Rail lip at MSAA 4 (measured before auto mode): continuous, thinner and sharper, peak warm 152 → 208.
-- Cost on the owner's GPU: [unmeasured]. The owner read the meter and picked auto.
-- My Chrome (:9353) and scratch vite (:5183) are killed.
+- Tests: shared 228/228, server 15/15 (with the new bounce test), client bounce-spark 3/3. Typecheck is
+  clean. Biome is clean except the pre-existing length warning on `run-room.test.ts`.
+- Burst B and the spark taps were checked in headless /test-level at DPR 1 with a stepped clock.
+  Taps: scratchpad `taps/` (session ec5ceff0).
+- Remote spark in a live two-client room: [unmeasured]. Only the server test covers it.
+- Known gap (unchanged from afb2642): a bounce during a bolt stun longer than bounceStun fires no
+  spark, on either end.
+- My Chrome (:9417) and scratch vite (:5193) are killed.
 
 ## Uncommitted
 
-- `.claude/memory/MEMORY.md`: my index line. The file also holds another agent's uncommitted line
-  (`check-the-cdp-port-is-yours`), so I left it for the supervisor.
+- none
 
 ## Held files
 
@@ -36,14 +36,13 @@ and above. The tunable also fixes the far monolith-seam flicker. Lane complete.
 
 ## Next
 
-1. None in this lane. The supervisor can move this summary to `.claude/phases/` and reset the file.
-2. If another NaN black flash appears, find it with the memory's method. Add a scene-buffer NaN scrub only
-   then (supervisor ruling).
+1. None in this lane. The supervisor can close #233 after a live two-client check, or close it now.
+2. #231 and #232 need an owner go-ahead before anyone builds them.
 
 ## Open questions
 
-- Supervisor: who commits `MEMORY.md` with both pending lines?
+- Supervisor: run a live two-client check of the remote spark before #233 closes?
 
 ## Lessons → memory
 
-- `.claude/memory/msaa-edge-samples-extrapolate-varyings.md` (committed in 7939183). Nothing new this seam.
+- `.claude/memory/shared-watcher-can-leave-dist-stale.md`

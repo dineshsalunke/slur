@@ -43,3 +43,4 @@ lives in its own file beside this one.
 - [Narrow headless captures need a CDP viewport](narrow-headless-captures-need-cdp-viewport.md) — `--window-size=390` crops a wider layout; use `setDeviceMetricsOverride` and probe scrollWidth
 - [A sweep that hits its bound fakes a reading](a-sweep-that-hits-its-bound-fakes-a-reading.md) — a window equal to the scan range is clipped; test no-input first; a jump pilot never re-presses from the floor
 - [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer has multisampling 0; a <1 px strip vanishes whole frames; zsh `$a` does not word-split, verify dials applied
+- [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — a new shared export missing from dist/index.js: another session's tsc watch stamped tsbuildinfo; run `tsc -b --force`
