@@ -18,6 +18,12 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
+> **Revision 8** — 2026-09-24. **Obstacle blocks and monoliths use the deck material.** Owner's call.
+> Sealed, fractured and debris blocks, the monoliths and the finish-gate body now use M1's procedural
+> deck plates and the `Deck.*` finish. The `Metal046B` photographic maps are deleted. Block seams, wear,
+> bevels and fracture glow do not change. A block now differs from the deck by seams, wear and form only.
+> §4 criteria 2 and 3 are not re-gated. Details: §7 item 16.
+>
 > **Revision 7** — 2026-09-23. **One metal across every metal surface: metalness 1.0, roughness 0.25,
 > and a single tuneable base colour.** Metalness 1.0 closes the §7 item 9 departure and is M1 as
 > written; roughness 0.25 sits below both M1's and M2's floors and is a tuned override, not a new
@@ -196,6 +202,10 @@ outlined tile edges. Wear must never generate a new seam or read as a hole.
 
 ### M2 — Hazard metal (coated)
 
+**Superseded in part, 2026-09-24 (rev. 8, §7 item 16) — blocks now use M1's deck material.** The seam,
+wear and instance-variation rows below still apply to blocks. The finish, metalness, roughness and base
+colour rows do not.
+
 Standard deadly blocks and destructible blocks.
 
 | Property | Target |
@@ -253,7 +263,8 @@ machined one.
 
 ### M3 — Dark stone (dielectric)
 
-**Superseded for monoliths, 2026-09-23 (rev. 6, §7 item 11) — monoliths now use M2's metal maps.** Kept
+**Superseded for monoliths, 2026-09-23 (rev. 6, §7 item 11) — monoliths used M2's metal maps, and use
+the deck material since rev. 8 (§7 item 16).** Kept
 here as the family definition for any future world-layer dielectric element; nothing currently ships it.
 
 Monoliths: obelisk, gate, arch. The oldest thing in the frame. *(Historical — describes the pre-rev.-6
@@ -441,11 +452,11 @@ Every element in the package, and what it is made of. No row reads "shared with 
 | Hazard-to-floor contact shading | **M1**, lighting only | none |
 | Gap slab side walls and underside | **M8** (M1 family, cut face) | — |
 | Gap rim and inner lip | **M7**, thin | gameplay |
-| Standard deadly block | **M2** coated | gameplay — sparse functional **vertical** seams; broad wear patches carry the family's variation |
-| Destructible block, intact | **M2** + **M7** in recessed fractures | gameplay |
-| Destructible block, fragments / burst | **M2** + **M7** | gameplay |
-| Finish-line structure | **M1** / **M2** + **M7** | gameplay |
-| Monolith — obelisk, gate, arch | **M3**, varied with **M4** | **environmental** — sparse seams |
+| Standard deadly block | **M1** deck material (rev. 8) with M2's seam, wear and variation rules | gameplay — sparse functional **vertical** seams; broad wear patches carry the family's variation |
+| Destructible block, intact | **M1** (rev. 8) + **M7** in recessed fractures | gameplay |
+| Destructible block, fragments / burst | **M1** (rev. 8) + **M7** | gameplay |
+| Finish-line structure | **M1** + **M7** | gameplay |
+| Monolith — obelisk, gate, arch | **M1** deck material (rev. 8; M3/M4 before rev. 6, M2 in rev. 6–7) | **environmental** — sparse seams |
 | Asteroid — all forms | **M5** | **environmental** — rare veins |
 | Gas giant, moon, crescent/eclipse | **M9** | none |
 | Nebula / backdrop | not a surface — colour and depth layers | n/a |
@@ -767,6 +778,9 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     finish (M2 uses a dielectric coat; a bare-conductor variant would already read differently), or
     texture scale, before reaching for a second image texture.
 
+    **Superseded in part by item 16 (2026-09-24).** Monoliths no longer use the `Metal046B` maps. They
+    use the deck material. The Axis 2 paragraph and the open criterion-2 gate above still apply.
+
 12. **One base colour, one metalness and one roughness across every metal surface — `1.0` / `0.25`.**
     Owner's call, 2026-09-23, made against the `cruise-lighting.png` golden reference. Three changes,
     all in `apps/client/app/game/scene/metal.ts` (which replaces `graphite.ts`):
@@ -868,7 +882,43 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     3. The fragments do not come to rest on the deck. They shrink to nothing in the air, at about 0.9s.
        The board shows only a few fragments at *"CLEAR"*, and it does not show where they land.
 
+16. **Obstacle blocks and monoliths use the deck material — 2026-09-24 (#228).** Owner's call: *"lets use
+    the deck material on the blocks and monoliths please"*.
+
+    **Departure from this sheet.** M2 says: *"The separation from the deck is finish, not value. A coated
+    dielectric block and a bare metal deck respond to the same light in visibly different ways"*. Item 12
+    removed the coat. This item removes the last surface difference, the texture. Blocks, monoliths and
+    the deck now use one material. A block differs from the deck only by its seams, its wear and its
+    form.
+
+    **What the engine does.**
+
+    - Sealed, fractured and debris blocks use the deck plates (`floorSurface()`) and follow the `Deck.*`
+      finish keys. The block shader samples in world units, so the plate joints on a block line up with
+      the deck grid.
+    - Monoliths use `monolithSurface()`. It is the deck material with its own plate size,
+      `Monolith.plate`. The default is 4, the same as `Deck.plate`. At 0 the texture has no plate joints
+      and no per-plate value change. The brushed grain and the wear stay. The owner has not yet chosen
+      between 4 and 0.
+    - Monoliths and the finish-gate body get the deck's rail glow. Blocks do not, on the owner's
+      instruction.
+    - The `Metal046B` maps are deleted. So are item 12's `Metal.mapTint` key and the `Block.*` and
+      `Monolith.*` texture keys from rev. 6. The owner chose no separate value dial for blocks.
+
+    **What did not change.** Block seams, wear patches, bevels and fracture glow. The marigold tiers
+    (§3). Scale, silhouette and placement.
+
+    **Open, not yet run.** §4 criterion 3 — *"A block is distinguishable from the deck it stands on by
+    finish and value together"* — now rests on seams, wear and form. Criterion 2 is still ungated from
+    items 11 and 12. One close still (x 20, z 132) shows the sealed block face darker than the deck
+    beside it: rgb(25–35) against rgb(50). That is one sample, not a gate.
+
 ## 8. Review log
+
+**Revision 7 → 8, the deck material on blocks and monoliths (2026-09-24).** No family table changes.
+§7 gains item 16. M2 gains a note: its seam, wear and variation rows still apply to blocks, and its
+finish rows do not. M3's note and §2's block, finish-line and monolith rows now name M1. Item 11 is
+marked superseded in part. §4 criterion 3 joins criterion 2 as ungated.
 
 **Revision 6 → 7, one metal, and ship contact shadows (2026-09-23).** No family definition changes —
 M1's and M2's tables stand as written. §7 gains item 12: metalness sweeps to 1.0 (closing item 9's

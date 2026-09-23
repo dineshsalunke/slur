@@ -17,7 +17,7 @@ lives in its own file beside this one.
 - [Eyeballing a tap lies about brightness](eyeballing-a-tap-lies-about-brightness.md) — the deck measures rgb(28) and looks mid-grey; composite a grey ramp before judging value
 - [Freeze the sim to A/B a light](freeze-the-sim-to-ab-a-light.md) — KeyP holds the camera, but freeze at the SPAWN pose; a timed flight drifts (SSIM 0.906)
 - [Probe by feature, not by pixel](probe-by-feature-not-by-pixel.md) — find the surface from its own emissive each frame; the bright deck line is the rim cord, not the rail
-- [Monoliths are metal now](monoliths-are-metal-now.md) — moved onto the block texture, softening a named hazard/scenery readability split; owner-accepted, re-gate still unrun
+- [Deck material on blocks and monoliths](deck-material-on-blocks-and-monoliths.md) — one material for deck, blocks, monoliths; separation is form only; criteria 2 and 3 unrun
 - [Drive the live module, do not reload](drive-the-live-module-not-a-reload.md) — import the page's own module over CDP and call `setNum`; the camera never moves between A/B frames
 - [Freeze does not stop asteroid drift](freeze-does-not-stop-asteroid-drift.md) — a two-tap diff is contaminated frame-wide; for presence, force an alien colour and scan one tap
 - [CDP import of tuning hits an HMR orphan](cdp-import-of-tuning-hits-an-hmr-orphan.md) — setNum/setCol silently reach a second module instance, not the page; pin uniforms instead
