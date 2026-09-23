@@ -23,3 +23,5 @@ lives in its own file beside this one.
 - [CDP import of tuning hits an HMR orphan](cdp-import-of-tuning-hits-an-hmr-orphan.md) — setNum/setCol silently reach a second module instance, not the page; pin uniforms instead
 - [Frame tap may answer from another tab](frame-tap-may-answer-from-another-tab.md) — screenshot the tab you drive over CDP when the reading must match state you just set
 - [Supervisor clears workers via herdr](supervisor-clears-workers-via-herdr.md) — `herdr agent prompt <pane> "/clear"`, then a resume prompt; "stalled" on /clear is success
+- [Headless game tabs starve the GPU](headless-game-tabs-starve-the-gpu.md) — one extra game tab doubles frame time; DPR 1, mute, kill after use
+- [Agent headless Chrome starves the owner](agent-headless-chrome-starves-the-owner.md) — `--force-device-scale-factor=1 --mute-audio`, kill after measuring; check `ps` before blaming code for fps

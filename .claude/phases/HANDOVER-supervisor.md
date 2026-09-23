@@ -23,6 +23,17 @@ Written at the watchdog warning (~151k/turn). The next supervisor session resume
 | workerthree | w2P:pG | #218 bolt art | Landed 38b4fb8 and 9017e0f (collect 0.32s → 0.13s). HELD for the fps verdict. Handover `handover-bolt-art.md`. |
 | workerfour | w2P:pH | main menu to match `golden-reference/cruise-lighting.png` | Read-only. Blocked on the impeccable plugin (marketplace added, plugin not installed; owner to run `/plugin install impeccable@impeccable` or say "go without it"). Owns ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/*. |
 
+## fps verdict (workerone, after this handover was first written)
+
+No commit regressed the frame (HEAD 20.3 ms against a50049f 20.1 ms at DPR 2, Metal). The cause is GPU contention
+from agents' uncapped headless Chrome tabs, plus the DPR 2 fill cost. Rule broadcast to all workers: headless
+Chrome runs at `--force-device-scale-factor=1 --mute-audio` and is killed after measuring (memory
+`agent-headless-chrome-starves-the-owner.md`). workertwo and workerthree holds are released. workerone holds for
+the owner's choice among the code fixes: DPR cap 1.5 or adaptive DPR, a lower-resolution rearview (~4 ms), and
+Environment `frames={Infinity}` → 1 (per-frame PMREM).
+Still running: two client dev servers in the main checkout (pids 85607 and 87001) and a stale `leva-panel`
+worktree stack (pid 34439). Not killed; ask the owner.
+
 ## fps investigation — evidence so far
 
 - Machine is not CPU-bound (top process ~11%).
