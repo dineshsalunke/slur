@@ -1,5 +1,6 @@
 import { CELL, HALF_WIDTH, type Track } from '@slur/shared';
 import { Fragment, useMemo } from 'react';
+import * as THREE from 'three';
 import { ACCENT_ANCHOR } from './accent';
 import { BOLT_HOT } from './combat-look';
 import { FinishOutline } from './finish-outline';
@@ -7,6 +8,8 @@ import { GATE_FRAME, outlineStrips } from './monolith-frame';
 import { MonolithFrames } from './monolith-frames';
 import type { MonolithTransform } from './monolith-transforms';
 import { MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
+import { unattached } from './unattached';
+import { useRailMask } from './use-rail-mask';
 
 const BAND_WIDTH = 4;
 const BAND_PROUD = 0.4;
@@ -42,9 +45,16 @@ export function FinishGate( { track }: { track: Track } ) {
     const band = useMemo( () => outlineStrips( GATE_FRAME, gate[ 0 ], BAND_WIDTH, BAND_PROUD ), [ gate ] );
     const core = useMemo( () => outlineStrips( GATE_FRAME, gate[ 0 ], CORE_WIDTH, CORE_PROUD ), [ gate ] );
     const tiles = useMemo( () => finishTiles( track.finishZ ), [ track.finishZ ] );
+    const { data, railMask } = useRailMask( track );
     return (
         <Fragment>
-            <MonolithFrames frame={ GATE_FRAME } placements={ gate } />
+            <dataTexture
+                ref={ railMask.texture }
+                args={ [ data.data, data.width, data.rows, THREE.RGBAFormat, THREE.FloatType ] }
+                attach={ unattached }
+                needsUpdate
+            />
+            <MonolithFrames frame={ GATE_FRAME } placements={ gate } railMask={ railMask } />
             <FinishOutline strips={ band } emissive={ ACCENT_ANCHOR } intensity={ GLOW_INTENSITY } />
             <FinishOutline strips={ core } emissive={ BOLT_HOT } intensity={ GLOW_INTENSITY } />
             <FinishOutline strips={ tiles } emissive={ ACCENT_ANCHOR } intensity={ GLOW_INTENSITY } />

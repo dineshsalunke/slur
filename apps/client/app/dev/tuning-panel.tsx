@@ -135,11 +135,6 @@ export function TuningPanel() {
     } );
 
     useControls( 'Monolith', {
-        metalness: numberControl( 'Monolith.metalness' ),
-        roughness: numberControl( 'Monolith.roughness' ),
-        envMapIntensity: numberControl( 'Monolith.envMapIntensity' ),
-        textureSpan: numberControl( 'Monolith.textureSpan' ),
-        normalScale: numberControl( 'Monolith.normalScale' ),
         seamEmissive: numberControl( 'Monolith.seamEmissive' ),
     } );
 

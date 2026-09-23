@@ -65,13 +65,7 @@ export const NUMBER_TUNABLES = {
     'Rail.railEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
     'Rail.rimEmissive': { value: 2, min: 0, max: 30, step: 0.05, rebuild: false },
 
-    'Monolith.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
-    'Monolith.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
-    'Monolith.envMapIntensity': { value: 1.55, min: 0, max: 6, step: 0.05, rebuild: false },
-    'Monolith.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
-    'Monolith.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
-    'Monolith.surface': { value: 0, min: 0, max: 2, step: 1, rebuild: false },
 
     'Block.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
     'Block.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
