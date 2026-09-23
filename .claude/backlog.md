@@ -11,6 +11,37 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
 
 ## Pending
 
+- [~] 2026-09-23 [feature] [procgen] **De-quantise the silhouette — nothing in the field may repeat one size**
+  why: the owner flew the track and said the blocks read as *"a vertical grid with a block and space"* — a
+  4u block, a 4u gap, repeating. Measured (seed 12345, 400 segments): 44% of blocks fell in 2.6–4u and the
+  ceiling was 12u. Three stacked quantisers, each in a different file. The [x] item is the first one closed;
+  the others are the same bug at other layers.
+  1. [x] **Wall blocks** — `fbd1165`. `WALL_NOISE_FZ_LANE` was 1.0, so `valueNoise2D` sampled the lane axis
+     on its lattice nodes and adjacent lanes were uncorrelated → runs one lane long. Plus a
+     `BLOCK_MAX_LANES` chop at 12u and a ≤18% inset. Now lane frequency 4.0, no chop, and `carveRun`
+     splits a run into continuous 4–20u chunks with continuous 2–9u gaps. Measured after: continuous
+     4–20u, no width above 3.4% of the field, 21.6% at 12u or wider (was 0%). Guarded by two tests in
+     `block-depth.test.ts`.
+  2. [ ] **Gap-deck blocks never got the carve** — `packages/shared/src/sim/gap-blocks.ts:39`
+     *"const lanes = 1 + Math.floor( r() * BLOCK_MAX_LANES );"* and line 44 *"x0: -HALF_WIDTH + start * CELL"*.
+     Measured, 9 seeds: 157 blocks, **exactly 3 distinct widths — 4, 8, 12**. Same fix, but it must re-check
+     `passableCorridorWidth` because gap decks are narrow to begin with.
+  3. [ ] **Every monolith in the field is the same object** — `monolith-config.ts` has one shape
+     (`shapes: [ 'box' ]`, `width: 12, depth: 12, height: 50`) and `monolith-field.ts:19` pushes
+     `{ z, side: -1 }, { z, side: 1 }` — mirrored pairs at the same z, spacing a pure function of intensity
+     with no jitter, each at a fixed distance from the rail. That is the tall slab colonnade in the
+     mid-distance. Wants per-monolith size jitter, a z-offset between the sides, and dropped ones.
+  4. [ ] **Block height is the last fixed axis** — every block exactly 8u. Gated: the vertical-reach check
+     is still missing from the validator, and GDD §0 puts 8u *"above double-jump reach on purpose"*. Build
+     the check before varying it. Carried from `.claude/phases/HANDOVER-corridor-closing.md`.
+  **Budget note:** the carve freed a lot of headroom — worst case per streaming window went **224 → 136**
+  against `BLOCK_LIMIT` 320 (measured, 9 seeds). The handover's "headroom is thinner than it looks" warning
+  no longer holds, so `WALL_DENSITY_MAX` or a smaller `BLOCK_SPLIT_GAP_MIN` are affordable if the field
+  wants to be denser.
+  **Method that worked, keep using it:** measure the width histogram before touching anything. Every
+  quantiser here was invisible to reasoning and obvious to a histogram — same lesson as the handover's
+  *"every design belief here was wrong until measured."*
+
 - [~] 2026-09-21 [feature] [art] **ART PASS — retired as a six-task umbrella; superseded by the five items below**
   Was tracked in `.claude/art-pass/INDEX.md` (deleted 2026-09-21) with the order
   **background → track → lighting → monoliths → asteroids → composition**. That ordering predates the
