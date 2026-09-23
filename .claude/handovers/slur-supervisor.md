@@ -1,72 +1,69 @@
-# HANDOVER — supervisor session, 2026-09-23
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-23, late evening
 
-Written at the watchdog warning (~151k/turn). The next supervisor session resumes from here.
+## Goal
 
-## How supervision works
+Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
+The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `supervisor-clears-workers-via-herdr.md`.
 
-- Workers are Claude sessions in herdr panes. `herdr pane list` maps `terminal_title` to `pane_id`.
-- The context watchdog (`~/.claude-personal/hooks/context-watchdog.sh`, warn 150k, hard stop 250k)
-  tells a worker to reach a seam and write a handover. Workers were told to message `slur-supervisor`
-  with "AT A SEAM at ~Nk" and never `/clear` themselves.
-- On a seam: check that the worker is idle and its tree is committed. Then
-  `herdr agent prompt <pane> "/clear"` (it reports "stalled"; that is success, so check that the status
-  line shows 0%), then send a resume prompt naming the handover file. Memory:
-  `supervisor-clears-workers-via-herdr.md`.
-- Config dir is `~/.claude-personal`, not `~/.claude`.
+## Done this session
 
-## Workers (panes as of writing)
+- `20c4118`: work log run 1 (`.claude/phases/worklog.md`).
+- `2f5b7a1`: 22 legacy HANDOVER notes folded into the worklog "Legacy handovers" section and deleted.
+  Recover any of them with `git show 11b74ca:<path>`. `e793b87` repoints the backlog reference.
+- `CLAUDE.local.md` §4 (git-ignored, so not committed) gained section 9 **Lessons → memory**. It also
+  says git is the archive (no numbered copies) and that the worklog is summarised on request by a
+  Sonnet 5 subagent reading `git log -p <Last summarised>..HEAD -- .claude/handovers/`. All workers
+  were told.
+- Cleared and resumed workerthree twice (`8f1cd68`, `7b25725`, `f3a0ece`). Cleared and resumed
+  workertwo twice (`f09f440`, `eedccfe`).
 
-| Worker | Pane | Lane | State |
-|---|---|---|---|
-| workerone | w2P:pD | fps regression bisect (owner: <15 fps) | Measuring. Report only; no fix yet. Handover for the parked #213 work: `handover-bounce-leftovers.md` (6efa656). |
-| workertwo | w2P:pF | #214 fractured blocks | Steps 1–3 and 6 landed (523d63c, b6f1f45, 8c9afaf, ADR-015 in 215159e). Step 5 is the OWNER's eyes-on gate: play /test-level at race speed and judge whether sealed and fractured blocks can be told apart, then smash one and shoot one in a hosted room. ADR-015 records that gate as open. Also built the DPR slider (248096d). |
-| workerthree | w2P:pG | HOMING SEEKER — plan APPROVED, building (ADR-017) | The owner's answers were sent: one seeker in flight at a time (config: per room by default); nearest VISIBLE ship ahead within a tunable range (LOS test in shared); speed 120 and turn 40, configurable; TTL 6s; dodge only by jumping over it or a last-moment strafe (window by time OR distance, tunable mode and threshold); stun longer than the bolt's; sounds yes (pickup, launch, lock warning, in-flight loop, impact, dodge); "harder to shake". All tunables go in the dev panel. Asks before touching hit-spark.tsx. Step 1 landed: issue #219, ADR-017 in d0b2e61. Now on step 2 (shared sim). Owner still to answer: (a) with no lock, fly straight (the default) or refuse the fire; (b) the terminal dive may clip a block within 40u; (c) the dev panel only drives /test-level, and hosted rooms use the server's DEFAULT_SIM_CONFIG. Earlier:  Sources: cruise-lighting.png and ingredients/ingredients.png; colour is marigold. The plan comes to the supervisor, and the owner and supervisor review it together before any work is handed over. |
-| (was) workerthree | — | #218 bolt art | Landed 38b4fb8 and 9017e0f (collect 0.32s → 0.13s). HELD for the fps verdict. Handover `handover-bolt-art.md`. |
-| workerfour | w2P:pH | main menu to match `golden-reference/cruise-lighting.png` | Read-only. Blocked on the impeccable plugin (marketplace added, plugin not installed; owner to run `/plugin install impeccable@impeccable` or say "go without it"). Owns ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/*. |
+## Workers
 
-## fps verdict (workerone, after this handover was first written)
+| Worker | Pane | Lane | State | Held files |
+|---|---|---|---|---|
+| workerone | w2P:pD | perf + #213 parked | Idle, waiting on owner decisions 1 and 2 below | none |
+| workertwo | w2P:pF | #220 monolith gate/arches | Landed: pillars `f9248ef` (ADR-018, ADD §4), gate + arches + /test-level finish reset `921ee24`, bulky arches `58bb6e6`. NOW: planning a **distinct finish gate** (owner: "not clear if the last one is just a gate or a finish line"). The plan folds in the gate bump (legs 40, depth 40, lintel 48, height 240) and the gate-seam visibility. Plan only; nothing built until the owner approves. | none yet |
+| workerthree | w2P:pG | #219 homing seeker | Steps 1–5 + the /test-level bug fix `2ca4bc8` landed. NOW building the owner-APPROVED **breadcrumb homing at ship height**: seekerFlyY 0.5, it follows the target's flown (z,x) ring, TTL ~20s, lock range 600. It re-runs the 30-seed blocked/expired/hit measurement afterwards. Uncommitted: `packages/shared/src/combat/constants.ts`, `sim-config.ts`. Then the look rebuild (square chamfered body, core on the NOSE, fins, near-cube pickup, THICK trail in MARIGOLD, departure recorded in ART_MATERIALS.md), then the render check, then the 3-slot plan. | combat/seeker.ts(+test), combat/constants.ts, sim-config.ts, rooms/room-combat.ts, dev/tuning-schema.ts, DECISIONS ADR-017, seeker-look.ts, seeker-bodies.tsx |
+| workerfour | w2P:pH | main menu to match cruise-lighting.png | Blocked on the impeccable plugin | ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/* |
 
-No commit regressed the frame (HEAD 20.3 ms against a50049f 20.1 ms at DPR 2, Metal). The cause is GPU contention
-from agents' uncapped headless Chrome tabs, plus the DPR 2 fill cost. Rule broadcast to all workers: headless
-Chrome runs at `--force-device-scale-factor=1 --mute-audio` and is killed after measuring (memory
-`headless-game-tabs-starve-the-gpu.md`, written by workerone). workertwo and workerthree holds are released. workerone holds for
-the owner's choice among the code fixes: DPR cap 1.5 or adaptive DPR, a lower-resolution rearview (~4 ms), and
-Environment `frames={Infinity}` → 1 (per-frame PMREM).
-Still running: two client dev servers in the main checkout (pids 85607 and 87001) and a stale `leva-panel`
-worktree stack (pid 34439). Not killed; ask the owner.
+## Pending decisions from workers
 
-## fps investigation — evidence so far
-
-- Machine is not CPU-bound (top process ~11%).
-- workerfour, SwiftShader 1600×900: `/test-level` 116 draws/frame, JS 1.1 ms median. Menu 13 draws, 0.30 ms.
-- workertwo, software GL: DPR 0.5 → 60 fps, DPR 2 → 24 fps.
-- Inference, not proven: GPU fill rate, not per-frame JS.
-- Suspects: 38b4fb8 (BoltPickups rewrites every pickup instance every frame; workerthree's lead, which
-  would be JS cost, not fill), 8c9afaf (second instanced block mesh, debris pools), 8b4d950 (streak sparks).
-- The owner has the DPR slider: press `` ` ``, then Render → dpr.
+- **Owner decision (#219):** a seeker pickup grants a BOLT while the room's one seeker is still in flight
+  (ADR-017, scope 'room'). Keep this, change the scope to 'shooter', or dim the pickup? The 3-slot design
+  may settle it.
+- **3 power-up slots:** owner request. workerthree plans it after the seeker look: which slot E fires,
+  what happens when all slots are full, duplicates, HUD layout, a new issue. HUD work that assumes one
+  slot is on hold.
+- **Render check:** the seeker has not been seen rendered yet. The earlier failure was
+  `queryFirst(LocalPlayer, Sim)` returning nothing (possibly the HMR-orphan trap, see memory).
 
 ## Open owner decisions
 
-1. Death explosion `game/scene/explosions.tsx:21-22`, still CYAN `#00e5ff` (local) and MAGENTA
-   `#ff2bd6` (others) cubes. Marigold for all, or a per-player hue?
-2. Generator retune (#213): workerone proposes no retune (a head-on bounce costs 1.45s against 1.50s for
-   an old death). Record it in ADR-014, and file issues for graze glance-vs-stop sub-tick phase and the
-   pocket stun-lock.
-3. `PICKUP_RESPAWN_S = 3`: the respawn happens ~300u behind the player, so the leader never sees it.
-4. Mount `<HitSpark/>` on /test-level (`test-level-canvas.tsx`, one line) — assign?
-5. Push `dev`? Nothing is pushed today.
-6. Unassigned: #216 (respawn can land inside a block).
+1. Perf fix (workerone): cap DPR at 1.5 or make it adaptive · a lower-resolution rearview (~4 ms) ·
+   Environment `frames` 1.
+2. #213: no retune. Record that in ADR-014 and file the graze-randomness and pocket-trap (seed 1,
+   z≈6019) issues?
+3. #214 step 5: the owner plays /test-level to judge sealed vs fractured blocks, then smashes one and
+   shoots one in a hosted room.
+4. workerfour: `/plugin install impeccable@impeccable`, or "go without it".
+5. Death explosion colour `game/scene/explosions.tsx:21-22`: still cyan and magenta.
+6. `PICKUP_RESPAWN_S = 3` respawns behind the leader.
+7. Mount `<HitSpark/>` on /test-level. #216 (respawn inside a block) is unassigned; offered to workertwo.
+8. Push `dev`? Nothing has been pushed today.
+9. Stray processes: client dev servers (pids 85607, 87001) and the `leva-panel` stack (pid 34439).
+10. Watchdog hook text should point non-lane sessions at CLAUDE.local.md §5.
 
 ## Reservations
 
-- ADR-015 → workertwo (#214). ADR-016 → workerone (if the retune proposal goes ahead).
-- `docs/art-direction/` is read-only for everyone.
+ADR-015 workertwo (#214) · ADR-016 workerone (#213 retune, if it goes ahead) · ADR-017 seeker ·
+ADR-018 pillars (taken). The next free number is ADR-019.
 
-## Update — harness live (latest)
+## Notes
 
-- Harness rules live in `CLAUDE.local.md` (git-ignored). Handovers are now `.claude/handovers/<agent>.md`.
-- workerone: cleared and resumed from `handovers/workerone.md` (8ff52bd). HOLDING for the owner: perf code fixes; the #213 retune note plus two issues (graze randomness; pocket trap at seed 1, z≈6019).
-- workertwo: cleared and resumed from `handovers/workertwo.md` (cbf3de6). HOLDING: #214 step 5 is the owner playing it.
-- workerthree: seeker step 2 (shared sim) in progress, UNCOMMITTED in packages/shared/src/combat/*, sim-config.ts, schema.ts, ship-classes.ts, index.ts. Owner answers already sent: no target means the shot is wasted; the dive is destroyed by a block (and destroys it if fractured); only /test-level is tunable.
-- workerfour: blocked on the impeccable plugin (`/plugin install impeccable@impeccable`) or "go without it".
-- Open with the owner: change the watchdog hook text (`~/.claude-personal/hooks/context-watchdog.sh`) so non-lane sessions point at CLAUDE.local.md §5 instead of "tell the user to /clear".
+- Untracked `docs/art-direction/ingredients/ingredients.png` and `docs/art-direction/monoliths/` are
+  the owner's (ChatGPT folder). No agent commits them.
+- The worklog header reads `Last summarised: e656f18`. The next run starts there.
+
+## Lessons → memory
+
+none
