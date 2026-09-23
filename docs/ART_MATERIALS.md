@@ -887,10 +887,12 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       sharp to interrupt.
     - **Plates 4u × 16u, straight bond.** Revision 5 decided this; the texture was still authored as
       four 4u rows, so the engine drew 4u × 4u tiles. One row per 16u span now.
-    - **Fog 100 – 1500.** At 420 the far monolith frames took the nebula's horizon colour and read
-      as pale grey against a dark sky; the reference keeps them dark at every distance.
-    - **Cold fill 0.30 and the directional fill 0.70,** so a dielectric wall has something to be lit
-      by. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
+    - **No scene fog.** Owner's call, 2026-09-24. At 420u the far monolith frames took the nebula's
+      horizon colour and read as pale grey while the sky behind them stayed sharp; the reference
+      keeps them dark at every distance, and a vacuum has no haze.
+    - **Cold fill 0.50, the directional fill 1.0, and environment intensity 1.5 on deck and rail and
+      2.0 on blocks,** on the owner's "too unlit" call against `action-lighting.png`, so a dielectric
+      wall has something to be lit by and the plates read. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
       `Env.*` tunables; nothing is frozen until the owner gates §4 criterion 2 against this set.
 
 ## 8. Review log

@@ -11,7 +11,6 @@ import { HitSpark } from './hit-spark';
 import { NearFill } from './near-fill';
 import { SceneEffects } from './scene-effects';
 import { SceneEnvironment } from './scene-environment';
-import { SceneFog } from './scene-fog';
 import { Ships } from './ship';
 import { TrackView } from './track-view';
 
@@ -28,7 +27,6 @@ export function WorldScene( {
         <Fragment>
             <GameEnvironment track={ track } />
             <SceneEnvironment />
-            <SceneFog />
             <BackFill />
             <NearFill />
             <RenderScale />

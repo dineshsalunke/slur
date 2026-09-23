@@ -94,11 +94,6 @@ export function TuningPanel() {
         color: colorControl( 'Fill.color' ),
     } );
 
-    useControls( 'Fog', {
-        near: numberControl( 'Fog.near' ),
-        far: numberControl( 'Fog.far' ),
-    } );
-
     useControls( 'Metal', {
         baseColor: colorControl( 'Metal.baseColor' ),
         mapTint: colorControl( 'Metal.mapTint' ),
