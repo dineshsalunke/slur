@@ -1,8 +1,13 @@
-import { HeldPower, pickupPower, pickupsOf, procgenDescriptor, resolveTrack } from '@slur/shared';
+import { DEFAULT_SIM_CONFIG, HeldPower, pickupPower, pickupsOf, procgenDescriptor, resolveTrack } from '@slur/shared';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { seekerCanisterCoreGeometry, seekerCanisterShellGeometry } from './seeker-look';
+import { SEEKER_FLIGHT, SEEKER_PICKUP, seekerCoreGeometry, seekerShellGeometry } from './seeker-look';
 import { splitPickupLayout } from './seeker-pickups';
+
+function bounds( g: THREE.BufferGeometry ): THREE.Box3 {
+    g.computeBoundingBox();
+    return g.boundingBox ?? new THREE.Box3();
+}
 
 describe( 'splitPickupLayout', () => {
     it( 'puts every pickup in exactly one field, by its shared power', () => {
@@ -16,17 +21,33 @@ describe( 'splitPickupLayout', () => {
     } );
 } );
 
-describe( 'seeker canister', () => {
-    it( 'lies nose-forward along z with its hot core at the rear', () => {
-        const shell = seekerCanisterShellGeometry();
-        const core = seekerCanisterCoreGeometry();
-        shell.computeBoundingBox();
-        core.computeBoundingBox();
-        const s = shell.boundingBox ?? new THREE.Box3();
-        const c = core.boundingBox ?? new THREE.Box3();
+describe( 'seeker in flight', () => {
+    it( 'lies nose-forward along z with its hot core on the nose', () => {
+        const s = bounds( seekerShellGeometry( SEEKER_FLIGHT ) );
+        const c = bounds( seekerCoreGeometry( SEEKER_FLIGHT ) );
 
         expect( s.max.z - s.min.z ).toBeGreaterThan( s.max.x - s.min.x );
-        expect( c.max.z ).toBeLessThan( s.min.z + 0.2 );
-        expect( c.min.z ).toBeGreaterThan( s.min.z );
+        expect( c.min.z ).toBeGreaterThanOrEqual( s.max.z );
+    } );
+
+    it( 'keeps its fins inside the sim body', () => {
+        const s = bounds( seekerShellGeometry( SEEKER_FLIGHT ) );
+        const half = DEFAULT_SIM_CONFIG.seekerHalf;
+
+        expect( s.max.y ).toBeGreaterThan( SEEKER_FLIGHT.half );
+        for ( const v of [ s.max.x, -s.min.x, s.max.y, -s.min.y ] ) expect( v ).toBeLessThanOrEqual( half );
+    } );
+} );
+
+describe( 'seeker pickup', () => {
+    it( 'is a near-cube with a core on both end faces', () => {
+        const s = bounds( seekerShellGeometry( SEEKER_PICKUP ) );
+        const c = bounds( seekerCoreGeometry( SEEKER_PICKUP ) );
+        const ratio = ( s.max.z - s.min.z ) / ( s.max.x - s.min.x );
+
+        expect( ratio ).toBeGreaterThan( 0.8 );
+        expect( ratio ).toBeLessThan( 1.25 );
+        expect( c.min.z ).toBeLessThanOrEqual( s.min.z );
+        expect( c.max.z ).toBeGreaterThanOrEqual( s.max.z );
     } );
 } );

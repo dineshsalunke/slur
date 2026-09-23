@@ -9,7 +9,14 @@ import {
     PICKUP_SHELL_ROUGHNESS,
 } from './combat-look';
 import { PickupInstances, type PickupPart } from './pickup-instances';
-import { seekerCanisterCoreGeometry, seekerCanisterGlyphGeometry, seekerCanisterShellGeometry } from './seeker-look';
+import {
+    SEEKER_FLIGHT,
+    SEEKER_PICKUP,
+    type SeekerForm,
+    seekerCoreGeometry,
+    seekerGlyphGeometry,
+    seekerShellGeometry,
+} from './seeker-look';
 
 export interface PickupLayouts {
     bolts: Anchor[];
@@ -22,12 +29,12 @@ export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
     return out;
 }
 
-export function buildSeekerBody(): PickupPart[] {
+function seekerParts( form: SeekerForm ): PickupPart[] {
     const glyph = new THREE.MeshStandardMaterial( { color: '#000000', emissiveIntensity: PICKUP_GLYPH_INTENSITY } );
     glyph.emissive = accent();
     return [
         {
-            geometry: seekerCanisterShellGeometry(),
+            geometry: seekerShellGeometry( form ),
             material: new THREE.MeshStandardMaterial( {
                 color: PICKUP_SHELL_COLOR,
                 metalness: 0,
@@ -35,9 +42,9 @@ export function buildSeekerBody(): PickupPart[] {
                 flatShading: true,
             } ),
         },
-        { geometry: seekerCanisterGlyphGeometry(), material: glyph },
+        { geometry: seekerGlyphGeometry( form ), material: glyph },
         {
-            geometry: seekerCanisterCoreGeometry(),
+            geometry: seekerCoreGeometry( form ),
             material: new THREE.MeshStandardMaterial( {
                 color: '#000000',
                 emissive: BOLT_HOT,
@@ -47,6 +54,14 @@ export function buildSeekerBody(): PickupPart[] {
     ];
 }
 
+export function buildSeekerBody(): PickupPart[] {
+    return seekerParts( SEEKER_FLIGHT );
+}
+
+function buildSeekerPickup(): PickupPart[] {
+    return seekerParts( SEEKER_PICKUP );
+}
+
 export function SeekerPickups( { layout, isTaken }: { layout: Anchor[]; isTaken: ( id: string ) => boolean } ) {
-    return <PickupInstances layout={ layout } isTaken={ isTaken } buildBody={ buildSeekerBody } />;
+    return <PickupInstances layout={ layout } isTaken={ isTaken } buildBody={ buildSeekerPickup } />;
 }
