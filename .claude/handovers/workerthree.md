@@ -1,45 +1,35 @@
-Agent: workerthree · Lane: homing seeker (#219) · Updated: 2026-09-23 (after 8b51a00)
+Agent: workerthree · Lane: homing seeker (#219) → 3-slot plan (#223) · Updated: 2026-09-23 (after e2096cd)
 
 ## Goal
 
-Build the homing seeker: the second held power. It is marigold, locks one visible racer ahead, is hard to
-shake, and has two dodges (jump, or a late strafe). Rule: ADR-017 in `docs/DECISIONS.md`.
+Build the homing seeker: the second held power (ADR-017, `docs/DECISIONS.md`). Next: three power slots
+(#223), waiting for owner approval.
 
 ## Done
 
 - Earlier: `d0b2e61` ADR-017 + #219 · `5771ee3` sim · `dfae252` server · `e656f18` room-combat split ·
   `8828f7a` pickup-instances · `cc3debe` canister · `7fcabd4` hosted render · `2ca4bc8` Held{power} ·
-  `a2223ca` fly at 2.5u + breadcrumb path · `edea282` Seeker.flyY tunable.
-- `ddc8285` — `Seeker` panel group in `dev/tuning-panel.tsx` (flyY slider). File released.
-- `911e8ae` — look rebuild in `seeker-look.ts`: `SeekerForm` {half, halfLen, fins, faces}.
-  `SEEKER_FLIGHT` = chamfered square 1.1u × 2.2u, hot core (`#FFE0A0`) on the NOSE, marigold rim + 2
-  bands, dorsal + 2 side fins (top at 0.95u, inside `seekerHalf` 1u, tested). `SEEKER_PICKUP` =
-  near-cube 1.5u × 1.4u, no fins, core on both end faces. `seeker-pickups.tsx` builds both.
-- `eac9e96` — `docs/ART_MATERIALS.md` §7 item 14: the marigold departure, quoting board panels 8 + 9
-  (`docs/art-direction/ingredients/ingredients.png`). File released.
-- `8b51a00` — trail fix after the render check: the trail starts at the body's REAR (skips ring
-  points still inside the body), width 0.5u, width and brightness fall with fade², brightness 1.8,
-  hot-core mix `SEEKER_TRAIL_HEAT` 0.35 at the head.
+  `a2223ca` fly at 2.5u + breadcrumb path · `edea282` Seeker.flyY tunable · `ddc8285` tuning panel group ·
+  `911e8ae` look rebuild (`seeker-look.ts`) · `eac9e96` ART_MATERIALS §7 item 14 · `8b51a00` trail fix.
+- `e2096cd` — `docs/ART_MATERIALS.md` item 14 corrected: trail 0.5u = 1.7× `BOLT_HEAD_RADIUS`, starts at
+  the body rear, width + brightness fall with fade². File released.
+- Issue #223 filed: three power slots.
 
 ## State
 
-- Render check DONE on a private stack (client :5181, headless Chrome CDP :9341; both killed after).
-  Stills in `.claude/frame-tap-refs/` (gitignored): `seeker-flight-close.png` (going-away body with
-  fins + oncoming nose core), `seeker-flight-side.png` (side profile + taper), `seeker-pickup-face.png`,
-  `seeker-pickup-side.png`.
-- Before 8b51a00 (measured in stills): the 0.75u trail began at the body centre and hid the body and
-  fins from behind; head was near-white. After: body, fins and bands read; trail is marigold.
-- Known artifact: dark chevron seams where trail segments join (open hex cylinders, stepped width).
-- Tests: client 227 pass, `tsc` clean, `pnpm lint` 7 old warnings.
-- STALE DOC: `ART_MATERIALS.md` item 14 still says trail radius 0.75u and 2.5× the bolt head. Now it is
-  0.5u (1.7×) with a fade² taper.
-- Method (worth reusing): koota `universe.worlds` gives the page's world over CDP →
-  `queryFirst(LocalPlayer, Sim)` for the ship; freeze (KeyP), then write seekers straight into
-  `localCombat.seekers` and move them from an in-page rAF loop; SeekerBodies draws them while frozen.
+- Render stills in `.claude/frame-tap-refs/` (gitignored): `seeker-flight-close.png`,
+  `seeker-flight-side.png`, `seeker-pickup-face.png`, `seeker-pickup-side.png`. Owner has them.
+- Known artifact: dark chevron seams where trail segments join.
+- Tests: client 227 pass, `tsc` clean, `pnpm lint` 7 old warnings (at 8b51a00).
+- Boost does NOT exist in code (`rg -i boost` in shared/server: none). GDD §5.3 lists it; issue #20.
+- Pickup kind is ALREADY visible before the grab: `seeker-pickups.tsx:28` splits by `pickupPower(a.id)`.
+  The one lie: a shut room gate turns a seeker canister into a bolt (`combat-step.ts:107`).
+- `USE_POWERUP` is a discrete room message, not a sequence-numbered input (`net-canvas.tsx:46`).
+- Free keys (checked): R = dev rear-view, P = dev freeze, M = mute. 1/2/3, Q, X are unbound.
 
 ## Uncommitted
 
-None of mine.
+None.
 
 ## Held files
 
@@ -51,34 +41,23 @@ None of mine.
   `routes/test-level/{local-pickup-field,local-power-slot,local-seeker-field}.tsx`,
   `routes/test-level/local-combat.test.ts`, `dev/tuning-schema.ts`, `net/attach-room-to-world.ts`,
   `game/ecs/traits.ts`
-- RELEASED: `dev/tuning-panel.tsx`, `docs/ART_MATERIALS.md`, `game/net-canvas.tsx`,
+- RELEASED: `docs/ART_MATERIALS.md`, `dev/tuning-panel.tsx`, `game/net-canvas.tsx`,
   `routes/test-level/test-level-canvas.tsx`, `routes/test-level/local-combat.ts`.
 
 ## Next
 
-0. Ask the supervisor for `docs/ART_MATERIALS.md` again. Fix item 14's trail line: radius 0.5u at the
-   head = 1.7× `BOLT_HEAD_RADIUS` (0.3u); width and brightness fall with the square of the fade; the
-   trail leaves the body's rear. Own commit, release.
-1. Owner look review of the four stills (supervisor relays). Possible follow-ups: the segment seams,
-   trail length (12 points × 2u = 24u).
-2. 3-slot plan for the supervisor (build nothing until the owner approves). OWNER REQUIREMENTS
-   (supervisor, 2026-09-23): (1) any mix in 3 slots, duplicates allowed; target loadout 2 seekers + 1
-   boost; (2) the player can DROP a slot's pickup to free it (*"I always want seeker and boost. If I pick
-   up something else by accident, I drop it to open the slot."*). The plan must answer: controls for
-   select/fire/drop (keep W/S, A/D, Space, E, M); a dropped pickup vanishes or stays on the track
-   (server-authoritative; a drop is an INPUT, never a position, ADR-000); all 3 full → skip (pickup
-   stays for others) or lose it; kind random on grab or visible before (if hidden, say the drop is what
-   makes 2 seekers + 1 boost reachable); HUD for 3 slots + selected slot; does the room-wide one-seeker
-   cap (grants a bolt) stand when a player can hold 2; schema/wire change + files to claim; file a
-   GitHub issue. Send it to the supervisor.
-3. Step 6 audio + LOCKED HUD, step 7 target dummy + tunables, step 8 two-player room + doc rows.
+1. Wait for the owner's answer on the 3-slot plan (sent to the supervisor; text in #223).
+2. On approval: claim the extra files (`net-canvas.tsx`, `overlays.tsx`, `local-combat.ts`,
+   `local-ship.tsx`, `bind-room-audio.ts`, `docs/GDD.md`; `docs/DECISIONS.md` only via the supervisor).
+   Slices: shared → server → client → docs.
+3. Seeker leftovers: step 6 audio + LOCKED HUD, step 7 target dummy, step 8 two-player room + doc rows.
 
 ## Open questions
 
-- Owner: when the gate is shut, keep "a seeker pickup grants a bolt", switch to `'shooter'` scope, or dim
-  the canister? The slots design changes this.
+- Owner: the 3-slot plan choices (see #223).
+- Owner: the seeker look (four stills). Trail seams, trail length 24u.
 - A bigger impact burst needs `hit-spark.tsx` (ask first).
 
 ## Lessons → memory
 
-`.claude/memory/koota-universe-reaches-the-page-world.md`.
+none
