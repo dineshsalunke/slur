@@ -61,8 +61,8 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 
 ## Notes
 
-- The untracked `docs/art-direction/ingredients/blocks/blocks.png`, `ingredients.png` and `monoliths/` belong to the owner
-  (ChatGPT folder). No agent commits them.
+- The owner's artboards blocks.png, ingredients.png and monoliths/monolith_archs.png were committed at the
+  owner's request (`288262d`, LFS). `dev` was pushed to origin at 288262d (it had been 90 ahead).
 - The worklog header reads `Last summarised: e656f18`.
 
 ## Lessons → memory
