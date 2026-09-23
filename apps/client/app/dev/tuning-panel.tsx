@@ -224,6 +224,7 @@ export function TuningPanel() {
         detail: numberControl( 'Rock.detail' ),
         spin: numberControl( 'Rock.spin' ),
         drift: numberControl( 'Rock.drift' ),
+        driftRate: numberControl( 'Rock.driftRate' ),
     } );
 
     return null;

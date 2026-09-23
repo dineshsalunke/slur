@@ -186,7 +186,8 @@ export const NUMBER_TUNABLES = {
     'Rock.roughness': { value: 1, min: 0.1, max: 1.5, step: 0.01, rebuild: false },
     'Rock.detail': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
     'Rock.spin': { value: 3.35, min: 0, max: 6, step: 0.05, rebuild: false },
-    'Rock.drift': { value: 6, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Rock.drift': { value: 40, min: 0, max: 120, step: 1, rebuild: false },
+    'Rock.driftRate': { value: 0.15, min: 0, max: 1, step: 0.01, rebuild: false },
 
     'Ship.envMapIntensity': { value: 0.45, min: 0, max: 3, step: 0.05, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;

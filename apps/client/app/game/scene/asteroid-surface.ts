@@ -62,6 +62,7 @@ export interface RockUniforms {
     uRockTime: { value: number };
     uRockSpin: { value: number };
     uRockDrift: { value: number };
+    uRockDriftRate: { value: number };
     uRockSurface: { value: THREE.Texture };
     uRockNormal: { value: THREE.Texture };
     uRockTexScale: { value: number };
@@ -78,7 +79,8 @@ export function rockUniforms( surface: THREE.Texture, normal: THREE.Texture ): R
     return {
         uRockTime: { value: 0 },
         uRockSpin: { value: 1 },
-        uRockDrift: { value: 1 },
+        uRockDrift: { value: 0 },
+        uRockDriftRate: { value: 0 },
         uRockSurface: { value: surface },
         uRockNormal: { value: normal },
         uRockTexScale: { value: 1 },
@@ -97,6 +99,9 @@ attribute vec4 aRockSpin;
 uniform float uRockTime;
 uniform float uRockSpin;
 uniform float uRockDrift;
+uniform float uRockDriftRate;
+const float DRIFT_REFERENCE_SIZE = 12.0;
+const float DRIFT_MASS_FLOOR = 0.3;
 varying vec3 vRockPos;
 varying vec3 vRockNormal;
 varying vec3 vRockAxX;
@@ -134,12 +139,21 @@ vRockAxZ = rockNormalToView( rockSpin * vec3( 0.0, 0.0, 1.0 ) );
 const VERT_POSITION = `
 #include <begin_vertex>
 vRockPos = transformed;
-transformed = rockSpin * transformed
-	+ normalize( aRockSpin.zxy ) * sin( uRockTime * 0.11 + aRockSpin.w * 57.0 ) * 0.04 * uRockDrift;
+transformed = rockSpin * transformed;
 `;
 
 const VERT_DEPTH = `
-#include <project_vertex>
+float rockPhase = aRockSpin.w * 57.0;
+float rockMass = clamp( DRIFT_REFERENCE_SIZE / length( instanceMatrix[ 0 ].xyz ), DRIFT_MASS_FLOOR, 1.0 );
+vec3 rockDriftA = normalize( vec3( aRockSpin.z, -aRockSpin.x, aRockSpin.y ) );
+vec3 rockDriftB = normalize( cross( rockDriftA, vec3( 0.0, 0.0, 1.0 ) ) + vec3( 0.0, 0.0, 0.4 ) );
+vec3 rockDrift = uRockDrift * rockMass * (
+	rockDriftA * sin( uRockTime * uRockDriftRate + rockPhase )
+	+ rockDriftB * 0.5 * sin( uRockTime * uRockDriftRate * 0.37 + rockPhase * 1.7 ) );
+vec4 mvPosition = instanceMatrix * vec4( transformed, 1.0 );
+mvPosition.xyz += rockDrift;
+mvPosition = modelViewMatrix * mvPosition;
+gl_Position = projectionMatrix * mvPosition;
 vRockDepth = - mvPosition.z;
 `;
 
