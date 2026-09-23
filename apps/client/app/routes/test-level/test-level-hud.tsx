@@ -1,4 +1,5 @@
 import type { Track } from '@slur/shared';
+import { FpsReadout } from '../../dev/fps-readout';
 import { FlightReadout } from '../../game/hud/flight-readout';
 import { HudLayer } from '../../game/hud/hud-layer';
 import { PowerSlot } from '../../game/hud/power-slot';
@@ -12,6 +13,9 @@ export function TestLevelHud( { track }: { track: Track } ) {
             <RosterPanel connected={ FIXTURE_FIELD } entries={ FIXTURE_ROSTER } />
             <FlightReadout track={ track } rank={ FIXTURE_RANK } field={ FIXTURE_FIELD } clock={ testRunSeconds } />
             <PowerSlot label={ FIXTURE_POWER } hint={ FIXTURE_POWER_HINT } />
+            <div className="absolute inset-x-0 top-0 flex justify-center">
+                <FpsReadout />
+            </div>
         </HudLayer>
     );
 }
