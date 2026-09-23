@@ -61,11 +61,7 @@ export function TuningPanel() {
 
     useControls( 'Rail lights', {
         intensity: numberControl( 'RailLight.intensity' ),
-        span: numberControl( 'RailLight.span' ),
-        thickness: numberControl( 'RailLight.thickness' ),
         lift: numberControl( 'RailLight.lift' ),
-        stride: numberControl( 'RailLight.stride' ),
-        offset: numberControl( 'RailLight.offset' ),
         color: colorControl( 'RailLight.color' ),
     } );
 

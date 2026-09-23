@@ -31,12 +31,8 @@ export const NUMBER_TUNABLES = {
     'Env.bandIntensity': { value: 0.1, min: 0, max: 4, step: 0.05, rebuild: false },
     'Env.bandHeight': { value: 5, min: 0.5, max: 60, step: 0.5, rebuild: false },
 
-    'RailLight.intensity': { value: 0.35, min: 0, max: 200, step: 0.05, rebuild: false },
-    'RailLight.span': { value: 170, min: 4, max: 400, step: 1, rebuild: false },
-    'RailLight.thickness': { value: 0.6, min: 0.05, max: 8, step: 0.05, rebuild: false },
+    'RailLight.intensity': { value: 6, min: 0, max: 30, step: 0.1, rebuild: false },
     'RailLight.lift': { value: 0.6, min: 0, max: 12, step: 0.05, rebuild: false },
-    'RailLight.stride': { value: 55, min: 4, max: 400, step: 1, rebuild: false },
-    'RailLight.offset': { value: 65, min: -120, max: 240, step: 1, rebuild: false },
 
     'Bloom.intensity': { value: 1.2, min: 0, max: 5, step: 0.05, rebuild: false },
     'Bloom.threshold': { value: 0.6, min: 0, max: 2, step: 0.01, rebuild: false },

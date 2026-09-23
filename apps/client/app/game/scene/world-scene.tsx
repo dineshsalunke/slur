@@ -9,7 +9,6 @@ import { FinishGate } from './finish-gate';
 import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark';
 import { NearFill } from './near-fill';
-import { RailLights } from './rail-lights';
 import { SceneEffects } from './scene-effects';
 import { SceneEnvironment } from './scene-environment';
 import { SceneFog } from './scene-fog';
@@ -32,7 +31,6 @@ export function WorldScene( {
             <SceneFog />
             <BackFill />
             <NearFill />
-            <RailLights track={ track } />
             <RenderScale />
             <EngineLight />
             <ExplosionField />

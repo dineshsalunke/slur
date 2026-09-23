@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
+import { patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
 import {
     BACKWARD,
     DOWN,
@@ -89,14 +90,20 @@ export function TrackFloor( { track }: { track: Track } ) {
     const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const rebuild = useRebuildToken();
     const surface = useMemo( floorSurface, [ rebuild ] );
+    const glow = useMemo( railGlowUniforms, [] );
+    const attachMaterial = ( mat: THREE.MeshStandardMaterial | null ) => {
+        matRef.current = mat;
+        if ( mat ) patchRailGlow( mat, glow );
+    };
 
     // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );
 
-    useFrame( () => {
+    useFrame( ( state ) => {
         const mat = matRef.current;
         if ( ! mat ) return;
 
+        updateRailGlow( glow, state.camera );
         mat.metalness = num( 'Deck.metalness' );
         mat.roughness = cleanToMapRoughness( num( 'Deck.roughness' ) );
         mat.envMapIntensity = num( 'Deck.envMapIntensity' );
@@ -106,7 +113,7 @@ export function TrackFloor( { track }: { track: Track } ) {
 
     return (
         <mesh geometry={ geo }>
-            <meshStandardMaterial ref={ matRef } { ...surface } />
+            <meshStandardMaterial ref={ attachMaterial } { ...surface } />
         </mesh>
     );
 }
