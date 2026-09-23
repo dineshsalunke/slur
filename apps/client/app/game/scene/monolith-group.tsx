@@ -2,15 +2,21 @@ import { useFrame } from '@react-three/fiber';
 import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
-import { useRebuildToken } from '../../dev/use-rebuild-token';
 import type { MonolithShapeConfig } from './monolith-config';
 import type { MonolithPlacement } from './monolith-field';
 import { type MonolithSize, monolithGeometry } from './monolith-geometry';
 import { bodySpan, bodyTransform, type MonolithTransform, seamTransform, shapeProfile } from './monolith-transforms';
-import { cleanToMapRoughness, monolithBodySurface } from './track-materials';
+import { useSealedBlockMaps } from './sealed-block-texture';
+import { TEX_SPAN_X } from './track-texture';
 
 const scratch = new THREE.Object3D();
 const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } );
+
+function cloneMap( tex: THREE.Texture ): THREE.Texture {
+    const clone = tex.clone();
+    clone.needsUpdate = true;
+    return clone;
+}
 
 function fill(
     mesh: THREE.InstancedMesh,
@@ -36,8 +42,17 @@ export function MonolithGroup( {
     shape: MonolithShapeConfig;
     placements: readonly MonolithPlacement[];
 } ) {
-    const rebuild = useRebuildToken();
-    const surface = useMemo( monolithBodySurface, [ rebuild ] );
+    const maps = useSealedBlockMaps();
+    const surface = useMemo(
+        () => ( {
+            color: '#ffffff',
+            map: cloneMap( maps.map ),
+            normalMap: cloneMap( maps.normalMap ),
+            roughnessMap: cloneMap( maps.roughnessMap ),
+            metalnessMap: cloneMap( maps.metalnessMap ),
+        } ),
+        [ maps ],
+    );
     const bodyRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const seamRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const size: MonolithSize = [ shape.width, bodySpan( shape ), shape.depth ];
@@ -60,8 +75,14 @@ export function MonolithGroup( {
         const body = bodyRef.current;
         if ( body ) {
             body.metalness = num( 'Monolith.metalness' );
-            body.roughness = cleanToMapRoughness( num( 'Monolith.roughness' ) );
+            body.roughness = num( 'Monolith.roughness' );
             body.envMapIntensity = num( 'Monolith.envMapIntensity' );
+            const normalScale = num( 'Monolith.normalScale' );
+            body.normalScale.set( normalScale, normalScale );
+            const repeat = TEX_SPAN_X / Math.max( num( 'Monolith.textureSpan' ), 1e-3 );
+            for ( const tex of [ body.map, body.normalMap, body.roughnessMap, body.metalnessMap ] ) {
+                tex?.repeat.set( repeat, repeat );
+            }
         }
         const seam = seamRef.current;
         if ( seam ) seam.emissiveIntensity = num( 'Monolith.seamEmissive' );

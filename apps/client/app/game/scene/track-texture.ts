@@ -615,7 +615,3 @@ export function deckSurfaceParams(): SurfaceParams {
 export function railSurfaceParams(): SurfaceParams {
     return { plate: num( 'Rail.plate' ), base: col( 'Rail.plateColor' ), ...grooveParams() };
 }
-
-export function monolithSurfaceParams(): SurfaceParams {
-    return { plate: num( 'Monolith.plate' ), base: col( 'Monolith.plateColor' ), ...grooveParams() };
-}

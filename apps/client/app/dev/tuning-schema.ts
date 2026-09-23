@@ -65,7 +65,8 @@ export const NUMBER_TUNABLES = {
     'Monolith.metalness': { value: GRAPHITE_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Monolith.roughness': { value: GRAPHITE_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
     'Monolith.envMapIntensity': { value: 1.55, min: 0, max: 6, step: 0.05, rebuild: false },
-    'Monolith.plate': { value: 17, min: 4, max: 40, step: 1, rebuild: true },
+    'Monolith.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
+    'Monolith.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
     'Block.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
@@ -116,7 +117,6 @@ export const COLOR_TUNABLES = {
     'Fog.color': { value: BACKDROP_HORIZON, rebuild: false },
     'Deck.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Rail.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
-    'Monolith.plateColor': { value: GRAPHITE_ALBEDO, rebuild: true },
     'Exhaust.hot': { value: '#fff1dc', rebuild: false },
     'Exhaust.cool': { value: ACCENT_ANCHOR, rebuild: false },
     'EngineLight.color': { value: '#ff9a3c', rebuild: false },

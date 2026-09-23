@@ -3,7 +3,6 @@ import { num } from '../../dev/tuning';
 import { ACCENT_ANCHOR } from './accent';
 import {
     deckSurfaceParams,
-    monolithSurfaceParams,
     NORMAL_SIGN_X,
     NORMAL_SIGN_Y,
     ROUGHNESS_MAP_BASE,
@@ -41,15 +40,6 @@ export function railBodySurface() {
         num( 'Rail.roughness' ),
         num( 'Rail.metalness' ),
         num( 'Rail.normalScale' ),
-    );
-}
-
-export function monolithBodySurface() {
-    return plateSurface(
-        monolithSurfaceParams(),
-        num( 'Monolith.roughness' ),
-        num( 'Monolith.metalness' ),
-        num( 'Deck.normalScale' ),
     );
 }
 

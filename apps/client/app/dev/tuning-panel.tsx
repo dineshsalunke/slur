@@ -127,8 +127,8 @@ export function TuningPanel() {
         metalness: numberControl( 'Monolith.metalness' ),
         roughness: numberControl( 'Monolith.roughness' ),
         envMapIntensity: numberControl( 'Monolith.envMapIntensity' ),
-        plate: numberControl( 'Monolith.plate' ),
-        plateColor: colorControl( 'Monolith.plateColor' ),
+        textureSpan: numberControl( 'Monolith.textureSpan' ),
+        normalScale: numberControl( 'Monolith.normalScale' ),
         seamEmissive: numberControl( 'Monolith.seamEmissive' ),
     } );
 
