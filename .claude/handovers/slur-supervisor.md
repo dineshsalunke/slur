@@ -31,6 +31,10 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
    a contract), ADR-014 (a block bounces and stuns, it does not kill), GDD §0 (MIN_CLEAR 7u at every
    z-slice), open issues #34 (weave too dense) and #24 (authoring format). Proposed worker: workerone
    (free, knows the generator from #213). A plan-only brief first.
+1b. #223 key clash on /test-level: keys 1–5 switch the ship class there (`local-ship.tsx:33`); the slots use
+   1/2/3. Hosted rooms do not clash (SET_CLASS is lobby-only, `run-room.ts:92`). workerthree builds (a)
+   Shift+1..5 = class, 1/2/3 = slot, until the owner answers. The other options: (b) keep 1–5 for class,
+   with Q only for slots; (c) move the class picker to the tuning panel.
 2. #216 departure: a respawn steps back one ship length, not CELL. Accept? (A one-line change.)
 3. #220 follow-ups: the finish reads only to 1000u (far plane); keep/drop/raise the floor checker;
    `Monolith.seamEmissive` 2 vs the ≤ 0.25 cap in ART_MATERIALS §3.
