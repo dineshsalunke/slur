@@ -996,6 +996,19 @@ says *"At most one seeker exists, held or in flight … When the limit is reache
 
 Commit: `eb4c381` (shared + server). The client slice follows.
 
+### Amendment — seekers fire back to back (2026-09-23, #226)
+
+The owner asked for this through slur-supervisor: *"i would like to fire seeker's back to back if
+required."* It replaces the #223 bullet above that says *"The cap moves to fire time. Each shooter can
+have one seeker in flight."*
+
+- **No seeker cap.** A racer can fire every seeker they hold, one after another. The only fire rule is
+  `canFire` (not dead, not stunned, not spectating, slot not empty). `seekerReady()` is removed.
+- **Seekers are independent.** Each seeker has its own id. Seekers do not collide with each other.
+- **The client draws at most `MAX_SEEKERS` (48) seekers.** This is a render bound only. The server does
+  not enforce it. 48 covers 12 racers × 3 slots, with room for refills within the seeker TTL. Seekers past
+  48 still fly and hit, but the client does not draw them.
+
 ### Affected
 
 `packages/shared/src/combat/{constants,seeker,seeker-trail,pickups,combat-step}.ts` ·

@@ -12,7 +12,6 @@ import {
     Seeker,
     type SeekerEvent,
     type SimConfig,
-    seekerReady,
     seekerShipsOf,
     spendPower,
     stunDurationForShip,
@@ -28,13 +27,11 @@ export interface FireContext {
     config: SimConfig;
 }
 
-export function firePower( ctx: FireContext, id: string, p: PlayerState, ownerId: string, slot: number ): boolean {
+export function firePower( ctx: FireContext, id: string, p: PlayerState, ownerId: string, slot: number ): void {
     const seeker = powerIn( p, slot ) === HeldPower.seeker;
-    if ( seeker && ! seekerReady( ownerId, ctx.state.seekers.values() ) ) return false;
     spendPower( p, slot );
     if ( seeker ) fireSeeker( ctx, id, p, ownerId );
     else fireBolt( ctx, id, p, ownerId );
-    return true;
 }
 
 function fireBolt( ctx: FireContext, id: string, p: PlayerState, ownerId: string ): void {

@@ -136,7 +136,7 @@ export function seekerCoreGeometry( f: SeekerForm ): THREE.BufferGeometry {
     );
 }
 
-export const MAX_SEEKERS = 16;
+export const MAX_SEEKERS = 48;
 export const SEEKER_TRAIL_WIDTH = 0.5;
 export const SEEKER_TRAIL_BRIGHT = 1.8;
 export const SEEKER_TRAIL_HEAT = 0.35;

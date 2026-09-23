@@ -15,7 +15,6 @@ import {
     type SeekerEvent,
     type SeekerState,
     type SimConfig,
-    seekerReady,
     spendPower,
     stepBolts,
     stepPickups,
@@ -91,7 +90,6 @@ function fireSeeker( me: Gunner, vz: number, track: Track ): void {
 function fire( me: Gunner, slot: number, vz: number, track: Track ): void {
     if ( ! canFire( me, slot ) ) return;
     const seeker = powerIn( me, slot ) === HeldPower.seeker;
-    if ( seeker && ! seekerReady( OWNER, localCombat.seekers.values() ) ) return;
     spendPower( me, slot );
     if ( seeker ) fireSeeker( me, vz, track );
     else fireBolt( me );

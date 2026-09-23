@@ -231,24 +231,17 @@ describe( 'RunRoom combat', () => {
         assert.equal( room.state.seekers.size, 0, 'the unlocked seeker expires' );
     } );
 
-    test( 'a second seeker is refused while the shooter has one in flight, and its slot is kept', async () => {
+    test( 'a shooter fires three seekers back to back', async () => {
         const { room, host } = await racingRoom( 1 );
         const shooter = playerOf( room, host.sessionId );
-        arm( shooter, HeldPower.seeker, HeldPower.seeker );
+        arm( shooter, HeldPower.seeker, HeldPower.seeker, HeldPower.seeker );
 
-        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
-        await room.waitForMessage( USE_POWERUP_MESSAGE );
-        host.send( USE_POWERUP_MESSAGE, { slot: 1 } );
-        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        for ( const slot of [ 0, 1, 2 ] ) {
+            host.send( USE_POWERUP_MESSAGE, { slot } );
+            await room.waitForMessage( USE_POWERUP_MESSAGE );
+        }
 
-        assert.equal( room.state.seekers.size, 1, 'only one seeker flies per shooter' );
-        assert.deepEqual( rack( shooter ), [ HeldPower.none, HeldPower.seeker, HeldPower.none ] );
-
-        tick( room, DEFAULT_SIM_CONFIG.seekerTtl + FIXED_DT );
-        host.send( USE_POWERUP_MESSAGE, { slot: 1 } );
-        await room.waitForMessage( USE_POWERUP_MESSAGE );
-
-        assert.equal( room.state.seekers.size, 1, 'the kept seeker fires once the first is gone' );
+        assert.equal( room.state.seekers.size, 3, 'every seeker flies at once' );
         assert.deepEqual( rack( shooter ), [ HeldPower.none, HeldPower.none, HeldPower.none ] );
     } );
 

@@ -37,11 +37,6 @@ export function canFire( g: Gunner, slot: number ): boolean {
     return ! g.spectating && ! g.dead && g.stunTimer <= 0 && powerIn( g, slot ) !== HeldPower.none;
 }
 
-export function seekerReady( ownerId: string, live: Iterable< { ownerId: string } > ): boolean {
-    for ( const s of live ) if ( s.ownerId === ownerId ) return false;
-    return true;
-}
-
 export function spendPower( g: Gunner, slot: number ): number {
     const power = powerIn( g, slot );
     if ( power !== HeldPower.none ) g.slots[ slot ] = HeldPower.none;

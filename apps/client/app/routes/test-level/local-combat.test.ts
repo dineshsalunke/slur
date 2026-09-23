@@ -56,7 +56,7 @@ describe( 'test-level local combat', () => {
         expect( localCombat.taken.size ).toBe( 0 );
     } );
 
-    it( 'a second seeker waits while the first is in flight, and its slot is kept', () => {
+    it( 'seekers fire back to back', () => {
         const { world, ship, track } = atPickup( bolt, [ seeker, seeker, bolt ] );
         leavePickup( ship );
         queueFire( 0 );
@@ -64,8 +64,8 @@ describe( 'test-level local combat', () => {
         queueFire( 1 );
         localCombatSystem( world, DT, track );
 
-        expect( localCombat.seekers.size ).toBe( 1 );
-        expect( rack( ship ) ).toEqual( [ none, seeker, bolt ] );
+        expect( localCombat.seekers.size ).toBe( 2 );
+        expect( rack( ship ) ).toEqual( [ none, none, bolt ] );
     } );
 
     it( 'a drop empties the slot and fires nothing', () => {

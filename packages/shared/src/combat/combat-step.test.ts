@@ -18,7 +18,6 @@ import {
     type ProjectileState,
     SEG_LEN,
     type Segment,
-    seekerReady,
     spendPower,
     stepBolts,
     stepPickups,
@@ -157,11 +156,4 @@ test( 'spending or dropping a slot empties only that slot', () => {
     assert.ok( ! dropPower( me, 7 ) );
     assert.ok( dropPower( gunner( { stunTimer: 1 } ), 0 ), 'a stunned racer may still drop' );
     assert.ok( ! dropPower( gunner( { spectating: true } ), 0 ) );
-} );
-
-test( 'a shooter may have one seeker in flight at a time', () => {
-    const live = [ { ownerId: 'a' } ];
-    assert.ok( ! seekerReady( 'a', live ) );
-    assert.ok( seekerReady( 'b', live ) );
-    assert.ok( seekerReady( 'a', [] ) );
 } );
