@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-23, late evening
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-23, ~20:45
 
 ## Goal
 
@@ -7,63 +7,49 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 
 ## Done this session
 
-- `20c4118`: work log run 1 (`.claude/phases/worklog.md`).
-- `2f5b7a1`: 22 legacy HANDOVER notes folded into the worklog "Legacy handovers" section and deleted.
-  Recover any of them with `git show 11b74ca:<path>`. `e793b87` repoints the backlog reference.
-- `CLAUDE.local.md` §4 (git-ignored, so not committed) gained section 9 **Lessons → memory**. It also
-  says git is the archive (no numbered copies) and that the worklog is summarised on request by a
-  Sonnet 5 subagent reading `git log -p <Last summarised>..HEAD -- .claude/handovers/`. All workers
-  were told.
-- Cleared and resumed workerthree twice (`8f1cd68`, `7b25725`, `f3a0ece`). Cleared and resumed
-  workertwo twice (`f09f440`, `eedccfe`).
+- Cleared and resumed: workerthree three times (`6c08dc4`, `9613ecf`, `12f4d06`), workertwo twice (`740f5b3`, `370714a`).
+- Relayed and got owner approval for: #216 (workerone), #222 destructible block (workertwo, supervisor defaults),
+  #223 three slots (workerthree, all recommendations, bolt + seeker only; boost is #20, later).
+- Sent the owner the seeker stills (the first look, then 4x length `fcebd5d`).
+- Supervisor handover commits: `8f93c72`, `8f4b0ce`, `cfec3aa`, `3604219`.
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #216 respawn inside a block (perf + #213 parked) | Owner APPROVED the plan: the nearest block-clear lane at the setback z; fallback steps z back by CELL; ends at the start apron; ignores world.broken; ADR-016. Baseline was 15/1068. Building. | sim/step.ts, sim/respawn-point.ts (new), sim/clearance.ts, sim/respawn.test.ts, sim/respawn-point.test.ts (new), docs/DECISIONS.md (first in queue) |
-| workertwo | w2P:pF | #222 destructible block rebuild to blocks.png | #220 done `c36518a`. Owner APPROVED the plan with the supervisor defaults: pre-glow on an inbound bolt; ~12 Voronoi cells; chunks vanish mid-air; debris is VFX only; the sealed block is out of scope; the flash is bloom only; the #214 Qs stay open. Building. | scene/fractured-block-geometry.ts(+test), fractured-block-shader.ts, block-debris.tsx, block-breaks.ts, block-burst.tsx (new), track-blocks.tsx (fractured path), game/block-state.ts, bolt-streaks.tsx (one noteBolt call), ART_MATERIALS.md (passed after e2096cd). dev/tuning-schema.ts (released to it by workerthree). QUEUED: DECISIONS.md (after workerone) |
-| workerthree | w2P:pG | #219 seeker, then #223 3 slots | Landed: breadcrumb homing `a2223ca`, flyY tunable `edea282` + slider `ddc8285`, look `911e8ae`, trail fix `8b51a00`, ART_MATERIALS item 14 `eac9e96`/`e2096cd`. Cleared and resumed 4 times (last `9613ecf`). NOW: the owner's seeker feedback: 4x length (2.2 → ~8.8u, visual only preferred) + a fin on each of 4 faces, then new stills. THEN #223, APPROVED with all recommendations: 1/2/3 select, Q cycles, E fires, X drops; a dropped power vanishes; full slots skip the pickup; the seeker cap moves to fire time, one per shooter; bolt + seeker only (boost is #20, later). | combat/*, sim-config.ts, schema.ts, rooms/room-combat.ts, seeker-*, and for #223: game/net-canvas.tsx, overlays/overlays.tsx, audio/bind-room-audio.ts, test-level/{local-combat.ts, local-ship.tsx}, game/input/ (new), docs/GDD.md. QUEUED: DECISIONS.md (ADR-017 amendment, third in line) |
+| workerone | w2P:pD | none | #216 DONE: `5fe5bd8` fix, `78700d5` ADR-016. Respawns inside a block went 15/1068 → 0/1068. Departure: the step-back is one ship length (2·halfL), not CELL; owner not asked yet. IDLE. Proposed for the TRACK GENERATION lane (see Open owner decisions). Perf + #213 still parked. | none |
+| workertwo | w2P:pF | #222 destructible block rebuild | Built `2ab2c2c` (12 cells, bolt pre-glow, analytic burst), ADR-015 amendment `fef4a21`, ART_MATERIALS item 15 `4589412`. Cleared and resumed. NOW: range stills, break-sequence taps, tuning, perf numbers, then stills to the owner. Asked to confirm client tsc: workerthree says the Break./Fracture. keys fail to typecheck. | #222 scene files (fractured-block-geometry.ts(+test), fractured-block-shader.ts, block-debris.tsx, block-breaks.ts, block-burst.tsx, track-blocks.tsx, game/block-state.ts), dev/tuning-schema.ts (re-cleared) |
+| workerthree | w2P:pG | #219 seeker, then #223 3 slots | Seeker 4x length + 4 fins `fcebd5d` (visual only; the nose sits on the sim front face). #223 shared + server landed as ONE commit `eb4c381`: server 13/13, shared 202/202. Hosted E does nothing until the client slice sends {slot}. NOW: ART_MATERIALS item 14 (8.8u, four fins), then the ADR-017 amendment, each in its own commit, then release both. Then the #223 client slice (keys, store, 3-cell HUD, audio, test-level). | combat/*, schema.ts, sim-config.ts, server rooms/{run-room.ts(+test), room-combat.ts}, seeker-*, test-level local-*, net-canvas.tsx, overlays/overlays.tsx, audio/bind-room-audio.ts, game/input/ (new), docs/GDD.md, docs/ART_MATERIALS.md, docs/DECISIONS.md |
 | workerfour | w2P:pH | main menu to match cruise-lighting.png | Blocked on the impeccable plugin | ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/* |
-
-## Pending decisions from workers
-
-- **DECISIONS.md queue:** workerone (ADR-016, #216) → workertwo (ADR-015 amendment, #222) → workerthree
-  (ADR-017 amendment, #223). One append per commit; each releases it to the next through the supervisor.
-- **Seeker fins:** read "fins on each side" as 4 fins (top, bottom, left, right). The owner has not
-  confirmed that reading.
 
 ## Open owner decisions
 
-- **#220 follow-ups (workertwo):** (a) should the finish read past 1000u (a larger far plane for the whole
-  scene, or a beacon)? (b) keep, drop or raise the floor checker (a few pixels tall at a 4u eye height)?
-  (c) `Monolith.seamEmissive` defaults to 2, equal to the gameplay reference; ART_MATERIALS.md §3 caps
-  environmental glow at ≤ 0.25 of it. Next lane for workertwo: these, or #216.
+1. **TRACK GENERATION (new owner focus, 2026-09-23).** The owner playtested and finds the NON-destructible
+   blocks "very annoying". They want the track made "interesting and challenging". The owner rejected my
+   multi-choice question because they want to clarify first: ASK THEM WHAT THEY WANT TO CLARIFY before
+   writing any brief. Context: ADR-006 (rhythm-paced generation), ADR-007 (8u blocks), ADR-013 (track from
+   a contract), ADR-014 (a block bounces and stuns, it does not kill), GDD §0 (MIN_CLEAR 7u at every
+   z-slice), open issues #34 (weave too dense) and #24 (authoring format). Proposed worker: workerone
+   (free, knows the generator from #213). A plan-only brief first.
+2. #216 departure: a respawn steps back one ship length, not CELL. Accept? (A one-line change.)
+3. #220 follow-ups: the finish reads only to 1000u (far plane); keep/drop/raise the floor checker;
+   `Monolith.seamEmissive` 2 vs the ≤ 0.25 cap in ART_MATERIALS §3.
+4. #214 questions (open, not blocking #222): do sealed blocks stop a bolt; one smashKeep for every class.
+5. Seeker fins: read as 4 (top, bottom, left, right). Built that way; the owner saw the stills and has not objected.
+6. Older: perf fix (DPR cap/adaptive, rear-view resolution, Environment frames); #213 no-retune; death
+   explosion colours `explosions.tsx:21-22`; `PICKUP_RESPAWN_S = 3`; mount `<HitSpark/>` on /test-level;
+   push `dev` (nothing pushed today); stray processes (pids 85607, 87001, 34439); workerfour's plugin.
 
-1. Perf fix (workerone): cap DPR at 1.5 or make it adaptive · a lower-resolution rearview (~4 ms) ·
-   Environment `frames` 1.
-2. #213: no retune. Record that in ADR-014 and file the graze-randomness and pocket-trap (seed 1,
-   z≈6019) issues?
-3. #214 step 5: the owner plays /test-level to judge sealed vs fractured blocks, then smashes one and
-   shoots one in a hosted room.
-4. workerfour: `/plugin install impeccable@impeccable`, or "go without it".
-5. Death explosion colour `game/scene/explosions.tsx:21-22`: still cyan and magenta.
-6. `PICKUP_RESPAWN_S = 3` respawns behind the leader.
-7. Mount `<HitSpark/>` on /test-level. #216 (respawn inside a block) is unassigned; offered to workertwo.
-8. Push `dev`? Nothing has been pushed today.
-9. Stray processes: client dev servers (pids 85607, 87001) and the `leva-panel` stack (pid 34439).
-10. Watchdog hook text should point non-lane sessions at CLAUDE.local.md §5.
+## File queues
 
-## Reservations
-
-ADR-015 workertwo (#214) · ADR-016 workerone (#213 retune, if it goes ahead) · ADR-017 seeker ·
-ADR-018 pillars (taken). The next free number is ADR-019.
+- docs/DECISIONS.md and docs/ART_MATERIALS.md: workerthree holds both now. Nobody is queued next.
+- Next free ADR number: ADR-019.
 
 ## Notes
 
-- Untracked `docs/art-direction/ingredients/ingredients.png` and `docs/art-direction/monoliths/` are
-  the owner's (ChatGPT folder). No agent commits them.
-- The worklog header reads `Last summarised: e656f18`. The next run starts there.
+- The untracked `docs/art-direction/ingredients/blocks/blocks.png`, `ingredients.png` and `monoliths/` belong to the owner
+  (ChatGPT folder). No agent commits them.
+- The worklog header reads `Last summarised: e656f18`.
 
 ## Lessons → memory
 
