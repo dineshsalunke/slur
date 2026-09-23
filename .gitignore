@@ -41,6 +41,9 @@ coverage/
 # Throwaway prototypes / inspectors (never committed; excluded from lint via biome useIgnoreFile)
 scratchpad/
 
+# Session handovers (yeet:pause) — local working notes, never committed.
+.tmp/
+
 # Per-machine Claude Code state — never shared.
 .claude/settings.local.json
 
