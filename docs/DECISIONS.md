@@ -589,3 +589,76 @@ the original coupling survived a green gate for several sessions.
 
 The rail's final height, its material tier beyond M7, and whether it breaks over full-width gaps or runs
 continuous. Height is exposed on the `/art-lab` panel for the owner to judge.
+
+## ADR-013 — The track is generated from a contract, never from the ship roster
+
+**Date:** 2026-09-23 · **Status:** ACCEPTED (owner) · **Builds:** the fixed-ceiling design GDD §0 already
+described for width, extended to speed and agility · **Closes:** `.claude/reports/GDD-DEVIATIONS.md` §1.2
+and §1.3
+
+### Decision
+
+The procedural generator reads a single **`TRACK_CONTRACT`** — `pacingCruise 55`, and a reference weaver of
+`weaveCruise 62` / `weaveStrafeClamp 65` / `weaveStrafeAccel 118` — and **never reads `SHIP_CLASSES`,
+`ALL_CLASS_TUNINGS` or `DEFAULT_TUNING`**. `packages/shared/src/sim/weave.ts` no longer imports the roster at
+all; `corridor.ts` and `intensity.ts` take their pacing speed from the contract instead of the Fighter's live
+tuning.
+
+The roster is **asserted to conform**, never consulted. `rosterContractFailures()` runs at module load of
+`ship-classes.ts` and throws on a class that is too wide (`2·halfW > MAX_SHIP_WIDTH`) or too sluggish to
+follow the racing line at half the pacing speed.
+
+### Why
+
+GDD §0 already argued this for width — *"a track seed must generate the **same geometry forever**. If
+clearance tracked the live roster, adding/resizing a ship would silently mutate every existing seed's
+track"* — but the code did the opposite on two other axes. `weave.ts:15-16` derived both caps as a `min` over
+the live roster, and `corridor.ts:32`/`intensity.ts:67` read `DEFAULT_TUNING.maxCruise`, which **is** the
+Fighter's tuning object.
+
+The owner's reason is stronger than the determinism one and is the reason this ADR is worded as a general
+rule: *"if the tracks are shaped by ship stats then what is the use of asking the user to think about his ship
+choice"*. A `min` over the roster draws every course around the **least** capable ship, so no course can ever
+reward picking a more capable one. Class choice was being cancelled out by the generator.
+
+The trigger was a one-character request — double the Freighter's `maxCruise` from 62 to 124. Measured before
+the change: that edit **halves** `SLOPE_CAP` (0.8387 → 0.4194) and **quarters** `CURV_CAP` (0.0982 → 0.0246),
+because the Freighter was the binding class in both. Every existing seed, `/test-level`'s fixed 20260921
+included, would have generated a different track as a side effect of a balance tweak.
+
+### Conformance is a floor, not a match
+
+The rejected shape was "every class must meet the contract's agility ratios", which would have **forbidden**
+the Freighter change outright: at 124u/s its slope ratio falls to 0.52, well under the contract's 1.05.
+
+That is the wrong answer to the right question. A ship that cannot hold top speed through a weave is not
+broken — it **brakes**, which is precisely what GDD §5.5's *"long cruiser — worst weaver (sluggish handling),
+gap-tank"* should feel like. So conformance is expressed through a new derived stat:
+
+    weaveThreadSpeed( t ) = min( strafeClamp / WEAVE_SLOPE_CAP, sqrt( strafeAccel · CELL / WEAVE_CURVATURE_CAP ) )
+
+— the fastest speed at which a class can follow the racing line, **independent of its own `maxCruise`**. The
+guard requires only `weaveThreadSpeed ≥ pacingCruise × 0.5` (27.5u/s). Today: Interceptor 92.5, Comet 85.6,
+Fighter 82.0, Phantom 78.2, Freighter 69.3 — every class currently threads above its own top speed, so
+nobody has to lift yet. A 124u/s Freighter would thread at the same 69.3 and simply scrub ~55u/s for the
+weave. This number is a good candidate for the ship-select screen.
+
+### The numbers were frozen, not chosen
+
+`TRACK_CONTRACT`'s four values are exactly the values the roster-derived formulas produced on 2026-09-23 —
+verified bit-identical (`Object.is`) for both caps, so **not one existing seed moved**. A migration whose first
+act was to reshape every track would have contradicted its own purpose. Picking rounder or more generous
+numbers remains available as a deliberate, separate reshape.
+
+`sim/track-contract.test.ts` fences that: it pins both caps, `FZ_ROWS`, `WEAVE_PERIOD_ROWS` and an FNV-1a
+digest of the racing line over 4000 rows for three seeds. Changing a contract number fails it with "every seed
+now weaves differently".
+
+### Not decided here
+
+GDD §0's clearance identifiers (`MIN_CLEAR 7u`, `CLEARANCE_MARGIN`) still do not exist in code; what ships is
+`MIN_LANE = 2·CELL = 8u` as an axiom — `.claude/reports/GDD-DEVIATIONS.md` §1.1, untouched here because
+correcting 8u to 7u is itself a reshape of every seed and wants its own decision.
+
+Whether the Freighter's `maxCruise` actually doubles is a balance question, now fully decoupled from track
+geometry: it is a one-line edit to `ship-classes.ts` that no longer moves a single block.

@@ -43,6 +43,36 @@ the roster fits the contract** instead of copying a ship's width by hand. `MAX_S
 expressed in `u`; the only tunable is `CLEARANCE_MARGIN` (raise for easier, lower for tighter — never shrink the
 ceiling to make tracks harder). Any `MIN_LANE`-style constant is *derived*, **not an axiom**.
 
+**The same contract rule governs SPEED and AGILITY, not just width (ADR-013).** The generator reads
+`TRACK_CONTRACT` (`packages/shared/src/constants.ts`) and **never the ship roster**:
+
+| Contract field | Value | What it sizes |
+|---|---|---|
+| `pacingCruise` | `55u/s` | hazard spacing and pinch lead-in — how much warning a racer gets |
+| `weaveCruise` · `weaveStrafeClamp` · `weaveStrafeAccel` | `62` · `65` · `118` | the racing line's slope and curvature caps |
+
+`WEAVE_SLOPE_CAP` and `WEAVE_CURVATURE_CAP` derive from those three numbers alone. A ship's own stats
+**cannot** move them, so **balancing a ship never reshapes a track**. That is the point: if the track bent to
+fit the least agile ship, picking a ship would carry no consequence, because the course would already have been
+drawn around the one you did not pick.
+
+> **Conformance, not conformity.** A class is **not** required to hold full throttle through the weave.
+> `weaveThreadSpeed( tuning )` gives the fastest speed at which a class can follow the racing line — a real,
+> derived class stat. A ship whose top speed exceeds it simply **lifts off the throttle for the weave**, which
+> is exactly how a fast-but-sluggish class should play. The only hard floor is
+> `weaveThreadSpeed ≥ pacingCruise × WEAVE_MIN_THREAD_FRACTION` (0.5 → **27.5u/s**): no ship may be forced
+> below half the pacing speed.
+
+> **Module-load guard:** `rosterContractFailures( SHIP_CLASSES )` runs at import of `ship-classes.ts` and
+> **throws**, listing every class that is too wide or too sluggish. It is unconditional, not dev-only — the
+> condition is a build-time constant, so a bad roster fails on the first run anywhere, never in front of a
+> player.
+
+Changing a `TRACK_CONTRACT` number is a **deliberate, one-time reshape of every existing seed**. It is fenced
+by a frozen-geometry test (`sim/track-contract.test.ts`) that pins the caps, the derived periods and a digest
+of the racing line for three seeds. If you meant it, re-pin it; if the test fires and you did not mean it, you
+just moved every track in the game.
+
 **Reference dimensions — informational, NOT constraints:**
 
 | Thing | Value | Note |

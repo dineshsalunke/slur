@@ -10,7 +10,7 @@ contradiction, it says so.
 
 | Severity | Count |
 |---|---|
-| The doc describes a contract that does not exist | 3 |
+| The doc describes a contract that does not exist | 3 *(1.2 and 1.3 resolved 2026-09-23 — ADR-013)* |
 | The doc describes behaviour the code no longer has | 4 |
 | Stale pointer or number | 4 |
 
@@ -39,7 +39,10 @@ forbids exactly this shape: *"Any `MIN_LANE`-style constant is *derived*, **not 
 uses, and the tunable the doc offers (`CLEARANCE_MARGIN`, *"the **only** clearance tunable"*) does not
 exist, so the documented way to make tracks easier or harder is not available.
 
-### 1.2 The roster-conformance guard is a test, not a module-load assertion
+### 1.2 The roster-conformance guard is a test, not a module-load assertion — **RESOLVED 2026-09-23 (ADR-013)**
+
+> Resolved: `rosterContractFailures()` now runs at module load of `ship-classes.ts` and throws, covering both
+> the width contract and the new weave contract. The finding as written stands below.
 
 GDD §0:
 
@@ -55,7 +58,11 @@ There is no such assertion. `ALL_CLASS_TUNINGS` is exported at
 **Impact:** a new or resized ship does not fail at module load as designed. It fails a test run, if
 one is run.
 
-### 1.3 Clearance tracks the live roster — the exact failure §0 exists to prevent
+### 1.3 Clearance tracks the live roster — the exact failure §0 exists to prevent — **RESOLVED 2026-09-23 (ADR-013)**
+
+> Resolved: the generator now reads `TRACK_CONTRACT` and never the roster — `weave.ts` no longer imports
+> `ALL_CLASS_TUNINGS`, and `corridor.ts`/`intensity.ts` no longer read `DEFAULT_TUNING.maxCruise`. The caps
+> were frozen bit-identical, so no existing seed moved. The finding as written stands below.
 
 This is the sharpest finding, and it is an inversion rather than an omission. GDD §0 argues for a
 fixed ceiling *because* roster-derived clearance is unsafe:

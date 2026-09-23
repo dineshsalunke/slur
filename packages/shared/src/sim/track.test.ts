@@ -4,7 +4,6 @@ import {
     ALL_CLASS_TUNINGS,
     applyDescriptor,
     CELL,
-    CURV_CAP,
     DEFAULT_TUNING,
     HALF_WIDTH,
     isHole,
@@ -20,12 +19,13 @@ import {
     SEG_LEN,
     type Segment,
     SHIP_CLASSES,
-    SLOPE_CAP,
     START_SAFE,
     TRACK_SEGMENTS,
     type Track,
     TrackDescriptorState,
     toDescriptor,
+    WEAVE_CURVATURE_CAP,
+    WEAVE_SLOPE_CAP,
     weaveLineLanes,
     ZCELLS,
 } from '../index.js';
@@ -164,21 +164,21 @@ test( 'fairness invariants hold for every segment across many seeds', () => {
     }
 } );
 
-test( 'racing-line slope stays under the derived least-capable cap (weave is threadable)', () => {
+test( 'racing-line slope stays under the contract cap (weave is threadable)', () => {
     for ( const seed of SEEDS ) {
         let prev = weaveLineLanes( seed, 0 );
         for ( let row = 1; row < TRACK_SEGMENTS * ZCELLS; row++ ) {
             const cur = weaveLineLanes( seed, row );
             assert.ok(
-                Math.abs( cur - prev ) <= SLOPE_CAP + 1e-9,
-                `seed ${ seed } row ${ row } slope ${ Math.abs( cur - prev ) } > SLOPE_CAP ${ SLOPE_CAP }`,
+                Math.abs( cur - prev ) <= WEAVE_SLOPE_CAP + 1e-9,
+                `seed ${ seed } row ${ row } slope ${ Math.abs( cur - prev ) } > WEAVE_SLOPE_CAP ${ WEAVE_SLOPE_CAP }`,
             );
             prev = cur;
         }
     }
 } );
 
-test( 'racing-line curvature stays under the derived reversal cap', () => {
+test( 'racing-line curvature stays under the contract reversal cap', () => {
     for ( const seed of SEEDS ) {
         const prev = weaveLineLanes( seed, 0 );
         let prevSlope = weaveLineLanes( seed, 1 ) - prev;
@@ -186,8 +186,8 @@ test( 'racing-line curvature stays under the derived reversal cap', () => {
             const cur = weaveLineLanes( seed, row );
             const slope = cur - weaveLineLanes( seed, row - 1 );
             assert.ok(
-                Math.abs( slope - prevSlope ) <= CURV_CAP + 1e-9,
-                `seed ${ seed } row ${ row } curvature ${ Math.abs( slope - prevSlope ) } > CURV_CAP ${ CURV_CAP }`,
+                Math.abs( slope - prevSlope ) <= WEAVE_CURVATURE_CAP + 1e-9,
+                `seed ${ seed } row ${ row } curvature ${ Math.abs( slope - prevSlope ) } > WEAVE_CURVATURE_CAP ${ WEAVE_CURVATURE_CAP }`,
             );
             prevSlope = slope;
         }
@@ -303,7 +303,7 @@ function mergeIntervals( iv: Array< [ number, number ] > ): Array< [ number, num
     return out;
 }
 test( 'a widest-hull ship can always thread the corridor (REACH and FIT together)', () => {
-    const reachUnits = SLOPE_CAP * CELL;
+    const reachUnits = WEAVE_SLOPE_CAP * CELL;
     const full: Array< [ number, number ] > = [ [ CENTRE_MIN, CENTRE_MAX ] ];
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );

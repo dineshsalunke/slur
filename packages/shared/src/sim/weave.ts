@@ -1,21 +1,22 @@
 import {
-    CELL,
     deriveNodePeriod,
-    deriveWeaveCurvatureCap,
     deriveWeavePeriod,
-    deriveWeaveSlopeCap,
     WEAVE_CARRIER_BUDGET,
+    WEAVE_CURVATURE_CAP,
     WEAVE_NOISE_FRAC,
+    WEAVE_SLOPE_CAP,
 } from '../constants.js';
-import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
 import { smoothstep, tri, valueNoise1D } from './noise.js';
 import { LANES, ZCELLS } from './space.js';
 
 export const WEAVE_AMP_LANES = LANES;
-export const SLOPE_CAP = deriveWeaveSlopeCap( ALL_CLASS_TUNINGS );
-export const CURV_CAP = deriveWeaveCurvatureCap( ALL_CLASS_TUNINGS, CELL );
-export const FZ_ROWS = deriveNodePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES );
-export const WEAVE_PERIOD_ROWS = deriveWeavePeriod( SLOPE_CAP, CURV_CAP, WEAVE_AMP_LANES, WEAVE_CARRIER_BUDGET );
+export const FZ_ROWS = deriveNodePeriod( WEAVE_SLOPE_CAP, WEAVE_CURVATURE_CAP, WEAVE_AMP_LANES );
+export const WEAVE_PERIOD_ROWS = deriveWeavePeriod(
+    WEAVE_SLOPE_CAP,
+    WEAVE_CURVATURE_CAP,
+    WEAVE_AMP_LANES,
+    WEAVE_CARRIER_BUDGET,
+);
 
 const SALT_LINE_A = 0x1234567 | 0;
 const SALT_LINE_B = 0x2b3c4d5 | 0;

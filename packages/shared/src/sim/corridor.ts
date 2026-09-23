@@ -1,5 +1,4 @@
 import {
-    DEFAULT_TUNING,
     OPEN_BAND_PEAK,
     OPEN_BAND_START,
     PINCH_FUNNEL_SEGS,
@@ -9,6 +8,7 @@ import {
     PINCH_SEGS_MAX,
     PINCH_SEGS_MIN,
     pinchLeadSegments,
+    TRACK_CONTRACT,
 } from '../constants.js';
 import { gapOpens } from './gaps.js';
 import { intensityAt, spacingSegments } from './intensity.js';
@@ -29,7 +29,7 @@ export function openBandLanes( intensity: number ): number {
 }
 
 function pinchLead(): number {
-    return pinchLeadSegments( SEG_LEN, DEFAULT_TUNING.maxCruise );
+    return pinchLeadSegments( SEG_LEN, TRACK_CONTRACT.pacingCruise );
 }
 
 function weaveBand( seed: number, i: number, lanes: number ): Band {

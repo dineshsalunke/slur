@@ -1,7 +1,6 @@
 import {
     CORRIDOR_W_MIN,
     CORRIDOR_W_START,
-    DEFAULT_TUNING,
     demandSpacingSegments,
     FLICK_RATE_MAX,
     FLICK_RATE_START,
@@ -10,6 +9,7 @@ import {
     GAP_REST_FLOOR,
     REST_INTENSITY,
     SECTIONS,
+    TRACK_CONTRACT,
     WALL_DENSITY_MAX,
     WALL_DENSITY_START,
 } from '../constants.js';
@@ -64,5 +64,5 @@ export function flickRate( intensity: number ): number {
 }
 
 export function spacingSegments( intensity: number ): number {
-    return demandSpacingSegments( intensity, SEG_LEN, DEFAULT_TUNING.maxCruise );
+    return demandSpacingSegments( intensity, SEG_LEN, TRACK_CONTRACT.pacingCruise );
 }

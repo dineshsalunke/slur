@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, deriveJump, type FlightTuning } from './constants.js';
+import { DEFAULT_TUNING, deriveJump, type FlightTuning, rosterContractFailures } from './constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from './sim-config.js';
 
 export type ShipClassId = 'interceptor' | 'fighter' | 'comet' | 'phantom' | 'freighter';
@@ -130,3 +130,7 @@ export function stunDurationForShip( id: string, cfg: SimConfig = DEFAULT_SIM_CO
 }
 
 export const ALL_CLASS_TUNINGS: FlightTuning[] = Object.values( SHIP_CLASSES ).map( ( c ) => c.tuning );
+
+const contractFailures = rosterContractFailures( Object.values( SHIP_CLASSES ) );
+if ( contractFailures.length > 0 )
+    throw new Error( `ship roster breaks the GDD §0 track contract:\n  ${ contractFailures.join( '\n  ' ) }` );

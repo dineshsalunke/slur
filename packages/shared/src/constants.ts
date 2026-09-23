@@ -109,16 +109,50 @@ export const NODE_PERIOD_SAFETY = 1.1;
 export const WEAVE_SLOPE_OCTAVE_FACTOR = 2;
 export const WEAVE_CURV_OCTAVE_FACTOR = 12;
 
-export function deriveWeaveSlopeCap( tunings: FlightTuning[] ): number {
-    let m = Number.POSITIVE_INFINITY;
-    for ( const t of tunings ) m = Math.min( m, t.strafeClamp / t.maxCruise );
-    return m * WEAVE_SLOPE_SAFETY;
+export const MAX_SHIP_WIDTH = CELL;
+
+export interface TrackContract {
+    pacingCruise: number;
+    weaveCruise: number;
+    weaveStrafeClamp: number;
+    weaveStrafeAccel: number;
 }
-export function deriveWeaveCurvatureCap( tunings: FlightTuning[], cell: number ): number {
-    let m = Number.POSITIVE_INFINITY;
-    for ( const t of tunings ) m = Math.min( m, ( t.strafeAccel * cell ) / ( t.maxCruise * t.maxCruise ) );
-    return m * WEAVE_CURV_SAFETY;
+
+export const TRACK_CONTRACT: TrackContract = {
+    pacingCruise: 55,
+    weaveCruise: 62,
+    weaveStrafeClamp: 65,
+    weaveStrafeAccel: 118,
+};
+
+export const WEAVE_SLOPE_CAP = ( TRACK_CONTRACT.weaveStrafeClamp / TRACK_CONTRACT.weaveCruise ) * WEAVE_SLOPE_SAFETY;
+
+export const WEAVE_CURVATURE_CAP =
+    ( ( TRACK_CONTRACT.weaveStrafeAccel * CELL ) / ( TRACK_CONTRACT.weaveCruise * TRACK_CONTRACT.weaveCruise ) ) *
+    WEAVE_CURV_SAFETY;
+
+export function weaveThreadSpeed( t: FlightTuning ): number {
+    return Math.min( t.strafeClamp / WEAVE_SLOPE_CAP, Math.sqrt( ( t.strafeAccel * CELL ) / WEAVE_CURVATURE_CAP ) );
 }
+
+export const WEAVE_MIN_THREAD_FRACTION = 0.5;
+
+export function rosterContractFailures( classes: { id: string; tuning: FlightTuning }[] ): string[] {
+    const threadFloor = TRACK_CONTRACT.pacingCruise * WEAVE_MIN_THREAD_FRACTION;
+    const out: string[] = [];
+    for ( const c of classes ) {
+        const width = 2 * c.tuning.halfW;
+        if ( width > MAX_SHIP_WIDTH )
+            out.push( `${ c.id }: full width ${ width }u exceeds MAX_SHIP_WIDTH ${ MAX_SHIP_WIDTH }u` );
+        const thread = weaveThreadSpeed( c.tuning );
+        if ( thread < threadFloor )
+            out.push(
+                `${ c.id }: follows the racing line at only ${ thread.toFixed( 1 ) }u/s, under the ${ threadFloor }u/s floor`,
+            );
+    }
+    return out;
+}
+
 export function deriveNodePeriod( slopeCap: number, curvCap: number, amp: number ): number {
     const slopeReq = ( amp * WEAVE_SLOPE_OCTAVE_FACTOR ) / slopeCap;
     const curvReq = Math.sqrt( ( amp * WEAVE_CURV_OCTAVE_FACTOR ) / curvCap );
