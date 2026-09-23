@@ -171,6 +171,10 @@ export function TuningPanel() {
         bobRate: numberControl( 'Hover.bobRate' ),
     } );
 
+    useControls( 'Seeker', {
+        flyY: numberControl( 'Seeker.flyY' ),
+    } );
+
     useControls( 'Chase camera', {
         back: numberControl( 'Chase.back' ),
         backStretch: numberControl( 'Chase.backStretch' ),
