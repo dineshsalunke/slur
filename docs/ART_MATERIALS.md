@@ -799,6 +799,31 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     into one key would mean two different operations under one name. Neither is a colour *decision* —
     both default to what already shipped.
 
+13. **The finish gate is the finish-line structure, not a monolith — 2026-09-23 (#220).** Owner's call:
+    *"the finish line gate should be distinct, right now it is not clear if the last one is just a gate
+    or a finish line."* §2 lists two rows the finish gate could belong to: *"Finish-line structure |
+    M1 / M2 + M7 | gameplay"* and *"Monolith — obelisk, gate, arch | … | environmental — sparse seams"*.
+    The gate at `finishZ` now takes the first row. It keeps the monolith metal body, and it gains
+    gameplay-tier M7:
+
+    - A marigold band, 4u wide, lines both inner leg faces and the underside of the lintel. A
+      `#FFE0A0` hot-core strip, 1.25u wide, runs down its centre. Both are at 2× the reference
+      intensity.
+    - A three-row marigold checker of 4u tiles crosses the deck at the finish line.
+    - The frame is larger than any arch: legs 40u, depth 40u, lintel 48u, height 240u.
+
+    **Departure from package wording.** The board names *"GATE"* as a monolith silhouette
+    (`monoliths/monolith_archs.png`, panel 1). Here that silhouette carries gameplay-tier glow.
+    §3 keeps the hot core off every monolith, and every arch still obeys that rule. The finish gate is
+    the one exception, because it is a gameplay signal.
+
+    **The glow ignores fog.** The scene fog runs linearly from 40u to 420u and fogs emissive colour
+    too, so the gate's glow would not show from past 420u. Only the finish glow materials set
+    `fog: false`. The body and every other surface still fog. The camera's far plane (1000u) now
+    limits how far away the finish reads. Measured in headless stills: at 450u the outline reads as a
+    lit doorway. The floor checker reads only at close range, because at a 4u eye height it is a few
+    pixels tall.
+
 ## 8. Review log
 
 **Revision 6 → 7, one metal, and ship contact shadows (2026-09-23).** No family definition changes —

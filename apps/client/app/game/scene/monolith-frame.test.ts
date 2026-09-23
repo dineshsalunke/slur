@@ -2,7 +2,15 @@ import { HALF_WIDTH } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { monolithLayout } from './arch-field';
 import { PILLAR, PILLAR_FIELD } from './monolith-config';
-import { ARCH_FRAME, type FrameConfig, frameParts, GATE_FRAME, legShape, lintelWidth } from './monolith-frame';
+import {
+    ARCH_FRAME,
+    type FrameConfig,
+    frameParts,
+    GATE_FRAME,
+    legShape,
+    lintelWidth,
+    outlineStrips,
+} from './monolith-frame';
 import { bodyTransform, RAIL_OUTER } from './monolith-transforms';
 
 const MIN_INNER_FACE = 56;
@@ -75,6 +83,42 @@ describe( 'ARCH_FRAME', () => {
                     Math.abs( pillar.position[ 2 ] - leg.position[ 2 ] ) < ( pillar.scale[ 2 ] + leg.scale[ 2 ] ) / 2;
                 expect( overlapX && overlapZ ).toBe( false );
             }
+        }
+    } );
+} );
+
+describe( 'GATE_FRAME', () => {
+    it( 'stands taller and heavier than every arch', () => {
+        const layout = monolithLayout( 8400, PILLAR_FIELD );
+        for ( const arch of layout.arches ) expect( GATE_FRAME.height ).toBeGreaterThan( arch.height );
+        expect( GATE_FRAME.legWidth ).toBeGreaterThan( ARCH_FRAME.legWidth );
+        expect( GATE_FRAME.depth ).toBeGreaterThan( ARCH_FRAME.depth );
+        expect( GATE_FRAME.lintel ).toBeGreaterThan( ARCH_FRAME.lintel );
+    } );
+} );
+
+describe( 'outlineStrips', () => {
+    const placement = { z: 900, height: GATE_FRAME.height };
+    const [ left, right, lintel ] = outlineStrips( GATE_FRAME, placement, 4, 0.5 );
+
+    it( 'lines both inner leg faces from the deck to the lintel', () => {
+        for ( const leg of [ left, right ] ) {
+            expect( Math.abs( leg.position[ 0 ] ) + leg.scale[ 0 ] / 2 ).toBeCloseTo( GATE_FRAME.opening / 2 );
+            expect( leg.position[ 1 ] - leg.scale[ 1 ] / 2 ).toBeCloseTo( 0 );
+            expect( leg.position[ 1 ] + leg.scale[ 1 ] / 2 ).toBeCloseTo( GATE_FRAME.height - GATE_FRAME.lintel );
+        }
+        expect( left.position[ 0 ] ).toBeCloseTo( -right.position[ 0 ] );
+    } );
+
+    it( 'lines the lintel underside across the whole opening', () => {
+        expect( lintel.scale[ 0 ] ).toBe( GATE_FRAME.opening );
+        expect( lintel.position[ 1 ] + lintel.scale[ 1 ] / 2 ).toBeCloseTo( GATE_FRAME.height - GATE_FRAME.lintel );
+    } );
+
+    it( 'centres every strip on the gate, the given width along the track', () => {
+        for ( const s of [ left, right, lintel ] ) {
+            expect( s.position[ 2 ] ).toBe( 900 );
+            expect( s.scale[ 2 ] ).toBe( 4 );
         }
     } );
 } );

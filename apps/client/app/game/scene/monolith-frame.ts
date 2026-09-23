@@ -24,13 +24,13 @@ export interface FrameParts {
 }
 
 export const GATE_FRAME: FrameConfig = {
-    height: 200,
+    height: 240,
     opening: 112,
-    legWidth: 24,
-    lintel: 32,
-    depth: 24,
+    legWidth: 40,
+    lintel: 48,
+    depth: 40,
     below: 60,
-    overhang: 6,
+    overhang: 8,
     chamfer: 0.45,
 };
 
@@ -82,6 +82,27 @@ export function lintelTransform( frame: FrameConfig, placement: FramePlacement )
         rotationY: 0,
         rotationZ: 0,
     };
+}
+
+export function outlineStrips(
+    frame: FrameConfig,
+    placement: FramePlacement,
+    width: number,
+    proud: number,
+): MonolithTransform[] {
+    const inner = frame.opening / 2;
+    const top = placement.height - frame.lintel;
+    const strip = ( x: number, y: number, sx: number, sy: number ): MonolithTransform => ( {
+        position: [ x, y, placement.z ],
+        scale: [ sx, sy, width ],
+        rotationY: 0,
+        rotationZ: 0,
+    } );
+    return [
+        strip( -( inner - proud / 2 ), top / 2, proud, top ),
+        strip( inner - proud / 2, top / 2, proud, top ),
+        strip( 0, top - proud / 2, frame.opening, proud ),
+    ];
 }
 
 export function frameParts( frame: FrameConfig, placements: readonly FramePlacement[] ): FrameParts {
