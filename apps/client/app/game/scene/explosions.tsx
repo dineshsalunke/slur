@@ -4,6 +4,7 @@ import { useWorld } from 'koota/react';
 import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Interp, LocalPlayer, Render, Sim } from '../ecs/traits';
+import { ACCENT_ANCHOR } from './accent';
 
 const MAX = 240;
 const PER_BURST = 40;
@@ -18,8 +19,9 @@ const BRIGHT = 2.6;
 
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
-const CYAN = new THREE.Color( '#00e5ff' );
-const MAGENTA = new THREE.Color( '#ff2bd6' );
+const LOCAL_CORE = new THREE.Color( '#FFFBE7' );
+const REMOTE_CORE = new THREE.Color( '#FFB52E' );
+const MARIGOLD = new THREE.Color( ACCENT_ANCHOR );
 
 interface Shard {
     active: boolean;
@@ -99,7 +101,13 @@ function detectDeaths( world: World, pool: Shard[], wasDead: Map< number, boolea
         const dead = sim ? sim.dead : buf !== undefined && buf.length > 0 && buf[ buf.length - 1 ].dead;
         const id = e.id();
         if ( dead && ! wasDead.get( id ) ) {
-            spawnBurst( pool, grp.position.x, grp.position.y, grp.position.z, e.has( LocalPlayer ) ? CYAN : MAGENTA );
+            spawnBurst(
+                pool,
+                grp.position.x,
+                grp.position.y,
+                grp.position.z,
+                e.has( LocalPlayer ) ? LOCAL_CORE : REMOTE_CORE,
+            );
         }
         wasDead.set( id, dead );
     }
@@ -130,7 +138,13 @@ function advanceShards( mesh: THREE.InstancedMesh, pool: Shard[], dt: number ): 
         _o.updateMatrix();
         mesh.setMatrixAt( i, _o.matrix );
         const b = BRIGHT * f * f;
-        mesh.setColorAt( i, _c.setRGB( p.r * b, p.g * b, p.b * b ) );
+        mesh.setColorAt(
+            i,
+            _c
+                .setRGB( p.r, p.g, p.b )
+                .lerp( MARIGOLD, 1 - f )
+                .multiplyScalar( b ),
+        );
     }
     mesh.instanceMatrix.needsUpdate = true;
     if ( mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;
