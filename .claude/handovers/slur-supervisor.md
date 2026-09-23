@@ -35,6 +35,10 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
    joins with reflection, which drops deprecated fields and shifts the indices. Wrong advice lives at
    `.claude/rules/colyseus-state.md:15` ("Dead fields get `@deprecated()`") and `conventions/colyseus.md:157`.
    workerthree drafts the wording in its handover; it edits only after the owner approves.
+1c. #223 live checks PASSED (workerthree `78ff858`, stills sent to the owner). New owner Qs: a cue when a
+   fire is refused (seeker cap/stun)? The dev tuning panel covers rack cells 2–3 in hosted rooms (dev only).
+   The key clash also exists in the hosted LOBBY: net-canvas.tsx sends SET_CLASS on 1–5, and the debug HUD
+   says "keys 1-5 to swap". One answer covers both. workerthree is IDLE waiting on it.
 1b. #223 key clash on /test-level: keys 1–5 switch the ship class there (`local-ship.tsx:33`); the slots use
    1/2/3. Hosted rooms do not clash (SET_CLASS is lobby-only, `run-room.ts:92`). workerthree builds (a)
    Shift+1..5 = class, 1/2/3 = slot, until the owner answers. The other options: (b) keep 1–5 for class,
