@@ -1,5 +1,6 @@
 import {
     copySimShip,
+    DEFAULT_SIM_CONFIG,
     FIXED_DT,
     type PlayerInput,
     type SimShip,
@@ -7,6 +8,7 @@ import {
     type Track,
     tuningForShip,
 } from '@slur/shared';
+import { blockWorld, restoreConfirmed } from '../game/block-state';
 
 interface Pending {
     seq: number;
@@ -43,7 +45,9 @@ export function createPredictor(): Predictor {
             const tuning = tuningForShip( snapshot.shipId );
             const ack = snapshot.lastProcessedInput;
             while ( pending.length > 0 && pending[ 0 ].seq <= ack ) pending.shift();
-            for ( const p of pending ) simulate( sim, p.input, FIXED_DT, tuning, track );
+            restoreConfirmed();
+            for ( const p of pending )
+                simulate( sim, p.input, FIXED_DT, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
         },
     };
 }

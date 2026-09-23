@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Hover, LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
 import { attachKeyboard } from '../../game/input/keyboard';
 import { localRole } from '../../game/spectator';
+import { queueFire } from './local-combat';
 
 export function LocalShip() {
     const world = useWorld();
@@ -28,6 +29,7 @@ export function LocalShip() {
     // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (1-5) → the ECS Net trait. No server
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
+            if ( e.code === 'KeyE' && ! e.repeat ) queueFire();
             const n = Number( e.key );
             if ( ! ( n >= 1 && n <= SHIP_ORDER.length ) ) return;
             const ship = world.queryFirst( LocalPlayer, Net );

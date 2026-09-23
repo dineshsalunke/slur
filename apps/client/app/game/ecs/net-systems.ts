@@ -1,6 +1,7 @@
-import { simulate, type Track, tuningForShip } from '@slur/shared';
+import { DEFAULT_SIM_CONFIG, simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
+import { blockWorld } from '../block-state';
 import { currentInput } from '../input/keyboard';
 import { localRole } from '../spectator';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
@@ -40,7 +41,7 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        simulate( s, input, dt, tuningForShip( net.shipId ), track );
+        simulate( s, input, dt, tuningForShip( net.shipId ), track, DEFAULT_SIM_CONFIG, blockWorld );
     } );
 }
 

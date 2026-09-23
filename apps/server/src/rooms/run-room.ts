@@ -1,13 +1,14 @@
 import { type Client, Room } from '@colyseus/core';
 import {
+    aimBolt,
     applyDescriptor,
     COLOR_COUNT,
     COUNTDOWN_SECONDS,
+    canFire,
     createFixedStep,
     createSimWorld,
     DEFAULT_SIM_CONFIG,
     FIXED_DT,
-    grabPickup,
     HeldPower,
     hitShipsOf,
     INPUT_MESSAGE,
@@ -27,7 +28,6 @@ import {
     RunState,
     raceShouldEnd,
     resetPlayerForRace,
-    resolveBolt,
     resolveTrack,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
@@ -37,7 +37,8 @@ import {
     START_STAGGER,
     shouldSpectateOnJoin,
     simulate,
-    stepProjectiles,
+    stepBolts,
+    stepPickups,
     stunDurationForShip,
     type Track,
     tuningForShip,
@@ -47,7 +48,6 @@ import {
 const RECONNECT_SECONDS = 20;
 const MAX_QUEUED_INPUTS = 120;
 const MAX_NAME = 16;
-const BOLT_SPAWN_AHEAD = 3;
 
 export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > {
     maxClients = 12;
@@ -103,13 +103,9 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.onMessage( USE_POWERUP_MESSAGE, ( client ) => {
             if ( this.state.phase !== PHASE.racing ) return;
             const p = this.state.players.get( client.sessionId );
-            if ( ! p || p.spectating || p.dead || p.stunTimer > 0 || p.heldPower === HeldPower.none ) return;
+            if ( ! p || ! canFire( p ) ) return;
             const bolt = new Projectile();
-            bolt.x = p.x;
-            bolt.y = p.y;
-            bolt.z = p.z + BOLT_SPAWN_AHEAD;
-            bolt.ownerId = client.sessionId;
-            bolt.ttl = this.config.boltTtl;
+            aimBolt( bolt, p, client.sessionId, this.config );
             this.state.projectiles.set( String( this.nextProjectileId++ ), bolt );
             p.heldPower = HeldPower.none;
         } );
@@ -176,26 +172,29 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     }
 
     private stepWorld( dt: number ): void {
-        stepProjectiles( this.state.projectiles.values(), dt, this.config );
-
         const ships = hitShipsOf( this.state.players.entries() );
-        const spent: string[] = [];
-        const sweep = this.config.boltSpeed * dt;
-        this.state.projectiles.forEach( ( bolt, id ) => {
-            const out = resolveBolt( bolt, ships, this.track, this.blocks.broken, sweep, this.config );
-            for ( const victimId of out.victims ) {
-                const v = this.state.players.get( victimId );
+        stepBolts(
+            this.state.projectiles,
+            ships,
+            this.track,
+            this.blocks.broken,
+            dt,
+            ( strike ) => {
+                const v = this.state.players.get( strike.victimId );
                 if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config );
-                this.broadcast( 'hit', { x: bolt.x, y: bolt.y, z: bolt.z, victimId } );
-            }
-            if ( out.block?.kind === 'fractured' ) this.blocks.broken.add( out.block.id );
-            if ( out.block ) this.broadcast( 'hit', { x: bolt.x, y: bolt.y, z: out.block.z0, victimId: '' } );
-            if ( out.spent ) spent.push( id );
-        } );
-        for ( const id of spent ) this.state.projectiles.delete( id );
-
+                this.broadcast( 'hit', strike );
+            },
+            this.config,
+        );
         this.mirrorBreaks();
-        this.stepPickups( dt );
+        stepPickups(
+            this.state.players.values(),
+            this.pickups,
+            this.state.pickupTaken,
+            this.pickupRespawn,
+            dt,
+            this.config,
+        );
     }
 
     private mirrorBreaks(): void {
@@ -203,30 +202,6 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         for ( const id of this.blocks.broken ) {
             const key = String( id );
             if ( ! this.state.blockBroken.has( key ) ) this.state.blockBroken.set( key, true );
-        }
-    }
-
-    private stepPickups( dt: number ): void {
-        this.state.players.forEach( ( p ) => {
-            if ( p.spectating || p.dead || p.heldPower !== HeldPower.none ) return;
-            for ( const pk of this.pickups ) {
-                if ( this.state.pickupTaken.get( pk.id ) ) continue;
-                if ( grabPickup( p, pk ) ) {
-                    p.heldPower = HeldPower.bolt;
-                    this.state.pickupTaken.set( pk.id, true );
-                    this.pickupRespawn.set( pk.id, this.config.pickupRespawnS );
-                    break;
-                }
-            }
-        } );
-        for ( const [ id, timer ] of this.pickupRespawn ) {
-            const next = timer - dt;
-            if ( next <= 0 ) {
-                this.state.pickupTaken.set( id, false );
-                this.pickupRespawn.delete( id );
-            } else {
-                this.pickupRespawn.set( id, next );
-            }
         }
     }
 

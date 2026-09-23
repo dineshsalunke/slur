@@ -2,6 +2,7 @@ import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import { type Anchor, pickupsOf, type RunState, type Track } from '@slur/shared';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { PICKUP_EMISSIVE, PICKUP_INTENSITY, PICKUP_RADIUS } from './combat-look';
 
 function placeSlot(
     mesh: THREE.InstancedMesh,
@@ -60,8 +61,8 @@ export function PickupField( { room, track }: { room: Room< RunState >; track: T
 
     return (
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, layout.length ] }>
-            <icosahedronGeometry args={ [ 0.9, 0 ] } />
-            <meshStandardMaterial emissive="#ffd24a" emissiveIntensity={ 3 } />
+            <icosahedronGeometry args={ [ PICKUP_RADIUS, 0 ] } />
+            <meshStandardMaterial emissive={ PICKUP_EMISSIVE } emissiveIntensity={ PICKUP_INTENSITY } />
         </instancedMesh>
     );
 }

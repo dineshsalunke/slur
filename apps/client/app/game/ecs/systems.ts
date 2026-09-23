@@ -1,5 +1,6 @@
-import { simulate, type Track, tuningForShip } from '@slur/shared';
+import { DEFAULT_SIM_CONFIG, simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
+import { blockWorld } from '../block-state';
 import { currentInput } from '../input/keyboard';
 import { LocalPlayer, Net, Prev, Render, Sim } from './traits';
 
@@ -9,7 +10,7 @@ export function localFlightSystem( world: World, dt: number, track: Track ): voi
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        simulate( s, input, dt, tuningForShip( net.shipId ), track );
+        simulate( s, input, dt, tuningForShip( net.shipId ), track, DEFAULT_SIM_CONFIG, blockWorld );
     } );
 }
 

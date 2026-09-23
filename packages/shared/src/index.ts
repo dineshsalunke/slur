@@ -1,3 +1,4 @@
+export * from './combat/combat-step.js';
 export * from './combat/constants.js';
 export * from './combat/pickups.js';
 export * from './combat/projectiles.js';

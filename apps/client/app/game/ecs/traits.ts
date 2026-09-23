@@ -12,6 +12,8 @@ export const Hover = trait( () => ( { lift: 0, phase: Math.random() * Math.PI * 
 
 export const LocalPlayer = trait();
 
+export const Armed = trait();
+
 export const Net = trait( { sessionId: '', shipId: DEFAULT_SHIP as string, colorId: 0 } );
 
 export const Remote = trait();

@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RENDER_DELAY_MS } from '../ecs/net-systems';
 import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
-
-const MAX_BOLTS = 64;
+import { BOLT_EMISSIVE, BOLT_INTENSITY, boltGeometry, MAX_BOLTS } from './combat-look';
 
 function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
     if ( buffer.length === 0 ) return null;
@@ -31,11 +30,7 @@ export function ProjectileField() {
     const ref = useRef< THREE.InstancedMesh | null >( null );
     const m = useMemo( () => new THREE.Object3D(), [] );
 
-    const boltGeo = useMemo( () => {
-        const g = new THREE.CapsuleGeometry( 0.055, 30, 4, 8 );
-        g.rotateX( Math.PI / 2 );
-        return g;
-    }, [] );
+    const boltGeo = useMemo( boltGeometry, [] );
 
     // Effect justified: brackets a GPU resource's lifetime. boltGeo is `new`'d in useMemo and attached via
     useEffect( () => () => boltGeo.dispose(), [ boltGeo ] );
@@ -66,7 +61,7 @@ export function ProjectileField() {
     return (
         <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX_BOLTS ] }>
             <primitive object={ boltGeo } attach="geometry" />
-            <meshStandardMaterial emissive="#8affff" emissiveIntensity={ 4 } />
+            <meshStandardMaterial emissive={ BOLT_EMISSIVE } emissiveIntensity={ BOLT_INTENSITY } />
         </instancedMesh>
     );
 }

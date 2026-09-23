@@ -8,6 +8,7 @@ import { updateChaseCamera } from '../../game/camera/chase';
 import { hoverSystem } from '../../game/ecs/hover';
 import { localDeathVfxSystem } from '../../game/ecs/net-systems';
 import { localFlightSystem, syncRenderSystem } from '../../game/ecs/systems';
+import { localCombatSystem } from './local-combat';
 
 export function LocalLoop( { track }: { track: Track } ) {
     const world = useWorld();
@@ -18,7 +19,10 @@ export function LocalLoop( { track }: { track: Track } ) {
 
     useFrame( ( state, delta ) => {
         if ( ! simFreeze.on ) {
-            const alpha = advance( delta, ( dt ) => localFlightSystem( world, dt, track ) );
+            const alpha = advance( delta, ( dt ) => {
+                localFlightSystem( world, dt, track );
+                localCombatSystem( world, dt, track );
+            } );
             syncRenderSystem( world, alpha );
             hoverSystem( world, delta );
             localDeathVfxSystem( world );

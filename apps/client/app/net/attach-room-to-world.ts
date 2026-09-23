@@ -2,6 +2,7 @@ import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import { INPUT_MESSAGE, type PlayerState, type ProjectileState, type RunState, type Track } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
+import { clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import {
     Hover,
     Interp,
@@ -131,6 +132,9 @@ export function attachRoomToWorld(
         }
     } );
 
+    const offBreak = $( room.state ).blockBroken.onAdd( ( _v, key ) => confirmBreak( Number( key ) ) );
+    const offUnbreak = $( room.state ).blockBroken.onRemove( ( _v, key ) => unconfirmBreak( Number( key ) ) );
+
     const offHit = room.onMessage( 'hit', ( m: { x: number; y: number; z: number; victimId: string } ) => {
         pushHit( { x: m.x, y: m.y, z: m.z } );
     } );
@@ -149,6 +153,9 @@ export function attachRoomToWorld(
         offProjAdd();
         offProjRemove();
         offHit();
+        offBreak();
+        offUnbreak();
+        clearBlockState();
         for ( const off of perPlayer.values() ) off();
         for ( const off of perProjectile.values() ) off();
         for ( const e of byId.values() ) e.destroy();

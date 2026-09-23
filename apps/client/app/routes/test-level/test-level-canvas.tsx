@@ -8,7 +8,9 @@ import { TuningPanelMount } from '../../dev/tuning-panel-mount';
 import { world } from '../../game/ecs/world';
 import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
+import { LocalBoltField } from './local-bolt-field';
 import { LocalLoop } from './local-loop';
+import { LocalPickupField } from './local-pickup-field';
 import { LocalShip } from './local-ship';
 import { TestLevelHud } from './test-level-hud';
 
@@ -42,6 +44,8 @@ export function TestLevelCanvas() {
                     <WorldScene track={ track }>
                         <LocalShip />
                         <LocalLoop track={ track } />
+                        <LocalPickupField track={ track } />
+                        <LocalBoltField />
                         <RearView />
                         <FrameTap />
                     </WorldScene>

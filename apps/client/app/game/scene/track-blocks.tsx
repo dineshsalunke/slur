@@ -4,6 +4,7 @@ import { useWorld } from 'koota/react';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
+import { blockWorld } from '../block-state';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import {
     type BlockDims,
@@ -67,6 +68,7 @@ function writeVariation( attrs: SealedAttributes, i: number, x: number, z: numbe
 
 function emitSealed( mesh: THREE.InstancedMesh, attrs: SealedAttributes, bi: number, seg: Segment ): number {
     for ( const b of seg.blocks ) {
+        if ( blockWorld.broken.has( b.id ) ) continue;
         const h = Math.max( 0.05, b.y1 - b.y0 );
         const dims = { w: b.x1 - b.x0, h, d: b.z1 - b.z0 };
         const cx = ( b.x0 + b.x1 ) / 2;
