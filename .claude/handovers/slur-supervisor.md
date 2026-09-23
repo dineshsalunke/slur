@@ -39,6 +39,8 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
   CORRECTION: a /game/:id link does not join at all (routes/game/route.tsx:13-14 redirects to /). The owner
   APPROVED the plan (comps first) AND deep-link join (a). workerfour claims: lobby-overlay, roster, ship-card,
   overlays.test, net-canvas, the ship-picker/choice move, routes/game/route.tsx, net/matchmaking.ts. NEXT: relay the comps.
+- workertwo ASSIGNED: the nebula ignores reduced motion (found by workerfour). The claim is pending from workertwo.
+- workerfour is ~125k and expects a seam before the ship-pick comps. The approved plan is in its handover Next.
 - Copy picks landed `1f1eb0b`. The exhaust nozzles for 4 ships (exhaust-ports.ts has split-crown only) are PARKED by the owner.
 - The workers table below is from ~02:00. Now: workerthree is IDLE, no files. workerfour holds its menu files plus
   rock-field.tsx and game/scene/reduced-motion.ts.
