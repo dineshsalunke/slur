@@ -831,8 +831,10 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
 
     The rest follows the board. Panel 8 says *"LARGE SILHOUETTE. BRIGHT CORE. DISTINCT FINS."*:
 
-    - The body is a chamfered square, 1.1u wide and 2.2u long. The core is on the nose. It has one
-      dorsal fin and two side fins. The fins stay inside the sim body (`seekerHalf`, 1u).
+    - The body is a chamfered square, 1.1u wide and 8.8u long. The core is on the nose. It has four
+      fins: top, bottom, left and right. The fins are at the rear. Each fin root is 2.4u long.
+    - The nose is at the front of the sim body (sim z + `seekerHalf`, 1u). The drawn body extends
+      7.8u behind the sim z. The drawn body is longer than the sim body. The sim body does not change.
     - The pickup is a near-cube, 1.5u wide and 1.4u long, with a core on both end faces.
     - The trail radius is 0.5u at the head. That is 1.7× the bolt streak's head
       (`BOLT_HEAD_RADIUS`, 0.3u). The trail starts at the rear of the body. Its width and brightness
