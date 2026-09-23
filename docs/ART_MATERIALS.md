@@ -824,6 +824,22 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     lit doorway. The floor checker reads only at close range, because at a 4u eye height it is a few
     pixels tall.
 
+14. **The homing seeker's trail is marigold, not the board's red-orange — 2026-09-23 (#219).** Owner's
+    call. The pickups board (`ingredients/ingredients.png`, panel 9) labels the trail *"SEEKER TRAIL
+    (ENLARGED) — THICK. TRACKING. INTENSE."* and draws it red-orange. The engine draws the trail and the
+    body's accent rims in the marigold accent. The nose core is the `#FFE0A0` hot core, as on the bolt.
+
+    The rest follows the board. Panel 8 says *"LARGE SILHOUETTE. BRIGHT CORE. DISTINCT FINS."*:
+
+    - The body is a chamfered square, 1.1u wide and 2.2u long. The core is on the nose. It has one
+      dorsal fin and two side fins. The fins stay inside the sim body (`seekerHalf`, 1u).
+    - The pickup is a near-cube, 1.5u wide and 1.4u long, with a core on both end faces.
+    - The trail radius is 0.75u at the head. That is 2.5× the bolt streak's head
+      (`BOLT_HEAD_RADIUS`, 0.3u).
+
+    **Departure from package wording.** No text on the board names a hue. The departure is from the
+    drawn colour only. The geometry is in `apps/client/app/game/scene/seeker-look.ts`.
+
 ## 8. Review log
 
 **Revision 6 → 7, one metal, and ship contact shadows (2026-09-23).** No family definition changes —
