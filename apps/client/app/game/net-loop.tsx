@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import type { PerspectiveCamera } from 'three';
 import type { Predictor } from '../net/prediction';
 import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from './camera/chase';
+import { hoverSystem } from './ecs/hover';
 import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
 import { syncRenderSystem } from './ecs/systems';
 import { localRole, runPhase, spectatorCam } from './spectator';
@@ -20,6 +21,7 @@ export function NetLoop( { predictor, track }: { predictor: Predictor; track: Tr
         if ( ! racing ) freezeLocalPrev( world );
         syncRenderSystem( world, alpha );
         remoteInterpSystem( world );
+        hoverSystem( world, delta );
         localDeathVfxSystem( world );
         const cam = state.camera as PerspectiveCamera;
         if ( runPhase.value === PHASE.lobby ) updateLobbyCamera( cam, world, delta );

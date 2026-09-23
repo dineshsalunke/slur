@@ -5,6 +5,7 @@ import { useEffect, useMemo } from 'react';
 import type { PerspectiveCamera } from 'three';
 import { attachFreezeToggle, simFreeze } from '../../dev/sim-freeze';
 import { updateChaseCamera } from '../../game/camera/chase';
+import { hoverSystem } from '../../game/ecs/hover';
 import { localDeathVfxSystem } from '../../game/ecs/net-systems';
 import { localFlightSystem, syncRenderSystem } from '../../game/ecs/systems';
 
@@ -19,6 +20,7 @@ export function LocalLoop( { track }: { track: Track } ) {
         if ( ! simFreeze.on ) {
             const alpha = advance( delta, ( dt ) => localFlightSystem( world, dt, track ) );
             syncRenderSystem( world, alpha );
+            hoverSystem( world, delta );
             localDeathVfxSystem( world );
         }
         updateChaseCamera( state.camera as PerspectiveCamera, world, delta );

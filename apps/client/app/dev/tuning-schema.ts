@@ -85,6 +85,12 @@ export const NUMBER_TUNABLES = {
     'Groove.darkening': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.cavity': { value: 0.3, min: 0, max: 1, step: 0.01, rebuild: true },
 
+    'Hover.base': { value: 0.35, min: 0, max: 4, step: 0.01, rebuild: false },
+    'Hover.speedLift': { value: 0.9, min: 0, max: 6, step: 0.01, rebuild: false },
+    'Hover.follow': { value: 4, min: 0.2, max: 30, step: 0.1, rebuild: false },
+    'Hover.bob': { value: 0.06, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Hover.bobRate': { value: 0.8, min: 0, max: 5, step: 0.05, rebuild: false },
+
     'Chase.back': { value: 14, min: 2, max: 40, step: 0.5, rebuild: false },
     'Chase.backStretch': { value: 0, min: 0, max: 20, step: 0.5, rebuild: false },
     'Chase.height': { value: 4, min: 0, max: 25, step: 0.1, rebuild: false },

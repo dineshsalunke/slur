@@ -144,6 +144,14 @@ export function TuningPanel() {
         cool: colorControl( 'Exhaust.cool' ),
     } );
 
+    useControls( 'Hover', {
+        base: numberControl( 'Hover.base' ),
+        speedLift: numberControl( 'Hover.speedLift' ),
+        follow: numberControl( 'Hover.follow' ),
+        bob: numberControl( 'Hover.bob' ),
+        bobRate: numberControl( 'Hover.bobRate' ),
+    } );
+
     useControls( 'Chase camera', {
         back: numberControl( 'Chase.back' ),
         backStretch: numberControl( 'Chase.backStretch' ),

@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, simulate, type Track, tuningForShip } from '@slur/shared';
+import { simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import { currentInput } from '../input/keyboard';
 import { LocalPlayer, Net, Prev, Render, Sim } from './traits';
@@ -16,8 +16,8 @@ export function localFlightSystem( world: World, dt: number, track: Track ): voi
 const lerp = ( a: number, b: number, t: number ) => a + ( b - a ) * t;
 
 export function syncRenderSystem( world: World, alpha: number ): void {
-    world.query( Sim, Prev, Render ).readEach( ( [ s, prev, grp ] ) => {
+    world.query( Sim, Prev, Render, Net ).readEach( ( [ s, prev, grp, net ] ) => {
         grp.position.set( lerp( prev.x, s.x, alpha ), lerp( prev.y, s.y, alpha ), lerp( prev.z, s.z, alpha ) );
-        grp.rotation.z = -( s.vx / DEFAULT_TUNING.strafeClamp ) * 0.5;
+        grp.rotation.z = -( s.vx / tuningForShip( net.shipId ).strafeClamp ) * 0.5;
     } );
 }
