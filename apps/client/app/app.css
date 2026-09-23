@@ -18,7 +18,9 @@
     --color-cyan: #3bd6ff; /* support accent — sparing, demoted from co-primary */
     --color-marigold: #f59a24; /* brand primary — the only energy colour */
     --color-gold: #ffd24a; /* held-power / pickup gold — brighter than marigold, its own accent */
-    --color-spring: #46e6a0; /* live-room pulse dot */
+    --color-deep: #0a1117;
+    --color-space: #162028;
+    --color-core: #ffe0a0;
     --color-fin: #00ff85; /* finisher tag */
     --color-magenta: #ff2bd6; /* spectator / leave accent */
     --color-fg: #cdd6e0; /* body text (landing) */
@@ -26,12 +28,8 @@
     --color-dim: #6b7787; /* muted labels */
     --color-line: rgba( 120, 160, 200, 0.14 ); /* hairline */
     --color-line-2: rgba( 120, 160, 200, 0.26 ); /* stronger hairline */
-    --color-glass-2: rgba( 14, 20, 32, 0.72 ); /* landing panel glass */
-    --color-ink: #04222a; /* dark ink ON the solid cyan CTA — the only place text sits on brand cyan */
     --color-threat: #ff5c6e; /* incoming-bolt warning tick (issue #38) */
     --color-threat-deep: #e81c30; /* deeper red for the edge-vignette rim */
-    --color-wordmark: #eaf6ff; /* landing SLUR wordmark */
-    --color-headline: #f3f8ff; /* landing lead headline */
     --color-debug: #00ff88; /* dev-only net-debug readout — terminal green, distinct from the finisher --color-fin */
     --color-readout: #eceff2; /* in-game HUD primary type — NEUTRAL white, not the cool --color-hud of the panels */
     --color-readout-dim: #8b929b; /* HUD secondary type — the u/s unit, the key hint, the stat row */
@@ -52,22 +50,16 @@
     --shadow-hud-gold: 0 0 16px rgba( 255, 210, 74, 0.35 ); /* held-power chip */
     --shadow-go: 0 0 14px rgba( 59, 214, 255, 0.5 ); /* primary GO button */
     --shadow-dot: 0 0 8px currentColor; /* the colour dot / live dot glow — inherits the element's colour */
-    --shadow-live: 0 0 8px var( --color-spring ); /* live-room pulse dot */
-    --shadow-focus: 0 0 0 3px rgba( 59, 214, 255, 0.16 ); /* call-sign focus ring */
+    --shadow-strip: 0 -14px 36px rgba( 10, 17, 23, 0.55 );
+    --shadow-cta: 0 6px 18px rgba( 245, 154, 36, 0.3 );
     --shadow-ship-on: 0 0 10px rgba( 59, 214, 255, 0.4 ); /* selected ship card */
     --shadow-stat: 0 0 6px rgba( 245, 154, 36, 0.75 ); /* ship-card stat-bar fill */
     --shadow-swatch: 0 0 10px var( --color-white ); /* selected colour swatch ring */
-
-    /* Landing CTA glow — a drop-shadow FILTER, not a box-shadow: the chamfer clip-path would clip a box-shadow. */
-    --drop-shadow-cta: 0 0 14px rgba( 59, 214, 255, 0.5 );
-    --drop-shadow-cta-hover: 0 0 20px rgba( 59, 214, 255, 0.78 );
 
     /* The HUD power-slot gem. A drop-shadow FILTER, not a box-shadow: the glow has to follow the SVG polygons,
        not the element's rectangle. */
     --drop-shadow-power-gem: 0 0 9px rgba( 245, 154, 36, 0.65 );
 
-    --text-shadow-wordmark: 0 0 18px rgba( 59, 214, 255, 0.55 ), 0 0 42px rgba( 59, 214, 255, 0.28 ); /* SLUR */
-    --text-shadow-marigold: 0 0 22px rgba( 245, 154, 36, 0.5 ); /* "Wreck" in the lead headline */
     --text-shadow-timer: 0 0 10px rgba( 59, 214, 255, 0.7 ); /* race timer readout */
     --text-shadow-count: 0 0 40px rgba( 59, 214, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
     --text-shadow-power: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power chip label */
@@ -105,31 +97,21 @@
     src: url( "/fonts/chakra-petch-700-latin.woff2" ) format( "woff2" );
 }
 
-/* Backdrop scrim over the fixed live-3D Canvas: a centre-clear vignette + a top/bottom fade so the
-   front-of-house UI stays legible against the moving scene. A custom @utility (Tailwind's own extension
-   point — NOT @apply, NOT vanilla CSS) because five colour stops in one arbitrary `bg-[…]` value is a
-   ~400-character unreadable class; here every stop derives from --color-void, so the palette stays one edit.
-   color-mix with `transparent` is exact: premultiplied interpolation yields the same colour at the stated
-   alpha, which is also what `bg-void/55` compiles to elsewhere. */
 @utility scrim {
     background:
         radial-gradient(
-            120% 90% at 50% 8%,
-            transparent 40%,
-            color-mix( in oklab, var( --color-void ) 55%, transparent ) 100%
+            55% 45% at 0% 0%,
+            color-mix( in oklab, var( --color-deep ) 55%, transparent ) 0%,
+            transparent 100%
         ),
         linear-gradient(
-            180deg,
-            color-mix( in oklab, var( --color-void ) 72%, transparent ) 0%,
-            transparent 22%,
-            transparent 60%,
-            color-mix( in oklab, var( --color-void ) 40%, transparent ) 100%
+            0deg,
+            color-mix( in oklab, var( --color-deep ) 94%, transparent ) 0%,
+            color-mix( in oklab, var( --color-deep ) 70%, transparent ) 28%,
+            transparent 60%
         );
 }
 
-/* Chamfer motif — the de-rounded cut-corner geometry (top-left + bottom-right), the signature TRON/Trek shape.
-   Two depths: `chamfer` (12px, panels) and `chamfer-btn` (7px, buttons). A custom @utility (Tailwind's own
-   extension point, NOT vanilla CSS) because it's reused across the landing panel + both button variants. */
 /* Incoming-bolt threat vignette (issue #38): transparent centre → red rim, so the danger reads in the
    PERIPHERY and the corridor's vanishing point is never tinted. A custom @utility for the same reason as
    `scrim` — the stops are unreadable as a ~200-char arbitrary `bg-[…]`, and the rim colour has to derive from
@@ -149,15 +131,15 @@
     );
 }
 
-@utility chamfer {
-    clip-path: polygon( 12px 0, 100% 0, 100% calc( 100% - 12px ), calc( 100% - 12px ) 100%, 0 100%, 0 12px );
+@keyframes slur-sweep {
+    from {
+        transform: scaleX( 0 );
+    }
 }
-@utility chamfer-btn {
-    clip-path: polygon( 7px 0, 100% 0, 100% calc( 100% - 7px ), calc( 100% - 7px ) 100%, 0 100%, 0 7px );
+@utility edge-sweep {
+    animation: slur-sweep 320ms cubic-bezier( 0.16, 1, 0.3, 1 );
 }
 
-/* Live-room pulse: the breathing dot next to the online count. Honours reduced-motion. Kept as a keyframe
-   (Tailwind's animate-* utilities don't cover a custom two-stop opacity pulse without a theme keyframe). */
 @keyframes slur-pulse {
     0%,
     100% {
@@ -171,7 +153,8 @@
     animation: slur-pulse 1.8s ease-in-out infinite;
 }
 @media ( prefers-reduced-motion: reduce ) {
-    .pulse-dot {
+    .pulse-dot,
+    .edge-sweep {
         animation: none;
     }
 }

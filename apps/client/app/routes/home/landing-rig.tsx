@@ -1,30 +1,37 @@
 import { useFrame } from '@react-three/fiber';
+import { DEFAULT_TUNING } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useMemo } from 'react';
-import { LocalPlayer, Sim } from '../../game/ecs/traits';
+import { LocalPlayer, Net, Render, Sim } from '../../game/ecs/traits';
+import { prefersReducedMotion } from './reduced-motion';
+import { currentShip } from './ship-choice';
 
-const DRIFT_SPEED = 22;
+const CRUISE = DEFAULT_TUNING.maxCruise * 0.6;
+const CAMERA_BACK = 5;
+const CAMERA_HEIGHT = 2.2;
+const LOOK_AHEAD = 40;
+const LOOK_HEIGHT = 1.6;
+const PORTRAIT_LOOK_HEIGHT = -6;
 
-export function LandingRig() {
+export function LandingRig( { loopZ }: { loopZ: number } ) {
     const world = useWorld();
-    const still = useMemo(
-        () => typeof window !== 'undefined' && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches,
-        [],
-    );
+    const still = useMemo( prefersReducedMotion, [] );
 
-    // JUSTIFIED EFFECT — external sync: the koota ECS world (module singleton). The backdrop needs exactly one
+    // Syncs with the koota ECS world (a module singleton): the backdrop needs one local ship entity to drive.
     useEffect( () => {
-        const e = world.spawn( Sim, LocalPlayer );
+        const e = world.spawn( Sim, LocalPlayer, Render, Net( { shipId: currentShip().id } ) );
         return () => e.destroy();
     }, [ world ] );
 
     useFrame( ( state, delta ) => {
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
         if ( ! sim ) return;
-        if ( ! still ) sim.z += DRIFT_SPEED * delta;
+        sim.vz = still ? 0 : CRUISE;
+        sim.z = ( sim.z + sim.vz * delta ) % loopZ;
         const cam = state.camera;
-        cam.position.set( 0, 5, sim.z - 13 );
-        cam.lookAt( 0, 1, sim.z + 8 );
+        cam.position.set( 0, CAMERA_HEIGHT, sim.z - CAMERA_BACK );
+        const portrait = state.size.width < state.size.height;
+        cam.lookAt( 0, portrait ? PORTRAIT_LOOK_HEIGHT : LOOK_HEIGHT, sim.z + LOOK_AHEAD );
     } );
 
     return null;

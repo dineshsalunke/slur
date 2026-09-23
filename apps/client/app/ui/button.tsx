@@ -1,27 +1,25 @@
 import type { ReactNode } from 'react';
 
-const VARIANT = {
-    primary: 'h-11 border-transparent bg-cyan text-ink drop-shadow-cta enabled:hover:drop-shadow-cta-hover',
-    ghost: 'h-9 border-line-2 text-fg enabled:hover:border-marigold enabled:hover:text-white',
-} as const;
-
 export function Button( {
-    variant,
+    name,
+    value,
     disabled = false,
-    onClick,
+    className = '',
     children,
 }: {
-    variant: keyof typeof VARIANT;
+    name?: string;
+    value?: string;
     disabled?: boolean;
-    onClick: () => void;
+    className?: string;
     children: ReactNode;
 } ) {
     return (
         <button
-            type="button"
+            type="submit"
+            name={ name }
+            value={ value }
             disabled={ disabled }
-            onClick={ onClick }
-            className={ `chamfer-btn cursor-pointer whitespace-nowrap border px-[22px] font-mono text-[12px] font-bold uppercase tracking-[0.16em] transition active:translate-y-px disabled:cursor-not-allowed disabled:grayscale-[50%] disabled:brightness-[0.7] disabled:drop-shadow-none ${ VARIANT[ variant ] }` }
+            className={ `inline-flex h-11 cursor-pointer items-center justify-center gap-3 whitespace-nowrap bg-marigold px-7 text-[14px] font-bold uppercase tracking-[0.2em] text-deep transition-[background-color,box-shadow,translate] duration-150 ease-out enabled:hover:shadow-cta enabled:active:translate-y-px enabled:active:bg-core focus-visible:bg-core focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-core disabled:cursor-wait disabled:opacity-70 ${ className }` }
         >
             { children }
         </button>
