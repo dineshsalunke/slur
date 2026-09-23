@@ -53,10 +53,10 @@ the cause with numbers and a proposed fix to slur-supervisor. Write nothing in t
 2. Discriminate z-fight from aliasing: at the far pose, raise `Monolith.seamEmissive` only (aliasing stays
    and z-fight stays), then widen the seam in a scratch copy (fixes aliasing) or push `proud` out (fixes
    z-fight). Use `git show <sha>:<path>` into a scratch copy only. Never check out in this tree.
-3. Check whether the owner means the emissive seam or the deck plate joints. Compare the far pose with
-   `Monolith.plate` 0 (f6e9874 removes the joints).
-4. Pre-81c2b76 A/B: serve `git show c82f4f4:` copies of monolith-group.tsx and monoliths.tsx in a scratch
-   worktree-free copy? No. Ask the supervisor how to serve an old file without touching the tree.
+3. Tell the emissive seam apart from plate-grid shimmer (supervisor asks for both, reported separately).
+   workertwo is setting the `Monolith.plate` default to 2 (finer grid). Run the far pose at plate 0 (no
+   joints, f6e9874) and plate 2.
+4. Pre-81c2b76 A/B: wait for the supervisor's answer on how to serve an old file without writing in the tree.
 5. Report to slur-supervisor. Candidate fixes: widen the seam with distance (screen-space minimum width),
    or `polygonOffset`/more proud depth if it is z-fight.
 
