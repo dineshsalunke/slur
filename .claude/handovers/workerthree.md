@@ -62,7 +62,13 @@ and not mine. `.claude/phases/{INDEX,worklog}.md` are modified and not mine.
 
 ## Next
 
-1. **OWNER CHANGE — seeker flies at SHIP height** (supervisor message, not yet answered). Owner: *"the
+0. **2026-09-23: ship-height PLAN SENT to the supervisor. Waiting for approval.** Measured with a scratch
+   script (30 seeds, heuristic target bot): a level seeker is blocked on 30–93% of shots, against 0–6.5%
+   now. Proposal: breadcrumb homing. Leg 1 flies the LOS line. After that it follows the target's own
+   (z,x) samples. The committed window homes direct at 40 u/s. Drop cruise/strike/climb/diveDz. Add
+   `seekerFlyY` 0.5 + `seekerTrailLen`. Side finding: TTL 6s × 30 u/s closing ≈ 180u reach, far below
+   lock range 600. Edit no shared sim until approved.
+1. **OWNER CHANGE — seeker flies at SHIP height** (plan sent, see 0). Owner: *"the
    seeker has to travel at the same height as the other ships, which i think is around 1 - 2u."*
    Before changing any code, send the supervisor a short plan:
    - Read the real ride height from shared constants (`DEFAULT_TUNING` / `DEFAULT_JUMP` in
