@@ -1,4 +1,5 @@
 import { HALF_WIDTH, LEAD_SEGMENTS, SEG_LEN } from '@slur/shared';
+import type { RefObject } from 'react';
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
 import { RAIL_W } from './track-geometry';
@@ -16,6 +17,17 @@ export interface RailGlowUniforms {
     uRailMaskCount: { value: number };
 }
 
+export interface RailMask {
+    texture: RefObject< THREE.DataTexture | null >;
+    count: number;
+}
+
+export interface RailMaskData {
+    data: Float32Array;
+    width: number;
+    rows: number;
+}
+
 export function railGlowUniforms(): RailGlowUniforms {
     return {
         uRailX: { value: RAIL_X },
@@ -27,6 +39,13 @@ export function railGlowUniforms(): RailGlowUniforms {
 }
 
 export function buildRailMask( runs: RailRun[], segments: number ): THREE.DataTexture {
+    const { data, width, rows } = railMaskData( runs, segments );
+    const texture = new THREE.DataTexture( data, width, rows, THREE.RGBAFormat, THREE.FloatType );
+    texture.needsUpdate = true;
+    return texture;
+}
+
+export function railMaskData( runs: RailRun[], segments: number ): RailMaskData {
     const count = segments + LEAD_SEGMENTS;
     const rows = Math.max( 1, Math.ceil( count / MASK_WIDTH ) );
     const data = new Float32Array( MASK_WIDTH * rows * 4 );
@@ -39,12 +58,10 @@ export function buildRailMask( runs: RailRun[], segments: number ): THREE.DataTe
             data[ k * 4 + channel + 1 ] = run.y;
         }
     }
-    const texture = new THREE.DataTexture( data, MASK_WIDTH, rows, THREE.RGBAFormat, THREE.FloatType );
-    texture.needsUpdate = true;
-    return texture;
+    return { data, width: MASK_WIDTH, rows };
 }
 
-export function updateRailGlow( u: RailGlowUniforms, mask: THREE.DataTexture, count: number ): void {
+export function updateRailGlow( u: RailGlowUniforms, mask: THREE.DataTexture | null, count: number ): void {
     u.uRailMask.value = mask;
     u.uRailMaskCount.value = count;
     u.uRailLift.value = num( 'RailLight.lift' );

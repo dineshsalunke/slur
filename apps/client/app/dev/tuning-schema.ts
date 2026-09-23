@@ -71,6 +71,7 @@ export const NUMBER_TUNABLES = {
     'Monolith.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
     'Monolith.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
+    'Monolith.surface': { value: 0, min: 0, max: 2, step: 1, rebuild: false },
 
     'Block.textureSpan': { value: 2, min: 0.25, max: 16, step: 0.05, rebuild: false },
     'Block.normalScale': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
