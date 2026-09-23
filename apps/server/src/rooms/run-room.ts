@@ -1,7 +1,5 @@
 import { type Client, Room } from '@colyseus/core';
 import {
-    aimBolt,
-    aimSeeker,
     applyDescriptor,
     COLOR_COUNT,
     COUNTDOWN_SECONDS,
@@ -16,12 +14,10 @@ import {
     type InputMessage,
     isColorId,
     isShipId,
-    lockTarget,
     PHASE,
     type Pickup,
     type PlayerInput,
     PlayerState,
-    Projectile,
     pickupsOf,
     procgenDescriptor,
     RACE_GRACE_SECONDS,
@@ -31,12 +27,8 @@ import {
     raceShouldEnd,
     resetPlayerForRace,
     resolveTrack,
-    SEEKER_HIT_MESSAGE,
-    SEEKER_MISS_MESSAGE,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
-    Seeker,
-    type SeekerEvent,
     type SimConfig,
     type SimWorld,
     START_MESSAGE,
@@ -53,6 +45,7 @@ import {
     tuningForShip,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
+import { firePower, resolveSeekerEvent } from './room-combat.js';
 
 const RECONNECT_SECONDS = 20;
 const MAX_QUEUED_INPUTS = 120;
@@ -113,28 +106,13 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             if ( this.state.phase !== PHASE.racing ) return;
             const p = this.state.players.get( client.sessionId );
             if ( ! p || ! canFire( p ) ) return;
-            if ( p.heldPower === HeldPower.seeker ) this.fireSeeker( p, client.sessionId );
-            else this.fireBolt( p, client.sessionId );
-            p.heldPower = HeldPower.none;
+            const ctx = { state: this.state, track: this.track, broken: this.blocks.broken, config: this.config };
+            firePower( ctx, String( this.nextProjectileId++ ), p, client.sessionId );
         } );
 
         this.setSimulationInterval( ( deltaMs ) => {
             this.advance( deltaMs / 1000, ( dt ) => this.fixedStep( dt ) );
         } );
-    }
-
-    private fireBolt( p: PlayerState, ownerId: string ): void {
-        const bolt = new Projectile();
-        aimBolt( bolt, p, ownerId, this.config );
-        this.state.projectiles.set( String( this.nextProjectileId++ ), bolt );
-    }
-
-    private fireSeeker( p: PlayerState, ownerId: string ): void {
-        const ships = seekerShipsOf( this.state.players.entries() );
-        const targetId = lockTarget( p, ownerId, ships, this.track, this.blocks.broken, this.config );
-        const seeker = new Seeker();
-        aimSeeker( seeker, p, ownerId, targetId, this.config );
-        this.state.seekers.set( String( this.nextProjectileId++ ), seeker );
     }
 
     private fixedStep( dt: number ): void {
@@ -214,7 +192,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             this.track,
             this.blocks.broken,
             dt,
-            ( event ) => this.onSeekerEvent( event ),
+            ( event ) => resolveSeekerEvent( this.state, event, ( t, m ) => this.broadcast( t, m ), this.config ),
             this.config,
         );
         this.mirrorBreaks();
@@ -231,22 +209,6 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
                 this.config,
             ),
         );
-    }
-
-    private onSeekerEvent( event: SeekerEvent ): void {
-        const { x, y, z } = event;
-        if ( event.outcome === 'miss' ) {
-            this.broadcast( SEEKER_MISS_MESSAGE, event );
-            return;
-        }
-        if ( event.outcome === 'blocked' ) {
-            this.broadcast( 'hit', { x, y, z, victimId: '' } );
-            return;
-        }
-        const v = this.state.players.get( event.targetId );
-        if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config, this.config.seekerStunS );
-        this.broadcast( 'hit', { x, y, z, victimId: event.targetId } );
-        this.broadcast( SEEKER_HIT_MESSAGE, event );
     }
 
     private mirrorBreaks(): void {
