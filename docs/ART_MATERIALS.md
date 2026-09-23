@@ -834,8 +834,9 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     - The body is a chamfered square, 1.1u wide and 2.2u long. The core is on the nose. It has one
       dorsal fin and two side fins. The fins stay inside the sim body (`seekerHalf`, 1u).
     - The pickup is a near-cube, 1.5u wide and 1.4u long, with a core on both end faces.
-    - The trail radius is 0.75u at the head. That is 2.5× the bolt streak's head
-      (`BOLT_HEAD_RADIUS`, 0.3u).
+    - The trail radius is 0.5u at the head. That is 1.7× the bolt streak's head
+      (`BOLT_HEAD_RADIUS`, 0.3u). The trail starts at the rear of the body. Its width and brightness
+      decrease with the square of the fade.
 
     **Departure from package wording.** No text on the board names a hue. The departure is from the
     drawn colour only. The geometry is in `apps/client/app/game/scene/seeker-look.ts`.
