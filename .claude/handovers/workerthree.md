@@ -56,13 +56,14 @@ Approved by the supervisor:
   `game/scene/seeker-*`, `game/overlays/{threat-hud,held-power-chip}.tsx` + tests, `audio/sfx-map.ts`,
   `routes/test-level/{local-combat.ts,local-pickup-field.tsx,local-power-slot.tsx}` + new test-level
   files, `dev/tuning-schema.ts`
-- **Not yet claimed — claim before step 5:** `net/attach-room-to-world.ts`, `game/ecs/traits.ts`.
+- **Approved for step 5 (supervisor, 2026-09-23):** `net/attach-room-to-world.ts`,
+  `game/ecs/traits.ts`, new `game/scene/seeker-*`.
 - Not mine: `hit-spark.tsx` (ask first), `dev/*` except `tuning-schema.ts`, `routes/home/*`,
   `ui/button.tsx`, `ui/panel.tsx`, `lobby/room-list.tsx`, and all of `docs/art-direction/`.
 
 ## Next
 
-1. **Step 5, in flight.** Claim `net/attach-room-to-world.ts` + `game/ecs/traits.ts` first. Client
+1. **Step 5, in flight.** Claims are approved; start writing. Nothing for step 5 is written yet. Client
    interpolation for `RunState.seekers` (a new ECS trait shaped like `ProjInterp`). `SeekerBodies`: the
    canister (reuse `seeker-look.ts`) yawed to its heading, 3 draws. A curved trail from a 12-point ring per
    seeker (1 draw), and embers (1 draw). MAX 16.
@@ -71,7 +72,8 @@ Approved by the supervisor:
    `audio/sfx-map.ts` first. Sounds: pickup, launch, lock pulse, an in-flight loop that grows as it
    closes, impact, dodge whoosh.
 3. **Step 7, `/test-level`.** `local-combat.ts` runs `stepSeekers` against a stationary target dummy and
-   uses a real `seekerGate`. The `Seeker.*` tunables go in `tuning-schema.ts`; the modes are 0/1 numbers
+   uses a real `seekerGate`. **The supervisor requires the pickup canister to be SEEN rendered before
+   the lane closes.** The `Seeker.*` tunables go in `tuning-schema.ts`; the modes are 0/1 numbers
    mapped to strings. Headless Chrome (DPR 1, muted, killed after use): pickup canister, launch,
    mid-curve, impact, rear view.
 4. **Step 8.** A two-player hosted room. Then the ART_SCALE_REFERENCE §7 seeker rows and the GDD §5 row.
