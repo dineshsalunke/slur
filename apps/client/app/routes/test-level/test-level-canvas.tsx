@@ -1,17 +1,16 @@
 import { Canvas } from '@react-three/fiber';
 import { resolveTrack, type TrackDescriptor } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
-import { Fragment, lazy, Suspense, useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import * as THREE from 'three';
 import { FrameTap } from '../../dev/frame-tap';
+import { TuningPanelMount } from '../../dev/tuning-panel-mount';
 import { world } from '../../game/ecs/world';
 import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
 import { LocalLoop } from './local-loop';
 import { LocalShip } from './local-ship';
 import { TestLevelHud } from './test-level-hud';
-
-const TuningPanel = import.meta.env.DEV ? lazy( () => import( '../../dev/tuning-panel' ) ) : null;
 
 const TEST_LEVEL_SEED = 20260921;
 const TEST_LEVEL_SEGMENTS = 420;
@@ -49,11 +48,7 @@ export function TestLevelCanvas() {
                 </Canvas>
                 <TestLevelHud track={ track } />
             </WorldProvider>
-            { TuningPanel ? (
-                <Suspense fallback={ null }>
-                    <TuningPanel />
-                </Suspense>
-            ) : null }
+            <TuningPanelMount />
         </Fragment>
     );
 }
