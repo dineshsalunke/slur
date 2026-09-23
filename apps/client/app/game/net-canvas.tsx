@@ -9,7 +9,6 @@ import {
 } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
-import * as THREE from 'three';
 import { GameAudio } from '../audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio';
 import { TuningPanelMount } from '../dev/tuning-panel-mount';
@@ -23,6 +22,7 @@ import { handlePowerKey } from './input/power-select';
 import { NetDebugHud } from './net-debug-hud';
 import { NetLoop } from './net-loop';
 import { NetPowerRack } from './net-power-rack';
+import { CANVAS_GL } from './scene/canvas-gl';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
 import { RearView } from './scene/rear-view';
@@ -68,7 +68,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     return (
         <WorldProvider world={ world }>
             <Canvas
-                gl={ { toneMapping: THREE.NeutralToneMapping } }
+                gl={ CANVAS_GL }
                 style={ { position: 'fixed', inset: 0 } }
                 camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
             >

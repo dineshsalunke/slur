@@ -17,6 +17,8 @@ export interface PlanetUniforms {
     uPlanetSin: { value: number };
     uPlanetSun: { value: THREE.Vector3 };
     uPlanetLight: { value: number };
+    uPlanetGlow: { value: number };
+    uPlanetRelief: { value: number };
     uMoonDir: { value: THREE.Vector3[] };
     uMoonSin: { value: number[] };
 }
@@ -27,6 +29,8 @@ export function planetUniforms(): PlanetUniforms {
         uPlanetSin: { value: 0 },
         uPlanetSun: { value: new THREE.Vector3( 0, 1, 0 ) },
         uPlanetLight: { value: 1 },
+        uPlanetGlow: { value: 1 },
+        uPlanetRelief: { value: 1 },
         uMoonDir: { value: MOON_SPREAD.map( () => new THREE.Vector3( 0, 0, 1 ) ) },
         uMoonSin: { value: MOON_SPREAD.map( () => 0 ) },
     };
@@ -49,6 +53,8 @@ export function applyPlanets( u: PlanetUniforms ): void {
     u.uPlanetSin.value = Math.sin( num( 'Sky.planetSize' ) * DEG );
     aimSun( u.uPlanetDir.value, num( 'Sky.planetPhase' ) * DEG, num( 'Sky.planetTilt' ) * DEG, u.uPlanetSun.value );
     u.uPlanetLight.value = num( 'Sky.planetLight' );
+    u.uPlanetGlow.value = num( 'Sky.planetGlow' );
+    u.uPlanetRelief.value = num( 'Sky.planetRelief' );
     const moons = num( 'Sky.moons' );
     const moonSin = Math.sin( num( 'Sky.moonSize' ) * DEG );
     for ( let i = 0; i < MOON_SPREAD.length; i++ ) {

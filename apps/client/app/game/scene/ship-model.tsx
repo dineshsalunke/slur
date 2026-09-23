@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import type * as THREE from 'three';
-import { col } from '../../dev/tuning';
+import { col, num } from '../../dev/tuning';
 import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
 import { guardLfsPointer } from './gltf-lfs-guard';
@@ -135,7 +135,11 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
             patched.current = true;
         }
         const base = col( 'Metal.baseColor' );
-        for ( const hull of hulls.current ) hull.color.set( base );
+        const envMapIntensity = num( 'Ship.envMapIntensity' );
+        for ( const hull of hulls.current ) {
+            hull.color.set( base );
+            hull.envMapIntensity = envMapIntensity;
+        }
         const target = isDead( entity ) ? 1 : 0;
         const u = uniforms.uDissolve;
         const step = delta / DISSOLVE_DURATION;

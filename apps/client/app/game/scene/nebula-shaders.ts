@@ -129,6 +129,8 @@ uniform vec3 uPlanetDir;
 uniform float uPlanetSin;
 uniform vec3 uPlanetSun;
 uniform float uPlanetLight;
+uniform float uPlanetGlow;
+uniform float uPlanetRelief;
 uniform vec3 uMoonDir[ 2 ];
 uniform float uMoonSin[ 2 ];
 
@@ -152,6 +154,13 @@ float nbStars( vec3 d, float cells, float cut, float twinkle ) {
 	return exp( - r * r * 16.0 ) * pow( h.y, 6.0 ) * flicker;
 }
 
+float nbTerrain( vec3 sp ) {
+	float coarse = texture( uNoise, sp * 0.6 ).r;
+	float ridges = 1.0 - abs( texture( uNoise, sp * 1.6 + 0.13 ).g * 2.0 - 1.0 );
+	float craters = smoothstep( 0.55, 0.9, texture( uNoise, sp * 3.2 + 0.61 ).b );
+	return coarse * 0.5 + ridges * ridges * 0.35 - craters * 0.25;
+}
+
 vec4 nbGlobe( vec3 d, vec3 centre, float sinR, float seed, float detail ) {
 	if ( sinR <= 0.0 ) return vec4( 0.0 );
 	float cosA = dot( d, centre );
@@ -161,24 +170,30 @@ vec4 nbGlobe( vec3 d, vec3 centre, float sinR, float seed, float detail ) {
 	float r = len / sinR;
 	float edge = max( fwidth( r ), 0.002 );
 	float cover = 1.0 - smoothstep( 1.0 - edge, 1.0 + edge, r );
-	if ( cover <= 0.0 ) return vec4( 0.0 );
-	r = min( r, 1.0 );
 	vec3 u = v / max( len, 1e-6 );
+	float sunSide = clamp( dot( u, uPlanetSun - centre * dot( uPlanetSun, centre ) ) * 1.5 + 0.5, 0.0, 1.0 );
+	float corona = exp( - max( r - 1.0, 0.0 ) * 12.0 ) * ( 1.0 - cover ) * ( 0.15 + 0.85 * sunSide );
+	vec3 glow = uRim * corona * 0.7 * uPlanetGlow;
+	if ( cover <= 0.0 ) return vec4( glow, clamp( corona * uPlanetGlow, 0.0, 1.0 ) );
+	r = min( r, 1.0 );
 	float z = sqrt( 1.0 - r * r );
 	vec3 n = u * r - centre * z;
-	float ndl = dot( n, uPlanetSun );
-	float day = smoothstep( -0.05, 0.5, ndl );
 	vec3 sp = n * detail * 0.25 + seed;
-	float coarse = texture( uNoise, sp ).r;
-	float ridges = 1.0 - abs( texture( uNoise, sp * 2.7 + 0.13 ).g * 2.0 - 1.0 );
-	float grain = texture( uNoise, sp * 7.0 + 0.61 ).b;
-	float relief = coarse * 0.45 + ridges * ridges * 0.35 + grain * 0.2;
-	float albedo = mix( 0.02, 0.22, relief );
-	float limb = pow( r, 16.0 ) * clamp( ndl * 2.0 + 0.5, 0.0, 1.0 );
-	float terminatorGlow = pow( r, 5.0 ) * 0.03 * day;
-	vec3 body = uRim * ( albedo * ( day * max( ndl, 0.0 ) + 0.1 ) + terminatorGlow ) + uDeep * 1.5;
-	vec3 c = ( body + uRim * limb * 0.3 ) * uPlanetLight;
-	return vec4( c, cover );
+	float h = nbTerrain( sp );
+	vec3 t1 = normalize( cross( n, abs( n.y ) < 0.9 ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 ) ) );
+	vec3 t2 = cross( n, t1 );
+	float e = 0.015;
+	float h1 = nbTerrain( sp + t1 * e * detail * 0.25 );
+	float h2 = nbTerrain( sp + t2 * e * detail * 0.25 );
+	vec3 bumped = normalize( n - ( t1 * ( h1 - h ) + t2 * ( h2 - h ) ) * ( 3.0 * uPlanetRelief / e ) * 0.05 );
+	float ndl = dot( bumped, uPlanetSun );
+	float day = smoothstep( -0.05, 0.5, dot( n, uPlanetSun ) );
+	float albedo = mix( 0.03, 0.2, clamp( h, 0.0, 1.0 ) );
+	float limb = pow( r, 16.0 ) * clamp( dot( n, uPlanetSun ) * 2.0 + 0.5, 0.0, 1.0 );
+	float rimLight = pow( r, 6.0 ) * 0.12 * sunSide;
+	vec3 body = uRim * ( albedo * ( day * max( ndl, 0.0 ) + 0.08 ) + rimLight * uPlanetGlow ) + uDeep * 1.5;
+	vec3 c = ( body + uRim * limb * 0.35 * uPlanetGlow ) * uPlanetLight;
+	return vec4( mix( glow, c, cover ), max( cover, clamp( corona * uPlanetGlow, 0.0, 1.0 ) ) );
 }
 
 vec3 nebulaShade( vec3 d ) {
@@ -249,12 +264,14 @@ void main() {
 
 export const NEBULA_LIGHT_FRAGMENT = `
 uniform float uEnvGain;
+uniform vec3 uEnvFill;
 varying vec3 vDir;
 
 ${ NEBULA_SHADE }
 
 void main() {
-	gl_FragColor = vec4( nebulaShade( normalize( vDir ) ) * uEnvGain, 1.0 );
+	vec3 d = normalize( vDir );
+	gl_FragColor = vec4( nebulaShade( d ) * uEnvGain + uEnvFill * ( 0.6 + 0.4 * d.y ), 1.0 );
 }
 `;
 

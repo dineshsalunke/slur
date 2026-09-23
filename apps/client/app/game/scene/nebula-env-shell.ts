@@ -6,8 +6,14 @@ const GROUND_DROP = 1.6;
 const BAND_RADIUS = 3.9;
 const BAND_HEIGHT_PER_UNIT = 0.04;
 
-const ENV_NUMBERS = [ 'Env.skyIntensity', 'Env.groundIntensity', 'Env.bandIntensity', 'Env.bandHeight' ] as const;
-const ENV_COLORS = [ 'Env.groundColor', 'Env.bandColor' ] as const;
+const ENV_NUMBERS = [
+    'Env.skyIntensity',
+    'Env.fillIntensity',
+    'Env.groundIntensity',
+    'Env.bandIntensity',
+    'Env.bandHeight',
+] as const;
+const ENV_COLORS = [ 'Env.fillColor', 'Env.groundColor', 'Env.bandColor' ] as const;
 
 export class NebulaEnvShell {
     private readonly groundMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide } );
@@ -24,6 +30,7 @@ export class NebulaEnvShell {
         scene: THREE.Scene,
         sky: THREE.Mesh,
         private readonly gain: { value: number },
+        private readonly fill: { value: THREE.Color },
     ) {
         sky.scale.setScalar( SHELL_RADIUS );
         this.ground.position.y = -GROUND_DROP;
@@ -52,6 +59,7 @@ export class NebulaEnvShell {
 
     apply(): void {
         this.gain.value = num( 'Env.skyIntensity' );
+        this.fill.value.set( col( 'Env.fillColor' ) ).multiplyScalar( num( 'Env.fillIntensity' ) );
         this.groundMaterial.color.set( col( 'Env.groundColor' ) ).multiplyScalar( num( 'Env.groundIntensity' ) );
         this.bandMaterial.color.set( col( 'Env.bandColor' ) ).multiplyScalar( num( 'Env.bandIntensity' ) );
         this.band.scale.setY( num( 'Env.bandHeight' ) * BAND_HEIGHT_PER_UNIT );

@@ -48,6 +48,8 @@ export function TuningPanel() {
 
     useControls( 'Environment', {
         skyIntensity: numberControl( 'Env.skyIntensity' ),
+        fillColor: colorControl( 'Env.fillColor' ),
+        fillIntensity: numberControl( 'Env.fillIntensity' ),
         groundColor: colorControl( 'Env.groundColor' ),
         groundIntensity: numberControl( 'Env.groundIntensity' ),
         bandColor: colorControl( 'Env.bandColor' ),
@@ -175,6 +177,10 @@ export function TuningPanel() {
         heat: numberControl( 'Exhaust.heat' ),
         hot: colorControl( 'Exhaust.hot' ),
         cool: colorControl( 'Exhaust.cool' ),
+    } );
+
+    useControls( 'Ship', {
+        envMapIntensity: numberControl( 'Ship.envMapIntensity' ),
     } );
 
     useControls( 'Hover', {

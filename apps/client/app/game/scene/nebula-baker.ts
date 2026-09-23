@@ -162,12 +162,14 @@ export class NebulaBaker {
         };
 
         const gain = { value: 1 };
+        const fill = { value: new THREE.Color( 0, 0, 0 ) };
         this.lightMaterial = cubeMaterial( NEBULA_LIGHT_FRAGMENT, {
             ...this.shadeUniforms,
             ...this.stillUniforms,
             uEnvGain: gain,
+            uEnvFill: fill,
         } );
-        this.shell = new NebulaEnvShell( this.lightScene, skyBox( this.lightMaterial ), gain );
+        this.shell = new NebulaEnvShell( this.lightScene, skyBox( this.lightMaterial ), gain, fill );
 
         const probe = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), this.probeMaterial );
         probe.frustumCulled = false;

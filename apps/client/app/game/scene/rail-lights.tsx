@@ -9,7 +9,7 @@ import { buildRailRuns, type RailRun } from './track-rails';
 
 RectAreaLightUniformsLib.init();
 
-const SLOTS_PER_SIDE = 3;
+const SLOTS_PER_SIDE = 1;
 
 const forward = new THREE.Vector3();
 const aim = new THREE.Vector3();
