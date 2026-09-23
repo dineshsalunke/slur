@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
-import { patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
+import { buildRailMask, patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
 import {
     BACKWARD,
     DOWN,
@@ -20,6 +20,7 @@ import {
 import { AHEAD } from './track-instancing';
 import { cleanToMapRoughness, floorSurface } from './track-materials';
 import { spanEdges } from './track-openings';
+import { buildRailRuns } from './track-rails';
 
 const isOffGrid = ( v: number ) => {
     const m = Math.abs( v % CELL );
@@ -87,6 +88,8 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
 
 export function TrackFloor( { track }: { track: Track } ) {
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
+    const segments = segmentCount( track );
+    const mask = useMemo( () => buildRailMask( buildRailRuns( track, segments ), segments ), [ track, segments ] );
     const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const rebuild = useRebuildToken();
     const surface = useMemo( floorSurface, [ rebuild ] );
@@ -96,14 +99,20 @@ export function TrackFloor( { track }: { track: Track } ) {
         if ( mat ) patchRailGlow( mat, glow );
     };
 
-    // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
-    useEffect( () => () => geo.dispose(), [ geo ] );
+    // GPU buffers outlive React's tree: a geometry and rail mask replaced by a width change must be released by hand.
+    useEffect(
+        () => () => {
+            geo.dispose();
+            mask.dispose();
+        },
+        [ geo, mask ],
+    );
 
-    useFrame( ( state ) => {
+    useFrame( () => {
         const mat = matRef.current;
         if ( ! mat ) return;
 
-        updateRailGlow( glow, state.camera );
+        updateRailGlow( glow, mask, segments + LEAD_SEGMENTS );
         mat.metalness = num( 'Deck.metalness' );
         mat.roughness = cleanToMapRoughness( num( 'Deck.roughness' ) );
         mat.envMapIntensity = num( 'Deck.envMapIntensity' );

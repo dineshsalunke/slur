@@ -202,7 +202,7 @@ normal = normalize( mat3( vRockAxX, vRockAxY, vRockAxZ ) * rockObjN );
 
 const FRAG_KEY = `
 #include <lights_fragment_end>
-reflectedLight.directDiffuse += BRDF_Lambert( material.diffuseColor ) * uRockKeyColor * max( dot( normal, uRockKeyDir ), 0.0 );
+reflectedLight.directDiffuse += BRDF_Lambert( material.diffuseColor ) * uRockKeyColor * max( dot( normal, mat3( viewMatrix ) * uRockKeyDir ), 0.0 );
 `;
 
 export function patchRock( material: THREE.MeshStandardMaterial, uniforms: RockUniforms ): void {

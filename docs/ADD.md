@@ -203,7 +203,7 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
 | Asteroids (Angular · Plate · Broken) | **BUILT** — displaced icosahedron with planar cuts, three streamed bands, shader spin and drift, triplanar CC0 rock maps (see below) | **done** |
 | Nebula sky | **BUILT** — domain-warped fBm and Worley noise baked to a cubemap, composited live, and the source of the IBL and the key light (see below) | **done** |
-| Planets / moons | **BUILT** — analytic discs in the sky pass: terminator, lit limb, noise-volume relief; one large planet for Deep Space, two small moons for Nebula (`Sky.planet*`, `Sky.moons`) | **done** |
+| Planets / moons | **BUILT** — analytic discs in the sky pass: terminator, lit limb, noise-volume relief; one planet in each preset (size 21 in Nebula, 17 in Deep Space), no moons by default (`Sky.planet*`, `Sky.moons` = 0) | **done** |
 | Pickups | procedural — low-poly geometric icons | high |
 | **Ships** | **keep the authored Quaternius CC0 models** — already integrated, WYSIWYG-locked (GDD §5.5) | — |
 
@@ -253,9 +253,11 @@ reads of the noise volume give relief. The planets are in the light cube too, so
 planet contributes to the IBL.
 
 **The rail glow is an analytic line light in the deck material** (`scene/rail-glow.ts`), not a scene
-light. Two infinite lines at the rail x positions give a wrapped `1/d` diffuse term and a specular
+light. Two lines at the rail x positions give a wrapped `1/d` diffuse term and a specular
 streak from the closest point on the line to the reflection ray, patched into `lights_fragment_end`
-of the floor material only. The six `RectAreaLight`s it replaced were the single largest cost of a
+of the floor material only. A per-segment rail mask (built from `buildRailRuns`) turns each line off
+where its rail is absent, with a 2u ramp at run ends. The lines are in world space and the shader
+moves them to view space with `viewMatrix`, so the rear-view pass lights the deck correctly. The six `RectAreaLight`s it replaced were the single largest cost of a
 DPR 2 frame (8 ms of 17.7 on an M3 Pro at 3456×2160), because three.js evaluates every area light
 with LTC on every fragment of every standard material. The line light costs a few dozen ALU on deck
 fragments. The `Environment` band cylinder still gives blocks, monoliths and ships their marigold.
@@ -270,8 +272,8 @@ canvas skips the compositor blend. The next millisecond lives in the post chain,
 **The rock maps are the only bitmaps in the pipeline.** They are `public/textures/dark-rock-*.jpg`, Poly
 Haven `dark_rock` (CC0), 1k. The asteroid shader uses the luminance of the diffuse map, tinted to
 graphite, and the AO, roughness and normal maps. It samples them triplanar in object space, so the
-maps rotate with the rock. The maps are not in LFS. If a map is missing, the rocks degrade and the game
-does not crash. The `nebula-backdrop.jpg` placeholder is deleted.
+maps rotate with the rock. The maps are not in LFS. `rock-field.tsx` loads them with `useTexture` and
+has no error boundary, so a missing map is expected to throw out of the Canvas (not tested). The `nebula-backdrop.jpg` placeholder is deleted.
 
 > **Honest cost:** shader noise trades texture memory for per-pixel ALU, which is in tension with §8 rule 3
 > ("light does the work, not texels"). With instanced fields and 12 ships it is usually a win, but it is a

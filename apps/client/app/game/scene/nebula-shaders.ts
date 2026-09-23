@@ -164,11 +164,11 @@ float nbTerrain( vec3 sp ) {
 vec4 nbGlobe( vec3 d, vec3 centre, float sinR, float seed, float detail ) {
 	if ( sinR <= 0.0 ) return vec4( 0.0 );
 	float cosA = dot( d, centre );
-	if ( cosA <= 0.0 ) return vec4( 0.0 );
 	vec3 v = d - centre * cosA;
 	float len = length( v );
 	float r = len / sinR;
 	float edge = max( fwidth( r ), 0.002 );
+	if ( cosA <= 0.0 ) return vec4( 0.0 );
 	float cover = 1.0 - smoothstep( 1.0 - edge, 1.0 + edge, r );
 	vec3 u = v / max( len, 1e-6 );
 	float sunSide = clamp( dot( u, uPlanetSun - centre * dot( uPlanetSun, centre ) ) * 1.5 + 0.5, 0.0, 1.0 );

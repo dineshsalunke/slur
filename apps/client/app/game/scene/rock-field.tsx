@@ -46,7 +46,7 @@ export function RockField() {
         uniforms.uRockRough.value = num( 'Rock.roughness' );
         uniforms.uRockDetail.value = num( 'Rock.detail' );
         uniforms.uRockFar.value = Math.min( ROCK_FAR, ( state.camera as THREE.PerspectiveCamera ).far );
-        uniforms.uRockKeyDir.value.copy( NEBULA_LIGHT.direction ).transformDirection( state.camera.matrixWorldInverse );
+        uniforms.uRockKeyDir.value.copy( NEBULA_LIGHT.direction ).normalize();
         uniforms.uRockKeyColor.value.copy( NEBULA_LIGHT.color ).multiplyScalar( num( 'Sky.keyLight' ) );
         material.envMapIntensity = num( 'Sky.environment' );
         const rock = col( 'Rock.color' );
