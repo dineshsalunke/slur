@@ -12,9 +12,9 @@ const SPEED = 22;
 const UP_BIAS = 2;
 const DRAG = 4;
 const GRAV = 12;
-const WIDTH = 0.045;
+const WIDTH = 0.07;
 const STREAK_S = 0.035;
-const BRIGHT = 4;
+const BRIGHT = 6;
 
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
