@@ -15,7 +15,9 @@ cap is at fire time: one seeker in flight per shooter. Built end to end and chec
 - `738ebd3` client slice + GDD §5.3/§8: power-select store, PowerRack/PowerCell HUD, three-slot local
   combat, audio edge, net-canvas sends {slot}.
 - `454f544` memory `deprecated-breaks-reflection-decoding.md`.
-- This seam: live checks (no code change), memory `drive-a-hosted-room-over-cdp.md`.
+- `78ff858` live checks (no code change), memory `drive-a-hosted-room-over-cdp.md`.
+- `3bc2605` seeker pickup is a bar 4.2u long (was 1.4u), owner request. ART_MATERIALS item 14 updated.
+  Still: scratchpad `seeker-pickup-bar.png` + `crop-seeker-pickup-bar.png`.
 
 ## State
 
