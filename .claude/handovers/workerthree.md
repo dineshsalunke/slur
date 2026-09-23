@@ -1,79 +1,72 @@
-Agent: workerthree · Lane: three power slots (#223), after the seeker look (#219) · Updated: 2026-09-23 ~21:00
+Agent: workerthree · Lane: three power slots (#223), after the seeker look (#219) · Updated: 2026-09-23 ~22:30
 
 ## Goal
 
-Build #223: three power slots (any mix, duplicates allowed). Keys: 1/2/3 select, Q cycles, E fires, X drops.
-A dropped power vanishes. With 3 full slots the racer skips the pickup and it stays. A grab fills the lowest empty slot.
-The seeker cap is now at FIRE time: one in flight per shooter. A seeker canister always grants a seeker.
-Only bolt + seeker for now (boost stays under #20). The owner APPROVED all of it (supervisor, 2026-09-23).
+#223: three power slots, any mix, duplicates allowed. 1/2/3 select a slot, Q cycles, E fires, X drops.
+A dropped power is gone. With a full rack the racer skips the pickup, and the pickup stays. The seeker
+cap is at fire time: one seeker in flight per shooter. Built end to end. Visual and live checks remain.
 
 ## Done
 
-- `e2096cd` ART_MATERIALS item 14, trail line (0.5u, 1.7×).
-- `fcebd5d` seeker body 4× (8.8u, halfLen 4.4), four fins (top/bottom/left/right, rear, 2.4u root), nose
-  anchored at sim z + seekerHalf (`SeekerForm.nose`, `seekerTail()`), TRAIL_POINTS 12→16, fade restarts
-  at the first visible point. VISUAL ONLY: SEEKER_HALF=1 and all sim code unchanged.
-- Stills (gitignored `.claude/frame-tap-refs/`): `seeker-flight-side.png`, `seeker-flight-quarter.png`,
-  `seeker-flight-close.png`. The pickup stills were not re-taken (geometry unchanged). Relayed to the owner.
-- Issue #223 filed.
+- `eb4c381` shared + server: slots, fire and drop by slot, fire-time seeker cap, run-room tests.
+- `c362fab` FIX: `heldPower` is a plain field. `@deprecated()` broke reflection decoding in hosted rooms
+  (see Lessons). A new run-room test decodes the rack through the SDK. It fails with `@deprecated()`.
+- `555862d` ART_MATERIALS item 14: 8.8u body, four rear fins.
+- `1081809` + `9928cc1` DECISIONS ADR-017 amendment: slots, fire-time cap, wire.
+- `738ebd3` client slice + GDD §5.3/§8: power-select store, PowerRack/PowerCell HUD, Held {slots},
+  real three-slot local combat, audio edge, net-canvas sends {slot}.
+- `454f544` memory `deprecated-breaks-reflection-decoding.md`.
 
 ## State
 
-- UNCOMMITTED #223 work (tree is mid-migration):
-  - shared DONE: `combat/constants.ts` (POWER_SLOTS=3, DROP_POWERUP_MESSAGE, PowerSlotMessage; SeekerScope
-    removed), `sim-config.ts` (seekerScope removed), `combat/combat-step.ts` (Gunner.slots; emptySlots,
-    isSlot, powerIn, canFire(g, slot), seekerReady, spendPower, dropPower, firstEmptySlot, grantPower;
-    stepPickups has no gate), `schema.ts` (`@deprecated()` heldPower kept + `slots` ArraySchema<uint8>
-    APPENDED), tests. Shared: tsc clean, 202 pass.
-  - server source DONE: `run-room.ts` (USE_POWERUP {slot}, DROP_POWERUP {slot}, clearCombat empties slots,
-    no gate), `room-combat.ts` (firePower(..., slot) returns false if own seeker is in flight; nothing is spent).
-    Server tsc clean. **`run-room.test.ts` NOT updated**: it still sets `heldPower` and sends USE_POWERUP
-    with no slot, so it will fail.
-  - client STOPGAP: `routes/test-level/local-combat.ts` bridges the old Held{power} as slot 0 (slots 1–2
-    stuffed with bolt so grabs never land there). Only there so /test-level does not crash on `g.slots`.
-- The hosted client still sends USE_POWERUP with no payload → the server ignores it → **E does nothing in a
-  hosted room until the client slice lands.** HeldPowerChip listens to the deprecated heldPower (always 0).
-- Client tsc: clean except workertwo's Break.*/Fracture.* keys (not mine).
-- Verified: @colyseus/schema 4.0.30 ArraySchema proxy supports `arr[i] = v`; `deprecated()` is exported.
+- Tests: server 14/14, shared 202/202, client 241/241. Client tsc is clean apart from workertwo's
+  Break.*/Fracture.* keys. `pnpm lint`: canvas-isolation and comment ratchet pass. Biome warns that
+  run-room.test.ts is over 300 lines (a warning only).
+- Verified through the SDK: `$( p ).slots.onChange` fires once per index, and fires on initial items.
+- NOT verified live: the hosted room in a browser (rack HUD, E/X, pickup sfx) and /test-level HUD look.
+  [unmeasured]
+- /test-level: ship class is now Shift+1..5 (option (a)). The owner's answer is pending through the
+  supervisor.
 
 ## Uncommitted
 
-packages/shared/src/{schema.ts, sim-config.ts, combat/constants.ts, combat/combat-step.ts,
-combat/combat-step.test.ts, combat/seeker-pickups.test.ts} · apps/server/src/rooms/{run-room.ts,
-room-combat.ts} · apps/client/app/routes/test-level/local-combat.ts
+none
 
 ## Held files
 
-- All previous holds (shared combat/*, schema, sim-config, index; server run-room(+test), room-combat; client
-  seeker-*, pickup/projectile fields, threat-hud, held-power-chip, sfx-map, test-level local-*,
-  attach-room-to-world, ecs/traits).
-- #223 claims CLEARED: game/net-canvas.tsx, game/overlays/overlays.tsx, audio/bind-room-audio.ts,
-  routes/test-level/{local-combat.ts, local-ship.tsx}, game/input/ (new store), docs/GDD.md.
-- RELEASED TO ME by the supervisor: docs/ART_MATERIALS.md and docs/DECISIONS.md.
-- RELEASED: dev/tuning-schema.ts (workertwo has it).
+- #223 client: game/input/power-select(.test).ts, game/hud/power-{rack,cell}.tsx, game/net-power-rack.tsx,
+  game/net-canvas.tsx, net/attach-room-to-world.ts, ecs/traits.ts, audio/bind-room-audio.ts,
+  routes/test-level/{local-combat(.test).ts, local-ship.tsx, test-level-hud.tsx}, game/net-debug-hud.tsx,
+  game/overlays/{overlays.tsx, overlays.test.tsx}, docs/GDD.md.
+- Shared combat/*, schema, sim-config; server run-room(+test), room-combat.
+- RELEASED: docs/ART_MATERIALS.md, docs/DECISIONS.md.
 
 ## Next
 
-1. Update `apps/server/src/rooms/run-room.test.ts`: set `shooter.slots[0] = …` and send `{ slot: 0 }`.
-   Add tests: drop empties a slot; a 2nd seeker is refused while own seeker flies (slot kept); a full rack
-   skips. Run `pnpm test` (server). Then commit shared + server + the stopgap in ONE commit (it must land
-   together).
-2. Client slice: a `game/input/power-select.ts` module store (selected slot; 1/2/3/Q keys; auto-advance to
-   the next full slot) using the useSyncExternalStore pattern in `dev/rear-view-toggle.ts`; net-canvas sends
-   `{slot}` on E and DROP on X; replace HeldPowerChip with a 3-cell strip (one component per cell, each
-   listens to its own slot via `$(p).slots.onChange`); bind-room-audio pickup sfx on any slot filling;
-   Held trait → {slots} and a real 3-slot local-combat (remove the stopgap) + local-power-slot +
-   local-combat.test.
-3. Docs: ART_MATERIALS item 14 → 8.8u long and four fins (leave items 13 and 15 alone; commit alone).
-   GDD §5.3 "single held slot (no stacking)" + the controls table. DECISIONS ADR-017 amendment (fire-time
-   seeker cap, slots). Commit each file alone, then release both docs.
-4. Then the seeker leftovers: audio + LOCKED HUD, target dummy, two-player room check.
+1. Live check in a hosted room (start solo): grab 2–3 pickups, look at the rack, press 1/2/3 and Q,
+   fire with E, drop with X, fire a second seeker while one flies (it must be refused). Headless Chrome
+   rules are in CLAUDE.local.md §7.
+2. /test-level HUD still: the rack in the bottom right, with no overlap with FlightReadout.
+3. Apply the owner's answer on the /test-level class keys.
+4. Seeker leftovers: audio + LOCKED HUD, target dummy, two-player room check.
 
 ## Open questions
 
-- Owner: look review of the 8.8u stills (supervisor relayed).
+- Owner: /test-level class keys, (a) Shift+1..5 (built), (b) or (c).
+- Owner, via the supervisor: correct the colyseus rule. DO NOT EDIT until the owner approves. Draft:
+  - `.claude/rules/colyseus-state.md:15`. OLD: *"order — a mismatch silently corrupts decoding. Dead
+    fields get `@deprecated()`."* NEW: *"order — a mismatch silently corrupts decoding. Keep a dead
+    field as a plain `@type` field that nothing writes. Never `@deprecated()`: our client decodes by
+    reflection, and a deprecated field moves every later field one index down (c362fab)."*
+  - `conventions/colyseus.md:157`. OLD: *"Append only; mark dead fields `@deprecated()`."* NEW:
+    *"Append only. Keep dead fields as plain unused `@type` fields. `@deprecated()` breaks
+    reflection decoding in @colyseus/schema 4.0.30: the reflected class leaves the field out, so the
+    client puts later fields one index too low (`field not defined at index N`, `definition
+    mismatch`). Measured in #223, fixed in c362fab. The guard is the SDK decode test in
+    `apps/server/src/rooms/run-room.test.ts`."*
+- Owner: the look review of the 8.8u seeker stills.
 - Trail segment seams (dark chevrons) are still there.
 
 ## Lessons → memory
 
-none (the ?t= HMR-orphan import lesson is already in `cdp-import-of-tuning-hits-an-hmr-orphan.md`).
+`.claude/memory/deprecated-breaks-reflection-decoding.md` (454f544).
