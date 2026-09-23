@@ -3,7 +3,7 @@ import { DEFAULT_TUNING } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useMemo } from 'react';
 import { LocalPlayer, Net, Render, Sim } from '../../game/ecs/traits';
-import { prefersReducedMotion } from './reduced-motion';
+import { prefersReducedMotion } from '../../game/scene/reduced-motion';
 import { currentShip } from './ship-choice';
 
 const CRUISE = DEFAULT_TUNING.maxCruise * 0.6;
@@ -11,7 +11,7 @@ const CAMERA_BACK = 5;
 const CAMERA_HEIGHT = 2.2;
 const LOOK_AHEAD = 40;
 const LOOK_HEIGHT = 1.6;
-const PORTRAIT_LOOK_HEIGHT = -6;
+const PORTRAIT_LOOK_HEIGHT = -12;
 
 export function LandingRig( { loopZ }: { loopZ: number } ) {
     const world = useWorld();

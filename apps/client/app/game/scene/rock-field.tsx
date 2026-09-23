@@ -7,6 +7,7 @@ import { AsteroidBand } from './asteroid-band';
 import { ASTEROID_BANDS, ROCK_FAR } from './asteroid-config';
 import { packRockSurface, patchRock, prepareRockNormal, rockUniforms } from './asteroid-surface';
 import { NEBULA_LIGHT } from './nebula-baker';
+import { prefersReducedMotion } from './reduced-motion';
 
 const ROCK_TEXTURES = [
     '/textures/dark-rock-diff.jpg',
@@ -27,6 +28,7 @@ export function RockField() {
         return m;
     }, [ uniforms ] );
     const color = useRef( '' );
+    const still = useMemo( prefersReducedMotion, [] );
 
     // JUSTIFIED EFFECT — brackets the lifetime of a GPU texture and material we built ourselves.
     useEffect(
@@ -38,7 +40,7 @@ export function RockField() {
     );
 
     useFrame( ( state ) => {
-        uniforms.uRockTime.value = state.clock.elapsedTime;
+        uniforms.uRockTime.value = still ? 0 : state.clock.elapsedTime;
         uniforms.uRockSpin.value = num( 'Rock.spin' );
         uniforms.uRockDrift.value = num( 'Rock.drift' );
         uniforms.uRockTexScale.value = num( 'Rock.textureScale' );

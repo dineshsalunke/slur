@@ -2,11 +2,12 @@ import { useFrame } from '@react-three/fiber';
 import { useQueryFirst } from 'koota/react';
 import { Suspense, useMemo, useRef } from 'react';
 import { LocalPlayer, Net, Render, Sim } from '../../game/ecs/traits';
+import { prefersReducedMotion } from '../../game/scene/reduced-motion';
 import { ShipModel } from '../../game/scene/ship-model';
-import { prefersReducedMotion } from './reduced-motion';
 import { currentShip, useShipChoice } from './ship-choice';
 
 const AHEAD = 2;
+const PORTRAIT_AHEAD = 15;
 const LANE_X = -2.6;
 const WIDE_ASPECT = 1.6;
 const REST_Y = 1.1;
@@ -42,10 +43,11 @@ export function LandingShip() {
         r.angle += r.rate * dt;
 
         const phase = still ? 0 : state.clock.elapsedTime * BOB_HZ * TWO_PI;
+        const aspect = state.size.width / state.size.height;
         grp.position.set(
-            LANE_X * Math.min( 1, state.size.width / state.size.height / WIDE_ASPECT ),
+            LANE_X * Math.min( 1, aspect / WIDE_ASPECT ),
             REST_Y + Math.sin( phase ) * BOB_AMP,
-            sim.z + AHEAD,
+            sim.z + ( aspect < 1 ? PORTRAIT_AHEAD : AHEAD ),
         );
         grp.rotation.z = r.angle + Math.cos( phase ) * IDLE_BANK;
     } );
