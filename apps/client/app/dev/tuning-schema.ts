@@ -16,12 +16,12 @@ interface ColorTunable {
 }
 
 export const NUMBER_TUNABLES = {
-    'Environment.intensity': { value: 1, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Environment.intensity': { value: 1.2, min: 0, max: 20, step: 0.05, rebuild: false },
     'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
 
-    'Env.skyIntensity': { value: 0.4, min: 0, max: 5, step: 0.01, rebuild: false },
-    'Env.groundIntensity': { value: 0.22, min: 0, max: 5, step: 0.01, rebuild: false },
-    'Env.bandIntensity': { value: 0.4, min: 0, max: 4, step: 0.05, rebuild: false },
+    'Env.skyIntensity': { value: 0.6, min: 0, max: 5, step: 0.01, rebuild: false },
+    'Env.groundIntensity': { value: 0.5, min: 0, max: 5, step: 0.01, rebuild: false },
+    'Env.bandIntensity': { value: 0.5, min: 0, max: 4, step: 0.05, rebuild: false },
     'Env.bandHeight': { value: 5, min: 0.5, max: 60, step: 0.5, rebuild: false },
 
     'RailLight.intensity': { value: 3, min: 0, max: 200, step: 0.5, rebuild: false },
@@ -85,11 +85,11 @@ export const NUMBER_TUNABLES = {
     'Groove.darkening': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.cavity': { value: 0.3, min: 0, max: 1, step: 0.01, rebuild: true },
 
-    'Chase.back': { value: 12, min: 2, max: 40, step: 0.5, rebuild: false },
+    'Chase.back': { value: 14, min: 2, max: 40, step: 0.5, rebuild: false },
     'Chase.backStretch': { value: 0, min: 0, max: 20, step: 0.5, rebuild: false },
-    'Chase.height': { value: 5, min: 0, max: 25, step: 0.1, rebuild: false },
-    'Chase.lookAhead': { value: 14, min: 0, max: 60, step: 0.5, rebuild: false },
-    'Chase.lookAtLift': { value: 1, min: -5, max: 15, step: 0.1, rebuild: false },
+    'Chase.height': { value: 4, min: 0, max: 25, step: 0.1, rebuild: false },
+    'Chase.lookAhead': { value: 17, min: 0, max: 60, step: 0.5, rebuild: false },
+    'Chase.lookAtLift': { value: 3, min: -5, max: 15, step: 0.1, rebuild: false },
     'Chase.fov': { value: 70, min: 40, max: 120, step: 1, rebuild: false },
     'Chase.fovStretch': { value: 0, min: 0, max: 40, step: 0.5, rebuild: false },
     'Chase.follow': { value: 20, min: 1, max: 60, step: 0.5, rebuild: false },
