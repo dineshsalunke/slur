@@ -22,6 +22,7 @@ lives in its own file beside this one.
 - [Freeze does not stop asteroid drift](freeze-does-not-stop-asteroid-drift.md) — a two-tap diff is contaminated frame-wide; for presence, force an alien colour and scan one tap
 - [CDP import of tuning hits an HMR orphan](cdp-import-of-tuning-hits-an-hmr-orphan.md) — setNum/setCol silently reach a second module instance, not the page; pin uniforms instead
 - [Frame tap may answer from another tab](frame-tap-may-answer-from-another-tab.md) — screenshot the tab you drive over CDP when the reading must match state you just set
+- [Pane percent is of 1M](pane-percent-is-of-one-million.md) — 15% on a worker's bar is the 150k warning; clear before assigning past 10%
 - [Supervisor clears workers via herdr](supervisor-clears-workers-via-herdr.md) — `herdr agent prompt <pane> "/clear"`, then a resume prompt; "stalled" on /clear is success
 - [Rear-view panel looks like geometry](rear-view-panel-looks-like-geometry.md) — the top-centre translucent slab in a /test-level tap is the mirror, not a lintel
 - [Headless game tabs starve the GPU](headless-game-tabs-starve-the-gpu.md) — one extra game tab doubles frame time; DPR 1, mute, kill after use
