@@ -1,70 +1,47 @@
-Agent: workerthree · Lane: seekers fire back to back (#226), after three power slots (#223) · Updated: 2026-09-23 ~23:25
+Agent: workerthree · Lane: rail flow seam has no bloom (#229) · Updated: 2026-09-24 ~01:30
 
 ## Goal
 
-#226: remove the one-seeker-in-flight cap so a racer can fire seekers back to back. Owner: *"i would
-like to fire seeker's back to back if required."* Add no new gate.
+Find why the rail flow seam (the marigold strip on top of each rail) barely blooms. Propose a fix. Build
+nothing until the supervisor clears it.
 
 ## Done
 
-- `eae791d` shared + server + client + DECISIONS: `seekerReady()` deleted, gate removed in server
-  `room-combat.ts` `firePower` (now `void`) and `/test-level` `local-combat.ts`. `MAX_SEEKERS` 16 → 48
-  (render bound only, supervisor's call). Three refusal tests became back-to-back tests. ADR-017
-  amendment quotes and replaces the #223 fire-time cap bullet.
-- Earlier lane #223: `eb4c381`, `c362fab`, `555862d`, `1081809`, `9928cc1`, `738ebd3`, `454f544`,
-  `78ff858`, `3bc2605` (seeker pickup bar).
+- Diagnosis. Issue filed: #229. No code written.
 
 ## State
 
-- Tests: shared 201/201, server 14/14, client 241/241. `pnpm typecheck` clean. `pnpm lint`: 8 warnings,
-  all older. The one warning in a file I touched is run-room.test.ts over 300 lines. It is older, and
-  this change made the file shorter.
-- Render buffers at 48: trail 768 segments × 76 B = 58,368 B; bodies 3 parts × 48 × 64 B = 9,216 B;
-  about 66 KB (was about 22 KB). Seekers past 48 fly and hit but are not drawn.
-- Live /test-level (private :5186, headless DPR 1, muted, all killed after): rack [2,2,2], E ×3 at
-  120 ms → rack 022 → 002 → 000, seekers 1 → 2 → 3. Still: scratchpad
-  `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/f9f2fb5c-0c78-4488-a314-a3dd3c3132bd/scratchpad/seekers-b2b.png`
-  (three seekers in a line, each with its own trail).
-- Overlap: E on consecutive frames (the client fires at most one per tick) → spawn z 3.67/3.33/3.11,
-  about 2u apart after 250 ms. The body is 8.8u long, so they draw as one stacked shape. They do not
-  collide: the seeker step tests blocks and ships only.
-- Server `onMessage` fires right away, not once per tick. Two USE_POWERUP messages in one tick spawn at
-  the same point [inferred from code, not measured]. Harmless: hit stun is SET
-  (`v.stunTimer = stunDurationForShip(...)`), so two hits at once give one stun. A later hit restarts it.
-- Nothing is keyed per owner: seeker ids come from `nextProjectileId++`. Audio `bind-room-audio.ts` and
-  `threat-hud.tsx` read `projectiles` only. The seekers have no per-owner sound.
-- NOT done: the hosted-room live check. A real room needs seeker pickups through a bot. The run-room
-  test drives the real room through a real Colyseus client (3 seekers → `seekers.size` 3).
+- Strip emissive = linear (1.826, 0.646, 0.035). Luminance 0.853. That is above `Bloom.threshold` 0.6 +
+  smoothing 0.2. The threshold is not the cause.
+- Cause: the strip is a flat 0.25u quad in the deck plane (`track-rail.tsx` strip quad, `RAIL_EMISSIVE_SHARE`
+  0.125), at |x| = 33. The camera sees it edge-on. The core is 1 px and dashed (x 60, y 477, R 250).
+- Bloom on − off, 1 px from the core: rail +79. Monolith seam (3 px core): +100.
+- `Rail.railEmissive` 8: halo +131, but the core clips to 254 and stays 1 px wide.
+- `Rail.railEmissive` 0 removes the line, so the line is the rail strip and not the rim cord.
+- Projected widths of the fix options (0.7 px now, 3–4 px with a lip or cord) are [unmeasured], from geometry.
+- Scratch dev server :5183 and headless Chrome :9333 are both killed.
 
 ## Uncommitted
 
-none
+- none
 
 ## Held files
 
-- #226: none held beyond the #223 set below (all committed).
-- #223 client: game/input/power-select(.test).ts, game/hud/power-{rack,cell}.tsx, game/net-power-rack.tsx,
-  game/net-canvas.tsx, net/attach-room-to-world.ts, ecs/traits.ts, audio/bind-room-audio.ts,
-  routes/test-level/{local-combat(.test).ts, local-ship.tsx, test-level-hud.tsx}, game/net-debug-hud.tsx,
-  game/overlays/{overlays.tsx, overlays.test.tsx}, docs/GDD.md.
-- Shared combat/*, schema, sim-config; server run-room(+test), room-combat.
+- none yet. Proposed claim: `apps/client/app/game/scene/track-rail.tsx`, `track-rail.test.ts`,
+  `track-geometry.ts` (one lip-height constant), `docs/ART_SCALE_REFERENCE.md` (one row).
 
 ## Next
 
-1. Supervisor decides whether the hosted-room check for #226 is worth a bot run.
-2. Close #226 once accepted.
-3. Apply the owner's answer on the class keys (/test-level and the `net-canvas.tsx` dev swap).
-4. If wanted: a refused-fire cue. Only stun can refuse a fire now.
-5. Seeker leftovers: audio + LOCKED HUD, target dummy, two-player room check.
+1. Wait for the supervisor to clear the claim and for the owner to pick a fix option (#229).
+2. Recommended option: an inboard vertical emissive lip on the strip, added to the strip group in
+   `buildRailGeometry`. Add a test for the extra quad.
+3. Re-tap headless `/test-level` with `ab=1`. Compare the 1 px halo against +79 now and +100 for the monolith.
 
 ## Open questions
 
-- Owner: class keys, (a) Shift+1..5 (built on /test-level), (b) or (c). Should the hosted room's dev
-  class swap move the same way?
-- Owner, via the supervisor: the colyseus rule wording (draft in `36dd249`). DO NOT EDIT until approved.
-- Owner: should seekers fired on consecutive frames be spaced apart? Now they draw as one stacked shape.
-- Owner: the look review of the 8.8u seeker stills. Trail segment seams (dark chevrons) remain.
+- Owner: is the seam shape (a lip or cord in place of a flat strip) acceptable? It changes the 0.25u flat
+  spec in `docs/ART_SCALE_REFERENCE.md` L42.
 
 ## Lessons → memory
 
-none
+- `.claude/memory/thin-emissive-needs-pixel-coverage.md`
