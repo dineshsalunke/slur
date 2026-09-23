@@ -36,6 +36,8 @@ lives in its own file beside this one.
 - [@deprecated breaks reflection decoding](deprecated-breaks-reflection-decoding.md) — the client decodes by reflection; a deprecated field shifts later indexes. Keep dead fields plain
 - [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + a gap-aware bot; races stop at 180 s; reverse through a pickup for a duplicate
 - [Thin emissive needs pixel coverage](thin-emissive-needs-pixel-coverage.md) — bloom follows lit-pixel area; an edge-on 0.25u strip is 1 px and barely blooms even at lum 0.85
+- [Check the CDP port is yours](check-the-cdp-port-is-yours.md) — Chrome on a taken port fails silently and your driver steers another agent's tab
 - [Count draw calls without repo edits](count-draw-calls-without-repo-edits.md) — CDP-inject a WebGL + rAF wrapper; exact draws on any route, ms is JS only
 - [Owner may waive issue filing](owner-may-waive-issue-filing.md) — when the owner says "no issue, go ahead", brief the worker to build without one
+- [MSAA edge samples extrapolate varyings](msaa-edge-samples-extrapolate-varyings.md) — `pow` on an unclamped varying goes NaN at MSAA, and bloom turns the frame black; clamp the base
 - [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer has multisampling 0; a <1 px strip vanishes whole frames; zsh `$a` does not word-split, verify dials applied
