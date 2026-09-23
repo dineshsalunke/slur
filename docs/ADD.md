@@ -250,9 +250,22 @@ panel make the two sky families from one parameter set. Measured sky-only cost, 
 from the planet centre gives a sphere normal, a sun direction (`Sky.planetPhase` around the view axis,
 `Sky.planetTilt` around the planet) gives the terminator, `pow( r, 16 )` gives the lit limb, and three
 reads of the noise volume give relief. The planets are in the light cube too, so a large Deep Space
-planet contributes to the IBL. The rail lights are six rectangular area lights; a smooth metal deck
-mirrors them at grazing angles, so their intensity is the one lighting value that floods the whole far
-deck orange when set high. It sits at 0.35 for the controlled halos the cruise board shows.
+planet contributes to the IBL.
+
+**The rail glow is an analytic line light in the deck material** (`scene/rail-glow.ts`), not a scene
+light. Two infinite lines at the rail x positions give a wrapped `1/d` diffuse term and a specular
+streak from the closest point on the line to the reflection ray, patched into `lights_fragment_end`
+of the floor material only. The six `RectAreaLight`s it replaced were the single largest cost of a
+DPR 2 frame (8 ms of 17.7 on an M3 Pro at 3456×2160), because three.js evaluates every area light
+with LTC on every fragment of every standard material. The line light costs a few dozen ALU on deck
+fragments. The `Environment` band cylinder still gives blocks, monoliths and ships their marigold.
+
+**DPR 2 frame budget, M3 Pro, 3456×2160, GPU-synced medians while driving** (`readPixels` each
+frame; plain rAF timing does not track the GPU under ANGLE Metal): 10.0 ms with everything, 5.4 ms
+with every mesh hidden (post chain, rear view, HUD, present), deck 2.1 ms, sky 1.4 ms, rocks 0.9 ms,
+point lights 0.5 ms. The canvas is created with `antialias: false, alpha: false` (`scene/canvas-gl.ts`):
+the composer's final quad gains nothing from a multisampled default framebuffer, and an opaque
+canvas skips the compositor blend. The next millisecond lives in the post chain, not the scene.
 
 **The rock maps are the only bitmaps in the pipeline.** They are `public/textures/dark-rock-*.jpg`, Poly
 Haven `dark_rock` (CC0), 1k. The asteroid shader uses the luminance of the diffuse map, tinted to
