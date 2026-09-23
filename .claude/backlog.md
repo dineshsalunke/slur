@@ -11,6 +11,53 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
 
 ## Pending
 
+- [ ] 2026-09-23 [task] [docs] **Work the three audit reports in `.claude/reports/`** — written 2026-09-23, none acted on
+  why: three audits ran in one pass and produced findings, not fixes. Each needs a doc-moves-or-code-moves
+  call from the owner. Read the report, not this summary — each finding quotes its source and its
+  contradicting file and line.
+  1. [ ] **`GDD-DEVIATIONS.md`** — 11 findings. Take **§1.3 first**: GDD §0 argues for a fixed clearance
+     ceiling because *"if clearance tracked the live roster, adding/resizing a ship would silently mutate
+     every existing seed's track"*, and `sim/weave.ts:15-16` derives `SLOPE_CAP`/`CURV_CAP` from
+     `ALL_CLASS_TUNINGS` — the live roster. The seed-stability promise does not hold across a roster change.
+     Then §1.1 (`MIN_CLEAR`/`MAX_SHIP_WIDTH`/`CLEARANCE_MARGIN` exist in no source file; `MIN_LANE = 8u`
+     ships instead of the documented 7u) and §2.1 (slow blocks are gone from the sim; GDD §5.2 and ADR-009
+     still ship them).
+  2. [ ] **`ADD-DEVIATIONS.md`** — 7 findings. §1 is a free win: four rows of §0's authority table and one
+     §7 reference point at `docs/art-direction/handoff/` and `boards/`, both deleted in the 2026-09-20/21
+     reorg. Resolve through `docs/art-direction/README.md`. The monolith departures (§2.1 scale 200–400u
+     documented vs 50u shipped, §2.2 metalness) are corrections for the owner to hand to ChatGPT — never an
+     edit inside `docs/art-direction/`.
+  3. [ ] **`CONVENTION-VIOLATIONS.md`** — 1 non-negotiable, 0 convention, 2 arguable. The real one is a
+     two-line prose comment at `apps/client/app/game/scene/sealed-block-shader.ts:137-138`, which
+     `check-comment-ratio.mjs` cannot catch because it only ratchets files as they change. Worth deciding
+     whether the ratchet should get a one-off full-tree sweep. The arguable pair (the 30Hz input
+     `setInterval` bound to `NetCanvas`'s mount; `CELL` imported into rim/floor geometry) both plausibly
+     sit inside their rules' own carve-outs — read the report's reasoning before touching either.
+
+- [ ] 2026-09-23 [task] [docs] **The audits only covered GDD, ADD and the conventions** — TDD, AUDIO and DECISIONS are unaudited
+  why: the same doc-vs-code drift that produced 18 findings across GDD and ADD almost certainly exists in
+  `docs/TDD.md`, `docs/AUDIO.md` and `docs/DECISIONS.md` — ADR-009 is already known to describe a removed
+  block family. Run the same pass over them before trusting any of the three.
+
+- [x] 2026-09-23 → 2026-09-23 [bug] [client] **Forward judder — the chase camera's axis split** — **DONE; `3b50857`; issue #212 closed**
+  why: the ship "kept juddering back and forth" flying forward while strafing stayed smooth. Three sessions
+  of hunting treated the axis split as a clue about *where the variance was*; it was the cause. `chase.ts`
+  copied the ship's x exactly but smoothed its z, so the camera lagged in z by a frame-rate-dependent amount
+  and every wobble in frame time read as the ship sliding. Now `cam.position.z = p.z - followBack`, with the
+  follow *distance* smoothed instead. Ship-to-camera z swing over 900 frames: hitch 0.446u → 0, vsync beat
+  0.145u → 0, jitter 0.184u → 0. `chase.test.ts` locks all three at < 1e-9.
+  **Still open, separately:** the frame-time variance itself, which now costs smoothness of the *world*
+  rather than of the ship. `R` unmounts the rearview pass (`ec5c780`) to A/B the loudest suspect against
+  the FPS readout's `max` field. Needs the owner's own browser — not headless Chrome (SwiftShader) and not
+  an extension-driven tab; both misreport frame time.
+  **Also found, not fixed:** `updateSpectatorCamera` still lags in z (measured: hitch 0.340u, beat 0.097u,
+  jitter 0.157u) and no test covers it. Deliberately left — it follows *remote* ships off the network
+  interpolation buffer, so its smoothing absorbs network jitter too, and copying z would hand that straight
+  to the camera. Needs an owner call, not a mechanical repeat of the chase fix.
+  **Also found, not fixed:** `createFixedStep` does `if ( n === maxSteps ) acc = 0` — any frame slower than
+  83ms silently discards accumulated time, so the ship falls behind real time. A position discontinuity on a
+  severe hitch. `packages/shared/src/sim/fixed-step.ts`.
+
 - [~] 2026-09-23 [feature] [procgen] **De-quantise the silhouette — nothing in the field may repeat one size**
   why: the owner flew the track and said the blocks read as *"a vertical grid with a block and space"* — a
   4u block, a 4u gap, repeating. Measured (seed 12345, 400 segments): 44% of blocks fell in 2.6–4u and the
@@ -73,9 +120,11 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
   ADR-001 note below is half stale. The authored provider stays unbuilt and belongs to #24. Dead
   `flightSystem` (no track → no collision) replaced by `localFlightSystem`. As-built:
   `.claude/phases/2026-09-21-test-level.md`.
-  **Still owed:** the CLAUDE.md `/solo` wording amendment (owner). Blocks render as two placeholder
-  families — `LETHAL_SURFACE` pink, `DRAG_SURFACE` white (`track-blocks.tsx`) — which the block-art item
-  replaces. Next art item: scene lighting to the golden reference.
+  **Still owed:** the CLAUDE.md `/solo` wording amendment (owner).
+  **Updated 2026-09-23:** the two placeholder block families are gone — `LETHAL_SURFACE`/`DRAG_SURFACE` no
+  longer appear anywhere in `apps/client/app`; blocks render as the sealed art family. `/env-lab` is also
+  gone (deleted 2026-09-22 with the lighting strip, issue #196), so `/test-level` and a hosted
+  `/game/:roomId` room are what is left to look at art in.
 
 - [ ] 2026-09-21 [feature] [art] Scene lighting to the new golden reference
   why: `docs/art-direction/golden-reference/` now carries two approved lighting states —
@@ -127,8 +176,10 @@ the global parking lot at `~/.claude/backlog.md` (the `backlog` skill writes bot
 - [~] 2026-08-09 [feature] [infra] Track provider + anchors + grammar + validator (post-S4) — **SEQUENCED as ADRs** (`docs/DECISIONS.md`)
   Build order is dependency-driven, NOT ADR-number order (see the DECISIONS "Build sequence"):
   1. [x] **ADR-001** provider decoupling — **SHIPPED (PR #46, 2026-08-10).** `RunState.seed` → nested
-     `TrackDescriptorState`; `resolveTrack(descriptor) → Track`; seed procgen-internal; `length`/`tier` reserved
-     UNWIRED; ADR-004 comment cleanup folded in. Geometry byte-identical.
+     `TrackDescriptorState`; `resolveTrack(descriptor) → Track`; seed procgen-internal; ADR-004 comment
+     cleanup folded in. Geometry byte-identical. **Corrected 2026-09-23:** `length` is wired end to end;
+     only `tier` is still unwired — it is carried on the wire (`schema.ts:56`) and hardcoded to 0 at
+     `sim/track-provider.ts:16`, read by no generator code.
   2. [x] **ADR-002** anchors — **SHIPPED (PR #47, 2026-08-10).** `Track.anchors: Anchor[]` (procgen emits;
      pickups = `anchors.filter(kind==='pickup')`; `corridorCenterX` internalised). **Visual seam FROZEN**
      (rule only, ADD.md §12; §6 points to it). `pickupTaken` keys unchanged.

@@ -1,12 +1,20 @@
 # Phase notes — index
 
 Read this file only. Open an individual note only when this index sends you there for a specific
-detail. 51 notes are summarized below (49 in `.claude/phases/`, 2 in `.Codex/phases/`).
+detail. **77 notes are summarized below**: 60 dated notes + 15 `HANDOVER-*` notes (4 still live in
+`.claude/phases/`, 11 moved to `.claude/phases/archive/` — see "HANDOVER notes" below) in
+`.claude/phases/`, plus 2 in `.Codex/phases/`. (Corrected 2026-09-23 — the previous header claimed
+51 notes against 76 files actually present; this pass also archived 11 completed `HANDOVER-*` notes,
+so the live file count in `.claude/phases/` is now 65, plus 11 under `archive/`.)
 
 Numeric tuning values (lighting, camera, material scalars) changed dozens of times across the
-2026-09-22 sessions and are volatile by nature — `apps/client/app/dev/tunables.ts`
-(`NUMBER_SPECS`/`COLOR_SPECS`) is the single source of truth for current values, not this index.
-The digest below covers **mechanisms and structural decisions**, not exact numbers.
+2026-09-22/23 sessions and are volatile by nature — **`apps/client/app/dev/tuning-schema.ts`**
+(`NUMBER_TUNABLES`/`COLOR_TUNABLES`) is the single source of truth for current values, not this
+index. (Corrected 2026-09-23 — the file was `dev/tunables.ts` with `NUMBER_SPECS`/`COLOR_SPECS`
+only through the 2026-09-22 tuning-panel generation; it was deleted and rebuilt on a leva-backed
+panel — see `2026-09-22-lighting-strip.md` and `d44d324` — and the current module is
+`tuning-schema.ts`, verified present at that path with those two export names.) The digest below
+covers **mechanisms and structural decisions**, not exact numbers.
 
 ## As-built digest — what still holds today (2026-09-22)
 
@@ -173,6 +181,89 @@ The digest below covers **mechanisms and structural decisions**, not exact numbe
   denial it describes was later found to be **flaky, not session-specific** (see that note's own
   correction, and `2026-09-22-non-destructible-block-to-board-28.md`'s addendum).
 
+## HANDOVER notes — status as of 2026-09-23
+
+`HANDOVER-*.md` files (unlike the dated notes) describe a specific in-flight lane and get archived
+once that lane's work lands. 11 of 15 are archived below; the other 4 are **LIVE** — an active
+lighting lane (issue #170) is using them and they stay in `.claude/phases/` until it closes.
+
+### LIVE — do not archive (issue #170, the "back-fill" lighting lane)
+
+- **`HANDOVER-back-fill.md`** — Traced #170 ("every light arrives from ahead of the player, add a
+  back-fill") and found the fill light was already correctly aimed; the real blocker was
+  `SEALED_BLOCK_METALNESS` at 0.9 (should be 0 per `ART_MATERIALS.md` §M2), which left blocks with no
+  diffuse term to light. Fixed in `e45bdaf`. Left open: raising `Fill.intensity` enough to read as
+  *cold* light costs the asteroid field's look — an owner's-eye call across two lanes, not landed.
+- **`HANDOVER-deck-vs-rail.md`** — Investigated issue #162 ("the deck out-shines the rail") and found
+  it does not reproduce — the ratio is inverted, the rail is 1.9–8.2x the deck. Also measured the
+  monolith face and found 78% of its apparent light is bloom spill, disproving a band-mirror theory
+  from `HANDOVER-back-fill.md`. No source change. Recommends #162 close as not-reproducing (owner's
+  call). The open half of #170 (cold light on player-facing faces) is unresolved.
+- **`HANDOVER-fill-cross-lane.md`** — Priced the open half of #170: raising `Fill.intensity` to get
+  ~10 levels of blue on a block face also pushes nearby asteroid rubble to 2x the deck's brightness,
+  crossing over at `Fill` ~0.8. Recommends `Fill` 1 as "the honest ceiling on this knob alone." Also
+  built a zero-camera-drift lighting A/B rig (live `setNum()` over CDP, no reload) — SSIM 0.99992
+  reproducibility, the best of three techniques tried across this lane. No source change; the
+  Fill-vs-asteroid tradeoff is still the owner's to call.
+- **`HANDOVER-block-mechanics.md`** — Briefs three owner asks: retire the tuning panel (superseded —
+  a different resolution shipped: the panel was deleted then rebuilt on leva, see
+  `2026-09-22-lighting-strip.md` and `d44d324`); block collisions bounce-and-stop instead of killing
+  (**not built** — `packages/shared/src/sim/step.ts`'s `insideBody` branch still only calls
+  `markDead`, verified this pass); and organic 4u–8u block heights (**not built** — `BLOCK_HEIGHT` is
+  still a fixed constant `8` in `packages/shared/src/sim/space.ts`, and the single-slice clearance
+  sampler that blocks it was fixed for width/depth but height was never varied). Kept LIVE because
+  two of its three asks are still genuinely open work, not superseded or shipped elsewhere.
+
+### Archived to `.claude/phases/archive/` — work shipped or superseded
+
+- **`HANDOVER-asteroids.md`** — issue #211, closed 2026-09-23. Shipped the asteroid field renderer
+  (faceted rock geometry, above/below-deck spread, size cut, four material passes) in `ffa25fb`.
+  Root-caused three prior look problems to fog (`meshStandardMaterial` defaults to `fog: true`, and
+  the bands sit past `Fog.far`). Flagged the remaining "still dark" complaint as issue #170, not an
+  asteroid bug — that lane is now the 4 LIVE notes above.
+- **`HANDOVER-atmospherics.md`** — issue #210, closed 2026-09-23. Shipped scene fog (`SceneFog`,
+  `THREE.Fog` graded to the backdrop's horizon colour, not black) in `24bf931`/`03a28c8`. Handed off
+  the (then-unbuilt) asteroid renderer to the next session, which shipped it as `HANDOVER-asteroids.md`
+  above.
+- **`HANDOVER-corridor-composition.md`** — the original briefing (unstarted) for 5 generator changes
+  to make the corridor ask more than one question at a time (vary block depth, let gaps and blocks
+  co-occur, space demands by reaction time, author rest/build/spike/release phrasing, lengthen the
+  test track). Fully answered and superseded by `HANDOVER-corridor-composition-done.md`.
+- **`HANDOVER-corridor-composition-done.md`** — all 5 changes above landed (`be6c95f`, `bf3ea85`,
+  `4af25f5`, `309f007`, `5326eb6`, `5b4a8f9`), plus a `track.ts` module split (`1fc678c`). Commits
+  confirmed in `git log`. Superseded in turn by `HANDOVER-corridor-closing.md`, which found the
+  playtest still boring and fixed the actual cause.
+- **`HANDOVER-corridor-closing.md`** — the owner flew the composed track and found ~25% of it asked
+  no lateral input at all; root cause was `laneState` leaving every open lane un-blockable, so blocks
+  were pure scenery. Shipped the ADR-006 "pinch gate" (a real, briefly-solid wall with one hole) and
+  made block width/depth continuous instead of 3 discrete tiers (`c47c532`, `7e27250`). Commits
+  confirmed in `git log`.
+- **`HANDOVER-de-quantising.md`** — the owner flew it again and said blocks still read as "a grid
+  with a block and a space" — a second quantisation bug in wall width (not the depth already fixed).
+  Fixed 3 stacked quantisers (`fbd1165`) and de-mirrored the monolith field (`568c523`). Commits
+  confirmed in `git log`. Left open (not archived away): gap-deck blocks never got the same width
+  carve (`gap-blocks.ts` still emits exactly 3 widths), and block height is still the one fixed axis.
+- **`HANDOVER-edge-fall.md`** — built "ships fall off the deck edges" (mechanic #3 of 3 the owner
+  announced), landed at `fc65986`, confirmed via `deckLimit`/`clampToEdges` in
+  `packages/shared/src/sim/step.ts`. Left as an explicit owner decision, not engineering: whether the
+  track-edge rail should read as a lip you slip past, or needs new art.
+- **`HANDOVER-exhaust.md`** — the split-crown exhaust plume and engine light. Root-caused the plume
+  reading invisible to a colour-ramp bug (the marigold end of the gradient was multiplied to zero by
+  construction) and shipped the fix in `dd24d04`/`ea7aa5c`, judged on screen. Next-step `EngineLight`
+  deck-streak tuning was hinted but not measured — open, low-stakes backlog.
+- **`HANDOVER-forward-judder.md`** — issue #212, closed. The ship appeared to judder forward but not
+  sideways; root cause was the chase camera smoothing world-z instead of copying it exactly (like it
+  already did for x), so frame-time variance showed up as a false forward wobble. Fixed in `3b50857`.
+- **`HANDOVER-hud.md`** — issue #209, closed 2026-09-23. Shipped the four-corner HUD
+  (`game/hud/{hud-layer,roster-panel,flight-readout,power-slot,power-gem}.tsx`) matching the approved
+  golden-reference boards, in `7996fc5`. Left open: reconciling `/game/:roomId`'s older cyan-panel HUD
+  onto the same components (the other half of #209), `» BOOST ACTIVE`, and the threat HUD.
+- **`HANDOVER-rearview-branch-consolidation.md`** — git-housekeeping note. Committed `hud`'s
+  in-progress exhaust work on the owner's instruction, corrected a false claim in
+  `HANDOVER-exhaust.md` (a ship hitbox/hull mismatch that turned out to be a wrong ship comparison),
+  and documented a 3-agent branch mixup (fixed by fast-forwarding `dev`) plus the lesson that
+  `git commit --amend` is unsafe in a shared checkout (HEAD is shared, not just the index).
+
 ## Per-file table
 
 | Date | File | Decided / changed | Status |
@@ -234,4 +325,9 @@ The digest below covers **mechanisms and structural decisions**, not exact numbe
 | 2026-09-22 | `2026-09-22-the-rearview-mirror.md` | Rearview mirror built as a 2nd pass at r3f priority 0.5 + drei `Hud` at 2, so `scene-effects.tsx` (a live agent's file) stayed untouched; root-caused "monoliths show, blocks don't" as two things — blocks are the ONLY streamed geometry (`BACK` 80→240; everything else is built once over the whole track) and `REAR_FOV` 82 was a *vertical* fov = 140° horizontal fisheye (→36). | LIVE, but **never seen on screen** — extension backgrounds the tab, `rAF` never fires; owner must foreground `/test-level` and confirm framing |
 | 2026-09-22 | `2026-09-22-block-surface-and-the-fresnel-trade.md` | Supervisor session: branch policy changed to all-agents-on-`dev` (no worktrees, no branches); `dev` fast-forwarded locally to absorb `art/rail-lights`, `feat/*` branches found stale and left unmerged; sealed-block shader compile bug (`patch` reserved word) fixed, seam flicker root-caused to a capped `fwidth` feather and fixed with an uncapped world-space footprint + coverage fade, chamfer 0.12u→0.5u; proved from `lights_physical_fragment.glsl.js` that a dark deck and a flat Fresnel ramp are mutually exclusive at any metalness, so `GRAPHITE_ALBEDO` `#7c8590` is a silent rewrite of M1's colour band. | LIVE, but **nothing judged on screen** — extension not connected; block texture, monolith cap chamfers and three announced game mechanics all unstarted |
 | 2026-09-22 | `2026-09-22-the-mirror-that-would-not-clear.md` | Closed the "never seen on screen" item on the rearview mirror across 4 owner turns. Three unrelated causes: `postprocessing`'s `EffectComposer` sets `renderer.autoClear = false` **permanently** (`build/index.js:1002`) so the mirror FBO carried stale depth and dropped geometry (presents exactly as a clip plane); the buffer was a fixed 512 against a CSS-pixel panel, i.e. a DPR upscale (now DPR-derived + 4× MSAA — and `useFBO` does NOT freeze its size, contrary to the prior note); and the inset was raw linear vs the main view's Khronos Neutral (curve now applied in the panel's own fragment shader, so `scene-effects.tsx` stayed untouched again). Re-treated against `golden-reference/scene-and-hud.png`, where the rear view is an **unframed band composited into the nebula** — frame and rule deleted, additive blending, edge feather. | LIVE, **owner-confirmed on screen** (`7faf414`, not pushed); vertical flip from the board deliberately NOT applied — owner's call |
-| 2026-09-22 | `2026-09-22-bloom-ownership-and-the-block-maps.md` | Fixed issue #166 by owning the `BloomEffect` and rendering it through `<primitive>` (React 19 makes `ref` a prop, which the wrapper's `JSON.stringify( restProps )` memo cannot survive) — verified across three HMR updates; blocks given the owner's real AmbientCG `Metal046B` maps, sampled through a world-space axis projection written straight into three's UV varyings, so no `uv` attribute and constant texel density at any block size; a `Block` leva group added. | LIVE (issue #166 fix, committed `6726322`); block maps landed at `3b82790` and **verified on screen** — mottling reads, projection works, chamfer reads; seam flicker confirmed gone by the owner, closing the `a0c87d1` fix; open: blocks now cast warm brown under marigold. Found `window.focus()` sometimes clears the backgrounded-tab freeze, but unreliably — always probe `document.hidden` before screenshotting |
+| 2026-09-22 | `2026-09-22-bloom-ownership-and-the-block-maps.md` | Fixed issue #166 by owning the `BloomEffect` and rendering it through `<primitive>` (React 19 makes `ref` a prop, which the wrapper's `JSON.stringify( restProps )` memo cannot survive) — verified across three HMR updates; blocks given the owner's real AmbientCG `Metal046B` maps, sampled through a world-space axis projection written straight into three's UV varyings, so no `uv` attribute and constant texel density at any block size; a `Block` leva group added. | issue #166 CLOSED 2026-09-23 (`6726322`); block maps landed at `3b82790` and **verified on screen** — mottling reads, projection works, chamfer reads; seam flicker confirmed gone by the owner, closing the `a0c87d1` fix; open: blocks now cast warm brown under marigold. Found `window.focus()` sometimes clears the backgrounded-tab freeze, but unreliably — always probe `document.hidden` before screenshotting |
+| 2026-08-10 | `2026-08-10-env-lab-DRAFT.md` | Same content as `2026-08-10-env-lab-DRAFT.md`'s row above under "As-built digest" — draft spec for the 3-variant `/env-lab` atmosphere prototype. | SUPERSEDED, see the digest entry above |
+| 2026-08-10 | `2026-08-10-procgen-weave-width-DRAFT.md` | Draft precursor to `2026-08-10-rhythm-paced-generation.md` — see the digest entry above. | SUPERSEDED, see the digest entry above |
+| 2026-09-22 | `2026-09-22-the-deck-is-a-mirror-and-the-authored-environment.md` | Root-caused the day-long "everything near the camera is black" complaint: at `metalness` ~1 a conductor's albedo *is* its specular F0, so a near-black `GRAPHITE_ALBEDO` (`#303c45`, F0 0.043) gives a 23x dark-near/bright-far mirror ramp that no lighting rig can fix — "you cannot light a mirror." Recommends raising albedo into real-conductor range instead of dropping metalness. Built `AuthoredEnvironment` (three authored emissive shells — sky/ground/marigold band — replacing a photographic HDRI, whose lower hemisphere read as a studio floor). | LIVE finding, SUPERSEDED (specific albedo/env numbers) by `2026-09-22-rail-lights-and-the-missing-tone-map.md`; the mirror/F0 diagnosis and `AuthoredEnvironment` architecture are durable and current |
+| 2026-09-22 | `2026-09-22-rail-lights-and-the-missing-tone-map.md` | Confirmed the albedo fix (`GRAPHITE_ALBEDO` → `#7c8590`) collapsed the mirror ramp; found the rails contributed zero light to the deck (emissive material only) and built `RailLights` — six `RectAreaLight`s riding the camera, root cost of `RectAreaLightUniformsLib.init()` at module scope since drei ships no wrapper. Hit and fixed a composer trap (missing `ToneMapping` effect washes the scene pale). Tuning persistence (`tuning-persist.ts`) shipped so a stale schema default can't silently resurrect an old value. | LIVE findings folded into the still-current rail-light/tone-mapping architecture; specific tuned numbers superseded by later 2026-09-22/23 passes (see digest) |
+| 2026-09-23 | `2026-09-23-monolith-metal-texture-handover.md` | Monoliths switched from a procedural stone panel texture to the same `Metal046B` photographic maps the sealed blocks use (`a4f909f`), moving the monolith material family from M3 (dielectric stone) to M2 (coated metal) — recorded as an owner-accepted departure in `ART_MATERIALS.md` Revision 6 (`807ca9e`). | LIVE (shipped); left open — nobody has re-judged the M3→M2 switch against `ART_MATERIALS.md` §4's "hazard vs scenery unambiguous" criterion by eye |
