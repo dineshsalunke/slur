@@ -36,9 +36,12 @@ The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `su
 
 ## Open owner decisions (newest first)
 
-E. **Monolith material (NEW, assigned to workertwo).** Owner: the monolith texture adds little. Options:
-   (A) drop the albedo map and use the deck colour; (B) monoliths use the deck material. workertwo builds a
-   live switch plus stills (current, A, B). The owner picks; then clean up and update ART_MATERIALS/ADD.
+E. **Monolith material #228: AWAITING THE OWNER'S PICK.** Switch `Monolith.surface` (0 current / 1 A deck
+   colour, no albedo / 2 B deck material) is committed in `ba17a58`, default 0. Stills are in
+   `.claude/frame-tap-refs/228-{current-metal,a-flat-deck-colour,b-deck-material}.png`, all sent to the
+   owner. B: the plate grid continues up the pillars, the rail glow lights their inner feet, and the
+   finish arches get no glow. workertwo is cleared, resumed and idle (handover `3d393d6`). On the pick:
+   make it the default, remove the switch, update ART_MATERIALS/ADD.
 A. **Darkness stills for #224** (blocks/ships/rails read darker: Env.bandIntensity 0.5 → 0.1, no local
    rail spill). workertwo needs a WORKTREE for the before (036645c) vs after (dev) pair. Approve?
 B. **Sky bake stall**: measured ~145 ms per re-bake at DPR 1 (ANGLE Metal, M1 Pro), on the first race
