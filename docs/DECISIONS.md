@@ -755,6 +755,10 @@ sealed.
 - The client predicts a smash. `reconcile()` restores the confirmed broken set before it replays inputs.
 - On the client, a broken fractured block splits into its two chunks. The chunks fall, then disappear.
   This is VFX only. The sim does not know about the chunks.
+  **Amended 2026-09-23 (#222, `2ab2c2c`):** the fractured block is now 12 convex cells split by glowing
+  cracks. It glows more as a bolt closes on it. When it breaks, every cell flies out and a flash shows, all
+  within about 0.9s. A block that was already broken when you join does not animate. It is still VFX only.
+  The look is recorded in `docs/ART_MATERIALS.md` §7 item 15.
 
 ### Two amendments to ADR-009
 
