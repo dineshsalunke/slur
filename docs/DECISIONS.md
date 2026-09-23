@@ -976,6 +976,25 @@ owner accepted this for now.
   the server's lock for the HUD.
 - **Hit any ship in the path.** A lock that hits someone else is not a lock.
 
+### Amendment — three power slots and a fire-time seeker cap (2026-09-23, #223)
+
+The owner approved this through slur-supervisor. It replaces the **One at a time** bullet above, which
+says *"At most one seeker exists, held or in flight … When the limit is reached, a seeker pickup
+**grants a bolt**."*
+
+- **Slots.** A racer holds up to `POWER_SLOTS` (3) powers, in any mix. Duplicates are allowed. A grab
+  fills the lowest empty slot. With 3 full slots the racer skips the pickup, and the pickup stays.
+- **Keys.** 1/2/3 select a slot. Q cycles. E fires the selected slot. X drops it, and a dropped power
+  is gone.
+- **The cap moves to fire time.** Each shooter can have one seeker in flight. Holding seekers has no
+  limit. A seeker pickup always grants a seeker. A fire refused by the cap spends nothing, and the slot
+  keeps its seeker.
+- **Wire.** `PlayerState.slots` is an `ArraySchema<uint8>` appended after `heldPower`. `heldPower` is
+  `@deprecated()`. `USE_POWERUP` carries `{ slot }`. A new `DROP_POWERUP` carries `{ slot }`. A message
+  with no valid slot is ignored. `seekerScope` and `seekerGate` are removed.
+
+Commit: `eb4c381` (shared + server). The client slice follows.
+
 ### Affected
 
 `packages/shared/src/combat/{constants,seeker,seeker-trail,pickups,combat-step}.ts` ·
