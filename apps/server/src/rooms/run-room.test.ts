@@ -9,6 +9,7 @@ import { WebSocketTransport } from '@colyseus/ws-transport';
 import {
     type Block,
     COUNTDOWN_SECONDS,
+    DEFAULT_SIM_CONFIG,
     FIXED_DT,
     HeldPower,
     PHASE,
@@ -17,6 +18,8 @@ import {
     pickupLayout,
     ROOM_NAME,
     resolveTrack,
+    SEEKER_HIT_MESSAGE,
+    SEEKER_MISS_MESSAGE,
     START_MESSAGE,
     STUN_SECONDS,
     TRACK_SEGMENTS,
@@ -153,6 +156,69 @@ describe( 'RunRoom combat', () => {
 
         assert.deepEqual( removed, added, 'the client is told to remove every bolt it was told to add' );
         assert.equal( room.state.projectiles.size, 0, 'and the server map is drained' );
+    } );
+
+    test( 'a fired seeker locks the racer ahead and its hit applies the seeker stun', async () => {
+        const { room, connections, host } = await racingRoom( 2 );
+        const [ , otherClient ] = connections;
+        assert.ok( otherClient, 'the second client connected' );
+
+        const shooter = playerOf( room, host.sessionId );
+        const victim = playerOf( room, otherClient.sessionId );
+        shooter.x = 0;
+        shooter.z = 0;
+        victim.shipId = 'executioner';
+        victim.x = 0;
+        victim.z = 20;
+        shooter.heldPower = HeldPower.seeker;
+
+        let seekerHits = 0;
+        for ( const c of [ host, otherClient ] ) {
+            c.onMessage( 'hit', () => {} );
+            c.onMessage( SEEKER_MISS_MESSAGE, () => {} );
+        }
+        host.onMessage( SEEKER_HIT_MESSAGE, () => {} );
+        otherClient.onMessage( SEEKER_HIT_MESSAGE, () => {
+            seekerHits++;
+        } );
+
+        host.send( USE_POWERUP_MESSAGE );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+
+        assert.equal( room.state.projectiles.size, 0, 'a held seeker does not fire a bolt' );
+        assert.equal( room.state.seekers.size, 1, 'firing spawns exactly one seeker' );
+        const [ seeker ] = room.state.seekers.values();
+        assert.equal( seeker?.targetId, otherClient.sessionId, 'the seeker locks the racer ahead' );
+        assert.equal( shooter.heldPower, HeldPower.none, 'firing empties the single held slot' );
+
+        tick( room, 1 );
+
+        assert.equal( room.state.seekers.size, 0, 'a spent seeker is pruned' );
+        assert.equal(
+            victim.stunTimer,
+            DEFAULT_SIM_CONFIG.seekerStunS,
+            'a zero-armour ship takes the full seeker stun',
+        );
+        assert.equal( shooter.stunTimer, 0, 'the owner is not stunned' );
+
+        await delay( 100 );
+        assert.equal( seekerHits, 1, 'the hit broadcasts one seeker-hit message' );
+    } );
+
+    test( 'a seeker fired with nothing ahead flies unlocked and is wasted', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const shooter = playerOf( room, host.sessionId );
+        shooter.heldPower = HeldPower.seeker;
+
+        host.send( USE_POWERUP_MESSAGE );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+
+        const [ seeker ] = room.state.seekers.values();
+        assert.equal( seeker?.targetId, '', 'no racer ahead means no lock' );
+        assert.equal( shooter.heldPower, HeldPower.none, 'the power is spent anyway' );
+
+        tick( room, DEFAULT_SIM_CONFIG.seekerTtl + FIXED_DT );
+        assert.equal( room.state.seekers.size, 0, 'the unlocked seeker expires' );
     } );
 
     function firstBlock( room: RunRoom, kind: Block[ 'kind' ] ): Block {

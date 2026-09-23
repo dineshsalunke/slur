@@ -1,6 +1,7 @@
 import { type Client, Room } from '@colyseus/core';
 import {
     aimBolt,
+    aimSeeker,
     applyDescriptor,
     COLOR_COUNT,
     COUNTDOWN_SECONDS,
@@ -15,6 +16,7 @@ import {
     type InputMessage,
     isColorId,
     isShipId,
+    lockTarget,
     PHASE,
     type Pickup,
     type PlayerInput,
@@ -29,16 +31,23 @@ import {
     raceShouldEnd,
     resetPlayerForRace,
     resolveTrack,
+    SEEKER_HIT_MESSAGE,
+    SEEKER_MISS_MESSAGE,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
+    Seeker,
+    type SeekerEvent,
     type SimConfig,
     type SimWorld,
     START_MESSAGE,
     START_STAGGER,
+    seekerGate,
+    seekerShipsOf,
     shouldSpectateOnJoin,
     simulate,
     stepBolts,
     stepPickups,
+    stepSeekers,
     stunDurationForShip,
     type Track,
     tuningForShip,
@@ -104,15 +113,28 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             if ( this.state.phase !== PHASE.racing ) return;
             const p = this.state.players.get( client.sessionId );
             if ( ! p || ! canFire( p ) ) return;
-            const bolt = new Projectile();
-            aimBolt( bolt, p, client.sessionId, this.config );
-            this.state.projectiles.set( String( this.nextProjectileId++ ), bolt );
+            if ( p.heldPower === HeldPower.seeker ) this.fireSeeker( p, client.sessionId );
+            else this.fireBolt( p, client.sessionId );
             p.heldPower = HeldPower.none;
         } );
 
         this.setSimulationInterval( ( deltaMs ) => {
             this.advance( deltaMs / 1000, ( dt ) => this.fixedStep( dt ) );
         } );
+    }
+
+    private fireBolt( p: PlayerState, ownerId: string ): void {
+        const bolt = new Projectile();
+        aimBolt( bolt, p, ownerId, this.config );
+        this.state.projectiles.set( String( this.nextProjectileId++ ), bolt );
+    }
+
+    private fireSeeker( p: PlayerState, ownerId: string ): void {
+        const ships = seekerShipsOf( this.state.players.entries() );
+        const targetId = lockTarget( p, ownerId, ships, this.track, this.blocks.broken, this.config );
+        const seeker = new Seeker();
+        aimSeeker( seeker, p, ownerId, targetId, this.config );
+        this.state.seekers.set( String( this.nextProjectileId++ ), seeker );
     }
 
     private fixedStep( dt: number ): void {
@@ -186,6 +208,15 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             },
             this.config,
         );
+        stepSeekers(
+            this.state.seekers,
+            seekerShipsOf( this.state.players.entries() ),
+            this.track,
+            this.blocks.broken,
+            dt,
+            ( event ) => this.onSeekerEvent( event ),
+            this.config,
+        );
         this.mirrorBreaks();
         stepPickups(
             this.state.players.values(),
@@ -194,7 +225,28 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             this.pickupRespawn,
             dt,
             this.config,
+            seekerGate(
+                this.state.players.entries(),
+                Array.from( this.state.seekers.values(), ( s ) => s.ownerId ),
+                this.config,
+            ),
         );
+    }
+
+    private onSeekerEvent( event: SeekerEvent ): void {
+        const { x, y, z } = event;
+        if ( event.outcome === 'miss' ) {
+            this.broadcast( SEEKER_MISS_MESSAGE, event );
+            return;
+        }
+        if ( event.outcome === 'blocked' ) {
+            this.broadcast( 'hit', { x, y, z, victimId: '' } );
+            return;
+        }
+        const v = this.state.players.get( event.targetId );
+        if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config, this.config.seekerStunS );
+        this.broadcast( 'hit', { x, y, z, victimId: event.targetId } );
+        this.broadcast( SEEKER_HIT_MESSAGE, event );
     }
 
     private mirrorBreaks(): void {
@@ -207,6 +259,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
     private clearCombat(): void {
         this.state.projectiles.clear();
+        this.state.seekers.clear();
         this.state.pickupTaken.clear();
         this.state.blockBroken.clear();
         this.blocks.broken.clear();
