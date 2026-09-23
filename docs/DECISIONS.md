@@ -721,11 +721,33 @@ fairness caps (threadable clearance, `MIN_LANE`) were written against a lethal b
 letter, but the **pressure** the generator's intensity curve was tuned to apply is now softer everywhere.
 Re-tuning intensity against a non-lethal block is not done here.
 
+### As-built — a bounce is not cheaper than a death in time
+
+workerone measured these numbers with bots on scratch scripts, not in playtests (`6efa656`). This note
+records them. It does not re-measure them.
+
+| One contact, flat track, 55u/s | Time lost |
+|---|---|
+| Head-on bounce | **1.45 s** |
+| 0.3u graze | 0.97 s |
+| The old death + respawn | 1.50 s |
+
+A bot that does not steer finishes 0 of 6 seeds. The concern above that *"blocks become cheap"* does not
+hold in time. A head-on bounce costs nearly as much as a death did. **Decision: no intensity retune.**
+
+Two defects came out of the same measurements. Each has its own issue:
+
+- **#231 — the graze outcome is random.** The shallowest-face rule makes glance or hard stop depend on
+  the sub-tick phase (0.3u clip: 68% glance, 32% stop). The forgiving reading above holds only about
+  two times in three.
+- **#232 — the pocket trap.** Two staggered blocks with a z-gap just over the hull (seed 1, z≈6019,
+  3.1u gap against a 2.52u hull) bounce a ship that holds throttle 100 times in 10 s.
+
 ### Not decided here
 
-No hit VFX fires on a bounce: `pushHit()` is still only called from the server's bolt-hit message
-(`apps/client/app/net/attach-room-to-world.ts:135`), so a wall hit gets the stun blink and the `hit` sound
-but no spark. Wiring the predicted bounce into `hit-events.ts` is the obvious follow-up.
+The local ship throws the hit spark on a predicted bounce (`afb2642`,
+`apps/client/app/game/ecs/bounce-spark.ts`). A remote ship that bounces gets the stun blink and the `hit`
+sound, but no spark. #233 tracks that.
 
 Whether a bounce should also scrub *lateral* speed, whether armour should scale `bounceStun` the way
 `stunDurationForShip()` scales the bolt stun, and whether breakable blocks (ADR-009) shatter on contact
