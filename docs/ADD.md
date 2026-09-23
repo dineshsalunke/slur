@@ -186,7 +186,8 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 | Gaps, finish gate | procedural geometry (chamfered boxes + emissive strips) | **~100%** |
 | Obstacle blocks (both states) | procedural geometry | **~100%** |
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
-| Asteroids (Angular · Plate · Broken) | procedural — convex hull over jittered points, flat-shaded | **~90%** |
+| Asteroids (Angular · Plate · Broken) | **BUILT** — displaced icosahedron with planar cuts, three streamed bands, shader spin and drift, triplanar CC0 rock maps (see below) | **done** |
+| Nebula sky | **BUILT** — domain-warped fBm and Worley noise baked to a cubemap, composited live, and the source of the IBL and the key light (see below) | **done** |
 | Planets / moons | procedural — sphere + gradient/terminator shading | high |
 | Pickups | procedural — low-poly geometric icons | high |
 | **Ships** | **keep the authored Quaternius CC0 models** — already integrated, WYSIWYG-locked (GDD §5.5) | — |
@@ -210,9 +211,29 @@ GLSL functions, so "procedural textures" rather than "texture assets".
 > which over a 16u tile is 0.05u — a five-centimetre line on a 64u ribbon, sub-pixel at any real distance.
 > The surface read as flat grey until this was fixed.
 
-**The one bitmap in the pipeline** is `public/textures/nebula-backdrop.jpg` — a placeholder deep-space
-backdrop until the procedural celestial layer exists. Deliberately not LFS: a missing backdrop should
-degrade, not crash.
+**The sky is procedural (issue #215).** `scene/nebula-baker.ts` bakes the nebula once, and again only when
+a structural tunable changes. The bake writes four continuous fields into a 1024² cubemap: glow (crest
+lines across a warped band, with self-shadowed billow texture), clump density, crest proximity and cloud
+shading. The fields are smooth, so the live pass can threshold them per pixel: the dark clumps get crisp
+edges at any DPR, and a directional derivative of the density toward the crest lights only the side of
+each clump that faces it. Stars are drawn live from a hash, not baked. The live pass reads the cubemap
+four times and a 64³ tiling noise volume three times (`scene/nebula-noise-volume.ts`; the volume replaces
+per-pixel hash noise, which was ALU-bound at DPR 2). Motion is a two-phase shear around the band axis,
+faster near the crest, plus a brightness stream that travels along the crest and star twinkle. The sky
+box follows the camera with no parallax term: a strafe offset on a sky layer reads as a rotation, so the
+asteroids carry all parallax. Sky output is soft-knee limited to 0.56 linear, under the bloom threshold.
+The same fields also go into a 128² cube that is PMREM-filtered. The asteroids use that cube as their env
+map, so the rocks reflect the sky that the player sees. The track keeps the authored `SceneEnvironment`
+IBL. A 64×32 probe measures two values: the horizon colour (`NEBULA_HORIZON`, which the scene fog
+follows) and the direction and colour of the rock key light. The `Nebula` and `Deep Space` presets on the
+`/test-level` panel make the two sky families from one parameter set. Measured sky-only cost, M3 Pro,
+1600×900: 0.62 ms at DPR 1, 1.05 ms at DPR 2.
+
+**The rock maps are the only bitmaps in the pipeline.** They are `public/textures/dark-rock-*.jpg`, Poly
+Haven `dark_rock` (CC0), 1k. The asteroid shader uses the luminance of the diffuse map, tinted to
+graphite, and the AO, roughness and normal maps. It samples them triplanar in object space, so the
+maps rotate with the rock. The maps are not in LFS. If a map is missing, the rocks degrade and the game
+does not crash. The `nebula-backdrop.jpg` placeholder is deleted.
 
 > **Honest cost:** shader noise trades texture memory for per-pixel ALU, which is in tension with §8 rule 3
 > ("light does the work, not texels"). With instanced fields and 12 ships it is usually a win, but it is a

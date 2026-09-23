@@ -1,4 +1,12 @@
 import { button, useControls } from 'leva';
+import {
+    DEEP_SPACE_PRESET,
+    NEBULA_PRESET,
+    SKY_BAKE_KEYS,
+    SKY_LIVE_KEYS,
+    SKY_LOOK_KEYS,
+    type SkyKey,
+} from '../game/scene/nebula-presets';
 import { col, num, setCol, setNum } from './tuning';
 import { copyDefaults } from './tuning-export';
 import { forget } from './tuning-persist';
@@ -22,6 +30,14 @@ function colorControl( path: ColorPath ) {
         onChange: ( value: string ) => setCol( path, value ),
         transient: true as const,
     };
+}
+
+function skyControls() {
+    const keys: readonly SkyKey[] = [ ...SKY_BAKE_KEYS, ...SKY_LOOK_KEYS, ...SKY_LIVE_KEYS ];
+    return Object.fromEntries( keys.map( ( key ) => [ key, numberControl( `Sky.${ key }` ) ] ) ) as Record<
+        SkyKey,
+        ReturnType< typeof numberControl >
+    >;
 }
 
 export function TuningPanel() {
@@ -79,7 +95,6 @@ export function TuningPanel() {
     useControls( 'Fog', {
         near: numberControl( 'Fog.near' ),
         far: numberControl( 'Fog.far' ),
-        color: colorControl( 'Fog.color' ),
     } );
 
     useControls( 'Metal', {
@@ -183,6 +198,22 @@ export function TuningPanel() {
         back: numberControl( 'EngineLight.back' ),
         lift: numberControl( 'EngineLight.lift' ),
         color: colorControl( 'EngineLight.color' ),
+    } );
+
+    const [ , setSky ] = useControls( 'Sky', () => ( {
+        Nebula: button( () => setSky( NEBULA_PRESET ) ),
+        'Deep Space': button( () => setSky( DEEP_SPACE_PRESET ) ),
+        ...skyControls(),
+    } ) );
+
+    useControls( 'Rock', {
+        color: colorControl( 'Rock.color' ),
+        textureScale: numberControl( 'Rock.textureScale' ),
+        normalScale: numberControl( 'Rock.normalScale' ),
+        roughness: numberControl( 'Rock.roughness' ),
+        detail: numberControl( 'Rock.detail' ),
+        spin: numberControl( 'Rock.spin' ),
+        drift: numberControl( 'Rock.drift' ),
     } );
 
     return null;

@@ -1,6 +1,7 @@
 import { ACCENT_ANCHOR } from '../game/scene/accent';
-import { BACKDROP_HORIZON } from '../game/scene/backdrop';
+import { ROCK_ALBEDO } from '../game/scene/asteroid-surface';
 import { METAL_BASE_COLOR, METAL_MAP_TINT, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
+import { NEBULA_PRESET } from '../game/scene/nebula-presets';
 
 interface NumberTunable {
     value: number;
@@ -128,6 +129,33 @@ export const NUMBER_TUNABLES = {
     'EngineLight.distance': { value: 14, min: 1, max: 80, step: 0.5, rebuild: false },
     'EngineLight.back': { value: 3.4, min: 0, max: 14, step: 0.1, rebuild: false },
     'EngineLight.lift': { value: 0.5, min: -2, max: 6, step: 0.05, rebuild: false },
+
+    'Sky.seed': { value: NEBULA_PRESET.seed, min: 0, max: 99, step: 1, rebuild: false },
+    'Sky.scale': { value: NEBULA_PRESET.scale, min: 0.5, max: 6, step: 0.05, rebuild: false },
+    'Sky.warp': { value: NEBULA_PRESET.warp, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Sky.bandTilt': { value: NEBULA_PRESET.bandTilt, min: 0, max: 180, step: 1, rebuild: false },
+    'Sky.bandOffset': { value: NEBULA_PRESET.bandOffset, min: -1, max: 1, step: 0.01, rebuild: false },
+    'Sky.bandWidth': { value: NEBULA_PRESET.bandWidth, min: 0.05, max: 1, step: 0.01, rebuild: false },
+    'Sky.density': { value: NEBULA_PRESET.density, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.voids': { value: NEBULA_PRESET.voids, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.dust': { value: NEBULA_PRESET.dust, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.hue': { value: NEBULA_PRESET.hue, min: 0, max: 360, step: 1, rebuild: false },
+    'Sky.saturation': { value: NEBULA_PRESET.saturation, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.brightness': { value: NEBULA_PRESET.brightness, min: 0, max: 4, step: 0.01, rebuild: false },
+    'Sky.voidDepth': { value: NEBULA_PRESET.voidDepth, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.clumps': { value: NEBULA_PRESET.clumps, min: 0.3, max: 0.95, step: 0.01, rebuild: false },
+    'Sky.dustOpacity': { value: NEBULA_PRESET.dustOpacity, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Sky.rim': { value: NEBULA_PRESET.rim, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Sky.motion': { value: NEBULA_PRESET.motion, min: 0, max: 4, step: 0.05, rebuild: false },
+    'Sky.environment': { value: NEBULA_PRESET.environment, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Sky.keyLight': { value: NEBULA_PRESET.keyLight, min: 0, max: 8, step: 0.05, rebuild: false },
+
+    'Rock.textureScale': { value: 1.1, min: 0.2, max: 4, step: 0.05, rebuild: false },
+    'Rock.normalScale': { value: 1.2, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Rock.roughness': { value: 1, min: 0.1, max: 1.5, step: 0.01, rebuild: false },
+    'Rock.detail': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Rock.spin': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Rock.drift': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
@@ -137,7 +165,7 @@ export const COLOR_TUNABLES = {
     'NearFill.color': { value: '#ffb964', rebuild: false },
     'RailLight.color': { value: ACCENT_ANCHOR, rebuild: false },
     'Fill.color': { value: '#bcc0c4', rebuild: false },
-    'Fog.color': { value: BACKDROP_HORIZON, rebuild: false },
+    'Rock.color': { value: ROCK_ALBEDO, rebuild: false },
     'Metal.baseColor': { value: METAL_BASE_COLOR, rebuild: true },
     'Metal.mapTint': { value: METAL_MAP_TINT, rebuild: false },
     'Shadow.color': { value: '#01040a', rebuild: false },
