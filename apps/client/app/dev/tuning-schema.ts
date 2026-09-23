@@ -15,7 +15,11 @@ interface ColorTunable {
     rebuild: boolean;
 }
 
+const DEVICE_DPR = Math.max( 0.5, globalThis.devicePixelRatio ?? 1 );
+
 export const NUMBER_TUNABLES = {
+    'Render.dpr': { value: Math.min( 2, DEVICE_DPR ), min: 0.5, max: DEVICE_DPR, step: 0.25, rebuild: false },
+
     'Environment.intensity': { value: 1.2, min: 0, max: 20, step: 0.05, rebuild: false },
     'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
 

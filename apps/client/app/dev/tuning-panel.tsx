@@ -25,6 +25,11 @@ function colorControl( path: ColorPath ) {
 }
 
 export function TuningPanel() {
+    useControls( 'Render', {
+        dpr: numberControl( 'Render.dpr' ),
+        device: { value: String( devicePixelRatio ), editable: false },
+    } );
+
     useControls( 'Environment', {
         skyColor: colorControl( 'Env.skyColor' ),
         skyIntensity: numberControl( 'Env.skyIntensity' ),

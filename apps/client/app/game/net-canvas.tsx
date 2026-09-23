@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { GameAudio } from '../audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio';
+import { TuningPanelMount } from '../dev/tuning-panel-mount';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
@@ -67,6 +68,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                 </WorldScene>
             </Canvas>
             { import.meta.env.DEV && <NetDebugHud track={ track } /> }
+            <TuningPanelMount />
         </WorldProvider>
     );
 }
