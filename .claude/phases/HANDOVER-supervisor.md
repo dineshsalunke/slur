@@ -19,7 +19,7 @@ Written at the watchdog warning (~151k/turn). The next supervisor session resume
 | Worker | Pane | Lane | State |
 |---|---|---|---|
 | workerone | w2P:pD | fps regression bisect (owner: <15 fps) | Measuring. Report only; no fix yet. Handover for the parked #213 work: `handover-bounce-leftovers.md` (6efa656). |
-| workertwo | w2P:pF | #214 fractured blocks | Steps 1–3 landed (523d63c, b6f1f45, 8c9afaf). Steps 5 (owner race-speed look) and 6 (ADR-015 docs) HELD for the fps verdict. Also built the DPR slider (248096d). |
+| workertwo | w2P:pF | #214 fractured blocks | Steps 1–3 and 6 landed (523d63c, b6f1f45, 8c9afaf, ADR-015 in 215159e). Step 5 is the OWNER's eyes-on gate: play /test-level at race speed and judge whether sealed and fractured blocks can be told apart, then smash one and shoot one in a hosted room. ADR-015 records that gate as open. Also built the DPR slider (248096d). |
 | workerthree | w2P:pG | #218 bolt art | Landed 38b4fb8 and 9017e0f (collect 0.32s → 0.13s). HELD for the fps verdict. Handover `handover-bolt-art.md`. |
 | workerfour | w2P:pH | main menu to match `golden-reference/cruise-lighting.png` | Read-only. Blocked on the impeccable plugin (marketplace added, plugin not installed; owner to run `/plugin install impeccable@impeccable` or say "go without it"). Owns ui/button.tsx, ui/panel.tsx, lobby/room-list.tsx, routes/home/*. |
 
