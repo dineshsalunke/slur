@@ -1,7 +1,10 @@
 # Handover — the ship judders forward but not sideways
 
-Session of 2026-09-23. Open bug, not fixed. Two commits landed that serve the hunt; the cause is
-narrowed to frame-time variance but **not yet measured on a real GPU**.
+**Resolved 2026-09-23 by `3b50857`** — the artifact was the camera, not the frame rate. Read "What
+was actually wrong" first; everything before it is the hunt that led there.
+
+Session of 2026-09-23. Original framing: open bug, cause narrowed to frame-time variance but not
+measured on a real GPU.
 
 ## The symptom, as the owner described it
 
@@ -82,6 +85,27 @@ and forth. **"Strafe smooth, forward juddering" is the signature of frame-time v
 camera, not evidence against it.** This session initially read the axis split the other way and was
 wrong.
 
+## What was actually wrong
+
+The axis split *was* the answer, read one step further. This session got as far as "variance passes
+through a smoothed z and not through a copied x", then went hunting for the variance. Variance is
+not the bug. **Variance passing through a smoothed z** is. `chase.ts` now copies the ship z exactly,
+the way it always copied x, and smooths the follow *distance* instead:
+
+```
+cam.position.x = p.x;
+cam.position.y += ( p.y + CHASE_HEIGHT - cam.position.y ) * k;
+cam.position.z = p.z - followBack;
+```
+
+Ship-to-camera z swing over 900 frames, before → after: hitch 0.446u → 0, vsync beat 0.145u → 0,
+jitter 0.184u → 0. `apps/client/app/game/camera/chase.test.ts` asserts all three at < 1e-9 and fails
+on the old line with those exact numbers — the 0.446 reproduces this document's own figure from an
+independent harness.
+
+The frame-time variance is real and still worth cutting; it now shows as the *world* wobbling rather
+than the ship. The suspects below stand, and `R` still A/Bs the loudest one.
+
 ## Suspects in the regression window (2026-09-22 22:42 → now)
 
 Everything here is a per-frame cost that did not exist the night before:
@@ -107,11 +131,12 @@ Everything here is a per-frame cost that did not exist the night before:
   `useFrame` render and drei `<Hud>` all go away — an A/B of the real cost, not an `if` inside a
   pass that still runs. Independent of leva, so the panel stays out of the measurement.
 
-## Next
+## Next — the remaining frame-time work, not the judder
 
-Tracked as issue #212.
+Issue #212 covers the judder and is fixed. What is left is the variance itself, which now costs
+smoothness of the *world* rather than of the ship:
 
-1. Fly `/test-level` and read `max` against the mean. Steady ⇒ look elsewhere. Spiky ⇒ it is this.
+1. Fly `/test-level` and read `max` against the mean. Steady ⇒ there is nothing left to chase.
 2. Press `R` and read the meter again. The rearview is the single biggest per-frame item added in
    the window.
 3. Only if 1 and 2 clear it: instrument per-pass GPU time rather than guessing further.
