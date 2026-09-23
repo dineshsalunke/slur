@@ -120,3 +120,30 @@ client 182 · server 4 — up 5 on this session's new `hover.test.ts` and the ca
 holds uncommitted ship-shadow and metal-material changes in this shared checkout — `ship-shadow.tsx`
 and `metal.ts` are new, `graphite.ts` is deleted, and `tuning-schema.ts` / `tuning-panel.tsx` /
 several `scene/` files are modified. `a50049f` was staged file-by-file to leave all of it alone.
+The owner asked for the tree committed; the call was that `workerone` lands its own work rather than
+have this session capture it mid-edit. **That commit is still outstanding** — expect those files to
+still be dirty on pickup, and do not sweep them up.
+
+## 5 — The tuning store is a cross-session hazard
+
+Two mechanics in `apps/client/app/dev/tuning-persist.ts`, neither obvious from its 30 lines, that
+cost `workerone` a session and nearly invalidated this one's readings.
+
+**A stored value silently masks a changed schema default.** `restore()` returns the stored value
+whenever `entry.from === fallback`. A tab open across an HMR schema edit writes back
+`{ value: <old>, from: <new default> }` — and the page then loads the old value while the source
+shows the new one. Found live: `Shadow.opacity { value: 0.55, from: 0.8 }` and
+`Shadow.softness { value: 1.6, from: 1.2 }`, i.e. `workerone`'s contact-shadow fix was dead at
+runtime on `:5173` while reading as shipped in the schema.
+
+**An external purge does not stick while a tab is open.** `remember()` writes the WHOLE in-memory
+`stored` map, loaded once at init, so the next knob change in any open page on the origin rewrites
+every key it knew at load time — over the purge.
+
+Checked before trusting any of this session's own numbers: every `Hover.*` and `Chase.*` entry had
+`value === from`, so the hover findings above were taken at true schema defaults.
+
+**Do not drive the store by importing the module.** Vite serves `/app/dev/tuning.ts?t=<timestamp>`
+after an edit, so an `import()` from CDP or `javascript_tool` resolves to a second module instance
+with its own maps; every `setNum` lands in the orphan while `remember()` still writes through to the
+shared key. Write `localStorage` and reload instead — that is the route this session used.
