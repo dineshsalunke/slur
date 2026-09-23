@@ -14,3 +14,5 @@ lives in its own file beside this one.
 - [Blocks are the only streamed geometry](blocks-are-the-only-streamed-geometry.md) — everything else is built once over the whole track; suspect `BACK` when blocks vanish from a non-chase view
 - [Claim the lane before the first write](claim-the-lane-before-the-first-write.md) — a handover's "Left undone" list is a shared queue; two sessions took the same item and one lost untracked files
 - [Headless Chrome for frame taps](headless-chrome-for-frame-taps.md) — drive a separate headless Chrome and curl `/__frame-tap`; never screenshot the extension tab
+- [Eyeballing a tap lies about brightness](eyeballing-a-tap-lies-about-brightness.md) — the deck measures rgb(28) and looks mid-grey; composite a grey ramp before judging value
+- [Freeze the sim to A/B a light](freeze-the-sim-to-ab-a-light.md) — KeyP holds the camera; reload → fly a fixed duration → freeze → tap
