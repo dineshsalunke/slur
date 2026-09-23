@@ -1,4 +1,4 @@
-import { DEFAULT_SHIP, spawnShip } from '@slur/shared';
+import { DEFAULT_SHIP, emptySlots, spawnShip } from '@slur/shared';
 import { trait } from 'koota';
 import * as THREE from 'three';
 import { makeSeekerTrail } from '../scene/seeker-trail';
@@ -13,7 +13,7 @@ export const Hover = trait( () => ( { lift: 0, phase: Math.random() * Math.PI * 
 
 export const LocalPlayer = trait();
 
-export const Held = trait( { power: 0 } );
+export const Held = trait( () => ( { slots: emptySlots() } ) );
 
 export const Net = trait( { sessionId: '', shipId: DEFAULT_SHIP as string, colorId: 0 } );
 

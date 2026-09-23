@@ -11,6 +11,7 @@ import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
 import { clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import {
+    Held,
     Hover,
     Interp,
     LocalPlayer,
@@ -24,6 +25,7 @@ import {
     SeekerTrail,
     Sim,
 } from '../game/ecs/traits';
+import { settleSlot } from '../game/input/power-select';
 import { pushHit } from '../game/scene/hit-events';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
@@ -71,13 +73,20 @@ function pushSeeker( ent: Entity, s: SeekerState ): void {
     }
 }
 
+function mirrorRack( ent: Entity | undefined, p: PlayerState ): void {
+    if ( ! ent ) return;
+    const slots = Array.from( p.slots );
+    ent.set( Held, { slots } );
+    settleSlot( slots );
+}
+
 function spawnPlayer(
     world: World,
     isLocal: boolean,
     net: { sessionId: string; shipId: string; colorId: number },
 ): Entity {
     return isLocal
-        ? world.spawn( Render, Hover, Net( net ), Sim, Prev, LocalPlayer )
+        ? world.spawn( Render, Hover, Net( net ), Sim, Prev, LocalPlayer, Held )
         : world.spawn( Render, Hover, Net( net ), Remote, Interp );
 }
 
@@ -117,7 +126,16 @@ export function attachRoomToWorld(
             if ( isLocal ) reconcileLocal( ent, p, predictor, trackRef.current );
             else pushRemote( ent, p );
         } );
-        perPlayer.set( sid, offChange );
+        if ( ! isLocal ) {
+            perPlayer.set( sid, offChange );
+            return;
+        }
+        mirrorRack( e, p );
+        const offSlots = $( p ).slots.onChange( () => mirrorRack( byId.get( sid ), p ) );
+        perPlayer.set( sid, () => {
+            offChange();
+            offSlots();
+        } );
     } );
 
     const offRemove = $( room.state ).players.onRemove( ( _p, sid ) => {

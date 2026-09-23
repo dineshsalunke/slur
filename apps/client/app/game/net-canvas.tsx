@@ -1,5 +1,12 @@
 import { Canvas } from '@react-three/fiber';
-import { resolveTrack, SET_CLASS_MESSAGE, SHIP_ORDER, type TrackDescriptor, USE_POWERUP_MESSAGE } from '@slur/shared';
+import {
+    DROP_POWERUP_MESSAGE,
+    resolveTrack,
+    SET_CLASS_MESSAGE,
+    SHIP_ORDER,
+    type TrackDescriptor,
+    USE_POWERUP_MESSAGE,
+} from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -9,10 +16,13 @@ import { TuningPanelMount } from '../dev/tuning-panel-mount';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
+import { Held, LocalPlayer } from './ecs/traits';
 import { world } from './ecs/world';
 import { attachKeyboard } from './input/keyboard';
+import { handlePowerKey } from './input/power-select';
 import { NetDebugHud } from './net-debug-hud';
 import { NetLoop } from './net-loop';
+import { NetPowerRack } from './net-power-rack';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
 import { RearView } from './scene/rear-view';
@@ -40,11 +50,14 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
         return () => removeEventListener( 'keydown', onKey );
     }, [ room ] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (E) → a discrete Colyseus fire message.
+    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (1-3/Q/E/X) → Colyseus fire/drop messages.
     useEffect( () => {
-        const onKey = ( e: KeyboardEvent ) => {
-            if ( e.code === 'KeyE' && ! e.repeat ) room.send( USE_POWERUP_MESSAGE );
+        const actions = {
+            rack: () => world.queryFirst( LocalPlayer, Held )?.get( Held )?.slots ?? [],
+            fire: ( slot: number ) => room.send( USE_POWERUP_MESSAGE, { slot } ),
+            drop: ( slot: number ) => room.send( DROP_POWERUP_MESSAGE, { slot } ),
         };
+        const onKey = ( e: KeyboardEvent ) => handlePowerKey( e, actions );
         addEventListener( 'keydown', onKey );
         return () => removeEventListener( 'keydown', onKey );
     }, [ room ] );
@@ -69,6 +82,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                     <RemoteEngineAudio />
                 </WorldScene>
             </Canvas>
+            <NetPowerRack />
             { import.meta.env.DEV && <NetDebugHud track={ track } /> }
             <TuningPanelMount />
         </WorldProvider>

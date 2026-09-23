@@ -1,10 +1,11 @@
 import { DEFAULT_SHIP, SHIP_ORDER } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect } from 'react';
-import { Hover, LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
+import { Held, Hover, LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
 import { attachKeyboard } from '../../game/input/keyboard';
+import { handlePowerKey } from '../../game/input/power-select';
 import { localRole } from '../../game/spectator';
-import { queueFire } from './local-combat';
+import { queueDrop, queueFire } from './local-combat';
 
 export function LocalShip() {
     const world = useWorld();
@@ -26,15 +27,19 @@ export function LocalShip() {
         return () => ship.destroy();
     }, [ world ] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (1-5) → the ECS Net trait. No server
+    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard → power slots and the Shift+1-5 ECS ship class.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
-            if ( e.code === 'KeyE' && ! e.repeat ) queueFire();
-            const n = Number( e.key );
-            if ( ! ( n >= 1 && n <= SHIP_ORDER.length ) ) return;
+            handlePowerKey( e, {
+                rack: () => world.queryFirst( LocalPlayer, Held )?.get( Held )?.slots ?? [],
+                fire: queueFire,
+                drop: queueDrop,
+            } );
+            const shipId = e.shiftKey ? SHIP_ORDER[ Number( e.code.replace( 'Digit', '' ) ) - 1 ] : undefined;
+            if ( ! e.code.startsWith( 'Digit' ) || ! shipId ) return;
             const ship = world.queryFirst( LocalPlayer, Net );
             const cur = ship?.get( Net );
-            if ( ship && cur ) ship.set( Net, { ...cur, shipId: SHIP_ORDER[ n - 1 ] } );
+            if ( ship && cur ) ship.set( Net, { ...cur, shipId } );
         };
         addEventListener( 'keydown', onKey );
         return () => removeEventListener( 'keydown', onKey );

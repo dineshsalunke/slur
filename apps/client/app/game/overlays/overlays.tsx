@@ -4,7 +4,6 @@ import { useRoom } from '../../net/room-context';
 import { useRunPhase } from '../net/use-run-view';
 import { AudioToggle } from './audio-toggle';
 import { CountdownOverlay } from './countdown-overlay';
-import { HeldPowerChip } from './held-power-chip';
 import { LeaveButton } from './leave-button';
 import { LeaveGuard } from './leave-guard';
 import { LobbyOverlay } from './lobby-overlay';
@@ -28,7 +27,6 @@ export function Overlays() {
             { phase === PHASE.lobby && <LobbyOverlay room={ room } /> }
             { phase === PHASE.countdown && <CountdownOverlay room={ room } /> }
             { phase === PHASE.racing && <RaceHud room={ room } /> }
-            { phase === PHASE.racing && <HeldPowerChip room={ room } /> }
             { phase === PHASE.racing && <ThreatHud room={ room } /> }
             { phase === PHASE.finished && <ResultsOverlay room={ room } /> }
         </Fragment>

@@ -13,15 +13,18 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
     const perProjectile = new Map< string, () => void >();
 
     const prevStun = new Map< string, number >();
-    const prevHeld = new Map< string, number >();
+    const prevSlots: number[] = [];
     const prevDead = new Map< string, boolean >();
     const threatened = new Set< string >();
 
-    const localEdges = ( p: PlayerState ): void => {
-        const ph = prevHeld.get( me ) ?? HeldPower.none;
-        if ( ph === HeldPower.none && p.heldPower !== HeldPower.none ) playSfx( 'pickup' );
-        prevHeld.set( me, p.heldPower );
+    const slotEdge = ( power: number, slot: number ): void => {
+        if ( ( prevSlots[ slot ] ?? HeldPower.none ) === HeldPower.none && power !== HeldPower.none ) {
+            playSfx( 'pickup' );
+        }
+        prevSlots[ slot ] = power;
+    };
 
+    const localEdges = ( p: PlayerState ): void => {
         const pd = prevDead.get( me ) ?? false;
         if ( ! pd && p.dead ) playSfx( 'death' );
         else if ( pd && ! p.dead ) playSfx( 'respawn' );
@@ -40,18 +43,23 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
 
     const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {
         prevStun.set( sid, p.stunTimer );
-        prevHeld.set( sid, p.heldPower );
         prevDead.set( sid, p.dead );
-        perPlayer.set(
-            sid,
-            $( p ).onChange( () => onPlayerChange( sid, p ) ),
-        );
+        const offChange = $( p ).onChange( () => onPlayerChange( sid, p ) );
+        if ( sid !== me ) {
+            perPlayer.set( sid, offChange );
+            return;
+        }
+        prevSlots.splice( 0, prevSlots.length, ...p.slots );
+        const offSlots = $( p ).slots.onChange( slotEdge );
+        perPlayer.set( sid, () => {
+            offChange();
+            offSlots();
+        } );
     } );
     const offRemove = $( room.state ).players.onRemove( ( _p, sid ) => {
         perPlayer.get( sid )?.();
         perPlayer.delete( sid );
         prevStun.delete( sid );
-        prevHeld.delete( sid );
         prevDead.delete( sid );
     } );
 

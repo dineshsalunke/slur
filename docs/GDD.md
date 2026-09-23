@@ -208,7 +208,9 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
   **ADR-006**. *(Prior generators are retired to `archive/superseded-design.md`.)*
 
 ### 5.3 Power-ups (Blur trinity) — starter set
-Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time.
+Pickups float on the track; drive through to collect. A racer holds up to **3 powers** in three slots.
+Any mix is allowed, and duplicates are allowed. A grab fills the lowest empty slot. With 3 full slots the
+racer skips the pickup, and the pickup stays. A dropped power is gone (ADR-017 amendment, #223).
 
 | Type | Example | Effect |
 |------|---------|--------|
@@ -219,7 +221,7 @@ Pickups float on the track; drive through to collect. Hold 1 (maybe 2) at a time
 | Utility | **Warp/Blink** | Short teleport/dodge (also SkyRoads-y gap crosser) |
 | Chaos | **Scramble** | Invert/blur a nearby rival's controls or view briefly |
 
-*OPEN: full roster + cooldowns. **S5 resolved:** v1 roster = **Bolt** (fire→stun); **single held slot** (no stacking); owner-immune only — everyone else is a target (teams / friendly-fire are a later mode). Mine/Shield/Boost = fast-follows.*
+*OPEN: full roster + cooldowns. **S5 resolved:** v1 roster = **Bolt** (fire→stun); **three slots** (#223, replaces the single held slot); owner-immune only — everyone else is a target (teams / friendly-fire are a later mode). Mine/Shield/Boost = fast-follows.*
 
 > The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the redefined **Tractor** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 
@@ -502,7 +504,9 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 | Brake / slow | S or ↓ | Hold to decelerate (no reverse) |
 | Strafe left/right | A / D or ← / → | Lateral, **not turning**; smooth analog (lanes fallback) |
 | Jump | Space | Tap = small hop · hold = higher · double-tap = double jump |
-| Use power-up | E | Uses held power-up (incl. **Boost**, now a pickup — Shift is unbound; LMB is not bound) |
+| Select power slot | 1 / 2 / 3 · Q | 1–3 select a slot. Q cycles to the next full slot. An emptied slot advances to the next full one |
+| Use power-up | E | Fires the selected slot (incl. **Boost**, now a pickup — LMB is not bound) |
+| Drop power-up | X | Empties the selected slot. The power is gone |
 | Mute | M | Someone always needs to mute fast |
 | Leave run | Esc | No pause; leaving drops you to spectate/menu |
 

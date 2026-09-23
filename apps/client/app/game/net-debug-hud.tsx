@@ -15,7 +15,7 @@ function playerLines( room: Room ): string[] {
     room.state.players.forEach( ( p, sid ) => {
         const me = sid === room.sessionId ? '★' : ' ';
         lines.push(
-            `${ me } ${ sid.slice( 0, 4 ) }  x=${ p.x.toFixed( 1 ) } z=${ p.z.toFixed( 1 ) } st=${ p.stunTimer.toFixed( 1 ) } pw=${ p.heldPower }${ p.connected ? '' : ' (gone)' }`,
+            `${ me } ${ sid.slice( 0, 4 ) }  x=${ p.x.toFixed( 1 ) } z=${ p.z.toFixed( 1 ) } st=${ p.stunTimer.toFixed( 1 ) } pw=${ Array.from( p.slots ).join( '' ) }${ p.connected ? '' : ' (gone)' }`,
         );
     } );
     return lines;

@@ -18,7 +18,6 @@ const bus = vi.hoisted( () => {
         finishTime: number;
         connected: boolean;
         z: number;
-        heldPower: number;
     }
     const state = {
         phase: PHASE_RACING(),
@@ -153,7 +152,6 @@ beforeEach( () => {
         finishTime: 0,
         connected: true,
         z: 0,
-        heldPower: 0,
     } );
     counts.LeaveGuard = 0;
     counts.RaceHud = 0;

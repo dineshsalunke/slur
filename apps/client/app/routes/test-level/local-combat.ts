@@ -4,14 +4,18 @@ import {
     aimSeeker,
     canFire,
     DEFAULT_SIM_CONFIG,
+    dropPower,
+    emptySlots,
     type Gunner,
     HeldPower,
     lockTarget,
     type ProjectileState,
     pickupsOf,
+    powerIn,
     type SeekerEvent,
     type SeekerState,
     type SimConfig,
+    seekerReady,
     spendPower,
     stepBolts,
     stepPickups,
@@ -22,6 +26,7 @@ import type { World } from 'koota';
 import { num } from '../../dev/tuning';
 import { blockWorld, clearBlockState } from '../../game/block-state';
 import { Held, LocalPlayer, Sim } from '../../game/ecs/traits';
+import { resetSlot, settleSlot } from '../../game/input/power-select';
 import { pushHit } from '../../game/scene/hit-events';
 
 const OWNER = 'test-level';
@@ -34,11 +39,16 @@ export const localCombat = {
     taken: new Map< string, boolean >(),
     respawn: new Map< string, number >(),
     nextId: 0,
-    fireQueued: false,
+    fireSlot: -1,
+    dropSlot: -1,
 };
 
-export function queueFire(): void {
-    localCombat.fireQueued = true;
+export function queueFire( slot: number ): void {
+    localCombat.fireSlot = slot;
+}
+
+export function queueDrop( slot: number ): void {
+    localCombat.dropSlot = slot;
 }
 
 function resetFor( track: Track ): void {
@@ -49,13 +59,15 @@ function resetFor( track: Track ): void {
     localCombat.taken.clear();
     localCombat.respawn.clear();
     localCombat.nextId = 0;
-    localCombat.fireQueued = false;
+    localCombat.fireSlot = -1;
+    localCombat.dropSlot = -1;
     clearBlockState();
 }
 
 export function restartLocalCombat( world: World, track: Track ): void {
     resetFor( track );
-    for ( const ship of world.query( LocalPlayer, Held ) ) ship.set( Held, { power: HeldPower.none } );
+    for ( const ship of world.query( LocalPlayer, Held ) ) ship.set( Held, { slots: emptySlots() } );
+    resetSlot();
 }
 
 function fireBolt( me: Gunner ): void {
@@ -76,6 +88,15 @@ function fireSeeker( me: Gunner, vz: number, track: Track ): void {
     localCombat.seekers.set( String( localCombat.nextId++ ), seeker );
 }
 
+function fire( me: Gunner, slot: number, vz: number, track: Track ): void {
+    if ( ! canFire( me, slot ) ) return;
+    const seeker = powerIn( me, slot ) === HeldPower.seeker;
+    if ( seeker && ! seekerReady( OWNER, localCombat.seekers.values() ) ) return;
+    spendPower( me, slot );
+    if ( seeker ) fireSeeker( me, vz, track );
+    else fireBolt( me );
+}
+
 function onSeekerEvent( e: SeekerEvent ): void {
     if ( e.outcome !== 'miss' ) pushHit( { x: e.x, y: e.y, z: e.z } );
 }
@@ -87,25 +108,27 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
     if ( ! ship || ! s ) return;
     if ( ! ship.has( Held ) ) ship.add( Held );
 
-    const held = ship.get( Held )?.power ?? HeldPower.none;
+    const held = ship.get( Held )?.slots ?? emptySlots();
     const me: Gunner = {
         x: s.x,
         y: s.y,
         z: s.z,
-        slots: [ held, HeldPower.bolt, HeldPower.bolt ],
+        slots: [ ...held ],
         stunTimer: s.stunTimer,
         dead: s.dead,
         spectating: false,
     };
-    if ( localCombat.fireQueued && canFire( me, 0 ) ) {
-        if ( spendPower( me, 0 ) === HeldPower.seeker ) fireSeeker( me, s.vz, track );
-        else fireBolt( me );
-    }
-    localCombat.fireQueued = false;
+    if ( localCombat.fireSlot >= 0 ) fire( me, localCombat.fireSlot, s.vz, track );
+    if ( localCombat.dropSlot >= 0 ) dropPower( me, localCombat.dropSlot );
+    localCombat.fireSlot = -1;
+    localCombat.dropSlot = -1;
 
     stepBolts( localCombat.bolts, [], track, blockWorld.broken, dt, pushHit );
     stepSeekers( localCombat.seekers, [], track, blockWorld.broken, dt, onSeekerEvent, seekerConfig() );
     stepPickups( [ me ], localCombat.pickups, localCombat.taken, localCombat.respawn, dt );
 
-    if ( me.slots[ 0 ] !== held ) ship.set( Held, { power: me.slots[ 0 ] } );
+    if ( me.slots.some( ( p, i ) => p !== held[ i ] ) ) {
+        ship.set( Held, { slots: me.slots } );
+        settleSlot( me.slots );
+    }
 }
