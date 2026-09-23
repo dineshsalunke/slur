@@ -34,10 +34,12 @@ None.
 
 ## Held files
 
-`game/overlays/{lobby-overlay,roster,leave-button,overlays,overlays.test,room-title,copy-link,spec-tag,
-lobby-ship-picker,colour-swatches,start-control}.tsx`, `game/net-canvas.tsx`, `dev/panel-visibility.ts`,
+`game/overlays/{lobby-overlay,roster,overlays.test,room-title,copy-link,spec-tag,
+lobby-ship-picker,colour-swatches,start-control}.tsx`, `dev/panel-visibility.ts`,
 `routes/game/route.tsx`, `net/matchmaking.ts`, `ship/*`, `ui/{key-hint,chevron,field-label,button}.tsx`,
 `apps/client/DESIGN.md`. Menu files as before.
+Released to workerone (#236): `game/net-canvas.tsx`, `game/overlays/overlays.tsx`,
+`game/overlays/leave-button.tsx`. A finish-review fix in those goes through the supervisor first.
 
 ## Next
 
