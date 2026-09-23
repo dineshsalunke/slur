@@ -16,3 +16,4 @@ lives in its own file beside this one.
 - [Headless Chrome for frame taps](headless-chrome-for-frame-taps.md) — drive a separate headless Chrome and curl `/__frame-tap`; never screenshot the extension tab
 - [Eyeballing a tap lies about brightness](eyeballing-a-tap-lies-about-brightness.md) — the deck measures rgb(28) and looks mid-grey; composite a grey ramp before judging value
 - [Freeze the sim to A/B a light](freeze-the-sim-to-ab-a-light.md) — KeyP holds the camera; reload → fly a fixed duration → freeze → tap
+- [Monoliths are metal now](monoliths-are-metal-now.md) — moved onto the block texture, softening a named hazard/scenery readability split; owner-accepted, re-gate still unrun

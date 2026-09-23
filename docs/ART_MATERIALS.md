@@ -18,6 +18,18 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
+> **Revision 6** — 2026-09-23. **Monoliths move off M3 onto the block metal family.** The engine-side
+> monolith texture (a procedural panel canvas whose tiling read poorly) is replaced with the same
+> `Metal046B` photographic maps §7 item 1 assigned to obstacle blocks (M2), driven by a `textureSpan`/
+> `normalScale` tuning pair mirroring `Block.*`. This is Axis 1 (material class) only — Axis 2
+> (marigold intensity, §3) is untouched: monoliths keep their own, lower `seamEmissive` default and stay
+> on the environmental tier. It also continues, rather than starts, a drift already recorded across
+> several 2026-09-22 phase notes: monolith metalness/roughness had already converged on the shared
+> `graphite.ts` values (0.9 / 0.4) against M3's `0.0` / `0.75–0.90`, flagged in those notes as *"owner's
+> call, unmade."* Recorded here as the owner's call, made: §7 item 11. §0's Axis 1 table and the M3
+> section below are corrected to match; §4 criterion 2 (hazard vs scenery, judged in the Monolith Field
+> sector) still needs a fresh gate against the converged material — not yet run.
+>
 > **Revision 5** — 2026-09-22. **Breaking bond is removed.** Deck plates are laid in **straight bond**
 > and elongated down-track — **4u across the ribbon by 16u along it**. Revision 4's half-tile row
 > offset produced a masonry read, which §M8 already names as the defect to avoid. On the owner's
@@ -55,13 +67,18 @@ them and got the emissive axis wrong as a result.
 
 | Layer | Elements | Material class |
 |---|---|---|
-| **Playable** | track ribbon, boundaries, gap slab edges, obstacle blocks, pickups, projectiles, mines, ships, finish line | hard-surface metal — bare or coated |
-| **World** | monoliths, asteroids, planets, moons, backdrop | stone, worn concrete, rock |
+| **Playable** | track ribbon, boundaries, gap slab edges, obstacle blocks, pickups, projectiles, mines, ships, finish line, **monoliths (rev. 6)** | hard-surface metal — bare or coated |
+| **World** | asteroids, planets, moons, backdrop | stone, worn concrete, rock |
 
 The package already states half of this — monoliths and asteroids are "dark stone / worn concrete"
 (`handoff/02_ENVIRONMENT.md`), the track is "dark graphite / black metallic surface"
 (`handoff/03_TRACK.md`). It never resolves the other half: obstacle blocks, pickups and the finish line
 sit on a "shared with track/world" fork the package never takes. §7 records the decision taken here.
+
+**Monoliths sit on the Playable row for material class only (rev. 6)** — they stay part of the World
+*layer* for everything Axis 2 governs (sparse environmental marigold, §3) and for scale/silhouette/
+placement, which is still what keeps them from reading as a hazard (ADD §4). The package's own "dark
+stone / worn concrete" wording for monoliths is superseded for material; it still describes asteroids.
 
 **Axis 2 — marigold intensity.** Marigold appears on both layers, at clearly different strengths.
 Gameplay emissive is the loud voice; environmental emissive is the quiet one. This is quantified in §3
@@ -229,7 +246,11 @@ machined one.
 
 ### M3 — Dark stone (dielectric)
 
-Monoliths: obelisk, gate, arch. The oldest thing in the frame.
+**Superseded for monoliths, 2026-09-23 (rev. 6, §7 item 11) — monoliths now use M2's metal maps.** Kept
+here as the family definition for any future world-layer dielectric element; nothing currently ships it.
+
+Monoliths: obelisk, gate, arch. The oldest thing in the frame. *(Historical — describes the pre-rev.-6
+monolith surface.)*
 
 | Property | Target |
 |---|---|
@@ -249,8 +270,12 @@ texture, the form is wrong and no map will save it.
 
 ### M4 — Worn concrete (dielectric, M3 variant)
 
+**Never shipped as a second monolith material** — the engine always drove every monolith shape through
+one shared surface, and that surface moved to M2 in rev. 6 along with M3. Kept as a defined variant for
+if/when a world-layer element needs two related dielectric finishes.
+
 The second monolith surface. Built-looking where M3 is carved-looking; keeps a monolith field from
-reading as one repeated prop.
+reading as one repeated prop. *(Historical — see M3's rev.-6 note.)*
 
 | Property | Target |
 |---|---|
@@ -710,7 +735,39 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
 - **`RAIL_EMITTER_RANGE` 150 → 400** is a property of the lighting rig, not of a surface, and is out of
   this sheet's scope.
 
+**Revision 6 — monoliths converge onto the block metal family (2026-09-23).**
+
+11. **Monoliths move from M3 (dark stone, dielectric) to M2 (coated metal).** §0 Axis 1 assigns
+    monoliths to the World layer's stone/worn-concrete material class, and §7 item 1 chose metal for
+    blocks *specifically because* "blocks 'must read differently from environmental monoliths.'" This
+    item narrows that separation from a material-class line to scale, silhouette and placement (ADD
+    §4's "huge, background-scale, framing — never track-adjacent"), which is the alternative §5 already
+    named for the *reverse* pairing (blocks-as-stone). Motivated by a shipped-quality problem, not a
+    design pull: the procedural panel canvas monoliths carried (`Monolith.plate = 17`) tiled unevenly and
+    read poorly next to the same-family deck/rail plates. Reusing M2's `Metal046B` photographic maps
+    fixed the tiling and, as a side effect, finished a metalness/roughness convergence (0.9 / 0.4) that
+    had already been drifting toward M2's values since 2026-09-22 without ever being reconciled against
+    this sheet.
+
+    **What did not move.** Axis 2 (§3) — monoliths keep a lower, independent `seamEmissive` default and
+    stay on the environmental (sparse, tightly-haloed) marigold tier, never the gameplay one. Scale,
+    silhouette, form (obelisk/box) and placement are unchanged.
+
+    **Open, not yet run.** §4 criterion 2 — *"Hazard versus scenery is unambiguous in the worst framing
+    we ship: the Monolith Field sector, at the closest a monolith is framed to the corridor, at cruise
+    speed"* — was written against the M3/M2 split and has not been re-gated against the converged
+    material. If it fails, the fallback is not a full revert: differentiate by seam colour/count, coat
+    finish (M2 uses a dielectric coat; a bare-conductor variant would already read differently), or
+    texture scale, before reaching for a second image texture.
+
 ## 8. Review log
+
+**Revision 5 → 6, monoliths onto M2 (2026-09-23).** §0's Axis 1 table moves monoliths from the World row
+to the Playable row for material class only; a new note under the table and under M3/M4 explains Axis 2
+and scale/silhouette/placement are unaffected. M3 and M4 are marked superseded-for-monoliths and kept as
+family definitions for a future world-layer dielectric, since neither was ever driven as two separate
+monolith materials in the engine. §7 gains item 11: the decision, what moved and what didn't, and the
+still-open §4 criterion-2 re-gate. No numbers in M1 or M2 change.
 
 **Revision 4 → 5, the deck's lighting departures (2026-09-20).** No family definition changes. §7 gains
 items 9 and 10 — `FLOOR_METALNESS` at 0.75 against M1's bare-conductor 1.0, and the pre-existing white

@@ -105,8 +105,10 @@ bearing readability contract of the marigold-primary system:
 - **Track:** dark graphite ribbon, large clean panel divisions, sparse fine seams, restrained gloss,
   functional marigold edge channels. **No ornamental greebling.**
 - **Environment:** monoliths (Obelisk · Gate · Arch) and asteroids (Angular · Plate · Broken, varied by
-  Elongated · Shattered · Cluster) in dark stone / worn concrete. Planets and moons stay cold and
-  desaturated — **no marigold surface colour by default**.
+  Elongated · Shattered · Cluster). Asteroids stay dark stone / worn concrete. **Monoliths moved onto the
+  block metal family** (`docs/ART_MATERIALS.md` rev. 6, 2026-09-23) — hazard-vs-scenery separation for
+  monoliths now rests on scale and placement alone (the row below), not material. Planets and moons stay
+  cold and desaturated — **no marigold surface colour by default**.
 - **Geometry stays angular** — hard edges, chamfered corners, trapezoidal/hex forms. Roundness is reserved
   for **lights** (status pips, glows), never structural panels.
 - Minimal texture detail; the "detail" is light, motion, and trails.
