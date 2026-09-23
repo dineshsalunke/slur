@@ -813,6 +813,10 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     into one key would mean two different operations under one name. Neither is a colour *decision* —
     both default to what already shipped.
 
+    **Superseded in part by item 16 (2026-09-24).** `Metal.mapTint` and the `Metal046B` maps are
+    deleted. Blocks and monoliths use the deck material, so `Metal.baseColor` is the one base-colour
+    key for every metal. The metalness and roughness paragraphs above still apply.
+
 13. **The finish gate is the finish-line structure, not a monolith — 2026-09-23 (#220).** Owner's call:
     *"the finish line gate should be distinct, right now it is not clear if the last one is just a gate
     or a finish line."* §2 lists two rows the finish gate could belong to: *"Finish-line structure |
