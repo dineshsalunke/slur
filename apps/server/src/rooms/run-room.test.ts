@@ -371,6 +371,26 @@ describe( 'RunRoom combat', () => {
         assert.notEqual( room.state.pickupTaken.get( pickup.id ), true, 'the skipped pickup stays available' );
     } );
 
+    test( 'a client decodes the rack and hears each slot change', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const changes: string[] = [];
+        const $ = getStateCallbacks( host );
+        $( host.state ).players.onAdd( ( p ) => {
+            $( p ).slots.onChange( ( v, i ) => changes.push( `${ i }=${ v }` ) );
+        } );
+        await room.waitForNextPatch();
+        await delay( 100 );
+        changes.length = 0;
+
+        arm( playerOf( room, host.sessionId ), HeldPower.bolt, HeldPower.none, HeldPower.seeker );
+        await room.waitForNextPatch();
+        await delay( 100 );
+
+        const mine = host.state.players.get( host.sessionId );
+        assert.deepEqual( mine && Array.from( mine.slots ), [ HeldPower.bolt, HeldPower.none, HeldPower.seeker ] );
+        assert.deepEqual( changes.sort(), [ `0=${ HeldPower.bolt }`, `2=${ HeldPower.seeker }` ] );
+    } );
+
     test( 'a taken pickup slot respawns after PICKUP_RESPAWN_S', async () => {
         const { room, host } = await racingRoom( 1 );
         const racer = playerOf( room, host.sessionId );
