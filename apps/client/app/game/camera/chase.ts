@@ -12,6 +12,8 @@ const CHASE_FOV = 70;
 const CHASE_FOV_STRETCH = 0;
 const CHASE_FOLLOW = 20;
 
+let followBack = CHASE_BACK;
+
 export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: number ): void {
     const e = world.queryFirst( LocalPlayer, Render, Sim );
     if ( ! e ) return;
@@ -27,10 +29,11 @@ export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: num
 
     const k = 1 - Math.exp( -CHASE_FOLLOW * dt );
     const back = CHASE_BACK + stretch * CHASE_BACK_STRETCH;
+    followBack += ( back - followBack ) * k;
 
     cam.position.x = p.x;
     cam.position.y += ( p.y + CHASE_HEIGHT - cam.position.y ) * k;
-    cam.position.z += ( p.z - back - cam.position.z ) * k;
+    cam.position.z = p.z - followBack;
     cam.lookAt( p.x, p.y + CHASE_LOOK_AT_LIFT, p.z + CHASE_LOOK_AHEAD );
 
     const fov = CHASE_FOV + stretch * CHASE_FOV_STRETCH;
