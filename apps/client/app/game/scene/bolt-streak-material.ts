@@ -32,7 +32,7 @@ varying vec3 vViewDir;
 
 void main() {
     float facing = abs( dot( normalize( vNormalView ), normalize( vViewDir ) ) );
-    float lead = 1.0 - vAxial;
+    float lead = clamp( 1.0 - vAxial, 0.0, 1.0 );
     float body = pow( facing, uSoftness ) * pow( lead, uFalloff );
     vec3 tint = mix( uCool, uHot, uHeat * smoothstep( 0.6, 1.0, lead ) );
     gl_FragColor = vec4( tint * body * uIntensity, 1.0 );

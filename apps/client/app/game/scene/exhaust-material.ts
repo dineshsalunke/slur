@@ -34,7 +34,7 @@ varying vec3 vViewDir;
 
 void main() {
     float facing = abs( dot( normalize( vNormalView ), normalize( vViewDir ) ) );
-    float body = pow( facing, uSoftness ) * pow( 1.0 - vAxial, uFalloff );
+    float body = pow( facing, uSoftness ) * pow( clamp( 1.0 - vAxial, 0.0, 1.0 ), uFalloff );
     vec3 tint = mix( uCool, uHot, pow( body, uHeat ) );
     gl_FragColor = vec4( tint * body * vGlow, 1.0 );
     #include <tonemapping_fragment>
