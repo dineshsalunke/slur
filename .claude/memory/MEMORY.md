@@ -29,3 +29,4 @@ lives in its own file beside this one.
 - [Measure a homing rule on procgen](measure-a-homing-rule-on-procgen.md) — 30 seeds + a block-avoiding bot + per-phase death log; unit tests missed two collision artifacts
 - [Fog hides emissive past 420u](fog-hides-emissive-past-420u.md) — linear fog 40–420u swallows glow; far signals need `fog:false`; camera far 1000u is the cap
 - [Instanced ref fill needs a geometry prop](instanced-ref-callback-needs-geometry-prop.md) — a JSX geometry child attaches after the ref callback; pass a module-level geometry
+- [procgen segmentAt is uncached](procgen-segmentat-is-uncached.md) — every call rebuilds the segment; memoise the track in a brute-force test (26.8 s → 0.26 s)

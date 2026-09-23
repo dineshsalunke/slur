@@ -1,34 +1,30 @@
-Agent: workerone · Lane: perf bisect (owner report) + parked block-bounce leftovers (#213) · Updated: 2026-09-23 ~18:00
+Agent: workerone · Lane: #216 respawn inside a block (done) + parked perf fixes and #213 leftovers · Updated: 2026-09-23
 
 ## Goal
 
-Find what dropped the game below 15 fps, and propose a fix; do not fix it. Parked: the #213 bounce leftovers,
-which wait on the owner.
+#216: a gap-death respawn must never land inside a block. Done. Perf fixes and #213 stay parked on the owner.
 
 ## Done
 
-- `042db00`: memory `headless-game-tabs-starve-the-gpu.md` (+ the supervisor's edit to
-  `headless-chrome-for-frame-taps.md`).
-- Perf report sent to slur-supervisor (not a commit). The supervisor broadcast rule (a).
-- Earlier #213 work: `7928739` (respawn probe on gap edges), `afb2642` (spark on predicted bounce),
-  `8b4d950` (marigold hit sparks). See `.claude/phases/handover-bounce-leftovers.md`.
+- `5fe5bd8`: fix(sim) — `respawnPoint()` in `packages/shared/src/sim/respawn-point.ts`. Nearest block-clear x
+  at the setback z; else step z back by `2 * halfL`; the start apron ends the search. Ignores `world.broken`.
+- `78700d5`: ADR-016 in `docs/DECISIONS.md` (amends ADR-014's invuln clause).
+- Earlier: `042db00` (memory), #213 work `7928739`, `afb2642`, `8b4d950`.
 
 ## State
 
-Headless Chrome on Metal (M1 Pro), no vsync, no frame cap; old commits run as `git archive` exports:
-
-- No code regression today. `/test-level` DPR 2 (3456×1826), alone on the GPU: HEAD `38b4fb8` 20.3 ms ·
-  `a50049f` 20.1 · `ec5c780` 21.0 · `c47c532` 21.6. Draws 103→116, tris ~1.34M flat.
-- Cause: GPU contention. HEAD alone is 20.7 ms; with one other headless game tab it is 40 ms (a vsync-capped
-  rival also gives 40 ms). The same code read 20, 40 or 66 ms as outside load changed.
-- DPR 1 is 8 ms and DPR 2 is 20 ms, so the frame is fill-bound. The rearview (R toggle) costs ~4 ms of 21 at DPR 2.
-- Suspect meshes (pickups 131–135 inst, embers 384, hit spark 4/48, fractured 6–8/160, debris 0/24,
-  sealed 33–57/320): each ≤2 ms when hidden, which is noise. The asteroids are 1.25M of the 1.34M tris but save only ~1 ms.
-- CPU profile: time is GL stalls; postprocessing ~50%, rear-view pass ~25%, PMREM regenerates every frame ~3%.
-- Scratch harness (not committed): `<scratchpad>/perf/{cdp,measure,level,ab,host,profile}.mjs` + `hook.js`.
-  That scratchpad belongs to the old session. Rebuild the harness if needed: a GL draw hook on
-  WebGL2RenderingContext.prototype, plus `window.__THREE_DEVTOOLS__` to reach the scene.
-- All my headless Chromes and scratch dev servers (5181–5185) are killed.
+- Full-density probe (6 seeds × gap edges × 2u lanes): 15/1068 inside a block before, 0/1068 after. x moves
+  on exactly the 15; 0 z-steps in the probe.
+- Brute-force test, 1,710 points on 3 seeds: 365 x-moves, 60 z-steps; every point clear, none farther than
+  the nearest clear grid x.
+- `pnpm -C packages/shared test` 202/202; shared typecheck green; biome + comment ratchet clean on my files.
+- Repo-wide `pnpm typecheck` fails in `apps/client/app/game/scene/block-debris.tsx` (missing
+  `DebrisPiece`/`fracturedDebrisPieces` export). Not my files. Repo `pnpm lint` has findings in other
+  agents' client files.
+- Departure from the approved plan: step-back is `2 * halfL`, not `CELL` (`.claude/rules/track-space.md`:
+  the sim never reads CELL). Reported to the supervisor.
+- Perf state (from the previous handover, still valid [unmeasured this session]): fill-bound at DPR 2;
+  GPU contention explains the drop; rearview ~4 ms of 21.
 
 ## Uncommitted
 
@@ -36,23 +32,23 @@ None.
 
 ## Held files
 
-None.
+None. `docs/DECISIONS.md` released to the supervisor (workertwo next).
 
 ## Next
 
-1. Wait for the owner's choice on the perf code fixes, which the supervisor relays:
-   - DPR cap at 1.5 or adaptive DPR (`dev/render-scale.tsx` `TARGET_DPR = 2`; workertwo's slider `248096d`)
-   - rearview at lower resolution or every other frame
-   - `Environment frames={Infinity}` → 1
-   Claim the files with the supervisor before the first write.
-2. #213, pending owner yes: an ADR-014 as-built note (bounce is not cheaper than death in time: head-on 1.45 s
-   vs death 1.50 s; recommend no intensity retune). File two issues: graze randomness (a clip shallower than a
-   threshold should always glance, `step.ts`) and the pocket trap (seed 1, z≈6019, gap 3.1u vs 2.52u hull; fix
-   it in the generator or the sim). ADR number, if a new one is needed: ADR-016 (re-check).
+1. Wait for the supervisor.
+2. Parked perf fixes, pending the owner: DPR cap 1.5 or adaptive (`dev/render-scale.tsx` `TARGET_DPR = 2`);
+   rearview at lower res or every other frame; `Environment frames={Infinity}` → 1.
+3. Parked #213, pending the owner: ADR-014 as-built note (bounce 1.45 s vs death 1.50 s; no retune); file
+   issues for graze randomness and the pocket trap (seed 1, z≈6019, gap 3.1u vs 2.52u hull).
 
 ## Open questions
 
-- Owner: which perf fixes from Next 1, if any?
-- Owner: go-ahead for the #213 ADR note and the two issues?
-- #213 leftovers not assigned: remote ships get no bounce spark (needs a broadcast from `run-room.ts`);
-  spark WIDTH/BRIGHT look pending; `explosions.tsx` death burst is still cyan/magenta (off-palette).
+- Owner: accept the `2 * halfL` step-back in place of `CELL`?
+- Owner: which perf fixes, if any? Go-ahead on #213 note and issues?
+- #213 leftovers not assigned: remote ships get no bounce spark; spark look pending; `explosions.tsx` death
+  burst is off-palette.
+
+## Lessons → memory
+
+`.claude/memory/procgen-segmentat-is-uncached.md`
