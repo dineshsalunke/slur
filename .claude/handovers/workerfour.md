@@ -1,32 +1,27 @@
-Agent: workerfour · Lane: ship-class retune #247 (DONE) + PR #195 merge (PAUSED) · Updated: 2026-09-24
+Agent: workerfour · Lane: phone play — touch pad, Gamepad API, fullscreen #251 (PLAN SENT) · Updated: 2026-09-24
 
 ## Goal
 
-#247: approved speeds, per-class brake, and strafe by the owner's keep-the-old-angle rule. Done.
-#195: paused, waiting on the owner.
+Make the game playable on a phone: an on-screen touch pad, physical controller support, and fullscreen
+with a landscape lock. All inputs go through the keyboard's input seam.
 
 ## Done
 
-- #247 filed. The proposal was sent. The owner approved the brakes and replaced the strafe with the angle rule.
-- `821a78a` feat(ships): retune class speed, brake and strafe (#247). This closes #247 once it is on
-  origin/dev.
-- #195: conflict list and plan sent earlier. Nothing committed or pushed.
+- #247 landed as `821a78a` (previous lane).
+- #249 filed (a flaky server test, tracking only).
+- #251 filed. The PLAN was sent to slur-supervisor for owner approval. No code yet.
 
 ## State (verified this session)
 
-- Measured per class (angle · ramp · slide · thread · dodge4 z): Int 63.2° 0.452s 5.27u 122.2 12.6u ·
-  Fig 55.6° 0.486s 5.71u 108.3 16.0u · Com 50.5° 0.469s 9.44u 108.7 18.7u · Pha 56.3° 0.500s 5.77u
-  104.9 15.0u · Fre 46.4° 0.551s 6.50u 98.0 22.7u. The commit message says Comet 108.8/18.6. The
-  values above are the correct ones.
-- The Comet strafeAccel is 290, not 288. The angle rule tied it with the Fighter, and ship-classes.test
-  needs armour to be the strict inverse of strafeAccel.
-- The lowest top-speed slope is the Freighter's 1.048 (46.4°), above WEAVE_SLOPE_CAP 0.839 (40.0°). The
-  lowest strafeAccel is 236, above 118. rosterContractFailures = [].
-- Tests: shared 258/258 in the tree and 251/251 at HEAD plus this file. Client 284/284. Typecheck and lint pass.
-- The server test "a bolt breaks a fractured block" is flaky: 1/8 at HEAD without the change, 0/8 with it.
-  Filed as #249 (tracking only; the supervisor said not to fix it yet).
-- Supervisor accepted the Comet at 290. Idle, waiting for the supervisor to clear GDD §5.5.
-- #195 worktree `../slur-worktrees/merge-195` is detached at origin/dev `74a7b89`. PR ref: `refs/remotes/pr/195`.
+- Seam: `game/input/keyboard.ts` `currentInput()` bumps seq. `ecs/net-systems.ts:39` and `ecs/systems.ts:9`
+  read it once per fixed step.
+- The jump is a held bool. `step.ts:49-50` makes tap/hold/double from the edges. Throttle, brake and
+  strafe are multiplied by the input value (`step.ts:13/14/25`), so analog input works.
+- MDN bcd 8.1.2: iPhone Safari has no element fullscreen ("Only available on iPad"). All Safari has no
+  `orientation.lock`. Chrome Android has both. safari_ios supports manifest `display` from 11.3.
+- Tailwind 4.3.3 is installed and has the `pointer-coarse:` variant.
+- `run-room.ts:83-88` does not clamp inputs. This is a side finding, not filed.
+- PR #195 is paused. Worktree `../slur-worktrees/merge-195` is detached at `74a7b89`.
 
 ## Uncommitted
 
@@ -34,19 +29,25 @@ None.
 
 ## Held files
 
-None for #247. Release ship-classes.ts, ship-classes.test.ts and track-contract.test.ts.
+None until the owner approves. The proposed claims are in the PLAN: game/input/*, the ecs/systems.ts and
+net-systems.ts imports, hud/touch-pad.tsx, hud/touch-button.tsx, net-hud.tsx,
+overlays/fullscreen-toggle.tsx, rotate-hint.tsx, overlays.tsx, ui/fullscreen.ts, and if Q2 = yes, root.tsx
+and public/manifest.webmanifest.
 
 ## Next
 
-1. GDD §5.5 class table: update it to the new numbers after workerthree commits GDD.md and the
-   supervisor clears it.
-2. #195: owner calls A/B/C, then rebase in the worktree, push HEAD:dev and clean up.
+1. Wait for the owner's approval and the answers to Q1 and Q2.
+2. Commit 1: current-input.ts merge + touch-state + gamepad (addEffect) + synth-key + TouchPad + tests.
+3. Commit 2: FullscreenToggle, rotate hint, and the manifest and meta if approved.
+4. Headless narrow capture with CDP touch emulation. Kill Chrome after.
 
 ## Open questions
 
-- GDD §5.5 table: who updates it, and when.
-- #195 owner calls A (drop the rail bounce), B (engine retune or drop the commit), C (push and close).
-- Delete `game/net-debug-hud.tsx` (carried over).
+- Q1: throttle as a hold button, or tap-to-latch?
+- Q2: manifest + Add-to-Home-Screen for iPhone?
+- Discrete actions: synthesized KeyboardEvents, or an action bus?
+- File the server input clamp as a separate issue?
+- #195 owner calls A/B/C. GDD §5.5 table owner. Delete `game/net-debug-hud.tsx`.
 
 ## Lessons → memory
 
