@@ -57,3 +57,5 @@ lives in its own file beside this one.
 - [Fork choices can conflict](fork-choices-can-conflict.md) — a fork's split is not a dominator; per-fork picks may be unflyable together, so bar softly and read `choice` off the path
 - [Pacing grid ignores ship length](pacing-grid-ignores-ship-length.md) — a z-slit shorter than the ship reads as an exit; grow blocks by halfW and halfL per class, confirm pockets in simulate()
 - [Test your lane against HEAD](test-your-lane-against-head.md) — the shared tree compiles other workers' uncommitted files; measure in a scratch copy with theirs at HEAD
+- [React dev tracks walk typed-array props](react-dev-tracks-walk-typed-array-props.md) — a big report prop on ~12 components made a dev seed change 5.8 s; pass it through context
+- [SVG polylines raster per tile](svg-polyline-raster-per-tile.md) — one long polyline replays whole for every tile; chunk it; count `missing tiles` in a cc trace

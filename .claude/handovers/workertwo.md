@@ -1,24 +1,35 @@
-Agent: workertwo · Lane: /pacing lag (owner; no issue yet) · Updated: 2026-09-24
+Agent: workertwo · Lane: /pacing lag (#245) · Updated: 2026-09-24
 
 ## Goal
 
-Find out why `/pacing?seed=N` lags, then fix it. Measure first. The owner says something is too big for it.
+Fix the `/pacing` lag the owner reported: content is blank for a moment after scrolling, then it paints.
+Also move `analyzeDescriptor` off the main thread.
 
 ## Done
 
-- Measured the route and sent the result to slur-supervisor. No code changed.
+- `20caf85` perf(pacing): analyze in a Web Worker; chunk polylines; report via context (#245).
+  - `analyze-worker.ts` + `analyze-client.ts`: a module-singleton Worker with id-keyed replies.
+    The clientLoader awaits `analyzeSeed( seed )`.
+  - `board-scale.ts`: `samplePoints` / `lineChunks` / `areaChunks` (64-point chunks) replace
+    `linePoints`. `polyline-chunks.tsx` renders them.
+  - `pacing-report-context.ts`: `PacingReportContext` + `usePacingReport()`. The route provides the
+    report. The leaves read it, and `PacingBoard` takes only `seed`.
+- Memories: `react-dev-tracks-walk-typed-array-props.md`, `svg-polyline-raster-per-tile.md`.
 
 ## State
 
-- analyzeDescriptor in Node: 97–147 ms on each of 20 seeds. Grid is 8000 x 102 = 816k cells.
-  `PathSolver.relaxFrom` is the hot spot (40 ms self time).
-- Page load: 574 ms. The one long task is the 120 ms clientLoader analyze.
-- DOM: 1702 nodes. Track strip SVG: 1200 nodes. The clearance and strafe polylines have 8002 points each.
-- Headless scroll and scrub at pps 24 and 240, at DPR 1 and emulated DPR 2: 0 dropped frames. Main
-  thread < 1 ms per frame. Zoom click: 32–34 ms.
-- The lag is NOT reproduced headless. The owner's repro is unknown [unmeasured].
-- Scratch scripts are in the session scratchpad (`cdp.mjs`, `trace.mjs`, `long.mjs`, `top.mjs`,
-  `seeds.mjs`). The Chrome on port 9441 is killed.
+- Cause of the raster cost: the 19 long polylines. Removing them cut `DisplayItemList::Raster` from
+  326 to 35 ms. Removing the 1318 rects did not change it.
+- Software raster, 2560x1440 DPR 2, pps 240, fling + jumps: RasterTask 409 → 172 ms. Max tile
+  11.3 → 6.2 ms. 1 frame with a missing tile before and after (the 30k-px jump).
+- GPU raster (ANGLE Metal, M1 Pro): 0 frames with missing tiles before and after. Owner's blank-then-paint
+  is still NOT reproduced headless. The cause on the owner's machine is [unmeasured]. Suspect GPU contention
+  from other game tabs [inferred].
+- Initial load: 0 long tasks (was one 120 ms). Board shows in 434–540 ms.
+- Seed change in dev: was one 5.8 s long task (React 19.2 dev props logging over `report`). Now 0 long
+  tasks, 482 ms end to end.
+- Client vitest 279/279. tsc, biome, ls-lint, comment ratchet, canvas isolation: clean.
+- Scratch scripts: session scratchpad `raster.mjs` (trace + missing tiles), `probe*.mjs`. Chrome on 9452 is killed.
 
 ## Uncommitted
 
@@ -26,20 +37,19 @@ None.
 
 ## Held files
 
-None. The proposed claims are pending: option 2 → `routes/pacing/route.tsx` + a new
-`analyze.worker.ts`. Option 6 → `board-scale.ts`, `clearance-plot.tsx`, `strafe-plot.tsx`,
-`pacing-strip.tsx`.
+None. `apps/client/app/routes/pacing/*` is released for workerone's R3 board.
 
 ## Next
 
-1. Wait for the owner's repro steps through the supervisor (which action lags, browser, window, other tabs).
-2. Reproduce it with that action, then build the approved option.
+1. Owner retests `/pacing` in their own Chrome. If it still blanks: which zoom, and was a game tab or
+   headless agent Chrome running at the time?
+2. If it still reproduces, take a DevTools Performance trace in the owner's browser (Rendering →
+   "Layer borders" shows checkerboarding).
 
 ## Open questions
 
-1. Which action lags for the owner?
-2. Option 4 (PathSolver speed-up) touches `packages/shared/src/pacing`. It needs workerone's RFC agreement.
+1. Does the owner still see the blank after `20caf85`? Which browser?
 
 ## Lessons → memory
 
-none
+`.claude/memory/react-dev-tracks-walk-typed-array-props.md`, `.claude/memory/svg-polyline-raster-per-tile.md`
