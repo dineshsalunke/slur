@@ -10,7 +10,8 @@
         "pretest": "pnpm --filter @slur/shared run build",
         "test": "vitest run",
         "preview": "vite preview",
-        "beat-analysis": "node tapper/beat-analysis-cli.ts"
+        "beat-analysis": "node tapper/beat-analysis-cli.ts",
+        "song-lab": "node song-lab/song-lab-cli.ts"
     },
     "dependencies": {
         "@colyseus/sdk": "catalog:",

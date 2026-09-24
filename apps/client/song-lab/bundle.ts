@@ -20,7 +20,7 @@ import {
 import type { Section } from '../tapper/beat-analysis.ts';
 
 export const LAB_BUNDLE_VERSION = 1;
-export const LAB_MAX_TICKS = 10800;
+export const LAB_MAX_TICKS = 27000;
 export const LAB_TRACE_EVERY = 30;
 
 export interface LabSong {
@@ -91,6 +91,8 @@ export interface LabResult {
     time: number;
     deaths: number;
     deathZ: number[];
+    bumps: number;
+    bumpZ: number[];
     final: LabShipState;
 }
 
@@ -105,6 +107,8 @@ export interface LabTally {
     ticks: number;
     deaths: number;
     deathZ: number[];
+    bumps: number;
+    bumpZ: number[];
     done: boolean;
 }
 
@@ -138,7 +142,7 @@ export function classTuning( classId: ShipClassId ): FlightTuning {
 }
 
 export function newTally(): LabTally {
-    return { ticks: 0, deaths: 0, deathZ: [], done: false };
+    return { ticks: 0, deaths: 0, deathZ: [], bumps: 0, bumpZ: [], done: false };
 }
 
 export function newReplay(): LabReplay {
@@ -155,11 +159,16 @@ export function labStep(
 ): void {
     if ( tally.done ) return;
     const wasDead = ship.dead;
+    const wasStunned = ship.stunTimer > 0;
     simulate( ship, input, FIXED_DT, tuning, track, DEFAULT_SIM_CONFIG, world );
     tally.ticks++;
     if ( ! wasDead && ship.dead ) {
         tally.deaths++;
         tally.deathZ.push( ship.z );
+    }
+    if ( ! wasStunned && ship.stunTimer > 0 ) {
+        tally.bumps++;
+        tally.bumpZ.push( ship.z );
     }
     if ( ship.finished || tally.ticks >= LAB_MAX_TICKS ) tally.done = true;
 }
@@ -202,6 +211,8 @@ export function labResult( r: LabReplay ): LabResult {
         time: r.tally.ticks * FIXED_DT,
         deaths: r.tally.deaths,
         deathZ: [ ...r.tally.deathZ ],
+        bumps: r.tally.bumps,
+        bumpZ: [ ...r.tally.bumpZ ],
         final: shipState( r.ship ),
     };
 }
@@ -218,5 +229,11 @@ export function replayRun( track: Track, run: Pick< LabRun, 'classId' | 'inputs'
 }
 
 export function sameResult( a: LabResult, b: LabResult ): boolean {
-    return a.finished === b.finished && a.ticks === b.ticks && a.deaths === b.deaths && sameFinal( a.final, b.final );
+    return (
+        a.finished === b.finished &&
+        a.ticks === b.ticks &&
+        a.deaths === b.deaths &&
+        a.bumps === b.bumps &&
+        sameFinal( a.final, b.final )
+    );
 }
