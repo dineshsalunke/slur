@@ -4,7 +4,7 @@ import { forkVerdict } from './route-lines';
 import { Stat } from './stat';
 
 export function BoardSummary() {
-    const { demand, gaps, grid, jump, duration, routes, arms } = usePacingReport();
+    const { demand, gaps, grid, jump, duration, routes, arms, score, adherence } = usePacingReport();
     const strafes = demand.moves.filter( ( m ) => m.kind === 'strafe' ).length;
     const jumps = demand.moves.filter( ( m ) => m.kind === 'jump' ).length;
     const reversals = demand.bins.reduce( ( s, b ) => s + b.reversals, 0 );
@@ -22,6 +22,13 @@ export function BoardSummary() {
             <Stat label="strafe moves" value={ String( strafes ) } />
             <Stat label="reversals" value={ String( reversals ) } />
             <Stat label="path jumps" value={ String( jumps ) } />
+            <Stat label="notes · breaches" value={ `${ score.notes.length } · ${ score.breaches }` } />
+            { adherence && (
+                <Stat
+                    label="band-line adherence"
+                    value={ `${ ( 100 * adherence.share ).toFixed( 0 ) }% of ${ adherence.notes }` }
+                />
+            ) }
             <Stat label="gaps forced / all" value={ `${ forced } / ${ gaps.length }` } />
             <Stat label="quiet share" value={ `${ ( ( 100 * quietTotal ) / duration ).toFixed( 0 ) }%` } />
             <Stat label="longest quiet" value={ `${ Math.max( 0, ...quiet ).toFixed( 1 ) }s` } />

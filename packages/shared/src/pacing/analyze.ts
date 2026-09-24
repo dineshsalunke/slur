@@ -1,5 +1,5 @@
 import { DEFAULT_TUNING, type FlightTuning, TRACK_CONTRACT } from '../constants.js';
-import type { Anchor, Segment, Track } from '../sim/space.js';
+import { type Anchor, SEG_LEN, type Segment, type Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 import { analyzeArms, type PacingArms } from './arms.js';
 import { measureDemand, type PacingDemand } from './demand.js';
@@ -9,6 +9,7 @@ import { airDistance, measureGaps, type PacingGap } from './jump-window.js';
 import { type PacingPocket, rosterPockets } from './pockets.js';
 import { type ReferencePath, referencePath } from './reference-path.js';
 import { analyzeRoutes, type PacingRoutes } from './route-graph.js';
+import { intentLine, type PacingScore, type ScoreAdherence, scoreAdherence, transcribe } from './score.js';
 
 export const PACING_JUMP_SOURCE = 'DEFAULT_JUMP';
 
@@ -39,14 +40,19 @@ export interface PacingReport {
     routes: PacingRoutes | null;
     arms: PacingArms | null;
     pockets: PacingPocket[] | null;
+    score: PacingScore;
     intent: PacingIntent | null;
+    line: PacingScore | null;
+    adherence: ScoreAdherence | null;
 }
+
+type TrackReport = Omit< PacingReport, 'intent' | 'line' | 'adherence' >;
 
 export function analyzeTrack(
     source: Track,
     tuning: FlightTuning = DEFAULT_TUNING,
     options: PacingOptions = {},
-): Omit< PacingReport, 'intent' > {
+): TrackReport {
     const cruise = TRACK_CONTRACT.pacingCruise;
     const frozen = freezeTrack( source );
     const grid = buildGrid( frozen );
@@ -74,11 +80,22 @@ export function analyzeTrack(
         routes,
         arms: wantArms && routes !== null ? analyzeArms( frozen, grid, routes, path, tuning, cruise ) : null,
         pockets: options.pockets === true ? rosterPockets( frozen ) : null,
+        score: transcribe( path, frozen.segments, jump.single ),
     };
 }
 
 export function analyzeDescriptor( d: TrackDescriptor, options: PacingOptions = {} ): PacingReport {
     const report = analyzeTrack( resolveTrack( d ), DEFAULT_TUNING, options );
     const intent = d.kind === 'procgen' ? procgenIntent( d, report.segments ) : null;
-    return { ...report, intent };
+    const line =
+        intent === null
+            ? null
+            : transcribe(
+                  intentLine( intent, report.segments, report.grid.count ),
+                  report.segments,
+                  report.jump.single,
+                  SEG_LEN,
+              );
+    const adherence = line === null ? null : scoreAdherence( line.notes, report.score.notes );
+    return { ...report, intent, line, adherence };
 }

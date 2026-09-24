@@ -8,6 +8,7 @@ import { ForkTable } from './fork-table';
 import { GapPlot } from './gap-plot';
 import { IntensityPlot } from './intensity-plot';
 import { LateralBars } from './lateral-bars';
+import { NotesLane } from './notes-lane';
 import { usePacingReport } from './pacing-report-context';
 import { PacingStrip } from './pacing-strip';
 import { QuietPlot } from './quiet-plot';
@@ -53,6 +54,7 @@ export function PacingBoard( { seed }: { seed: number } ) {
                     <IntensityPlot />
                     <ForkLane />
                     <PacingStrip />
+                    <NotesLane />
                     <CorridorLane />
                     <ClearancePlot />
                     <StrafePlot />
