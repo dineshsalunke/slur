@@ -241,6 +241,16 @@ The room before GO uses the same lower third over the live track. It shows the r
 - **Keys:** A/D and the arrows cycle the ship. A bare Enter starts the run for the host only. The key hint shows [A D] Ship, plus [Enter] Go for the host.
 - **Audio toggle:** hidden in the lobby, because it would sit over the strip. M still mutes.
 
+### Results
+The room after the race uses the same lower third over the live track. The winner is the hero.
+- **Header:** the same as the lobby. The wordmark is on the left and a ghost Leave is on the right.
+- **Winner card:** a 10px square in the winner's colour and "Results" (600 12px 0.22em uppercase, `text-shadow-readout`). Below it is "<name> wins": 700 uppercase, 0.86 leading, 0.01em tracking and balanced. It is 64px on phones, where it wraps to two lines, and clamp(56px, 8vw, 112px) from `sm`. Below that are the winning time (600 22px, 28px from `sm`) and the ship in Meta. With no finisher, the title reads "No finishers".
+- **Standings:** from `lg`, a 32rem column to the right of the winner card, bottom-aligned. Below `lg`, it goes under the card. The rows are 6px apart, 36px tall (40px from `sm`), Deep Space at 85%, with a 1px Readout/15 border (Readout/45 on your own row). The columns are rank (700), colour square, name (600 15px) with the YOU and HOST word tags, ship in Meta (from `sm`), time (600 14px) and gap to the leader (13px Readout Dim). All numbers use tabular figures. A DNF row shows "DNF" and sets rank, name and time in Readout Dim. On phones, your own row hides the HOST tag so the name keeps its width.
+- **Entrance:** the rows fade in and rise 8px in finish order, 300ms each, 60ms apart. The CSS `@starting-style` does this, with no JS timer. Under reduced motion the rows appear at once.
+- **Strip:** "Your finish" as a field label, then your place as an ordinal (700 20px, 22px from `sm`), your time (600 16px) and your gap. A late joiner sees "Spectated". The host sees the marigold Race again button with a chevron. A guest sees "Waiting for <host>" over "The host starts the next run" in Meta. On phones this block is at most 11.5rem wide, so its second line wraps.
+- **Keys:** a bare Enter starts the next run for the host only. The key hint shows [Enter] Race again, from `lg`.
+- **Audio toggle:** hidden, as in the lobby. M still mutes.
+
 ### In-race controls
 In countdown and racing, mute and Leave sit top-right at the HUD inset, 8px apart. They use the same ghost treatment as the lobby Leave, so Leave looks the same across GO.
 - **Ghost:** square, 36px tall, a 1px Readout/25 border on Deep Space at 60%, and 600 12px 0.2em uppercase type. Hover raises the border to Readout/60. Focus draws a 2px Readout outline at a 2px offset. There is no colour, glow or blur.

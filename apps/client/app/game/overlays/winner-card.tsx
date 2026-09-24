@@ -20,7 +20,7 @@ export function WinnerCard( { room }: { room: Room< RunState > } ) {
                 ) }
                 Results
             </p>
-            <h2 className="m-0 mt-2 text-[clamp(44px,6.4vw,96px)] font-bold uppercase leading-[0.86] text-balance text-readout text-shadow-readout">
+            <h2 className="m-0 mt-3 text-[64px] font-bold uppercase leading-[0.86] tracking-[0.01em] text-balance sm:text-[clamp(56px,8vw,112px)] text-readout text-shadow-readout">
                 { winner ? `${ winner.name || 'Racer' } wins` : 'No finishers' }
             </h2>
             { winner && (
