@@ -60,3 +60,4 @@ lives in its own file beside this one.
 - [React dev tracks walk typed-array props](react-dev-tracks-walk-typed-array-props.md) — a big report prop on ~12 components made a dev seed change 5.8 s; pass it through context
 - [SVG polylines raster per tile](svg-polyline-raster-per-tile.md) — one long polyline replays whole for every tile; chunk it; count `missing tiles` in a cc trace
 - [Rate clamp is not flyability](rate-clamp-is-not-flyability.md) — pacing paths obey the per-row rate clamp but ignore strafeAccel; fly the path with a sim pilot to prove it (#246)
+- [Fractured blocks rarely have a clear lane](fractured-blocks-rarely-have-a-clear-lane.md) — a post-hoc fracture-shadow demotion costs ~76% at today's density; reserve the rest at placement (#248, R4)
