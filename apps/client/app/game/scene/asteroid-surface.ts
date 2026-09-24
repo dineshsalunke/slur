@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 const ANISOTROPY = 8;
 
-export const ROCK_ALBEDO = '#4a525a';
+export const ROCK_ALBEDO = '#524c47';
 
 type Source = CanvasImageSource & { width: number; height: number };
 
@@ -61,8 +61,8 @@ export function prepareRockNormal( texture: THREE.Texture ): THREE.Texture {
 export interface RockUniforms {
     uRockTime: { value: number };
     uRockSpin: { value: number };
-    uRockDrift: { value: number };
-    uRockDriftRate: { value: number };
+    uRockSpeed: { value: number };
+    uRockCycle: { value: number };
     uRockSurface: { value: THREE.Texture };
     uRockNormal: { value: THREE.Texture };
     uRockTexScale: { value: number };
@@ -73,14 +73,15 @@ export interface RockUniforms {
     uRockFar: { value: number };
     uRockKeyDir: { value: THREE.Vector3 };
     uRockKeyColor: { value: THREE.Color };
+    uRockHeatColor: { value: THREE.Color };
 }
 
 export function rockUniforms( surface: THREE.Texture, normal: THREE.Texture ): RockUniforms {
     return {
         uRockTime: { value: 0 },
         uRockSpin: { value: 1 },
-        uRockDrift: { value: 0 },
-        uRockDriftRate: { value: 0 },
+        uRockSpeed: { value: 0 },
+        uRockCycle: { value: 1 },
         uRockSurface: { value: surface },
         uRockNormal: { value: normal },
         uRockTexScale: { value: 1 },
@@ -91,23 +92,31 @@ export function rockUniforms( surface: THREE.Texture, normal: THREE.Texture ): R
         uRockFar: { value: 1000 },
         uRockKeyDir: { value: new THREE.Vector3( 0, 1, 0 ) },
         uRockKeyColor: { value: new THREE.Color( 0, 0, 0 ) },
+        uRockHeatColor: { value: new THREE.Color( 0, 0, 0 ) },
     };
 }
 
 const VERT_HEAD = `
+#ifdef ROCK_LOOSE
+attribute float aRockHeat;
+#else
 attribute vec4 aRockSpin;
+#endif
 uniform float uRockTime;
 uniform float uRockSpin;
-uniform float uRockDrift;
-uniform float uRockDriftRate;
-const float DRIFT_REFERENCE_SIZE = 12.0;
-const float DRIFT_MASS_FLOOR = 0.3;
+uniform float uRockSpeed;
+uniform float uRockCycle;
+const float TRAVEL_REFERENCE_SIZE = 12.0;
+const float TRAVEL_MASS_FLOOR = 0.3;
+const float TRAVEL_FADE = 0.06;
 varying vec3 vRockPos;
 varying vec3 vRockNormal;
 varying vec3 vRockAxX;
 varying vec3 vRockAxY;
 varying vec3 vRockAxZ;
 varying float vRockDepth;
+varying float vRockFade;
+varying float vRockHeat;
 
 mat3 rockRotation( vec3 a, float angle ) {
 	float s = sin( angle );
@@ -128,7 +137,11 @@ vec3 rockNormalToView( vec3 n ) {
 
 const VERT_NORMAL = `
 #include <beginnormal_vertex>
+#ifdef ROCK_LOOSE
+mat3 rockSpin = mat3( 1.0 );
+#else
 mat3 rockSpin = rockRotation( normalize( aRockSpin.xyz ), uRockTime * aRockSpin.w * uRockSpin );
+#endif
 vRockNormal = objectNormal;
 objectNormal = rockSpin * objectNormal;
 vRockAxX = rockNormalToView( rockSpin * vec3( 1.0, 0.0, 0.0 ) );
@@ -143,15 +156,20 @@ transformed = rockSpin * transformed;
 `;
 
 const VERT_DEPTH = `
-float rockPhase = aRockSpin.w * 57.0;
-float rockMass = clamp( DRIFT_REFERENCE_SIZE / length( instanceMatrix[ 0 ].xyz ), DRIFT_MASS_FLOOR, 1.0 );
-vec3 rockDriftA = normalize( vec3( aRockSpin.z, -aRockSpin.x, aRockSpin.y ) );
-vec3 rockDriftB = normalize( cross( rockDriftA, vec3( 0.0, 0.0, 1.0 ) ) + vec3( 0.0, 0.0, 0.4 ) );
-vec3 rockDrift = uRockDrift * rockMass * (
-	rockDriftA * sin( uRockTime * uRockDriftRate + rockPhase )
-	+ rockDriftB * 0.5 * sin( uRockTime * uRockDriftRate * 0.37 + rockPhase * 1.7 ) );
 vec4 mvPosition = instanceMatrix * vec4( transformed, 1.0 );
-mvPosition.xyz += rockDrift;
+#ifdef ROCK_LOOSE
+vRockFade = 1.0;
+vRockHeat = aRockHeat;
+#else
+float rockMass = clamp( TRAVEL_REFERENCE_SIZE / length( instanceMatrix[ 0 ].xyz ), TRAVEL_MASS_FLOOR, 1.0 );
+vec2 rockOut = normalize( instanceMatrix[ 3 ].xy + vec2( 1e-3, 0.0 ) );
+float rockSide = aRockSpin.x >= 0.0 ? 1.0 : -1.0;
+vec3 rockVel = normalize( vec3( -rockOut.y * rockSide, rockOut.x * rockSide, aRockSpin.z * 0.9 ) ) * uRockSpeed * rockMass;
+float rockU = fract( uRockTime / uRockCycle + fract( aRockSpin.w * 57.0 + aRockSpin.y * 13.0 ) );
+mvPosition.xyz += rockVel * ( rockU - 0.5 ) * uRockCycle;
+vRockFade = smoothstep( 0.0, TRAVEL_FADE, rockU ) * smoothstep( 1.0, 1.0 - TRAVEL_FADE, rockU );
+vRockHeat = 0.0;
+#endif
 mvPosition = modelViewMatrix * mvPosition;
 gl_Position = projectionMatrix * mvPosition;
 vRockDepth = - mvPosition.z;
@@ -168,18 +186,21 @@ uniform vec3 uRockColor;
 uniform float uRockFar;
 uniform vec3 uRockKeyDir;
 uniform vec3 uRockKeyColor;
+uniform vec3 uRockHeatColor;
 varying vec3 vRockPos;
 varying vec3 vRockNormal;
 varying vec3 vRockAxX;
 varying vec3 vRockAxY;
 varying vec3 vRockAxZ;
 varying float vRockDepth;
+varying float vRockFade;
+varying float vRockHeat;
 `;
 
 const FRAG_SAMPLE = `
 #include <clipping_planes_fragment>
 float rockDither = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
-if ( smoothstep( uRockFar, uRockFar * 0.8, vRockDepth ) < rockDither ) discard;
+if ( smoothstep( uRockFar, uRockFar * 0.8, vRockDepth ) * vRockFade < rockDither ) discard;
 vec3 rockN = normalize( vRockNormal );
 vec3 rockW = pow( abs( rockN ), vec3( 4.0 ) );
 rockW /= dot( rockW, vec3( 1.0 ) );
@@ -214,12 +235,18 @@ vec3 rockObjN = normalize( rockTx.zyx * rockW.x + rockTy.xzy * rockW.y + rockTz.
 normal = normalize( mat3( vRockAxX, vRockAxY, vRockAxZ ) * rockObjN );
 `;
 
+const FRAG_EMISSIVE = `
+#include <emissivemap_fragment>
+totalEmissiveRadiance += uRockHeatColor * vRockHeat * smoothstep( 0.5, 0.12, rockS.b ) * ( 2.0 - rockS.r );
+`;
+
 const FRAG_KEY = `
 #include <lights_fragment_end>
 reflectedLight.directDiffuse += BRDF_Lambert( material.diffuseColor ) * uRockKeyColor * max( dot( normal, mat3( viewMatrix ) * uRockKeyDir ), 0.0 );
 `;
 
-export function patchRock( material: THREE.MeshStandardMaterial, uniforms: RockUniforms ): void {
+export function patchRock( material: THREE.MeshStandardMaterial, uniforms: RockUniforms, loose = false ): void {
+    if ( loose ) material.defines = { ...material.defines, ROCK_LOOSE: '' };
     material.onBeforeCompile = ( shader ) => {
         Object.assign( shader.uniforms, uniforms );
         shader.vertexShader =
@@ -235,7 +262,8 @@ export function patchRock( material: THREE.MeshStandardMaterial, uniforms: RockU
                 .replace( '#include <color_fragment>', FRAG_COLOR )
                 .replace( '#include <roughnessmap_fragment>', FRAG_ROUGHNESS )
                 .replace( '#include <normal_fragment_maps>', FRAG_NORMAL )
+                .replace( '#include <emissivemap_fragment>', FRAG_EMISSIVE )
                 .replace( '#include <lights_fragment_end>', FRAG_KEY );
     };
-    material.customProgramCacheKey = () => 'slur-rock';
+    material.customProgramCacheKey = () => ( loose ? 'slur-rock-loose' : 'slur-rock' );
 }
