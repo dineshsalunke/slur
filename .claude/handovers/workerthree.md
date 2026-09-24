@@ -1,4 +1,4 @@
-Agent: workerthree · Lane: seeker speed from the roster, #243 (open, awaiting the owner's factor) · Updated: 2026-09-24
+Agent: workerthree · Lane: #244 block merge (RFC sent, not started) + #243 seeker speed (owner factor pending) · Updated: 2026-09-24
 
 ## Goal
 
@@ -34,6 +34,8 @@ The homing seeker must outrun every ship class. Its top speed = fastest `maxCrui
   `combat/seeker.test.ts`, `docs/DECISIONS.md`) until the owner picks the factor.
 
 ## Next
+
+0. #244 (owner lane via supervisor): RFC sent with 7 options, measured in scratch `clusters.mjs` + `m2.mjs` (session 5add3877). Recommended option 5: in-segment guarded merge + abut at the segment boundary, in `track.ts` + new `sim/merge-blocks.ts`. Baseline 4,527 blocks / 1,577 close pairs; option 5 gives 4,194 / 143 with zero new sub-7u slices. Wait for the RFC answer, then claims, then build.
 
 1. Wait for the owner's factor (1.15 vs 1.5) through slur-supervisor.
 2. If it changes: edit `SEEKER_SPEED_FACTOR` and the "(1.15)" in ADR-017. At 1.5, retime the early-strafe
