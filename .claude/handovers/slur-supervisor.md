@@ -83,3 +83,8 @@ stills after the push.
 - #239 DONE `b0e9235`, closed (workerthree). workerthree IDLE, no files. Candidate next lanes: #231, #232, perf, the menu picker removal (queued for workerfour).
 - #238 built `1d1f9f2` (workerfour): finish review running, then the DESIGN.md Results section, then the overlays.test.tsx
   split (room mock → shared helper, approved), then the menu-picker lane (plan first).
+- PR merge DONE (workertwo): #188 #225 #230 (546130d) #237 (74a7b89) merged; origin/dev = 74a7b89. Stills:
+  .claude/frame-tap-refs/merge-before-spawn.png / merge-after-spawn.png. landing-scene.tsx lost SceneFog too (menu has no fog).
+  THIS CHECKOUT IS NOT SYNCED: run `git merge origin/dev` once nothing is staged (workerone's finish-* renames are still staged).
+- Skills committed 744233c (owner): .claude/skills + .claude/agents. scripts/bin/ gitignored, biome skips .claude/skills. pnpm lint errors 0.
+- IDLE: workertwo, workerthree. Owner has not picked their next lanes (#231, #232, perf).
