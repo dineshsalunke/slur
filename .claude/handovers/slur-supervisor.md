@@ -29,7 +29,7 @@ line with `│ [0-9]*%`: a bare `[0-9]*%` matches pane text.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | R4 S1 (#250 follow-on): registerCruise 124 + guard, FRACTURE_SHADOW_Z onto it, note-move pilot, notes parser, seeded motif library | BUILDING, claims cleared | constants.ts, sim/fracture-shadow.*, pacing/score.*, pacing/ngrams.*, index.ts export lines, sim/track-contract.test.ts, new sim/score/*, routes/pacing/* |
+| workerone | w2P:pD | R4 S1 LANDED 4eacff7 (pilot = RFC §3; 15/15 motifs pass; motif digest 1779460072; forks J|R not parsed yet; motif weights are placeholders for the owner). NOW S2 composer, cleared + resumed; claim list pending | S2 claims pending | constants.ts, sim/fracture-shadow.*, pacing/score.*, pacing/ngrams.*, index.ts export lines, sim/track-contract.test.ts, new sim/score/*, routes/pacing/* |
 | workertwo | w2P:pF | none | idle at 15% (clear before assigning) | none |
 | workerthree | w2P:pG | #244 block merge | built, UNCOMMITTED; commit waits for the owner's approval in its pane | sim/track.ts, sim/merge-blocks.*, sim/pocket.test.ts, docs/GDD.md, docs/DECISIONS.md |
 | workerfour | w2P:pH | #251 phone play APPROVED, BUILDING: one input merge point (input/current-input.ts), touch pad (HOLD throttle), Gamepad API via addEffect, synthesized key events for E/Q/M/Enter, fullscreen toggle + manifest/Add-to-Home-Screen for iPhone. Also files a server input-clamp issue (not fixed) | building | game/input/*, ecs/systems.ts + net-systems.ts import line, hud/touch-pad.tsx, hud/touch-button.tsx, net-hud.tsx, overlays/fullscreen-toggle.tsx, overlays/rotate-hint.tsx, overlays/overlays.tsx, ui/fullscreen.ts, root.tsx, public/manifest.webmanifest |
