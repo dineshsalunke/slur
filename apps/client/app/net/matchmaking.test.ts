@@ -9,6 +9,9 @@ interface Descriptor {
     tier?: number;
     length?: number;
     levelId?: string;
+    blockDensity?: number;
+    gapChance?: number;
+    gen?: string;
 }
 
 function makeRoom( descriptor?: Descriptor ) {
@@ -32,9 +35,9 @@ function makeRoom( descriptor?: Descriptor ) {
     };
 }
 
-const READY = { kind: 'procgen', seed: 12345, tier: 0, length: 400 };
-const PENDING = { kind: 'procgen', seed: 0, tier: 0, length: 400 };
-const RESOLVED = { kind: 'procgen', seed: 12345, tier: 0, length: 400 };
+const READY = { kind: 'procgen', seed: 12345, tier: 0, length: 400, blockDensity: 1, gapChance: 1, gen: 'weave' };
+const PENDING = { ...READY, seed: 0 };
+const RESOLVED = { kind: 'procgen', seed: 12345, tier: 0, length: 400, blockDensity: 1, gapChance: 1, gen: 'weave' };
 
 describe( 'waitForDescriptor', () => {
     it( 'resolves immediately when the descriptor is already present and ready', async () => {
