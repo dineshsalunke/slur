@@ -1,30 +1,38 @@
-Agent: workertwo · Lane: in-race HUD Leave + mute restyle (#240) · Updated: 2026-09-24
+Agent: workertwo · Lane: merge open PRs into dev (188, 225, 230, 237; no issue) · Updated: 2026-09-24
 
 ## Goal
 
-Restyle the in-race Leave and mute buttons to the new HUD style. The lobby ghost Leave must keep
-working. Send before/after stills. DONE, awaiting owner review.
+Merge the open PRs into `dev` and resolve conflicts. Keep both sides' intent. PR 195 is out of scope.
+DONE, pushed.
 
 ## Done
 
-- Issue #240 filed.
-- `aee81fb`: ghost style for in-race Leave + mute (`ui/ghost.ts`, `ui/speaker-glyph.tsx`), the
-  click-focus fix (onMouseDown preventDefault), and mute hidden in PHASE.finished (supervisor add).
-  `apps/client/DESIGN.md` gets an "In-race controls" entry.
+- #188 and #225 merged on GitHub (`42b1c69`, `f7fa82c`). #225 was marked ready first.
+- #230 merged at `546130d`, #237 at `74a7b89`. Both were made in a detached worktree and pushed with
+  `origin HEAD:dev` (`f7fa82c..74a7b89`). GitHub shows both MERGED.
+- The owner, through the supervisor, confirmed the resolution rule. #228's deck material wins for blocks
+  and monoliths. Every other scene change in #230 and #237 is kept.
 
 ## State
 
-- At `aee81fb`: client tsc exit 0, biome clean on changed files, vitest 270/270, comment ratchet
-  passes, `impeccable detect` reports none.
-- Tested over CDP in a hosted room (scratch :2591/:5191, headless, DPR 1, muted): after a real mouse
-  click on mute, activeElement is BODY; Space leaves aria-pressed unchanged; Tab focuses Leave.
-- Stills (git-ignored) in `.claude/frame-tap-refs/`: `240-before-racing(-topright).png`,
-  `240-after-racing(-topright,-topright-muted,-topright-focus).png`, `240-after-lobby.png` (ghost
-  Leave unchanged), plus countdown shots.
-- The results Leave keeps the old hud tone (out of scope). The results phase was not shot after the
-  mute-hide edit [unmeasured; code-only change].
-- `pnpm lint` repo-wide fails on untracked `.claude/skills/` files, not on mine.
-- No scratch servers or Chrome running.
+- Resolution: `sealed-block-material.ts` stays deleted. `STONE_*`, `Block.envMapIntensity` 2.0 and
+  `Monolith.textureSpan` 8 are dropped. `METAL_ROUGHNESS` is 0.40 and `METAL_BASE_COLOR` is `#7d7a75`.
+  #230's Env/Fill/Deck/Rail light values, the Rock values and no-fog are in. `SceneFog` is also gone
+  from `routes/home/landing-scene.tsx`, which dev added after #230 was branched.
+- `block-debris.tsx` has #237's rigid bodies, built on `floorSurface()` + `applyDeckFinish`, and the
+  material rebuilds on `useRebuildToken`.
+- `ART_MATERIALS.md` §7: item 16 = #228, item 17 = #230 (it carries a "superseded in part by item 16"
+  note), item 18 = #237. The `ADD.md` refs point to 18.
+- Gate at `74a7b89` in the worktree: typecheck clean. Tests: client 272, shared 228, server 15, 0 fail.
+  Biome on the 27 touched app files: 0 errors. One warning (`track-texture.ts` line count) was already
+  on dev. The comment ratchet passes.
+- Stills (git-ignored): `.claude/frame-tap-refs/merge-before-spawn.png` (`f7fa82c`) and
+  `merge-after-spawn.png` (`74a7b89`). They are `/test-level` spawn frames, headless, 1600×900, DPR 1.
+  The after frame is warmer and lighter, with lit monolith faces.
+- A block-break or meteor-strike frame on the merged build was not shot [unmeasured].
+- The shared checkout was NOT synced to origin/dev. The supervisor owns that sync, a real merge.
+- The worktree was removed. No scratch servers or Chrome are running. The `refs/remotes/pr/*` refs
+  were deleted.
 
 ## Uncommitted
 
@@ -32,19 +40,17 @@ None.
 
 ## Held files
 
-`game/overlays/{leave-button,audio-toggle,overlays}.tsx`, `ui/ghost.ts`, `ui/speaker-glyph.tsx`, and
-the DESIGN.md "In-race controls" entry, until the owner signs off.
+None. The PR-merge claims are released.
 
 ## Next
 
-1. Wait for the owner's review of the stills. Apply any changes.
-2. Follow-up (not claimed): the results panel Leave still uses HudButton (magenta). It fits
-   workerfour's results strip work.
+1. Wait for the supervisor's next lane.
 
 ## Open questions
 
-1. Older: R3 wear patches; worktree for the `036645c` stills; the 145 ms bake on the first race frame.
+1. None new. Older: R3 wear patches, the worktree for the `036645c` stills, and the 145 ms bake on the
+   first race frame.
 
 ## Lessons → memory
 
-none.
+`.claude/memory/merge-prs-in-a-detached-worktree.md`

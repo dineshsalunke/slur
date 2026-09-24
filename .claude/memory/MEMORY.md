@@ -47,3 +47,4 @@ lives in its own file beside this one.
 - [Biome class sort glues arbitrary classes](biome-class-sort-glues-arbitrary-property.md) — `--write` dropped the space before a trailing `${ className }`; put the interpolation first
 - [Two-client check needs two Chromes](two-client-check-needs-two-chromes.md) — headless renders only the front tab; one Chrome per client; count calls with a CDP logpoint
 - [Leave guard blocks CDP navigate](leave-guard-blocks-cdp-navigate.md) — navigating away from /game raises beforeunload and CDP evals hang; use a fresh tab per run
+- [Merge PRs in a detached worktree](merge-prs-in-a-detached-worktree.md) — a staged index blocks `git merge` here; merge off origin/dev in a detached worktree, `push HEAD:dev`, never ff the shared checkout
