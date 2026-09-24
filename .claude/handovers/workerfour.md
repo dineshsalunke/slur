@@ -1,4 +1,4 @@
-Agent: workerfour · Lane: #242 menu ship-picker removal + #238 results follow-ups · Updated: 2026-09-24 09:40
+Agent: workerfour · Lane: #242 menu ship-picker removal + #238 results follow-ups · Updated: 2026-09-24 09:50
 
 ## Goal
 
@@ -13,6 +13,8 @@ follow-ups (owner): results above the finish curtain, drop the "Results" label.
   Bare-Enter hosting lives in the new `routes/home/use-enter-hosts.ts`, called by HostButton.
   DESIGN.md has the lobby Ship Picker (signature), the Menu Strip, the layout grid, the room
   stacking order and the winner card.
+- `97df771` (owner): the dormant bank-on-change branch in `landing-ship.tsx` is removed. `ship-choice`
+  keeps `turn`/`dir` for the lobby stepper sweep. Gates: typecheck 0, vitest 279/279, lint passes.
 
 ## State (verified this session)
 
@@ -44,10 +46,8 @@ None after this seam. The claims can be released.
 
 ## Open questions
 
-- Owner: keep the winner's colour square on the time row, or drop it?
-- `routes/home/landing-ship.tsx` still has the bank-on-change branch. It is dormant now that the menu
-  cannot change the ship. Remove it? (It was left alone per the approved plan.)
 - Delete `game/net-debug-hud.tsx` (the owner must run `git rm` or allow it). Carried over.
+- Owner decided: the winner colour square stays on the time row.
 
 ## Lessons → memory
 
