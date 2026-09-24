@@ -46,3 +46,4 @@ lives in its own file beside this one.
 - [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — a new shared export missing from dist/index.js: another session's tsc watch stamped tsbuildinfo; run `tsc -b --force`
 - [Biome class sort glues arbitrary classes](biome-class-sort-glues-arbitrary-property.md) — `--write` dropped the space before a trailing `${ className }`; put the interpolation first
 - [Two-client check needs two Chromes](two-client-check-needs-two-chromes.md) — headless renders only the front tab; one Chrome per client; count calls with a CDP logpoint
+- [Leave guard blocks CDP navigate](leave-guard-blocks-cdp-navigate.md) — navigating away from /game raises beforeunload and CDP evals hang; use a fresh tab per run
