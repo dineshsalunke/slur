@@ -1,9 +1,22 @@
-import type { PlayerInput } from '@slur/shared';
+import type { FlightTuning, PlayerInput, ShipClassId } from '@slur/shared';
+import {
+    classTuning,
+    expandInputs,
+    type LabResult,
+    type LabRun,
+    type LabTally,
+    newTally,
+} from '../../../song-lab/bundle';
 import { createStore } from '../tapper/external-store';
-import type { LabResult } from './lab-bundle';
-import { createReplay, rewindReplay } from './replay-step';
 
 export const SPEEDS = [ 0.25, 0.5, 1, 2, 4, 8 ];
+
+export interface LiveReplay {
+    inputs: PlayerInput[];
+    tuning: FlightTuning;
+    tally: LabTally;
+    generation: number;
+}
 
 export interface ReplayView {
     playing: boolean;
@@ -11,17 +24,28 @@ export interface ReplayView {
     replayed: LabResult | null;
 }
 
-export const replay = createReplay();
+export const replay: LiveReplay = {
+    inputs: [],
+    tuning: classTuning( 'fighter' ),
+    tally: newTally(),
+    generation: 0,
+};
 
 export const replayView = createStore< ReplayView >( { playing: true, speed: 1, replayed: null } );
 
-export function loadReplay( inputs: readonly PlayerInput[] ): void {
-    replay.inputs = inputs;
+export function replayLive(): boolean {
+    return ! replay.tally.done && replay.tally.ticks < replay.inputs.length;
+}
+
+export function loadReplay( classId: ShipClassId, run: LabRun | undefined ): void {
+    replay.inputs = run ? expandInputs( run.inputs ) : [];
+    replay.tuning = classTuning( classId );
     restartReplay();
 }
 
 export function restartReplay(): void {
-    rewindReplay( replay );
+    replay.tally = newTally();
+    replay.generation++;
     replayView.set( { ...replayView.get(), replayed: null } );
 }
 

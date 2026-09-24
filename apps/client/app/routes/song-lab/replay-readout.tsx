@@ -5,8 +5,9 @@ import { replay } from './replay-state';
 function attachReadout( el: HTMLParagraphElement | null ): ( () => void ) | undefined {
     if ( ! el ) return undefined;
     return addEffect( () => {
-        const t = ( replay.frame * FIXED_DT ).toFixed( 2 );
-        el.textContent = `tick ${ replay.frame } / ${ replay.inputs.length } · ${ t } s · deaths ${ replay.deaths }`;
+        const { ticks, deaths } = replay.tally;
+        const t = ( ticks * FIXED_DT ).toFixed( 2 );
+        el.textContent = `tick ${ ticks } / ${ replay.inputs.length } · ${ t } s · deaths ${ deaths }`;
     } );
 }
 

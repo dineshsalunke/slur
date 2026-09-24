@@ -1,92 +1,90 @@
-import {
-    createSimWorld,
-    emptyInput,
-    FIXED_DT,
-    resolveTrack,
-    SHIP_CLASSES,
-    spawnShip,
-    type Track,
-    type TrackDescriptor,
-} from '@slur/shared';
+import { composeScore, emptyInput, SHIP_CLASSES, SHIPS, type ShipClassId } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
-import type { LabBundle, LabRun } from './lab-bundle';
-import { labHref, pickShip, pickVariant } from './lab-view';
-import { createReplay, replayLive, replayResult, rewindReplay, sameResult, stepReplay } from './replay-step';
+import {
+    type LabBundle,
+    type LabRun,
+    type LabVariant,
+    labDigest,
+    labResult,
+    labTrack,
+    packInputs,
+    replayRun,
+} from '../../../song-lab/bundle';
+import { checkVariant } from './lab-check';
+import { formatResult, labHref, pickClass, pickVariant, shipForClass } from './lab-view';
 
-const DESC: TrackDescriptor = {
-    kind: 'procgen',
-    seed: 7,
-    tier: 0,
-    length: 20,
-    blockDensity: 0,
-    gapChance: 0,
-};
-const track: Track = resolveTrack( DESC );
+const score = composeScore( 11, 12 );
 
-function throttleInputs( n: number ) {
-    return Array.from( { length: n }, ( _, i ) => ( { ...emptyInput( i ), throttle: 1 } ) );
+function variant( id: string, runs: LabRun[] ): LabVariant {
+    return {
+        id,
+        label: id,
+        rules: [],
+        build: { kind: 'compose', seed: 11, length: 12, library: 'standard', curve: null },
+        motifs: null,
+        score,
+        scoreString: '',
+        phraseStrings: [],
+        intensity: [],
+        trackDigest: labDigest( { score } ),
+        runs,
+    };
 }
 
-function runAll( inputs: ReturnType< typeof throttleInputs > ) {
-    const r = createReplay();
-    r.inputs = inputs;
-    const s = spawnShip();
-    const world = createSimWorld();
-    while ( replayLive( r ) ) stepReplay( r, s, FIXED_DT, SHIP_CLASSES.fighter.tuning, track, world );
-    return { result: replayResult( r ), z: s.z, r };
+function recorded( classId: ShipClassId, ticks: number ): LabRun {
+    const inputs = packInputs(
+        Array.from( { length: ticks }, ( _, i ) => ( {
+            ...emptyInput( i ),
+            throttle: 1,
+            strafe: i % 240 < 120 ? 1 : -1,
+        } ) ),
+    );
+    const r = replayRun( labTrack( { score } ), { classId, inputs } );
+    return { classId, inputs, result: labResult( r ), trace: r.trace };
 }
 
-describe( 'song-lab replay', () => {
-    it( 'stops on the tick the ship finishes', () => {
-        const { result, r } = runAll( throttleInputs( 60 * 60 ) );
-        expect( result.finished ).toBe( true );
-        expect( result.frames ).toBeLessThan( r.inputs.length );
-        expect( r.frame ).toBe( result.frames );
+describe( 'song-lab check', () => {
+    it( 'matches a run against its own recording', () => {
+        const c = checkVariant( variant( 'a', [ recorded( 'fighter', 600 ), recorded( 'freighter', 600 ) ] ) );
+        expect( c.digestOk ).toBe( true );
+        expect( c.matches ).toEqual( { fighter: true, freighter: true } );
     } );
 
-    it( 'stops at the end of the inputs when the ship does not finish', () => {
-        const { result } = runAll( throttleInputs( 30 ) );
-        expect( result ).toEqual( { finished: false, frames: 30, deaths: 0 } );
-    } );
-
-    it( 'replays the same inputs to the same result and position', () => {
-        const a = runAll( throttleInputs( 600 ) );
-        const b = runAll( throttleInputs( 600 ) );
-        expect( sameResult( a.result, b.result ) ).toBe( true );
-        expect( a.z ).toBe( b.z );
-    } );
-
-    it( 'rewind resets the tally and bumps the generation', () => {
-        const { r } = runAll( throttleInputs( 30 ) );
-        const gen = r.generation;
-        rewindReplay( r );
-        expect( [ r.frame, r.deaths, r.finishFrame, r.generation ] ).toEqual( [ 0, 0, -1, gen + 1 ] );
+    it( 'flags a tampered result and a tampered digest', () => {
+        const run = recorded( 'comet', 300 );
+        const v = variant( 'a', [ { ...run, result: { ...run.result, ticks: run.result.ticks + 1 } } ] );
+        const c = checkVariant( { ...v, trackDigest: v.trackDigest + 1 } );
+        expect( c.digestOk ).toBe( false );
+        expect( c.matches.comet ).toBe( false );
     } );
 } );
 
 describe( 'song-lab picks', () => {
-    const run = ( shipId: LabRun[ 'shipId' ] ): LabRun => ( {
-        shipId,
-        inputs: [],
-        result: { finished: false, frames: 0, deaths: 0 },
-    } );
     const bundle: LabBundle = {
-        name: 'b',
-        song: 's',
-        variants: [
-            { id: 'a', rules: [], score: '', track: DESC, runs: [ run( 'bob' ) ] },
-            { id: 'b', rules: [], score: '', track: DESC, runs: [] },
-        ],
+        version: 1,
+        createdAt: '',
+        song: { file: 's', duration: 0, bpm: 120, beatsPerBar: 4, sections: [] },
+        variants: [ variant( 'a', [ recorded( 'comet', 1 ) ] ), variant( 'b', [] ) ],
     };
 
     it( 'falls back to the first variant and the first flown class', () => {
         expect( pickVariant( bundle, 'nope' ).id ).toBe( 'a' );
-        expect( pickShip( pickVariant( bundle, null ), 'executioner' ) ).toBe( 'bob' );
+        expect( pickClass( pickVariant( bundle, null ), 'interceptor' ) ).toBe( 'comet' );
+    } );
+
+    it( 'maps every class to the ship that carries it', () => {
+        for ( const classId of Object.keys( SHIP_CLASSES ) as ShipClassId[] )
+            expect( SHIPS[ shipForClass( classId ) ].classId ).toBe( classId );
     } );
 
     it( 'builds a query string for a pick', () => {
-        expect( labHref( { bundle: 'x.json', variant: 'a', shipId: 'bob' } ) ).toBe(
-            '?bundle=x.json&variant=a&class=bob',
+        expect( labHref( { bundle: 'x.json', variant: 'a', classId: 'comet' } ) ).toBe(
+            '?bundle=x.json&variant=a&class=comet',
         );
+    } );
+
+    it( 'formats a result with its death positions', () => {
+        const r = { ...recorded( 'comet', 1 ).result, deaths: 2, deathZ: [ 10.4, 99.6 ], time: 3 };
+        expect( formatResult( r ) ).toBe( 'DNF · 3.00 s · 2 deaths @ z 10, 100' );
     } );
 } );

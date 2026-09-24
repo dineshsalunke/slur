@@ -1,7 +1,7 @@
+import { variantCheck } from './lab-check';
 import { installLabKeys } from './lab-keys';
 import { fetchBundle, listBundles } from './lab-source';
-import { buildLabTrack } from './lab-track';
-import { labView, pickShip, pickVariant } from './lab-view';
+import { labView, pickClass, pickVariant } from './lab-view';
 import { loadReplay } from './replay-state';
 import { SongLabEmpty } from './song-lab-empty';
 import { SongLabPage } from './song-lab-page';
@@ -18,9 +18,13 @@ export async function clientLoader( { request }: { request: Request } ) {
     if ( ! name ) return null;
     const bundle = await fetchBundle( name );
     const variant = pickVariant( bundle, q.get( 'variant' ) );
-    const shipId = pickShip( variant, q.get( 'class' ) );
-    loadReplay( variant.runs.find( ( r ) => r.shipId === shipId )?.inputs ?? [] );
-    return { view: labView( bundles, name, bundle, variant, shipId ), track: buildLabTrack( variant ) };
+    const classId = pickClass( variant, q.get( 'class' ) );
+    const check = variantCheck( name, bundle, variant );
+    loadReplay(
+        classId,
+        variant.runs.find( ( r ) => r.classId === classId ),
+    );
+    return { view: labView( bundles, name, bundle, variant, classId, check ), track: check.track };
 }
 
 export default function SongLab( { loaderData }: { loaderData: Awaited< ReturnType< typeof clientLoader > > } ) {

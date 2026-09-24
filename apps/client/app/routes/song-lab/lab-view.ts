@@ -1,5 +1,12 @@
-import { SHIP_ORDER, type ShipId } from '@slur/shared';
-import type { LabBundle, LabResult, LabVariant } from './lab-bundle';
+import { SHIP_ORDER, SHIPS, type ShipClassId, type ShipId } from '@slur/shared';
+import type { LabBundle, LabResult, LabRule, LabVariant } from '../../../song-lab/bundle';
+import type { LabCheck } from './lab-check';
+
+export interface LabRow {
+    classId: ShipClassId;
+    result: LabResult;
+    match: boolean | null;
+}
 
 export interface LabView {
     bundles: string[];
@@ -7,26 +14,34 @@ export interface LabView {
     song: string;
     variants: string[];
     variant: string;
-    classes: ShipId[];
+    label: string;
+    classes: ShipClassId[];
+    classId: ShipClassId;
     shipId: ShipId;
-    rules: string[];
-    score: string;
-    results: { shipId: ShipId; result: LabResult }[];
+    rules: LabRule[];
+    scoreString: string;
+    phraseStrings: string[];
+    digestOk: boolean;
+    results: LabRow[];
 }
 
 export interface LabPick {
     bundle: string;
     variant: string;
-    shipId: ShipId;
+    classId: ShipClassId;
+}
+
+export function shipForClass( classId: ShipClassId ): ShipId {
+    return SHIP_ORDER.find( ( s ) => SHIPS[ s ].classId === classId ) ?? SHIP_ORDER[ 0 ];
 }
 
 export function pickVariant( bundle: LabBundle, id: string | null ): LabVariant {
     return bundle.variants.find( ( v ) => v.id === id ) ?? bundle.variants[ 0 ];
 }
 
-export function pickShip( variant: LabVariant, id: string | null ): ShipId {
-    const flown = variant.runs.map( ( r ) => r.shipId );
-    return flown.find( ( s ) => s === id ) ?? flown[ 0 ] ?? SHIP_ORDER[ 0 ];
+export function pickClass( variant: LabVariant, id: string | null ): ShipClassId {
+    const flown = variant.runs.map( ( r ) => r.classId );
+    return flown.find( ( c ) => c === id ) ?? flown[ 0 ] ?? SHIPS[ SHIP_ORDER[ 0 ] ].classId;
 }
 
 export function labView(
@@ -34,28 +49,37 @@ export function labView(
     name: string,
     bundle: LabBundle,
     variant: LabVariant,
-    shipId: ShipId,
+    classId: ShipClassId,
+    check: LabCheck,
 ): LabView {
     return {
         bundles,
         bundle: name,
-        song: bundle.song,
+        song: bundle.song.file,
         variants: bundle.variants.map( ( v ) => v.id ),
         variant: variant.id,
-        classes: variant.runs.map( ( r ) => r.shipId ),
-        shipId,
+        label: variant.label,
+        classes: variant.runs.map( ( r ) => r.classId ),
+        classId,
+        shipId: shipForClass( classId ),
         rules: variant.rules,
-        score: variant.score,
-        results: variant.runs.map( ( r ) => ( { shipId: r.shipId, result: r.result } ) ),
+        scoreString: variant.scoreString,
+        phraseStrings: variant.phraseStrings,
+        digestOk: check.digestOk,
+        results: variant.runs.map( ( r ) => ( {
+            classId: r.classId,
+            result: r.result,
+            match: check.matches[ r.classId ] ?? null,
+        } ) ),
     };
 }
 
 export function labHref( pick: LabPick ): string {
-    const q = new URLSearchParams( { bundle: pick.bundle, variant: pick.variant, class: pick.shipId } );
+    const q = new URLSearchParams( { bundle: pick.bundle, variant: pick.variant, class: pick.classId } );
     return `?${ q }`;
 }
 
-export function formatResult( r: LabResult, dt: number ): string {
-    const time = `${ ( r.frames * dt ).toFixed( 2 ) } s`;
-    return `${ r.finished ? 'finished' : 'DNF' } · ${ time } · ${ r.deaths } deaths`;
+export function formatResult( r: LabResult ): string {
+    const deathZ = r.deathZ.length > 0 ? ` @ z ${ r.deathZ.map( ( z ) => Math.round( z ) ).join( ', ' ) }` : '';
+    return `${ r.finished ? 'finished' : 'DNF' } · ${ r.time.toFixed( 2 ) } s · ${ r.deaths } deaths${ deathZ }`;
 }

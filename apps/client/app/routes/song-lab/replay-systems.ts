@@ -1,29 +1,31 @@
-import { copySimShip, spawnShip, type Track, tuningForShip } from '@slur/shared';
+import { copySimShip, FIXED_DT, spawnShip, type Track } from '@slur/shared';
 import type { World } from 'koota';
+import { labResult, labStep } from '../../../song-lab/bundle';
 import { blockWorld, clearBlockState } from '../../game/block-state';
 import { sparkIfBounced } from '../../game/ecs/bounce-spark';
-import { LocalPlayer, Net, Prev, Sim } from '../../game/ecs/traits';
-import { endReplay, replay, replayView } from './replay-state';
-import { replayLive, replayResult, stepReplay } from './replay-step';
+import { LocalPlayer, Prev, Sim } from '../../game/ecs/traits';
+import { endReplay, replay, replayLive, replayView } from './replay-state';
 
-export function replayFlightSystem( world: World, dt: number, track: Track ): void {
-    world.query( Sim, Prev, Net, LocalPlayer ).updateEach( ( [ s, prev, net ] ) => {
+export function replayFlightSystem( world: World, track: Track ): void {
+    world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
-        const tuning = tuningForShip( net.shipId );
-        const stunBefore = s.stunTimer;
-        const vzBefore = s.vz;
-        stepReplay( replay, s, dt, tuning, track, blockWorld );
-        sparkIfBounced( s, stunBefore, vzBefore, dt, tuning );
+        if ( replayLive() ) {
+            const stunBefore = s.stunTimer;
+            const vzBefore = s.vz;
+            labStep( s, replay.inputs[ replay.tally.ticks ], replay.tuning, track, blockWorld, replay.tally );
+            sparkIfBounced( s, stunBefore, vzBefore, FIXED_DT, replay.tuning );
+        } else if ( replayView.get().replayed === null ) {
+            endReplay( labResult( { ship: s, world: blockWorld, tally: replay.tally, trace: [] } ) );
+        }
     } );
-    if ( ! replayLive( replay ) && replayView.get().replayed === null ) endReplay( replayResult( replay ) );
 }
 
 export function respawnReplayShip( world: World ): void {
     clearBlockState();
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
-        copySimShip( s, spawnShip() );
+        copySimShip( s, spawnShip( 0, 0 ) );
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;

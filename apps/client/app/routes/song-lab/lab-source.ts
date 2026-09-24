@@ -1,4 +1,4 @@
-import type { LabBundle } from './lab-bundle';
+import type { LabBundle } from '../../../song-lab/bundle';
 
 const bundles = new Map< string, Promise< LabBundle > >();
 

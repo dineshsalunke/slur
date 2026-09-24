@@ -6,7 +6,7 @@ const ON = `${ CHIP } border-marigold text-marigold`;
 const OFF = `${ CHIP } border-line-2 text-dim hover:text-fg`;
 
 export function LabPicker( { view }: { view: LabView } ) {
-    const pick: LabPick = { bundle: view.bundle, variant: view.variant, shipId: view.shipId };
+    const pick: LabPick = { bundle: view.bundle, variant: view.variant, classId: view.classId };
     const rows = [
         { label: 'bundle', items: view.bundles, current: view.bundle, to: ( b: string ) => ( { ...pick, bundle: b } ) },
         {
@@ -34,13 +34,19 @@ export function LabPicker( { view }: { view: LabView } ) {
             ) ) }
             <div className="flex flex-wrap items-center gap-1">
                 <span className="w-16 text-dim">class</span>
-                { view.classes.map( ( s ) => (
-                    <Link key={ s } className={ s === view.shipId ? ON : OFF } to={ labHref( { ...pick, shipId: s } ) }>
-                        { s }
+                { view.classes.map( ( c ) => (
+                    <Link
+                        key={ c }
+                        className={ c === view.classId ? ON : OFF }
+                        to={ labHref( { ...pick, classId: c } ) }
+                    >
+                        { c }
                     </Link>
                 ) ) }
             </div>
-            <p className="text-dim">song { view.song }</p>
+            <p className="text-dim">
+                song { view.song } · ship { view.shipId }
+            </p>
         </section>
     );
 }

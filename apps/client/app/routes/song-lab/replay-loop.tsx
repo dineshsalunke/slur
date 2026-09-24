@@ -24,7 +24,7 @@ export function ReplayLoop( { track }: { track: Track } ) {
         }
         const view = replayView.get();
         if ( view.playing ) {
-            const alpha = advance( delta * view.speed, ( dt ) => replayFlightSystem( world, dt, track ) );
+            const alpha = advance( delta * view.speed, () => replayFlightSystem( world, track ) );
             syncRenderSystem( world, alpha );
             hoverSystem( world, delta );
             localDeathVfxSystem( world );

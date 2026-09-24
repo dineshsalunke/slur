@@ -1,18 +1,28 @@
-import { FIXED_DT } from '@slur/shared';
-import { formatResult, type LabView } from './lab-view';
+import { formatResult, type LabRow, type LabView } from './lab-view';
 import { ReplayVerdict } from './replay-verdict';
+
+function verdict( row: LabRow ): string {
+    if ( row.match === null ) return '—';
+    return row.match ? 'MATCH' : 'DIVERGED';
+}
 
 export function RunResults( { view }: { view: LabView } ) {
     return (
         <section className="flex flex-col gap-1">
-            <h2 className="text-dim">recorded runs</h2>
-            { view.results.map( ( { shipId, result } ) => (
-                <div key={ shipId } className={ shipId === view.shipId ? 'text-marigold' : '' }>
-                    <span className="inline-block w-28">{ shipId }</span>
-                    { formatResult( result, FIXED_DT ) }
+            <h2 className="text-dim">recorded runs · headless replay</h2>
+            <p className={ view.digestOk ? 'text-dim' : 'text-threat' }>
+                track digest { view.digestOk ? 'MATCH' : 'DIVERGED' }
+            </p>
+            { view.results.map( ( row ) => (
+                <div key={ row.classId } className={ row.classId === view.classId ? 'text-marigold' : '' }>
+                    <span className="inline-block w-24">{ row.classId }</span>
+                    <span className={ `inline-block w-20 ${ row.match === false ? 'text-threat' : '' }` }>
+                        { verdict( row ) }
+                    </span>
+                    { formatResult( row.result ) }
                 </div>
             ) ) }
-            <ReplayVerdict recorded={ view.results.find( ( r ) => r.shipId === view.shipId )?.result ?? null } />
+            <ReplayVerdict recorded={ view.results.find( ( r ) => r.classId === view.classId )?.result ?? null } />
         </section>
     );
 }
