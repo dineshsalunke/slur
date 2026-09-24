@@ -4,7 +4,7 @@ The R4 RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/fc64b
 
 ## Goal
 
-- R4: the phrase RFC is written and sent. Wait for the owner's answers to Q1–Q7. Build nothing.
+- R4: the phrase RFC is written and sent. Wait for the owner's answers to rev 2 Q1–Q9. Build nothing.
 - #248: HOLD the hook-up. #246: paused; RFC §8 proposes folding it into R4.
 
 ## Owner rulings (2026-09-24)
