@@ -90,11 +90,11 @@ function fitUnit( notes: readonly MotifNote[], x: number ): MotifNote[] | null {
     return ok( m ) ? m : null;
 }
 
-function barTime( a: LabSongAnalysis, bar: number ): number {
+export function barTime( a: LabSongAnalysis, bar: number ): number {
     return a.bars[ bar ] ?? a.duration;
 }
 
-function beatLen( a: LabSongAnalysis, bar: number ): number {
+export function beatLen( a: LabSongAnalysis, bar: number ): number {
     const t0 = barTime( a, bar );
     const t1 = a.bars[ bar + 1 ] ?? t0 + ( a.beatsPerBar * 60 ) / a.bpm;
     return ( t1 - t0 ) / a.beatsPerBar;

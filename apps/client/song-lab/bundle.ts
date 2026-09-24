@@ -19,7 +19,7 @@ import {
     type Track,
 } from '@slur/shared';
 import type { Section } from '../tapper/beat-analysis.ts';
-import { openSegments } from './open.ts';
+import { openSegments, stagedSegments } from './open.ts';
 
 export const LAB_BUNDLE_VERSION = 1;
 export const LAB_MAX_TICKS = 27000;
@@ -83,9 +83,15 @@ export interface LabVariant {
     runs: LabRun[];
     humanRuns?: LabHumanRun[];
     emit?: LabEmit;
+    stage?: LabStage;
 }
 
 export type LabEmit = 'corridor' | 'open';
+
+export interface LabStage {
+    open: [ number, number ][];
+    rails: [ number, number ][];
+}
 
 export type LabSkill = 'pro' | 'club' | 'rookie';
 
@@ -146,13 +152,14 @@ export interface LabReplay {
     trace: number[];
 }
 
-export function labEmitted( score: ComposedScore, emit: LabEmit = 'corridor' ): EmittedScore {
+export function labEmitted( score: ComposedScore, emit: LabEmit = 'corridor', stage?: LabStage ): EmittedScore {
     const corridor = emitScore( score );
-    return emit === 'open' ? { ...corridor, segments: openSegments( score, corridor.spans ) } : corridor;
+    if ( emit === 'open' ) return { ...corridor, segments: openSegments( score, corridor.spans ) };
+    return stage === undefined ? corridor : { ...corridor, segments: stagedSegments( score, corridor, stage ) };
 }
 
-export function labTrack( v: Pick< LabVariant, 'score' | 'emit' > ): Track {
-    return segmentsTrack( labEmitted( v.score, v.emit ).segments, v.score.length );
+export function labTrack( v: Pick< LabVariant, 'score' | 'emit' | 'stage' > ): Track {
+    return segmentsTrack( labEmitted( v.score, v.emit, v.stage ).segments, v.score.length );
 }
 
 export function fnv1a( text: string ): number {
@@ -165,8 +172,8 @@ export function trackDigest( segments: readonly Segment[] ): number {
     return fnv1a( JSON.stringify( segments ) );
 }
 
-export function labDigest( v: Pick< LabVariant, 'score' | 'emit' > ): number {
-    return trackDigest( labEmitted( v.score, v.emit ).segments );
+export function labDigest( v: Pick< LabVariant, 'score' | 'emit' | 'stage' > ): number {
+    return trackDigest( labEmitted( v.score, v.emit, v.stage ).segments );
 }
 
 export function classTuning( classId: ShipClassId ): FlightTuning {

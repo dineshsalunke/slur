@@ -1,9 +1,10 @@
-import { CELL, SCORE_LINE_LIMIT, SEG_LEN } from '@slur/shared';
+import { CELL, FIXED_DT, SCORE_LINE_LIMIT, SEG_LEN, type Track } from '@slur/shared';
 import { describe, expect, test } from 'vitest';
 import type { SongAnalysis } from '../tapper/beat-analysis.ts';
 import {
     classTuning,
     expandInputs,
+    type LabInputRun,
     labDigest,
     labEmitted,
     labResult,
@@ -14,6 +15,7 @@ import {
     replayRun,
     sameResult,
 } from './bundle.ts';
+import { CONDUCTOR_VARIANTS, downbeat } from './conductor.ts';
 import { GROOVE_VARIANTS } from './groove.ts';
 import { gridStart, placeEvents, type SongEvent, songClock } from './map.ts';
 import { mineMotifs } from './mine.ts';
@@ -40,6 +42,28 @@ const song: SongAnalysis = {
         { fromBar: 16, toBar: 24, label: 'mid', energy: 0.5 },
     ],
 };
+
+function landingBeats( inputs: LabInputRun[], track: Track ): number[] {
+    const c = songClock( song );
+    const tuning = classTuning( 'freighter' );
+    const r = newReplay();
+    const beat = 60 / BPM;
+    const errs: number[] = [];
+    let air = false;
+    let cruise = -1;
+    for ( const input of expandInputs( inputs ) ) {
+        if ( r.tally.done ) break;
+        labStep( r.ship, input, tuning, track, r.world, r.tally );
+        if ( cruise < 0 && r.ship.vz >= tuning.maxCruise ) cruise = r.tally.ticks;
+        if ( air && r.ship.grounded ) {
+            const t = c.t0 + ( r.tally.ticks - cruise ) * FIXED_DT;
+            const bars = Array.from( { length: song.bars.length + 1 }, ( _, bar ) => downbeat( song, bar ) );
+            errs.push( Math.min( ...bars.map( ( b ) => Math.abs( t - b ) ) ) / beat );
+        }
+        air = ! r.ship.grounded;
+    }
+    return errs;
+}
 
 describe( 'song lab', () => {
     test( 'RLE inputs round-trip', () => {
@@ -148,5 +172,38 @@ describe( 'song lab', () => {
                 .segments.flatMap( ( s ) => s.blocks )
                 .reduce( ( n, b ) => n + ( b.x1 - b.x0 ) * ( b.z1 - b.z0 ), 0 );
         expect( area( 'open' ) ).toBeLessThan( area( 'corridor' ) / 4 );
+    } );
+
+    test( 'the conductor replays from JSON and its UP jumps land on the downbeats', () => {
+        const v = buildVariant( CONDUCTOR_VARIANTS[ 0 ], song, 1, [ 'freighter', 'interceptor' ] );
+        const copy: typeof v = JSON.parse( JSON.stringify( v ) );
+        expect( copy.stage?.rails.length ).toBeGreaterThan( 0 );
+        expect( labDigest( copy ) ).toBe( v.trackDigest );
+        const track = labTrack( copy );
+        for ( const run of copy.runs ) {
+            expect( sameResult( labResult( replayRun( track, run ) ), run.result ) ).toBe( true );
+            expect( run.result.finished ).toBe( true );
+            expect( run.result.deaths ).toBe( 0 );
+        }
+        const errs = landingBeats( v.runs[ 0 ].inputs, track );
+        const echoes = Number( v.build.kind === 'direct' ? v.build.params.echo : 0 );
+        expect( errs.length ).toBeGreaterThan( 8 );
+        expect( errs.filter( ( e ) => e > 0.25 ).length ).toBeLessThanOrEqual( echoes );
+    } );
+
+    test( 'a stage appends sealed rails and leaves every other segment as the corridor emits it', () => {
+        const v = buildVariant( CONDUCTOR_VARIANTS[ 0 ], song, 1, [] );
+        const plain = labEmitted( v.score ).segments;
+        const staged = labEmitted( v.score, 'corridor', v.stage ).segments;
+        expect( labEmitted( v.score, 'corridor', undefined ).segments ).toEqual( plain );
+        let railed = 0;
+        staged.forEach( ( s, i ) => {
+            const base = plain[ i ];
+            expect( s.blocks.slice( 0, base.blocks.length ) ).toEqual( base.blocks );
+            const added = s.blocks.slice( base.blocks.length );
+            if ( added.length > 0 ) railed++;
+            for ( const b of added ) expect( b.kind ).toBe( 'sealed' );
+        } );
+        expect( railed ).toBeGreaterThan( 0 );
     } );
 } );

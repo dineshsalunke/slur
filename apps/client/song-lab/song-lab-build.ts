@@ -18,9 +18,9 @@ export function buildVariant(
     skills: readonly LabSkill[] = [],
 ): LabVariant {
     const c = songClock( a );
-    const { build, score, motifs, taps = [] } = spec.make( a, c, seed );
+    const { build, score, motifs, taps = [], stage } = spec.make( a, c, seed );
     const tapSet = new Set( taps );
-    const emitted = labEmitted( score, spec.emit );
+    const emitted = labEmitted( score, spec.emit, stage );
     const track = segmentsTrack( emitted.segments, score.length );
     const holes = trackHoles( track, score.length ).map( ( h ) => ( tapSet.has( h.z0 ) ? { ...h, tap: true } : h ) );
     const course = { spans: emitted.spans, holes };
@@ -45,5 +45,6 @@ export function buildVariant(
             ),
         ),
         ...( spec.emit === undefined ? {} : { emit: spec.emit } ),
+        ...( stage === undefined ? {} : { stage } ),
     };
 }

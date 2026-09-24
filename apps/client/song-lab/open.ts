@@ -6,6 +6,7 @@ import {
     CALM_TUBE_HALF,
     CELL,
     type ComposedScore,
+    type EmittedScore,
     fullFloor,
     HALF_WIDTH,
     type OpenSpan,
@@ -15,6 +16,7 @@ import {
     START_SAFE,
     segIndexForZ,
 } from '@slur/shared';
+import type { LabStage } from './bundle.ts';
 
 export const OPEN_RAIL = CELL;
 export const OPEN_NEAR = CALM_TUBE_HALF + 1e-6;
@@ -90,6 +92,39 @@ function segmentBlocks(
             if ( c !== null ) blocks.push( { ...c, id: blockId( i, blocks.length ), kind } );
         }
     return blocks;
+}
+
+function stageRails( spans: readonly OpenSpan[], rails: readonly [ number, number ][] ): BlockBox[] {
+    const out: BlockBox[] = [];
+    for ( const [ z0, z1 ] of rails )
+        for ( const s of spans ) {
+            const lo = Math.max( z0, s.z0 );
+            const hi = Math.min( z1, s.z1 );
+            if ( hi - lo <= 1e-6 ) continue;
+            const a0 = Math.max( -HALF_WIDTH, s.line - CALM_TUBE_HALF - OPEN_RAIL );
+            const b1 = Math.min( HALF_WIDTH, s.line + CALM_TUBE_HALF + OPEN_RAIL );
+            if ( s.line - CALM_TUBE_HALF > a0 ) out.push( box( a0, s.line - CALM_TUBE_HALF, lo, hi ) );
+            if ( b1 > s.line + CALM_TUBE_HALF ) out.push( box( s.line + CALM_TUBE_HALF, b1, lo, hi ) );
+        }
+    return out;
+}
+
+export function stagedSegments( score: ComposedScore, emitted: EmittedScore, stage: LabStage ): Segment[] {
+    const open = stage.open.length > 0 ? openSegments( score, emitted.spans ) : [];
+    const inOpen = ( s: Segment ) => stage.open.some( ( [ z0, z1 ] ) => s.z0 >= z0 && s.z1 <= z1 );
+    const rails = stageRails( emitted.spans, stage.rails );
+    return emitted.segments.map( ( seg, i ) => {
+        const base = inOpen( seg ) ? ( open[ i ] ?? seg ) : seg;
+        if ( base.kind === 'gap' || base.kind === 'finish' ) return base;
+        const added: Block[] = [];
+        for ( const b of rails ) {
+            const c = clip( b, base.z0, base.z1 );
+            if ( c !== null )
+                added.push( { ...c, id: blockId( i, base.blocks.length + added.length ), kind: 'sealed' } );
+        }
+        if ( added.length === 0 ) return base;
+        return { ...base, kind: base.kind === 'plain' ? 'block' : base.kind, blocks: [ ...base.blocks, ...added ] };
+    } );
 }
 
 export function openSegments( score: ComposedScore, spans: readonly OpenSpan[] ): Segment[] {
