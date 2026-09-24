@@ -1,56 +1,45 @@
-Agent: workerone · Lane: #253 song lab → wind-down + new "fly-and-record" tapper · Updated: 2026-09-25 00:30
+Agent: workerone · Lane: #253 wind-down done → new beat-recording deck (plan only) · Updated: 2026-09-25
 
 Older versions of this file hold the conductor and earlier #253 history (`git log -p -- .claude/handovers/workerone.md`).
 
 ## Goal
 
-- Owner, 2026-09-25: "this is not really working out". Archive all song-lab work on a branch. Keep the
-  **replay-related code** on `dev`.
-- Then a new experiment. A route with a plain empty deck: no blocks, no gaps. The owner picks any mp3 and plays
-  it, then flies and strafes on the beats. The inputs are recorded. We analyse them to learn what the owner
-  means by moving to a song.
+- Build a new dev route: a plain empty deck. The owner plays any mp3 and flies and strafes on the beats. The
+  route records the inputs so we can learn what the owner means by moving to a song.
 
 ## Done
 
-- `db8cd1e` conductor variant · `b64766f` handover.
-- Branch **`archive/song-lab`** → `b64766f` (the tip of `dev`). Made with `git branch`, no checkout, so HEAD
-  stays on `dev`. **Not pushed.**
+- `9388a67` removes song-lab and tapper from `dev` and reverts c3d2a63 (the score intensity curve). The
+  archive is the local branch `archive/song-lab` → `b64766f`. It is **not pushed**.
+- I deleted `apps/client/.songs/lab/` (ignored data). The mp3 and `imgaine_dragons-believer.analysis.json`
+  stay, as the supervisor said.
 
 ## State
 
-- `/tapper` **already exists** (`7f397d0`, `apps/client/app/routes/tapper/`). It is a 2D key-tap recorder
-  (takes, note lane, song grid, `recorder.ts`, `takes-store.ts`). It is dev-only, registered in
-  `apps/client/app/routes.ts:10` beside `song-lab`.
-- `apps/client/tapper/` holds the beat analysis: `beat-analysis.ts`, `drum-onsets.ts`, `tapper-plugin.ts`.
-  `song-lab` imports its types.
-- Song-lab footprint on dev: `apps/client/song-lab/*` (generators + CLI), `apps/client/app/routes/song-lab/*`
-  (viewer), plus references in `routes.ts`, `package.json`, `vitest.config.ts` and `tapper-plugin.ts`.
-- The bundle swap never happened. It is moot now.
+- Score digest over composeScore + emitScore, seeds 1–30: `62f2711c…3efc` before and after the undo.
+  Adherence is 1.0000 on all 30 seeds. The scratch probe was `digest.mjs`.
+- Gates at `9388a67`: typecheck green · lint green · shared 316/316 · server 17/17 · client 297/299.
+- The 2 failures are in `app/net/matchmaking.test.ts`. The descriptor has more fields than the test
+  expects. [inferred, not run at HEAD without this change] The cause is 0734e06 or later, because this
+  change does not touch that code.
 
 ## Uncommitted
 
-- None.
+- None of mine.
 
 ## Held files
 
-- `apps/client/song-lab/**` · `apps/client/app/routes/song-lab/**` · `packages/shared/src/sim/score/*`.
+- None. The new route needs fresh claims after the owner approves the plan.
 
-## Next — wait for the owner's answers first
+## Next
 
-1. Owner decides what "replay-related" means. Proposal: **keep** `song-lab/bundle.ts` (labStep, replayRun,
-   pack/expandInputs, LabRun and LabResult types), `record.ts`, `pilot.ts` and `human.ts`, plus the viewer's
-   `replay-*` files, `song-sync.ts` and `lab-check.ts`, moved to a neutral home. **Remove** the generators:
-   `conductor.ts`, `groove.ts`, `variants.ts`, `map.ts`, `mine.ts`, `open.ts`, `song-lab-cli.ts`, `-build.ts`.
-   Also remove the `/song-lab` route UI.
-2. Owner decides the name clash. The existing `/tapper` is the 2D recorder. Choose: replace it, extend it with a
-   3D deck, or give the new route another name.
-3. Push `archive/song-lab` to origin? This needs the owner's say. It is outward-facing.
-4. Then file an issue, claim files with the supervisor and build the deck route. Reuse `/test-level` rendering,
-   the song playback from `song-sync.ts`, and `packInputs` to record inputs with the song time per tick.
+1. Send the new-deck plan to the supervisor. Wait for the owner's approval.
+2. After the owner approves, file an issue, claim the files and build.
 
 ## Open questions
 
-- The 3 items above (replay scope, route name, push).
+- Push `archive/song-lab` to origin? This is the owner's decision.
+- The matchmaking test failures: which lane owns them?
 
 ## Lessons → memory
 
