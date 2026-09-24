@@ -1,6 +1,7 @@
 import { type PlayerInput, SHIP_CLASSES, type ShipClassId, type Track } from '@slur/shared';
 import {
     classTuning,
+    type LabReplay,
     type LabRun,
     labResult,
     labStep,
@@ -10,17 +11,18 @@ import {
     replayRun,
     sameResult,
 } from './bundle.ts';
-import { newPilot, type PilotCourse, pilotInput } from './pilot.ts';
+import { newPilot, type Pilot, type PilotCourse, pilotInput } from './pilot.ts';
 
 export const LAB_CLASSES = Object.keys( SHIP_CLASSES ) as ShipClassId[];
 
-export function recordRun( track: Track, course: PilotCourse, classId: ShipClassId ): LabRun {
+export type Driver = ( r: LabReplay ) => PlayerInput;
+
+export function flyRun( track: Track, classId: ShipClassId, drive: Driver ): LabRun {
     const r = newReplay();
     const tuning = classTuning( classId );
-    const pilot = newPilot( course, tuning, track );
     const inputs: PlayerInput[] = [];
     while ( ! r.tally.done ) {
-        const input = pilotInput( pilot, r.ship, r.world );
+        const input = drive( r );
         input.seq = r.tally.ticks;
         inputs.push( input );
         labStep( r.ship, input, tuning, track, r.world, r.tally );
@@ -30,4 +32,13 @@ export function recordRun( track: Track, course: PilotCourse, classId: ShipClass
     if ( ! sameResult( labResult( replayRun( track, run ) ), run.result ) )
         throw new Error( `${ classId }: the replay of the recorded inputs diverged` );
     return run;
+}
+
+export function classPilot( track: Track, course: PilotCourse, classId: ShipClassId ): Pilot {
+    return newPilot( course, classTuning( classId ), track );
+}
+
+export function recordRun( track: Track, course: PilotCourse, classId: ShipClassId ): LabRun {
+    const pilot = classPilot( track, course, classId );
+    return flyRun( track, classId, ( r ) => pilotInput( pilot, r.ship, r.world ) );
 }

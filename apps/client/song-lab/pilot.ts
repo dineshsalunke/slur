@@ -46,6 +46,9 @@ export interface Pilot {
     plan: JumpPlan | null;
     predicting: boolean;
     wasDead: boolean;
+    aim: number;
+    lag: number;
+    takeoffShift: () => number;
 }
 
 export function trackHoles( track: Track, length: number ): Hole[] {
@@ -61,7 +64,17 @@ export function trackHoles( track: Track, length: number ): Hole[] {
 }
 
 export function newPilot( course: PilotCourse, tuning: FlightTuning, track: Track ): Pilot {
-    return { course, tuning, track, plan: null, predicting: false, wasDead: false };
+    return {
+        course,
+        tuning,
+        track,
+        plan: null,
+        predicting: false,
+        wasDead: false,
+        aim: 0,
+        lag: 0,
+        takeoffShift: () => 0,
+    };
 }
 
 function spanAt( spans: readonly OpenSpan[], z: number ): OpenSpan | undefined {
@@ -77,8 +90,13 @@ function spanAt( spans: readonly OpenSpan[], z: number ): OpenSpan | undefined {
     return undefined;
 }
 
-export function lineAt( spans: readonly OpenSpan[], z: number, fallback: number ): number {
-    return spanAt( spans, z )?.line ?? fallback;
+export function aimAt( spans: readonly OpenSpan[], z: number, fallback: number, aim: number, halfW: number ): number {
+    const s = spanAt( spans, z );
+    if ( s === undefined ) return fallback;
+    if ( aim === 0 ) return s.line;
+    const lo = Math.min( s.line, s.a + halfW );
+    const hi = Math.max( s.line, s.b - halfW );
+    return Math.min( hi, Math.max( lo, s.line + aim ) );
 }
 
 export function strafeToward( s: SimShip, target: number, t: FlightTuning ): number {
@@ -121,7 +139,10 @@ function planJump( p: Pilot, s: SimShip, world: SimWorld, hole: number ): JumpPl
     for ( const mode of [ 'single', 'double' ] as const ) {
         const ok: number[] = [];
         for ( let z = from; z <= h.z0; z += PILOT_LEAD_STEP ) if ( clears( p, s, world, hole, z, mode ) ) ok.push( z );
-        if ( ok.length > 0 ) return { hole, takeoffZ: ok[ Math.floor( ok.length / 2 ) ], mode, jp: newJumpPilot() };
+        if ( ok.length > 0 ) {
+            const shift = p.predicting ? 0 : p.takeoffShift();
+            return { hole, takeoffZ: ok[ Math.floor( ok.length / 2 ) ] + shift, mode, jp: newJumpPilot() };
+        }
     }
     return { hole, takeoffZ: h.z0 - p.tuning.halfL, mode: 'double', jp: newJumpPilot() };
 }
@@ -144,8 +165,10 @@ export function pilotInput( p: Pilot, s: SimShip, world: SimWorld ): PlayerInput
     p.wasDead = s.dead;
     const input: PlayerInput = { seq: 0, throttle: 1, brake: 0, strafe: 0, jump: false };
     if ( s.dead ) return input;
-    const look = s.z + Math.max( s.vz, 0 ) * PILOT_LOOK_S;
-    input.strafe = strafeToward( s, lineAt( p.course.spans, look, s.x ), p.tuning );
+    const lag = p.predicting ? 0 : p.lag;
+    const look = s.z + Math.max( s.vz, 0 ) * ( PILOT_LOOK_S - lag );
+    const aim = p.predicting ? 0 : p.aim;
+    input.strafe = strafeToward( s, aimAt( p.course.spans, look, s.x, aim, p.tuning.halfW ), p.tuning );
     steerJumps( p, s, world, input );
     return input;
 }

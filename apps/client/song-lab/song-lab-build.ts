@@ -1,5 +1,6 @@
 import { emitScore, formatNotes, type ShipClassId, segmentsTrack } from '@slur/shared';
-import { type LabVariant, trackDigest } from './bundle.ts';
+import { type LabSkill, type LabVariant, trackDigest } from './bundle.ts';
+import { humanSeed, pilotSpec, recordHumanRun } from './human.ts';
 import { songClock } from './map.ts';
 import { trackHoles } from './pilot.ts';
 import { recordRun } from './record.ts';
@@ -10,6 +11,7 @@ export function buildVariant(
     a: LabSongAnalysis,
     seed: number,
     classes: readonly ShipClassId[],
+    skills: readonly LabSkill[] = [],
 ): LabVariant {
     const c = songClock( a );
     const { build, score, motifs } = spec.make( a, c, seed );
@@ -31,5 +33,10 @@ export function buildVariant(
         intensity: intensityOf( score ),
         trackDigest: trackDigest( emitted.segments ),
         runs: classes.map( ( id ) => recordRun( track, course, id ) ),
+        humanRuns: skills.flatMap( ( skill ) =>
+            classes.map( ( id ) =>
+                recordHumanRun( track, course, id, pilotSpec( skill, humanSeed( spec.id, seed, id, skill ) ) ),
+            ),
+        ),
     };
 }

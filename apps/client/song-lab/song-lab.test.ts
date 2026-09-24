@@ -69,4 +69,18 @@ describe( 'song lab', () => {
             expect( run.result.finished ).toBe( true );
         }
     } );
+
+    test( 'human runs are seeded, replay from JSON and leave the perfect runs unchanged', () => {
+        const spec = COMPOSE_VARIANTS[ 1 ];
+        const perfect = buildVariant( spec, song, 3, [ 'fighter' ] );
+        const a = buildVariant( spec, song, 3, [ 'fighter' ], [ 'club', 'rookie' ] );
+        const b = buildVariant( spec, song, 3, [ 'fighter' ], [ 'club', 'rookie' ] );
+        expect( a.runs ).toEqual( perfect.runs );
+        expect( a.humanRuns ).toEqual( b.humanRuns );
+        const copy: typeof a = JSON.parse( JSON.stringify( a ) );
+        const track = labTrack( copy );
+        expect( copy.humanRuns?.map( ( r ) => r.pilot.skill ) ).toEqual( [ 'club', 'rookie' ] );
+        for ( const run of copy.humanRuns ?? [] )
+            expect( sameResult( labResult( replayRun( track, run ) ), run.result ) ).toBe( true );
+    } );
 } );

@@ -72,6 +72,21 @@ export interface LabVariant {
     intensity: number[];
     trackDigest: number;
     runs: LabRun[];
+    humanRuns?: LabHumanRun[];
+}
+
+export type LabSkill = 'pro' | 'club' | 'rookie';
+
+export interface LabPilotSpec {
+    skill: LabSkill;
+    seed: number;
+    reactTicks: number;
+    aimSigma: number;
+    takeoffJitter: number;
+}
+
+export interface LabHumanRun extends LabRun {
+    pilot: LabPilotSpec;
 }
 
 export type LabInputRun = [ ticks: number, throttle: number, brake: number, strafe: number, jump: 0 | 1 ];
