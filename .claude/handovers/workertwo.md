@@ -1,32 +1,23 @@
-Agent: workertwo · Lane: none (idle) · Updated: 2026-09-24
+Agent: workertwo · Lane: in-race HUD Leave + mute restyle (#240) · Updated: 2026-09-24
 
 ## Goal
 
-No lane. Supervisor: stay idle. The last lane was deck material on monoliths + blocks (#228). Its code,
-tunable, docs and memory are done.
+Restyle the in-race Leave and mute buttons (top-right, countdown/racing) to the new HUD style
+(`game/hud/*`, `apps/client/DESIGN.md`). The lobby ghost Leave must keep working. Send before/after stills.
 
 ## Done
 
-- `81c2b76`: monoliths use only the deck material. `use-rail-mask.ts` shared by `monoliths.tsx` and
-  `finish-gate.tsx`.
-- `9688d40`: sealed, fractured and debris blocks spread `floorSurface()` and follow `Deck.*` through
-  `applyDeckFinish` (`deck-finish.ts`).
-- `f6e9874`: `Monolith.plate` tunable (0–24, rebuild). `SurfaceParams.joints`: false makes `eachJoint`
-  a no-op and drops the per-plate value jitter. `monolithSurface()` in `track-materials.ts`.
-- `321a65f`: `docs/ART_MATERIALS.md` rev. 8. `docs/ADD.md` §4. Memory
-  `deck-material-on-blocks-and-monoliths.md`.
-- `d54e4ef`: §7 item 12 superseded-in-part note.
-- `fd818e6`: `Monolith.plate` default 4 → 2 (owner).
+- Issue #240 filed.
+- Plan + claims sent to slur-supervisor. Waiting for the owner to clear it. Nothing built.
 
 ## State
 
-- At `fd818e6`: vitest 244/244. At `f6e9874`: client tsc clean, comment ratchet passes.
-- Plate-2 bake: extra ≈ 57–67 ms cold on `/test-level` (headless swiftshader). Hosted room at GO:
-  [unmeasured].
-- Next 0 (reduced-motion nebula) was handed to workerfour by the supervisor before I wrote anything.
-  The line is `nebula-baker.ts:196` (`this.liveUniforms.uTime.value = elapsed;`), driven from
-  `nebula-sky.tsx:11`.
-- No scratch servers or Chrome running.
+- Leave (hud tone) = `HudButton variant="leave"`: magenta border, `rounded-[5px]`. AudioToggle = emoji,
+  `rounded-[5px]`, `backdrop-blur`, cyan `shadow-hud`. Both break DESIGN.md Don'ts (read this session).
+- Plan: both use the lobby ghost treatment (square, 36px, Readout/25 on Deep/60). Mute gets an inline SVG
+  speaker glyph like `ui/chevron.tsx`. The shared classes go in `ui/ghost.ts`.
+- `game/input/keyboard.ts` never preventDefaults Space. A clicked button keeps focus, so a jump presses
+  it again [inferred, not reproduced]. Offered to the owner as an optional fix.
 
 ## Uncommitted
 
@@ -34,21 +25,20 @@ None.
 
 ## Held files
 
-None. Released by the supervisor: `monolith-group.tsx`, `tuning-schema.ts`, `tuning-panel.tsx`
-(workerthree's edits there are committed). The rest of the #228 file set is released with the lane.
+Claimed, not yet cleared: `game/overlays/{leave-button,audio-toggle,overlays}.tsx`, new
+`ui/ghost.ts`, new `ui/speaker-glyph.tsx`, `apps/client/DESIGN.md`.
 
 ## Next
 
-1. Idle. Wait for the supervisor.
-2. Follow-up for whoever holds `track-floor.tsx`: it keeps an inline copy of `applyDeckFinish`. Fold it
-   into `deck-finish.ts`.
-3. Earlier lane (#227): still waiting on the worktree and the 145 ms bake questions.
+1. Wait for the supervisor or owner to clear the plan and answer the Space-focus question.
+2. Take the BEFORE still first: scratch stack on its own ports, headless Chrome (DPR 1, muted), hosted
+   room, countdown, top-right crop. Also one lobby still.
+3. Build → tsc/lint/vitest → run `impeccable detect --json` → AFTER stills → commit → handover.
 
 ## Open questions
 
-1. Owner: does R3 need a follow-up? Wear patches do not show on the close block (one sample).
-2. Owner (still open): worktree for the `036645c` darkness stills; the 145 ms bake on the first race
-   frame.
+1. Owner: include the Space-focus fix (onMouseDown preventDefault) in #240?
+2. Older: R3 wear patches; worktree for the `036645c` stills; the 145 ms bake on the first race frame.
 
 ## Lessons → memory
 
