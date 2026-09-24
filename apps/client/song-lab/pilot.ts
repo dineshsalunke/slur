@@ -11,6 +11,7 @@ import {
     type SimShip,
     type SimWorld,
     simulate,
+    spawnShip,
     steerJump,
     type Track,
 } from '@slur/shared';
@@ -25,13 +26,19 @@ export const PILOT_PREDICT_TICKS = 360;
 export interface Hole {
     z0: number;
     z1: number;
+    tap?: boolean;
 }
+
+export type LabJumpMode = JumpMode | 'tap';
+
+export const TAP_TICKS = 4;
 
 interface JumpPlan {
     hole: number;
     takeoffZ: number;
-    mode: JumpMode;
+    mode: LabJumpMode;
     jp: JumpPilot;
+    held: number;
 }
 
 export interface PilotCourse {
@@ -119,10 +126,42 @@ function cloneWorld( w: SimWorld ): SimWorld {
     return { broken: new Set( w.broken ) };
 }
 
-function clears( p: Pilot, s: SimShip, world: SimWorld, hole: number, takeoffZ: number, mode: JumpMode ): boolean {
+export function tapAirDistance( t: FlightTuning ): number {
+    const s = spawnShip( 0, 0 );
+    s.vz = t.maxCruise;
+    let z0: number | null = null;
+    for ( let n = 0; n < PILOT_PREDICT_TICKS; n++ ) {
+        simulate( s, { seq: n, throttle: 1, brake: 0, strafe: 0, jump: n < TAP_TICKS }, FIXED_DT, t );
+        if ( z0 === null && ! s.grounded ) z0 = s.z;
+        if ( z0 !== null && s.grounded ) return s.z - z0;
+    }
+    return 0;
+}
+
+function steerTap( plan: JumpPlan, s: SimShip ): void {
+    const jp = plan.jp;
+    if ( jp.done ) return;
+    if ( ! jp.fired ) {
+        if ( s.z >= plan.takeoffZ ) {
+            jp.fired = true;
+            jp.input.jump = true;
+            plan.held = 1;
+        }
+        return;
+    }
+    if ( plan.held < TAP_TICKS ) plan.held++;
+    else jp.input.jump = false;
+    if ( ! s.grounded ) jp.airborne = true;
+    else if ( jp.airborne ) {
+        jp.done = true;
+        jp.input.jump = false;
+    }
+}
+
+function clears( p: Pilot, s: SimShip, world: SimWorld, hole: number, takeoffZ: number, mode: LabJumpMode ): boolean {
     const ship: SimShip = { ...s };
     const w = cloneWorld( world );
-    const sub: Pilot = { ...p, predicting: true, plan: { hole, takeoffZ, mode, jp: newJumpPilot() } };
+    const sub: Pilot = { ...p, predicting: true, plan: { hole, takeoffZ, mode, jp: newJumpPilot(), held: 0 } };
     const h = p.course.holes[ hole ];
     for ( let n = 0; n < PILOT_PREDICT_TICKS; n++ ) {
         const input = pilotInput( sub, ship, w );
@@ -136,15 +175,16 @@ function clears( p: Pilot, s: SimShip, world: SimWorld, hole: number, takeoffZ: 
 function planJump( p: Pilot, s: SimShip, world: SimWorld, hole: number ): JumpPlan {
     const h = p.course.holes[ hole ];
     const from = Math.max( s.z, h.z0 - PILOT_MAX_LEAD );
-    for ( const mode of [ 'single', 'double' ] as const ) {
+    const modes: readonly LabJumpMode[] = h.tap ? [ 'tap', 'single', 'double' ] : [ 'single', 'double' ];
+    for ( const mode of modes ) {
         const ok: number[] = [];
         for ( let z = from; z <= h.z0; z += PILOT_LEAD_STEP ) if ( clears( p, s, world, hole, z, mode ) ) ok.push( z );
         if ( ok.length > 0 ) {
             const shift = p.predicting ? 0 : p.takeoffShift();
-            return { hole, takeoffZ: ok[ Math.floor( ok.length / 2 ) ] + shift, mode, jp: newJumpPilot() };
+            return { hole, takeoffZ: ok[ Math.floor( ok.length / 2 ) ] + shift, mode, jp: newJumpPilot(), held: 0 };
         }
     }
-    return { hole, takeoffZ: h.z0 - p.tuning.halfL, mode: 'double', jp: newJumpPilot() };
+    return { hole, takeoffZ: h.z0 - p.tuning.halfL, mode: 'double', jp: newJumpPilot(), held: 0 };
 }
 
 function steerJumps( p: Pilot, s: SimShip, world: SimWorld, input: PlayerInput ): void {
@@ -156,7 +196,8 @@ function steerJumps( p: Pilot, s: SimShip, world: SimWorld, input: PlayerInput )
             p.plan = planJump( p, s, world, hole );
     }
     if ( p.plan === null ) return;
-    steerJump( p.plan.jp, p.plan.mode, s, p.plan.takeoffZ );
+    if ( p.plan.mode === 'tap' ) steerTap( p.plan, s );
+    else steerJump( p.plan.jp, p.plan.mode, s, p.plan.takeoffZ );
     input.jump = p.plan.jp.input.jump;
 }
 

@@ -116,7 +116,7 @@ function fits( n: MotifNote, x: number ): boolean {
 
 const REST = parseNotes( '.' )[ 0 ];
 
-function padTo( notes: ComposedNote[], z: number, to: number, x: number, phrase: number ): number {
+export function padTo( notes: ComposedNote[], z: number, to: number, x: number, phrase: number ): number {
     let at = z;
     while ( to - at >= REST.duration ) {
         notes.push( { ...REST, z: at, x, phrase } );

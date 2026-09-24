@@ -2,6 +2,7 @@ import {
     type ComposedScore,
     createSimWorld,
     DEFAULT_SIM_CONFIG,
+    type EmittedScore,
     emitScore,
     FIXED_DT,
     type FlightTuning,
@@ -18,6 +19,7 @@ import {
     type Track,
 } from '@slur/shared';
 import type { Section } from '../tapper/beat-analysis.ts';
+import { openSegments } from './open.ts';
 
 export const LAB_BUNDLE_VERSION = 1;
 export const LAB_MAX_TICKS = 27000;
@@ -73,7 +75,10 @@ export interface LabVariant {
     trackDigest: number;
     runs: LabRun[];
     humanRuns?: LabHumanRun[];
+    emit?: LabEmit;
 }
+
+export type LabEmit = 'corridor' | 'open';
 
 export type LabSkill = 'pro' | 'club' | 'rookie';
 
@@ -134,8 +139,13 @@ export interface LabReplay {
     trace: number[];
 }
 
-export function labTrack( v: Pick< LabVariant, 'score' > ): Track {
-    return segmentsTrack( emitScore( v.score ).segments, v.score.length );
+export function labEmitted( score: ComposedScore, emit: LabEmit = 'corridor' ): EmittedScore {
+    const corridor = emitScore( score );
+    return emit === 'open' ? { ...corridor, segments: openSegments( score, corridor.spans ) } : corridor;
+}
+
+export function labTrack( v: Pick< LabVariant, 'score' | 'emit' > ): Track {
+    return segmentsTrack( labEmitted( v.score, v.emit ).segments, v.score.length );
 }
 
 export function fnv1a( text: string ): number {
@@ -148,8 +158,8 @@ export function trackDigest( segments: readonly Segment[] ): number {
     return fnv1a( JSON.stringify( segments ) );
 }
 
-export function labDigest( v: Pick< LabVariant, 'score' > ): number {
-    return trackDigest( emitScore( v.score ).segments );
+export function labDigest( v: Pick< LabVariant, 'score' | 'emit' > ): number {
+    return trackDigest( labEmitted( v.score, v.emit ).segments );
 }
 
 export function classTuning( classId: ShipClassId ): FlightTuning {

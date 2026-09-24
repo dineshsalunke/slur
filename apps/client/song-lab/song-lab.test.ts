@@ -1,9 +1,20 @@
 import { CELL, SCORE_LINE_LIMIT, SEG_LEN } from '@slur/shared';
 import { describe, expect, test } from 'vitest';
 import type { SongAnalysis } from '../tapper/beat-analysis.ts';
-import { expandInputs, labDigest, labResult, labTrack, packInputs, replayRun, sameResult } from './bundle.ts';
+import {
+    expandInputs,
+    labDigest,
+    labEmitted,
+    labResult,
+    labTrack,
+    packInputs,
+    replayRun,
+    sameResult,
+} from './bundle.ts';
+import { GROOVE_VARIANTS } from './groove.ts';
 import { placeEvents, type SongEvent, songClock } from './map.ts';
 import { mineMotifs } from './mine.ts';
+import { TAP_TICKS } from './pilot.ts';
 import { buildVariant } from './song-lab-build.ts';
 import { COMPOSE_VARIANTS } from './variants.ts';
 
@@ -82,5 +93,42 @@ describe( 'song lab', () => {
         expect( copy.humanRuns?.map( ( r ) => r.pilot.skill ) ).toEqual( [ 'club', 'rookie' ] );
         for ( const run of copy.humanRuns ?? [] )
             expect( sameResult( labResult( replayRun( track, run ) ), run.result ) ).toBe( true );
+    } );
+
+    test( 'the groove places the owner groove on backbeats and the hook tap jump is a short press', () => {
+        const v = buildVariant( GROOVE_VARIANTS[ 1 ], song, 1, [ 'fighter', 'freighter' ] );
+        expect( v.scoreString.replaceAll( '. ', '' ) ).toMatch( /^L R L R L R r l r l r r l r l / );
+        expect( v.scoreString.replaceAll( '. ', '' ) ).toContain( 'J j' );
+        for ( const run of v.runs ) {
+            expect( run.result.deaths ).toBe( 0 );
+            const presses: number[] = [];
+            let held = 0;
+            for ( const input of expandInputs( run.inputs ) ) {
+                if ( input.jump ) held++;
+                else if ( held > 0 ) {
+                    presses.push( held );
+                    held = 0;
+                }
+            }
+            expect( presses ).toContain( TAP_TICKS );
+        }
+    } );
+
+    test( 'an open variant replays from JSON and has far less wall than its corridor', () => {
+        const spec = { ...GROOVE_VARIANTS[ 1 ], emit: 'open' as const };
+        const v = buildVariant( spec, song, 1, [ 'comet' ], [ 'rookie' ] );
+        const copy: typeof v = JSON.parse( JSON.stringify( v ) );
+        expect( copy.emit ).toBe( 'open' );
+        expect( labDigest( copy ) ).toBe( v.trackDigest );
+        const track = labTrack( copy );
+        for ( const run of [ ...copy.runs, ...( copy.humanRuns ?? [] ) ] ) {
+            expect( sameResult( labResult( replayRun( track, run ) ), run.result ) ).toBe( true );
+            expect( run.result.finished ).toBe( true );
+        }
+        const area = ( emit: 'open' | 'corridor' ) =>
+            labEmitted( v.score, emit )
+                .segments.flatMap( ( s ) => s.blocks )
+                .reduce( ( n, b ) => n + ( b.x1 - b.x0 ) * ( b.z1 - b.z0 ), 0 );
+        expect( area( 'open' ) ).toBeLessThan( area( 'corridor' ) / 4 );
     } );
 } );

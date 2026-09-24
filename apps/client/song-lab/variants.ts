@@ -1,6 +1,7 @@
 import { type ComposedScore, composeScore, MOTIFS, type Motif, type NoteToken, parseMotif } from '@slur/shared';
 import type { SongAnalysis } from '../tapper/beat-analysis.ts';
-import type { LabBuild, LabRule } from './bundle.ts';
+import type { LabBuild, LabEmit, LabRule } from './bundle.ts';
+import { GROOVE_VARIANTS } from './groove.ts';
 import {
     barAt,
     barCurve,
@@ -35,12 +36,14 @@ export interface VariantBuild {
     build: LabBuild;
     score: ComposedScore;
     motifs: Motif[] | null;
+    taps?: number[];
 }
 
 export interface VariantSpec {
     id: string;
     label: string;
     rules: LabRule[];
+    emit?: LabEmit;
     make: ( a: LabSongAnalysis, c: SongClock, seed: number ) => VariantBuild;
 }
 
@@ -231,7 +234,7 @@ export const DRUM_VARIANTS: VariantSpec[] = [
 ];
 
 export function variantsFor( a: LabSongAnalysis ): VariantSpec[] {
-    return a.drums === undefined ? COMPOSE_VARIANTS : [ ...COMPOSE_VARIANTS, ...DRUM_VARIANTS ];
+    return a.drums === undefined ? COMPOSE_VARIANTS : [ ...COMPOSE_VARIANTS, ...DRUM_VARIANTS, ...GROOVE_VARIANTS ];
 }
 
 export function intensityOf( score: ComposedScore ): number[] {
