@@ -1,90 +1,50 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~04:00
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~09:15
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `supervisor-clears-workers-via-herdr.md`.
 
-## Done this session
+## Done
 
-- #213 leftovers (workerthree): `1ccc673` `0dd9b97` `56dc932` `c21a50b`; live two-client check passed, #233 closed.
-  #231 graze and #232 pocket trap are open and wait on the owner.
-- /pacing step 1 (workerone) `5211671`. Step 2 (jump contract) waits on the owner's look at /pacing.
-- Lobby comp B (workerfour) `efd671f` `7b4579f` `e26a79c` `3a92a96`.
-- Debug UI `2a05eda`. `game/net-debug-hud.tsx` is an orphan: git rm was permission-blocked, so the owner must run it.
-  `--color-debug` goes with it.
-- Hosted HUD = /test-level set (#236, workerone) `b255460`. #236 is open for owner review.
-- PUSHED local dev to origin: `81f9462..16a6829` (84 commits). Owner request.
+- #241 hosted finish curtain (workerone) `deabca3`, handover `ce2e28c`.
+- #238 results comp B (workerfour) `1d1f9f2` `7943126` `dc856e7`, handover `f6d257a`, `374e878`.
+- PRs 188, 225, 230, 237 merged to origin/dev (`74a7b89`) by workertwo.
+- All four workers cleared at ~09:10 (owner-approved) and given new lanes.
 
-## PR merge (owner-approved order, NOT yet assigned: no worker was free)
-
-Give it to the first worker that finishes. Steps:
-1. `gh pr merge` 188 (docs, clean) and 225 (draft: mark it ready first; clean).
-2. Merge 230, then 237 (mahendradambe's fork PRs; heads at `refs/remotes/pr/230`, `pr/237`) into local dev.
-   Resolve the conflicts: 230 conflicts in tuning-schema.ts, sealed-block-material.ts, ART_MATERIALS.md. 237 adds
-   block-debris.tsx and metal.ts. Run tests, push, and let GitHub close the PRs (or comment + close).
-3. 195 (the owner's feat/ship-feel, 33 commits, 134 files, needs a rebase) gets its own lane LATER.
-Check the claims first: the conflicting files may be held by then.
-
-## Workers (all building, owner-approved)
+## Workers
 
 | Worker | Pane | Lane | Held files |
 |---|---|---|---|
-| workerone | w2P:pD | #241 hosted finish curtain + camera watch; hide FlightReadout after the own finish | game/finish/* (git mv from routes/test-level finish-*), test-level local-loop.tsx + test-level-canvas.tsx (imports), net-loop.tsx, net-canvas.tsx, finish-watch.ts(+test), net/standings-store.ts(+test), hud/net-pilot-readout.tsx |
-| workertwo | w2P:pF | #240 in-race Leave + mute ghost restyle, SVG speaker, click-no-focus fix, hide AudioToggle in lobby AND finished | leave-button.tsx, audio-toggle.tsx, overlays.tsx, ui/ghost.ts, ui/speaker-glyph.tsx, DESIGN.md (In-race controls entry) |
-| workerthree | w2P:pG | #239 pickup SFX cut (engine-level `cut`), plus a pickup sound on /test-level | audio-engine.ts(+test), sfx-map.ts, test-level local-combat.ts(+test), test-level route.tsx |
-| workerfour | w2P:pH | #238 results comp B (winner card); "<Name> wins", "Race again ›", Enter = Race again, staggered rows | results-overlay.tsx + new leaves, overlays.test.tsx (results tests), DESIGN.md (Results section) |
+| workerone | w2P:pD | Pacing step 2: BRANCHING RFC (no code). The analyzer assumes one Viterbi path; the owner wants every route, with splits and merges. | none until approved |
+| workertwo | w2P:pF | /pacing route lags ("something is too big"). Measure, then options and claims. | none yet (likely routes/pacing/*) |
+| workerthree | w2P:pG | #231 graze, then #232 pocket trap. Both touch sim/step.ts. RFC first. | none yet |
+| workerfour | w2P:pH | #242 menu picker removal (APPROVED); results root above the z-30 curtain; drop the "Results" label; the lobby picker is the signature. | #242: routes/home/menu-strip.tsx, ship-picker.tsx (rm), host-button.tsx, DESIGN.md Menu Strip + Ship Picker |
 
-Hand-off agreed: the curtain owns the local finish (it never holds black), and results mount on PHASE.finished
-above z-30, independently.
+## Owner decisions this session
 
-## Open owner decisions
+- Results above the curtain: yes. The "Results" label: drop it. #242: approved.
+- Orbit fallback clipping into a block: no change (the track is empty during the orbit).
 
-1. Click Copy link once in a real tab.
+## Open
+
+1. **Checkout sync.** `git merge origin/dev` was denied by the auto-mode classifier. Local is 17 commits behind
+   origin/dev, and none of those commits touch a dirty file. The owner must run it or allow it.
 2. Owner-run `git rm apps/client/app/game/net-debug-hud.tsx` and drop `--color-debug`.
-3. #231, #232, perf fixes, pacing step 2, PR 195 rebase.
-4. Rail seam lip yellow (old). 5. Untracked `.claude/agents|skills/` (break `pnpm lint`). 6. docs/art-direction changes are ChatGPT's; leave them alone.
+3. Click Copy link once in a real tab. Review #236.
+4. Pacing questions for the owner: 93% quiet share; the double-jump window (~1.1 s vs 0.45 s reaction); lengthwise slots.
+5. The perf fixes and the PR 195 rebase are not assigned.
 
 ## Uncommitted
 
 none of mine.
 
-## Since the seam (~04:15)
-
-- #240 landed `aee81fb` (workertwo). Stills in `.claude/frame-tap-refs/240-*`. Its claims are released.
-- workertwo cleared and given the PR merge lane (188, 225, then 230 + 237 with conflicts resolved; 195 out of scope).
-  It sends its conflict files for a claim check before the first write.
-- QUEUED for workerfour after #238 (owner): remove the ship picker from the main menu. Keep the ship store.
-  Plan + issue first.
-
-- 188 + 225 MERGED on GitHub by workertwo (~04:25). Local dev pushed first (787b7be). Local dev is now BEHIND
-  origin/dev by those two merges.
-- Shared index held workerone's staged renames, so `git merge` here is unsafe. Owner APPROVED a detached worktree
-  `../slur-worktrees/pr-merge` for workertwo: merge 230 → 237 there, `git push origin HEAD:dev`.
-  THEN: sync this checkout (`git merge origin/dev`) ONLY when `git status` shows nothing staged and the workers
-  are idle or committed. Ask workertwo, or do it yourself.
-- workerfour cleared + resumed at ~04:20 (building #238 comp B from its handover spec).
-
 ## Next
 
-1. Relay each lane's result (stills/SHAs) to the owner.
-2. After workertwo's push: sync the checkout at a clean-index moment (above).
-3. Check workertwo's merge claims against workerone (net-*), workerthree (audio, test-level), workerfour (results).
+1. Claim-check each worker's plan. workertwo and workerone both touch pacing: keep workertwo's lag fix and
+   workerone's later branching build apart.
+2. Relay the RFCs (#231/#232, branching) and the lag cause to the owner.
 
 ## Lessons → memory
 
 none.
-
-## Owner call on PR 230 (~04:35)
-
-#228 deck material wins for blocks and monoliths. Keep all of PR 230's scene changes (METAL_ROUGHNESS 0.40, fill
-lights, env 1.5, no fog). ART_MATERIALS §7: dev stays 16, PR 230 becomes 17, PR 237 becomes 18. workertwo sends
-stills after the push.
-- #239 DONE `b0e9235`, closed (workerthree). workerthree IDLE, no files. Candidate next lanes: #231, #232, perf, the menu picker removal (queued for workerfour).
-- #238 built `1d1f9f2` (workerfour): finish review running, then the DESIGN.md Results section, then the overlays.test.tsx
-  split (room mock → shared helper, approved), then the menu-picker lane (plan first).
-- PR merge DONE (workertwo): #188 #225 #230 (546130d) #237 (74a7b89) merged; origin/dev = 74a7b89. Stills:
-  .claude/frame-tap-refs/merge-before-spawn.png / merge-after-spawn.png. landing-scene.tsx lost SceneFog too (menu has no fog).
-  THIS CHECKOUT IS NOT SYNCED: run `git merge origin/dev` once nothing is staged (workerone's finish-* renames are still staged).
-- Skills committed 744233c (owner): .claude/skills + .claude/agents. scripts/bin/ gitignored, biome skips .claude/skills. pnpm lint errors 0.
-- IDLE: workertwo, workerthree. Owner has not picked their next lanes (#231, #232, perf).
