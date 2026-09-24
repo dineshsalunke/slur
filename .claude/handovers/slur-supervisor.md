@@ -74,3 +74,9 @@ none of mine.
 ## Lessons → memory
 
 none.
+
+## Owner call on PR 230 (~04:35)
+
+#228 deck material wins for blocks and monoliths. Keep all of PR 230's scene changes (METAL_ROUGHNESS 0.40, fill
+lights, env 1.5, no fog). ART_MATERIALS §7: dev stays 16, PR 230 becomes 17, PR 237 becomes 18. workertwo sends
+stills after the push.
