@@ -62,6 +62,10 @@ drift < 1 beat at bars 8/28/60/96/finish.
 - matchmaking.test.ts FIXED c0a7a90 (workertwo, handover 87524f6): the fixture was stale; client 299/299. workertwo idle.
 - /beat-deck APPROVED (~01:45): the name /beat-deck, a dev plugin writes takes to .songs/takes/, AUTO-CRUISE (held throttle
   in the input layer, no sim change). workerone dispatched to build v1 (no analysis yet).
+- /beat-deck v1 LANDED 1ab0a3f (handover 17c71c7): headless take of 6.6 s = 17 KB, 399 ticks, 18 keys; mp3 sha OK; path-safe
+  plugin; client 309/309. On the owner's stack the supervisor verified the route (200) and the plugin POST (400 on an empty body).
+  workerone cleared + resumed idle. A bot sample take sits in .songs/takes/; delete it before analysis.
+  NEXT: the owner records takes → analysis step (key-down vs believer.analysis.json beats).
 
 ## Landed this session (all local, not pushed)
 
