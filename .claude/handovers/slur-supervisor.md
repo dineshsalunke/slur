@@ -32,6 +32,15 @@ the status line until it shows 0–5%; the first read after /clear can still sho
 - Branching: fork = both arms >= 25u + one hull apart; difficulty binds the EASIEST route; a fractured block is a
   wall for viability AND a conditional arm; dead ends NOT allowed (per class). The owner sends no edited image.
 
+## ~13:30 update: owner answered items 1–8; all four workers cleared and resumed
+
+- workertwo: Web Worker + scroll paint delay ("scrolling left/right, content shows up late"); then release routes/pacing/*.
+- workerone: X = stop window < ship length; hull z-length 6u; hardest = Viterbi cost; pickups in R4. Generator
+  regenerate-on-trap HELD until #244 lands. R3 after workertwo.
+- workerthree: #243 factor 1.5 (retime fixture), then #244 WAITS on the owner's option (5 vs 3), still unasked-answered.
+- workerfour: merge PR #195 (only open PR) in a detached worktree; conflict list + plan first.
+The items below are the pre-13:30 queue; only item 0 (#244 option) and item 9 remain open.
+
 ## Open owner questions (relay in this order)
 
 0. #244 block merge (workerthree RFC, relayed): option 5 (in-segment guarded union + boundary abut; close pairs
