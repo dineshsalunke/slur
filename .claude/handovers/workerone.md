@@ -1,77 +1,70 @@
-Agent: workerone · Lane: R4 S3 — emitter (#250) · Updated: 2026-09-24 18:15
+Agent: workerone · Lane: R4 S3 — emitter + `gen:'score'` switch (#250) · Updated: 2026-09-24 19:10
 
 The approved RFC: `.claude/phases/2026-09-24-r4-score-rfc.md` (798ac1d). Older versions of this file hold
-history: 4e66705 (S2 seam), 4eacff7 (S1 seam), e868c04 (rev 2 numbers), 192787f (R4 brief).
+history: 58bb78f (S3 emitter seam), 4e66705 (S2), 4eacff7 (S1), e868c04 (rev 2 numbers), 192787f (brief).
 
 ## Goal
 
-- S3 (RFC §12 step 4): score → geometry (M4 band on the score line, M1 accents, N2/N3 filler outside the
-  ±5u calm tube). New files only, because `sim/track.ts` is dirty with workerthree's #244. The `gen:'score'`
-  switch goes to the supervisor as a diff, like #248.
+- Hand the `gen:'score'` switch to slur-supervisor as a diff (track.ts is dirty with workerthree's #244),
+  so the owner can playtest a score track in a hosted room.
 
 ## Done
 
-- `798ac1d` RFC · `c24f2bb` S0 · `4eacff7` S1 · `4e66705` S2.
-- S3 emitter (this seam, SHA in the commit that carries this file):
-  - `sim/score/emit.ts`: `scoreSpans` gives one open interval `[a, b]` per z-span, with walls from each
-    edge to the deck edge. Roles: calm (the walled side is at line ± `CALM_TUBE_HALF` 5, on the next move's
-    side; the other side is open to `freeReach` = corridorWidthLanes × 4 − 5), preview (a 4u pin just before
-    each lateral onset, at line ± `SCORE_PIN_HALF` 2.5), move (the union of old and new), gate (20u, the
-    behind side pinned at 2.5; the far side is `SCORE_GATE_FAR` 5.5 when the next move is the same way or
-    the note is an accent), smash (a fractured ±3u block in a ±5u slot). `J` = 1 hole segment, `JJ` = 2.
-    N3 = seeded 4×4u bumps on the free-side wall in calms ≥ 40u. `emitSegments`, `emitScore`,
-    `segmentsTrack( segments, length )`, `scoreTrack( seed )`.
-  - `compose.ts`: phrase 0 is always one rest (the first pin cannot sit in start-safe).
-    `SCORE_LINE_LIMIT` = HALF_WIDTH − MIN_LANE + hull = 26 (an edge gate keeps 8u).
-- Why pins, not the tube alone: the easiest-route solver minimises lateral travel, and it moves as early as
-  the walls allow. With the ±5u tube it moved 1u for a 4u step and drifted 3u early. Both runs are under
-  the transcriber's 3.4u minimum step, so notes vanished (adherence 0.67–0.74). The pins fix it. The calm
-  tube stays ±5u clear in every calm span.
+- `798ac1d` RFC · `c24f2bb` S0 · `4eacff7` S1 · `4e66705` S2 · `58bb78f` S3 emitter.
+- Owner rulings on S3 (via supervisor): playtest as is (914 blocks, 0.5u pin clearance OK). `JJ` is exempt
+  from ADR-006 "no two gaps in a row" on `'score'` tracks only.
+- This seam (SHA in the commit that carries this file):
+  - Diff for the supervisor: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/91190798-1cd4-4a01-ab73-1f3a33e86834/scratchpad/gen-score-switch.diff`
+    (272+ lines, 8 files). Built in the scratch copy `…/scratchpad/gen` (HEAD 58bb78f + the diff).
+    - `space.ts`: `gen?: TrackGen` last on `ProcgenDescriptor`; `TRACK_GENS`, `TrackGen`, `isTrackGen`.
+    - `track.ts`: `makeProcgenTrack` returns `scoreTrack( seed, length )` when `d.gen === 'score'`.
+    - `schema.ts`: `@type( 'string' ) gen = 'weave'` LAST on `TrackDescriptorState`; apply/toDescriptor.
+    - `track-provider.ts`: `procgenDescriptor( seed, gen = 'weave' )`.
+    - `run-room.ts`: reads `SLUR_TRACK_GEN` (default weave). Playtest: `SLUR_TRACK_GEN=score pnpm dev`.
+    - `track.test.ts`: `makeTrack` pins `'weave'`; the gap test is renamed "weave: …".
+    - New `track-gen.test.ts`: gen round-trip, score descriptor = `scoreTrack`, and the JJ-only gap test
+      (standard score tracks + a `JJ` test library).
+    - `run-room.test.ts`: a client decodes a score descriptor and resolves the server track from it; a room
+      without the env var hosts weave.
+  - ADR-020 amendment (JJ exemption) appended to `.claude/phases/2026-09-24-adr-020-pending.md`.
 
 ## State
 
-- Seeds 1–30 with the standard library: adherence **1.000 on every seed**. The transcript round-trips
-  token for token on all 30. Path stuck rows 0. Slices under MIN_LANE 0. sealShadowed changes 0 blocks.
-- Blocks per track: mean **914** (865–941). Today's weave has ~466. Worst 58-segment window is well under
-  the 320 budget [asserted in the test for 6 seeds].
-- Accents (a test library `!l J !r` etc.): 100% played on 3 seeds. Smash (a test library `S l S`):
-  sealShadowed leaves every block alone. Width ≥ MIN_LANE with the fractured blocks taken out.
-- The reference path treats fractured blocks as solid (`CONTRACT_HULL.solid` = SOLID_ALL). So an `S` note
-  makes the easiest route stuck. The standard library has no `S`, so no seed shows it.
-- Tests: 306/306 shared in the scratch copy at HEAD + S3 (296 + 10). The suite took 596s this time.
-  respawn.test and grid.test were slow; load average 18.8 [inferred: machine load; the emit and compose
-  files take ~1s each]. biome and the comment ratchet are clean.
-- Real ship clearance at a pin: 0.5u (hull 2u, settle tolerance 0.25u) [unmeasured in flight].
+- Scratch copy: shared 309/309 pass, server 17/17 pass. biome: 0 errors; 2 warnings are the pre-existing
+  line-count warnings on track.test.ts (432 lines at HEAD) and run-room.test.ts (437 at HEAD). No comments added.
+- `git apply --check` passes on a fresh HEAD archive. On the dirty #244 `track.ts` the import hunk needs
+  `git apply -C1` (#244 adds an import line in the context); checked on a copy, both hunks land.
+- The standard motif library emits no `JJ` (0 of 200 seeds). The test library emits 100 `JJ` over 8 seeds.
+- A score room has no pickups: `scoreTrack` gives `anchors: []` (S4 work).
+- The client renders a score track through `resolveTrack( toDescriptor(...) )` [inferred; not flown]. Any
+  client visual that reads `weaveLineLanes` directly would still follow the weave line [unmeasured].
 
 ## Uncommitted
 
-None.
+None (the diff lives in the scratchpad by design).
 
 ## Held files
 
 - `packages/shared/src/sim/score/*` · `packages/shared/src/pacing/*` + tests · the pacing and score export
   lines in `packages/shared/src/index.ts` · `apps/client/app/routes/pacing/*` · `sim/fracture-shadow.ts` + test.
+- Pending the supervisor applying the diff: `sim/space.ts`, `schema.ts`, `sim/track-provider.ts`,
+  new `sim/track-gen.test.ts`, `apps/server/src/rooms/run-room.ts` + test (track.ts/track.test.ts go with #244).
 
 ## Next
 
-1. The `gen:'score'` switch as a diff file in the scratchpad (not the tree). `space.ts`: `gen?: 'weave' |
-   'score'` last on `ProcgenDescriptor`. `track.ts`: `makeProcgenTrack` returns `segmentsTrack( emitScore(
-   composeScore( seed, length ) ).segments, length )` when `d.gen === 'score'`. `schema.ts:72` gains a plain
-   string field LAST (`@type( 'string' ) gen = 'weave'`), plus lines 83/97. Test it through the
-   client-decoded state (memory `deprecated-breaks-reflection-decoding.md`). Hand it to the supervisor.
-2. Conflict to flag: `JJ` = 2 adjacent hole segments. `track.test.ts:236` "no two gaps in a row" fails on a
-   `'score'` track with any `JJ`. The RFC §4.5 missed it. Either the test counts a `JJ` as one gap, or `JJ`
-   uses split floors.
-3. S4: forks, pickups (`anchors: []` today), and a smash solver (SOLID_SEALED hull for `S`).
-4. S5: fly the emitted geometry with the contract ship at 55 and 124 u/s through `simulate()` with
-   collisions (the 0.5u pin clearance).
+1. Wait for the supervisor to apply the diff. Then playtest support if asked (a hosted room with
+   `SLUR_TRACK_GEN=score`).
+2. S4: forks, pickups (`anchors: []` today), a smash solver (SOLID_SEALED hull for `S`).
+3. S5: fly the emitted geometry with the contract ship at 55 and 124 u/s through `simulate()` with
+   collisions (the 0.5u pin clearance, and `JJ` = 40u hole reach per class).
 
 ## Open questions
 
-- Owner/supervisor: blocks go from ~466 to ~914 per track. It is under the render budget, but the corridor
-  reads walled. Want a lighter free side (walls only where a pin is needed)?
-- Owner: `SCORE_PIN_HALF` 2.5 puts a wall 0.5u from a settled hull at each note. Accept for playtest?
+- Supervisor: the ADR-020 file's first Consequences bullet ("no two gaps … by construction") is now wrong.
+  I appended an amendment that says it replaces that bullet. Delete the old bullet when you sequence it.
+- Owner: the standard library has no `JJ`, so a playtest will show no double gaps. Add a `JJ` motif?
 
 ## Lessons → memory
 
-- `.claude/memory/easiest-route-moves-early.md` (written this seam).
+- Updated `.claude/memory/test-your-lane-against-head.md` (server in the scratch copy, biome config,
+  checking a diff against a dirty file).

@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 8f6395f8-20c1-444f-8027-de4859801247
-  modified: 2026-09-24T11:31:51.516Z
+  modified: 2026-09-24T13:27:14.675Z
 ---
 
 `pnpm test` compiles whatever is in the working tree, and that includes other workers' uncommitted
@@ -25,6 +25,12 @@ symlink the repo `node_modules` at `<dir>/node_modules`, `cp -R packages/shared/
 copy your changed files over. **Never run `pnpm test` in the copy**: pnpm runs a deps check that
 starts `pnpm install` through the symlinked `node_modules` (on 2026-09-24 it failed on the catalog
 and left the repo untouched). Call `node_modules/.bin/tsc` and `node --test` directly.
+
+Add `apps/server` to the same `git archive` for a server test: its `node_modules/@slur/shared` is a
+relative link, so it resolves to the scratch shared. Build shared with `tsc -b` first. Biome in the
+copy needs the repo `biome.json` and `.gitignore` at the copy root, or it exits with a config error.
+To hand a diff over a file another worker holds dirty, `git apply --check` it on a fresh HEAD archive,
+then on a copy of their file with `-C1`.
 
 **Why:** a failure or a number from the shared tree may belong to someone else's lane. You would
 report it as yours, or "fix" their work.
