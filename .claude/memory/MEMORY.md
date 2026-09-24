@@ -51,3 +51,4 @@ lives in its own file beside this one.
 - [Seed a finished room with a scratch server](seed-a-finished-room-with-a-scratch-server.md) — subclass RunRoom in the scratchpad, a `__finish` message seeds racers; define `lobby` too; Enter goes on `document.body`
 - [Share a vi.mock through a dynamic import](share-a-vi-mock-through-a-dynamic-import.md) — `vi.mock(p, async () => (await import('./test-room')).sdkMock)`; keep the helper free of overlay imports
 - [Short-course scratch server](short-course-scratch-server.md) — subclass RunRoom in a scratch .mjs with a 30-segment thin course to reach the finish; the bot wedges on the full track
+- [Moving a useEffect trips the comment ratchet](moving-a-useeffect-trips-the-comment-ratchet.md) — its mandatory comment fails an existing file; move the effect into a new `use-*.ts` hook file

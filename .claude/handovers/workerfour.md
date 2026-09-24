@@ -1,63 +1,54 @@
-Agent: workerfour · Lane: menu ship-picker removal #242 (plan sent, awaiting owner approval) · Updated: 2026-09-24
+Agent: workerfour · Lane: #242 menu ship-picker removal + #238 results follow-ups · Updated: 2026-09-24 09:40
 
 ## Goal
 
-#242: remove the ship picker from the main menu (`/`). The in-room lobby pick replaces it. Keep the
-shared ship store. The saved ship still goes out on host, join and deep link.
+#242: remove the ship picker from the menu. The lobby picker is the signature Ship Picker. Results
+follow-ups (owner): results above the finish curtain, drop the "Results" label.
 
 ## Done
 
-- #238 results screen is complete: `1d1f9f2` build, `7943126` review fix + DESIGN.md Results, `dc856e7`
-  test split, `f6d257a` handover. The supervisor confirmed these and released the claims.
-- Issue #242 filed. The plan and claims went to the supervisor, who relays them to the owner.
+- `ae5ec7b`: results root z-[2] → z-35 (above the z-30 curtain, below the z-40 LeaveGuard). The
+  "Results" label is dropped, and the winner's colour square moves to the time row.
+- `0ab2cb9` (#242): ShipPicker deleted. The menu strip is call sign, Host and [Enter] Host.
+  Bare-Enter hosting lives in the new `routes/home/use-enter-hosts.ts`, called by HostButton.
+  DESIGN.md has the lobby Ship Picker (signature), the Menu Strip, the layout grid, the room
+  stacking order and the winner card.
 
-## State (verified this session unless marked)
+## State (verified this session)
 
-- The menu picker is `routes/home/ship-picker.tsx`. It renders `<ShipStepper onStep={cycleShip}/>` and
-  owns a window keydown useEffect: A/D/arrows cycle the ship, and a bare Enter calls
-  `requestSubmit()` on the `MENU_FORM` form.
-- `routes/home/menu-strip.tsx` holds the grid `sm:grid-cols-[minmax(0,15rem)_minmax(0,17rem)_auto]
-  lg:grid-cols-[15rem_17rem_auto_1fr]` with CallSignField, ShipPicker, HostButton and KeyHint.
-  HINTS = [A D] Ship, [Enter] Host.
-- `routes/home/host-button.tsx` is a submit `Button` that reads `useNavigation()` for "Hosting…".
-- `routes/home/landing-ship.tsx` renders the saved ship via `useShipChoice()`, and banks when
-  `currentShip().turn` changes. After removal that branch is dormant.
-- `ShipStepper` and `cycleShip` are still used by `game/overlays/lobby-ship-picker.tsx`.
-- No tests exist under `routes/home/`.
-
-## Plan sent (build only after approval)
-
-1. menu-strip: drop ShipPicker. Hints are [Enter] Host only. Grid is sm `[minmax(0,15rem)_auto]`, lg
-   `[15rem_auto_1fr]`.
-2. `git rm routes/home/ship-picker.tsx`.
-3. Move the bare-Enter → `requestSubmit()` useEffect into HostButton, with its one-line comment. The
-   NN #13 weighing is in the message to the supervisor (a MenuKeys leaf / autofocus / module singleton /
-   native form Enter were rejected). Copy it into the commit body.
-4. landing-ship: no change unless the owner asks.
-5. DESIGN.md: the Menu Strip line reads "call sign, primary and key hint". The Ship Picker (signature)
-   section is reframed for the lobby. Drop the menu backdrop bank line.
-6. Verify: typecheck, vitest, lint, and headless menu captures at 1440 and 390 (CDP viewport).
+- Client typecheck exits 0. Vitest 279/279. Biome, ls-lint, canvas isolation and the comment ratchet
+  pass.
+- Live headless run on a scratch server (:2612/:5222, CDP :9491):
+  - menu 1440 and 390: no picker; scrollWidth equals innerWidth.
+  - A bare Enter on body hosts: it navigated to /game/<id>.
+  - After the finish, at curtain opacity 0.654, the scene dims and the results stay at full
+    strength. Computed z-index: results 35, curtain 30. The card text has no "Results".
+- A still with the curtain pinned to opacity 1 by hand did not render black. It is inconclusive and
+  was not used as evidence. The mid-curtain still is the proof.
+- Stills: session 0a02f5e1 scratchpad `srv/shots/` (menu-1440, menu-390, results-mid-curtain,
+  results-1440, results-390).
+- Chrome, the scratch server and the client are killed.
 
 ## Uncommitted
 
-None after this handover commit.
+None.
 
-## Held files (claimed, pending clearance)
+## Held files
 
-`routes/home/menu-strip.tsx`, `routes/home/ship-picker.tsx` (delete), `routes/home/host-button.tsx`,
-`apps/client/DESIGN.md` (Menu Strip + Ship Picker sections only).
+None after this seam. The claims can be released.
 
 ## Next
 
-1. Wait for the supervisor to relay the owner's approval. Then build steps 1–6, commit by pathspec
-   and report the SHA.
+1. Owner review of the stills.
+2. No other work queued.
 
 ## Open questions
 
-- Owner: is the lobby picker now the "signature" interaction in DESIGN.md?
-- Owner (relayed by the supervisor): keep or drop the "Results" label above "<name> wins" (#238).
+- Owner: keep the winner's colour square on the time row, or drop it?
+- `routes/home/landing-ship.tsx` still has the bank-on-change branch. It is dormant now that the menu
+  cannot change the ship. Remove it? (It was left alone per the approved plan.)
 - Delete `game/net-debug-hud.tsx` (the owner must run `git rm` or allow it). Carried over.
 
 ## Lessons → memory
 
-none this seam (the two #238 memories were committed in `f6d257a`).
+`.claude/memory/moving-a-useeffect-trips-the-comment-ratchet.md`
