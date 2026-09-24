@@ -29,20 +29,24 @@ line with `│ [0-9]*%`: a bare `[0-9]*%` matches pane text.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | R4 S1 LANDED 4eacff7 (pilot = RFC §3; 15/15 motifs pass; motif digest 1779460072; forks J|R not parsed yet; motif weights are placeholders for the owner). S2 composer LANDED 4e66705 (35–47 notes/track, median 42; cross-phrase gap test; fixed S1 dead-reckoning bug). S3 emitter LANDED (handover 58bb78f): adherence 1.000 on seeds 1–30, 914 blocks/track vs 466 (preview pins + gates at 2.5u). Owner: PLAYTEST AS IS; EXEMPT JJ from "no two gaps in a row" on score tracks only. NOW (cleared + resumed): the gen:'score' switch as a DIFF for me (track.ts still dirty with #244). S4 open item: the reference path treats fractured blocks as solid, so S notes get stuck | switch claims pending | constants.ts, sim/fracture-shadow.*, pacing/score.*, pacing/ngrams.*, index.ts export lines, sim/track-contract.test.ts, new sim/score/*, routes/pacing/* |
+| workerone | w2P:pD | R4 S1 LANDED 4eacff7 (pilot = RFC §3; 15/15 motifs pass; motif digest 1779460072; forks J|R not parsed yet; motif weights are placeholders for the owner). S2 composer LANDED 4e66705 (35–47 notes/track, median 42; cross-phrase gap test; fixed S1 dead-reckoning bug). S3 emitter LANDED (handover 58bb78f): adherence 1.000 on seeds 1–30, 914 blocks/track vs 466 (preview pins + gates at 2.5u). Owner: PLAYTEST AS IS; EXEMPT JJ from "no two gaps in a row" on score tracks only. gen:'score' switch DIFF READY (884fa0e handover; diff at scratchpad 91190798…/gen-score-switch.diff, 8 files; shared 309/309, server 17/17 on HEAD 58bb78f + diff; apply with `git apply -C1` over #244's track.ts). Playtest: `SLUR_TRACK_GEN=score pnpm dev`. IDLE. S4 open item: the reference path treats fractured blocks as solid, so S notes get stuck | switch paths: space.ts, track.ts, schema.ts, track-provider.ts, run-room.ts, track.test.ts, new track-gen.test.ts, run-room.test.ts | constants.ts, sim/fracture-shadow.*, pacing/score.*, pacing/ngrams.*, index.ts export lines, sim/track-contract.test.ts, new sim/score/*, routes/pacing/* |
 | workertwo | w2P:pF | none | idle at 15% (clear before assigning) | none |
 | workerthree | w2P:pG | #244 block merge | built, UNCOMMITTED; commit waits for the owner's approval in its pane | sim/track.ts, sim/merge-blocks.*, sim/pocket.test.ts, docs/GDD.md, docs/DECISIONS.md |
-| workerfour | w2P:pH | #251 BUILT 9b365f3 + 6bb632f, LOCAL, NOT PUSHED (owner checks on a real iPhone, Android and controller first). #252 filed (server input clamp). NOW (cleared + resumed): follow-ups: app icons 192/512 + apple-touch-icon, lobby clipping at 390px tall, hide the key hint on touch | claim list pending | game/input/*, ecs/systems.ts + net-systems.ts import line, hud/touch-pad.tsx, hud/touch-button.tsx, net-hud.tsx, overlays/fullscreen-toggle.tsx, overlays/rotate-hint.tsx, overlays/overlays.tsx, ui/fullscreen.ts, root.tsx, public/manifest.webmanifest |
+| workerfour | w2P:pH | #251 BUILT 9b365f3 + 6bb632f, LOCAL, NOT PUSHED (owner checks on a real iPhone, Android and controller first). #252 filed (server input clamp). Follow-ups BUILT, LOCAL: 97dc750 icons, b58923f lobby fit (844×390 and 667×375 fit), a5cd9a2 key hint; handover 3c4a8c7. Client 299/299. IDLE | claims released | none |
 
 ## Sequenced behind #244's commit
 
-1. ADR-020 into DECISIONS.md (parked text).
+0. Apply + commit workerone's gen:'score' switch diff (it touches track.ts).
+1. ADR-020 into DECISIONS.md (parked text + workerone's JJ Amendment; delete the old "no two gaps … by construction" Consequences bullet).
 2. GDD §5.5 class table for #247 (workerfour, or whoever is free).
 3. The #248 hook-up is superseded by R4 (a test on score tracks), so do not apply it to weave tracks.
 
 ## Open owner questions
 
-- Approve workerthree's #244 commit in pane w2P:pG.
+- Approve workerthree's #244 commit in pane w2P:pG. It blocks the score playtest.
+- Add a JJ motif? The standard library has 0 JJ over 200 seeds, so a score playtest shows no double gaps.
+- Score rooms have no pickups (S4). Client visuals that read weaveLineLanes may follow the weave line [unmeasured].
+- #251: a maskable icon variant? Landscape notch safe-area padding in the lobby? Device check still pending.
 - #246 is folded into R4. There is no separate choice left.
 - PR #195: sync and A/B/C calls (see git log -p of this file for the detail). Paused.
 - Older: owner-run `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
@@ -57,8 +61,8 @@ none of mine.
 
 ## Next
 
-1. Relay workerfour's phone-play plan to the owner.
-2. On workerone's S1 report: relay the pilot times and any motif that fails the check; then S2 (composer).
+1. When #244 commits: have workerone apply + commit the switch diff, then the owner playtests score.
+2. Then S4 (pickups on score tracks, fractured blocks in the reference path) for workerone.
 
 ## Lessons → memory
 
