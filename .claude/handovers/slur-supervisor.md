@@ -20,6 +20,14 @@ Standing owner decisions:
   (with no curve passed, output must be byte-identical; digest + seeds 1–30 adherence unchanged).
 - The bundle must store each variant's curve so the viewer's rebuild matches (trackDigest).
 
+## Owner decision ~23:35: FREIGHTER ONLY
+
+"for now we will only test this with freighter, if the experiment gives good result we will then continue with
+other classes and features or fixes". Sync fix = option 1: the song starts when the freighter reaches cruise
+(notes at z = zCruise + 124·t). No physics change and no per-class maps. Dispatched: workerone does map +
+bundle, workerfour does the viewer (audio start, readout origin, bar-106 stop, freighter default). Target:
+drift < 1 beat at bars 8/28/60/96/finish.
+
 ## Landed this session (all local, not pushed)
 
 - 72948ae JJ motifs · 0734e06 gen:'score' switch (`SLUR_TRACK_GEN=score pnpm dev`) · 59ee8df #244 ·
