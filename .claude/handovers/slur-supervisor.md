@@ -32,7 +32,7 @@ Standing owner decisions:
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #253 pipeline DONE: c3d2a63 curve, b5b7b3c pipeline, handover ae61282. Bundle `.songs/lab/believer-s1.json` = 10 variants × 5 classes, all replay-verified; perfect pilot → 50/50 finish, 0 deaths, 0 bumps (times don't separate variants; 65–151 notes do). NOW (cleared + resumed): ADD human-like pilot runs (reaction delay + noise, 2–3 skill levels, seeded), keep the perfect runs | building | apps/client/song-lab/**, score/compose.ts + test, score/emit.ts + test, client package.json + vitest.config.ts (1 line each) |
+| workerone | w2P:pD | #253 pipeline DONE: c3d2a63 curve, b5b7b3c pipeline, handover ae61282. Bundle `.songs/lab/believer-s1.json` = 10 variants × 5 classes, all replay-verified; perfect pilot → 50/50 finish, 0 deaths, 0 bumps (times don't separate variants; 65–151 notes do). Human runs LANDED f98f9e5 (handover 639655e): pro/club/rookie, 150 runs, 0 replay mismatches; bundle 16.7 MB. Deaths pro/club/rookie: drum-driven variants easiest (snare-jump 1/15/38, triplet-grid 1/14/39), `mined` hardest (12/44/103). IDLE | none | apps/client/song-lab/**, score/compose.ts + test, score/emit.ts + test, client package.json + vitest.config.ts (1 line each) |
 | workertwo | w2P:pF | none | cleared + resumed idle (d688b79) | none |
 | workerthree | w2P:pG | none | cleared + resumed idle (9674c9f) | none |
 | workerfour | w2P:pH | #253 /song-lab viewer | cleared + resumed; wired to the real bundle (bf70803) + headless check (67a2dfa); waits for workerone's first bundle, then runs MATCH on every variant × class | routes/song-lab/**, tapper/tapper-plugin.ts, 1 line routes.ts |
