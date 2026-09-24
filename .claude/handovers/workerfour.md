@@ -1,60 +1,63 @@
-Agent: workerfour · Lane: song-shaped tracks, steps 1-2 (#253) · Updated: 2026-09-24 19:58
+Agent: workerfour · Lane: /song-lab replay viewer, #253 step 3 · Updated: 2026-09-24 20:15
 
 ## Goal
 
-A throwaway experiment. Step 1 analyses a song's beats and sections. Step 2 is a dev-only /tapper
-route: the owner taps score notes over a chosen, slowed section and exports the takes as JSON.
+A dev-only /song-lab route. Pick a bundle → variant → class, rebuild the track from bundle data, and replay
+the recorded per-tick inputs through simulate() in the /test-level scene. Play/pause/restart, speed, and a side
+panel with the rules, the score and per-class results with a MATCH/DIVERGED verdict. Throwaway, like /tapper.
 
 ## Done
 
-- `7f397d0` feat(tapper): beat analysis and a dev-only /tapper recorder (#253). Committed locally
-  BEFORE the supervisor's "do not commit until the owner's word" arrived. Not pushed.
-- The song moved from `apps/client/public/audio/music/` to the gitignored `apps/client/.songs/`
-  (owner-approved). `git status --untracked-files=all` does not list it.
-- The earlier #251 lane (phone play) is still built and not pushed. It waits for the owner's device
-  check. See `git log -p -- .claude/handovers/workerfour.md` for its state.
+- Scaffold commit (see `git log -- apps/client/app/routes/song-lab`): routes/song-lab/**, two endpoints in
+  tapper/tapper-plugin.ts (`/__song-lab/list`, `/__song-lab/bundle?name=`), one line in app/routes.ts.
+  It uses a STUB bundle type (`routes/song-lab/lab-bundle.ts`: descriptor + PlayerInput[] + {finished, frames, deaths}).
+- Mechanism (supervisor-approved): useFrame + createFixedStep(FIXED_DT, 16) fed delta × speed; selection in
+  the URL + clientLoader; playback in the module singleton `replay-state.ts`; readout via addEffect in a ref
+  callback. Weighing is in the supervisor message and goes in the PR body.
+- #253 steps 1-2 `7f397d0` and the #251 phone lane are unchanged and not pushed.
 
 ## State (verified this session)
 
-- Believer: 125.02 BPM, 426 beats, 106 bars (1.92 s per bar), 204.43 s.
-- Sections (energy tiers): 0-4 low · 4-20 mid · 20-28 low · **28-44 high** · 44-52 mid · 52-56 low ·
-  56-60 mid · **60-72 high** · 72-76 mid · 76-84 low · 84-88 mid · **88-96 high** · 96-104 mid · 104-106 low.
-- Click-track test: BPM within 0.5 at 96/125/140, beats within 30 ms after a measured 36 ms onset-lag
-  correction. At 150 BPM the tempo picker halves to 75 (octave error). Not a problem for this song.
-- Client tests 311/311 pass. Typecheck passes. biome, ls-lint and the comment ratchet pass on my files.
-- A `react-router build` emits no tapper chunk and no song. The React Router CLI sets
-  NODE_ENV=production for typegen too, so route.tsx uses `useLoaderData` and not `+types`.
-- Headless run (:5193 client, Chrome :9473, both stopped): section 28-44 loads at 0.75×. The clip
-  endpoint returns 43.97 s for 33 s of song in 0.1 s, and a traversal name gets a 404. The recording
-  gave `l R < J JJ S` (hold 1.5 beats). A punch-in over bar 33 kept bar 32 and replaced the rest.
-  Undo works.
-- The recorded notes landed ~0.12 beat early. The driver's own timing error is not separated from
-  it. [unmeasured on the owner's hardware: whether output-latency compensation is right]
-- Export JSON download: [unmeasured].
+- vitest song-lab 6/6. Client tsc clean. biome, canvas-isolation and the comment ratchet pass.
+- Live: scratch client :5194 and headless Chrome :9474, both killed. A scratch stub bundle (5 classes, procgen
+  length 40, sine strafe + periodic jump, deleted afterwards) gave MATCH at 8× for dispatcher, bob,
+  executioner and split-crown. The executioner and split-crown MATCHes came after in-page class switches.
+- /__song-lab/bundle rejects `../x.json` with 404.
+- The stub generator is at scratchpad/stub-bundle.mjs and the CDP driver at scratchpad/drive2.mjs. The
+  scratchpad is session-local and will not survive a /clear.
+- [unmeasured] The camera at the finish looked into a wall (bob.png). Nothing was checked past that.
 
 ## Uncommitted
 
-- `.claude/handovers/workerfour.md` (this file). Not committed, because I was told to stay stopped.
+- none after this seam commit.
 
 ## Held files
 
-`apps/client/tapper/`, `apps/client/app/routes/tapper/`, plus the one-line hooks in
-`apps/client/app/routes.ts`, `vite.config.ts`, `vitest.config.ts`, `package.json` and `.gitignore`.
+`apps/client/app/routes/song-lab/**`, `apps/client/tapper/tapper-plugin.ts`, the song-lab line in
+`apps/client/app/routes.ts`. From the #253 steps 1-2 lane: `apps/client/app/routes/tapper/**`. workertwo holds
+tapper/beat-analysis* and drum-onsets*. workerone owns `apps/client/song-lab/bundle.ts`.
 
 ## Next
 
-1. Wait for the owner's word on `7f397d0` (keep it, or amend it before a push).
-2. Owner check: `pnpm dev` → /tapper → section 28-44 (the first chorus), rate 0.75×, loop 28-32,
-   R to record. If taps land early or late, add a per-machine offset (ms) to the recorder.
-3. Step 3 (not started): read the exported takes into motifs and intensity bands.
+1. Swap the stub for workerone's `apps/client/song-lab/bundle.ts` (commit 0099d73). Delete `lab-bundle.ts`.
+   - Loader: fetch bundle → `labTrack(v)`. Verdict = `sameResult(labResult(replayRun(track, run)), run.result)
+     && labDigest(v) === v.trackDigest`, computed once in the loader and shown in the panel.
+   - Live loop: `r = newReplay()`, `inputs = expandInputs(run.inputs)`. Each fixed step:
+     `labStep(r.ship, inputs[r.tally.ticks], classTuning(id), track, r.world, r.tally)` until `r.tally.done`.
+     Mirror r.ship into the ECS Sim (copySimShip), OR step the ECS Sim with labStep and pass
+     blockWorld as the world. The second avoids a copy; clearBlockState on restart.
+   - The run key is classId (ShipClassId). Map it to a ShipId through SHIPS for the model and Net.shipId.
+   - The panel shows `label`, `rules` ({from,to,detail}), `scoreString`, `phraseStrings`, and result
+     `time`/`deaths`/`deathZ`. Maybe an intensity strip.
+   - Replace replay-step.ts with the bundle.ts helpers. Keep the tests on labView/labHref and add one on
+     the classId→ShipId map.
+2. Wait for workerone's first real bundle ping, then run the live MATCH check on it.
+3. Commit, and report to the supervisor with the SHA.
 
 ## Open questions
 
-- MEMORY.md line 70 points at `never-pkill-by-pattern.md`, which I deleted as a duplicate of the
-  supervisor's `kill-by-pid-never-pkill.md`. The supervisor committed that line in `f16a56c`. It
-  needs removing.
-- Does the owner want a tap-latency offset control now, or only if the first takes read early?
+- none.
 
 ## Lessons → memory
 
-`.claude/memory/kill-by-pid-never-pkill.md` (the supervisor wrote it about my 19:49 pkill incident).
+none. Nothing new beyond the existing memories on CDP drivers and scratch servers.
