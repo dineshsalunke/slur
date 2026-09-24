@@ -1,11 +1,13 @@
 import { useNavigation } from 'react-router';
 import { Button } from '../../ui/button';
 import { Chevron } from '../../ui/chevron';
+import { useEnterHosts } from './use-enter-hosts';
 
 export function HostButton() {
     const navigation = useNavigation();
     const busy = navigation.state !== 'idle';
     const hosting = busy && ! navigation.formData?.get( 'join' );
+    useEnterHosts();
 
     return (
         <Button disabled={ busy } className="w-full sm:w-auto">

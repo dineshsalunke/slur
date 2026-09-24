@@ -168,10 +168,10 @@ A cold graphite field lit by a single warm signal.
 A single screen that never scrolls. It is a column with the header at the top, and the pitch, live runs and strip pushed to the bottom (`mt-auto`). The top two-thirds stay open for the world.
 
 - **Gutters:** 20px, or 40px from the `sm` breakpoint (640px). Header top padding is 20px, or 28px from `sm`.
-- **Strip grid:** a single stacked column on narrow screens (16px gap). From `sm` it is three columns: call sign (up to 15rem), ship (up to 17rem), HOST (auto), with a 24px gap, aligned to the bottom. From `lg` (1024px) a fourth, flexible column holds the key hint, right-aligned. The key hint is hidden below `lg`.
+- **Strip grid:** a single stacked column on narrow screens (16px gap). From `sm` it is two columns: call sign (up to 15rem) and HOST (auto), with a 24px gap, aligned to the bottom. From `lg` (1024px) a third, flexible column holds the key hint, right-aligned. The key hint is hidden below `lg`. The menu has no ship picker. The player picks a ship in the room lobby.
 - **Rhythm:** 6px between a label and its control, 8px between chips, 10px between a section heading and its content, 16px and 24px between groups.
 - **Live runs:** a single horizontal row of chips. On narrow screens it bleeds to the screen edge and scrolls sideways.
-- **Stacking:** canvas `z-0` (fixed, inset 0), scrim `z-[1]` (fixed, pointer-events none), content `z-[2]`.
+- **Stacking:** canvas `z-0` (fixed, inset 0), scrim `z-[1]` (fixed, pointer-events none), content `z-[2]`. In a room, the HUD is `z-20`, the countdown `z-[25]`, the in-race controls `z-[26]` and the finish curtain `z-30`. The results content is `z-35`, above the curtain, so the fade does not dim it. The leave guard is `z-40`.
 - **Portrait:** the backdrop camera tilts down and the ship moves forward, so the ship stays in view above the strip.
 
 ## Elevation & Depth
@@ -215,18 +215,18 @@ A live-run chip is a submit button bound to the menu form.
 - **Label:** the Label style above the field, 6px gap.
 
 ### Ship Picker (signature)
-The ‹ NAME › stepper is the one interaction the menu is built around.
+The ‹ NAME › stepper in the room lobby is the one interaction the lobby is built around. It is the only place to pick a ship. The menu has none, and it sends the saved ship on host, join and deep link.
 - **Frame:** a Deep Space bar with a 1px Readout/20 border, 44px tall. It has two 40px chevron step buttons and the ship name centred between them (Title, uppercase, at least 12ch).
-- **Legend:** "Ship" on the left and "Class · <name>" on the right (Meta tracking), on one Label line.
+- **Legend:** "Ship" on the left and "Class · <name>" on the right (Meta tracking), on one Label line. From `sm` the class half is invisible, because the spec tag shows the class.
 - **Steps:** the chevrons rest at Readout Dim and turn Readout White on hover or focus. Focus draws a 2px Readout outline inset 2px.
-- **Change:** A/D, the arrow keys or a chevron cycles the ship. The 1px Marigold rule under the name sweeps in from the side of travel (`edge-sweep`, 320ms, cubic-bezier(0.16, 1, 0.3, 1)). The backdrop ship banks into the change on a damped spring.
-- **Reduced motion:** the name swaps instantly. There is no sweep, no bank kick, no bob and no cruise drift. The asteroid, nebula and ship-bank motion in the scene also freeze.
+- **Change:** A/D, the arrow keys or a chevron cycles the ship and sends it to the room. The 1px Marigold rule under the name sweeps in from the side of travel (`edge-sweep`, 320ms, cubic-bezier(0.16, 1, 0.3, 1)).
+- **Reduced motion:** the name swaps instantly. There is no sweep. On the menu backdrop there is no bob and no cruise drift, and the asteroid and nebula motion freeze.
 
 ### Key Hint
 - **Style:** keycaps are square boxes, at least 24px, with a 1px Readout/25 border and 600 11px Readout White type. The action word follows in Meta. Pairs are 20px apart. It shows from `lg` up, at the right end of the strip.
 
 ### Menu Strip (signature)
-The lower third itself: a full-width Space Grey bar with a 1px Readout/15 top edge and the upward `shadow-strip`. Padding is 16px × 20px, or 20px × 40px from `sm`. It holds the call sign, ship picker, primary and key hint on one 44px control line. Form errors appear below as 14px Readout White text and take no space when empty.
+The lower third itself: a full-width Space Grey bar with a 1px Readout/15 top edge and the upward `shadow-strip`. Padding is 16px × 20px, or 20px × 40px from `sm`. It holds the call sign, primary and key hint on one 44px control line. The key hint shows [Enter] Host, and a bare Enter hosts from anywhere on the menu. Form errors appear below as 14px Readout White text and take no space when empty.
 
 ### Lobby (in-room)
 The room before GO uses the same lower third over the live track. It shows the run, not the pitch.
@@ -244,7 +244,8 @@ The room before GO uses the same lower third over the live track. It shows the r
 ### Results
 The room after the race uses the same lower third over the live track. The winner is the hero.
 - **Header:** the same as the lobby. The wordmark is on the left and a ghost Leave is on the right.
-- **Winner card:** a 10px square in the winner's colour and "Results" (600 12px 0.22em uppercase, `text-shadow-readout`). Below it is "<name> wins": 700 uppercase, 0.86 leading, 0.01em tracking and balanced. It is 64px on phones, where it wraps to two lines, and clamp(56px, 8vw, 112px) from `sm`. Below that are the winning time (600 22px, 28px from `sm`) and the ship in Meta. With no finisher, the title reads "No finishers".
+- **Winner card:** "<name> wins" with no label above it: 700 uppercase, 0.86 leading, 0.01em tracking and balanced. It is 64px on phones, where it wraps to two lines, and clamp(56px, 8vw, 112px) from `sm`. Below it are a 10px square in the winner's colour, the winning time (600 22px, 28px from `sm`) and the ship in Meta. With no finisher, the title reads "No finishers".
+- **Stacking:** the content is `z-35`, above the `z-30` finish curtain, so the fade does not dim it. The scrim stays at `z-[1]`, under the curtain.
 - **Standings:** from `lg`, a 32rem column to the right of the winner card, bottom-aligned. Below `lg`, it goes under the card. The rows are 6px apart, 36px tall (40px from `sm`), Deep Space at 85%, with a 1px Readout/15 border (Readout/45 on your own row). The columns are rank (700), colour square, name (600 15px) with the YOU and HOST word tags, ship in Meta (from `sm`), time (600 14px) and gap to the leader (13px Readout Dim). All numbers use tabular figures. A DNF row shows "DNF" and sets rank, name and time in Readout Dim. On phones, your own row hides the HOST tag so the name keeps its width.
 - **Entrance:** the rows fade in and rise 8px in finish order, 300ms each, 60ms apart. The CSS `@starting-style` does this, with no JS timer. Under reduced motion the rows appear at once.
 - **Strip:** "Your finish" as a field label, then your place as an ordinal (700 20px, 22px from `sm`), your time (600 16px) and your gap. A late joiner sees "Spectated". The host sees the marigold Race again button with a chevron. A guest sees "Waiting for <host>" over "The host starts the next run" in Meta. On phones this block is at most 11.5rem wide, so its second line wraps.
