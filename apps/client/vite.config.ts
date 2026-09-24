@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
+import { beatDeckPlugin } from './beat-deck/beat-deck-plugin.ts';
 import { frameTapPlugin } from './frame-tap-plugin.ts';
 
 export default defineConfig( ( { mode } ) => {
@@ -12,6 +13,7 @@ export default defineConfig( ( { mode } ) => {
             tailwindcss(),
             reactRouter(),
             frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/frame-tap-refs' ) } ),
+            beatDeckPlugin( { dir: resolve( process.cwd(), '.songs/takes' ) } ),
         ],
         server: {
             host: true,

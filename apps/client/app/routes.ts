@@ -5,4 +5,5 @@ export default [
     route( 'test-level', 'routes/test-level/route.tsx' ),
     route( 'pacing', 'routes/pacing/route.tsx' ),
     route( 'game/:roomId', 'routes/game/route.tsx' ),
+    ...( process.env.NODE_ENV === 'production' ? [] : [ route( 'beat-deck', 'routes/beat-deck/route.tsx' ) ] ),
 ] satisfies RouteConfig;
