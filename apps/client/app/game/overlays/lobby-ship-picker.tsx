@@ -28,5 +28,10 @@ export function LobbyShipPicker( { room }: { room: Room< RunState > } ) {
         return () => removeEventListener( 'keydown', onKey );
     }, [ room ] );
 
-    return <ShipStepper classLegend="sm:invisible" onStep={ ( dir ) => stepShip( room, dir ) } />;
+    return (
+        <ShipStepper
+            classLegend="sm:[@media(min-height:481px)]:invisible"
+            onStep={ ( dir ) => stepShip( room, dir ) }
+        />
+    );
 }
