@@ -39,7 +39,10 @@ drift < 1 beat at bars 8/28/60/96/finish.
   downbeat, half-time, size = loudness, legato/staccato, prep beat, fermata = open stretch).
   Claims CLEAR: conductor.ts (new), bundle.ts, song-lab-build.ts, variants.ts, song-lab.test.ts. Old-13
   hash 809ff7fd. It builds to believer-s1.next.json; SWAP ONLY AFTER workerfour's live check reports.
-- workerfour dispatched ~00:05: LIVE drift check (audio clock) on groove/groove-tight/envelope, plus one pro run.
+- workerfour LIVE check PASSED (b0be2cc typed song.clock, handover c688b57): perfect freighter live-audio
+  drift ≤16 ms at bars 8/28/60/96 on groove/groove-tight/envelope, 0 re-seeks. Pro: about −25 ms per
+  bump. Re-sync is dropped (not a rhythm game). workerfour re-checks conductor when its bundle lands.
+- workerone cleared + resumed ~00:30 and is building conductor. Swap gate OPENED.
 
 ## Landed this session (all local, not pushed)
 
