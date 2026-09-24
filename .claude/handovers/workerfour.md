@@ -37,12 +37,17 @@ the song-lab line in `apps/client/app/routes.ts`. workerone owns `apps/client/so
 
 ## Next
 
-1. Wait for the supervisor. A possible follow-up: re-anchor song time on ship z after a bump (policy choice).
+1. Idle. When the supervisor sends the SHA of workerone's `conductor` bundle, repeat the live check on
+   conductor × perfect freighter: bars 8/28/60/96 + finish, silence until crossTick, digest MATCH, re-seek count.
+   Recreate the driver if the scratchpad is gone. It imports the page modules by resource URL
+   (song-sync, tapper-clock, replay-state, /app/game/ecs/traits.ts, the koota dep), calls restartReplay, and samples
+   ship time − playheadAt(elapsedAtPerf(now)) on each rAF. Run it with `node drift.mjs conductor perfect`.
+   The variant id is passed as `variant=` in the URL.
 
 ## Open questions
 
-- Should the song follow the ship after a bump (re-seek on z) or keep tempo (today)? For the owner.
+- none. Re-seek after a bump is DROPPED: the song keeps tempo (owner decision).
 
 ## Lessons → memory
 
-none new. Driver: scratchpad drift.mjs (imports page modules by resource URL; traits live at /app/game/ecs/traits.ts).
+`.claude/memory/song-keeps-tempo-not-a-rhythm-game.md`.

@@ -74,3 +74,4 @@ lives in its own file beside this one.
 - [Peer edit orphans a live check](peer-edit-orphans-a-live-check.md) — an impossible live reading (tick 0/0) may be HMR from another worker's save; compare mtimes, verify headless in node
 - [Song map runs at freighter speed](song-map-runs-at-freighter-speed.md) — zPerSecond = registerCruise 124; other classes end 23–98 s behind the song (perfect pilots)
 - [Open islands can wedge a ship](open-islands-can-wedge-a-ship.md) — a thin post + rail corner traps a late ship forever (no pilot reverses); scan human DNFs with static z
+- [Song keeps tempo, not a rhythm game](song-keeps-tempo-not-a-rhythm-game.md) — /song-lab audio never re-seeks after a bump; a human run falling behind is expected
