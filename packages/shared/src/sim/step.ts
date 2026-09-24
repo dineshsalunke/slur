@@ -229,14 +229,16 @@ function blockPush(
 
 function bounceOffBlock( s: SimShip, push: BlockPush, t: FlightTuning ): void {
     const dir = push.delta < 0 ? -1 : 1;
+    const stunned = s.stunTimer > 0;
+    const kick = stunned ? 0 : t.bounceBack;
     if ( push.axis === 'x' ) {
         s.x += push.delta + dir * BOUNCE_CLEARANCE;
-        if ( s.vx * dir < 0 ) s.vx = dir * t.bounceBack;
+        if ( s.vx * dir < 0 ) s.vx = dir * kick;
     } else {
         s.z += push.delta + dir * BOUNCE_CLEARANCE;
-        if ( s.vz * dir < 0 ) s.vz = dir * t.bounceBack;
+        if ( s.vz * dir < 0 ) s.vz = dir * kick;
     }
-    if ( s.stunTimer < t.bounceStun ) s.stunTimer = t.bounceStun;
+    if ( ! stunned ) s.stunTimer = t.bounceStun;
 }
 
 export function resolveCollisions(

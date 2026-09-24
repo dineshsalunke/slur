@@ -753,6 +753,16 @@ Measured with a 100-phase sweep, Fighter at 55u/s: a 0.3u clip glanced **68%** b
 Clips of 0.1–0.45u glance 100% for every class, and clips of 0.55–0.8u hard-stop 100%
 (`sim/graze.test.ts`). A glance still applies `bounceStun`.
 
+### As-built — a hit during a stun is a plain stop (#232)
+
+`bounceOffBlock()` still pushes the hull out. When `stunTimer` is already above zero, it zeroes the
+velocity into the face, gives no knockback and does not refresh the stun. Before this, a pocket shorter
+than the hull plus one knockback (about 1.0u) held a ship in the stun. On the 8 fairness seeds × 5 classes
+there are 1,213 such pockets. With throttle held, **729** kept the stun past `bounceStun` before the
+change, and **1** after (0.0005u slack, which no ship can enter). A bolt-stunned ship that drifts into a
+block now stops dead with no extra stun (owner). `sim/pocket.test.ts` scans every pocket with slack
+≥ 0.01u.
+
 ### Not decided here
 
 The local ship throws the hit spark on a predicted bounce (`afb2642`,
