@@ -1,46 +1,48 @@
-Agent: workerone · Lane: #253 wind-down done → new beat-recording deck (plan only) · Updated: 2026-09-25
+Agent: workerone · Lane: #253 /beat-deck v1 (fly-and-record) · Updated: 2026-09-25 01:00
 
-Older versions of this file hold the conductor and earlier #253 history (`git log -p -- .claude/handovers/workerone.md`).
+Older versions hold the song-lab history (`git log -p -- .claude/handovers/workerone.md`).
 
 ## Goal
 
-- Build a new dev route: a plain empty deck. The owner plays any mp3 and flies and strafes on the beats. The
-  route records the inputs so we can learn what the owner means by moving to a song.
+- Dev-only `/beat-deck`: an empty deck. The owner picks an mp3, presses Enter and flies to the song
+  (auto-cruise; A/D and Space carry the rhythm). The inputs are recorded to learn what "moving to a song" means.
 
 ## Done
 
-- `9388a67` removes song-lab and tapper from `dev` and reverts c3d2a63 (the score intensity curve). The
-  archive is the local branch `archive/song-lab` → `b64766f`. It is **not pushed**.
-- I deleted `apps/client/.songs/lab/` (ignored data). The mp3 and `imgaine_dragons-believer.analysis.json`
-  stay, as the supervisor said.
+- `9388a67` removes song-lab and tapper from dev and reverts c3d2a63. The archive is the local branch
+  `archive/song-lab` (b64766f), **not pushed**.
+- `1ab0a3f` /beat-deck v1: `apps/client/app/routes/beat-deck/**` and `apps/client/beat-deck/beat-deck-plugin.ts`
+  (+ test), plus one-line hooks in routes.ts, vite.config.ts and vitest.config.ts.
 
 ## State
 
-- Score digest over composeScore + emitScore, seeds 1–30: `62f2711c…3efc` before and after the undo.
-  Adherence is 1.0000 on all 30 seeds. The scratch probe was `digest.mjs`.
-- Gates at `9388a67`: typecheck green · lint green · shared 316/316 · server 17/17 · client 297/299.
-- The 2 failures are in `app/net/matchmaking.test.ts`. The descriptor has more fields than the test
-  expects. [inferred, not run at HEAD without this change] The cause is 0734e06 or later, because this
-  change does not touch that code.
+- Headless take (measured): 6.6 s → 17 KB, 399 ticks, 18 key events, equal column lengths, sha256 = the mp3's,
+  vz 124 with no throttle key held. Key holds of 250 ms recorded as 251–253 ms. Clock: `output-timestamp`.
+- Gates at 1ab0a3f: typecheck green, lint green, client 309/309. The matchmaking failures seen at 9388a67 no
+  longer reproduce [not investigated].
+- The sample take `take-imgaine-dragons-believer-2026-09-24T19-21-20-102Z.json` is in `apps/client/.songs/takes/`
+  (ignored). It is a bot take; delete it before analysing the owner's takes.
+- The deck is 3000 segments (60 000 u ≈ 8 min at 124 u/s). A longer song ends at the finish line
+  (`end: 'finish'`).
 
 ## Uncommitted
 
-- None of mine.
+- None.
 
 ## Held files
 
-- None. The new route needs fresh claims after the owner approves the plan.
+- `apps/client/app/routes/beat-deck/**` · `apps/client/beat-deck/**`.
 
 ## Next
 
-1. Send the new-deck plan to the supervisor. Wait for the owner's approval.
-2. After the owner approves, file an issue, claim the files and build.
+1. The owner records real takes on `/beat-deck`.
+2. Then (not approved yet) an analysis step: compare key-down songMs with the beats in
+   `imgaine_dragons-believer.analysis.json`.
 
 ## Open questions
 
 - Push `archive/song-lab` to origin? This is the owner's decision.
-- The matchmaking test failures: which lane owns them?
 
 ## Lessons → memory
 
-- none this seam.
+- `.claude/memory/drive-beat-deck-headless.md`.
