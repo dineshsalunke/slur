@@ -46,6 +46,11 @@ the status line until it shows 0–5%; the first read after /clear can still sho
   origin/dev 74a7b89 lacks this checkout's 40 unpushed commits. Needs owner: sync (merge origin/dev + push dev),
   then call A (drop rail bounce; the deck edges are fall-off now), B (port the engine glow only, retune for bloom
   threshold 0.6), C (push to dev and close #195).
+- #243 CLOSED f9e0373 (factor 1.5). #244 built, UNCOMMITTED: workerthree's commit was classifier-denied; the owner
+  must approve it in pane w2P:pG. Owner call: FRACTURE_RATE ×1.2 (94 fractured lost, 17%) or accept.
+- workerone 1e7160c: X rule (window < 2·halfL) + 6u hull; the solver now uses legalMask (diagonal jump exits).
+  Trapped pockets per class per seed are 9–56, measured on PRE-#244 track.ts. Next: re-measure after #244 commits,
+  then the owner picks regenerate-per-segment vs avoid-at-source. workerone idle, holds pacing/*.
 The items below are the pre-13:30 queue; only item 9 remains open.
 
 ## Open owner questions (relay in this order)
