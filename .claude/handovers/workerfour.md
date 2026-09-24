@@ -7,8 +7,9 @@ Redesign the PHASE.finished overlay (`game/overlays/results-overlay.tsx`) in the
 
 ## Done
 
-- Issue #238 filed.
-- Plan + claims sent to slur-supervisor (comps A "Broadcast standings", B "Podium card").
+- Issue #238 filed. Supervisor cleared the comps and the step-2 claims.
+- Comps A "Timing board" and B "Winner card" sent to the supervisor for the owner. Files are in this
+  session's scratchpad `comps/` (`comp.html?v=a|b&host=1|0`, plus 4 PNGs: desk host, mob guest).
 
 ## State
 
@@ -16,6 +17,8 @@ Redesign the PHASE.finished overlay (`game/overlays/results-overlay.tsx`) in the
 - Data available without server change: rank, name, colorId, shipId, finishTime, dnf (`useRunView`,
   `computeStandings`).
 - Server sets PHASE.finished only when all racers finish or the deadline hits.
+- Both comps: strip = "Your finish" + host "Race again" (marigold) + [Enter] hint; guest "Waiting for
+  <host>". Times as m:ss.00, gap +s.ss.
 
 ## Uncommitted
 
@@ -23,19 +26,20 @@ None.
 
 ## Held files
 
-None yet. Claimed for step 2 (pending clearance): `game/overlays/results-overlay.tsx`, new results leaves,
-`game/overlays/overlays.test.tsx`, `apps/client/DESIGN.md`.
-Not mine: `leave-button.tsx`, `audio-toggle.tsx` (workertwo), `overlays.tsx` (workerone).
+Cleared for step 2: `game/overlays/results-overlay.tsx`, new results leaves, results tests in
+`game/overlays/overlays.test.tsx`, the DESIGN.md "Results" section.
+Not mine: `leave-button.tsx`, `audio-toggle.tsx` (workertwo). `overlays.tsx` is unheld; ask before editing.
 
 ## Next
 
-1. Wait for supervisor clearance and workerone's answer on the ending → results hand-off.
-2. Load impeccable, make 2 comps in the scratchpad, publish for the owner.
-3. After the pick: build, test, headless check, DESIGN.md "Results" section.
+1. Wait for the owner's pick and answers (A/B, copy, Enter = Race again, row stagger).
+2. Build per NN #13 (mechanism weighing goes in the commit/PR body), tests, headless check desk + 390.
+3. Finish review (impeccable-finish-reviewer), then the DESIGN.md "Results" section.
 
 ## Open questions
 
-- Hand-off with workerone's hosted ending effect (asked via supervisor).
+- Hide AudioToggle in PHASE.finished (overlays.tsx edit) — asked the supervisor.
+- Hand-off with workerone's hosted ending effect — the supervisor is relaying it.
 - Delete `game/net-debug-hud.tsx` (owner must run `git rm` or allow it). Carried over.
 
 ## Lessons → memory
