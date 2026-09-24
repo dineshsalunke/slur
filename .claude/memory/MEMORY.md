@@ -59,3 +59,4 @@ lives in its own file beside this one.
 - [Test your lane against HEAD](test-your-lane-against-head.md) — the shared tree compiles other workers' uncommitted files; measure in a scratch copy with theirs at HEAD
 - [React dev tracks walk typed-array props](react-dev-tracks-walk-typed-array-props.md) — a big report prop on ~12 components made a dev seed change 5.8 s; pass it through context
 - [SVG polylines raster per tile](svg-polyline-raster-per-tile.md) — one long polyline replays whole for every tile; chunk it; count `missing tiles` in a cc trace
+- [Rate clamp is not flyability](rate-clamp-is-not-flyability.md) — pacing paths obey the per-row rate clamp but ignore strafeAccel; fly the path with a sim pilot to prove it (#246)
