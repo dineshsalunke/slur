@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #253 song lab step 2 (variants → tracks → runs → bundle) · Updated: 2026-09-24 20:15
+Agent: workerone · Lane: #253 song lab step 2 (variants → tracks → runs → bundle) · Updated: 2026-09-24 20:25
 
 Older versions of this file hold #250 history: 4571c5f and earlier.
 
@@ -10,26 +10,31 @@ Older versions of this file hold #250 history: 4571c5f and earlier.
 ## Done
 
 - `0734e06` TASK 1: `gen:'score'` switch applied over #244 (`-C1`). shared 316/316, server 17/17.
-- `c3d2a63` Optional intensity curve on `composeScore(seed, length, motifs, curve?)`. It rides on
-  `score.curve`, and `freeReach` reads it (supervisor-approved). No curve: sha256 over compose+emit for
-  seeds 1–30 unchanged. shared 318/318.
-- `0099d73` `apps/client/song-lab/bundle.ts`: the LabBundle v1 type + the shared replay loop (`labStep`,
-  `replayRun`, `labTrack`, `labDigest`, `expandInputs`/`packInputs`, `sameResult`). workerfour accepted it.
-- `b5b7b3c` The pipeline: `map.ts` (song clock, curves, event placer), `variants.ts` (10 variants),
-  `mine.ts` (n-gram motif mining), `pilot.ts`, `record.ts`, `song-lab-build.ts`, `song-lab-cli.ts`,
-  `song-lab.test.ts`; `bumps`/`bumpZ` in the result; `LAB_MAX_TICKS` 27000; vitest include; `song-lab` script.
+- `c3d2a63` Optional intensity curve on `composeScore(seed, length, motifs, curve?)`.
+- `0099d73` `apps/client/song-lab/bundle.ts`: LabBundle v1 type + shared replay loop. workerfour accepted it.
+- `b5b7b3c` The pipeline: map, variants (10), mine, pilot, record, build, CLI, tests.
+- `f98f9e5` Human-pilot runs (supervisor answer to the pilot question): `LabVariant.humanRuns?: LabHumanRun[]`,
+  `LabHumanRun = LabRun & { pilot: LabPilotSpec }`, skills pro/club/rookie in `human.ts`. `runs` unchanged.
+  CLI `--skills pro,club,rookie|none` (default all three).
 
 ## State
 
-- Bundle: `apps/client/.songs/lab/believer-s1.json` (2.5 MB, gitignored), 10 variants × 5 classes.
-- All 50 runs finish with 0 deaths and 0 bumps. Every run is replay-verified before it is written.
-  Times per class: interceptor 302.1 s · fighter 264.6 · comet 226.9 · phantom 282.2 · freighter 206.3.
-- Played notes: envelope 131 · section-energy 151 · bar-energy 148 · breaths 150 · snare-jump 65 ·
-  sweep 65 · kick-jump 70 · triplet-grid 104 · hat-density 139 · mined 126 (12 mined motifs, 51 JJ).
-- Direct variants drop most drum events: a note lasts 2–4 beats (120–220u at ~59.5u/beat), so events
-  inside the previous note are dropped. `build.params` records events/placed/dropped.
-- Song clock: z = 120 + (t − bars[0]) × 124 u/s; track length 1270 segments for Believer.
-- song-lab vitest 9/9; client tsc clean for song-lab; biome clean; comment ratchet passes.
+- Bundle: `apps/client/.songs/lab/believer-s1.json` (16.7 MB, gitignored; built with `--name believer-s1`).
+  50 perfect runs + 150 human runs.
+- Perfect runs are byte-identical to the pre-f98f9e5 bundle: sha256 over `[.variants[].runs[] | {inputs,result}]`
+  = `f10e9316…` before and after.
+- All 200 runs replay to the same result from the JSON; every track digest matches (scratch check with
+  `bundle.ts` replayRun/sameResult).
+- Human model: steers to the line where it was reactTicks ago (9/15/21), OU aim wobble σ 0.4/0.9/1.6 u held
+  15 ticks and clamped to [a+halfW, b−halfW], takeoff jitter ±6/12/20 u. Planner predictions stay perfect.
+- Summed deaths, pro/club/rookie: envelope 0/17/75 · section-energy 1/30/80 · bar-energy 0/24/78 ·
+  breaths 0/21/67 · snare-jump 1/15/38 · sweep 1/19/64 · kick-jump 5/17/42 · triplet-grid 1/14/39 ·
+  hat-density 2/29/74 · mined 12/44/103. Drum-driven variants are easiest; mined is hardest.
+- One seed per cell, so single cells are noisy [unmeasured: variance across seeds].
+- Freighter is the rookie outlier: DNF at the 450 s cap on 5 variants.
+- song-lab vitest 10/10 (incl. seeded + replay + perfect-unchanged test); client tsc clean; biome clean;
+  comment ratchet passes.
+- workerfour was told the type change before the commit; no reply yet.
 
 ## Uncommitted
 
@@ -41,18 +46,16 @@ None.
 
 ## Next
 
-1. Wait for workerfour's viewer feedback on the bundle; fix any type mismatch in `bundle.ts`.
-2. The pilot is perfect, so runs do not tell variants apart. Consider a harder pilot (reaction delay or
-   input noise) or a per-class result such as time spent off the line, if the owner wants a signal.
-3. Direct variants: try shorter note spacing (drop the `REGISTER_GAP` calm for song notes) or quantise
-   to the triplet grid for placement, per workertwo's measurement (86% of snares sit on triplet slots).
-4. More seeds / songs: `pnpm --filter @slur/client song-lab <analysis.json> --seed N`.
+1. Wait for workerfour: the viewer ignores `humanRuns` until it shows them (key by classId/skill).
+2. If the owner wants firmer numbers: several seeds per skill, report mean ± spread per variant.
+3. Bundle size: the human inputs dither (5.5k RLE entries per run vs 831 perfect). A strafe dead-band in the
+   human driver would cut it if 16.7 MB is too heavy for the viewer.
+4. Direct variants: shorter note spacing or triplet-grid placement (see git history of this file).
 
 ## Open questions
 
-- Owner: is "all variants fly clean" the result you want, or should the pilot be human-like so the
-  bundle shows which mapping is harder?
+- Owner: are the skill numbers (reaction 150/250/350 ms, aim σ, jitter) the right calibration?
 
 ## Lessons → memory
 
-- `.claude/memory/score-pilot-must-not-lead-the-note.md`.
+- `.claude/memory/delay-the-perception-not-the-loop.md`.
