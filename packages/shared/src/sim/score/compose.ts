@@ -1,7 +1,7 @@
 import { CELL, MAX_SHIP_WIDTH, REST_INTENSITY } from '../../constants.js';
 import { intensityAt } from '../intensity.js';
 import { hash2, mulberry32 } from '../rng.js';
-import { HALF_WIDTH, MIN_LANE, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../space.js';
+import { clamp, HALF_WIDTH, MIN_LANE, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../space.js';
 import { MOTIFS, type ParsedMotif } from './motifs.js';
 import { type MotifNote, type NoteToken, parseNotes } from './notes.js';
 
@@ -34,11 +34,19 @@ export interface ComposedPhrase {
     z1: number;
 }
 
+export type IntensityCurve = readonly number[];
+
 export interface ComposedScore {
     seed: number;
     length: number;
+    curve?: IntensityCurve;
     phrases: ComposedPhrase[];
     notes: ComposedNote[];
+}
+
+export function scoreIntensityAt( i: number, length: number, curve?: IntensityCurve ): number {
+    if ( curve === undefined || curve.length === 0 ) return intensityAt( i, length );
+    return clamp( curve[ clamp( i, 0, curve.length - 1 ) ], 0, 1 );
 }
 
 interface Chosen {
@@ -147,6 +155,7 @@ export function composeScore(
     seed: number,
     length: number = TRACK_SEGMENTS,
     motifs: readonly ParsedMotif[] = MOTIFS,
+    curve?: IntensityCurve,
 ): ComposedScore {
     const end = length * SEG_LEN;
     const phrases: ComposedPhrase[] = [];
@@ -161,7 +170,7 @@ export function composeScore(
     while ( end - z >= REST_NOTE.duration ) {
         const index = phrases.length;
         const z0 = z;
-        const intensity = intensityAt( Math.floor( z / SEG_LEN ), length );
+        const intensity = scoreIntensityAt( Math.floor( z / SEG_LEN ), length, curve );
         const chosen = index === 0 ? null : choosePhrase( seed, index, intensity, x, end - z, motifs );
         if ( chosen === null ) place( REST_NOTE, index );
         else {
@@ -171,7 +180,8 @@ export function composeScore(
         }
         phrases.push( phraseRecord( index, chosen, intensity, z0, z ) );
     }
-    return { seed, length, phrases, notes };
+    if ( curve === undefined ) return { seed, length, phrases, notes };
+    return { seed, length, curve: [ ...curve ], phrases, notes };
 }
 
 function phraseRecord(

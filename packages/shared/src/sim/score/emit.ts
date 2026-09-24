@@ -1,6 +1,6 @@
 import { CALM_TUBE_HALF, CELL, MAX_SHIP_WIDTH } from '../../constants.js';
 import { SCORE_REGISTER_CRUISE } from '../../pacing/score.js';
-import { corridorWidthLanes, intensityAt } from '../intensity.js';
+import { corridorWidthLanes } from '../intensity.js';
 import { hash2, mulberry32 } from '../rng.js';
 import {
     BLOCK_HEIGHT,
@@ -18,7 +18,13 @@ import {
     TRACK_SEGMENTS,
     type Track,
 } from '../space.js';
-import { type ComposedNote, type ComposedScore, composeScore } from './compose.js';
+import {
+    type ComposedNote,
+    type ComposedScore,
+    composeScore,
+    type IntensityCurve,
+    scoreIntensityAt,
+} from './compose.js';
 import { SETTLE_X_TOL } from './note-move.js';
 import { SMASH_NOTE_DEPTH } from './notes.js';
 
@@ -58,8 +64,8 @@ export function moveZ( n: ComposedNote ): number {
     return Math.ceil( ( n.move * SCORE_REGISTER_CRUISE ) / CELL ) * CELL;
 }
 
-export function freeReach( z: number, length: number ): number {
-    return corridorWidthLanes( intensityAt( segIndexForZ( z ), length ) ) * CELL - CALM_TUBE_HALF;
+export function freeReach( z: number, length: number, curve?: IntensityCurve ): number {
+    return corridorWidthLanes( scoreIntensityAt( segIndexForZ( z ), length, curve ) ) * CELL - CALM_TUBE_HALF;
 }
 
 function nextLateralDirs( notes: readonly ComposedNote[] ): number[] {
@@ -93,7 +99,7 @@ export function scoreSpans( score: ComposedScore ): OpenSpan[] {
     const push = ( z0: number, z1: number, ab: [ number, number ], line: number, role: OpenSpanRole ): void => {
         if ( z1 > z0 ) spans.push( { z0, z1, a: ab[ 0 ], b: ab[ 1 ], line, role } );
     };
-    const reachAt = ( z: number ): number => freeReach( z, score.length );
+    const reachAt = ( z: number ): number => freeReach( z, score.length, score.curve );
     const calm = ( z0: number, z1: number, line: number, walled: number, upcoming?: ComposedNote ): void => {
         const pinned = upcoming !== undefined && isLateral( upcoming );
         const pin = pinned ? Math.max( z0, z1 - SCORE_PIN_Z ) : z1;
