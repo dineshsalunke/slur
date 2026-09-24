@@ -34,6 +34,12 @@ the status line until it shows 0–5%; the first read after /clear can still sho
 
 ## Open owner questions (relay in this order)
 
+0. #244 block merge (workerthree RFC, relayed): option 5 (in-segment guarded union + boundary abut; close pairs
+   1,577 → 143, blocks −7%, clearance loss 0, ~10% of fractured blocks become sealed) vs option 3 (−29% blocks,
+   needs cross-segment block ownership across sim, client streamer and pacing). Claims (option 5) are clear:
+   sim/track.ts, new sim/merge-blocks.ts(+test), track.test.ts, DECISIONS/GDD lines. It may dissolve workerone's
+   seed 20260921 z 1200–1278 pocket fixture: tell workerone to pin a hand-built fixture then.
+
 1. My proposal awaiting a yes: workertwo moves the analyzer into a Web Worker now (analysis with R1+R2 on may near
    1 s [inferred]), then hands routes/pacing/* to workerone for R3. R4 phrase RFC after the owner sees the board.
 2. Pocket trap threshold X (now 2u). Suggested: trapped when the stop window < that ship's length (traps phantom +
