@@ -123,6 +123,15 @@ export interface ProcgenDescriptor {
     length: number;
     blockDensity?: number;
     gapChance?: number;
+    gen?: TrackGen;
+}
+
+export const TRACK_GENS = [ 'weave', 'score' ] as const;
+
+export type TrackGen = ( typeof TRACK_GENS )[ number ];
+
+export function isTrackGen( v: unknown ): v is TrackGen {
+    return TRACK_GENS.includes( v as TrackGen );
 }
 
 export function fullFloor( y: number ): FloorSpan[] {

@@ -3,7 +3,7 @@ import { emptySlots } from './combat/combat-step.js';
 import type { ProjectileState } from './combat/projectiles.js';
 import type { SeekerState } from './combat/seeker.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
-import { FULL_DENSITY } from './sim/space.js';
+import { FULL_DENSITY, isTrackGen, type TrackGen } from './sim/space.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
 import type { SimShip } from './sim/types.js';
 
@@ -72,6 +72,7 @@ export class TrackDescriptorState extends Schema {
     @type( 'float32' ) blockDensity = 1;
     @type( 'float32' ) gapChance = 1;
     @type( 'string' ) levelId = '';
+    @type( 'string' ) gen: TrackGen = 'weave';
 }
 
 export function applyDescriptor( state: TrackDescriptorState, d: TrackDescriptor ): void {
@@ -82,6 +83,7 @@ export function applyDescriptor( state: TrackDescriptorState, d: TrackDescriptor
         state.length = d.length;
         state.blockDensity = d.blockDensity ?? FULL_DENSITY.blocks;
         state.gapChance = d.gapChance ?? FULL_DENSITY.gaps;
+        state.gen = d.gen ?? 'weave';
     } else {
         state.levelId = d.levelId;
     }
@@ -96,6 +98,7 @@ export function toDescriptor( state: TrackDescriptorState ): TrackDescriptor {
             length: state.length,
             blockDensity: state.blockDensity,
             gapChance: state.gapChance,
+            gen: isTrackGen( state.gen ) ? state.gen : 'weave',
         };
     }
     return { kind: 'authored', levelId: state.levelId };

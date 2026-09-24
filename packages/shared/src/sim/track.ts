@@ -9,6 +9,7 @@ import { flickRate, intensityAt, spacingSegments, wallDensity } from './intensit
 import { abutAcrossBoundary, mergeCloseBlocks } from './merge-blocks.js';
 import { valueNoise2D } from './noise.js';
 import { hash2, mulberry32 } from './rng.js';
+import { scoreTrack } from './score/emit.js';
 import {
     type Anchor,
     BLOCK_HEIGHT,
@@ -170,6 +171,7 @@ function mergedSegment( seed: number, i: number, length: number, density: TrackD
 export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
     const seed = d.seed;
     const length = d.length || TRACK_SEGMENTS;
+    if ( d.gen === 'score' ) return scoreTrack( seed, length );
     const density: TrackDensity = {
         blocks: d.blockDensity ?? FULL_DENSITY.blocks,
         gaps: d.gapChance ?? FULL_DENSITY.gaps,

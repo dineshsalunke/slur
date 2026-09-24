@@ -30,7 +30,7 @@ import {
     ZCELLS,
 } from '../index.js';
 
-const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed ) );
+const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed, 'weave' ) );
 
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 0x0fffffff, 42, 99991, 0xffffffff ];
 const WIDEST_HALF_W = Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfW ) );
@@ -233,7 +233,7 @@ test( 'walls are generated', () => {
     assert.ok( walls > 0, 'no walls generated' );
 } );
 
-test( 'no two gaps in a row and none in start-safe', () => {
+test( 'weave: no two gaps in a row and none in start-safe', () => {
     for ( const seed of SEEDS ) {
         const t = makeTrack( seed );
         for ( let i = 0; i < START_SAFE; i++ )

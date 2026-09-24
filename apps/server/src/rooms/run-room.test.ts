@@ -416,6 +416,34 @@ describe( 'RunRoom combat', () => {
         assert.deepEqual( changes.sort(), [ `0=${ HeldPower.bolt }`, `2=${ HeldPower.seeker }` ] );
     } );
 
+    test( 'a client decodes a score descriptor and resolves the server track from it', async () => {
+        process.env.SLUR_TRACK_GEN = 'score';
+        const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
+        delete process.env.SLUR_TRACK_GEN;
+        const host = await colyseus.connectTo( room, { name: 'Racer0' } );
+        await room.waitForNextPatch();
+        await delay( 100 );
+
+        const decoded = toDescriptor( host.state.descriptor );
+        assert.equal( decoded.kind === 'procgen' && decoded.gen, 'score' );
+        assert.deepEqual( decoded, toDescriptor( room.state.descriptor ) );
+        assert.equal( host.state.players.get( host.sessionId )?.name, 'Racer0' );
+        const server = resolveTrack( toDescriptor( room.state.descriptor ) );
+        const client = resolveTrack( decoded );
+        for ( let i = 0; i < TRACK_SEGMENTS; i += 7 ) {
+            assert.equal( JSON.stringify( client.segmentAt( i ) ), JSON.stringify( server.segmentAt( i ) ) );
+        }
+    } );
+
+    test( 'a room without SLUR_TRACK_GEN hosts a weave track', async () => {
+        const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
+        const host = await colyseus.connectTo( room, { name: 'Racer0' } );
+        await room.waitForNextPatch();
+        await delay( 100 );
+        const decoded = toDescriptor( host.state.descriptor );
+        assert.equal( decoded.kind === 'procgen' && decoded.gen, 'weave' );
+    } );
+
     test( 'a taken pickup slot respawns after PICKUP_RESPAWN_S', async () => {
         const { room, host } = await racingRoom( 1 );
         const racer = playerOf( room, host.sessionId );
