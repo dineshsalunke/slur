@@ -24,6 +24,8 @@ Agent: workerfour · Lane: ship-class retune #247 (DONE) + PR #195 merge (PAUSED
   lowest strafeAccel is 236, above 118. rosterContractFailures = [].
 - Tests: shared 258/258 in the tree and 251/251 at HEAD plus this file. Client 284/284. Typecheck and lint pass.
 - The server test "a bolt breaks a fractured block" is flaky: 1/8 at HEAD without the change, 0/8 with it.
+  Filed as #249 (tracking only; the supervisor said not to fix it yet).
+- Supervisor accepted the Comet at 290. Idle, waiting for the supervisor to clear GDD §5.5.
 - #195 worktree `../slur-worktrees/merge-195` is detached at origin/dev `74a7b89`. PR ref: `refs/remotes/pr/195`.
 
 ## Uncommitted
@@ -43,7 +45,6 @@ None for #247. Release ship-classes.ts, ship-classes.test.ts and track-contract.
 ## Open questions
 
 - GDD §5.5 table: who updates it, and when.
-- File an issue for the flaky run-room bolt test?
 - #195 owner calls A (drop the rail bounce), B (engine retune or drop the commit), C (push and close).
 - Delete `game/net-debug-hud.tsx` (carried over).
 
