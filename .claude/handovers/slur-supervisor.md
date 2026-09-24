@@ -35,7 +35,7 @@ Standing owner decisions:
 | workerone | w2P:pD | #253 pipeline DONE: c3d2a63 curve, b5b7b3c pipeline, handover ae61282. Bundle `.songs/lab/believer-s1.json` = 10 variants × 5 classes, all replay-verified; perfect pilot → 50/50 finish, 0 deaths, 0 bumps (times don't separate variants; 65–151 notes do). Human runs LANDED f98f9e5 (handover 639655e): pro/club/rookie, 150 runs, 0 replay mismatches; bundle 16.7 MB. Deaths pro/club/rookie: drum-driven variants easiest (snare-jump 1/15/38, triplet-grid 1/14/39), `mined` hardest (12/44/103). IDLE | none | apps/client/song-lab/**, score/compose.ts + test, score/emit.ts + test, client package.json + vitest.config.ts (1 line each) |
 | workertwo | w2P:pF | none | cleared + resumed idle (d688b79) | none |
 | workerthree | w2P:pG | none | cleared + resumed idle (9674c9f) | none |
-| workerfour | w2P:pH | #253 /song-lab viewer DONE: bf70803, 67a2dfa, ddf5bfe, 63b8014 (pilot picker); handover e8ec4dc. 200/200 MATCH, 10/10 digests, load 0.64–0.71 s warm. Owner's return goal is MET. Offered next: intensity strip + note mix per variant (not started) | IDLE | routes/song-lab/**, tapper/tapper-plugin.ts, 1 line routes.ts |
+| workerfour | w2P:pH | #253 /song-lab viewer DONE: bf70803, 67a2dfa, ddf5bfe, 63b8014 (pilot picker); handover e8ec4dc. 200/200 MATCH, 10/10 digests, load 0.64–0.71 s warm. Owner's return goal is MET. NOW (cleared + resumed ~21:45): owner asked for the SONG to play during replays, synced to the replay (bar→distance map), reusing the tapper audio clock | claims pending | routes/song-lab/**, tapper/tapper-plugin.ts, 1 line routes.ts |
 
 ## Next
 
@@ -49,6 +49,11 @@ Standing owner decisions:
 - #251: maskable icon? Landscape notch safe-area? Device check pending (97dc750, b58923f, a5cd9a2).
 - Score rooms have no pickups (S4).
 - PR #195 paused. Older: `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
+
+## Owner's dev stack
+
+The supervisor started `pnpm dev` (background task in its session) at ~21:39: client :5173, server :2567
+(pid 85262). A /clear of the supervisor may end it; tell the owner to restart `pnpm dev` if so.
 
 ## Uncommitted
 
