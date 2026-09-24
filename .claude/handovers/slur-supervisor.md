@@ -37,6 +37,8 @@ drift < 1 beat at bars 8/28/60/96/finish.
   (memory updated 82137b9).
 - ~00:15 workerone dispatched: 14th variant `conductor` (4/4 pattern down-in-out-up, landing on the
   downbeat, half-time, size = loudness, legato/staccato, prep beat, fermata = open stretch).
+  Claims CLEAR: conductor.ts (new), bundle.ts, song-lab-build.ts, variants.ts, song-lab.test.ts. Old-13
+  hash 809ff7fd. It builds to believer-s1.next.json; SWAP ONLY AFTER workerfour's live check reports.
 - workerfour dispatched ~00:05: LIVE drift check (audio clock) on groove/groove-tight/envelope, plus one pro run.
 
 ## Landed this session (all local, not pushed)
