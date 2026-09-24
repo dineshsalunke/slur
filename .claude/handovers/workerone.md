@@ -1,33 +1,37 @@
-Agent: workerone · Lane: R4 S0 — score transcriber + /pacing notes lane (APPROVED, not started) · Updated: 2026-09-24
+Agent: workerone · Lane: R4 S0 — score transcriber + /pacing notes lane (#250) · Updated: 2026-09-24 16:55
 
-The approved RFC is committed: `.claude/phases/2026-09-24-r4-score-rfc.md` (798ac1d). The owner rulings on its
-§13 are at the top of that file. Older versions of this file hold history: e868c04 (rev 2 numbers), 192787f
-(R4 brief), d520f36 (R1 rulings).
+The approved RFC: `.claude/phases/2026-09-24-r4-score-rfc.md` (798ac1d). Older versions of this file hold
+history: e868c04 (rev 2 numbers), 192787f (R4 brief), d520f36 (R1 rulings).
 
 ## Goal
 
-- S0 (RFC §12 step 1): a transcriber that reads any `Track` as a score of notes, and a notes lane on the
-  `/pacing` board with register-gap breaches marked. No generator change.
-- S0 must also output: today's **adherence** (the share of notes the easiest route plays), a proposed
-  adherence floor, a proposed **calm-tube width**, and the most common note **n-grams (3–8 notes)** on
-  today's tracks as a draft motif list for the owner.
+- S0 (RFC §12 step 1): read any `Track` as notes and show them on `/pacing` with register-gap breaches.
+  No generator change. Report adherence, breaches, n-gram motifs, and proposals for the adherence floor and
+  the calm-tube width.
 
 ## Done
 
 - `2812078` R1 · `6e67f53` R2 · `1e7160c` trap rule + 6u hull · `85077ca` R3 board · `b0a3977` #248 pass (unwired).
-- `798ac1d` R4 RFC rev 2, approved: every recommendation.
+- `798ac1d` R4 RFC rev 2, approved.
+- `c24f2bb` S0 (#250): `pacing/score.ts` (transcribe, intentLine, scoreAdherence), `pacing/ngrams.ts`,
+  `PacingReport.score / line / adherence`, `NotesLane` + `NoteRow`, two summary stats.
 
 ## State
 
-- Owner rulings: see the RFC header. The key numbers: REGISTER_GAP_S 0.5 · registerCruise 124 (frozen, S1) ·
-  note durations L1 120u / L2 140u / J 140u / JJ 220u / rest 60u on 20u segments · forcing M4 + M1 accents ·
-  filler N2 + N3 + N4 · old seeds stay behind `gen: 'weave'` · #246 and #248 fold into R4.
-- Contract move times (simulate(), counter-press pilot, settled ±0.25u ±1 u/s): 4u 0.367 s · 8u 0.550 s ·
-  J 0.517 s · JJ 1.150 s.
-- The ADR text (ADR-020 stub) was sent to slur-supervisor. The supervisor sequences it into
-  `docs/DECISIONS.md`, which is dirty with workerthree's #244. **Do not touch DECISIONS.md.**
-- `sim/track.ts` is dirty in the shared tree (another lane). Test S0 against HEAD in a scratch copy (memory
-  `test-your-lane-against-head.md`).
+- Tests: 273/273 shared at HEAD + S0 in a scratch copy (tree `sim/track.ts` is dirty with #244).
+  Client typecheck passed. biome and the comment ratchet are clean on the 10 S0 files. `pnpm lint` still fails
+  on files of other lanes (`track-rail.tsx`, `world-scene.tsx`, the max-lines rule).
+- Seeds 1–30 at HEAD [the "30 fairness seeds" set is not named anywhere; 1..30 is my choice]:
+  easiest route 1,380 notes, 739 breaches (54%). Band line 2,655 notes, 2,476 breaches (93%).
+- Breach pairs (easiest): lateral→lateral 405 · lateral→air 159 · air→lateral 145 · air→air 30. Shortfall
+  p50 68u, p90 111u, max 204u.
+- Adherence (band line → easiest, ±62u): 993/2655 = 37.4%; ±31u 33.1%; ±124u 40.8%. Per seed 26–47%.
+- Easiest-route drift inside calms ≥ 20u (n = 1,153): p50 0, p90 2.95u, p95 2.95u, max 7.68u.
+  Easiest vs band centre during calm: p50 16.7u, p95 26.1u.
+- Visual: `/pacing?seed=1` renders the Notes lane (CDP screenshot, headless Chrome killed after).
+- Placeholders that S1 replaces: `NOTE_MOVE_S` hard-codes the RFC §3 measurements.
+  `SCORE_REGISTER_CRUISE = FASTEST_CRUISE` is to become `TRACK_CONTRACT.registerCruise`.
+- Left = −x is [inferred] from `step.ts` (strafe −1 → vx −). Only the l/r naming depends on it.
 
 ## Uncommitted
 
@@ -37,25 +41,19 @@ None.
 
 - `apps/client/app/routes/pacing/*` · `packages/shared/src/pacing/*` + tests · the pacing export lines in
   `packages/shared/src/index.ts` · `packages/shared/src/sim/fracture-shadow.ts` + test.
-- **Not yet claimed:** `constants.ts` (`TRACK_CONTRACT.registerCruise`) belongs to S1. Claim it then.
 
 ## Next
 
-1. File the S0 GitHub issue (`CONTRIBUTING.md`). Title idea: "R4 S0: score transcriber + /pacing notes lane".
-2. Send the supervisor the S0 file list before the first write. Draft list:
-   `packages/shared/src/pacing/score.ts` + `score.test.ts` (transcriber: the reference path → notes),
-   `packages/shared/src/pacing/ngrams.ts` + test (n-gram counts), an export line in `index.ts`,
-   `apps/client/app/routes/pacing/*` (notes lane component, one per file). Read `conventions/r3f.md` /
-   `tailwind.md` rules for the board before writing.
-3. Build the transcriber on `referencePath` (the easiest and hardest routes). A note = a lateral move of
-   ≥ 1 cell settled, a jump, or a smash. Mark each gap between notes shorter than `noteSpacing`.
-4. Measure over the 30 fairness seeds: adherence, breach count, the n-gram table, and the lateral spread
-   around the line during the calm (for the calm-tube proposal). Report to the supervisor.
+1. Wait for the owner's reply (through the supervisor) on the S0 proposals: an adherence floor of 90%
+   (accents 100%), and a calm tube of ±5u.
+2. S1: claim `constants.ts` (`TRACK_CONTRACT.registerCruise` + the roster guard), then the `noteMove` pilot
+   that replaces `NOTE_MOVE_S`, then the motif library, the parser and load-time validation.
 
 ## Open questions
 
-- **Supervisor:** The R3 board does not show quiet-time bands or trapped pockets. Say if either is needed.
+- **Owner:** approve the adherence floor and the calm-tube width. Edit the draft motif list.
+- **Supervisor:** the R3 board does not show quiet-time bands or trapped pockets. Say if either is needed.
 
 ## Lessons → memory
 
-- none
+- `.claude/memory/pacing-board-needs-cdp-not-screenshot-flag.md`
