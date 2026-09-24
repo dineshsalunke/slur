@@ -1,125 +1,15 @@
 // @vitest-environment jsdom
 
-import { PHASE, RESTART_MESSAGE, SET_CLASS_MESSAGE, START_MESSAGE } from '@slur/shared';
+import { PHASE, SET_CLASS_MESSAGE, START_MESSAGE } from '@slur/shared';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RoomProvider } from '../../net/room-context';
 import { currentShip } from '../../ship/ship-choice';
-import { Overlays } from './overlays';
+import { mountOverlays, pressEnter, unmountOverlays } from './mount-overlays';
+import { bus, send } from './test-room';
 
-const bus = vi.hoisted( () => {
-    interface Player {
-        name: string;
-        colorId: number;
-        shipId: string;
-        spectating: boolean;
-        finished: boolean;
-        finishTime: number;
-        connected: boolean;
-        z: number;
-    }
-    const state = {
-        phase: PHASE_RACING(),
-        countdown: 0,
-        elapsed: 0,
-        finishDeadline: 0,
-        hostId: 'self',
-        players: new Map< string, Player >(),
-    } as Record< string, unknown > & { players: Map< string, Player > };
-    function PHASE_RACING() {
-        return 2;
-    }
-    const rootListeners = new Map< string, Set< ( v: unknown ) => void > >();
-    const playerChange = new Set< () => void >();
-    const listen = (
-        registry: Map< string, Set< ( v: unknown ) => void > >,
-        prop: string,
-        cb: ( v: unknown ) => void,
-    ) => {
-        const set = registry.get( prop ) ?? new Set();
-        set.add( cb );
-        registry.set( prop, set );
-        return () => set.delete( cb );
-    };
-    return {
-        state,
-        rootListeners,
-        playerChange,
-        listen,
-        emitRoot( prop: string, value: unknown ) {
-            state[ prop ] = value;
-            for ( const cb of rootListeners.get( prop ) ?? [] ) cb( value );
-        },
-        emitPlayerChange() {
-            for ( const cb of [ ...playerChange ] ) cb();
-        },
-        reset() {
-            rootListeners.clear();
-            playerChange.clear();
-            state.phase = 2;
-            state.elapsed = 0;
-            state.countdown = 0;
-            state.hostId = 'self';
-            state.players = new Map();
-        },
-    };
-} );
+vi.mock( '@colyseus/sdk', async () => ( await import( './test-room' ) ).sdkMock );
 
-vi.mock( '@colyseus/sdk', () => ( {
-    Client: class {},
-    getStateCallbacks: () => ( target: unknown ) => {
-        if ( target === bus.state ) {
-            return {
-                listen: ( prop: string, cb: ( v: unknown ) => void ) => {
-                    const off = bus.listen( bus.rootListeners, prop, cb );
-                    cb( bus.state[ prop ] );
-                    return off;
-                },
-                players: {
-                    onAdd: ( cb: ( p: unknown, id: string ) => void ) => {
-                        for ( const [ id, p ] of bus.state.players ) cb( p, id );
-                        return () => {};
-                    },
-                    onRemove: () => () => {},
-                },
-            };
-        }
-        return {
-            onChange: ( cb: () => void ) => {
-                bus.playerChange.add( cb );
-                return () => bus.playerChange.delete( cb );
-            },
-            listen: ( prop: string, cb: ( v: unknown ) => void ) => {
-                cb( ( target as Record< string, unknown > )[ prop ] );
-                return () => {};
-            },
-        };
-    },
-} ) );
-
-const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0, ResultsOverlay: 0, Standings: 0 } ) );
-
-vi.mock( './results-overlay', async ( importOriginal ) => {
-    const actual = await importOriginal< typeof import('./results-overlay') >();
-    return {
-        ResultsOverlay: ( props: Parameters< typeof actual.ResultsOverlay >[ 0 ] ) => {
-            counts.ResultsOverlay += 1;
-            return actual.ResultsOverlay( props );
-        },
-    };
-} );
-
-vi.mock( './standings', async ( importOriginal ) => {
-    const actual = await importOriginal< typeof import('./standings') >();
-    return {
-        Standings: ( props: Parameters< typeof actual.Standings >[ 0 ] ) => {
-            counts.Standings += 1;
-            return actual.Standings( props );
-        },
-    };
-} );
+const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0 } ) );
 
 vi.mock( './spec-tag', async ( importOriginal ) => {
     const actual = await importOriginal< typeof import('./spec-tag') >();
@@ -151,56 +41,15 @@ vi.mock( './leave-guard', async ( importOriginal ) => {
     };
 } );
 
-const send = vi.fn();
-const room = { sessionId: 'self', state: bus.state, send } as never;
-
-let container: HTMLDivElement;
-let root: Root;
-
-async function mountOverlays() {
-    const router = createMemoryRouter( [
-        {
-            path: '/',
-            element: (
-                <RoomProvider room={ room }>
-                    <Overlays />
-                </RoomProvider>
-            ),
-        },
-    ] );
-    await act( async () => {
-        root.render( <RouterProvider router={ router } /> );
-    } );
-}
-
 beforeEach( () => {
-    ( globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean } ).IS_REACT_ACT_ENVIRONMENT = true;
     bus.reset();
-    bus.state.players.set( 'self', {
-        name: 'Racer',
-        colorId: 0,
-        shipId: 'executioner',
-        spectating: false,
-        finished: false,
-        finishTime: 0,
-        connected: true,
-        z: 0,
-    } );
     counts.LeaveGuard = 0;
     counts.SpecTag = 0;
     counts.Roster = 0;
     send.mockClear();
-    container = document.createElement( 'div' );
-    document.body.append( container );
-    root = createRoot( container );
 } );
 
-afterEach( async () => {
-    await act( async () => {
-        root.unmount();
-    } );
-    container.remove();
-} );
+afterEach( unmountOverlays );
 
 describe( 'Overlays subscription boundary (#91)', () => {
     it( 'does not re-render LeaveGuard on an elapsed patch', async () => {
@@ -226,7 +75,7 @@ describe( 'Overlays subscription boundary (#91)', () => {
     } );
 
     it( 'mounts the spectator bar when self turns spectator, without re-rendering LeaveGuard', async () => {
-        await mountOverlays();
+        const container = await mountOverlays();
         counts.LeaveGuard = 0;
         expect( container.textContent ).not.toContain( 'Spectating' );
 
@@ -275,74 +124,12 @@ describe( 'Lobby overlay subscription boundary', () => {
         bus.state.phase = PHASE.lobby;
         await mountOverlays();
 
-        await act( async () => {
-            document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'Enter', bubbles: true } ) );
-        } );
+        await pressEnter();
         expect( send ).toHaveBeenCalledWith( START_MESSAGE );
 
         send.mockClear();
         bus.state.hostId = 'other';
-        await act( async () => {
-            document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'Enter', bubbles: true } ) );
-        } );
+        await pressEnter();
         expect( send ).not.toHaveBeenCalledWith( START_MESSAGE );
-    } );
-} );
-
-function finishedRace() {
-    bus.state.phase = PHASE.finished;
-    const base = { shipId: 'executioner', spectating: false, connected: true, z: 0 };
-    const racers = [
-        [ 'self', 'Dinesh', 104.78 ],
-        [ 'priya', 'Priya', 102.37 ],
-        [ 'sam', 'Sam', 0 ],
-    ] as const;
-    racers.forEach( ( [ id, name, finishTime ], colorId ) => {
-        bus.state.players.set( id, { ...base, name, colorId, finished: finishTime > 0, finishTime } );
-    } );
-}
-
-function pressEnter() {
-    return act( async () => {
-        document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'Enter', bubbles: true } ) );
-    } );
-}
-
-describe( 'Results overlay', () => {
-    it( 'titles the winner and marks the unfinished racer DNF', async () => {
-        finishedRace();
-        await mountOverlays();
-
-        expect( container.querySelector( 'h2' )?.textContent ).toBe( 'Priya wins' );
-        const rows = [ ...container.querySelectorAll( 'ol[aria-label="Standings"] li' ) ];
-        expect( rows.map( ( r ) => r.textContent?.includes( 'DNF' ) ) ).toEqual( [ false, false, true ] );
-        expect( rows[ 1 ]?.textContent ).toContain( '+2.41' );
-    } );
-
-    it( 'restarts the run on a bare Enter for the host only', async () => {
-        finishedRace();
-        await mountOverlays();
-
-        await pressEnter();
-        expect( send ).toHaveBeenCalledWith( RESTART_MESSAGE );
-
-        send.mockClear();
-        bus.state.hostId = 'priya';
-        await pressEnter();
-        expect( send ).not.toHaveBeenCalledWith( RESTART_MESSAGE );
-    } );
-
-    it( 'lets a per-player patch reach Standings without re-rendering the shell', async () => {
-        finishedRace();
-        await mountOverlays();
-        counts.ResultsOverlay = 0;
-        counts.Standings = 0;
-
-        await act( async () => {
-            bus.emitPlayerChange();
-        } );
-
-        expect( counts.Standings ).toBeGreaterThan( 0 );
-        expect( counts.ResultsOverlay ).toBe( 0 );
     } );
 } );
