@@ -52,7 +52,12 @@ None.
 
 1. HOLD: the generator regenerate step. Wait until workerthree lands #244 (`sim/track.ts` block merge). Then re-run the z 1200–1278 fixture. If the merge dissolves it, pin a hand-built fixture for the freighter and phantom windows.
 2. Then design the regenerate step: `rosterPockets` finds trapped segments, and the generator rebuilds each one. There are 35–56 freighter traps per seed, so check the cost first. Send an RFC to the supervisor before any build.
-3. R3 board: after workertwo releases `apps/client/app/routes/pacing/*`.
+3. **R3 board: UNBLOCKED.** workertwo released `apps/client/app/routes/pacing/*` (#245, `20caf85`). Send claims to slur-supervisor before the first write. Rules from #245:
+   - New panels read `usePacingReport()` (`PacingReportContext`). Never pass a `report` prop: React dev tracks walk the typed arrays, and that stalled the page for 5.8 s.
+   - Draw long lines with `lineChunks`/`areaChunks` + `<PolylineChunks>`.
+   - The analyzer runs in a module-singleton Worker. Turn on routes/pockets/arms through that worker, not in the route.
+   - First step: read the #245 route files and the worker's options path.
+4. After #244 commits (awaiting owner approval): re-measure the trapped-pocket counts on the five seeds and compare with the State table above.
 4. R4: pickups as a reward axis in `dominated`.
 
 ## Open questions
