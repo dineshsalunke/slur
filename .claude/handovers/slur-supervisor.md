@@ -27,6 +27,10 @@ other classes and features or fixes". Sync fix = option 1: the song starts when 
 (notes at z = zCruise + 124·t). No physics change and no per-class maps. Dispatched: workerone does map +
 bundle, workerfour does the viewer (audio start, readout origin, bar-106 stop, freighter default). Target:
 drift < 1 beat at bars 8/28/60/96/finish.
+- Field: LabSong.clock {z0 257.3 (freighter cruise at tick 248, 4.133 s), t0 0, zPerSecond 124}.
+- workerfour viewer DONE 9b3ab59 (handover 50c2a1a), cleared + resumed ~23:55. It waits for workerone's
+  bundle SHA and then runs the live drift check. Send it that SHA.
+- workerone is building map/bundle/cli/test (claims CLEAR). groove.ts also shows as modified.
 
 ## Landed this session (all local, not pushed)
 
