@@ -1,9 +1,11 @@
 import { emptyInput } from '@slur/shared';
+import { latchJump } from './jump-latch';
 
 const input = emptyInput();
-let seq = 0;
 const down = new Set< string >();
 const has = ( ...codes: string[] ) => codes.some( ( c ) => down.has( c ) );
+
+export const keyboardInput: Readonly< typeof input > = input;
 
 function recompute(): void {
     input.throttle = has( 'KeyW', 'ArrowUp' ) ? 1 : 0;
@@ -14,6 +16,7 @@ function recompute(): void {
 
 export function attachKeyboard(): () => void {
     const on = ( e: KeyboardEvent ) => {
+        if ( e.code === 'Space' && ! down.has( 'Space' ) ) latchJump();
         down.add( e.code );
         recompute();
     };
@@ -27,9 +30,4 @@ export function attachKeyboard(): () => void {
         removeEventListener( 'keydown', on );
         removeEventListener( 'keyup', off );
     };
-}
-
-export function currentInput() {
-    input.seq = ++seq;
-    return input;
 }

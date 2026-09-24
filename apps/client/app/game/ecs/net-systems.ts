@@ -2,7 +2,7 @@ import { DEFAULT_SIM_CONFIG, simulate, type Track, tuningForShip } from '@slur/s
 import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { blockWorld } from '../block-state';
-import { currentInput } from '../input/keyboard';
+import { currentInput } from '../input/current-input';
 import { localRole } from '../spectator';
 import { sparkIfBounced } from './bounce-spark';
 import { Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
