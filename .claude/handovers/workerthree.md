@@ -1,27 +1,25 @@
-Agent: workerthree · Lane: pickup SFX cut, #239 (closed) · Updated: 2026-09-24
+Agent: workerthree · Lane: bounce fixes, #231 (closed) then #232 · Updated: 2026-09-24
 
 ## Goal
 
-When several ingredients are taken back to back, a new pickup SFX stops the one still playing, then
-plays. This applies to hosted rooms and /test-level. All other SFX stay as they are. Lane complete.
+#231: a shallow block clip always glances. #232: staggered blocks must not stun-lock a ship.
 
 ## Done
 
-- #239 filed, approved (option 1, owner Q1 = add the sound to /test-level), and closed.
-- b0e9235: fix(audio). `PlayOpts.cut` in audio-engine (last live source per name, 10 ms fade, then
-  stop). `pickup: cut:true` in sfx-map, plus `loadSfx()`. /test-level local-combat plays 'pickup' on a
-  slot fill. The route's clientLoader loads the pickup sample.
+- f5c8ff8: fix(sim), #231. `entryPush()` in `sim/step.ts` uses the entry face from the previous tick.
+  An end-face entry with lateral overlap < `FlightTuning.grazeDepth` (0.5u, owner) resolves on x.
+  `sim/graze.test.ts`. ADR-014 has an as-built paragraph. Issue closed with the sweep table.
 
 ## State
 
-- Tests: audio-engine 4/4, local-combat 11/11, client 279/279. Typecheck and biome are clean on the
-  touched files.
-- Live, hosted: 3 pickups 0.61 s and 0.51 s apart. Each start stopped the previous pickup at +10 ms.
-  The countdown, GO and two fires 0.10 s apart had no stop.
-- Live, /test-level: pickups 0.47 s apart. The earlier one was stopped at +10 ms.
-- Driver: scratchpad `pickup-chain.mjs` (session 3c30e912).
-- Stack :2594/:5198 and Chrome :9463 are killed.
-- /test-level has no M key. Only the stored mute and volume apply there.
+- #231 sweep, 100 phases. Fighter 0.3u clip: 68% glance before, 100% after. 0.55–0.8u: 0% glance.
+- Tests at f5c8ff8: shared 232/232, server 15/15, client 279/279. Typecheck and lint are clean.
+- #232, measured on the 8 fairness seeds × 5 classes: 1,213 pockets. With throttle held, 729 stun-lock
+  (the longest is 5.00 s). The seed 1 z≈6019 Fighter stays stunned 600/600 ticks, even when it steers.
+- #232 prototype (a hit during stun = a plain stop, no kick, no stun refresh): stun-lock 729 → 1.
+  The 1 left has 0.0005u slack. Scratchpad `step-proto.ts`, `stunlock.mjs`, `pocket-scan*.mjs`
+  (session 93637031).
+- #232 RFC sent to slur-supervisor. Recommended option 1. Owner Q: bolt-stun drift into a block.
 
 ## Uncommitted
 
@@ -29,17 +27,18 @@ plays. This applies to hosted rooms and /test-level. All other SFX stay as they 
 
 ## Held files
 
-- none (the #239 claims are released)
+- packages/shared/src/sim/step.ts (kept for #232)
 
 ## Next
 
-1. None in this lane.
-2. #231 and #232 still need an owner go-ahead.
+1. On approval: build option 1 in `bounceOffBlock`, then add `sim/pocket.test.ts` and an ADR-014 line.
+2. Close #232 with the numbers and report the SHA to slur-supervisor.
 
 ## Open questions
 
-- none
+- #232 owner Q: a bolt-stunned ship that drifts into a block stops dead, with no knockback and no stun
+  stacking. Is that OK?
 
 ## Lessons → memory
 
-- `.claude/memory/leave-guard-blocks-cdp-navigate.md`
+- none
