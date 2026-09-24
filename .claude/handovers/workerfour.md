@@ -99,6 +99,14 @@ Do not edit `overlays.tsx`, `leave-button.tsx` or `audio-toggle.tsx` (workertwo,
    (`impeccable-finish-reviewer`, comp B PNGs as the approved comp), apply its fixes, and add the
    DESIGN.md "Results" section.
 
+## Queued lane (after #238)
+
+Owner request via the supervisor: remove the ship picker from the main menu (`/`), because the in-room
+ship pick replaces it. Keep the shared ship store: the saved ship still goes out on host, join and deep
+link. Decide what the menu backdrop ship shows (probably the saved ship). First file an issue, then send
+the supervisor a plan plus claims (`routes/home.tsx`, `routes/home/*`, maybe the DESIGN.md menu section).
+Write nothing before clearance.
+
 ## Open questions
 
 - Hand-off with workerone's hosted finish fade (#241): results mount on PHASE.finished, independent of
