@@ -12,7 +12,7 @@ export function ResultsOverlay( { room }: { room: Room< RunState > } ) {
     return (
         <Fragment>
             <Scrim />
-            <div className="fixed inset-0 z-[2] flex flex-col font-readout text-readout selection:bg-marigold selection:text-deep">
+            <div className="fixed inset-0 z-35 flex flex-col font-readout text-readout selection:bg-marigold selection:text-deep">
                 <header className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-10 sm:pt-7">
                     <h1 className="m-0 text-[20px] font-bold tracking-[0.42em] text-readout text-shadow-readout">
                         SLUR

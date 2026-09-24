@@ -10,21 +10,16 @@ export function WinnerCard( { room }: { room: Room< RunState > } ) {
 
     return (
         <div className="min-w-0">
-            <p className="m-0 flex items-center gap-2.5 text-[12px] font-semibold uppercase tracking-[0.22em] text-readout text-shadow-readout">
-                { winner && (
-                    <span
-                        aria-hidden="true"
-                        className="size-2.5 flex-none"
-                        style={ { background: colorHex( winner.colorId ) } }
-                    />
-                ) }
-                Results
-            </p>
-            <h2 className="m-0 mt-3 text-[64px] font-bold uppercase leading-[0.86] tracking-[0.01em] text-balance sm:text-[clamp(56px,8vw,112px)] text-readout text-shadow-readout">
+            <h2 className="m-0 text-[64px] font-bold uppercase leading-[0.86] tracking-[0.01em] text-balance sm:text-[clamp(56px,8vw,112px)] text-readout text-shadow-readout">
                 { winner ? `${ winner.name || 'Racer' } wins` : 'No finishers' }
             </h2>
             { winner && (
                 <p className="m-0 mt-4 flex items-baseline gap-4 tabular-nums">
+                    <span
+                        aria-hidden="true"
+                        className="size-2.5 flex-none self-center"
+                        style={ { background: colorHex( winner.colorId ) } }
+                    />
                     <span className="text-[22px] font-semibold text-readout text-shadow-readout sm:text-[28px]">
                         { raceTime( winner.finishTime ) }
                     </span>
