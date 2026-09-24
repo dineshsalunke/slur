@@ -53,7 +53,7 @@ test( 'no class may outrun the frozen register cruise', () => {
 } );
 
 test( 'the motif library is frozen (re-pin only for a deliberate reshape of every score seed)', () => {
-    assert.equal( motifDigest( MOTIF_LIBRARY ), 1779460072 );
+    assert.equal( motifDigest( MOTIF_LIBRARY ), 2694968437 );
 } );
 
 function weaveDigest( seed: number, rows: number ): number {

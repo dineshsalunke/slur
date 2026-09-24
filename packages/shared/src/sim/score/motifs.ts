@@ -40,16 +40,19 @@ export const MOTIF_LIBRARY: readonly Motif[] = [
     seeded( 'n3-3', 'J l r', N3 ),
     seeded( 'n3-4', 'l J J', N3 ),
     seeded( 'n3-5', 'l r J', N3 ),
+    seeded( 'n3-6', 'l JJ r', [ 0, 0.9 ] ),
     seeded( 'n4-1', 'J l J J', N4 ),
     seeded( 'n4-2', 'J l r J', N4 ),
     seeded( 'n4-3', 'l J r J', N4 ),
     seeded( 'n4-4', 'l J l r', N4 ),
     seeded( 'n4-5', 'J l J r', N4 ),
+    seeded( 'n4-6', 'J l JJ r', [ 0.3, 1 ] ),
     seeded( 'n5-1', 'L J r J J', N5 ),
     seeded( 'n5-2', 'J l r J l', N5 ),
     seeded( 'n5-3', 'l J l r J', N5 ),
     seeded( 'n5-4', 'J < R r l', N5 ),
     seeded( 'n5-5', 'J L r J J', N5 ),
+    seeded( 'n5-6', 'L JJ r J l', N5 ),
 ];
 
 type PlanCache = Map< number, StrafePlan | null >;
