@@ -76,3 +76,7 @@ scratchpad/
 
 # Personal multi-agent harness instructions (loaded by every local session)
 CLAUDE.local.md
+
+# Songs for the dev-only /tapper route (#253). Commercial audio: local only, never
+# committed and never shipped. The dev server serves them; public/ would ship them.
+/apps/client/.songs/
