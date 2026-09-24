@@ -60,7 +60,8 @@ drift < 1 beat at bars 8/28/60/96/finish.
 - DONE 9388a67 (handover e3e67ab): 71 files removed. Score sha256 62f2711c is the same before and after. mp3 + analysis.json
   kept. archive/song-lab is local only; push is the owner's call.
 - matchmaking.test.ts FIXED c0a7a90 (workertwo, handover 87524f6): the fixture was stale; client 299/299. workertwo idle.
-- /beat-deck plan relayed to the owner. Waiting on (a) the name, (b) download vs dev plugin to .songs/takes/, (c) auto-cruise vs W/S.
+- /beat-deck APPROVED (~01:45): the name /beat-deck, a dev plugin writes takes to .songs/takes/, AUTO-CRUISE (held throttle
+  in the input layer, no sim change). workerone dispatched to build v1 (no analysis yet).
 
 ## Landed this session (all local, not pushed)
 
