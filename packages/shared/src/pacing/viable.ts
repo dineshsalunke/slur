@@ -1,5 +1,4 @@
-import { CELL_AIR, CELL_GROUND, columnX, nearestColumn, PACING_DZ, type PacingGrid } from './grid.js';
-import { airRunLengths } from './reference-path.js';
+import { columnX, nearestColumn, type PacingGrid } from './grid.js';
 
 export interface RouteRegion {
     k0: number;
@@ -7,39 +6,6 @@ export interface RouteRegion {
     x0: number;
     x1: number;
     cells: number;
-}
-
-function crossingRows( grid: PacingGrid, maxStep: number ): Uint16Array {
-    const { count, cols, cells } = grid;
-    const out = new Uint16Array( count * cols );
-    for ( let k = 0; k < count; k++ ) {
-        let j = 0;
-        while ( j < cols ) {
-            if ( cells[ k * cols + j ] !== CELL_AIR ) {
-                j++;
-                continue;
-            }
-            let e = j;
-            while ( e < cols && cells[ k * cols + e ] === CELL_AIR ) e++;
-            const rows = Math.ceil( ( e - j ) / maxStep );
-            for ( let q = j; q < e; q++ ) out[ k * cols + q ] = rows;
-            j = e;
-        }
-    }
-    return out;
-}
-
-export function legalMask( grid: PacingGrid, airLimit: number, maxStep: number ): Uint8Array {
-    const airSamples = airLimit / PACING_DZ;
-    const runs = airRunLengths( grid );
-    const across = crossingRows( grid, maxStep );
-    const out = new Uint8Array( grid.cells.length );
-    for ( let i = 0; i < out.length; i++ ) {
-        const c = grid.cells[ i ];
-        if ( c === CELL_GROUND ) out[ i ] = 1;
-        else if ( c === CELL_AIR ) out[ i ] = runs[ i ] <= airSamples || across[ i ] <= airSamples ? 1 : 0;
-    }
-    return out;
 }
 
 export function anyNear( mask: Uint8Array, row: number, cols: number, j: number, step: number ): boolean {

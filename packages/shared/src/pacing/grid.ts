@@ -1,4 +1,5 @@
 import { type FlightTuning, MAX_SHIP_WIDTH, TRACK_CONTRACT } from '../constants.js';
+import { SHIP_CLASSES } from '../ship-classes.js';
 import { openRunsAtSlice } from '../sim/clearance.js';
 import {
     type BlockKind,
@@ -30,7 +31,15 @@ export interface PacingHull {
 export const SOLID_ALL: readonly BlockKind[] = [ 'sealed', 'fractured' ];
 export const SOLID_SEALED: readonly BlockKind[] = [ 'sealed' ];
 
-export const CONTRACT_HULL: PacingHull = { halfW: PACING_HULL, halfL: 0, footW: 0, footL: 0, solid: SOLID_ALL };
+export const PACING_HULL_L = SHIP_CLASSES.freighter.tuning.halfL;
+
+export const CONTRACT_HULL: PacingHull = {
+    halfW: PACING_HULL,
+    halfL: PACING_HULL_L,
+    footW: 0,
+    footL: 0,
+    solid: SOLID_ALL,
+};
 
 export function classHull( t: FlightTuning, slot = 0 ): PacingHull {
     return { halfW: t.halfW, halfL: t.halfL + slot / 2, footW: t.halfW, footL: t.halfL, solid: SOLID_ALL };

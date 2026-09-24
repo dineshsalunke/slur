@@ -11,6 +11,8 @@ import {
     HALF_WIDTH,
     nearestColumn,
     PACING_HULL,
+    PACING_HULL_L,
+    SHIP_CLASSES,
     type Track,
 } from '../index.js';
 import { syntheticTrack, wall } from './fixture.test.js';
@@ -36,6 +38,18 @@ test( 'a cell is blocked, ground or air from the segment it samples', () => {
     assert.equal( at( 45, 0 ), CELL_AIR );
     assert.equal( grid.widest[ 25 ], HALF_WIDTH );
     assert.equal( grid.widest[ 45 ], 0 );
+} );
+
+test( 'the contract hull is as long as the freighter, so a block reaches 3u past each end', () => {
+    assert.equal( 2 * PACING_HULL_L, 6 );
+    assert.equal( PACING_HULL_L, SHIP_CLASSES.freighter.tuning.halfL );
+    const track = syntheticTrack( 3, ( s ) => ( s.index === 1 ? { ...s, blocks: [ wall( 1, -HALF_WIDTH, 0 ) ] } : s ) );
+    const grid = buildGrid( freezeTrack( track ) );
+    const at = ( k: number ): number => grid.cells[ k * grid.cols + nearestColumn( -10 ) ];
+    assert.equal( at( 16 ), CELL_GROUND );
+    assert.equal( at( 17 ), CELL_BLOCKED );
+    assert.equal( at( 42 ), CELL_BLOCKED );
+    assert.equal( at( 43 ), CELL_GROUND );
 } );
 
 test( 'freezing a track builds every segment once', () => {

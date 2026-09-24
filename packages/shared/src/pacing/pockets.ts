@@ -16,10 +16,12 @@ import {
     sampleZ,
 } from './grid.js';
 import { airDistance } from './jump-window.js';
-import { maxColumnStep } from './reference-path.js';
-import { anyNear, legalMask, type RouteRegion, regionsOf } from './viable.js';
+import { legalMask, maxColumnStep } from './reference-path.js';
+import { anyNear, type RouteRegion, regionsOf } from './viable.js';
 
-export const POCKET_SLOT_MIN_U = 2;
+export function pocketSlot( t: FlightTuning ): number {
+    return 2 * t.halfL;
+}
 
 const DT = 1 / 60;
 const SWEEP_DZ = 0.1;
@@ -29,7 +31,6 @@ const STRAFE_TICKS = 3;
 const ARRIVE_U = 0.05;
 const ARRIVE_VX = 0.5;
 const DOOR_DEPTH = 2;
-const DOOR_AHEAD = Math.ceil( POCKET_SLOT_MIN_U / 2 / PACING_DZ ) + 1;
 
 export interface PacingPocket extends RouteRegion {
     classId: ShipClassId;
@@ -127,12 +128,13 @@ interface Scene {
     phys: Reach;
     slot: Reach;
     dead: Uint8Array;
+    ahead: number;
 }
 
 function isDoor( scene: Scene, k: number, q: number ): boolean {
     const { cols, count } = scene.slot.grid;
     if ( scene.dead[ k * cols + q ] === 1 ) return false;
-    for ( let d = 0; d <= DOOR_AHEAD && k + d < count; d++ )
+    for ( let d = 0; d <= scene.ahead && k + d < count; d++ )
         if ( scene.slot.bwd[ ( k + d ) * cols + q ] === 1 ) return true;
     return false;
 }
@@ -198,9 +200,11 @@ export function squeezesThrough( track: Track, t: FlightTuning, a: SqueezeAttemp
     return false;
 }
 
-function doorAttempts( dead: Uint8Array, slot: PacingGrid, p: RouteRegion, doors: Door[] ): SqueezeAttempt[] {
+function doorAttempts( scene: Scene, slotU: number, p: RouteRegion, doors: Door[] ): SqueezeAttempt[] {
+    const { dead } = scene;
+    const slot = scene.slot.grid;
     const out: SqueezeAttempt[] = [];
-    const committed = ( p.k0 + 1 ) * PACING_DZ + POCKET_SLOT_MIN_U / 2;
+    const committed = ( p.k0 + 1 ) * PACING_DZ + slotU / 2;
     const z0 = Math.max( committed, Math.min( ...doors.map( ( d ) => sampleZ( d.k ) ) ) - SWEEP_PAD );
     const z1 = Math.max( ...doors.map( ( d ) => sampleZ( d.k ) ) ) + SWEEP_PAD;
     const xs = [ ...new Set( doors.flatMap( ( d ) => d.xs ) ) ];
@@ -236,15 +240,15 @@ function escapeWindow( track: Track, t: FlightTuning, tries: SqueezeAttempt[] ):
 export function classPockets( frozen: FrozenTrack, classId: ShipClassId, t: FlightTuning ): PacingPocket[] {
     const step = maxColumnStep( TRACK_CONTRACT.pacingCruise );
     const airLimit = airDistance( t, 'double' );
-    const slot = stoppingReach( buildGrid( frozen, classHull( t, POCKET_SLOT_MIN_U ) ), airLimit, step );
+    const slotU = pocketSlot( t );
+    const slot = stoppingReach( buildGrid( frozen, classHull( t, slotU ) ), airLimit, step );
     const phys = stoppingReach( buildGrid( frozen, classHull( t ) ), airLimit, step );
     const dead = deadMask( slot );
-    const scene = { phys, slot, dead };
+    const scene = { phys, slot, dead, ahead: Math.ceil( slotU / 2 / PACING_DZ ) + 1 };
     return regionsOf( dead, slot.grid ).map( ( p ) => {
         const doors = findDoors( scene, p );
-        const window =
-            doors.length > 0 ? escapeWindow( frozen.track, t, doorAttempts( dead, slot.grid, p, doors ) ) : 0;
-        return { ...p, classId, doors: doors.length, window, trapped: window < POCKET_SLOT_MIN_U };
+        const window = doors.length > 0 ? escapeWindow( frozen.track, t, doorAttempts( scene, slotU, p, doors ) ) : 0;
+        return { ...p, classId, doors: doors.length, window, trapped: window < slotU };
     } );
 }
 

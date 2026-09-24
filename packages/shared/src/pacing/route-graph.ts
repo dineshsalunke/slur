@@ -9,7 +9,8 @@ import {
     type PacingGrid,
     SOLID_SEALED,
 } from './grid.js';
-import { legalMask, type RouteRegion, regionsOf, viableCells } from './viable.js';
+import { legalMask } from './reference-path.js';
+import { type RouteRegion, regionsOf, viableCells } from './viable.js';
 
 export const REACTION_S = 0.45;
 export const FORK_MIN_ARM_U = REACTION_S * TRACK_CONTRACT.pacingCruise;

@@ -4,7 +4,7 @@ import {
     classPockets,
     freezeTrack,
     type PacingPocket,
-    POCKET_SLOT_MIN_U,
+    pocketSlot,
     procgenDescriptor,
     resolveTrack,
     SHIP_CLASSES,
@@ -59,11 +59,23 @@ function fixturePockets( id: ShipClassId ): PacingPocket[] {
 test( 'seed 20260921 z 1200-1278 traps the freighter by its 1.3u right slot', () => {
     const [ pocket, ...rest ] = fixturePockets( 'freighter' );
     assert.deepEqual( rest, [] );
-    assert.ok( pocket.window > 1 && pocket.window < POCKET_SLOT_MIN_U, `window ${ pocket.window }` );
+    assert.ok(
+        pocket.window > 1 && pocket.window < pocketSlot( SHIP_CLASSES.freighter.tuning ),
+        `window ${ pocket.window }`,
+    );
+} );
+
+test( 'seed 20260921 z 1200-1278 traps the phantom: a 2.3u window is shorter than its own length', () => {
+    const [ pocket, ...rest ] = fixturePockets( 'phantom' );
+    assert.deepEqual( rest, [] );
+    assert.ok(
+        pocket.window > 2 && pocket.window < pocketSlot( SHIP_CLASSES.phantom.tuning ),
+        `window ${ pocket.window }`,
+    );
 } );
 
 test( 'seed 20260921 z 1200-1278 frees every other class', () => {
-    for ( const id of [ 'comet', 'interceptor', 'fighter', 'phantom' ] as const ) {
+    for ( const id of [ 'comet', 'interceptor', 'fighter' ] as const ) {
         assert.deepEqual( fixturePockets( id ), [], id );
     }
 } );

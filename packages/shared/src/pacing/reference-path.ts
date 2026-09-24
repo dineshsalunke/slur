@@ -1,14 +1,5 @@
 import { TRACK_CONTRACT } from '../constants.js';
-import {
-    CELL_AIR,
-    CELL_BLOCKED,
-    CELL_GROUND,
-    columnX,
-    nearestColumn,
-    PACING_DX,
-    PACING_DZ,
-    type PacingGrid,
-} from './grid.js';
+import { CELL_AIR, CELL_GROUND, columnX, nearestColumn, PACING_DX, PACING_DZ, type PacingGrid } from './grid.js';
 
 export const PATH_REVERSAL_COST = 2;
 export const PATH_JUMP_COST = 4;
@@ -63,6 +54,39 @@ export function airRunLengths( grid: PacingGrid ): Uint16Array {
     return out;
 }
 
+function crossingRows( grid: PacingGrid, maxStep: number ): Uint16Array {
+    const { count, cols, cells } = grid;
+    const out = new Uint16Array( count * cols );
+    for ( let k = 0; k < count; k++ ) {
+        let j = 0;
+        while ( j < cols ) {
+            if ( cells[ k * cols + j ] !== CELL_AIR ) {
+                j++;
+                continue;
+            }
+            let e = j;
+            while ( e < cols && cells[ k * cols + e ] === CELL_AIR ) e++;
+            const rows = Math.ceil( ( e - j ) / maxStep );
+            for ( let q = j; q < e; q++ ) out[ k * cols + q ] = rows;
+            j = e;
+        }
+    }
+    return out;
+}
+
+export function legalMask( grid: PacingGrid, airLimit: number, maxStep: number ): Uint8Array {
+    const airSamples = airLimit / PACING_DZ;
+    const runs = airRunLengths( grid );
+    const across = crossingRows( grid, maxStep );
+    const out = new Uint8Array( grid.cells.length );
+    for ( let i = 0; i < out.length; i++ ) {
+        const c = grid.cells[ i ];
+        if ( c === CELL_GROUND ) out[ i ] = 1;
+        else if ( c === CELL_AIR ) out[ i ] = runs[ i ] <= airSamples || across[ i ] <= airSamples ? 1 : 0;
+    }
+    return out;
+}
+
 const DIRS = 3;
 
 function nextDir( prev: number, m: number ): number {
@@ -83,8 +107,7 @@ class PathSolver {
     readonly pred: Int16Array;
     readonly order: number[];
     readonly origin: number;
-    private readonly airRuns: Uint16Array;
-    private readonly airSamples: number;
+    private readonly legalCells: Uint8Array;
     private readonly mask: Uint8Array | null;
     private cost: Float64Array;
     private next: Float64Array;
@@ -103,8 +126,7 @@ class PathSolver {
         this.mask = mask;
         this.maxStep = maxColumnStep( cruise );
         this.order = stepOrder( this.maxStep );
-        this.airRuns = airRunLengths( grid );
-        this.airSamples = airLimit / PACING_DZ;
+        this.legalCells = legalMask( grid, airLimit, this.maxStep );
         this.states = grid.cols * DIRS;
         this.pred = new Int16Array( rows * this.states ).fill( -1 );
         this.cost = new Float64Array( this.states ).fill( Number.POSITIVE_INFINITY );
@@ -112,11 +134,7 @@ class PathSolver {
     }
 
     legal( k: number, j: number ): boolean {
-        const i = k * this.grid.cols + j;
-        const c = this.grid.cells[ i ];
-        if ( c === CELL_GROUND ) return true;
-        if ( c === CELL_BLOCKED ) return false;
-        return this.airRuns[ i ] <= this.airSamples;
+        return this.legalCells[ k * this.grid.cols + j ] === 1;
     }
 
     barred( k: number, j: number ): boolean {
