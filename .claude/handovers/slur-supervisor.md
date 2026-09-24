@@ -57,6 +57,9 @@ the status line until it shows 0–5%; the first read after /clear can still sho
   zero-demand tie as a dodge? Add quiet bands and trapped pockets to the board? Next pacing step: R4 phrase RFC.
 - R3 BUG (owner, images/4.png in my scratchpad): the hardest route near F4 climbs almost vertically, breaking the
   strafe clamp. Sent to workerone: find the cause, assert the clamp on every emitted route, issue + fix.
+- #246 (workerone): the slope bug is a MODEL gap. The solver has no strafe acceleration (0 → 65 u/s in one row;
+  sim strafeAccel 165). F4 hardest takes 0.49 s where a ship needs >= 0.62 s. Owner to pick: 1 velocity state in the
+  solver (recommended, ~10× states) · 2 diagnostic only · 3 lower the solver rate.
 The items below are the pre-13:30 queue; only item 9 remains open.
 
 ## Open owner questions (relay in this order)
