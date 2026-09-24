@@ -81,3 +81,5 @@ none.
 lights, env 1.5, no fog). ART_MATERIALS §7: dev stays 16, PR 230 becomes 17, PR 237 becomes 18. workertwo sends
 stills after the push.
 - #239 DONE `b0e9235`, closed (workerthree). workerthree IDLE, no files. Candidate next lanes: #231, #232, perf, the menu picker removal (queued for workerfour).
+- #238 built `1d1f9f2` (workerfour): finish review running, then the DESIGN.md Results section, then the overlays.test.tsx
+  split (room mock → shared helper, approved), then the menu-picker lane (plan first).
