@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     FZ_ROWS,
+    MOTIF_LIBRARY,
+    motifDigest,
     rosterContractFailures,
     SHIP_CLASSES,
     TRACK_CONTRACT,
@@ -38,6 +40,20 @@ test( 'a ship faster than the contract brakes for the weave instead of reshaping
     );
     assert.ok( thread < freighter.maxCruise, 'the Freighter should have to lift off the throttle for the weave' );
     assert.deepEqual( rosterContractFailures( [ { id: 'freighter', tuning: freighter } ] ), [] );
+} );
+
+test( 'no class may outrun the frozen register cruise', () => {
+    assert.equal( TRACK_CONTRACT.registerCruise, 124 );
+    for ( const c of Object.values( SHIP_CLASSES ) )
+        assert.ok( c.tuning.maxCruise <= TRACK_CONTRACT.registerCruise, c.id );
+    const fast = { ...SHIP_CLASSES.freighter.tuning, maxCruise: TRACK_CONTRACT.registerCruise + 1 };
+    assert.deepEqual( rosterContractFailures( [ { id: 'fast', tuning: fast } ] ), [
+        'fast: maxCruise 125u/s exceeds the 124u/s register cruise',
+    ] );
+} );
+
+test( 'the motif library is frozen (re-pin only for a deliberate reshape of every score seed)', () => {
+    assert.equal( motifDigest( MOTIF_LIBRARY ), 1779460072 );
 } );
 
 function weaveDigest( seed: number, rows: number ): number {

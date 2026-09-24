@@ -47,7 +47,7 @@ const SCAN_BEFORE = 96;
 const SCAN_AFTER = 8;
 const REFINE_STEPS = 7;
 
-interface JumpPilot {
+export interface JumpPilot {
     input: PlayerInput;
     fired: boolean;
     airborne: boolean;
@@ -56,7 +56,7 @@ interface JumpPilot {
     second: boolean;
 }
 
-function newPilot(): JumpPilot {
+export function newJumpPilot(): JumpPilot {
     return {
         input: { seq: 0, throttle: 1, brake: 0, strafe: 0, jump: false },
         fired: false,
@@ -81,7 +81,7 @@ function steerDouble( p: JumpPilot, s: SimShip ): void {
     }
 }
 
-function steer( p: JumpPilot, mode: JumpMode, s: SimShip, takeoffZ: number ): void {
+export function steerJump( p: JumpPilot, mode: JumpMode, s: SimShip, takeoffZ: number ): void {
     if ( mode === 'none' || p.done ) return;
     if ( ! p.fired ) {
         if ( s.z >= takeoffZ ) {
@@ -102,10 +102,10 @@ function steer( p: JumpPilot, mode: JumpMode, s: SimShip, takeoffZ: number ): vo
 export function airDistance( tuning: FlightTuning, mode: JumpMode ): number {
     const s = spawnShip( 0, 0 );
     s.vz = tuning.maxCruise;
-    const pilot = newPilot();
+    const pilot = newJumpPilot();
     let z0: number | null = null;
     for ( let n = 0; n < MAX_TICKS; n++ ) {
-        steer( pilot, mode, s, 0 );
+        steerJump( pilot, mode, s, 0 );
         simulate( s, pilot.input, DT, tuning );
         if ( z0 === null && ! s.grounded ) z0 = s.z;
         if ( z0 !== null && s.grounded ) return s.z - z0;
@@ -141,9 +141,9 @@ export function clearsGap(
 ): boolean {
     const s = spawnShip( x, takeoffZ - RUNUP );
     s.vz = tuning.maxCruise;
-    const pilot = newPilot();
+    const pilot = newJumpPilot();
     for ( let n = 0; n < MAX_TICKS; n++ ) {
-        steer( pilot, mode, s, takeoffZ );
+        steerJump( pilot, mode, s, takeoffZ );
         simulate( s, pilot.input, DT, tuning, track );
         if ( s.dead ) return false;
         if ( s.z >= exitZ && s.grounded ) return mode === 'none' || pilot.fired;

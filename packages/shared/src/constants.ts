@@ -125,6 +125,7 @@ export interface TrackContract {
     weaveCruise: number;
     weaveStrafeClamp: number;
     weaveStrafeAccel: number;
+    registerCruise: number;
 }
 
 export const TRACK_CONTRACT: TrackContract = {
@@ -132,7 +133,12 @@ export const TRACK_CONTRACT: TrackContract = {
     weaveCruise: 62,
     weaveStrafeClamp: 65,
     weaveStrafeAccel: 118,
+    registerCruise: 124,
 };
+
+export const SCORE_ADHERENCE_FLOOR = 0.75;
+export const SCORE_ACCENT_ADHERENCE = 1;
+export const CALM_TUBE_HALF = 5;
 
 export const WEAVE_SLOPE_CAP = ( TRACK_CONTRACT.weaveStrafeClamp / TRACK_CONTRACT.weaveCruise ) * WEAVE_SLOPE_SAFETY;
 
@@ -157,6 +163,10 @@ export function rosterContractFailures( classes: { id: string; tuning: FlightTun
         if ( thread < threadFloor )
             out.push(
                 `${ c.id }: follows the racing line at only ${ thread.toFixed( 1 ) }u/s, under the ${ threadFloor }u/s floor`,
+            );
+        if ( c.tuning.maxCruise > TRACK_CONTRACT.registerCruise )
+            out.push(
+                `${ c.id }: maxCruise ${ c.tuning.maxCruise }u/s exceeds the ${ TRACK_CONTRACT.registerCruise }u/s register cruise`,
             );
     }
     return out;

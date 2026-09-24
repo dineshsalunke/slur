@@ -50,6 +50,10 @@ test( 'the clear zone covers one second of post-smash travel for every class', (
     assert.equal( FRACTURE_SHADOW_SEGMENTS, Math.ceil( FRACTURE_SHADOW_Z / SEG_LEN ) );
 } );
 
+test( 'the clear zone is sized at the frozen register cruise, not the fastest class', () => {
+    assert.ok( Math.abs( FRACTURE_SHADOW_Z - 55.8 ) < 1e-9, `${ FRACTURE_SHADOW_Z }` );
+} );
+
 test( 'a block right behind a fractured block seals it', () => {
     const b = box( 1, -2, 2, 204, 208 );
     const ahead = [ seg( 11, [ box( 2, 1, 5, 225, 230, 'sealed' ) ] ) ];

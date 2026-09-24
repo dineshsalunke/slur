@@ -1,18 +1,17 @@
-import { CELL } from '../constants.js';
-import { FASTEST_CRUISE } from '../ship-classes.js';
+import { CELL, TRACK_CONTRACT } from '../constants.js';
 import { FRACTURE_SHADOW_Z } from '../sim/fracture-shadow.js';
+import { HELD_NOTE_CELLS, NOTE_MOVE_S } from '../sim/score/note-move.js';
 import { type Block, SEG_LEN, type Segment, spanHasZ } from '../sim/space.js';
 import { PACING_DX, PACING_DZ, PACING_HULL, sampleZ } from './grid.js';
 import type { PacingIntent } from './intent.js';
 import type { ReferencePath } from './reference-path.js';
 
 export const REGISTER_GAP_S = 0.5;
-export const SCORE_REGISTER_CRUISE = FASTEST_CRUISE;
+export const SCORE_REGISTER_CRUISE = TRACK_CONTRACT.registerCruise;
 export const REGISTER_GAP_Z = REGISTER_GAP_S * SCORE_REGISTER_CRUISE;
 export const NOTE_MERGE_U = 4;
 export const NOTE_MIN_STEP_U = CELL - PACING_DX;
-export const HELD_MIN_CELLS = 3;
-export const NOTE_MOVE_S = { step1: 0.367, step2: 0.55, jump: 0.517, double: 1.15 } as const;
+export const HELD_MIN_CELLS = HELD_NOTE_CELLS;
 export const REST_UNIT_U = 60;
 export const ADHERENCE_WINDOW_U = REGISTER_GAP_Z;
 
@@ -152,7 +151,7 @@ export function noteMoveSeconds( n: Pick< ScoreNote, 'kind' | 'k0' | 'k1' | 'cel
         case 'smash':
             return span;
         case 'held':
-            return Math.max( NOTE_MOVE_S.step2, span );
+            return Math.max( NOTE_MOVE_S.held, span );
         default:
             return n.cells >= 2 ? NOTE_MOVE_S.step2 : NOTE_MOVE_S.step1;
     }
