@@ -49,7 +49,12 @@ None in this lane.
 
 ## Next
 
-1. Wait for the supervisor or owner to review the R3 stills.
+1. **OWNER BUG (from slur-supervisor, not started).** Screenshot: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/8c16779d-5bdf-47ad-a4a3-007e9b801592/images/4.png`. The dashed magenta HARDEST route near F4 climbs from the bottom track edge to the top half almost vertically. It drops just as steeply at the left edge. That slope is impossible at max strafe.
+   - Suspects: a splice between windowed/arm solves that skips the strafe clamp; soft barring (`barred`) letting the path jump; the drawing joining non-adjacent samples (the strip draws `arms.hardest.path.x` with stride 2).
+   - Prove it first: max |dx| per 1u sample on the easiest and hardest routes over seeds 20260921/1/42/7/99991 must be ≤ the clamp (`maxColumnStep` × `PACING_DX`).
+   - Fix it with a shared test that asserts the clamp on every emitted route (easiest, hardest, every arm path).
+   - File a GitHub issue. Send the supervisor a claim for any file outside the held set.
+2. Wait for the supervisor or owner to review the R3 stills.
 2. HOLD: the generator regenerate step. Wait until workerthree lands #244 (`sim/track.ts` block merge). Then re-run the z 1200–1278 fixture. If the merge dissolves it, pin a hand-built fixture for the freighter and phantom windows.
 3. Then design the regenerate step (`rosterPockets` → rebuild the trapped segments). Check the cost first (35–56 freighter traps per seed). Send an RFC to the supervisor before any build.
 4. After #244 commits: re-measure the trapped-pocket counts on the five seeds (the 68f48bd version of this file has the table).
