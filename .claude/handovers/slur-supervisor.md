@@ -53,7 +53,10 @@ drift < 1 beat at bars 8/28/60/96/finish.
 - Replay code stays on dev. Owner to say which files count as replay code.
 - NEW experiment (owner → workerone): a route with a plain empty deck. The owner plays an mp3, flies/strafes
   on the beats, and the inputs are recorded for analysis. Its name clashes with /tapper (7f397d0). Waiting on owner answers.
-- workerone cleared + resumed idle (handover ef31128). workerfour stood down; conductor re-check cancelled.
+- workerone cleared + resumed idle (handover ef31128). workerfour stood down (8e62847).
+- ~01:15 OWNER: the archive branch is fine (question dropped). "none stay on dev get rid of everything". "yes": /tapper
+  goes too, replaced by the new flying deck. workerone dispatched: delete song-lab + tapper + hooks +
+  .songs/lab, and revert the c3d2a63 curve. Keep the mp3s. Then a plan for the new deck goes to the owner via the supervisor.
 
 ## Landed this session (all local, not pushed)
 
