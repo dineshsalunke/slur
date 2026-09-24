@@ -1,11 +1,11 @@
 import { CELL, MAX_SHIP_WIDTH, REST_INTENSITY } from '../../constants.js';
 import { intensityAt } from '../intensity.js';
 import { hash2, mulberry32 } from '../rng.js';
-import { HALF_WIDTH, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../space.js';
+import { HALF_WIDTH, MIN_LANE, SEG_LEN, START_SAFE, TRACK_SEGMENTS } from '../space.js';
 import { MOTIFS, type ParsedMotif } from './motifs.js';
 import { type MotifNote, type NoteToken, parseNotes } from './notes.js';
 
-export const SCORE_LINE_LIMIT = HALF_WIDTH - MAX_SHIP_WIDTH / 2;
+export const SCORE_LINE_LIMIT = HALF_WIDTH - MIN_LANE + MAX_SHIP_WIDTH / 2;
 export const SCORE_REPEAT_MAX = 2;
 export const SCORE_BREATH_MAX_RESTS = 4;
 export const SCORE_ATTEMPTS = 4;
@@ -162,22 +162,25 @@ export function composeScore(
         const index = phrases.length;
         const z0 = z;
         const intensity = intensityAt( Math.floor( z / SEG_LEN ), length );
-        const chosen = choosePhrase( seed, index, intensity, x, end - z, motifs );
+        const chosen = index === 0 ? null : choosePhrase( seed, index, intensity, x, end - z, motifs );
         if ( chosen === null ) place( REST_NOTE, index );
         else {
             for ( const n of chosen.notes ) place( n, index );
             for ( let k = breathRests( intensity ); k > 0 && end - z >= REST_NOTE.duration; k-- )
                 place( REST_NOTE, index );
         }
-        phrases.push( {
-            index,
-            motif: chosen === null ? null : chosen.motif.id,
-            variation: chosen === null ? null : chosen.variation,
-            attempt: chosen === null ? -1 : chosen.attempt,
-            intensity,
-            z0,
-            z1: z,
-        } );
+        phrases.push( phraseRecord( index, chosen, intensity, z0, z ) );
     }
     return { seed, length, phrases, notes };
+}
+
+function phraseRecord(
+    index: number,
+    chosen: Chosen | null,
+    intensity: number,
+    z0: number,
+    z1: number,
+): ComposedPhrase {
+    if ( chosen === null ) return { index, motif: null, variation: null, attempt: -1, intensity, z0, z1 };
+    return { index, motif: chosen.motif.id, variation: chosen.variation, attempt: chosen.attempt, intensity, z0, z1 };
 }
