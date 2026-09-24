@@ -95,11 +95,6 @@ export function TuningPanel() {
         color: colorControl( 'Fill.color' ),
     } );
 
-    useControls( 'Fog', {
-        near: numberControl( 'Fog.near' ),
-        far: numberControl( 'Fog.far' ),
-    } );
-
     useControls( 'Metal', {
         baseColor: colorControl( 'Metal.baseColor' ),
     } );
@@ -215,6 +210,7 @@ export function TuningPanel() {
         detail: numberControl( 'Rock.detail' ),
         spin: numberControl( 'Rock.spin' ),
         drift: numberControl( 'Rock.drift' ),
+        driftRate: numberControl( 'Rock.driftRate' ),
     } );
 
     return null;

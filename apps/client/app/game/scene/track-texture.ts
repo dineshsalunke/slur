@@ -5,7 +5,7 @@ import { rebuildToken, subscribeRebuild } from '../../dev/tuning-rebuild';
 export const AUTHOR_PLATE_U = 4;
 
 const COLS = 4;
-const ROWS = 4;
+const ROWS = 1;
 
 export const TEX_SPAN_X = AUTHOR_PLATE_U * COLS;
 export const TEX_SPAN_Z = AUTHOR_PLATE_U * ROWS;

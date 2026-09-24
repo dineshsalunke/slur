@@ -27,7 +27,7 @@ export const NUMBER_TUNABLES = {
     'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
 
     'Env.skyIntensity': { value: 0.6, min: 0, max: 5, step: 0.01, rebuild: false },
-    'Env.fillIntensity': { value: 0.14, min: 0, max: 2, step: 0.01, rebuild: false },
+    'Env.fillIntensity': { value: 0.5, min: 0, max: 2, step: 0.01, rebuild: false },
     'Env.groundIntensity': { value: 0.5, min: 0, max: 5, step: 0.01, rebuild: false },
     'Env.bandIntensity': { value: 0.1, min: 0, max: 4, step: 0.05, rebuild: false },
     'Env.bandHeight': { value: 5, min: 0.5, max: 60, step: 0.5, rebuild: false },
@@ -44,23 +44,20 @@ export const NUMBER_TUNABLES = {
     'NearFill.height': { value: 3, min: -5, max: 20, step: 0.5, rebuild: false },
     'NearFill.distance': { value: 45, min: 5, max: 200, step: 1, rebuild: false },
 
-    'Fill.intensity': { value: 0.35, min: 0, max: 3, step: 0.01, rebuild: false },
+    'Fill.intensity': { value: 1, min: 0, max: 3, step: 0.01, rebuild: false },
     'Fill.elevation': { value: 35, min: -20, max: 89, step: 1, rebuild: false },
     'Fill.azimuth': { value: 25, min: -90, max: 90, step: 1, rebuild: false },
 
-    'Fog.near': { value: 40, min: 0, max: 900, step: 5, rebuild: false },
-    'Fog.far': { value: 420, min: 50, max: 2000, step: 10, rebuild: false },
-
     'Deck.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Deck.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
-    'Deck.envMapIntensity': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Deck.envMapIntensity': { value: 1.5, min: 0, max: 6, step: 0.05, rebuild: false },
     'Deck.normalScale': { value: 0.8, min: 0, max: 3, step: 0.01, rebuild: false },
     'Deck.plate': { value: 4, min: 1, max: 24, step: 1, rebuild: true },
     'Deck.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
     'Rail.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Rail.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
-    'Rail.envMapIntensity': { value: 1, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Rail.envMapIntensity': { value: 1.5, min: 0, max: 6, step: 0.05, rebuild: false },
     'Rail.normalScale': { value: 0.8, min: 0, max: 3, step: 0.01, rebuild: false },
     'Rail.plate': { value: 4, min: 1, max: 24, step: 1, rebuild: true },
     'Rail.railEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
@@ -173,12 +170,13 @@ export const NUMBER_TUNABLES = {
     'Sky.environment': { value: NEBULA_PRESET.environment, min: 0, max: 6, step: 0.05, rebuild: false },
     'Sky.keyLight': { value: NEBULA_PRESET.keyLight, min: 0, max: 8, step: 0.05, rebuild: false },
 
-    'Rock.textureScale': { value: 1, min: 0.2, max: 4, step: 0.05, rebuild: false },
+    'Rock.textureScale': { value: 1.15, min: 0.2, max: 4, step: 0.05, rebuild: false },
     'Rock.normalScale': { value: 2.5, min: 0, max: 3, step: 0.05, rebuild: false },
     'Rock.roughness': { value: 1, min: 0.1, max: 1.5, step: 0.01, rebuild: false },
     'Rock.detail': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
     'Rock.spin': { value: 3.35, min: 0, max: 6, step: 0.05, rebuild: false },
-    'Rock.drift': { value: 6, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Rock.drift': { value: 28, min: 0, max: 120, step: 1, rebuild: false },
+    'Rock.driftRate': { value: 1, min: 0, max: 1, step: 0.01, rebuild: false },
 
     'Ship.envMapIntensity': { value: 0.45, min: 0, max: 3, step: 0.05, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;

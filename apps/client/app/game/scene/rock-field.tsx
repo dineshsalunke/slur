@@ -43,6 +43,7 @@ export function RockField() {
         uniforms.uRockTime.value = still ? 0 : state.clock.elapsedTime;
         uniforms.uRockSpin.value = num( 'Rock.spin' );
         uniforms.uRockDrift.value = num( 'Rock.drift' );
+        uniforms.uRockDriftRate.value = num( 'Rock.driftRate' );
         uniforms.uRockTexScale.value = num( 'Rock.textureScale' );
         uniforms.uRockNormalScale.value = num( 'Rock.normalScale' );
         uniforms.uRockRough.value = num( 'Rock.roughness' );

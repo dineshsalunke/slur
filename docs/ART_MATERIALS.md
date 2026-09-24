@@ -918,6 +918,41 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     items 11 and 12. One close still (x 20, z 132) shows the sealed block face darker than the deck
     beside it: rgb(25–35) against rgb(50). That is one sample, not a gate.
 
+17. **Monoliths and blocks go back to a dielectric finish; the deck goes satin; the plates are
+    4u × 16u — 2026-09-23 (#224), provisional.**
+
+    **Superseded in part by item 16 (#228).** This item was written before item 16 and merged after
+    it. The monolith and block finish (metalness 0.15, roughness 0.75, `Monolith.textureSpan` 8,
+    `Block.envMapIntensity` 2.0) is not in the engine. Blocks and monoliths use the deck material and
+    its `Deck.*` keys. The deck and rail roughness 0.40, the plates, no fog and the fill values below
+    are in the engine.
+
+    Measured against `action-lighting.png` with the
+    nebula cube as the only environment. Item 12's `1.0 / 0.25` on monoliths and blocks rendered them
+    as black mirrors: a conductor has no diffuse term, and the cube's side faces hold only the dark
+    nebula and the ground disc, so a wall reflects nothing. The reference shows both as matte dark
+    stone with visible grain and a lit face against a shadow face.
+
+    - **Monoliths: metalness 0.15, roughness 0.75.** That is M3 as written (*"Metalness | 0.0"*,
+      *"Roughness | 0.75 – 0.90"*) with a little conductor left for the marigold band, and it undoes
+      the material half of item 11 while keeping its `Metal046B` maps. `Monolith.textureSpan` goes
+      from 2 to 8 so the panel division reads at monolith scale instead of dissolving into noise.
+    - **Blocks: metalness 0.15, roughness 0.75.** M2's *"Metalness | 0.0"* and its stated reason,
+      *"it keeps the block from going black when there is little for a conductor to reflect"*, were
+      right. This reopens the finish line between block and deck that item 12 closed.
+    - **Deck and rail: roughness 0.40.** Inside M1's *"0.35 – 0.50"*. The reference's rail reflections
+      are soft streaks, not edges, and the wear is invisible at 0.25 because the reflection is too
+      sharp to interrupt.
+    - **Plates 4u × 16u, straight bond.** Revision 5 decided this; the texture was still authored as
+      four 4u rows, so the engine drew 4u × 4u tiles. One row per 16u span now.
+    - **No scene fog.** Owner's call, 2026-09-24. At 420u the far monolith frames took the nebula's
+      horizon colour and read as pale grey while the sky behind them stayed sharp; the reference
+      keeps them dark at every distance, and a vacuum has no haze.
+    - **Cold fill 0.50, the directional fill 1.0, and environment intensity 1.5 on deck and rail and
+      2.0 on blocks,** on the owner's "too unlit" call against `action-lighting.png`, so a dielectric
+      wall has something to be lit by and the plates read. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
+      `Env.*` tunables; nothing is frozen until the owner gates §4 criterion 2 against this set.
+
 ## 8. Review log
 
 **Revision 7 → 8, the deck material on blocks and monoliths (2026-09-24).** No family table changes.
