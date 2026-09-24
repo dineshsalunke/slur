@@ -29,3 +29,7 @@ const target = out ?? file.replace( /\.[^.]+$/, '.analysis.json' );
 writeFileSync( target, `${ JSON.stringify( result ) }\n` );
 console.error( `${ result.bpm } BPM · ${ result.beats.length } beats · ${ result.bars.length } bars → ${ target }` );
 for ( const s of result.sections ) console.error( `  bars ${ s.fromBar }-${ s.toBar } ${ s.label } ${ s.energy }` );
+for ( const [ band, onsets ] of Object.entries( result.drums ) ) {
+    const perBar = ( onsets.length / Math.max( 1, result.bars.length ) ).toFixed( 2 );
+    console.error( `  ${ band }: ${ onsets.length } onsets · ${ perBar } per bar` );
+}

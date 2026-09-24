@@ -68,3 +68,4 @@ lives in its own file beside this one.
 - [Bash tool runs fish](bash-tool-runs-fish.md) — bash loops and `set --` fail with misleading errors; wrap in `bash -c`
 - [Song tracks are a throwaway experiment](song-tracks-are-a-throwaway-experiment.md) — #253 tooling is disposable; keep it isolated; only a distilled generator survives
 - [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — a BSD pkill turned `-U 501 --` into patterns and SIGTERMed the owner's apps; record your PIDs
+- [Believer is on a triplet grid](believer-is-on-a-triplet-grid.md) — test onsets against thirds of a beat as well as 16ths; kick band catches bass, kick lands +15 ms late

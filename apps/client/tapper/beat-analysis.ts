@@ -1,6 +1,8 @@
+import { type DrumStreams, drumOnsets } from './drum-onsets.ts';
+
 export const ANALYSIS_SR = 22050;
-const HOP = 256;
-const WIN = 1024;
+export const HOP = 256;
+export const WIN = 1024;
 export const FPS = ANALYSIS_SR / HOP;
 const BPM_MIN = 70;
 const BPM_MAX = 180;
@@ -8,7 +10,7 @@ const BPM_PRIOR_CENTRE = 120;
 const BPM_PRIOR_OCTAVES = 0.9;
 export const BEATS_PER_BAR = 4;
 const TIGHTNESS = 100;
-const ONSET_LAG_S = 0.036;
+export const ONSET_LAG_S = 0.036;
 const DETREND_S = 0.5;
 const SECTION_GRAIN_BARS = 4;
 
@@ -30,9 +32,11 @@ export interface SongAnalysis {
     bars: number[];
     energy: number[];
     sections: Section[];
+    firstBarBeat: number;
+    drums: DrumStreams;
 }
 
-function fft( re: Float64Array, im: Float64Array ): void {
+export function fft( re: Float64Array, im: Float64Array ): void {
     const n = re.length;
     for ( let i = 1, j = 0; i < n; i++ ) {
         let bit = n >> 1;
@@ -70,8 +74,8 @@ function butterflies( re: Float64Array, im: Float64Array, len: number ): void {
     }
 }
 
-function detrend( raw: Float32Array ): Float32Array {
-    const w = Math.round( FPS * DETREND_S );
+export function detrend( raw: Float32Array, seconds = DETREND_S ): Float32Array {
+    const w = Math.round( FPS * seconds );
     const n = raw.length;
     const prefix = new Float64Array( n + 1 );
     for ( let i = 0; i < n; i++ ) prefix[ i + 1 ] = prefix[ i ] + raw[ i ];
@@ -244,14 +248,17 @@ export function analyzePcm( song: string, pcm: Float32Array ): SongAnalysis {
     );
     const peak = Math.max( ...raw ) || 1;
     const energy = raw.map( ( e ) => round3( e / peak ) );
+    const published = beats.map( round3 );
     return {
         song,
         duration: round3( pcm.length / ANALYSIS_SR ),
         bpm: Math.round( bpm * 100 ) / 100,
         beatsPerBar: BEATS_PER_BAR,
-        beats: beats.map( round3 ),
+        beats: published,
         bars: bars.map( round3 ),
         energy,
         sections: sections( energy ),
+        firstBarBeat: phase,
+        drums: drumOnsets( pcm, published, bpm, phase ),
     };
 }

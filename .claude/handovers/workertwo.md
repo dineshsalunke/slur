@@ -1,35 +1,38 @@
-Agent: workertwo · Lane: /pacing lag (#245) · Updated: 2026-09-24
+Agent: workertwo · Lane: song-lab step 1, drum analysis (#253) · Updated: 2026-09-24 20:15
 
 ## Goal
 
-Fix the `/pacing` lag the owner reported: content is blank for a moment after scrolling, then it paints.
-Also move `analyzeDescriptor` off the main thread.
+Extend `apps/client/tapper/beat-analysis*` with band-split drum onset streams (kick, snare, hats). Each
+onset has a time, strength, beat and bar. workerone consumes the output.
 
 ## Done
 
-- `20caf85` perf(pacing): analyze in a Web Worker; chunk polylines; report via context (#245).
-  - `analyze-worker.ts` + `analyze-client.ts`: a module-singleton Worker with id-keyed replies.
-    The clientLoader awaits `analyzeSeed( seed )`.
-  - `board-scale.ts`: `samplePoints` / `lineChunks` / `areaChunks` (64-point chunks) replace
-    `linePoints`. `polyline-chunks.tsx` renders them.
-  - `pacing-report-context.ts`: `PacingReportContext` + `usePacingReport()`. The route provides the
-    report. The leaves read it, and `PacingBoard` takes only `seed`.
-- Memories: `react-dev-tracks-walk-typed-array-props.md`, `svg-polyline-raster-per-tile.md`.
+- (this commit) feat(tapper): band-split drum onsets (#253).
+  - New `tapper/drum-onsets.ts`. It runs a band STFT (kick 40–130 Hz, snare 180–4000 Hz,
+    hats 7–11 kHz). Log flux detects the onsets. Linear flux, scaled to each band's p99 level,
+    classifies them and removes leak between bands.
+  - `SongAnalysis` gains `firstBarBeat` and `drums: { kick, snare, hats: DrumOnset[] }`. Existing
+    fields are unchanged.
+  - `DrumOnset = { t, strength (0..1 per band), beat (fractional index into beats[]), bar (index into
+    bars[], -1 before bars[0]), inBar (0..<4) }`.
+  - `beat-analysis.ts` now exports `HOP`, `WIN`, `ONSET_LAG_S`, `fft` and `detrend(raw, seconds?)`.
+  - The CLI prints onsets per bar for each band.
+- Output shape sent to workerone and the supervisor before building. workerone acked.
 
 ## State
 
-- Cause of the raster cost: the 19 long polylines. Removing them cut `DisplayItemList::Raster` from
-  326 to 35 ms. Removing the 1318 rects did not change it.
-- Software raster, 2560x1440 DPR 2, pps 240, fling + jumps: RasterTask 409 → 172 ms. Max tile
-  11.3 → 6.2 ms. 1 frame with a missing tile before and after (the 30k-px jump).
-- GPU raster (ANGLE Metal, M1 Pro): 0 frames with missing tiles before and after. Owner's blank-then-paint
-  is still NOT reproduced headless. The cause on the owner's machine is [unmeasured]. Suspect GPU contention
-  from other game tabs [inferred].
-- Initial load: 0 long tasks (was one 120 ms). Board shows in 434–540 ms.
-- Seed change in dev: was one 5.8 s long task (React 19.2 dev props logging over `report`). Now 0 long
-  tasks, 482 ms end to end.
-- Client vitest 279/279. tsc, biome, ls-lint, comment ratchet, canvas isolation: clean.
-- Scratch scripts: session scratchpad `raster.mjs` (trace + missing tiles), `probe*.mjs`. Chrome on 9452 is killed.
+- Synthetic kit (kick on 1+3, snare on 2+4) at 96, 125 and 140 BPM: kick and snare have 100% recall
+  and 0 false positives, within 3 ms. With eighth-note hats added, kick and snare stay exact. The hats
+  stream has 0 false positives and ~48% recall: hats under a kick or snare are masked.
+- Believer (106 bars, 1.7 s run): kick 6.56/bar, snare 5.12/bar, hats 1.34/bar.
+  At `strength >= 0.5`: kick 1.55, snare 1.14, hats 0.42 per bar.
+- Believer is on a triplet grid. Share of onsets on triplet-8th slots (random is 37.5%): snare 86%,
+  hats 70%, kick 50%. At `strength >= 0.5`: snare 96%, hats 93%, kick 74%.
+- The kick band catches bass. Kick onsets land +15–19 ms late on Believer.
+- `barPhase` (pre-existing) puts the downbeat on the loudest beat. On the synthetic kit that is the
+  snare, so kick has `inBar` 1 and 3. Not changed: the supervisor asked for existing fields unchanged.
+- `apps/client/.songs/imgaine_dragons-believer.analysis.json` has been regenerated with `drums`
+  (gitignored).
 
 ## Uncommitted
 
@@ -37,19 +40,21 @@ None.
 
 ## Held files
 
-None. `apps/client/app/routes/pacing/*` is released for workerone's R3 board.
+- `apps/client/tapper/beat-analysis.ts`, `beat-analysis-cli.ts`, `beat-analysis.test.ts`,
+  `drum-onsets.ts`, `drum-onsets.test.ts`. Release them when the supervisor closes the lane.
 
 ## Next
 
-1. Owner retests `/pacing` in their own Chrome. If it still blanks: which zoom, and was a game tab or
-   headless agent Chrome running at the time?
-2. If it still reproduces, take a DevTools Performance trace in the owner's browser (Rendering →
-   "Layer borders" shows checkerboarding).
+1. Wait for the supervisor. Possible follow-ups:
+   - Make `barPhase` kick-aware, so the downbeat lands on the kick. This changes `bars` values.
+   - Add a per-band lag for the kick (about -15 ms).
+   - Report a triplet flag or a swing estimate for each song.
 
 ## Open questions
 
-1. Does the owner still see the blank after `20caf85`? Which browser?
+- Should `bars` move so that the kick lands on beat 1? This needs owner or supervisor approval. It
+  changes the values in an existing field.
 
 ## Lessons → memory
 
-`.claude/memory/react-dev-tracks-walk-typed-array-props.md`, `.claude/memory/svg-polyline-raster-per-tile.md`
+- `.claude/memory/believer-is-on-a-triplet-grid.md`
