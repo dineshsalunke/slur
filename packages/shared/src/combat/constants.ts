@@ -25,7 +25,7 @@ export const SEEKER_MISS_MESSAGE = 'seekerMiss';
 
 export const SEEKER_RATIO = 0.25;
 export const SEEKER_LOCK_RANGE = 600;
-export const SEEKER_SPEED_FACTOR = 1.15;
+export const SEEKER_SPEED_FACTOR = 1.5;
 export const SEEKER_RAMP_S = 0.3;
 export const SEEKER_TRACK_TURN = 240;
 export const SEEKER_TURN = 40;

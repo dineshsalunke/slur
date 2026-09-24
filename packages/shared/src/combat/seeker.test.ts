@@ -159,7 +159,7 @@ test( 'an early full-rate strafe does not shake it', () => {
     const clamp = 95;
     const early: Strafe = ( s ) =>
         s.ttl > DEFAULT_SIM_CONFIG.seekerTtl - 3 ? (s.ttl % 1 > 0.5 ? clamp : -clamp) : 0;
-    assert.equal( fly( launched( 't' ), ship( 't', { z: 300 } ), early ), 'hit' );
+    assert.equal( fly( launched( 't' ), ship( 't', { z: 500 } ), early ), 'hit' );
 } );
 
 test( 'a strafe inside the terminal window beats it', () => {
