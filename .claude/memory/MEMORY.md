@@ -54,4 +54,5 @@ lives in its own file beside this one.
 - [Moving a useEffect trips the comment ratchet](moving-a-useeffect-trips-the-comment-ratchet.md) — its mandatory comment fails an existing file; move the effect into a new `use-*.ts` hook file
 - [A/B an old sim from git in scratch](ab-an-old-sim-from-git-in-scratch.md) — `git show` the old step.ts, point its imports at dist, strip-types it beside the new one
 - [Escape-sweep pilot must stop](escape-sweep-pilot-must-stop.md) — a PD strafe overshoots off the deck and one-exit sweeps fake traps; √-profile pilot, sweep every door
+- [Fork choices can conflict](fork-choices-can-conflict.md) — a fork's split is not a dominator; per-fork picks may be unflyable together, so bar softly and read `choice` off the path
 - [Pacing grid ignores ship length](pacing-grid-ignores-ship-length.md) — a z-slit shorter than the ship reads as an exit; grow blocks by halfW and halfL per class, confirm pockets in simulate()
