@@ -42,6 +42,10 @@ the status line until it shows 0–5%; the first read after /clear can still sho
 - #244: OWNER PICKED OPTION 5; sent to workerthree (builds after #243 closes). When it lands, release workerone's
   regenerate-on-trap step. workertwo claims routes/pacing/* (issue first, headless GPU raster only); workerone
   claims pacing X rule + 6u hull (cleared).
+- PR #195 (workerfour, worktree ../slur-worktrees/merge-195): only 5 of 33 commits are the PR's. HELD: its base
+  origin/dev 74a7b89 lacks this checkout's 40 unpushed commits. Needs owner: sync (merge origin/dev + push dev),
+  then call A (drop rail bounce; the deck edges are fall-off now), B (port the engine glow only, retune for bloom
+  threshold 0.6), C (push to dev and close #195).
 The items below are the pre-13:30 queue; only item 9 remains open.
 
 ## Open owner questions (relay in this order)
