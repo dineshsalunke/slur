@@ -1,0 +1,11 @@
+{
+    "name": "SLUR",
+    "short_name": "SLUR",
+    "start_url": "/",
+    "scope": "/",
+    "display": "fullscreen",
+    "orientation": "landscape",
+    "background_color": "#05060a",
+    "theme_color": "#05060a",
+    "icons": [ { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon" } ]
+}

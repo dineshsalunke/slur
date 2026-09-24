@@ -4,10 +4,12 @@ import { useRoom } from '../../net/room-context';
 import { useRunPhase } from '../net/use-run-view';
 import { AudioToggle } from './audio-toggle';
 import { CountdownOverlay } from './countdown-overlay';
+import { FullscreenToggle } from './fullscreen-toggle';
 import { LeaveButton } from './leave-button';
 import { LeaveGuard } from './leave-guard';
 import { LobbyOverlay } from './lobby-overlay';
 import { ResultsOverlay } from './results-overlay';
+import { RotateHint } from './rotate-hint';
 import { SpectatorGate } from './spectator-gate';
 import { ThreatHud } from './threat-hud';
 
@@ -20,10 +22,12 @@ export function Overlays() {
 
             { ( phase === PHASE.countdown || phase === PHASE.racing ) && (
                 <div className="fixed top-[clamp(16px,4.4vh,46px)] right-[clamp(16px,2.7vw,48px)] z-[26] flex items-center gap-2">
+                    <FullscreenToggle />
                     <AudioToggle />
                     <LeaveButton tone="ghost" />
                 </div>
             ) }
+            { ( phase === PHASE.countdown || phase === PHASE.racing ) && <RotateHint /> }
             { phase === PHASE.lobby && <LobbyOverlay room={ room } /> }
             { phase === PHASE.countdown && <CountdownOverlay room={ room } /> }
             { phase === PHASE.racing && <SpectatorGate room={ room } /> }

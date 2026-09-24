@@ -8,7 +8,12 @@ export function Layout( { children }: { children: React.ReactNode } ) {
         <html lang="en" className="overflow-hidden leading-[normal] [color-scheme:dark]">
             <head>
                 <meta charSet="utf-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+                <meta name="theme-color" content="#05060a" />
+                <meta name="mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+                <link rel="manifest" href="/manifest.webmanifest" />
                 <Meta />
                 <Links />
             </head>
