@@ -1,0 +1,38 @@
+import type { Room } from '@colyseus/sdk';
+import { computeStandings, type RunState } from '@slur/shared';
+import { Fragment } from 'react';
+import { LABEL } from '../../ui/field-label';
+import { useRunView } from '../net/use-run-view';
+import { gapTo, ordinal, raceTime } from './results-format';
+
+export function YourFinish( { room }: { room: Room< RunState > } ) {
+    const view = useRunView( room );
+    const standings = computeStandings( view.players );
+    const mine = standings.find( ( s ) => s.id === view.selfId );
+    const leader = standings.find( ( s ) => ! s.dnf );
+
+    return (
+        <div className="min-w-0">
+            <p className={ `m-0 flex ${ LABEL }` }>Your finish</p>
+            <p className="m-0 mt-1.5 flex items-baseline gap-2.5 tabular-nums sm:gap-3.5">
+                { ! mine ? (
+                    <span className="text-[20px] font-bold text-readout sm:text-[22px]">Spectated</span>
+                ) : mine.dnf ? (
+                    <span className="text-[20px] font-bold text-readout-dim sm:text-[22px]">DNF</span>
+                ) : (
+                    <Fragment>
+                        <span className="text-[20px] font-bold text-readout sm:text-[22px]">
+                            { ordinal( mine.rank ) }
+                        </span>
+                        <span className="text-[16px] font-semibold text-readout">{ raceTime( mine.finishTime ) }</span>
+                        { mine.rank > 1 && leader && (
+                            <span className="text-[13px] text-readout-dim">
+                                { gapTo( leader.finishTime, mine.finishTime ) }
+                            </span>
+                        ) }
+                    </Fragment>
+                ) }
+            </p>
+        </div>
+    );
+}

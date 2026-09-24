@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { PHASE, SET_CLASS_MESSAGE, START_MESSAGE } from '@slur/shared';
+import { PHASE, RESTART_MESSAGE, SET_CLASS_MESSAGE, START_MESSAGE } from '@slur/shared';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -99,7 +99,27 @@ vi.mock( '@colyseus/sdk', () => ( {
     },
 } ) );
 
-const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0 } ) );
+const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0, ResultsOverlay: 0, Standings: 0 } ) );
+
+vi.mock( './results-overlay', async ( importOriginal ) => {
+    const actual = await importOriginal< typeof import('./results-overlay') >();
+    return {
+        ResultsOverlay: ( props: Parameters< typeof actual.ResultsOverlay >[ 0 ] ) => {
+            counts.ResultsOverlay += 1;
+            return actual.ResultsOverlay( props );
+        },
+    };
+} );
+
+vi.mock( './standings', async ( importOriginal ) => {
+    const actual = await importOriginal< typeof import('./standings') >();
+    return {
+        Standings: ( props: Parameters< typeof actual.Standings >[ 0 ] ) => {
+            counts.Standings += 1;
+            return actual.Standings( props );
+        },
+    };
+} );
 
 vi.mock( './spec-tag', async ( importOriginal ) => {
     const actual = await importOriginal< typeof import('./spec-tag') >();
@@ -266,5 +286,63 @@ describe( 'Lobby overlay subscription boundary', () => {
             document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'Enter', bubbles: true } ) );
         } );
         expect( send ).not.toHaveBeenCalledWith( START_MESSAGE );
+    } );
+} );
+
+function finishedRace() {
+    bus.state.phase = PHASE.finished;
+    const base = { shipId: 'executioner', spectating: false, connected: true, z: 0 };
+    const racers = [
+        [ 'self', 'Dinesh', 104.78 ],
+        [ 'priya', 'Priya', 102.37 ],
+        [ 'sam', 'Sam', 0 ],
+    ] as const;
+    racers.forEach( ( [ id, name, finishTime ], colorId ) => {
+        bus.state.players.set( id, { ...base, name, colorId, finished: finishTime > 0, finishTime } );
+    } );
+}
+
+function pressEnter() {
+    return act( async () => {
+        document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'Enter', bubbles: true } ) );
+    } );
+}
+
+describe( 'Results overlay', () => {
+    it( 'titles the winner and marks the unfinished racer DNF', async () => {
+        finishedRace();
+        await mountOverlays();
+
+        expect( container.querySelector( 'h2' )?.textContent ).toBe( 'Priya wins' );
+        const rows = [ ...container.querySelectorAll( 'ol[aria-label="Standings"] li' ) ];
+        expect( rows.map( ( r ) => r.textContent?.includes( 'DNF' ) ) ).toEqual( [ false, false, true ] );
+        expect( rows[ 1 ]?.textContent ).toContain( '+2.41' );
+    } );
+
+    it( 'restarts the run on a bare Enter for the host only', async () => {
+        finishedRace();
+        await mountOverlays();
+
+        await pressEnter();
+        expect( send ).toHaveBeenCalledWith( RESTART_MESSAGE );
+
+        send.mockClear();
+        bus.state.hostId = 'priya';
+        await pressEnter();
+        expect( send ).not.toHaveBeenCalledWith( RESTART_MESSAGE );
+    } );
+
+    it( 'lets a per-player patch reach Standings without re-rendering the shell', async () => {
+        finishedRace();
+        await mountOverlays();
+        counts.ResultsOverlay = 0;
+        counts.Standings = 0;
+
+        await act( async () => {
+            bus.emitPlayerChange();
+        } );
+
+        expect( counts.Standings ).toBeGreaterThan( 0 );
+        expect( counts.ResultsOverlay ).toBe( 0 );
     } );
 } );

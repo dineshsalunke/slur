@@ -1,45 +1,40 @@
 import type { Room } from '@colyseus/sdk';
-import { computeStandings, RESTART_MESSAGE, type RunState } from '@slur/shared';
-import { ColorDot } from '../../ui/color-dot';
-import { HudButton } from '../../ui/hud-button';
-import { HudPanel } from '../../ui/hud-panel';
-import { colorHex } from '../colors';
-import { useRunView } from '../net/use-run-view';
+import type { RunState } from '@slur/shared';
+import { Fragment } from 'react';
+import { Scrim } from '../../ui/scrim';
 import { LeaveButton } from './leave-button';
+import { RaceAgain } from './race-again';
+import { Standings } from './standings';
+import { WinnerCard } from './winner-card';
+import { YourFinish } from './your-finish';
 
 export function ResultsOverlay( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const isHost = view.selfId === view.hostId;
-    const standings = computeStandings( view.players.map( ( p ) => ( { ...p } ) ) );
     return (
-        <HudPanel className="fixed top-1/2 left-1/2 min-w-[360px] max-w-[90vw] -translate-x-1/2 -translate-y-1/2 px-3.5 py-3">
-            <h2 className="mb-2 text-[13px] font-bold uppercase tracking-[3px] text-cyan">Results</h2>
-            <table className="mt-2 mb-3.5 w-full border-collapse">
-                <tbody>
-                    { standings.map( ( s ) => (
-                        <tr key={ s.id } className={ s.id === view.selfId ? 'text-cyan' : '' }>
-                            <td className="min-w-[18px] border-b border-cyan/15 px-2 py-1.5 font-mono text-[14px] font-bold leading-none text-cyan">
-                                { s.rank }
-                            </td>
-                            <td className="border-b border-cyan/15 px-2 py-1.5 text-[14px]">
-                                <ColorDot hex={ colorHex( s.colorId ) } />
-                            </td>
-                            <td className="border-b border-cyan/15 px-2 py-1.5 text-[14px]">{ s.name || 'Racer' }</td>
-                            <td className="border-b border-cyan/15 px-2 py-1.5 text-right font-mono text-[14px]">
-                                { s.dnf ? 'DNF' : `${ s.finishTime.toFixed( 2 ) }s` }
-                            </td>
-                        </tr>
-                    ) ) }
-                </tbody>
-            </table>
-            <div className="flex justify-end gap-2.5">
-                { isHost && (
-                    <HudButton variant="go" onClick={ () => room.send( RESTART_MESSAGE ) }>
-                        Play Again ▶
-                    </HudButton>
-                ) }
-                <LeaveButton />
+        <Fragment>
+            <Scrim />
+            <div className="fixed inset-0 z-[2] flex flex-col font-readout text-readout selection:bg-marigold selection:text-deep">
+                <header className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-10 sm:pt-7">
+                    <h1 className="m-0 text-[20px] font-bold tracking-[0.42em] text-readout text-shadow-readout">
+                        SLUR
+                    </h1>
+                    <LeaveButton tone="ghost" />
+                </header>
+
+                <div className="mt-auto grid gap-5 px-5 pb-6 sm:px-10 lg:grid-cols-[minmax(0,1fr)_32rem] lg:items-end lg:gap-10">
+                    <WinnerCard room={ room } />
+                    <Standings room={ room } />
+                </div>
+
+                <section
+                    aria-label="Your finish"
+                    className="border-t border-readout/15 bg-space px-5 py-4 shadow-strip sm:px-10 sm:py-5"
+                >
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-4 sm:grid-cols-[auto_auto_1fr] sm:gap-10">
+                        <YourFinish room={ room } />
+                        <RaceAgain room={ room } />
+                    </div>
+                </section>
             </div>
-        </HudPanel>
+        </Fragment>
     );
 }
