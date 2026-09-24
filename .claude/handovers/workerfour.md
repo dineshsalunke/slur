@@ -1,4 +1,4 @@
-Agent: workerfour · Lane: phone play — touch pad, Gamepad API, fullscreen #251 (PLAN SENT) · Updated: 2026-09-24
+Agent: workerfour · Lane: phone play — touch pad, Gamepad API, fullscreen #251 (BUILT) · Updated: 2026-09-24
 
 ## Goal
 
@@ -7,21 +7,26 @@ with a landscape lock. All inputs go through the keyboard's input seam.
 
 ## Done
 
-- #247 landed as `821a78a` (previous lane).
-- #249 filed (a flaky server test, tracking only).
-- #251 filed. The PLAN was sent to slur-supervisor for owner approval. No code yet.
+- `9b365f3` feat(input): touch pad and gamepad on the one input seam (#251).
+- `6bb632f` feat(ui): fullscreen toggle, rotate hint and web app manifest (#251).
+- #252 filed: the server does not clamp client inputs (owner: a separate issue, not this lane).
+- Neither commit is pushed. #251 stays open until the owner checks a real device.
 
 ## State (verified this session)
 
-- Seam: `game/input/keyboard.ts` `currentInput()` bumps seq. `ecs/net-systems.ts:39` and `ecs/systems.ts:9`
-  read it once per fixed step.
-- The jump is a held bool. `step.ts:49-50` makes tap/hold/double from the edges. Throttle, brake and
-  strafe are multiplied by the input value (`step.ts:13/14/25`), so analog input works.
-- MDN bcd 8.1.2: iPhone Safari has no element fullscreen ("Only available on iPad"). All Safari has no
-  `orientation.lock`. Chrome Android has both. safari_ios supports manifest `display` from 11.3.
-- Tailwind 4.3.3 is installed and has the `pointer-coarse:` variant.
-- `run-room.ts:83-88` does not clamp inputs. This is a side finding, not filed.
-- PR #195 is paused. Worktree `../slur-worktrees/merge-195` is detached at `74a7b89`.
+- Client tests 299/299, typecheck and lint pass. One lint run failed without output and the rerun
+  passed [cause unmeasured, probably another worker's files].
+- Headless run (844×390 mobile with touch emulation, private stack :2591/:5191, Chrome :9471, all killed):
+  pointer coarse true, innerWidth = scrollWidth = 844. Pad display is flex; on desktop it is none.
+  Measured on the server ship: thrust 1.5 s → vz 40.5; thrust+left 0.3 s → vx 31.5; thrust+brake
+  0.3 s → vz 25 → 16; jump hold 250 ms → y 1.67, jumpsUsed 1; tap at rest → jumpsUsed 1, y 2.18 at
+  +300 ms; tap at speed → jumpsUsed 1. touchInput is all zero after release. Portrait 390: the rotate
+  hint is flex.
+- Captures (scratchpad caps/): phone-landscape-racing.png, phone-landscape-thrust-held.png (older pad
+  position), phone-landscape-lobby.png, phone-portrait-rotate-hint.png, desktop-no-pad.png.
+- The lobby at 844×390 clips the GO button and the second colour row. This is outside this lane.
+- The power-rack keyboard hint "E FIRE · Q CYCLE · X DROP" still shows on touch devices. This is outside
+  this lane.
 
 ## Uncommitted
 
@@ -29,26 +34,22 @@ None.
 
 ## Held files
 
-None until the owner approves. The proposed claims are in the PLAN: game/input/*, the ecs/systems.ts and
-net-systems.ts imports, hud/touch-pad.tsx, hud/touch-button.tsx, net-hud.tsx,
-overlays/fullscreen-toggle.tsx, rotate-hint.tsx, overlays.tsx, ui/fullscreen.ts, and if Q2 = yes, root.tsx
-and public/manifest.webmanifest.
+None after the report. Release the #251 claims.
 
 ## Next
 
-1. Wait for the owner's approval and the answers to Q1 and Q2.
-2. Commit 1: current-input.ts merge + touch-state + gamepad (addEffect) + synth-key + TouchPad + tests.
-3. Commit 2: FullscreenToggle, rotate hint, and the manifest and meta if approved.
-4. Headless narrow capture with CDP touch emulation. Kill Chrome after.
+1. The owner checks a real iPhone (Add to Home Screen, landscape, pad) and Android (fullscreen button +
+   orientation lock).
+2. The owner checks a real controller: stick/d-pad steer, RT/LT, A jump, X/RB fire, Y/LB cycle, Start
+   = Enter, Select = mute.
+3. Possible follow-ups: lobby layout at phone height, hiding the key hints on coarse pointers, a
+   180×180 apple-touch-icon and manifest icons.
 
 ## Open questions
 
-- Q1: throttle as a hold button, or tap-to-latch?
-- Q2: manifest + Add-to-Home-Screen for iPhone?
-- Discrete actions: synthesized KeyboardEvents, or an action bus?
-- File the server input clamp as a separate issue?
+- Push both commits to origin/dev now, or after the device check?
 - #195 owner calls A/B/C. GDD §5.5 table owner. Delete `game/net-debug-hud.tsx`.
 
 ## Lessons → memory
 
-none
+`.claude/memory/touch-test-over-cdp.md`
