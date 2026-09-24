@@ -24,7 +24,7 @@ the status line until it shows 0–5%; the first read after /clear can still sho
 | workerone | w2P:pD | pacing: R1+R2 done, idle. Next = R3 board (needs routes/pacing/*) or R4 phrase RFC; owner to choose | packages/shared/src/pacing/*, index.ts export lines |
 | workertwo | w2P:pF | /pacing lag: measured, NOT reproduced headless; waiting on the owner's repro | none claimed (routes/pacing/* proposed) |
 | workerthree | w2P:pG | NEW: merge clustered blocks in the generator (owner, screenshot images/3.png in my scratchpad). Issue + RFC first | #243 files until the factor is set |
-| workerfour | w2P:pH | idle | none |
+| workerfour | w2P:pH | ship retune (owner-approved speeds: Int 84/60 · Fig 96/58 · Com 112/66 · Pha 90/52 · Fre 124/30). Proposes per-class brakeDecel + strafe next; builds those only after the owner answers. PR #195 paused | ship-classes.ts, ship-classes.test.ts, track-contract.test.ts; GDD §5.5 waits for workerthree |
 
 ## Owner rulings this session
 
