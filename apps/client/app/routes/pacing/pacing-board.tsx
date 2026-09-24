@@ -2,6 +2,9 @@ import { useRef } from 'react';
 import { DEFAULT_PPS } from './board-scale';
 import { BoardSummary } from './board-summary';
 import { ClearancePlot } from './clearance-plot';
+import { CorridorLane } from './corridor-lane';
+import { ForkLane } from './fork-lane';
+import { ForkTable } from './fork-table';
 import { GapPlot } from './gap-plot';
 import { IntensityPlot } from './intensity-plot';
 import { LateralBars } from './lateral-bars';
@@ -44,11 +47,13 @@ export function PacingBoard( { seed }: { seed: number } ) {
                 </div>
                 <BoardSummary />
             </header>
-            <div ref={ scrollerRef } className="relative min-h-0 flex-1 overflow-auto pb-40">
+            <div ref={ scrollerRef } data-pacing-scroller className="relative min-h-0 flex-1 overflow-auto pb-40">
                 <div className="relative w-max">
                     <TimeRuler />
                     <IntensityPlot />
+                    <ForkLane />
                     <PacingStrip />
+                    <CorridorLane />
                     <ClearancePlot />
                     <StrafePlot />
                     <LateralBars />
@@ -56,6 +61,7 @@ export function PacingBoard( { seed }: { seed: number } ) {
                     <GapPlot />
                     <ScrubLayer />
                 </div>
+                <ForkTable />
             </div>
         </main>
     );

@@ -1,4 +1,5 @@
 import { PACING_DZ, type PacingReport, SEG_LEN } from '@slur/shared';
+import { forkLabel, forkVerdict } from './route-lines';
 
 function signed( v: number ): string {
     return `${ v >= 0 ? '+' : '' }${ v.toFixed( 1 ) }`;
@@ -25,6 +26,20 @@ function gapLine( report: PacingReport, i: number ): string | null {
     ].join( '\n' );
 }
 
+function routeLine( report: PacingReport, k: number ): string | null {
+    const { routes, arms } = report;
+    if ( ! routes ) return null;
+    const parts = [ `corridors ${ routes.corridors[ k ] }` ];
+    const i =
+        arms?.forks.findIndex( ( fa ) => routes.forks[ fa.fork ].k0 <= k && k <= routes.forks[ fa.fork ].k1 ) ?? -1;
+    if ( arms && i >= 0 ) {
+        const fa = arms.forks[ i ];
+        parts.push( `${ forkLabel( i ) } ${ fa.arms.length } arms, ${ forkVerdict( fa ) }` );
+        parts.push( `hard route x ${ signed( arms.hardest.path.x[ k ] ) }` );
+    }
+    return parts.join( ' · ' );
+}
+
 export function describeAt( report: PacingReport, seconds: number ): string {
     const { cruise, grid, path, demand, intent } = report;
     const z = Math.min( Math.max( 0, seconds * cruise ), report.finishZ - 1e-3 );
@@ -38,6 +53,8 @@ export function describeAt( report: PacingReport, seconds: number ): string {
         `clearance ${ grid.widest[ k ].toFixed( 1 ) }u · path x ${ signed( path.x[ k ] ) } · strafe ${ demand.strafe[ k ].toFixed( 0 ) }u/s`,
         activity( report, k ),
     ];
+    const route = routeLine( report, k );
+    if ( route ) lines.push( route );
     const gap = gapLine( report, i );
     if ( gap ) lines.push( gap );
     return lines.join( '\n' );

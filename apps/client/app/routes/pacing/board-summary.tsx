@@ -1,9 +1,10 @@
 import { REST_MIN_S, TRACK_CONTRACT } from '@slur/shared';
 import { usePacingReport } from './pacing-report-context';
+import { forkVerdict } from './route-lines';
 import { Stat } from './stat';
 
 export function BoardSummary() {
-    const { demand, gaps, grid, jump, duration } = usePacingReport();
+    const { demand, gaps, grid, jump, duration, routes, arms } = usePacingReport();
     const strafes = demand.moves.filter( ( m ) => m.kind === 'strafe' ).length;
     const jumps = demand.moves.filter( ( m ) => m.kind === 'jump' ).length;
     const reversals = demand.bins.reduce( ( s, b ) => s + b.reversals, 0 );
@@ -27,6 +28,18 @@ export function BoardSummary() {
             <Stat label={ `rests ≥ ${ REST_MIN_S }s` } value={ String( rests ) } />
             <Stat label="at strafe cap" value={ `${ ( ( 100 * atClamp ) / demand.strafe.length ).toFixed( 1 ) }%` } />
             <Stat label="narrowest floor run" value={ `${ narrowest.toFixed( 1 ) }u` } />
+            { arms && routes && (
+                <Stat
+                    label="forks real / all · dodges"
+                    value={ `${ arms.forks.filter( ( fa ) => forkVerdict( fa ) === 'real' ).length } / ${ arms.forks.length } · ${ routes.forks.length - arms.forks.length }` }
+                />
+            ) }
+            { arms && (
+                <Stat
+                    label="lateral easy / hard"
+                    value={ `${ arms.easiest.lateral.toFixed( 0 ) } / ${ arms.hardest.lateral.toFixed( 0 ) }u` }
+                />
+            ) }
             <Stat
                 label={ `air, ${ jump.source }` }
                 value={ `${ jump.single.toFixed( 1 ) } / ${ jump.double.toFixed( 1 ) }u` }

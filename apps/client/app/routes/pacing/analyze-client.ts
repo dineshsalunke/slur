@@ -1,5 +1,7 @@
-import type { PacingReport } from '@slur/shared';
+import type { PacingOptions, PacingReport } from '@slur/shared';
 import type { AnalyzeReply, AnalyzeRequest } from './analyze-worker';
+
+const BOARD_OPTIONS: PacingOptions = { routes: true, arms: true };
 
 interface Pending {
     resolve: ( report: PacingReport ) => void;
@@ -38,6 +40,6 @@ export function analyzeSeed( seed: number ): Promise< PacingReport > {
     const id = nextId++;
     return new Promise( ( resolve, reject ) => {
         pending.set( id, { resolve, reject } );
-        analyzer().postMessage( { id, seed } satisfies AnalyzeRequest );
+        analyzer().postMessage( { id, seed, options: BOARD_OPTIONS } satisfies AnalyzeRequest );
     } );
 }

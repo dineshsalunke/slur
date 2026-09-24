@@ -5,6 +5,8 @@ import { LegendSwatch } from './legend-swatch';
 import { MetricPanel } from './metric-panel';
 import { usePacingReport } from './pacing-report-context';
 import { PolylineChunks } from './polyline-chunks';
+import { SelectedArmLine } from './selected-arm-line';
+import { ViableFill } from './viable-fill';
 
 function airRuns( air: Uint8Array ): Array< [ number, number ] > {
     const out: Array< [ number, number ] > = [];
@@ -29,14 +31,19 @@ const LEGEND = (
         <LegendSwatch swatchClass="bg-void outline outline-line-2" label="hole" />
         <LegendSwatch swatchClass="bg-fg/10" label="intended band" />
         <LegendSwatch swatchClass="bg-magenta/40" label="pinch" />
-        <LegendSwatch swatchClass="bg-cyan" label="reference path" />
+        <LegendSwatch swatchClass="bg-cyan/25" label="viable hull centre" />
+        <LegendSwatch swatchClass="bg-threat/40" label="dead end" />
+        <LegendSwatch swatchClass="outline outline-dashed outline-marigold" label="opens with a bolt" />
+        <LegendSwatch swatchClass="bg-cyan" label="easiest route" />
+        <LegendSwatch swatchClass="bg-magenta" label="hardest route" />
+        <LegendSwatch swatchClass="bg-marigold" label="picked arm" />
         <LegendSwatch swatchClass="bg-gold" label="airborne / pickup" />
         <span className="pt-1">top = left (+x)</span>
     </Fragment>
 );
 
 export function PacingStrip() {
-    const { cruise, duration, segments, anchors, path, intent } = usePacingReport();
+    const { cruise, duration, segments, anchors, path, intent, arms } = usePacingReport();
     const t = ( z: number ): number => z / cruise;
     return (
         <MetricPanel
@@ -84,6 +91,7 @@ export function PacingStrip() {
                     />
                 ),
             ) }
+            <ViableFill />
             { segments.flatMap( ( seg ) =>
                 seg.blocks.map( ( b ) => (
                     <rect
@@ -117,6 +125,13 @@ export function PacingStrip() {
                 ) }
                 className="fill-none stroke-gold stroke-[3px]"
             />
+            { arms && (
+                <PolylineChunks
+                    chunks={ lineChunks( samplePoints( arms.hardest.path.x, cruise, 2 ) ) }
+                    className="fill-none stroke-magenta stroke-[1.5px] [stroke-dasharray:4_3]"
+                />
+            ) }
+            <SelectedArmLine />
         </MetricPanel>
     );
 }
