@@ -51,6 +51,8 @@ the status line until it shows 0–5%; the first read after /clear can still sho
 - workerone 1e7160c: X rule (window < 2·halfL) + 6u hull; the solver now uses legalMask (diagonal jump exits).
   Trapped pockets per class per seed are 9–56, measured on PRE-#244 track.ts. Next: re-measure after #244 commits,
   then the owner picks regenerate-per-segment vs avoid-at-source. workerone idle, holds pacing/*.
+- #245 /pacing lag DONE 20caf85 (workertwo, idle): chunked polylines, Worker, report via context. routes/pacing/*
+  released; R3 sent to workerone. Owner to retest /pacing scrolling.
 The items below are the pre-13:30 queue; only item 9 remains open.
 
 ## Open owner questions (relay in this order)
