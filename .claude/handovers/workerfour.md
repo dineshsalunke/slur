@@ -1,26 +1,30 @@
-Agent: workerfour · Lane: /song-lab song starts at freighter cruise, #253 · Updated: 2026-09-24 23:59
+Agent: workerfour · Lane: /song-lab song starts at freighter cruise, #253 · Updated: 2026-09-25 00:10
 
 ## Goal
 
 The /song-lab song starts when the replayed ship passes the bundle's song start z (freighter cruise), not at GO.
-The song-bar readout uses the same origin, the song bar stops at the last bar, and the class defaults to freighter.
+Verify it live against workerone's bundle (61063be).
 
 ## Done
 
 - `ab88019`: the song plays behind the replay, at 1× only, re-seeking on drift > 80 ms. Mute, volume, M key.
-- `fab0267`: the 13-variant bundle (bcbc3d5) passes: 13/13 digests MATCH, 260/260 runs MATCH, load 583–672 ms.
-- `9b3ab59`: song start at cruise. The field is LabSong.clock { z0, t0, zPerSecond }, agreed with workerone:
-  z = z0 + zPerSecond·(t − t0). Believer: z0 257.3 (freighter cruise, tick 248), t0 0, zPerSecond 124.
-  replay.crossTick is the fractional tick where ship z crosses z0, recorded inside replayFlightSystem.
-  Song time = t0 + (tick − crossTick)·FIXED_DT. Ship bar = t0 + (z − z0)/zPerSecond. The readout clamps the bar
-  to the last bar and shows "ended". The class defaults to freighter.
+- `fab0267`: the 13-variant bundle (bcbc3d5) passes: 13/13 digests MATCH, 260/260 runs MATCH.
+- `9b3ab59`: song start at cruise from LabSong.clock { z0, t0, zPerSecond }; crossTick; readout clamps at the end.
+- `b0be2cc`: the loader reads the typed `bundle.song.clock`; the structural helper is gone.
 
 ## State
 
-- tsc clean and song-lab vitest 10/10 against workerone's UNCOMMITTED bundle.ts (LabSong.clock is required
-  there). The route reads song.clock structurally (`'clock' in song`), and the test fixture is a variable, so
-  it should also compile at HEAD before workerone commits. [unmeasured at HEAD: not built in a scratch copy]
-- Live check NOT RUN: workerone has not rebuilt the bundle yet. It will send the SHA.
+- tsc clean; vitest song-lab 17/17 (with 61063be).
+- Live check, headless Chrome :9474 + scratch Vite :5194, believer-s1.json at 61063be, freighter.
+  Drift = ship time − the LIVE audio playhead (playheadAt(elapsedAtPerf(now))), sampled when ship time passes the bar.
+  - groove perfect: bar 8/28/60/96 = −10/−8/−5/−1 ms; last audible −16 ms. 0 re-seeks.
+  - groove-tight perfect: −10/−8/−5/−3 ms; last −1 ms. 0 re-seeks.
+  - envelope perfect: −14/−13/−11/−8 ms; last −7 ms. 0 re-seeks.
+  - All three: silent (status ready, not playing) until tick 248; crossTick 248.0; first playhead ≈ 0.09 s.
+    Finish at tick 12521, ship time 204.55 s; the song (204.43 s) ends first; readout "song ended · bar 106.4".
+  - envelope pro (8 bumps): each bump adds ≈ −25 ms. Drift −15/−68/−119/−197 ms at bars 8/28/60/96, −214 ms
+    (analytic) at finish. Audio never re-seeks: song time is tick-based, so the song keeps tempo and leads the ship.
+  - Digest line: "track digest MATCH · 20 / 20 runs MATCH" for groove, groove-tight, envelope.
 
 ## Uncommitted
 
@@ -33,22 +37,12 @@ the song-lab line in `apps/client/app/routes.ts`. workerone owns `apps/client/so
 
 ## Next
 
-1. When workerone's bundle SHA lands: replace `bundleSongMap( bundle.song )` in `route.tsx` with the typed
-   `bundle.song.clock`, and drop the helper. Re-run tsc and vitest.
-2. Headless verify (scratch Vite :5194 via `CLIENT_PORT=5194 VITE_SERVER_PORT=2594 npx react-router dev` in
-   apps/client; Chrome :9474 with DPR 1, --mute-audio, --autoplay-policy=no-user-gesture-required). Checks:
-   - MATCH counts for all 13 variants.
-   - On perfect freighter, the ship-bar vs song-bar drift at bars 8/28/60/96 and at the finish.
-   - The song starts silent and begins at crossTick ≈ 248.
-   Recreate the drivers in the scratchpad: a CDP driver that reads `main p.whitespace-pre` (the readout) and
-   the aside `p` with "track digest", and presses keys through Input.dispatchKeyEvent. To reach bar 96 fast,
-   use 8× then drop to 1× near the bar (the song re-seeks on return to 1×).
-3. Kill Chrome and Vite by PID, report SHAs + numbers to slur-supervisor, commit this handover.
+1. Wait for the supervisor. A possible follow-up: re-anchor song time on ship z after a bump (policy choice).
 
 ## Open questions
 
-- none.
+- Should the song follow the ship after a bump (re-seek on z) or keep tempo (today)? For the owner.
 
 ## Lessons → memory
 
-`.claude/memory/song-map-runs-at-freighter-speed.md` (from ab88019). This seam: none new.
+none new. Driver: scratchpad drift.mjs (imports page modules by resource URL; traits live at /app/game/ecs/traits.ts).
