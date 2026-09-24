@@ -743,6 +743,16 @@ Two defects came out of the same measurements. Each has its own issue:
 - **#232 — the pocket trap.** Two staggered blocks with a z-gap just over the hull (seed 1, z≈6019,
   3.1u gap against a 2.52u hull) bounce a ship that holds throttle 100 times in 10 s.
 
+### As-built — a graze always glances (#231)
+
+The push-out no longer uses the shallowest face. `entryPush()` in `sim/step.ts` uses the previous tick's
+position to find the face the hull came through. A hull that comes in through a side face resolves on x.
+A hull that comes in through an end face resolves on x when its lateral overlap is less than the new
+`FlightTuning.grazeDepth` (0.5u, owner), and on z otherwise. The outcome now depends only on clip depth.
+Measured with a 100-phase sweep, Fighter at 55u/s: a 0.3u clip glanced **68%** before and **100%** after.
+Clips of 0.1–0.45u glance 100% for every class, and clips of 0.55–0.8u hard-stop 100%
+(`sim/graze.test.ts`). A glance still applies `bounceStun`.
+
 ### Not decided here
 
 The local ship throws the hit spark on a predicted bounce (`afb2642`,

@@ -167,16 +167,22 @@ interface BlockPush {
     delta: number;
 }
 
-function shallowestPush( b: Block, s: SimShip, t: FlightTuning ): BlockPush {
-    const candidates: BlockPush[] = [
-        { axis: 'x', delta: b.x0 - ( s.x + t.halfW ) },
-        { axis: 'x', delta: b.x1 - ( s.x - t.halfW ) },
-        { axis: 'z', delta: b.z0 - ( s.z + t.halfL ) },
-        { axis: 'z', delta: b.z1 - ( s.z - t.halfL ) },
-    ];
-    let best = candidates[ 0 ];
-    for ( const c of candidates ) if ( Math.abs( c.delta ) < Math.abs( best.delta ) ) best = c;
-    return best;
+function nearer( a: number, b: number ): number {
+    return Math.abs( a ) <= Math.abs( b ) ? a : b;
+}
+
+function outsideSpan( c: number, half: number, lo: number, hi: number ): boolean {
+    return c + half <= lo || c - half >= hi;
+}
+
+function entryPush( b: Block, s: SimShip, prevX: number, prevZ: number, t: FlightTuning ): BlockPush {
+    const x: BlockPush = { axis: 'x', delta: nearer( b.x0 - ( s.x + t.halfW ), b.x1 - ( s.x - t.halfW ) ) };
+    const z: BlockPush = { axis: 'z', delta: nearer( b.z0 - ( s.z + t.halfL ), b.z1 - ( s.z - t.halfL ) ) };
+    const fromSide = outsideSpan( prevX, t.halfW, b.x0, b.x1 );
+    const fromEnd = outsideSpan( prevZ, t.halfL, b.z0, b.z1 );
+    if ( fromEnd ) return Math.abs( x.delta ) < t.grazeDepth ? x : z;
+    if ( fromSide ) return x;
+    return Math.abs( x.delta ) <= Math.abs( z.delta ) ? x : z;
 }
 
 function breakable( b: Block, world: SimWorld | undefined ): boolean {
@@ -204,7 +210,9 @@ function smashThrough( segs: Segment[], s: SimShip, prevY: number, t: FlightTuni
 function blockPush(
     segs: Segment[],
     s: SimShip,
+    prevX: number,
     prevY: number,
+    prevZ: number,
     t: FlightTuning,
     world: SimWorld | undefined,
 ): BlockPush | null {
@@ -212,7 +220,7 @@ function blockPush(
     for ( const seg of segs ) {
         for ( const b of seg.blocks ) {
             if ( breakable( b, world ) || ! standing( b, world ) || ! overlapsBlock( b, s, prevY, t ) ) continue;
-            const p = shallowestPush( b, s, t );
+            const p = entryPush( b, s, prevX, prevZ, t );
             if ( best === null || Math.abs( p.delta ) < Math.abs( best.delta ) ) best = p;
         }
     }
@@ -231,7 +239,15 @@ function bounceOffBlock( s: SimShip, push: BlockPush, t: FlightTuning ): void {
     if ( s.stunTimer < t.bounceStun ) s.stunTimer = t.bounceStun;
 }
 
-export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: FlightTuning, world?: SimWorld ): void {
+export function resolveCollisions(
+    s: SimShip,
+    prevX: number,
+    prevY: number,
+    prevZ: number,
+    track: Track,
+    t: FlightTuning,
+    world?: SimWorld,
+): void {
     const segs = footprintSegs( track, s.z, t.halfL );
 
     const floorY = landingFloor( segs, s, prevY, t );
@@ -252,7 +268,7 @@ export function resolveCollisions( s: SimShip, prevY: number, track: Track, t: F
     }
 
     const smashed = world !== undefined && smashThrough( segs, s, prevY, t, world );
-    const push = blockPush( segs, s, prevY, t, world );
+    const push = blockPush( segs, s, prevX, prevY, prevZ, t, world );
     if ( push !== null ) {
         if ( s.invulnTimer <= 0 ) bounceOffBlock( s, push, t );
     } else if ( ! smashed ) {
@@ -287,9 +303,11 @@ export function simulate(
     applyStrafe( s, control, t, dt );
     applyJump( s, control, t, dt );
     applyGravity( s, t, dt );
+    const prevX = s.x;
     const prevY = s.y;
+    const prevZ = s.z;
     integrate( s, dt );
-    if ( track ) resolveCollisions( s, prevY, track, t, world );
+    if ( track ) resolveCollisions( s, prevX, prevY, prevZ, track, t, world );
     else resolveFlatFloor( s, t );
 
     if ( s.invulnTimer > 0 ) s.invulnTimer -= dt;
