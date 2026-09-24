@@ -23,13 +23,14 @@ interface SfxDef {
     bus: Bus;
     gain?: number;
     rate?: number;
+    cut?: boolean;
 }
 
 const TABLE: Record< Sfx, SfxDef > = {
     fire: { file: 'laser_fire.ogg', bus: 'combat', gain: 0.7 },
     hit: { file: 'hit_impact.ogg', bus: 'combat', gain: 0.9 },
     stun: { file: 'stun.ogg', bus: 'combat', gain: 0.85 },
-    pickup: { file: 'pickup.ogg', bus: 'ui', gain: 0.8 },
+    pickup: { file: 'pickup.ogg', bus: 'ui', gain: 0.8, cut: true },
     threat: { file: 'threat.ogg', bus: 'threat', gain: 0.9 },
     death: { file: 'death_derezz.ogg', bus: 'combat', gain: 1 },
     respawn: { file: 'respawn.ogg', bus: 'combat', gain: 0.8 },
@@ -50,7 +51,7 @@ export const MUSIC = {
 export async function preloadAudio(): Promise< void > {
     const jobs: Promise< void >[] = [];
     for ( const key of Object.keys( TABLE ) as Sfx[] ) {
-        jobs.push( loadSample( key, `${ BASE }/${ TABLE[ key ].file }` ) );
+        jobs.push( loadSfx( key ) );
     }
     jobs.push( loadSample( MUSIC.run.name, MUSIC.run.file ) );
     jobs.push( loadSample( MUSIC.lobby.name, MUSIC.lobby.file ) );
@@ -59,5 +60,9 @@ export async function preloadAudio(): Promise< void > {
 
 export function playSfx( sfx: Sfx, over: PlayOpts = {} ): void {
     const def = TABLE[ sfx ];
-    play( sfx, { bus: def.bus, gain: def.gain, rate: def.rate, ...over } );
+    play( sfx, { bus: def.bus, gain: def.gain, rate: def.rate, cut: def.cut, ...over } );
+}
+
+export function loadSfx( sfx: Sfx ): Promise< void > {
+    return loadSample( sfx, `${ BASE }/${ TABLE[ sfx ].file }` );
 }

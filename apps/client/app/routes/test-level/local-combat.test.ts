@@ -1,9 +1,12 @@
 import { HeldPower, pickupPower, pickupsOf, procgenDescriptor, resolveTrack } from '@slur/shared';
 import { createWorld } from 'koota';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { playSfx } from '../../audio/sfx-map';
 import { Held, LocalPlayer, Sim } from '../../game/ecs/traits';
 import { resetSlot, selectedSlot } from '../../game/input/power-select';
 import { localCombat, localCombatSystem, queueDrop, queueFire, restartLocalCombat } from './local-combat';
+
+vi.mock( '../../audio/sfx-map', () => ( { playSfx: vi.fn() } ) );
 
 const DT = 1 / 60;
 const { none, bolt, seeker } = HeldPower;
@@ -31,7 +34,34 @@ function leavePickup( ship: Ship ): void {
 }
 
 describe( 'test-level local combat', () => {
-    beforeEach( resetSlot );
+    beforeEach( () => {
+        resetSlot();
+        vi.mocked( playSfx ).mockClear();
+    } );
+
+    it( 'a pickup plays the pickup sound once', () => {
+        const { world, track } = atPickup( seeker );
+        localCombatSystem( world, DT, track );
+
+        expect( vi.mocked( playSfx ).mock.calls ).toEqual( [ [ 'pickup' ] ] );
+    } );
+
+    it( 'a full rack plays no pickup sound', () => {
+        atPickup( bolt, [ seeker, seeker, seeker ] );
+        expect( playSfx ).not.toHaveBeenCalled();
+    } );
+
+    it( 'firing and dropping play no pickup sound', () => {
+        const { world, ship, track } = atPickup( bolt, [ seeker, bolt, none ] );
+        vi.mocked( playSfx ).mockClear();
+        leavePickup( ship );
+        queueFire( 0 );
+        localCombatSystem( world, DT, track );
+        queueDrop( 1 );
+        localCombatSystem( world, DT, track );
+
+        expect( playSfx ).not.toHaveBeenCalled();
+    } );
 
     it( 'a seeker pickup fills slot 0 and fires a seeker, not a bolt', () => {
         const { world, ship, track } = atPickup( seeker );

@@ -22,6 +22,7 @@ import {
     type Track,
 } from '@slur/shared';
 import type { World } from 'koota';
+import { playSfx } from '../../audio/sfx-map';
 import { num } from '../../dev/tuning';
 import { blockWorld, clearBlockState } from '../../game/block-state';
 import { Held, LocalPlayer, Sim } from '../../game/ecs/traits';
@@ -123,7 +124,11 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
 
     stepBolts( localCombat.bolts, [], track, blockWorld.broken, dt, pushHit );
     stepSeekers( localCombat.seekers, [], track, blockWorld.broken, dt, onSeekerEvent, seekerConfig() );
+    const beforePickups = [ ...me.slots ];
     stepPickups( [ me ], localCombat.pickups, localCombat.taken, localCombat.respawn, dt );
+    if ( me.slots.some( ( p, i ) => beforePickups[ i ] === HeldPower.none && p !== HeldPower.none ) ) {
+        playSfx( 'pickup' );
+    }
 
     if ( me.slots.some( ( p, i ) => p !== held[ i ] ) ) {
         ship.set( Held, { slots: me.slots } );

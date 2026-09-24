@@ -23,11 +23,20 @@ export interface PlayOpts {
     bus?: Bus;
     gain?: number;
     rate?: number;
+    cut?: boolean;
 }
 
 interface Voice {
     gain: GainNode;
 }
+
+interface LiveCut {
+    src: AudioBufferSourceNode;
+    fade: GainNode;
+}
+
+const CUT_FADE_S = 0.01;
+const liveCuts = new Map< string, LiveCut >();
 
 interface Engine {
     ctx: AudioContext;
@@ -150,9 +159,36 @@ export function play( name: string, opts: PlayOpts = {} ): void {
     const src = e.ctx.createBufferSource();
     src.buffer = buf;
     src.playbackRate.value = opts.rate ?? 1;
-    src.connect( voice.gain );
+    if ( opts.cut ) {
+        cutLive( e, name );
+        trackCut( e, name, src ).connect( voice.gain );
+    } else src.connect( voice.gain );
     duck( e, bus );
     src.start();
+}
+
+function cutLive( e: Engine, name: string ): void {
+    const prev = liveCuts.get( name );
+    if ( ! prev ) return;
+    liveCuts.delete( name );
+    const now = e.ctx.currentTime;
+    const g = prev.fade.gain;
+    g.cancelScheduledValues( now );
+    g.setValueAtTime( g.value, now );
+    g.linearRampToValueAtTime( 0, now + CUT_FADE_S );
+    prev.src.stop( now + CUT_FADE_S );
+}
+
+function trackCut( e: Engine, name: string, src: AudioBufferSourceNode ): GainNode {
+    const fade = e.ctx.createGain();
+    src.connect( fade );
+    const entry: LiveCut = { src, fade };
+    liveCuts.set( name, entry );
+    src.onended = () => {
+        if ( liveCuts.get( name ) === entry ) liveCuts.delete( name );
+        fade.disconnect();
+    };
+    return fade;
 }
 
 export function getBus( bus: Bus ): GainNode | null {
