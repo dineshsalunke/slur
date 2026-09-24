@@ -1,54 +1,49 @@
-Agent: workerfour · Lane: #242 menu ship-picker removal + #238 results follow-ups · Updated: 2026-09-24 09:50
+Agent: workerfour · Lane: merge open PRs — #195 feat/ship-feel · Updated: 2026-09-24
 
 ## Goal
 
-#242: remove the ship picker from the menu. The lobby picker is the signature Ship Picker. Results
-follow-ups (owner): results above the finish curtain, drop the "Results" label.
+Land PR #195 (ship banking, engine-core bloom, rail bounce) onto dev from a detached worktree. Push
+only after the plan is approved.
 
 ## Done
 
-- `ae5ec7b`: results root z-[2] → z-35 (above the z-30 curtain, below the z-40 LeaveGuard). The
-  "Results" label is dropped, and the winner's colour square moves to the time row.
-- `0ab2cb9` (#242): ShipPicker deleted. The menu strip is call sign, Host and [Enter] Host.
-  Bare-Enter hosting lives in the new `routes/home/use-enter-hosts.ts`, called by HostButton.
-  DESIGN.md has the lobby Ship Picker (signature), the Menu Strip, the layout grid, the room
-  stacking order and the winner card.
-- `97df771` (owner): the dormant bank-on-change branch in `landing-ship.tsx` is removed. `ship-choice`
-  keeps `turn`/`dir` for the lobby stepper sweep. Gates: typecheck 0, vitest 279/279, lint passes.
+- Conflict list and resolution plan sent to slur-supervisor. Nothing committed or pushed.
 
 ## State (verified this session)
 
-- Client typecheck exits 0. Vitest 279/279. Biome, ls-lint, canvas isolation and the comment ratchet
-  pass.
-- Live headless run on a scratch server (:2612/:5222, CDP :9491):
-  - menu 1440 and 390: no picker; scrollWidth equals innerWidth.
-  - A bare Enter on body hosts: it navigated to /game/<id>.
-  - After the finish, at curtain opacity 0.654, the scene dims and the results stay at full
-    strength. Computed z-index: results 35, curtain 30. The card text has no "Results".
-- A still with the curtain pinned to opacity 1 by hand did not render black. It is inconclusive and
-  was not used as evidence. The mid-curtain still is the proof.
-- Stills: session 0a02f5e1 scratchpad `srv/shots/` (menu-1440, menu-390, results-mid-curtain,
-  results-1440, results-390).
-- Chrome, the scratch server and the client are killed.
+- Worktree `../slur-worktrees/merge-195` is detached at origin/dev `74a7b89`. PR ref: `refs/remotes/pr/195`.
+- Only 5 of the 33 commits are the PR (`dcc3149..01947c2`). The other 28 are pre-squash
+  feat/test-level history, already on dev.
+- Trial rebase conflicts:
+  - `9af27e0`: step.ts. The bounce is dead on dev, because fc65986 removed the rail clamp from the
+    track path.
+  - `0dc8c7d`: 7 content conflicts plus tunables.ts modify/delete. Dev deleted tunables.ts in 3fd4a97;
+    its knobs now live in dev/tuning-schema.ts.
+  - `8fbb223`: ship-model.tsx. Dev's "one metal" supersedes the hull knobs. Bloom.threshold is 0.6.
+  - `01947c2`: the phases doc, modify/delete.
+- The shared checkout's dev and origin/dev have diverged: 17 commits one way, 40 the other.
 
 ## Uncommitted
 
-None.
+None in the shared tree. The worktree is clean.
 
 ## Held files
 
-None after this seam. The claims can be released.
+None yet.
 
 ## Next
 
-1. Owner review of the stills.
-2. No other work queued.
+1. Wait for owner calls A (drop the rail bounce, fix GDD:301), B (engine retune for threshold 0.6, or
+   drop the commit) and C (push HEAD:dev and close #195).
+2. Rebase the kept commits in the worktree and resolve as planned. Run typecheck, test and lint, then a
+   headless /test-level check.
+3. Push HEAD:dev, close #195, then remove the worktree and delete `refs/remotes/pr/195`.
 
 ## Open questions
 
-- Delete `game/net-debug-hud.tsx` (the owner must run `git rm` or allow it). Carried over.
-- Owner decided: the winner colour square stays on the time row.
+- Owner calls A/B/C above.
+- Delete `game/net-debug-hud.tsx` (carried over).
 
 ## Lessons → memory
 
-`.claude/memory/moving-a-useeffect-trips-the-comment-ratchet.md`
+none
