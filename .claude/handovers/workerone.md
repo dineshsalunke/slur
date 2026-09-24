@@ -4,7 +4,7 @@ The RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/a42d7260
 
 ## Goal
 
-- #248: demote a fractured block whose shadow (x ±2u, z1 → z1 + 0.45×124×1 s ≈ 56u) holds a block or floor gap. Plan sent to slur-supervisor; waiting for go. New files only: sim/fracture-shadow.ts + test + one index.ts export. track.ts/fracture.ts belong to workerthree (#244); the track.ts hook-up goes to the supervisor as a diff.
+- #248: pure pass landed (b0a3977). Hook-up diff sent to slur-supervisor; it applies after #244 commits. Owner to rule on the 76% fractured loss.
 - #246: make pacing routes flyable under the sim's strafe acceleration. Waiting for the owner to pick a fix.
 - Held: the generator regenerate step (waits for #244).
 
@@ -20,6 +20,7 @@ The RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/a42d7260
 
 - `2812078` R1 · `6e67f53` R2 · `1e7160c` trap rule + 6u hull · `85077ca` R3 board.
 - Filed #246 (no code). Cause measured, reported to slur-supervisor.
+- `b0a3977` #248 sim/fracture-shadow.ts + test + index.ts export. Pure; not hooked up.
 
 ## State
 
@@ -30,6 +31,10 @@ The RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/a42d7260
 - Scripts: scratchpad `5b01310f-…/scratchpad/{clamp,f4,track}.mjs` (run against `packages/shared/dist`).
 - The dist was built from the shared tree, which holds workerthree's uncommitted `sim/track.ts` [unmeasured whether it changes these numbers].
 
+- #248 sweep (30 seeds, #244 geometry, pad 2u): fractured 1656 → 392 (−76.3%); 1209 block hazards (all start at/after z1), 55 gap. Pad 1.3u: −75.2%. Zone 0.25/0.5/0.75/1 s: −46.5/−66.0/−71.6/−76.3%. HEAD without #244: 1998 → 423.
+- #248 build time: full walk 3.4 → 4.9 ms/seed (1.44×); resolveTrack 1.4 → 1.9 ms. No cache.
+- Hook-up diff: scratchpad 5b01310f-…/scratchpad/hookup-248.diff (track.ts + track.test.ts); 269/269 in scratch #244+hook-up.
+
 ## Uncommitted
 
 None in this lane.
@@ -37,11 +42,12 @@ None in this lane.
 ## Held files
 
 - `apps/client/app/routes/pacing/*` (R3). Release on request.
+- `packages/shared/src/sim/fracture-shadow.ts` + test (#248).
 - `packages/shared/src/pacing/*` + tests and the pacing export lines in `packages/shared/src/index.ts`. Release on request.
 
 ## Next
 
-0. On go for #248: write sim/fracture-shadow.ts (pure sealShadowed(seg, ahead, clear)), its test (zero violations after the pass; order-independent), scratch sweep of fractured before/after + block/gap violations for pad 2u and 1.3u on 5 seeds + 30-seed totals, build-time cost. Then send the track.ts hook-up diff (runs last, after merge + abut, n = 3 segments ahead).
+0. #248: wait for the owner ruling on the 76% loss (shorter zone / only smash-line-closing hazards / generator placement). If kept, the supervisor applies hookup-248.diff after #244.
 1. Wait for the owner's #246 pick (via slur-supervisor). Options: (1, recommended) velocity level in the solver state, a step change needs ~11 rows per 32.5 u/s; (2) diagnostic post-pass only; (3) lower the solver rate. Then build in `reference-path.ts` with a shared test that flies every emitted route with the sim strafe model and bounds the tracking error. Re-check the cost: the route graph, `legalMask` and `rosterPockets` all use `maxStep`.
 2. Wait for the supervisor or owner to review the R3 stills.
 3. HOLD: the generator regenerate step. Wait until workerthree lands #244 (`sim/track.ts` block merge). Then re-run the z 1200–1278 fixture. If the merge dissolves it, pin a hand-built fixture for the freighter and phantom windows.
@@ -52,6 +58,7 @@ None in this lane.
 ## Open questions
 
 - **Owner:** #246 fix option 1, 2 or 3.
+- **Owner:** #248 drops ~76% of fractured blocks (−80% vs today with #244). Keep, shorten the zone, or narrow the hazard test?
 - **Owner:** 35–56 trapped pockets per class per seed is a lot for a regenerate loop. Should the rule regenerate per segment, or should the generator avoid the shape at its source?
 - **Owner:** 10 of 17 forks on seed 20260921 have a dominated arm, and many arms tie at zero demand. Is a tie at zero demand a "dodge" rather than a fork?
 - **Supervisor:** the board does not show quiet-time bands or trapped pockets. Say if R3 needs either.
