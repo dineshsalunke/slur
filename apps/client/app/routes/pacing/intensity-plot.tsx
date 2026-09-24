@@ -1,25 +1,21 @@
-import { type PacingIntent, SEG_LEN } from '@slur/shared';
+import { SEG_LEN } from '@slur/shared';
+import { lineChunks, type PlotPoint } from './board-scale';
 import { MetricPanel } from './metric-panel';
+import { usePacingReport } from './pacing-report-context';
+import { PolylineChunks } from './polyline-chunks';
 
-function steps( intensity: Float32Array, cruise: number ): string {
-    const out: string[] = [];
+function steps( intensity: Float32Array, cruise: number ): PlotPoint[] {
+    const out: PlotPoint[] = [];
     const segT = SEG_LEN / cruise;
     for ( let i = 0; i < intensity.length; i++ ) {
-        const v = ( -intensity[ i ] ).toFixed( 3 );
-        out.push( `${ ( i * segT ).toFixed( 3 ) },${ v }`, `${ ( ( i + 1 ) * segT ).toFixed( 3 ) },${ v }` );
+        out.push( [ i * segT, -intensity[ i ] ], [ ( i + 1 ) * segT, -intensity[ i ] ] );
     }
-    return out.join( ' ' );
+    return out;
 }
 
-export function IntensityPlot( {
-    intent,
-    cruise,
-    duration,
-}: {
-    intent: PacingIntent;
-    cruise: number;
-    duration: number;
-} ) {
+export function IntensityPlot() {
+    const { intent, cruise, duration } = usePacingReport();
+    if ( ! intent ) return null;
     const segT = SEG_LEN / cruise;
     return (
         <MetricPanel
@@ -40,9 +36,8 @@ export function IntensityPlot( {
                     className={ n % 2 === 0 ? 'fill-fg/[0.04]' : 'fill-transparent' }
                 />
             ) ) }
-            <polyline
-                points={ steps( intent.intensity, cruise ) }
-                vectorEffect="non-scaling-stroke"
+            <PolylineChunks
+                chunks={ lineChunks( steps( intent.intensity, cruise ) ) }
                 className="fill-none stroke-marigold stroke-[1.5px]"
             />
         </MetricPanel>

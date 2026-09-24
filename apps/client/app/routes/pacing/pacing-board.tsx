@@ -1,4 +1,3 @@
-import type { PacingReport } from '@slur/shared';
 import { useRef } from 'react';
 import { DEFAULT_PPS } from './board-scale';
 import { BoardSummary } from './board-summary';
@@ -6,6 +5,7 @@ import { ClearancePlot } from './clearance-plot';
 import { GapPlot } from './gap-plot';
 import { IntensityPlot } from './intensity-plot';
 import { LateralBars } from './lateral-bars';
+import { usePacingReport } from './pacing-report-context';
 import { PacingStrip } from './pacing-strip';
 import { QuietPlot } from './quiet-plot';
 import { ScrubLayer } from './scrub-layer';
@@ -23,10 +23,10 @@ function initScale( el: HTMLElement | null, duration: number ): void {
     }
 }
 
-export function PacingBoard( { seed, report }: { seed: number; report: PacingReport } ) {
+export function PacingBoard( { seed }: { seed: number } ) {
     const rootRef = useRef< HTMLElement | null >( null );
     const scrollerRef = useRef< HTMLDivElement >( null );
-    const { duration, cruise, intent } = report;
+    const { duration, cruise } = usePacingReport();
     return (
         <main
             ref={ ( el ) => {
@@ -42,19 +42,19 @@ export function PacingBoard( { seed, report }: { seed: number; report: PacingRep
                     <ZoomControls rootRef={ rootRef } scrollerRef={ scrollerRef } duration={ duration } />
                     <span className="text-[11px] text-dim">time = z / pacingCruise { cruise }u/s</span>
                 </div>
-                <BoardSummary report={ report } />
+                <BoardSummary />
             </header>
             <div ref={ scrollerRef } className="relative min-h-0 flex-1 overflow-auto pb-40">
                 <div className="relative w-max">
-                    { intent && <TimeRuler duration={ duration } cruise={ cruise } sections={ intent.sections } /> }
-                    { intent && <IntensityPlot intent={ intent } cruise={ cruise } duration={ duration } /> }
-                    <PacingStrip report={ report } />
-                    <ClearancePlot report={ report } />
-                    <StrafePlot report={ report } />
-                    <LateralBars report={ report } />
-                    <QuietPlot report={ report } />
-                    <GapPlot report={ report } />
-                    <ScrubLayer report={ report } />
+                    <TimeRuler />
+                    <IntensityPlot />
+                    <PacingStrip />
+                    <ClearancePlot />
+                    <StrafePlot />
+                    <LateralBars />
+                    <QuietPlot />
+                    <GapPlot />
+                    <ScrubLayer />
                 </div>
             </div>
         </main>

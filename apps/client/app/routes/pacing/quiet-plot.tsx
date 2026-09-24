@@ -1,15 +1,11 @@
-import {
-    demandSpacingSeconds,
-    PACING_DZ,
-    type PacingReport,
-    REACTION_WINDOW_S,
-    REST_MIN_S,
-    SEG_LEN,
-} from '@slur/shared';
+import { demandSpacingSeconds, PACING_DZ, REACTION_WINDOW_S, REST_MIN_S, SEG_LEN } from '@slur/shared';
 import { Fragment } from 'react';
+import { lineChunks, type PlotPoint } from './board-scale';
 import { GuideLine } from './guide-line';
 import { LegendSwatch } from './legend-swatch';
 import { MetricPanel } from './metric-panel';
+import { usePacingReport } from './pacing-report-context';
+import { PolylineChunks } from './polyline-chunks';
 
 const QUIET_MAX_S = 6;
 const BAR_GAP_S = 0.04;
@@ -20,18 +16,18 @@ function quietClass( seconds: number ): string {
     return 'fill-dim';
 }
 
-function spacingSteps( intensity: Float32Array, cruise: number ): string {
-    const out: string[] = [];
+function spacingSteps( intensity: Float32Array, cruise: number ): PlotPoint[] {
+    const out: PlotPoint[] = [];
     const segT = SEG_LEN / cruise;
     for ( let i = 0; i < intensity.length; i++ ) {
-        const v = ( -Math.min( QUIET_MAX_S, demandSpacingSeconds( intensity[ i ] ) ) ).toFixed( 3 );
-        out.push( `${ ( i * segT ).toFixed( 3 ) },${ v }`, `${ ( ( i + 1 ) * segT ).toFixed( 3 ) },${ v }` );
+        const v = -Math.min( QUIET_MAX_S, demandSpacingSeconds( intensity[ i ] ) );
+        out.push( [ i * segT, v ], [ ( i + 1 ) * segT, v ] );
     }
-    return out.join( ' ' );
+    return out;
 }
 
-export function QuietPlot( { report }: { report: PacingReport } ) {
-    const { cruise, duration, demand, intent } = report;
+export function QuietPlot() {
+    const { cruise, duration, demand, intent } = usePacingReport();
     const t = ( k: number ): number => ( k * PACING_DZ ) / cruise;
     return (
         <MetricPanel
@@ -60,9 +56,8 @@ export function QuietPlot( { report }: { report: PacingReport } ) {
                 />
             ) ) }
             { intent && (
-                <polyline
-                    points={ spacingSteps( intent.intensity, cruise ) }
-                    vectorEffect="non-scaling-stroke"
+                <PolylineChunks
+                    chunks={ lineChunks( spacingSteps( intent.intensity, cruise ) ) }
                     className="fill-none stroke-marigold stroke-[1.5px]"
                 />
             ) }

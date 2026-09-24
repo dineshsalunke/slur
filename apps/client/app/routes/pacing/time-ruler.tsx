@@ -1,13 +1,11 @@
-import { type PacingSection, SEG_LEN } from '@slur/shared';
+import { SEG_LEN } from '@slur/shared';
 import { setTimeVar, TICK_EVERY_S } from './board-scale';
+import { usePacingReport } from './pacing-report-context';
 
-interface TimeRulerProps {
-    duration: number;
-    cruise: number;
-    sections: PacingSection[];
-}
-
-export function TimeRuler( { duration, cruise, sections }: TimeRulerProps ) {
+export function TimeRuler() {
+    const { duration, cruise, intent } = usePacingReport();
+    if ( ! intent ) return null;
+    const { sections } = intent;
     const ticks: number[] = [];
     for ( let s = 0; s <= duration; s += TICK_EVERY_S ) ticks.push( s );
     const segT = SEG_LEN / cruise;

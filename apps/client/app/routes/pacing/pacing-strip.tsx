@@ -1,8 +1,10 @@
-import { HALF_WIDTH, PACING_DZ, type PacingReport, spanZ0, spanZ1 } from '@slur/shared';
+import { HALF_WIDTH, spanZ0, spanZ1 } from '@slur/shared';
 import { Fragment } from 'react';
-import { linePoints } from './board-scale';
+import { lineChunks, samplePoints } from './board-scale';
 import { LegendSwatch } from './legend-swatch';
 import { MetricPanel } from './metric-panel';
+import { usePacingReport } from './pacing-report-context';
+import { PolylineChunks } from './polyline-chunks';
 
 function airRuns( air: Uint8Array ): Array< [ number, number ] > {
     const out: Array< [ number, number ] > = [];
@@ -33,8 +35,8 @@ const LEGEND = (
     </Fragment>
 );
 
-export function PacingStrip( { report }: { report: PacingReport } ) {
-    const { cruise, duration, segments, anchors, path, intent } = report;
+export function PacingStrip() {
+    const { cruise, duration, segments, anchors, path, intent } = usePacingReport();
     const t = ( z: number ): number => z / cruise;
     return (
         <MetricPanel
@@ -105,20 +107,16 @@ export function PacingStrip( { report }: { report: PacingReport } ) {
                     className="stroke-gold stroke-[3px]"
                 />
             ) ) }
-            <polyline
-                points={ linePoints( path.x, cruise, 2 ) }
-                vectorEffect="non-scaling-stroke"
+            <PolylineChunks
+                chunks={ lineChunks( samplePoints( path.x, cruise, 2 ) ) }
                 className="fill-none stroke-cyan stroke-[1.5px]"
             />
-            { airRuns( path.air ).map( ( [ k0, k1 ] ) => (
-                <polyline
-                    key={ k0 }
-                    points={ linePoints( path.x.subarray( k0, k1 ), cruise ) }
-                    transform={ `translate(${ t( k0 * PACING_DZ ) } 0)` }
-                    vectorEffect="non-scaling-stroke"
-                    className="fill-none stroke-gold stroke-[3px]"
-                />
-            ) ) }
+            <PolylineChunks
+                chunks={ airRuns( path.air ).flatMap( ( [ k0, k1 ] ) =>
+                    lineChunks( samplePoints( path.x, cruise, 1, k0, k1 ) ),
+                ) }
+                className="fill-none stroke-gold stroke-[3px]"
+            />
         </MetricPanel>
     );
 }

@@ -1,8 +1,9 @@
-import type { PacingReport } from '@slur/shared';
 import { type PointerEvent, useRef } from 'react';
+import { usePacingReport } from './pacing-report-context';
 import { describeAt } from './scrub-readout';
 
-export function ScrubLayer( { report }: { report: PacingReport } ) {
+export function ScrubLayer() {
+    const report = usePacingReport();
     const lineRef = useRef< HTMLDivElement >( null );
     const readoutRef = useRef< HTMLPreElement >( null );
 

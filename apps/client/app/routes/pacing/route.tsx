@@ -1,6 +1,7 @@
-import { analyzeDescriptor, procgenDescriptor } from '@slur/shared';
 import type { Route } from './+types/route';
+import { analyzeSeed } from './analyze-client';
 import { PacingBoard } from './pacing-board';
+import { PacingReportContext } from './pacing-report-context';
 
 const DEFAULT_SEED = 20260921;
 
@@ -17,11 +18,15 @@ export function meta() {
     ];
 }
 
-export function clientLoader( { request }: Route.ClientLoaderArgs ) {
+export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
     const seed = parseSeed( new URL( request.url ).searchParams.get( 'seed' ) );
-    return { seed, report: analyzeDescriptor( procgenDescriptor( seed ) ) };
+    return { seed, report: await analyzeSeed( seed ) };
 }
 
 export default function Pacing( { loaderData }: Route.ComponentProps ) {
-    return <PacingBoard seed={ loaderData.seed } report={ loaderData.report } />;
+    return (
+        <PacingReportContext value={ loaderData.report }>
+            <PacingBoard seed={ loaderData.seed } />
+        </PacingReportContext>
+    );
 }

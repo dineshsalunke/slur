@@ -1,10 +1,10 @@
-import type { PacingReport } from '@slur/shared';
 import { MetricPanel } from './metric-panel';
+import { usePacingReport } from './pacing-report-context';
 
 const BAR_GAP_S = 0.12;
 
-export function LateralBars( { report }: { report: PacingReport } ) {
-    const { duration, demand } = report;
+export function LateralBars() {
+    const { duration, demand } = usePacingReport();
     const peak = Math.max( 1, ...demand.bins.map( ( b ) => b.lateral ) );
     const top = Math.ceil( peak / 10 ) * 10;
     return (

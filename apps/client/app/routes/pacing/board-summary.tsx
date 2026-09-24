@@ -1,8 +1,9 @@
-import { type PacingReport, REST_MIN_S, TRACK_CONTRACT } from '@slur/shared';
+import { REST_MIN_S, TRACK_CONTRACT } from '@slur/shared';
+import { usePacingReport } from './pacing-report-context';
 import { Stat } from './stat';
 
-export function BoardSummary( { report }: { report: PacingReport } ) {
-    const { demand, gaps, grid, jump, duration } = report;
+export function BoardSummary() {
+    const { demand, gaps, grid, jump, duration } = usePacingReport();
     const strafes = demand.moves.filter( ( m ) => m.kind === 'strafe' ).length;
     const jumps = demand.moves.filter( ( m ) => m.kind === 'jump' ).length;
     const reversals = demand.bins.reduce( ( s, b ) => s + b.reversals, 0 );

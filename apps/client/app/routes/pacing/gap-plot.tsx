@@ -1,13 +1,13 @@
-import type { PacingReport } from '@slur/shared';
 import { Fragment } from 'react';
 import { LegendSwatch } from './legend-swatch';
 import { MetricPanel } from './metric-panel';
+import { usePacingReport } from './pacing-report-context';
 
 const WINDOW_MAX_S = 1.6;
 const MARK_S = 0.12;
 
-export function GapPlot( { report }: { report: PacingReport } ) {
-    const { cruise, duration, gaps, jump } = report;
+export function GapPlot() {
+    const { cruise, duration, gaps, jump } = usePacingReport();
     const t = ( z: number ): number => z / cruise;
     return (
         <MetricPanel
