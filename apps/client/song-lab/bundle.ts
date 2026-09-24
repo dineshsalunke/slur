@@ -31,6 +31,13 @@ export interface LabSong {
     bpm: number;
     beatsPerBar: number;
     sections: Section[];
+    clock: LabClock;
+}
+
+export interface LabClock {
+    z0: number;
+    t0: number;
+    zPerSecond: number;
 }
 
 export interface LabBundle {

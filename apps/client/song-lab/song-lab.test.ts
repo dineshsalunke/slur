@@ -2,17 +2,20 @@ import { CELL, SCORE_LINE_LIMIT, SEG_LEN } from '@slur/shared';
 import { describe, expect, test } from 'vitest';
 import type { SongAnalysis } from '../tapper/beat-analysis.ts';
 import {
+    classTuning,
     expandInputs,
     labDigest,
     labEmitted,
     labResult,
+    labStep,
     labTrack,
+    newReplay,
     packInputs,
     replayRun,
     sameResult,
 } from './bundle.ts';
 import { GROOVE_VARIANTS } from './groove.ts';
-import { placeEvents, type SongEvent, songClock } from './map.ts';
+import { gridStart, placeEvents, type SongEvent, songClock } from './map.ts';
 import { mineMotifs } from './mine.ts';
 import { TAP_TICKS } from './pilot.ts';
 import { buildVariant } from './song-lab-build.ts';
@@ -50,6 +53,21 @@ describe( 'song lab', () => {
         expect( expandInputs( packInputs( inputs ) ) ).toEqual( inputs );
     } );
 
+    test( 'the song clock starts where the recorded freighter first reaches cruise', () => {
+        const c = songClock( song );
+        const v = buildVariant( GROOVE_VARIANTS[ 0 ], song, 1, [ 'freighter' ] );
+        const track = labTrack( v );
+        const tuning = classTuning( 'freighter' );
+        const r = newReplay();
+        for ( const input of expandInputs( v.runs[ 0 ].inputs ) ) {
+            labStep( r.ship, input, tuning, track, r.world, r.tally );
+            if ( r.ship.vz >= tuning.maxCruise ) break;
+        }
+        expect( r.ship.z ).toBe( c.z0 );
+        expect( c.t0 ).toBe( 0 );
+        expect( v.score.notes[ 0 ].z ).toBeGreaterThanOrEqual( c.z0 );
+    } );
+
     test( 'placed events sit back to back on the segment grid inside the line limit', () => {
         const c = songClock( song );
         const events: SongEvent[] = song.beats.map( ( t, i ) => ( {
@@ -58,7 +76,7 @@ describe( 'song lab', () => {
             accent: false,
         } ) );
         const score = placeEvents( song, c, 1, events, new Array( c.length ).fill( 0.5 ) );
-        let z = c.z0;
+        let z = gridStart( c );
         for ( const n of score.notes ) {
             expect( n.z ).toBe( z );
             expect( n.z % SEG_LEN ).toBe( 0 );

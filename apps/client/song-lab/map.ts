@@ -4,6 +4,8 @@ import {
     type ComposedPhrase,
     type ComposedScore,
     clamp,
+    FIXED_DT,
+    type FlightTuning,
     intensityAt,
     type MotifNote,
     mirrorNote,
@@ -11,7 +13,10 @@ import {
     parseNotes,
     SCORE_LINE_LIMIT,
     SEG_LEN,
+    SHIP_CLASSES,
+    type ShipClassId,
     START_SAFE,
+    spawnShip,
     TRACK_CONTRACT,
 } from '@slur/shared';
 import type { SongAnalysis } from '../tapper/beat-analysis.ts';
@@ -33,12 +38,28 @@ export interface SongEvent {
 export const CURVE_FLOOR = 0.15;
 export const CURVE_CEIL = 1;
 
+export const SONG_SYNC_CLASS: ShipClassId = 'freighter';
+
+export function cruiseZ( t: FlightTuning ): number {
+    let z = spawnShip( 0, 0 ).z;
+    let vz = 0;
+    while ( vz < t.maxCruise ) {
+        vz = Math.min( vz + t.accel * FIXED_DT, t.maxCruise );
+        z += vz * FIXED_DT;
+    }
+    return z;
+}
+
 export function songClock( a: SongAnalysis ): SongClock {
     const zPerSecond = TRACK_CONTRACT.registerCruise;
-    const t0 = a.bars[ 0 ] ?? a.beats[ 0 ] ?? 0;
-    const z0 = START_SAFE * SEG_LEN;
+    const t0 = 0;
+    const z0 = cruiseZ( SHIP_CLASSES[ SONG_SYNC_CLASS ].tuning );
     const length = Math.ceil( ( z0 + ( a.duration - t0 ) * zPerSecond ) / SEG_LEN );
     return { t0, z0, zPerSecond, zPerBeat: ( zPerSecond * 60 ) / a.bpm, length };
+}
+
+export function gridStart( c: SongClock ): number {
+    return Math.ceil( c.z0 / SEG_LEN ) * SEG_LEN;
 }
 
 export function zAt( c: SongClock, t: number ): number {
@@ -140,7 +161,7 @@ export function placeEvents(
     const sorted = [ ...events ].sort( ( p, q ) => p.t - q.t );
     const end = c.length * SEG_LEN;
     const notes: ComposedNote[] = [];
-    let z = c.z0;
+    let z = gridStart( c );
     let x = 0;
     for ( const e of sorted ) {
         const ez = Math.ceil( zAt( c, e.t ) / SEG_LEN ) * SEG_LEN;

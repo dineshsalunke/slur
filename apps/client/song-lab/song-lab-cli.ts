@@ -4,6 +4,7 @@ import { parseArgs } from 'node:util';
 import type { ShipClassId } from '@slur/shared';
 import { LAB_BUNDLE_VERSION, type LabBundle, type LabResult, type LabSkill, type LabVariant } from './bundle.ts';
 import { LAB_SKILL_IDS } from './human.ts';
+import { songClock } from './map.ts';
 import { LAB_CLASSES } from './record.ts';
 import { buildVariant } from './song-lab-build.ts';
 import { type LabSongAnalysis, variantsFor } from './variants.ts';
@@ -58,10 +59,18 @@ function main(): void {
         console.log( `${ summary( v ) }  (${ ( ( performance.now() - t0 ) / 1000 ).toFixed( 1 ) }s)` );
         return v;
     } );
+    const clock = songClock( a );
     const bundle: LabBundle = {
         version: LAB_BUNDLE_VERSION,
         createdAt: new Date().toISOString(),
-        song: { file: a.song, duration: a.duration, bpm: a.bpm, beatsPerBar: a.beatsPerBar, sections: a.sections },
+        song: {
+            file: a.song,
+            duration: a.duration,
+            bpm: a.bpm,
+            beatsPerBar: a.beatsPerBar,
+            sections: a.sections,
+            clock: { z0: clock.z0, t0: clock.t0, zPerSecond: clock.zPerSecond },
+        },
         variants,
     };
     const name = values.name ?? `${ basename( file ).replace( /\.analysis\.json$/, '' ) }-s${ seed }`;

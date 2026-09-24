@@ -14,7 +14,7 @@ import {
 } from '@slur/shared';
 import type { Section } from '../tapper/beat-analysis.ts';
 import type { LabBuild, LabEmit, LabRule } from './bundle.ts';
-import { barCurve, padTo, phrasesOf, rescale, type SongClock, smooth, zAt } from './map.ts';
+import { barCurve, gridStart, padTo, phrasesOf, rescale, type SongClock, smooth, zAt } from './map.ts';
 import { tapAirDistance } from './pilot.ts';
 import type { LabSongAnalysis, VariantSpec } from './variants.ts';
 
@@ -181,7 +181,7 @@ function placeGrooves(
 }
 
 export function placeGroove( a: LabSongAnalysis, c: SongClock, plan: GroovePlan ): PlacedGroove {
-    const p: Placing = { c, tight: plan.tight, notes: [], taps: [], z: c.z0, x: 0 };
+    const p: Placing = { c, tight: plan.tight, notes: [], taps: [], z: gridStart( c ), x: 0 };
     let grooves = 0;
     let hooks = 0;
     a.sections.forEach( ( s, phrase ) => {
