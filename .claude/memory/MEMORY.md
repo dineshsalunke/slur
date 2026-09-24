@@ -71,3 +71,4 @@ lives in its own file beside this one.
 - [Believer is on a triplet grid](believer-is-on-a-triplet-grid.md) — test onsets against thirds of a beat as well as 16ths; kick band catches bass, kick lands +15 ms late
 - [Delay the perception, not the loop](delay-the-perception-not-the-loop.md) — a human-like pilot lags what it sees; an input-delayed bang-bang strafe limit-cycles
 - [Score pilot must not lead the note](score-pilot-must-not-lead-the-note.md) — the preview pin holds the line until onset; steer to span.line at ship.z, pick takeoffs by forward sim
+- [Peer edit orphans a live check](peer-edit-orphans-a-live-check.md) — an impossible live reading (tick 0/0) may be HMR from another worker's save; compare mtimes, verify headless in node
