@@ -115,6 +115,6 @@ test( 'no pocket on the fairness seeds stun-locks any class holding throttle', (
             }
         }
     }
-    assert.ok( checked > 1000, `the scan found only ${ checked } pockets` );
+    assert.ok( checked > 300, `the scan found only ${ checked } pockets` );
     assert.deepEqual( locked, [] );
 } );

@@ -81,7 +81,7 @@ just moved every track in the game.
 | Track width | `64u` (`HALF_WIDTH 32`) | 16 lanes *in the current generator*; the width, not the lane count, is what matters |
 | Segment depth | `SEG_LEN` `20u` | one segment; a gap is one segment long |
 | Deadly block height | `8u` (`BLOCK_HEIGHT`) | **above double-jump reach on purpose** — strafe around, never hop |
-| Deadly block width/depth | 1–3 lanes wide; depth drawn from `BLOCK_DEPTHS` `4/8/16u` at a varied z-offset | a *generation artifact*, **not** a rule — any size is legal |
+| Deadly block width/depth | 1–3 lanes wide; depth drawn from `BLOCK_DEPTHS` `4/8/16u` at a varied z-offset; close blocks then merge into one (ADR-019) | a *generation artifact*, **not** a rule — any size is legal |
 | `MAX_SHIP_WIDTH` | `1 cell = 4u` | the ship-size **contract**; ceiling for `MIN_CLEAR`; roster asserted ≤ this |
 | `CLEARANCE_MARGIN` | `3u` | the **only** clearance tunable (raise = easier tracks) |
 | `MIN_CLEAR` | `7u` | `MAX_SHIP_WIDTH + CLEARANCE_MARGIN`; per-slice threadable-floor floor |

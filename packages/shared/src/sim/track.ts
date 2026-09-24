@@ -6,6 +6,7 @@ import { placeBlock } from './fracture.js';
 import { gapBlocks } from './gap-blocks.js';
 import { crackCovering, crackFloors, gapFloors, gapOpens } from './gaps.js';
 import { flickRate, intensityAt, spacingSegments, wallDensity } from './intensity.js';
+import { abutAcrossBoundary, mergeCloseBlocks } from './merge-blocks.js';
 import { valueNoise2D } from './noise.js';
 import { hash2, mulberry32 } from './rng.js';
 import {
@@ -161,6 +162,11 @@ function pickupAnchors( length: number, segmentAt: ( i: number ) => Segment ): A
     return out;
 }
 
+function mergedSegment( seed: number, i: number, length: number, density: TrackDensity ): Segment {
+    const s = buildSegment( seed, i, length, density );
+    return s.blocks.length > 1 ? { ...s, blocks: mergeCloseBlocks( s ) } : s;
+}
+
 export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
     const seed = d.seed;
     const length = d.length || TRACK_SEGMENTS;
@@ -168,7 +174,12 @@ export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
         blocks: d.blockDensity ?? FULL_DENSITY.blocks,
         gaps: d.gapChance ?? FULL_DENSITY.gaps,
     };
-    const segmentAt = ( i: number ): Segment => buildSegment( seed, i, length, density );
+    const merged = ( i: number ): Segment => mergedSegment( seed, i, length, density );
+    const segmentAt = ( i: number ): Segment => {
+        const s = merged( i );
+        if ( s.blocks.length === 0 ) return s;
+        return { ...s, blocks: abutAcrossBoundary( s, merged( i - 1 ).blocks, merged( i + 1 ).blocks ) };
+    };
     return {
         finishZ: length * SEG_LEN,
         segmentAt,

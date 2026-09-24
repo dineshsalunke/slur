@@ -1095,3 +1095,45 @@ side and evenly place, these are the pillars holding the track, that is the idea
 
 `apps/client/app/game/scene/{monolith-config,monolith-field,monolith-transforms,monolith-group,monoliths}` ·
 `docs/ADD.md` §4.
+
+---
+
+## ADR-019 — Close blocks merge into one larger block
+
+**Date:** 2026-09-24 · **Status:** Accepted (owner picked option 5 of the #244 RFC, via slur-supervisor)
+
+### Context
+
+The generator left clusters of 2–3 small staggered blocks close together. On 9 seeds there were 1,577
+close pairs: 304 slits (x-gap under `MAX_SHIP_WIDTH`, 4u) inside one segment, and 1,063 pockets (z-gap
+under the longest hull, 6u) across a segment boundary.
+
+### Decision
+
+`sim/merge-blocks.ts`, applied in `makeProcgenTrack`:
+
+1. **In a segment,** a close pair (slit, pocket or diagonal) becomes one block, their bounding box. The
+   merge repeats until no pair is left. A merge is refused when it drops `passableCorridorWidth` below
+   `MIN_LANE` (or below the width the segment already had).
+2. **Across a segment boundary,** a block grows to the segment edge when a block in the next or previous
+   segment overlaps it in x within a 6u z-gap. The same clearance guard applies. A block never leaves its
+   segment, so `step.ts` still reads only `segmentAtZ( z ± halfL )`.
+
+A merged block keeps the lowest member id. It is fractured only when a member was fractured and the result
+fits the 12 × 12u fracture cap. `segmentAt( i )` builds segments `i − 1` and `i + 1` too, so it stays a
+pure function of the seed and `i`.
+
+Measured on the 8 fairness seeds + 20260921: blocks 4,527 → 4,194, close pairs 1,577 → 176 (slits 0),
+narrowest corridor 8u. Fractured blocks 565 → 471 (94 lost to a merge). `FRACTURE_RATE_*` is unchanged;
+a re-tune is an open owner call.
+
+### Rejected alternatives
+
+The #244 RFC measured seven options. Option 3 was the other candidate: 29% fewer blocks, but a block
+would span segments, so the sim, the client block streamer and pacing would all need cross-segment block
+ownership.
+
+### Affected
+
+`packages/shared/src/sim/{merge-blocks,track}.ts` · `sim/pocket.test.ts` (scan floor 1,000 → 300: the
+merge removes most pockets it scanned).
