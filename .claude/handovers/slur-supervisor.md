@@ -1,92 +1,55 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~13:10
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~16:55
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `supervisor-clears-workers-via-herdr.md`.
 The owner has given standing approval to clear workers at a seam (`herdr agent prompt <pane> "/clear"`, then re-read
-the status line until it shows 0–5%; the first read after /clear can still show the old percent).
+the status line until it shows 0–5%; the first read after /clear can still show the old percent). Grep the status
+line with `│ [0-9]*%`: a bare `[0-9]*%` matches pane text.
 
-## Done this session
+## Done this session (afternoon)
 
-- #241 finish curtain `deabca3` (workerone). #238 results `7943126` `dc856e7` `ae5ec7b` (z-35, no label). #242 menu
-  picker removed `0ab2cb9`, bank code removed `97df771` (workerfour).
-- #231 graze `f5c8ff8` (option D, grazeDepth 0.5u). #232 pocket trap `56711c9` (a hit during stun is a plain stop).
-  Both closed (workerthree).
-- #243 seeker speed from the roster `1f1b0c3` at factor 1.15 (workerthree). Issue OPEN until the owner picks the factor.
-- Pacing branching RFC ruled. R1 route graph + per-class pockets `2812078`. R2 per-arm metrics, easiest/hardest
-  `6e67f53` (workerone). Both opt-in; /pacing unchanged.
+- #247 ship retune `821a78a` (workerfour). Owner-approved: speeds Int 84/60 · Fig 96/58 · Com 112/66 · Pha 90/52 ·
+  Fre 124/30. Brakes 150/130/100/120/150. Strafe keeps each class's pre-change top-speed angle (clamp
+  166/140/136/135/130); accel and damp scaled by the same ratio (Comet accel 290 for the armour-inverse test).
+  Every class angle ≥ 46.4° = TRACK_CONTRACT 65/62. Freighter now threads 98 u/s (0.79 of top), not 69 (owner told).
+- #249 filed: flaky bolt test run-room.test.ts:323 (1 in 8 at HEAD). Not fixed.
+- #248 fracture-shadow check `b0a3977` (workerone). NOT wired: it seals 76% of fractured blocks. Owner: HOLD; solve in
+  the score model. Hook-up diff in workerone's scratchpad (5b01310f…/hookup-248.diff).
+- R4 score RFC rev 2 APPROVED in full; committed `.claude/phases/2026-09-24-r4-score-rfc.md` (798ac1d).
+  Owner model: the track is a score of notes (L/R/J/JJ/held/SMASH/rest), tempo = distance grid, motif library +
+  variation. Register gap: 0.5 s of calm after the END of every move at registerCruise 124, every note pair.
+  Adherence 75% (owner, not 90%), accents 100%, calm tube ±5u, motifs seeded from the n3–n5 transcriber list.
+- ADR-020 text parked at `.claude/phases/2026-09-24-adr-020-pending.md` (9db0be4). It goes into docs/DECISIONS.md
+  after #244's ADR-019 lands.
+- R4 S0 transcriber + /pacing Notes lane `c24f2bb` (#250). Today's tracks: 54% of notes breach the gap; adherence 37%.
 
 ## Workers
 
-| Worker | Pane | Lane | Held files |
-|---|---|---|---|
-| workerone | w2P:pD | #248 check LANDED b0a3977, NOT wired: it seals 76% of fractured blocks, so the owner said HOLD and solve it in the phrase model. Hook-up diff is in workerone's scratchpad. R4 RFC rev 2 APPROVED in full (register gap: 0.5 s after the END of every move at registerCruise 124, every note pair; G3 20u durations, 60u rest; M4 + M1 accents; filler N2/N3/N4; gen:'weave' keeps old seeds; motifs SEEDED from the transcriber; #246/#248 fold in). NOW: S0 transcriber + /pacing notes lane + n-gram motif draft. ADR text comes to me (DECISIONS.md dirty with #244). RFC in workerone's scratchpad fc64b587…/rfc-r4-phrase.md until committed | packages/shared/src/pacing/*, index.ts export lines |
-| workertwo | w2P:pF | /pacing lag: measured, NOT reproduced headless; waiting on the owner's repro | none claimed (routes/pacing/* proposed) |
-| workerthree | w2P:pG | NEW: merge clustered blocks in the generator (owner, screenshot images/3.png in my scratchpad). Issue + RFC first | #243 files until the factor is set |
-| workerfour | w2P:pH | IDLE. #247 LANDED 821a78a (Comet strafeAccel 290 for the armour-inverse test). Filed #249 flaky bolt test (not fixed). Waiting: GDD §5.5 table after workerthree commits GDD.md. Owner flag: Freighter now threads 98 u/s (0.79 of top) vs 69 (0.56). Was: Owner-approved: speeds Int 84/60 · Fig 96/58 · Com 112/66 · Pha 90/52 · Fre 124/30; brakes 150/130/100/120/150; strafe keeps each class's pre-change angle (clamp 166/140/136/135/130), accel and damp scaled by the same ratio. PR #195 paused | ship-classes.ts, ship-classes.test.ts, track-contract.test.ts; GDD §5.5 waits for workerthree |
+| Worker | Pane | Lane | State | Held files |
+|---|---|---|---|---|
+| workerone | w2P:pD | R4 S1 (#250 follow-on): registerCruise 124 + guard, FRACTURE_SHADOW_Z onto it, note-move pilot, notes parser, seeded motif library | BUILDING, claims cleared | constants.ts, sim/fracture-shadow.*, pacing/score.*, pacing/ngrams.*, index.ts export lines, sim/track-contract.test.ts, new sim/score/*, routes/pacing/* |
+| workertwo | w2P:pF | none | idle at 15% (clear before assigning) | none |
+| workerthree | w2P:pG | #244 block merge | built, UNCOMMITTED; commit waits for the owner's approval in its pane | sim/track.ts, sim/merge-blocks.*, sim/pocket.test.ts, docs/GDD.md, docs/DECISIONS.md |
+| workerfour | w2P:pH | NEW: phone play: on-screen touch gamepad, Gamepad API, fullscreen + landscape | issue + PLAN first, builds nothing until the owner approves | apps/client/app/game/input/* (ask before overlays/mount-overlays.tsx, net-canvas.tsx) |
 
-## Owner rulings this session
+## Sequenced behind #244's commit
 
-- Results above the curtain; drop the "Results" label; keep the winner square; remove the bank code. Orbit fallback: no change.
-- Branching: fork = both arms >= 25u + one hull apart; difficulty binds the EASIEST route; a fractured block is a
-  wall for viability AND a conditional arm; dead ends NOT allowed (per class). The owner sends no edited image.
+1. ADR-020 into DECISIONS.md (parked text).
+2. GDD §5.5 class table for #247 (workerfour, or whoever is free).
+3. The #248 hook-up is superseded by R4 (a test on score tracks), so do not apply it to weave tracks.
 
-## ~13:30 update: owner answered items 1–8; all four workers cleared and resumed
+## Open owner questions
 
-- workertwo: Web Worker + scroll paint delay ("scrolling left/right, content shows up late"); then release routes/pacing/*.
-- workerone: X = stop window < ship length; hull z-length 6u; hardest = Viterbi cost; pickups in R4. Generator
-  regenerate-on-trap HELD until #244 lands. R3 after workertwo.
-- workerthree: #243 factor 1.5 (retime fixture), then #244 WAITS on the owner's option (5 vs 3), still unasked-answered.
-- workerfour: merge PR #195 (only open PR) in a detached worktree; conflict list + plan first.
-- #244: OWNER PICKED OPTION 5; sent to workerthree (builds after #243 closes). When it lands, release workerone's
-  regenerate-on-trap step. workertwo claims routes/pacing/* (issue first, headless GPU raster only); workerone
-  claims pacing X rule + 6u hull (cleared).
-- PR #195 (workerfour, worktree ../slur-worktrees/merge-195): only 5 of 33 commits are the PR's. HELD: its base
-  origin/dev 74a7b89 lacks this checkout's 40 unpushed commits. Needs owner: sync (merge origin/dev + push dev),
-  then call A (drop rail bounce; the deck edges are fall-off now), B (port the engine glow only, retune for bloom
-  threshold 0.6), C (push to dev and close #195).
-- #243 CLOSED f9e0373 (factor 1.5). #244 built, UNCOMMITTED: workerthree's commit was classifier-denied; the owner
-  must approve it in pane w2P:pG. Owner call: FRACTURE_RATE ×1.2 (94 fractured lost, 17%) or accept.
-- workerone 1e7160c: X rule (window < 2·halfL) + 6u hull; the solver now uses legalMask (diagonal jump exits).
-  Trapped pockets per class per seed are 9–56, measured on PRE-#244 track.ts. Next: re-measure after #244 commits,
-  then the owner picks regenerate-per-segment vs avoid-at-source. workerone idle, holds pacing/*.
-- #245 /pacing lag DONE 20caf85 (workertwo, idle): chunked polylines, Worker, report via context. routes/pacing/*
-  released; R3 sent to workerone. Owner to retest /pacing scrolling.
-- R3 board LANDED 85077ca (workerone, idle; stills in its scratchpad 0f01f9f0…/r3-*.png). Owner questions: count a
-  zero-demand tie as a dodge? Add quiet bands and trapped pockets to the board? Next pacing step: R4 phrase RFC.
-- R3 BUG (owner, images/4.png in my scratchpad): the hardest route near F4 climbs almost vertically, breaking the
-  strafe clamp. Sent to workerone: find the cause, assert the clamp on every emitted route, issue + fix.
-- #246 (workerone): the slope bug is a MODEL gap. The solver has no strafe acceleration (0 → 65 u/s in one row;
-  sim strafeAccel 165). F4 hardest takes 0.49 s where a ship needs >= 0.62 s. Owner to pick: 1 velocity state in the
-  solver (recommended, ~10× states) · 2 diagnostic only · 3 lower the solver rate.
-The items below are the pre-13:30 queue; only item 9 remains open.
-
-## Open owner questions (relay in this order)
-
-0. #244 block merge (workerthree RFC, relayed): option 5 (in-segment guarded union + boundary abut; close pairs
-   1,577 → 143, blocks −7%, clearance loss 0, ~10% of fractured blocks become sealed) vs option 3 (−29% blocks,
-   needs cross-segment block ownership across sim, client streamer and pacing). Claims (option 5) are clear:
-   sim/track.ts, new sim/merge-blocks.ts(+test), track.test.ts, DECISIONS/GDD lines. It may dissolve workerone's
-   seed 20260921 z 1200–1278 pocket fixture: tell workerone to pin a hand-built fixture then.
-
-1. My proposal awaiting a yes: workertwo moves the analyzer into a Web Worker now (analysis with R1+R2 on may near
-   1 s [inferred]), then hands routes/pacing/* to workerone for R3. R4 phrase RFC after the owner sees the board.
-2. Pocket trap threshold X (now 2u). Suggested: trapped when the stop window < that ship's length (traps phantom +
-   freighter at the owner's z 1200–1278 fixture).
-3. Generator on a trap: suggested regenerate the segment.
-4. Contract hull z-length: suggested the Freighter's 6u.
-5. Seeker factor: 1.15 (landed) or 1.5 (the lowest that catches a Freighter from 500u inside the 20 s TTL; one
-   fixture needs retiming).
-6. "Hardest route" ranking (suggested: keep Viterbi cost); pickups as a reward axis (suggested: yes, in R4).
-7. /pacing lag repro: which action, browser, game tab open?
-8. A lane for workerfour. Options: the perf fixes, the PR 195 rebase.
-9. Older: owner-run `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; click Copy link; review #236.
+- Approve workerthree's #244 commit in pane w2P:pG.
+- #246 is folded into R4. There is no separate choice left.
+- PR #195: sync and A/B/C calls (see git log -p of this file for the detail). Paused.
+- Older: owner-run `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
 
 ## Blocked on permission
 
-`git merge origin/dev` was denied (auto-mode classifier). Local dev may still be behind origin/dev: check
-`git rev-list --left-right --count HEAD...origin/dev`. The owner runs it, or allows it.
+`git merge origin/dev` was denied earlier (auto-mode classifier). Local dev may be behind origin/dev.
 
 ## Uncommitted
 
@@ -94,9 +57,9 @@ none of mine.
 
 ## Next
 
-1. Relay workerthree's block-merge RFC. Claim-check it against workerone (pacing reads the generator, does not write it).
-2. On the owner's answers, dispatch items 1–8 above.
+1. Relay workerfour's phone-play plan to the owner.
+2. On workerone's S1 report: relay the pilot times and any motif that fails the check; then S2 (composer).
 
 ## Lessons → memory
 
-none new. (Re-read a pane's status line after /clear; the first read can be stale.)
+none new.
