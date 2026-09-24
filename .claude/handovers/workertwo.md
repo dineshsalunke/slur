@@ -2,22 +2,29 @@ Agent: workertwo · Lane: in-race HUD Leave + mute restyle (#240) · Updated: 20
 
 ## Goal
 
-Restyle the in-race Leave and mute buttons (top-right, countdown/racing) to the new HUD style
-(`game/hud/*`, `apps/client/DESIGN.md`). The lobby ghost Leave must keep working. Send before/after stills.
+Restyle the in-race Leave and mute buttons to the new HUD style. The lobby ghost Leave must keep
+working. Send before/after stills. DONE, awaiting owner review.
 
 ## Done
 
 - Issue #240 filed.
-- Plan + claims sent to slur-supervisor. Waiting for the owner to clear it. Nothing built.
+- `aee81fb`: ghost style for in-race Leave + mute (`ui/ghost.ts`, `ui/speaker-glyph.tsx`), the
+  click-focus fix (onMouseDown preventDefault), and mute hidden in PHASE.finished (supervisor add).
+  `apps/client/DESIGN.md` gets an "In-race controls" entry.
 
 ## State
 
-- Leave (hud tone) = `HudButton variant="leave"`: magenta border, `rounded-[5px]`. AudioToggle = emoji,
-  `rounded-[5px]`, `backdrop-blur`, cyan `shadow-hud`. Both break DESIGN.md Don'ts (read this session).
-- Plan: both use the lobby ghost treatment (square, 36px, Readout/25 on Deep/60). Mute gets an inline SVG
-  speaker glyph like `ui/chevron.tsx`. The shared classes go in `ui/ghost.ts`.
-- `game/input/keyboard.ts` never preventDefaults Space. A clicked button keeps focus, so a jump presses
-  it again [inferred, not reproduced]. Offered to the owner as an optional fix.
+- At `aee81fb`: client tsc exit 0, biome clean on changed files, vitest 270/270, comment ratchet
+  passes, `impeccable detect` reports none.
+- Tested over CDP in a hosted room (scratch :2591/:5191, headless, DPR 1, muted): after a real mouse
+  click on mute, activeElement is BODY; Space leaves aria-pressed unchanged; Tab focuses Leave.
+- Stills (git-ignored) in `.claude/frame-tap-refs/`: `240-before-racing(-topright).png`,
+  `240-after-racing(-topright,-topright-muted,-topright-focus).png`, `240-after-lobby.png` (ghost
+  Leave unchanged), plus countdown shots.
+- The results Leave keeps the old hud tone (out of scope). The results phase was not shot after the
+  mute-hide edit [unmeasured; code-only change].
+- `pnpm lint` repo-wide fails on untracked `.claude/skills/` files, not on mine.
+- No scratch servers or Chrome running.
 
 ## Uncommitted
 
@@ -25,20 +32,18 @@ None.
 
 ## Held files
 
-Claimed, not yet cleared: `game/overlays/{leave-button,audio-toggle,overlays}.tsx`, new
-`ui/ghost.ts`, new `ui/speaker-glyph.tsx`, `apps/client/DESIGN.md`.
+`game/overlays/{leave-button,audio-toggle,overlays}.tsx`, `ui/ghost.ts`, `ui/speaker-glyph.tsx`, and
+the DESIGN.md "In-race controls" entry, until the owner signs off.
 
 ## Next
 
-1. Wait for the supervisor or owner to clear the plan and answer the Space-focus question.
-2. Take the BEFORE still first: scratch stack on its own ports, headless Chrome (DPR 1, muted), hosted
-   room, countdown, top-right crop. Also one lobby still.
-3. Build → tsc/lint/vitest → run `impeccable detect --json` → AFTER stills → commit → handover.
+1. Wait for the owner's review of the stills. Apply any changes.
+2. Follow-up (not claimed): the results panel Leave still uses HudButton (magenta). It fits
+   workerfour's results strip work.
 
 ## Open questions
 
-1. Owner: include the Space-focus fix (onMouseDown preventDefault) in #240?
-2. Older: R3 wear patches; worktree for the `036645c` stills; the 145 ms bake on the first race frame.
+1. Older: R3 wear patches; worktree for the `036645c` stills; the 145 ms bake on the first race frame.
 
 ## Lessons → memory
 
