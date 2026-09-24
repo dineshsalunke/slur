@@ -1,6 +1,15 @@
-import { MAX_SHIP_WIDTH, TRACK_CONTRACT } from '../constants.js';
+import { type FlightTuning, MAX_SHIP_WIDTH, TRACK_CONTRACT } from '../constants.js';
 import { openRunsAtSlice } from '../sim/clearance.js';
-import { HALF_WIDTH, SEG_LEN, type Segment, segIndexForZ, spanHasZ, type Track } from '../sim/space.js';
+import {
+    type BlockKind,
+    HALF_WIDTH,
+    SEG_LEN,
+    type Segment,
+    segIndexForZ,
+    spanHasZ,
+    spanOverlapsZ,
+    type Track,
+} from '../sim/space.js';
 
 export const PACING_DZ = 1;
 export const PACING_DX = ( TRACK_CONTRACT.weaveStrafeClamp * PACING_DZ ) / TRACK_CONTRACT.pacingCruise / 2;
@@ -10,11 +19,29 @@ export const CELL_BLOCKED = 0;
 export const CELL_GROUND = 1;
 export const CELL_AIR = 2;
 
+export interface PacingHull {
+    halfW: number;
+    halfL: number;
+    footW: number;
+    footL: number;
+    solid: readonly BlockKind[];
+}
+
+export const SOLID_ALL: readonly BlockKind[] = [ 'sealed', 'fractured' ];
+export const SOLID_SEALED: readonly BlockKind[] = [ 'sealed' ];
+
+export const CONTRACT_HULL: PacingHull = { halfW: PACING_HULL, halfL: 0, footW: 0, footL: 0, solid: SOLID_ALL };
+
+export function classHull( t: FlightTuning, slot = 0 ): PacingHull {
+    return { halfW: t.halfW, halfL: t.halfL + slot / 2, footW: t.halfW, footL: t.halfL, solid: SOLID_ALL };
+}
+
 export interface PacingGrid {
     count: number;
     cols: number;
     cells: Uint8Array;
     widest: Float32Array;
+    hull: PacingHull;
 }
 
 export interface FrozenTrack {
@@ -50,47 +77,78 @@ export function sampleZ( k: number ): number {
     return ( k + 0.5 ) * PACING_DZ;
 }
 
-export function columnX( j: number ): number {
-    return -HALF_WIDTH + PACING_HULL + j * PACING_DX;
+export function columnX( j: number, hull: PacingHull = CONTRACT_HULL ): number {
+    return -HALF_WIDTH + hull.halfW + j * PACING_DX;
 }
 
-export function columnCount(): number {
-    return Math.floor( ( 2 * HALF_WIDTH - 2 * PACING_HULL ) / PACING_DX + 1e-9 ) + 1;
+export function columnCount( hull: PacingHull = CONTRACT_HULL ): number {
+    return Math.floor( ( 2 * HALF_WIDTH - 2 * hull.halfW ) / PACING_DX + 1e-9 ) + 1;
 }
 
-export function nearestColumn( x: number ): number {
-    const j = Math.round( ( x + HALF_WIDTH - PACING_HULL ) / PACING_DX );
-    return Math.min( Math.max( j, 0 ), columnCount() - 1 );
+export function nearestColumn( x: number, hull: PacingHull = CONTRACT_HULL ): number {
+    const j = Math.round( ( x + HALF_WIDTH - hull.halfW ) / PACING_DX );
+    return Math.min( Math.max( j, 0 ), columnCount( hull ) - 1 );
 }
 
-function blockedAt( seg: Segment, x: number, z: number ): boolean {
-    return seg.blocks.some( ( b ) => b.z0 <= z && z < b.z1 && b.x0 < x + PACING_HULL && b.x1 > x - PACING_HULL );
+function blockedAt( segs: Segment[], hull: PacingHull, x: number, z: number ): boolean {
+    return segs.some( ( seg ) =>
+        seg.blocks.some(
+            ( b ) =>
+                hull.solid.includes( b.kind ) &&
+                b.z0 - hull.halfL <= z &&
+                z < b.z1 + hull.halfL &&
+                b.x0 < x + hull.halfW &&
+                b.x1 > x - hull.halfW,
+        ),
+    );
 }
 
-function groundAt( seg: Segment, x: number, z: number ): boolean {
-    return seg.floors.some( ( f ) => spanHasZ( seg, f, z ) && f.x0 <= x && x <= f.x1 );
+function floorTouches( seg: Segment, hull: PacingHull, x: number, z: number ): boolean {
+    return seg.floors.some( ( f ) => {
+        const inZ = hull.footL === 0 ? spanHasZ( seg, f, z ) : spanOverlapsZ( seg, f, z - hull.footL, z + hull.footL );
+        return inZ && f.x0 <= x + hull.footW && x - hull.footW <= f.x1;
+    } );
 }
 
-function classifyRow( seg: Segment, z: number, cols: number, out: Uint8Array, base: number ): void {
+function groundAt( segs: Segment[], hull: PacingHull, x: number, z: number ): boolean {
+    return segs.some( ( seg ) => floorTouches( seg, hull, x, z ) );
+}
+
+function rowSegments( frozen: FrozenTrack, hull: PacingHull, z: number ): Segment[] {
+    const reach = Math.max( hull.halfL, hull.footL );
+    const out: Segment[] = [];
+    for ( let i = segIndexForZ( z - reach ); i <= segIndexForZ( z + reach ); i++ )
+        out.push( frozen.track.segmentAt( i ) );
+    return out;
+}
+
+function classifyRow(
+    segs: Segment[],
+    hull: PacingHull,
+    z: number,
+    cols: number,
+    out: Uint8Array,
+    base: number,
+): void {
     for ( let j = 0; j < cols; j++ ) {
-        const x = columnX( j );
-        if ( blockedAt( seg, x, z ) ) out[ base + j ] = CELL_BLOCKED;
-        else out[ base + j ] = groundAt( seg, x, z ) ? CELL_GROUND : CELL_AIR;
+        const x = columnX( j, hull );
+        if ( blockedAt( segs, hull, x, z ) ) out[ base + j ] = CELL_BLOCKED;
+        else out[ base + j ] = groundAt( segs, hull, x, z ) ? CELL_GROUND : CELL_AIR;
     }
 }
 
-export function buildGrid( frozen: FrozenTrack ): PacingGrid {
+export function buildGrid( frozen: FrozenTrack, hull: PacingHull = CONTRACT_HULL ): PacingGrid {
     const count = Math.round( ( frozen.length * SEG_LEN ) / PACING_DZ );
-    const cols = columnCount();
+    const cols = columnCount( hull );
     const cells = new Uint8Array( count * cols );
     const widest = new Float32Array( count );
     for ( let k = 0; k < count; k++ ) {
         const z = sampleZ( k );
-        const seg = frozen.segments[ segIndexForZ( z ) ];
-        classifyRow( seg, z, cols, cells, k * cols );
+        classifyRow( rowSegments( frozen, hull, z ), hull, z, cols, cells, k * cols );
         let best = 0;
-        for ( const [ lo, hi ] of openRunsAtSlice( seg, z ) ) best = Math.max( best, hi - lo );
+        for ( const [ lo, hi ] of openRunsAtSlice( frozen.segments[ segIndexForZ( z ) ], z ) )
+            best = Math.max( best, hi - lo );
         widest[ k ] = best;
     }
-    return { count, cols, cells, widest };
+    return { count, cols, cells, widest, hull };
 }

@@ -5,7 +5,9 @@ import { measureDemand, type PacingDemand } from './demand.js';
 import { buildGrid, freezeTrack, type PacingGrid } from './grid.js';
 import { type PacingIntent, procgenIntent } from './intent.js';
 import { airDistance, measureGaps, type PacingGap } from './jump-window.js';
+import { type PacingPocket, rosterPockets } from './pockets.js';
 import { type ReferencePath, referencePath } from './reference-path.js';
+import { analyzeRoutes, type PacingRoutes } from './route-graph.js';
 
 export const PACING_JUMP_SOURCE = 'DEFAULT_JUMP';
 
@@ -13,6 +15,11 @@ export interface PacingJump {
     source: string;
     single: number;
     double: number;
+}
+
+export interface PacingOptions {
+    routes?: boolean;
+    pockets?: boolean;
 }
 
 export interface PacingReport {
@@ -27,10 +34,16 @@ export interface PacingReport {
     demand: PacingDemand;
     gaps: PacingGap[];
     jump: PacingJump;
+    routes: PacingRoutes | null;
+    pockets: PacingPocket[] | null;
     intent: PacingIntent | null;
 }
 
-export function analyzeTrack( source: Track, tuning: FlightTuning = DEFAULT_TUNING ): Omit< PacingReport, 'intent' > {
+export function analyzeTrack(
+    source: Track,
+    tuning: FlightTuning = DEFAULT_TUNING,
+    options: PacingOptions = {},
+): Omit< PacingReport, 'intent' > {
     const cruise = TRACK_CONTRACT.pacingCruise;
     const frozen = freezeTrack( source );
     const grid = buildGrid( frozen );
@@ -52,11 +65,13 @@ export function analyzeTrack( source: Track, tuning: FlightTuning = DEFAULT_TUNI
         demand: measureDemand( path, cruise ),
         gaps: measureGaps( frozen, grid, path, tuning ),
         jump,
+        routes: options.routes === true ? analyzeRoutes( frozen, grid, jump.double, path.maxStep ) : null,
+        pockets: options.pockets === true ? rosterPockets( frozen ) : null,
     };
 }
 
-export function analyzeDescriptor( d: TrackDescriptor ): PacingReport {
-    const report = analyzeTrack( resolveTrack( d ) );
+export function analyzeDescriptor( d: TrackDescriptor, options: PacingOptions = {} ): PacingReport {
+    const report = analyzeTrack( resolveTrack( d ), DEFAULT_TUNING, options );
     const intent = d.kind === 'procgen' ? procgenIntent( d, report.segments ) : null;
     return { ...report, intent };
 }
