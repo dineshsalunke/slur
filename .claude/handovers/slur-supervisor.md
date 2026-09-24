@@ -49,10 +49,18 @@ above z-30, independently.
 
 none of mine.
 
+## Since the seam (~04:15)
+
+- #240 landed `aee81fb` (workertwo). Stills in `.claude/frame-tap-refs/240-*`. Its claims are released.
+- workertwo cleared and given the PR merge lane (188, 225, then 230 + 237 with conflicts resolved; 195 out of scope).
+  It sends its conflict files for a claim check before the first write.
+- QUEUED for workerfour after #238 (owner): remove the ship picker from the main menu. Keep the ship store.
+  Plan + issue first.
+
 ## Next
 
 1. Relay each lane's result (stills/SHAs) to the owner.
-2. Assign the PR merge to the first free worker (above).
+2. Check workertwo's merge claims against workerone (net-*), workerthree (audio, test-level), workerfour (results).
 
 ## Lessons → memory
 
