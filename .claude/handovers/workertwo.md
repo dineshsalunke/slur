@@ -40,20 +40,18 @@ None.
 
 ## Held files
 
-- `apps/client/tapper/beat-analysis.ts`, `beat-analysis-cli.ts`, `beat-analysis.test.ts`,
-  `drum-onsets.ts`, `drum-onsets.test.ts`. Release them when the supervisor closes the lane.
+None. The supervisor released all claims (lane closed).
 
 ## Next
 
-1. Wait for the supervisor. Possible follow-ups:
-   - Make `barPhase` kick-aware, so the downbeat lands on the kick. This changes `bars` values.
-   - Add a per-band lag for the kick (about -15 ms).
-   - Report a triplet flag or a swing estimate for each song.
+1. Stay idle until the supervisor assigns new work.
+2. Parked follow-ups (not approved): add a kick lag of about -15 ms; report a triplet or swing flag
+   for each song.
 
 ## Open questions
 
-- Should `bars` move so that the kick lands on beat 1? This needs owner or supervisor approval. It
-  changes the values in an existing field.
+None. Kick-aware `barPhase` was declined by the supervisor. A one-beat offset of the downbeat does not
+change the feel, and workerone already consumes `bars`.
 
 ## Lessons → memory
 
