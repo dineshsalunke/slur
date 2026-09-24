@@ -64,3 +64,4 @@ lives in its own file beside this one.
 - [Touch test over CDP](touch-test-over-cdp.md) — touch emulation makes `pointer: coarse` match; dispatchTouchEvent reaches the pad; sample the server ship ≥300 ms after a tap
 - [Easiest route moves early](easiest-route-moves-early.md) — referencePath takes least travel, as early as allowed; pin the path at each note, a one-sided tube wall forces only 1u
 - [Fractured blocks rarely have a clear lane](fractured-blocks-rarely-have-a-clear-lane.md) — a post-hoc fracture-shadow demotion costs ~76% at today's density; reserve the rest at placement (#248, R4)
+- [Bash tool runs fish](bash-tool-runs-fish.md) — bash loops and `set --` fail with misleading errors; wrap in `bash -c`
