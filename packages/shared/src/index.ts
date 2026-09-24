@@ -5,6 +5,7 @@ export * from './combat/projectiles.js';
 export * from './combat/seeker.js';
 export * from './constants.js';
 export * from './pacing/analyze.js';
+export * from './pacing/arms.js';
 export * from './pacing/demand.js';
 export * from './pacing/grid.js';
 export * from './pacing/intent.js';

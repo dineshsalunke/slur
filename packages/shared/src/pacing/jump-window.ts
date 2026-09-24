@@ -113,7 +113,7 @@ export function airDistance( tuning: FlightTuning, mode: JumpMode ): number {
     return 0;
 }
 
-function blockFree( track: Track ): Track {
+export function blockFree( track: Track ): Track {
     const cache = new Map< number, Segment >();
     const segmentAt = ( i: number ): Segment => {
         let s = cache.get( i );
@@ -224,15 +224,15 @@ function groundThreads( grid: PacingGrid, k0: number, k1: number, maxStep: numbe
     return true;
 }
 
-interface Hole {
+export interface PacingHole {
     j: number;
     k0: number;
     len: number;
 }
 
-function holeAt( grid: PacingGrid, j: number, k0: number, k1: number ): Hole | null {
+export function holeAt( grid: PacingGrid, j: number, k0: number, k1: number ): PacingHole | null {
     const { cols, cells } = grid;
-    let best: Hole | null = null;
+    let best: PacingHole | null = null;
     let k = k0;
     while ( k < k1 ) {
         if ( cells[ k * cols + j ] !== CELL_AIR ) {
@@ -247,8 +247,8 @@ function holeAt( grid: PacingGrid, j: number, k0: number, k1: number ): Hole | n
     return best;
 }
 
-function deepestHole( grid: PacingGrid, k0: number, k1: number ): Hole | null {
-    let best: Hole | null = null;
+function deepestHole( grid: PacingGrid, k0: number, k1: number ): PacingHole | null {
+    let best: PacingHole | null = null;
     for ( let j = 0; j < grid.cols; j++ ) {
         const h = holeAt( grid, j, k0, k1 );
         if ( h !== null && ( best === null || h.len > best.len ) ) best = h;
@@ -284,7 +284,7 @@ export function measureGaps(
 
 const NO_HOLE = { x: 0, holeLen: 0, rolls: true, single: null, double: null };
 
-function holeShape( hole: Hole ): { x: number; lipZ: number; holeLen: number } {
+function holeShape( hole: PacingHole ): { x: number; lipZ: number; holeLen: number } {
     return { x: columnX( hole.j ), lipZ: sampleZ( hole.k0 ) - PACING_DZ / 2, holeLen: hole.len * PACING_DZ };
 }
 
@@ -293,7 +293,16 @@ function firstAir( air: Uint8Array, k0: number, k1: number ): number {
     return -1;
 }
 
-function measureHole( bare: Track, tuning: FlightTuning, hole: Hole ) {
+export interface HoleMeasure {
+    x: number;
+    lipZ: number;
+    holeLen: number;
+    rolls: boolean;
+    single: TakeoffWindow | null;
+    double: TakeoffWindow | null;
+}
+
+export function measureHole( bare: Track, tuning: FlightTuning, hole: PacingHole ): HoleMeasure {
     const { x, lipZ, holeLen } = holeShape( hole );
     const holeEnd = lipZ + holeLen;
     const rolls = clearsGap( bare, tuning, x, lipZ, holeEnd + tuning.halfL + 2, 'none' );

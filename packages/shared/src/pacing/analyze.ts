@@ -1,6 +1,7 @@
 import { DEFAULT_TUNING, type FlightTuning, TRACK_CONTRACT } from '../constants.js';
 import type { Anchor, Segment, Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
+import { analyzeArms, type PacingArms } from './arms.js';
 import { measureDemand, type PacingDemand } from './demand.js';
 import { buildGrid, freezeTrack, type PacingGrid } from './grid.js';
 import { type PacingIntent, procgenIntent } from './intent.js';
@@ -20,6 +21,7 @@ export interface PacingJump {
 export interface PacingOptions {
     routes?: boolean;
     pockets?: boolean;
+    arms?: boolean;
 }
 
 export interface PacingReport {
@@ -35,6 +37,7 @@ export interface PacingReport {
     gaps: PacingGap[];
     jump: PacingJump;
     routes: PacingRoutes | null;
+    arms: PacingArms | null;
     pockets: PacingPocket[] | null;
     intent: PacingIntent | null;
 }
@@ -53,6 +56,9 @@ export function analyzeTrack(
         double: airDistance( tuning, 'double' ),
     };
     const path = referencePath( grid, cruise, jump.double );
+    const wantArms = options.arms === true;
+    const routes =
+        options.routes === true || wantArms ? analyzeRoutes( frozen, grid, jump.double, path.maxStep ) : null;
     return {
         length: frozen.length,
         finishZ: source.finishZ,
@@ -65,7 +71,8 @@ export function analyzeTrack(
         demand: measureDemand( path, cruise ),
         gaps: measureGaps( frozen, grid, path, tuning ),
         jump,
-        routes: options.routes === true ? analyzeRoutes( frozen, grid, jump.double, path.maxStep ) : null,
+        routes,
+        arms: wantArms && routes !== null ? analyzeArms( frozen, grid, routes, path, tuning, cruise ) : null,
         pockets: options.pockets === true ? rosterPockets( frozen ) : null,
     };
 }
