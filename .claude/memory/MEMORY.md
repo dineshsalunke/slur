@@ -67,5 +67,4 @@ lives in its own file beside this one.
 - [ast-grep trailing comma matches nothing](ast-grep-trailing-comma-matches-nothing.md) — an array-element pattern with its comma is an ERROR node; use Edit for list inserts
 - [Bash tool runs fish](bash-tool-runs-fish.md) — bash loops and `set --` fail with misleading errors; wrap in `bash -c`
 - [Song tracks are a throwaway experiment](song-tracks-are-a-throwaway-experiment.md) — #253 tooling is disposable; keep it isolated; only a distilled generator survives
-- [Never pkill by pattern](never-pkill-by-pattern.md) — kill the PID you saved; BSD pkill reads trailing flags as patterns and SIGTERMed the owner's apps
 - [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — a BSD pkill turned `-U 501 --` into patterns and SIGTERMed the owner's apps; record your PIDs
