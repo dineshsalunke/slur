@@ -1,41 +1,40 @@
-Agent: workerone · Lane: R4 S1 — registerCruise, noteMove pilot, motif library (#250) · Updated: 2026-09-24 17:10
+Agent: workerone · Lane: R4 S2 — composer (#250) · Updated: 2026-09-24
 
 The approved RFC: `.claude/phases/2026-09-24-r4-score-rfc.md` (798ac1d). Older versions of this file hold
-history: e868c04 (rev 2 numbers), 192787f (R4 brief), d520f36 (R1 rulings), f398d98 (S0 seam + owner answers).
+history: 4eacff7 (S1 seam), e868c04 (rev 2 numbers), 192787f (R4 brief), d520f36 (R1 rulings), f398d98 (S0).
 
 ## Goal
 
-- S1 (RFC §12 step 2): freeze `TRACK_CONTRACT.registerCruise`, measure note moves with a `simulate()` pilot,
-  and ship the motif library, parser and load-time validation. No generator change.
+- S2 (RFC §12 step 3): envelope → motif chain → score, with G3 durations. Pure data, testable alone. No
+  generator change.
 
 ## Done
 
 - `2812078` R1 · `6e67f53` R2 · `1e7160c` trap rule + 6u hull · `85077ca` R3 board · `b0a3977` #248 pass (unwired).
-- `798ac1d` R4 RFC rev 2 · `c24f2bb` S0 (#250).
-- S1 (this seam, SHA in the commit that carries this file):
-  - `constants.ts`: `TRACK_CONTRACT.registerCruise = 124`; `rosterContractFailures` fails a class with
-    `maxCruise > 124`; `SCORE_ADHERENCE_FLOOR 0.75`, `SCORE_ACCENT_ADHERENCE 1`, `CALM_TUBE_HALF 5`.
-  - `sim/fracture-shadow.ts`: `FRACTURE_SHADOW_Z = S × registerCruise × max(smashKeep)` (still 55.8u).
-  - `sim/score/note-move.ts`: `CONTRACT_TUNING`, `strafePlan` (hold + counter-press search), `measureNoteMoves`,
-    `NOTE_MOVE_S` at load; throws if the contract ship cannot play a note.
-  - `sim/score/notes.ts`: tokens `l r L R < > J JJ S .`, `!` accent, `parseNotes`, `formatNotes`, G3 `noteDuration`.
-  - `sim/score/motifs.ts`: `MOTIF_LIBRARY` (owner's 15 S0 motifs), `motifFailures`, `motifFlightFailures`
-    (flat-floor flight at 55 and 124 u/s), `motifDigest`, `MOTIFS`; throws at load on any failure.
-  - `pacing/score.ts`: cruise from `registerCruise`, moves from the pilot; held uses the 3-cell move.
-  - `pacing/jump-window.ts`: `JumpPilot`, `newJumpPilot`, `steerJump` exported (renamed from private names).
+- `798ac1d` R4 RFC rev 2 · `c24f2bb` S0 · `4eacff7` S1.
+- S2 (this seam, SHA in the commit that carries this file):
+  - `sim/score/compose.ts`: `composeScore( seed, length )` → `{ phrases, notes }`. Each note carries `z` (onset),
+    `x` (line after the note) and `phrase`. `choosePhrase` picks a weighted motif whose intensity band holds
+    `intensityAt()`. `rollVariation` / `varyMotif` do repeat (1–`SCORE_REPEAT_MAX` 2), mirror and stretch
+    (stretch k inserts k−1 rests between notes). The sub-seed is `hash2( seed ^ SALT_SCORE, phrase × 5 + attempt )`.
+    If the line leaves `±SCORE_LINE_LIMIT` (30u), the other mirror is forced, but only if `motif.mirror` allows it.
+    Else a re-roll, up to `SCORE_ATTEMPTS` 4, then one rest. Breath after a phrase:
+    `round( 4 × ( 1 − intensity ) )` rests. Below `REST_INTENSITY` there are rests only.
+  - `sim/score/motifs.ts` (S1 fix): the flight check now aims each move from the ship's actual x at the onset,
+    not from the absolute line. The old dead reckoning summed each plan's landing error (step 1 lands 0.034u
+    short, held 0.167u short). So `l l l < R` failed at 0.269u > the 0.25u settle tolerance. Chained scores
+    showed it: before the fix, 20 of 60 whole-score flights failed. Motif data and digest are unchanged.
 
 ## State
 
-- Pilot vs RFC §3: step1 0.3667 s (0.367) · step2 0.550 s (0.550) · J 0.5167 s (0.517) · JJ 1.150 s (1.150).
-  New: held (3 cells) 0.633 s.
-- G3 durations: l/r 120 · L/R 140 · </> 160 · J 140 · JJ 220 · S 80 · rest 60 (u).
-- All 15 seeded motifs pass the load-time check at 55 and 124 u/s. Library digest 1779460072.
-- Tests: 286/286 shared in a scratch copy at HEAD + S1 (273 before + 13 new). biome clean on S1 files. Comment
-  ratchet clean. Client typecheck not run [no client file uses a changed name — rg, this session].
-- Shared module load 122 ms total in node [measured once]. The pilot search alone is ~19 ms.
-- S0 numbers after the held change (seeds 1–30): easiest 1,380 notes, 754 breaches (was 739). Band line 2,655
-  notes, 2,505 breaches (was 2,476). Adherence 993/2,655 = 37.4% (unchanged).
-- Left = −x is still [inferred] from `step.ts`.
+- Tests: 296/296 shared in a scratch copy at HEAD + S2 (286 + 10 new). biome clean, comment ratchet clean,
+  `tsc -b` clean. Client typecheck on S1 (4eacff7): clean.
+- Played notes per track, seeds 1–30: min 35 · median 42 · max 47 · mean 41.3 (the RFC target is 28–56).
+- Phrases over 30 seeds: 486, of which 258 are single-rest phrases. 198 phrase boundaries between played notes.
+- Every seed 1–30 flies clean end to end with the contract ship at 55 and 124 u/s. Cross-phrase gap ≥ move ×
+  124 + 62u on all 198 boundaries.
+- Composing 30 seeds takes ~14 ms [measured once].
+- Motif use is uneven: n4-5 28, n3-5 27, n3-4 20 … n4-1 7, n4-4 7 (the bands overlap unevenly).
 
 ## Uncommitted
 
@@ -47,19 +46,19 @@ None.
   · the pacing and score export lines in `packages/shared/src/index.ts` · `sim/fracture-shadow.ts` + test ·
   `constants.ts` (S1 lines) · `sim/track-contract.test.ts` (S1 tests).
 
-## Next — S2 (not started; needs the supervisor's go)
+## Next — S3 (not started; needs the supervisor's go)
 
-1. Composer (RFC §12 step 3): envelope → motif chain → score, with G3 durations. Pure data, testable alone.
-2. Variation as a pure function of `(motif, sub-seed)`: repeat, mirror (forced at the band edge), stretch.
-3. Forks (`J|R`, two voices, RFC §7) are not in the parser yet. `parseNotes('J|R')` throws. Add in S2 or S3.
+1. Emitter (RFC §12 step 4): score → geometry (M4 band on the score line + M1 accent gates + N2/N3 filler)
+   behind `gen: 'score'` on `ProcgenDescriptor` (new field last, plain).
+2. Transcribe round-trip: emit → S0 transcriber → the same notes.
+3. Forks (`J|R`, two voices) are still not in the parser. Planned for S4.
 
 ## Open questions
 
-- none for the owner. The seeded motifs carry placeholder fields: intensity n3 [0, 0.6] · n4 [0.3, 0.9] ·
-  n5 [0.5, 1], weight 1, mirror true, stretch [1, 2]. The owner edits them in `sim/score/motifs.ts`.
-- **Supervisor:** the R3 board does not show quiet-time bands or trapped pockets. Say if either is needed.
+- Owner: breath rests (`4 × (1 − intensity)`), repeat max 2 and the 30u line limit are my placeholders. The
+  owner can tune them.
+- Owner: a no-mirror motif at the band edge re-rolls instead of mirroring. I read `mirror: false` as "never".
 
 ## Lessons → memory
 
-- `.claude/memory/test-your-lane-against-head.md` — updated: never run `pnpm test` in a scratch copy
-  (it starts `pnpm install` through the symlinked `node_modules`); call tsc and `node --test` directly.
+- none (the dead-reckoning fix is recorded in this commit and in the Done list above).

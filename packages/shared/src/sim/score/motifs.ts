@@ -96,7 +96,7 @@ function startNote( f: Flight, at: string ): void {
 }
 
 function flyNote( f: Flight, n: MotifNote, at: string ): void {
-    const target = f.line + n.dir * n.cells * CELL;
+    const target = f.s.x + n.dir * n.cells * CELL;
     const plan = n.dir === 0 ? null : planFor( f.plans, f.tuning, n.cells );
     if ( n.dir !== 0 && plan === null )
         f.out.push( `${ at }: the contract ship cannot settle a ${ n.cells }-cell step` );

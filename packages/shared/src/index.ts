@@ -33,6 +33,7 @@ export * from './sim/input.js';
 export * from './sim/intensity.js';
 export * from './sim/noise.js';
 export * from './sim/rng.js';
+export * from './sim/score/compose.js';
 export * from './sim/score/motifs.js';
 export * from './sim/score/note-move.js';
 export * from './sim/score/notes.js';
