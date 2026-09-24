@@ -1,28 +1,28 @@
-Agent: workerthree · Lane: bounce fixes, #231 + #232 (both closed) · Updated: 2026-09-24
+Agent: workerthree · Lane: seeker speed from the roster, #243 (open, awaiting the owner's factor) · Updated: 2026-09-24
 
 ## Goal
 
-#231: a shallow block clip always glances. #232: staggered blocks must not stun-lock a ship. Lane complete.
+The homing seeker must outrun every ship class. Its top speed = fastest `maxCruise` × a data factor.
 
 ## Done
 
-- f5c8ff8: fix(sim), #231. `entryPush()` in `sim/step.ts` uses the entry face from the previous tick.
-  An end-face entry with lateral overlap < `FlightTuning.grazeDepth` (0.5u, owner) resolves on x.
-  `sim/graze.test.ts`. ADR-014 as-built. Issue closed with the sweep table.
-- 56711c9: fix(sim), #232. In `bounceOffBlock()`, a hit while `stunTimer > 0` pushes out and stops: no
-  knockback, no stun refresh. `sim/pocket.test.ts` pins seed 1 z≈6019 and scans every fairness-seed
-  pocket. ADR-014 as-built. Issue closed with the scan table.
+- 1f1b0c3: feat(combat), #243. `SEEKER_SPEED = 120` → `SEEKER_SPEED_FACTOR = 1.15` (`combat/constants.ts`).
+  `SimConfig.seekerSpeed` → `seekerSpeedFactor`. `ship-classes.ts` exports `FASTEST_CRUISE`.
+  `seeker.ts` exports `seekerTopSpeed(cfg)`, used by `advance()`. `seeker.test.ts`: the ramp test, a
+  roster pin (top speed > every class `maxCruise`), and the trail-follow fixture target moved 250 → 350u.
+  ADR-017 as-built line updated. Measurements posted on #243.
 
 ## State
 
-- #231, 100 phases. Fighter 0.3u: 68% glance before, 100% after. 0.55–0.8u: 0% glance.
-- #232, 8 seeds × 5 classes, 1,213 pockets. Throttle held, stun streak > bounceStun: 729 → 1 (0.0005u
-  slack, not enterable). Max bounces in 5 s: 149 → 19. Release + strafe, still held after 1 s: 738 → 23
-  (3-sided enclosures with full control; dead ends are workerone's route-graph lane).
-- Tests at 56711c9: shared 235/235, server 15/15, client 279/279. Typecheck, biome and the comment
+- No boost exists: `sim/step.ts:21` clamps `vz` to `maxCruise`. The ramp (0.3 s) is not the limit.
+- Freighter (124) at 120 u/s: 0 hits. At 143 (×1.15): median 2.8 / 7.6 / 15.5 s / never for launch
+  gaps 60 / 150 / 300 / 500u. At 186 (×1.5): 0.9 / 2.4 / 4.8 / 8.0 s. TTL 20 s. Full table on #243.
+- At factor 1.5 the fixture `an early full-rate strafe does not shake it` fails (arrival ~2.3 s is inside
+  its 3 s strafe). A move to 1.5 must retime that fixture.
+- Tests at 1f1b0c3: shared 236/236, server 15/15, client 279/279. Typecheck, biome and the comment
   check are clean.
-- Scratch scripts: `stunlock.mjs`, `pocket-scan*.mjs`, `sweep.ts` (session 93637031). No servers and
-  no Chrome were started.
+- Scratch: `seeker-speed.mjs` (session 5add3877), `SPEEDS=120,143,... node seeker-speed.mjs`. No
+  servers and no Chrome were started.
 
 ## Uncommitted
 
@@ -30,27 +30,20 @@ Agent: workerthree · Lane: bounce fixes, #231 + #232 (both closed) · Updated: 
 
 ## Held files
 
-- none (the #231/#232 claims are released)
+- The #243 claims (`combat/constants.ts`, `sim-config.ts`, `ship-classes.ts`, `combat/seeker.ts`,
+  `combat/seeker.test.ts`, `docs/DECISIONS.md`) until the owner picks the factor.
 
 ## Next
 
-1. NEW LANE assigned by slur-supervisor (owner-approved direction), NOT STARTED: the homing seeker is
-   slower than the fastest ship. Facts from the supervisor [unmeasured by me]: `combat/constants.ts:28`
-   `SEEKER_SPEED = 120`; Freighter `maxCruise = 124` (`ship-classes.ts:84`); `seeker.ts:271` ramps with
-   `seekerRampS`. Steps:
-   a. File a GitHub issue.
-   b. Derive the seeker speed from the roster: max `maxCruise` × a factor, with the factor as data.
-      Default 1.15 (~143u/s) unless the owner picks another.
-   c. Check whether any boost or pickup lifts a ship past `maxCruise`, and whether the ramp time lets
-      the seeker catch a Freighter at all.
-   d. Measure time-to-hit on a Freighter and a Comet at max cruise, before and after, over the fairness
-      seeds (`.claude/memory/measure-a-homing-rule-on-procgen.md`).
-   e. Send claims to slur-supervisor before the first write. Build after the claim check (no RFC gate).
+1. Wait for the owner's factor (1.15 vs 1.5) through slur-supervisor.
+2. If it changes: edit `SEEKER_SPEED_FACTOR` and the "(1.15)" in ADR-017. At 1.5, retime the early-strafe
+   fixture. Rerun `seeker-speed.mjs`, comment on #243, commit, close #243.
+3. If 1.15 stands: close #243 and release the claims.
 
 ## Open questions
 
-- none
+- Owner: keep factor 1.15, or raise it (×1.5 reaches a Freighter at the full 500u gap inside TTL)?
 
 ## Lessons → memory
 
-- `.claude/memory/ab-an-old-sim-from-git-in-scratch.md`
+- none
