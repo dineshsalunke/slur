@@ -33,7 +33,10 @@ drift < 1 beat at bars 8/28/60/96/finish.
 - workerone DONE 61063be (handover f194d47): perfect-freighter drift 0.000 beats at every checkpoint on all
   13 variants (bundle analysis). 260/260 replay match. groove.ts gridStart = 260. IDLE, holds nothing.
   Human freighter drifts after bumps (pro −5 beats by bar 96; rookie −350 to −520 at the finish).
-  Owner Q: re-sync the audio to the ship after a bump?
+  The re-sync question is DROPPED. Owner: "we are not making a rythm game"; the song only helps the owner see the moves
+  (memory updated 82137b9).
+- ~00:15 workerone dispatched: 14th variant `conductor` (4/4 pattern down-in-out-up, landing on the
+  downbeat, half-time, size = loudness, legato/staccato, prep beat, fermata = open stretch).
 - workerfour dispatched ~00:05: LIVE drift check (audio clock) on groove/groove-tight/envelope, plus one pro run.
 
 ## Landed this session (all local, not pushed)
