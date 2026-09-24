@@ -944,7 +944,8 @@ shake. The owner's steer: *"it should be HARDER TO SHAKE."*
   at `seekerDropRate` (12 u/s) to `seekerStrikeY` (0.5u), so a jumping ship visibly passes over it.
   Blocks are `BLOCK_HEIGHT` (8u) tall, so the seeker can never overfly one.
 - **Flight path: it follows the target (owner-approved plan, 2026-09-23).** Forward speed ramps from the
-  shooter's `vz` to `seekerSpeed` (120 u/s) over `seekerRampS` (0.3s). Laterally:
+  shooter's `vz` to its top speed over `seekerRampS` (0.3s). The top speed is `FASTEST_CRUISE` ×
+  `seekerSpeedFactor` (1.15), so no class outruns it (#243). Laterally:
   - *Leg 1* is the LOS line from launch to the target's position at launch. LOS proved it clear.
   - After that, the seeker follows the **target's own flown path**: every tick it records the target's
     `(z, x)` when the target has moved `seekerTrailStep` (1u) since the last sample, at most

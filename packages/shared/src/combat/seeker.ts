@@ -1,4 +1,4 @@
-import { tuningForShip } from '../ship-classes.js';
+import { FASTEST_CRUISE, tuningForShip } from '../ship-classes.js';
 import { type Block, segIndexForZ, type Track } from '../sim/space.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { SEEKER_SPAWN_AHEAD } from './constants.js';
@@ -267,9 +267,14 @@ function targetAlive( t: SeekerShip | undefined ): t is SeekerShip {
     return t !== undefined && ! t.dead && ! t.spectating && ! t.finished;
 }
 
+export function seekerTopSpeed( cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
+    return cfg.seekerSpeedFactor * FASTEST_CRUISE;
+}
+
 function advance( seeker: SeekerState, dt: number, cfg: SimConfig ): number {
-    const accel = cfg.seekerSpeed / cfg.seekerRampS;
-    seeker.vz = seeker.vz < cfg.seekerSpeed ? Math.min( cfg.seekerSpeed, seeker.vz + accel * dt ) : cfg.seekerSpeed;
+    const top = seekerTopSpeed( cfg );
+    const accel = top / cfg.seekerRampS;
+    seeker.vz = seeker.vz < top ? Math.min( top, seeker.vz + accel * dt ) : top;
     const sweep = seeker.vz * dt;
     seeker.z += sweep;
     return sweep;

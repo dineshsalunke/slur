@@ -10,7 +10,7 @@ import {
     SEEKER_LOCK_RANGE,
     SEEKER_RAMP_S,
     SEEKER_RATIO,
-    SEEKER_SPEED,
+    SEEKER_SPEED_FACTOR,
     SEEKER_STRIKE_Y,
     SEEKER_STUN_S,
     SEEKER_TRACK_TURN,
@@ -33,7 +33,7 @@ export interface SimConfig {
     pickupRespawnS: number;
     seekerRatio: number;
     seekerLockRange: number;
-    seekerSpeed: number;
+    seekerSpeedFactor: number;
     seekerRampS: number;
     seekerTrackTurn: number;
     seekerTurn: number;
@@ -59,7 +59,7 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     pickupRespawnS: PICKUP_RESPAWN_S,
     seekerRatio: SEEKER_RATIO,
     seekerLockRange: SEEKER_LOCK_RANGE,
-    seekerSpeed: SEEKER_SPEED,
+    seekerSpeedFactor: SEEKER_SPEED_FACTOR,
     seekerRampS: SEEKER_RAMP_S,
     seekerTrackTurn: SEEKER_TRACK_TURN,
     seekerTurn: SEEKER_TURN,

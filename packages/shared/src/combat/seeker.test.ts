@@ -17,7 +17,9 @@ import {
     type SeekerShip,
     type SeekerState,
     type Segment,
+    SHIP_CLASSES,
     type SimConfig,
+    seekerTopSpeed,
     stepSeeker,
     stepSeekers,
     type Track,
@@ -117,14 +119,22 @@ test( 'line of sight passes beside a block and fails through it', () => {
     assert.ok( ! lineOfSight( track, new Set(), -20, 0, 20, 220 ) );
 } );
 
-test( 'speed ramps from the shooter up to seekerSpeed and no further', () => {
+test( 'speed ramps from the shooter up to the top speed and no further', () => {
+    const top = seekerTopSpeed();
     const s = launched( '' );
     assert.equal( s.vz, 55 );
     for ( let i = 0; i < 60; i++ ) stepSeeker( s, [], OPEN, new Set(), FIXED_DT );
-    assert.equal( s.vz, DEFAULT_SIM_CONFIG.seekerSpeed );
-    const fast = launched( '', { vz: 124 } );
-    stepSeeker( fast, [], OPEN, new Set(), FIXED_DT );
-    assert.equal( fast.vz, DEFAULT_SIM_CONFIG.seekerSpeed );
+    assert.equal( s.vz, top );
+    const over = launched( '', { vz: top + 10 } );
+    stepSeeker( over, [], OPEN, new Set(), FIXED_DT );
+    assert.equal( over.vz, top );
+} );
+
+test( 'the top speed is the fastest cruise times the factor and outruns every class', () => {
+    const fastest = Math.max( ...Object.values( SHIP_CLASSES ).map( ( c ) => c.tuning.maxCruise ) );
+    assert.equal( seekerTopSpeed(), fastest * DEFAULT_SIM_CONFIG.seekerSpeedFactor );
+    assert.equal( seekerTopSpeed( { ...DEFAULT_SIM_CONFIG, seekerSpeedFactor: 2 } ), fastest * 2 );
+    for ( const c of Object.values( SHIP_CLASSES ) ) assert.ok( seekerTopSpeed() > c.tuning.maxCruise, c.id );
 } );
 
 test( 'a seeker with no lock flies straight at fly height and expires', () => {
@@ -242,7 +252,7 @@ function detour( z: number ): number {
 test( 'it follows the path the target flew around a block', () => {
     const track = trackWith( [ block( 20, -4, 4 ) ] );
     const s = launched( 't' );
-    const t = ship( 't', { z: 250 } );
+    const t = ship( 't', { z: 350 } );
     let out: SeekerOutcome = 'flying';
     while ( out === 'flying' ) {
         t.z += t.vz * FIXED_DT;
