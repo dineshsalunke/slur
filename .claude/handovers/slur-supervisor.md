@@ -80,3 +80,4 @@ none.
 #228 deck material wins for blocks and monoliths. Keep all of PR 230's scene changes (METAL_ROUGHNESS 0.40, fill
 lights, env 1.5, no fog). ART_MATERIALS §7: dev stays 16, PR 230 becomes 17, PR 237 becomes 18. workertwo sends
 stills after the push.
+- #239 DONE `b0e9235`, closed (workerthree). workerthree IDLE, no files. Candidate next lanes: #231, #232, perf, the menu picker removal (queued for workerfour).
