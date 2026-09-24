@@ -1,47 +1,50 @@
-Agent: workerfour · Lane: merge open PRs — #195 feat/ship-feel · Updated: 2026-09-24
+Agent: workerfour · Lane: ship-class speed retune #247 (active) + PR #195 merge (PAUSED) · Updated: 2026-09-24
 
 ## Goal
 
-Land PR #195 (ship banking, engine-core bloom, rail bounce) onto dev from a detached worktree. Push
-only after the plan is approved.
+#247: set the approved top speeds and accels. Add per-class brakeDecel and retune strafe once the owner
+approves the numbers. #195: paused, waiting on the owner.
 
 ## Done
 
-- Conflict list and resolution plan sent to slur-supervisor. Nothing committed or pushed.
+- #247 filed. Brake and strafe proposal sent to slur-supervisor. No code yet.
+- #195: conflict list and plan sent to slur-supervisor earlier. Nothing committed or pushed.
 
 ## State (verified this session)
 
-- Worktree `../slur-worktrees/merge-195` is detached at origin/dev `74a7b89`. PR ref: `refs/remotes/pr/195`.
-- Only 5 of the 33 commits are the PR (`dcc3149..01947c2`). The other 28 are pre-squash
-  feat/test-level history, already on dev.
-- Trial rebase conflicts:
-  - `9af27e0`: step.ts. The bounce is dead on dev, because fc65986 removed the rail clamp from the
-    track path.
-  - `0dc8c7d`: 7 content conflicts plus tunables.ts modify/delete. Dev deleted tunables.ts in 3fd4a97;
-    its knobs now live in dev/tuning-schema.ts.
-  - `8fbb223`: ship-model.tsx. Dev's "one metal" supersedes the hull knobs. Bloom.threshold is 0.6.
-  - `01947c2`: the phases doc, modify/delete.
-- The shared checkout's dev and origin/dev have diverged: 17 commits one way, 40 the other.
+- Approved: Interceptor 84/60 · Fighter 96/58 · Comet 112/66 · Phantom 90/52 · Freighter 124/30.
+- Proposed (brake · strafeAccel/Clamp/Damp): I 150 · 300/120/22 · F 130 · 210/95/16 · C 100 · 230/105/9 ·
+  P 120 · 175/90/14 · Fr 150 · 118/65/10 (unchanged). rosterContractFailures = [].
+- Warning measure = spacingSegments(0.5) × SEG_LEN = 60u, divided by top speed (the b998e6c method).
+- Measuring script: scratchpad `measure.mjs` (session-local). It imports shared dist, takes a JSON of
+  per-class overrides, and prints 0->top, thread, brake->thread, warning, dodge4 z and release drift.
+- Tests that read class tuning: pacing/pockets.test, pacing/grid.test (workerone), sim/pocket.test
+  (workerthree), plus ship-classes, seeker, graze, track, track-contract and client hover.test.
+- #195 worktree `../slur-worktrees/merge-195` is detached at origin/dev `74a7b89`. PR ref: `refs/remotes/pr/195`.
+  Rebase conflicts: 9af27e0 step.ts (the bounce is dead on dev) · 0dc8c7d, 7 conflicts plus tunables.ts
+  modify/delete · 8fbb223 ship-model.tsx · 01947c2 the phases doc.
 
 ## Uncommitted
 
-None in the shared tree. The worktree is clean.
+None.
 
 ## Held files
 
-None yet.
+packages/shared/src/ship-classes.ts, ship-classes.test.ts, and sim/track-contract.test.ts if a fixture
+moves. GDD §5.5: needs the supervisor's clearance after workerthree commits.
 
 ## Next
 
-1. Wait for owner calls A (drop the rail bounce, fix GDD:301), B (engine retune for threshold 0.6, or
-   drop the commit) and C (push HEAD:dev and close #195).
-2. Rebase the kept commits in the worktree and resolve as planned. Run typecheck, test and lint, then a
-   headless /test-level check.
-3. Push HEAD:dev, close #195, then remove the worktree and delete `refs/remotes/pr/195`.
+1. Wait for the owner's answer on the brake/strafe proposal: (a) approve, (b) Freighter brake/strafe
+   variant, (c) Comet damp 9 or 11.
+2. Edit ship-classes.ts. Run pnpm test, typecheck and lint. Report any pacing or pocket test break to the
+   supervisor, and do not edit those tests. Commit by explicit pathspec, with `Closes #247`.
+3. #195: owner calls A/B/C, then rebase in the worktree, push HEAD:dev and clean up.
 
 ## Open questions
 
-- Owner calls A/B/C above.
+- #247 proposal choices (a)/(b)/(c).
+- #195 owner calls A (drop the rail bounce), B (engine retune or drop the commit), C (push and close).
 - Delete `game/net-debug-hud.tsx` (carried over).
 
 ## Lessons → memory
