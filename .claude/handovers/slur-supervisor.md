@@ -30,7 +30,11 @@ drift < 1 beat at bars 8/28/60/96/finish.
 - Field: LabSong.clock {z0 257.3 (freighter cruise at tick 248, 4.133 s), t0 0, zPerSecond 124}.
 - workerfour viewer DONE 9b3ab59 (handover 50c2a1a), cleared + resumed ~23:55. It waits for workerone's
   bundle SHA and then runs the live drift check. Send it that SHA.
-- workerone is building map/bundle/cli/test (claims CLEAR). groove.ts also shows as modified.
+- workerone DONE 61063be (handover f194d47): perfect-freighter drift 0.000 beats at every checkpoint on all
+  13 variants (bundle analysis). 260/260 replay match. groove.ts gridStart = 260. IDLE, holds nothing.
+  Human freighter drifts after bumps (pro −5 beats by bar 96; rookie −350 to −520 at the finish).
+  Owner Q: re-sync the audio to the ship after a bump?
+- workerfour dispatched ~00:05: LIVE drift check (audio clock) on groove/groove-tight/envelope, plus one pro run.
 
 ## Landed this session (all local, not pushed)
 
