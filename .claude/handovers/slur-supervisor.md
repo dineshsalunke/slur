@@ -39,7 +39,10 @@ the status line until it shows 0–5%; the first read after /clear can still sho
   regenerate-on-trap HELD until #244 lands. R3 after workertwo.
 - workerthree: #243 factor 1.5 (retime fixture), then #244 WAITS on the owner's option (5 vs 3), still unasked-answered.
 - workerfour: merge PR #195 (only open PR) in a detached worktree; conflict list + plan first.
-The items below are the pre-13:30 queue; only item 0 (#244 option) and item 9 remain open.
+- #244: OWNER PICKED OPTION 5; sent to workerthree (builds after #243 closes). When it lands, release workerone's
+  regenerate-on-trap step. workertwo claims routes/pacing/* (issue first, headless GPU raster only); workerone
+  claims pacing X rule + 6u hull (cleared).
+The items below are the pre-13:30 queue; only item 9 remains open.
 
 ## Open owner questions (relay in this order)
 
