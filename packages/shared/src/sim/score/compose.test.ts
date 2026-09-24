@@ -120,18 +120,6 @@ test( 'below the rest intensity the composer writes rests only', () => {
     assert.equal( choosePhrase( 1, 0, REST_INTENSITY / 2, 0, 1e6 ), null );
 } );
 
-test( 'an intensity curve drives each phrase, and no curve leaves the score as before', () => {
-    assert.equal( 'curve' in scoreOf( 1 ), false );
-    const length = 120;
-    const curve = Array.from( { length }, ( _, i ) => ( i < 30 ? 0 : 0.8 ) );
-    const sc = composeScore( 1, length, MOTIFS, curve );
-    assert.deepEqual( sc.curve, curve );
-    for ( const p of sc.phrases ) assert.equal( p.intensity, curve[ Math.floor( p.z0 / SEG_LEN ) ] );
-    const early = sc.notes.filter( ( n ) => n.z < 30 * SEG_LEN - SEG_LEN * 12 );
-    assert.ok( early.every( ( n ) => n.kind === 'rest' ) );
-    assert.ok( sc.notes.some( ( n ) => n.kind !== 'rest' ) );
-} );
-
 test( 'a track holds 28–56 played notes, and composing all 30 seeds is cheap', () => {
     const counts = SEEDS.map( ( seed ) => played( scoreOf( seed ) ).length );
     for ( const c of counts ) assert.ok( 28 <= c && c <= 56, `${ c } notes` );

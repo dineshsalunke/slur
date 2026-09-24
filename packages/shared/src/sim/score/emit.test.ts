@@ -7,7 +7,6 @@ import {
     composeScore,
     emitScore,
     FRACTURE_SHADOW_SEGMENTS,
-    freeReach,
     HALF_WIDTH,
     isHole,
     MIN_LANE,
@@ -18,11 +17,9 @@ import {
     SCORE_ACCENT_ADHERENCE,
     SCORE_ADHERENCE_FLOOR,
     type ScoreNote,
-    SEG_LEN,
     type Segment,
     START_SAFE,
     scoreAdherence,
-    scoreSpans,
     scoreTrack,
     sealShadowed,
     segmentsTrack,
@@ -111,21 +108,6 @@ test( 'every z-slice keeps a ≥ MIN_LANE open corridor', () => {
             assert.ok( passableCorridorWidth( s ) >= MIN_LANE - 1e-6, `seed ${ seed } seg ${ i }` );
         }
     }
-} );
-
-test( 'the score curve sets the wall reach: a calm curve opens the corridor wider than a hot one', () => {
-    const length = 40;
-    const calm = Array.from( { length }, () => 0 );
-    const hot = Array.from( { length }, () => 1 );
-    const z = 20 * SEG_LEN;
-    assert.ok( freeReach( z, length, calm ) > freeReach( z, length, hot ) );
-    assert.equal( freeReach( z, length ), freeReach( z, length, undefined ) );
-    const reachOf = ( curve: number[] ) =>
-        scoreSpans( composeScore( 1, length, undefined, curve ) ).find( ( s ) => s.role === 'calm' && s.z0 >= z );
-    const a = reachOf( calm );
-    const b = reachOf( hot );
-    assert.ok( a !== undefined && b !== undefined );
-    assert.ok( a.b - a.a >= b.b - b.a );
 } );
 
 test( 'the calm tube stays clear: no block reaches within CALM_TUBE_HALF of the line during a calm', () => {

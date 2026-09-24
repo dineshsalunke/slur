@@ -3,7 +3,6 @@ import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 import { frameTapPlugin } from './frame-tap-plugin.ts';
-import { tapperPlugin } from './tapper/tapper-plugin.ts';
 
 export default defineConfig( ( { mode } ) => {
     const env = loadEnv( mode, process.cwd(), '' );
@@ -13,7 +12,6 @@ export default defineConfig( ( { mode } ) => {
             tailwindcss(),
             reactRouter(),
             frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/frame-tap-refs' ) } ),
-            tapperPlugin( { dir: resolve( process.cwd(), '.songs' ) } ),
         ],
         server: {
             host: true,
