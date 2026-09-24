@@ -66,3 +66,4 @@ lives in its own file beside this one.
 - [Fractured blocks rarely have a clear lane](fractured-blocks-rarely-have-a-clear-lane.md) — a post-hoc fracture-shadow demotion costs ~76% at today's density; reserve the rest at placement (#248, R4)
 - [ast-grep trailing comma matches nothing](ast-grep-trailing-comma-matches-nothing.md) — an array-element pattern with its comma is an ERROR node; use Edit for list inserts
 - [Bash tool runs fish](bash-tool-runs-fish.md) — bash loops and `set --` fail with misleading errors; wrap in `bash -c`
+- [Song tracks are a throwaway experiment](song-tracks-are-a-throwaway-experiment.md) — #253 tooling is disposable; keep it isolated; only a distilled generator survives
