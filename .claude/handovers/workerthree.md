@@ -1,25 +1,28 @@
-Agent: workerthree · Lane: bounce fixes, #231 (closed) then #232 · Updated: 2026-09-24
+Agent: workerthree · Lane: bounce fixes, #231 + #232 (both closed) · Updated: 2026-09-24
 
 ## Goal
 
-#231: a shallow block clip always glances. #232: staggered blocks must not stun-lock a ship.
+#231: a shallow block clip always glances. #232: staggered blocks must not stun-lock a ship. Lane complete.
 
 ## Done
 
 - f5c8ff8: fix(sim), #231. `entryPush()` in `sim/step.ts` uses the entry face from the previous tick.
   An end-face entry with lateral overlap < `FlightTuning.grazeDepth` (0.5u, owner) resolves on x.
-  `sim/graze.test.ts`. ADR-014 has an as-built paragraph. Issue closed with the sweep table.
+  `sim/graze.test.ts`. ADR-014 as-built. Issue closed with the sweep table.
+- 56711c9: fix(sim), #232. In `bounceOffBlock()`, a hit while `stunTimer > 0` pushes out and stops: no
+  knockback, no stun refresh. `sim/pocket.test.ts` pins seed 1 z≈6019 and scans every fairness-seed
+  pocket. ADR-014 as-built. Issue closed with the scan table.
 
 ## State
 
-- #231 sweep, 100 phases. Fighter 0.3u clip: 68% glance before, 100% after. 0.55–0.8u: 0% glance.
-- Tests at f5c8ff8: shared 232/232, server 15/15, client 279/279. Typecheck and lint are clean.
-- #232, measured on the 8 fairness seeds × 5 classes: 1,213 pockets. With throttle held, 729 stun-lock
-  (the longest is 5.00 s). The seed 1 z≈6019 Fighter stays stunned 600/600 ticks, even when it steers.
-- #232 prototype (a hit during stun = a plain stop, no kick, no stun refresh): stun-lock 729 → 1.
-  The 1 left has 0.0005u slack. Scratchpad `step-proto.ts`, `stunlock.mjs`, `pocket-scan*.mjs`
-  (session 93637031).
-- #232 RFC sent to slur-supervisor. Recommended option 1. Owner Q: bolt-stun drift into a block.
+- #231, 100 phases. Fighter 0.3u: 68% glance before, 100% after. 0.55–0.8u: 0% glance.
+- #232, 8 seeds × 5 classes, 1,213 pockets. Throttle held, stun streak > bounceStun: 729 → 1 (0.0005u
+  slack, not enterable). Max bounces in 5 s: 149 → 19. Release + strafe, still held after 1 s: 738 → 23
+  (3-sided enclosures with full control; dead ends are workerone's route-graph lane).
+- Tests at 56711c9: shared 235/235, server 15/15, client 279/279. Typecheck, biome and the comment
+  check are clean.
+- Scratch scripts: `stunlock.mjs`, `pocket-scan*.mjs`, `sweep.ts` (session 93637031). No servers and
+  no Chrome were started.
 
 ## Uncommitted
 
@@ -27,18 +30,16 @@ Agent: workerthree · Lane: bounce fixes, #231 (closed) then #232 · Updated: 20
 
 ## Held files
 
-- packages/shared/src/sim/step.ts (kept for #232)
+- none (the #231/#232 claims are released)
 
 ## Next
 
-1. On approval: build option 1 in `bounceOffBlock`, then add `sim/pocket.test.ts` and an ADR-014 line.
-2. Close #232 with the numbers and report the SHA to slur-supervisor.
+1. None in this lane. Waiting for a new assignment.
 
 ## Open questions
 
-- #232 owner Q: a bolt-stunned ship that drifts into a block stops dead, with no knockback and no stun
-  stacking. Is that OK?
+- none
 
 ## Lessons → memory
 
-- none
+- `.claude/memory/ab-an-old-sim-from-git-in-scratch.md`
