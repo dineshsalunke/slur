@@ -9,6 +9,7 @@ import { localDeathVfxSystem } from '../../game/ecs/net-systems';
 import { syncRenderSystem } from '../../game/ecs/systems';
 import { replay, replayView } from './replay-state';
 import { replayFlightSystem, respawnReplayShip } from './replay-systems';
+import { syncSong } from './song-sync';
 
 const MAX_STEPS = 16;
 
@@ -23,12 +24,14 @@ export function ReplayLoop( { track }: { track: Track } ) {
             respawnReplayShip( world );
         }
         const view = replayView.get();
+        let alpha = 0;
         if ( view.playing ) {
-            const alpha = advance( delta * view.speed, () => replayFlightSystem( world, track ) );
+            alpha = advance( delta * view.speed, () => replayFlightSystem( world, track ) );
             syncRenderSystem( world, alpha );
             hoverSystem( world, delta );
             localDeathVfxSystem( world );
         }
+        syncSong( world, alpha );
         updateChaseCamera( state.camera as PerspectiveCamera, world, delta );
     } );
 

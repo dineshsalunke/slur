@@ -54,6 +54,8 @@ export const clockStore = createStore< ClockState >( {
 
 let ctx: AudioContext | null = null;
 let clickBus: GainNode | null = null;
+let songBus: GainNode | null = null;
+let songGain = 1;
 let clip: Clip | null = null;
 let run: Run | null = null;
 const frameSubs = new Set< ( p: Playhead ) => void >();
@@ -68,9 +70,27 @@ function audio(): AudioContext {
         clickBus = ctx.createGain();
         clickBus.gain.value = clockStore.get().click ? CLICK_GAIN : 0;
         clickBus.connect( ctx.destination );
+        songBus = ctx.createGain();
+        songBus.gain.value = songGain;
+        songBus.connect( ctx.destination );
     }
     void ctx.resume();
     return ctx;
+}
+
+export function setSongGain( gain: number ): void {
+    songGain = gain;
+    if ( songBus ) songBus.gain.value = gain;
+}
+
+export function audioRunning(): boolean {
+    if ( ! ctx ) return false;
+    if ( ctx.state === 'suspended' ) void ctx.resume();
+    return ctx.state === 'running';
+}
+
+export function outputLatency(): number {
+    return ctx?.outputLatency ?? 0;
 }
 
 const toClip = ( songT: number ) => ( songT - ( clip?.originS ?? 0 ) ) / clockStore.get().rate;
@@ -179,7 +199,7 @@ export function play( fromS?: number ): void {
     src.loop = true;
     src.loopStart = toClip( loopFromS );
     src.loopEnd = loopEnd;
-    src.connect( ac.destination );
+    src.connect( songBus ?? ac.destination );
     const t0 = ac.currentTime + 0.05;
     src.start( t0, start );
     const r: Run = { src, t0, start, loopStart: src.loopStart, loopEnd, scheduledTo: 0 };

@@ -1,4 +1,4 @@
-import { composeScore, emptyInput, SHIP_CLASSES, SHIPS, type ShipClassId } from '@slur/shared';
+import { composeScore, emptyInput, FIXED_DT, SHIP_CLASSES, SHIPS, type ShipClassId } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import {
     type LabBundle,
@@ -14,6 +14,7 @@ import {
 } from '../../../song-lab/bundle';
 import { checkVariant } from './lab-check';
 import { formatResult, labEntries, labHref, pickEntry, pickVariant, shipForClass } from './lab-view';
+import { songTarget } from './song-sync';
 
 const score = composeScore( 11, 12 );
 
@@ -130,5 +131,12 @@ describe( 'song-lab picks', () => {
     it( 'formats a result with its death positions', () => {
         const r = { ...recorded( 'comet', 1 ).result, deaths: 2, deathZ: [ 10.4, 99.6 ], time: 3 };
         expect( formatResult( r ) ).toBe( 'DNF · 3.00 s · 2 deaths @ z 10, 100 · 0 bumps' );
+    } );
+
+    it( 'maps sim ticks to song time and plays only while running inside the song', () => {
+        expect( songTarget( 0.38, 200, 60, 0.5, true ) ).toBeCloseTo( 0.38 + 60.5 * FIXED_DT );
+        expect( songTarget( 0.38, 200, 60, 0, false ) ).toBeNull();
+        expect( songTarget( -1, 200, 0, 0, true ) ).toBeNull();
+        expect( songTarget( 0.38, 1, 600, 0, true ) ).toBeNull();
     } );
 } );

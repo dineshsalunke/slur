@@ -5,6 +5,7 @@ import { labView, pickEntry, pickVariant } from './lab-view';
 import { loadReplay } from './replay-state';
 import { SongLabEmpty } from './song-lab-empty';
 import { SongLabPage } from './song-lab-page';
+import { loadSong } from './song-sync';
 
 export function meta() {
     return [ { title: 'SLUR — Song Lab' } ];
@@ -22,6 +23,7 @@ export async function clientLoader( { request }: { request: Request } ) {
     const picked = pickEntry( check.entries, q.get( 'class' ), q.get( 'pilot' ) );
     const view = labView( bundles, name, bundle, variant, check.entries, picked, check );
     loadReplay( view.classId, picked?.run );
+    void loadSong( bundle.song.file );
     return { view, track: check.track };
 }
 

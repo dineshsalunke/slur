@@ -1,5 +1,6 @@
 import { typingTarget } from '../../dev/typing-target';
 import { restartReplay, stepSpeed, togglePlay } from './replay-state';
+import { toggleSongMute } from './song-sync';
 
 const ROUTE = '/song-lab';
 
@@ -8,6 +9,7 @@ const COMMANDS: Record< string, () => void > = {
     KeyR: restartReplay,
     BracketLeft: () => stepSpeed( -1 ),
     BracketRight: () => stepSpeed( 1 ),
+    KeyM: toggleSongMute,
 };
 
 let installed = false;

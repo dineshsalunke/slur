@@ -4,6 +4,7 @@ import type { LabView } from './lab-view';
 import { ReplayReadout } from './replay-readout';
 import { ReplayTransport } from './replay-transport';
 import { RunResults } from './run-results';
+import { SongControls } from './song-controls';
 import { SongLabCanvas } from './song-lab-canvas';
 import { VariantInfo } from './variant-info';
 
@@ -18,6 +19,7 @@ export function SongLabPage( { view, track }: { view: LabView; track: Track } ) 
                 <h1 className="text-lg text-marigold">Song Lab</h1>
                 <LabPicker view={ view } />
                 <ReplayTransport />
+                <SongControls />
                 <RunResults view={ view } />
                 <VariantInfo view={ view } />
             </aside>
