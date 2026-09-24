@@ -81,5 +81,6 @@ export function labHref( pick: LabPick ): string {
 
 export function formatResult( r: LabResult ): string {
     const deathZ = r.deathZ.length > 0 ? ` @ z ${ r.deathZ.map( ( z ) => Math.round( z ) ).join( ', ' ) }` : '';
-    return `${ r.finished ? 'finished' : 'DNF' } · ${ r.time.toFixed( 2 ) } s · ${ r.deaths } deaths${ deathZ }`;
+    const time = r.time.toFixed( 2 );
+    return `${ r.finished ? 'finished' : 'DNF' } · ${ time } s · ${ r.deaths } deaths${ deathZ } · ${ r.bumps } bumps`;
 }

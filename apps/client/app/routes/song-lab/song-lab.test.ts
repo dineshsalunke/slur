@@ -85,6 +85,6 @@ describe( 'song-lab picks', () => {
 
     it( 'formats a result with its death positions', () => {
         const r = { ...recorded( 'comet', 1 ).result, deaths: 2, deathZ: [ 10.4, 99.6 ], time: 3 };
-        expect( formatResult( r ) ).toBe( 'DNF · 3.00 s · 2 deaths @ z 10, 100' );
+        expect( formatResult( r ) ).toBe( 'DNF · 3.00 s · 2 deaths @ z 10, 100 · 0 bumps' );
     } );
 } );
