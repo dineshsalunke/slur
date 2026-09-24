@@ -53,6 +53,8 @@ the status line until it shows 0–5%; the first read after /clear can still sho
   then the owner picks regenerate-per-segment vs avoid-at-source. workerone idle, holds pacing/*.
 - #245 /pacing lag DONE 20caf85 (workertwo, idle): chunked polylines, Worker, report via context. routes/pacing/*
   released; R3 sent to workerone. Owner to retest /pacing scrolling.
+- R3 board LANDED 85077ca (workerone, idle; stills in its scratchpad 0f01f9f0…/r3-*.png). Owner questions: count a
+  zero-demand tie as a dodge? Add quiet bands and trapped pockets to the board? Next pacing step: R4 phrase RFC.
 The items below are the pre-13:30 queue; only item 9 remains open.
 
 ## Open owner questions (relay in this order)
