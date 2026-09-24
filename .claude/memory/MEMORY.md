@@ -69,3 +69,4 @@ lives in its own file beside this one.
 - [Song tracks are a throwaway experiment](song-tracks-are-a-throwaway-experiment.md) — #253 tooling is disposable; keep it isolated; only a distilled generator survives
 - [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — a BSD pkill turned `-U 501 --` into patterns and SIGTERMed the owner's apps; record your PIDs
 - [Believer is on a triplet grid](believer-is-on-a-triplet-grid.md) — test onsets against thirds of a beat as well as 16ths; kick band catches bass, kick lands +15 ms late
+- [Score pilot must not lead the note](score-pilot-must-not-lead-the-note.md) — the preview pin holds the line until onset; steer to span.line at ship.z, pick takeoffs by forward sim

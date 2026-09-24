@@ -1,60 +1,58 @@
-Agent: workerone · Lane: R4 S3 — JJ motifs + `gen:'score'` switch (#250) · Updated: 2026-09-24 20:10
+Agent: workerone · Lane: #253 song lab step 2 (variants → tracks → runs → bundle) · Updated: 2026-09-24 20:15
 
-The approved RFC: `.claude/phases/2026-09-24-r4-score-rfc.md` (798ac1d). Older versions of this file hold
-history: 884fa0e (switch diff seam), 58bb78f (S3 emitter seam), 4e66705 (S2), 4eacff7 (S1).
+Older versions of this file hold #250 history: 4571c5f and earlier.
 
 ## Goal
 
-- Standard motif library emits `JJ` on most seeds (owner-approved 2026-09-24). Then hand the
-  `gen:'score'` switch to slur-supervisor as a diff (waits on #244, track.ts).
+- Map a song to several track variants, fly each with a pilot for all 5 classes, and write one lab bundle
+  for workerfour's `/song-lab` viewer. Throwaway experiment (`.claude/memory/song-tracks-are-a-throwaway-experiment.md`).
 
 ## Done
 
-- `798ac1d` RFC · `c24f2bb` S0 · `4eacff7` S1 · `4e66705` S2 · `58bb78f` S3 emitter · `884fa0e` switch diff.
-- `72948ae` JJ motifs: `n3-6 'l JJ r'` [0, 0.9] · `n4-6 'J l JJ r'` [0.3, 1] · `n5-6 'L JJ r J l'` N5 [0.5, 1].
-  Library digest 1779460072 → 2694968437 (`track-contract.test.ts`).
-- Switch diff refreshed: `track-gen.test.ts` drops its private JJ test library and asserts the exemption on
-  the standard score tracks. Same 8 files. Path unchanged:
-  `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/91190798-1cd4-4a01-ab73-1f3a33e86834/scratchpad/gen-score-switch.diff`
-  (copy + the old version in `…/5fa4d776-636d-40e4-84d1-41aa764fa45d/scratchpad/`).
+- `0734e06` TASK 1: `gen:'score'` switch applied over #244 (`-C1`). shared 316/316, server 17/17.
+- `c3d2a63` Optional intensity curve on `composeScore(seed, length, motifs, curve?)`. It rides on
+  `score.curve`, and `freeReach` reads it (supervisor-approved). No curve: sha256 over compose+emit for
+  seeds 1–30 unchanged. shared 318/318.
+- `0099d73` `apps/client/song-lab/bundle.ts`: the LabBundle v1 type + the shared replay loop (`labStep`,
+  `replayRun`, `labTrack`, `labDigest`, `expandInputs`/`packInputs`, `sameResult`). workerfour accepted it.
+- `b5b7b3c` The pipeline: `map.ts` (song clock, curves, event placer), `variants.ts` (10 variants),
+  `mine.ts` (n-gram motif mining), `pilot.ts`, `record.ts`, `song-lab-build.ts`, `song-lab-cli.ts`,
+  `song-lab.test.ts`; `bumps`/`bumpZ` in the result; `LAB_MAX_TICKS` 27000; vitest include; `song-lab` script.
 
 ## State
 
-- Seeds 1–200, standard library: 455 `JJ` notes, on 173 of 200 seeds (was 0). Per-motif phrase uses:
-  n3-6 149 · n4-6 115 · n5-6 57. Plain N3/N4 bands gave only 146/200 seeds, so n3-6 and n4-6 are widened.
-- All three pass `motifFailures` (the load-time pilot at 55 and 124 u/s).
-- Scratch copy at HEAD + 72948ae: shared 306/306 pass. With the refreshed diff applied: shared 309/309,
-  server 17/17. biome clean on the touched files; comment ratchet passes.
-- Refreshed diff: 8 standard score test seeds give 18 `JJ` double gaps, all pass the gap-run check.
-- `git apply --check` fails on the live dirty `track.ts` (#244), as before; `git apply -C1 --check` passes on
-  a copy of it.
-- A score room still has no pickups (`anchors: []`, S4).
+- Bundle: `apps/client/.songs/lab/believer-s1.json` (2.5 MB, gitignored), 10 variants × 5 classes.
+- All 50 runs finish with 0 deaths and 0 bumps. Every run is replay-verified before it is written.
+  Times per class: interceptor 302.1 s · fighter 264.6 · comet 226.9 · phantom 282.2 · freighter 206.3.
+- Played notes: envelope 131 · section-energy 151 · bar-energy 148 · breaths 150 · snare-jump 65 ·
+  sweep 65 · kick-jump 70 · triplet-grid 104 · hat-density 139 · mined 126 (12 mined motifs, 51 JJ).
+- Direct variants drop most drum events: a note lasts 2–4 beats (120–220u at ~59.5u/beat), so events
+  inside the previous note are dropped. `build.params` records events/placed/dropped.
+- Song clock: z = 120 + (t − bars[0]) × 124 u/s; track length 1270 segments for Believer.
+- song-lab vitest 9/9; client tsc clean for song-lab; biome clean; comment ratchet passes.
 
 ## Uncommitted
 
-None (the diff lives in the scratchpad by design).
+None.
 
 ## Held files
 
-- `packages/shared/src/sim/score/*` · `packages/shared/src/pacing/*` + tests · the pacing and score export
-  lines in `packages/shared/src/index.ts` · `apps/client/app/routes/pacing/*` · `sim/fracture-shadow.ts` + test ·
-  the motif digest line in `sim/track-contract.test.ts`.
-- Pending the supervisor applying the diff: `sim/space.ts`, `schema.ts`, `sim/track-provider.ts`,
-  new `sim/track-gen.test.ts`, `apps/server/src/rooms/run-room.ts` + test (track.ts/track.test.ts go with #244).
+- `apps/client/song-lab/**` · `packages/shared/src/sim/score/*` · the pacing/score lines in shared `index.ts`.
 
 ## Next
 
-1. Wait for #244 to land, then for the supervisor to apply the diff. Playtest support if asked
-   (`SLUR_TRACK_GEN=score pnpm dev`).
-2. S4: forks, pickups, a smash solver (SOLID_SEALED hull for `S`).
-3. S5: fly the emitted geometry with the contract ship at 55 and 124 u/s through `simulate()` with
-   collisions (0.5u pin clearance, `JJ` = 40u hole reach per class).
+1. Wait for workerfour's viewer feedback on the bundle; fix any type mismatch in `bundle.ts`.
+2. The pilot is perfect, so runs do not tell variants apart. Consider a harder pilot (reaction delay or
+   input noise) or a per-class result such as time spent off the line, if the owner wants a signal.
+3. Direct variants: try shorter note spacing (drop the `REGISTER_GAP` calm for song notes) or quantise
+   to the triplet grid for placement, per workertwo's measurement (86% of snares sit on triplet slots).
+4. More seeds / songs: `pnpm --filter @slur/client song-lab <analysis.json> --seed N`.
 
 ## Open questions
 
-- Supervisor: ADR-020's first Consequences bullet ("no two gaps … by construction") is replaced by the
-  amendment in `.claude/phases/2026-09-24-adr-020-pending.md`. Delete the old bullet when you sequence it.
+- Owner: is "all variants fly clean" the result you want, or should the pilot be human-like so the
+  bundle shows which mapping is harder?
 
 ## Lessons → memory
 
-- `.claude/memory/ast-grep-trailing-comma-matches-nothing.md`.
+- `.claude/memory/score-pilot-must-not-lead-the-note.md`.
