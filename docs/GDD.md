@@ -272,23 +272,20 @@ is a model + a `classId` (balance for free), adding a class is a new archetype. 
 **`shipId`** (set once at join/hot-swap); the sim resolves `shipId → class → tuning` identically on client and
 server (the netcode "one shared `simulate()`" requirement). Model/scale live client-side under the same id.
 
-**Flight stats (S6 target spec).**
-> ⚠ **STALE — do not code against this table.** All five classes are wired in
-> `packages/shared/src/ship-classes.ts`, and playtest tuning moved **strafe power and grip** past these
-> numbers on every class. Top speed, accel and jump match. The source of truth is the code; reconciling the
-> table is parked in the global backlog `~/.claude/backlog.md` (2026-09-21, tagged `slur`).
+**Flight stats (as built, #247 retune, `821a78a`).** The source of truth is
+`packages/shared/src/ship-classes.ts`. This table copies it.
 
-| Class | Top speed | Pickup (accel) | Strafe pwr / cap | Grip (damp) | Jump h / air |
-|---|:--:|:--:|:--:|:--:|:--:|
-| Interceptor | 48 | 45 | 195 / 95 | 12 (snap) | 3.0 / 2 |
-| **Fighter** | 55 | 40 | 150 / 80 | 8 (neutral) | 3.2 / 2 |
-| Comet | **70** | 52 | 165 / 85 | 4 (drifty) | 2.8 / 2 |
-| Phantom | 50 | 38 | 135 / 75 | 8 (neutral) | 4.2 / **3** |
-| Freighter | **124** | 30 | 105 / 65 | 5 (drifty) | 3.6 / 2 |
+| Class | Top speed | Accel | Brake | Strafe accel / clamp | Grip (damp) | Jump h / jumps | `weaveThreadSpeed` |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| Interceptor | 84 | 60 | 150 | 367 / 166 | 31.5 | 3.0 / 2 | 122.2 |
+| **Fighter** | 96 | 58 | 130 | 288 / 140 | 24.5 | 3.2 / 2 | 108.3 |
+| Comet | 112 | 66 | 100 | 290 / 136 | 14.4 | 2.8 / 2 | 108.7 |
+| Phantom | 90 | 52 | 120 | 270 / 135 | 23.4 | 4.2 / **3** | 104.9 |
+| Freighter | **124** | 30 | 150 | 236 / 130 | 20 | 3.6 / 2 | 98.0 |
 
 The Freighter's top speed is **not** a top speed it can use everywhere. It follows the racing line at
-**69.3u/s** (`weaveThreadSpeed`), so holding 124 costs it a **44% scrub** into every weave, and at full throttle
-a mid-difficulty hazard gives it **0.48s** of warning against **0.50s** of braking. It is a straight-line ship
+**98.0u/s** (`weaveThreadSpeed`), so holding 124 costs it a **21% scrub** into every weave, and at full throttle
+a mid-difficulty hazard gives it **0.48s** of warning against **0.17s** of braking (124 → 98 at `brakeDecel` 150). It is a straight-line ship
 that must read the track ahead — top speed for the open sections, paid for in the dense ones. Raised 62 → 124 on
 2026-09-23; under ADR-013 this moved **no track geometry**.
 

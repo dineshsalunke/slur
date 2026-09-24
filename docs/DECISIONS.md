@@ -1137,3 +1137,31 @@ ownership.
 
 `packages/shared/src/sim/{merge-blocks,track}.ts` · `sim/pocket.test.ts` (scan floor 1,000 → 300: the
 merge removes most pockets it scanned).
+
+---
+
+## ADR-020 — The track is a score: notes first, then geometry
+
+**Date:** 2026-09-24 · **Status:** Accepted (owner approved every recommendation of the R4 RFC rev 2, via slur-supervisor) · **Partially supersedes:** ADR-006 §1 ("never a rhythm game (no discrete notes…)") and ADR-006 §2 (the weave micro layer), for `gen: 'score'` tracks only · **RFC:** `.claude/phases/2026-09-24-r4-score-rfc.md`
+
+### Decision
+
+1. A `'score'` track is generated from a score of notes: `L`/`R` (1 or 2 cells), a held strafe, `J`, `JJ`, `S` (smash), accents and rests. The geometry that forces each note comes second. The sim stays continuous (GDD §0 unchanged).
+2. **Register gap.** After every note the player gets `REGISTER_GAP_S` = 0.5 s of calm, measured at `TRACK_CONTRACT.registerCruise` = 124u/s. The calm is counted from the end of the move (settled or landed). Note spacing = `registerCruise × (noteMove + REGISTER_GAP_S)`. `noteMove` is measured for the contract ship with a `simulate()` pilot.
+3. `registerCruise` is frozen in `TRACK_CONTRACT`. A roster guard rejects any class faster than it. `FRACTURE_SHADOW_Z` uses it instead of a roster max.
+4. Each note has a duration rounded up to `SEG_LEN`: L1 120u, L2 140u, J 140u, JJ 220u, rest 60u.
+5. Forcing: a score-steered band (today's corridor band centred on the score line) plus pinch gates on accent notes. Filler that asks for no input: band walls, off-line harmony blocks, and pickups as optional ornaments.
+6. Motifs are data: TypeScript objects that hold note strings, validated at module load. The first library is seeded from transcribed n-grams of today's tracks, and the owner edits it.
+7. Old seeds are kept: `ProcgenDescriptor.gen?: 'weave' | 'score'`, default `'weave'`.
+8. #246 and #248 fold in. The `simulate()` pilot becomes the flyability check. On `'score'` tracks, `sealShadowed` must leave every block unchanged, and a test checks that.
+
+### Consequences
+
+- A track holds ~28–56 notes. The class difference is the length of the calm (Freighter 0.61–0.76 s, Interceptor 1.15–1.47 s). No class slows down for a note.
+- Set from S0 data (#250, c24f2bb) by the owner: adherence floor **75%** (the easiest route plays ≥ 75% of the score's notes), accents **100%**; calm tube **±5u** (hull 2u + 3u of measured drift). Today's weave tracks measure 37% adherence, and 54% of their notes breach the register gap.
+
+### Amendment — `JJ` is exempt from "no two gaps in a row" (owner ruling, 2026-09-24)
+
+- ADR-006 *Fairness* says: *"gaps ≤ `GAP-REACH`, no two in a row."* On `'score'` tracks a `JJ` note is two adjacent hole segments (40u). So the rule does not hold by construction. This amendment replaces the earlier claim that it did.
+- Ruling (owner, via slur-supervisor): on `'score'` tracks only, two holes in a row are allowed when they are one `JJ` note. Three or more holes in a row are never allowed. `'weave'` tracks keep the ADR-006 rule.
+- Tests: `sim/track.test.ts` "weave: no two gaps in a row and none in start-safe" runs on `gen: 'weave'` only. `sim/track-gen.test.ts` "score: the only two gaps in a row are a JJ, never three, none in start-safe" runs on standard `'score'` tracks and on a test library with `JJ`. The standard motif library has no `JJ` today (0 of 200 seeds), so only the test library exercises the exemption.
