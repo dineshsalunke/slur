@@ -1,56 +1,63 @@
-Agent: workerfour · Lane: results screen redesign #238 (done) → next: menu ship-picker removal · Updated: 2026-09-24
+Agent: workerfour · Lane: menu ship-picker removal #242 (plan sent, awaiting owner approval) · Updated: 2026-09-24
 
 ## Goal
 
-#238: build the PHASE.finished overlay to comp B "Winner card". Done. Next is the queued menu-picker lane.
+#242: remove the ship picker from the main menu (`/`). The in-room lobby pick replaces it. Keep the
+shared ship store. The saved ship still goes out on host, join and deep link.
 
 ## Done
 
-- `1d1f9f2` feat(results): the comp B build. Shell `results-overlay.tsx` with zero subscriptions. Leaves:
-  `winner-card`, `standings`, `standing-row` (props only), `your-finish`, `race-again` (host Enter =
-  RESTART), and `results-format.ts` + test. The NN #13 weighing is in the commit body.
-- `7943126` fix(results): the finish review found one material fix, the winner title scale. It is now
-  64px on phones and clamp(56px,8vw,112px) from sm. Also adds the DESIGN.md "Results" section.
-- `dc856e7` test(overlays): the supervisor asked for this split. The fake room is in
-  `game/overlays/test-room.ts`, the harness in `game/overlays/mount-overlays.tsx`, and the results tests
-  in `results-overlay.test.tsx`.
-- Memories: `seed-a-finished-room-with-a-scratch-server.md`, `share-a-vi-mock-through-a-dynamic-import.md`.
+- #238 results screen is complete: `1d1f9f2` build, `7943126` review fix + DESIGN.md Results, `dc856e7`
+  test split, `f6d257a` handover. The supervisor confirmed these and released the claims.
+- Issue #242 filed. The plan and claims went to the supervisor, who relays them to the owner.
 
 ## State (verified this session unless marked)
 
-- vitest `app/game/overlays`: 4 files, 27/27. Client typecheck clean. Biome on overlays: no warnings.
-  ls-lint and the comment ratchet are clean.
-- Repo-wide `pnpm lint` fails on biome errors in the untracked `.claude/skills/`, which is not lane code.
-- Headless (private stack :2611/:5211, Chrome :9483, all killed): 1440x900 and 390x844, host and
-  guest. scrollWidth equals innerWidth. At 390 with 6 rows the card top is at 292px and the header
-  ends at 56px. Host bare Enter moves phase 3 to 0.
-- Reviewer's owner note, not a fix: the "Results" label above "<name> wins" is repetitive, and the
-  craft floor bans labels above headings. The owner approved the label, so it stays unless they change it.
-- `HudPanel`, `HudButton` and `ColorDot` still have users (leave-button, spectator-bar, leave-guard),
-  so none were deleted.
+- The menu picker is `routes/home/ship-picker.tsx`. It renders `<ShipStepper onStep={cycleShip}/>` and
+  owns a window keydown useEffect: A/D/arrows cycle the ship, and a bare Enter calls
+  `requestSubmit()` on the `MENU_FORM` form.
+- `routes/home/menu-strip.tsx` holds the grid `sm:grid-cols-[minmax(0,15rem)_minmax(0,17rem)_auto]
+  lg:grid-cols-[15rem_17rem_auto_1fr]` with CallSignField, ShipPicker, HostButton and KeyHint.
+  HINTS = [A D] Ship, [Enter] Host.
+- `routes/home/host-button.tsx` is a submit `Button` that reads `useNavigation()` for "Hosting…".
+- `routes/home/landing-ship.tsx` renders the saved ship via `useShipChoice()`, and banks when
+  `currentShip().turn` changes. After removal that branch is dormant.
+- `ShipStepper` and `cycleShip` are still used by `game/overlays/lobby-ship-picker.tsx`.
+- No tests exist under `routes/home/`.
+
+## Plan sent (build only after approval)
+
+1. menu-strip: drop ShipPicker. Hints are [Enter] Host only. Grid is sm `[minmax(0,15rem)_auto]`, lg
+   `[15rem_auto_1fr]`.
+2. `git rm routes/home/ship-picker.tsx`.
+3. Move the bare-Enter → `requestSubmit()` useEffect into HostButton, with its one-line comment. The
+   NN #13 weighing is in the message to the supervisor (a MenuKeys leaf / autofocus / module singleton /
+   native form Enter were rejected). Copy it into the commit body.
+4. landing-ship: no change unless the owner asks.
+5. DESIGN.md: the Menu Strip line reads "call sign, primary and key hint". The Ship Picker (signature)
+   section is reframed for the lobby. Drop the menu backdrop bank line.
+6. Verify: typecheck, vitest, lint, and headless menu captures at 1440 and 390 (CDP viewport).
 
 ## Uncommitted
 
 None after this handover commit.
 
-## Held files
+## Held files (claimed, pending clearance)
 
-None. Release the #238 claims.
+`routes/home/menu-strip.tsx`, `routes/home/ship-picker.tsx` (delete), `routes/home/host-button.tsx`,
+`apps/client/DESIGN.md` (Menu Strip + Ship Picker sections only).
 
 ## Next
 
-1. Queued lane: remove the ship picker from the main menu (`/`). The in-room pick replaces it. Keep
-   the shared ship store; the saved ship still goes out on host, join and deep link. Decide what the
-   menu backdrop ship shows (probably the saved ship). File an issue first. Send the supervisor a
-   plan plus claims (`routes/home.tsx`, `routes/home/*`, maybe the DESIGN.md menu section). Write
-   nothing before clearance.
+1. Wait for the supervisor to relay the owner's approval. Then build steps 1–6, commit by pathspec
+   and report the SHA.
 
 ## Open questions
 
-- For the owner, via the supervisor: keep or drop the "Results" label above the winner title?
+- Owner: is the lobby picker now the "signature" interaction in DESIGN.md?
+- Owner (relayed by the supervisor): keep or drop the "Results" label above "<name> wins" (#238).
 - Delete `game/net-debug-hud.tsx` (the owner must run `git rm` or allow it). Carried over.
 
 ## Lessons → memory
 
-`.claude/memory/seed-a-finished-room-with-a-scratch-server.md`,
-`.claude/memory/share-a-vi-mock-through-a-dynamic-import.md`.
+none this seam (the two #238 memories were committed in `f6d257a`).
