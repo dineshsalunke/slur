@@ -1,39 +1,56 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~09:15
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~13:10
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. The clear and resume steps are in memory `supervisor-clears-workers-via-herdr.md`.
+The owner has given standing approval to clear workers at a seam (`herdr agent prompt <pane> "/clear"`, then re-read
+the status line until it shows 0–5%; the first read after /clear can still show the old percent).
 
-## Done
+## Done this session
 
-- #241 hosted finish curtain (workerone) `deabca3`, handover `ce2e28c`.
-- #238 results comp B (workerfour) `1d1f9f2` `7943126` `dc856e7`, handover `f6d257a`, `374e878`.
-- PRs 188, 225, 230, 237 merged to origin/dev (`74a7b89`) by workertwo.
-- All four workers cleared at ~09:10 (owner-approved) and given new lanes.
+- #241 finish curtain `deabca3` (workerone). #238 results `7943126` `dc856e7` `ae5ec7b` (z-35, no label). #242 menu
+  picker removed `0ab2cb9`, bank code removed `97df771` (workerfour).
+- #231 graze `f5c8ff8` (option D, grazeDepth 0.5u). #232 pocket trap `56711c9` (a hit during stun is a plain stop).
+  Both closed (workerthree).
+- #243 seeker speed from the roster `1f1b0c3` at factor 1.15 (workerthree). Issue OPEN until the owner picks the factor.
+- Pacing branching RFC ruled. R1 route graph + per-class pockets `2812078`. R2 per-arm metrics, easiest/hardest
+  `6e67f53` (workerone). Both opt-in; /pacing unchanged.
 
 ## Workers
 
 | Worker | Pane | Lane | Held files |
 |---|---|---|---|
-| workerone | w2P:pD | Pacing step 2: BRANCHING RFC (no code). The analyzer assumes one Viterbi path; the owner wants every route, with splits and merges. | none until approved |
-| workertwo | w2P:pF | /pacing route lags ("something is too big"). Measure, then options and claims. | none yet (likely routes/pacing/*) |
-| workerthree | w2P:pG | #231 graze, then #232 pocket trap. Both touch sim/step.ts. RFC first. | none yet |
-| workerfour | w2P:pH | #242 menu picker removal (APPROVED); results root above the z-30 curtain; drop the "Results" label; the lobby picker is the signature. | #242: routes/home/menu-strip.tsx, ship-picker.tsx (rm), host-button.tsx, DESIGN.md Menu Strip + Ship Picker |
+| workerone | w2P:pD | pacing: R1+R2 done, idle. Next = R3 board (needs routes/pacing/*) or R4 phrase RFC; owner to choose | packages/shared/src/pacing/*, index.ts export lines |
+| workertwo | w2P:pF | /pacing lag: measured, NOT reproduced headless; waiting on the owner's repro | none claimed (routes/pacing/* proposed) |
+| workerthree | w2P:pG | NEW: merge clustered blocks in the generator (owner, screenshot images/3.png in my scratchpad). Issue + RFC first | #243 files until the factor is set |
+| workerfour | w2P:pH | idle | none |
 
-## Owner decisions this session
+## Owner rulings this session
 
-- Results above the curtain: yes. The "Results" label: drop it. #242: approved.
-- Orbit fallback clipping into a block: no change (the track is empty during the orbit).
+- Results above the curtain; drop the "Results" label; keep the winner square; remove the bank code. Orbit fallback: no change.
+- Branching: fork = both arms >= 25u + one hull apart; difficulty binds the EASIEST route; a fractured block is a
+  wall for viability AND a conditional arm; dead ends NOT allowed (per class). The owner sends no edited image.
 
-## Open
+## Open owner questions (relay in this order)
 
-1. **Checkout sync.** `git merge origin/dev` was denied by the auto-mode classifier. Local is 17 commits behind
-   origin/dev, and none of those commits touch a dirty file. The owner must run it or allow it.
-2. Owner-run `git rm apps/client/app/game/net-debug-hud.tsx` and drop `--color-debug`.
-3. Click Copy link once in a real tab. Review #236.
-4. Pacing questions for the owner: 93% quiet share; the double-jump window (~1.1 s vs 0.45 s reaction); lengthwise slots.
-5. The perf fixes and the PR 195 rebase are not assigned.
+1. My proposal awaiting a yes: workertwo moves the analyzer into a Web Worker now (analysis with R1+R2 on may near
+   1 s [inferred]), then hands routes/pacing/* to workerone for R3. R4 phrase RFC after the owner sees the board.
+2. Pocket trap threshold X (now 2u). Suggested: trapped when the stop window < that ship's length (traps phantom +
+   freighter at the owner's z 1200–1278 fixture).
+3. Generator on a trap: suggested regenerate the segment.
+4. Contract hull z-length: suggested the Freighter's 6u.
+5. Seeker factor: 1.15 (landed) or 1.5 (the lowest that catches a Freighter from 500u inside the 20 s TTL; one
+   fixture needs retiming).
+6. "Hardest route" ranking (suggested: keep Viterbi cost); pickups as a reward axis (suggested: yes, in R4).
+7. /pacing lag repro: which action, browser, game tab open?
+8. A lane for workerfour. Options: the perf fixes, the PR 195 rebase.
+9. Older: owner-run `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; click Copy link; review #236.
+
+## Blocked on permission
+
+`git merge origin/dev` was denied (auto-mode classifier). Local dev may still be behind origin/dev: check
+`git rev-list --left-right --count HEAD...origin/dev`. The owner runs it, or allows it.
 
 ## Uncommitted
 
@@ -41,10 +58,9 @@ none of mine.
 
 ## Next
 
-1. Claim-check each worker's plan. workertwo and workerone both touch pacing: keep workertwo's lag fix and
-   workerone's later branching build apart.
-2. Relay the RFCs (#231/#232, branching) and the lag cause to the owner.
+1. Relay workerthree's block-merge RFC. Claim-check it against workerone (pacing reads the generator, does not write it).
+2. On the owner's answers, dispatch items 1–8 above.
 
 ## Lessons → memory
 
-none.
+none new. (Re-read a pane's status line after /clear; the first read can be stale.)
