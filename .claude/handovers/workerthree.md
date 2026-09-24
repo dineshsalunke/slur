@@ -34,7 +34,18 @@ Agent: workerthree · Lane: bounce fixes, #231 + #232 (both closed) · Updated: 
 
 ## Next
 
-1. None in this lane. Waiting for a new assignment.
+1. NEW LANE assigned by slur-supervisor (owner-approved direction), NOT STARTED: the homing seeker is
+   slower than the fastest ship. Facts from the supervisor [unmeasured by me]: `combat/constants.ts:28`
+   `SEEKER_SPEED = 120`; Freighter `maxCruise = 124` (`ship-classes.ts:84`); `seeker.ts:271` ramps with
+   `seekerRampS`. Steps:
+   a. File a GitHub issue.
+   b. Derive the seeker speed from the roster: max `maxCruise` × a factor, with the factor as data.
+      Default 1.15 (~143u/s) unless the owner picks another.
+   c. Check whether any boost or pickup lifts a ship past `maxCruise`, and whether the ramp time lets
+      the seeker catch a Freighter at all.
+   d. Measure time-to-hit on a Freighter and a Comet at max cruise, before and after, over the fairness
+      seeds (`.claude/memory/measure-a-homing-rule-on-procgen.md`).
+   e. Send claims to slur-supervisor before the first write. Build after the claim check (no RFC gate).
 
 ## Open questions
 
