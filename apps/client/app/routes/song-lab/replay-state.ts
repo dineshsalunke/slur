@@ -1,4 +1,4 @@
-import type { FlightTuning, PlayerInput, ShipClassId } from '@slur/shared';
+import { type FlightTuning, type PlayerInput, SEG_LEN, type ShipClassId, START_SAFE } from '@slur/shared';
 import {
     classTuning,
     expandInputs,
@@ -16,6 +16,8 @@ export interface LiveReplay {
     tuning: FlightTuning;
     tally: LabTally;
     generation: number;
+    songZ: number;
+    crossTick: number | null;
 }
 
 export interface ReplayView {
@@ -29,6 +31,8 @@ export const replay: LiveReplay = {
     tuning: classTuning( 'fighter' ),
     tally: newTally(),
     generation: 0,
+    songZ: START_SAFE * SEG_LEN,
+    crossTick: null,
 };
 
 export const replayView = createStore< ReplayView >( { playing: true, speed: 1, replayed: null } );
@@ -37,14 +41,22 @@ export function replayLive(): boolean {
     return ! replay.tally.done && replay.tally.ticks < replay.inputs.length;
 }
 
-export function loadReplay( classId: ShipClassId, run: LabRun | undefined ): void {
+export function loadReplay( classId: ShipClassId, run: LabRun | undefined, songZ: number ): void {
     replay.inputs = run ? expandInputs( run.inputs ) : [];
     replay.tuning = classTuning( classId );
+    replay.songZ = songZ;
     restartReplay();
+}
+
+export function crossingTick( ticksAfter: number, zBefore: number, zAfter: number, songZ: number ): number | null {
+    if ( zAfter < songZ ) return null;
+    const frac = zAfter > zBefore ? ( songZ - zBefore ) / ( zAfter - zBefore ) : 0;
+    return ticksAfter - 1 + Math.min( 1, Math.max( 0, frac ) );
 }
 
 export function restartReplay(): void {
     replay.tally = newTally();
+    replay.crossTick = null;
     replay.generation++;
     replayView.set( { ...replayView.get(), replayed: null } );
 }

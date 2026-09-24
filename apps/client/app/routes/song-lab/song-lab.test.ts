@@ -14,7 +14,8 @@ import {
 } from '../../../song-lab/bundle';
 import { checkVariant } from './lab-check';
 import { formatResult, labEntries, labHref, pickEntry, pickVariant, shipForClass } from './lab-view';
-import { songTarget } from './song-sync';
+import { crossingTick } from './replay-state';
+import { shipTimeAt, songTarget, songTimeAt } from './song-sync';
 
 const score = composeScore( 11, 12 );
 
@@ -85,10 +86,18 @@ describe( 'song-lab picks', () => {
         [ recorded( 'comet', 1 ), recorded( 'fighter', 1 ) ],
         [ human( 'fighter', 'club', 1 ), human( 'comet', 'rookie', 1 ), human( 'comet', 'pro', 1 ) ],
     );
+    const song = {
+        file: 's',
+        duration: 0,
+        bpm: 120,
+        beatsPerBar: 4,
+        sections: [],
+        clock: { z0: 257.3, t0: 0, zPerSecond: 124 },
+    };
     const bundle: LabBundle = {
         version: 1,
         createdAt: '',
-        song: { file: 's', duration: 0, bpm: 120, beatsPerBar: 4, sections: [] },
+        song,
         variants: [ withHumans, variant( 'b', [] ) ],
     };
 
@@ -133,10 +142,20 @@ describe( 'song-lab picks', () => {
         expect( formatResult( r ) ).toBe( 'DNF · 3.00 s · 2 deaths @ z 10, 100 · 0 bumps' );
     } );
 
-    it( 'maps sim ticks to song time and plays only while running inside the song', () => {
-        expect( songTarget( 0.38, 200, 60, 0.5, true ) ).toBeCloseTo( 0.38 + 60.5 * FIXED_DT );
-        expect( songTarget( 0.38, 200, 60, 0, false ) ).toBeNull();
-        expect( songTarget( -1, 200, 0, 0, true ) ).toBeNull();
-        expect( songTarget( 0.38, 1, 600, 0, true ) ).toBeNull();
+    it( 'finds the fractional tick where the ship crosses the song start', () => {
+        expect( crossingTick( 10, 250, 254, 257.3 ) ).toBeNull();
+        expect( crossingTick( 11, 255, 259, 257.3 ) ).toBeCloseTo( 10 + 2.3 / 4 );
+        expect( crossingTick( 1, 300, 300, 257.3 ) ).toBe( 0 );
+    } );
+
+    it( 'starts song time at the crossing and plays only while running inside the song', () => {
+        const map = { z0: 257.3, t0: 0, zPerSecond: 124 };
+        expect( songTimeAt( map, null, 300, 0 ) ).toBeNull();
+        expect( songTimeAt( map, 248.5, 308, 0.5 ) ).toBeCloseTo( 60 * FIXED_DT );
+        expect( shipTimeAt( map, 257.3 + 124 ) ).toBeCloseTo( 1 );
+        expect( songTarget( 1, 200, true ) ).toBe( 1 );
+        expect( songTarget( 1, 200, false ) ).toBeNull();
+        expect( songTarget( null, 200, true ) ).toBeNull();
+        expect( songTarget( 201, 200, true ) ).toBeNull();
     } );
 } );

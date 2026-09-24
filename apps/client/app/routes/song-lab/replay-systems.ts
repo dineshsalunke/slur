@@ -4,7 +4,7 @@ import { labResult, labStep } from '../../../song-lab/bundle';
 import { blockWorld, clearBlockState } from '../../game/block-state';
 import { sparkIfBounced } from '../../game/ecs/bounce-spark';
 import { LocalPlayer, Prev, Sim } from '../../game/ecs/traits';
-import { endReplay, replay, replayLive, replayView } from './replay-state';
+import { crossingTick, endReplay, replay, replayLive, replayView } from './replay-state';
 
 export function replayFlightSystem( world: World, track: Track ): void {
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
@@ -16,6 +16,7 @@ export function replayFlightSystem( world: World, track: Track ): void {
             const vzBefore = s.vz;
             labStep( s, replay.inputs[ replay.tally.ticks ], replay.tuning, track, blockWorld, replay.tally );
             sparkIfBounced( s, stunBefore, vzBefore, FIXED_DT, replay.tuning );
+            replay.crossTick ??= crossingTick( replay.tally.ticks, prev.z, s.z, replay.songZ );
         } else if ( replayView.get().replayed === null ) {
             endReplay( labResult( { ship: s, world: blockWorld, tally: replay.tally, trace: [] } ) );
         }

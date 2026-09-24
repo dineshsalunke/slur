@@ -1,3 +1,4 @@
+import { SEG_LEN, type ShipClassId, START_SAFE } from '@slur/shared';
 import { variantCheck } from './lab-check';
 import { installLabKeys } from './lab-keys';
 import { fetchBundle, listBundles } from './lab-source';
@@ -5,7 +6,13 @@ import { labView, pickEntry, pickVariant } from './lab-view';
 import { loadReplay } from './replay-state';
 import { SongLabEmpty } from './song-lab-empty';
 import { SongLabPage } from './song-lab-page';
-import { loadSong } from './song-sync';
+import { loadSong, type SongMap } from './song-sync';
+
+const DEFAULT_CLASS: ShipClassId = 'freighter';
+
+function bundleSongMap( song: object ): SongMap | null {
+    return 'clock' in song ? ( song.clock as SongMap ) : null;
+}
 
 export function meta() {
     return [ { title: 'SLUR — Song Lab' } ];
@@ -20,10 +27,11 @@ export async function clientLoader( { request }: { request: Request } ) {
     const bundle = await fetchBundle( name );
     const variant = pickVariant( bundle, q.get( 'variant' ) );
     const check = variantCheck( name, bundle, variant );
-    const picked = pickEntry( check.entries, q.get( 'class' ), q.get( 'pilot' ) );
+    const picked = pickEntry( check.entries, q.get( 'class' ) ?? DEFAULT_CLASS, q.get( 'pilot' ) );
     const view = labView( bundles, name, bundle, variant, check.entries, picked, check );
-    loadReplay( view.classId, picked?.run );
-    void loadSong( bundle.song.file );
+    const map = bundleSongMap( bundle.song );
+    loadReplay( view.classId, picked?.run, map?.z0 ?? START_SAFE * SEG_LEN );
+    void loadSong( bundle.song.file, map );
     return { view, track: check.track };
 }
 

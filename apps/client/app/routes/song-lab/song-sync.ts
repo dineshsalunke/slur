@@ -1,6 +1,6 @@
-import { FIXED_DT, spawnShip } from '@slur/shared';
+import { FIXED_DT } from '@slur/shared';
 import type { World } from 'koota';
-import { type SongClock, songClock, tAt } from '../../../song-lab/map';
+import { songClock } from '../../../song-lab/map';
 import type { SongAnalysis } from '../../../tapper/beat-analysis';
 import { LocalPlayer, Sim } from '../../game/ecs/traits';
 import { createStore } from '../tapper/external-store';
@@ -29,10 +29,15 @@ export interface SongView {
     error: string | null;
 }
 
+export interface SongMap {
+    z0: number;
+    t0: number;
+    zPerSecond: number;
+}
+
 interface LoadedSong {
     analysis: SongAnalysis;
-    clock: SongClock;
-    startT: number;
+    map: SongMap;
     endT: number;
 }
 
@@ -40,7 +45,6 @@ const ROUTE = '/song-lab';
 const DRIFT_S = 0.08;
 const LEAD_S = 0.05;
 const SETTLE_MS = 250;
-const SPAWN_Z = spawnShip( 0, 0 ).z;
 
 export const songView = createStore< SongView >( {
     file: '',
@@ -51,6 +55,7 @@ export const songView = createStore< SongView >( {
 } );
 
 let loaded: LoadedSong | null = null;
+let given: SongMap | null = null;
 let ours = false;
 let settleUntil = 0;
 let line = '';
@@ -75,16 +80,17 @@ export function setSongVolume( volume: number ): void {
     applyGain();
 }
 
-export function songTarget(
-    startT: number,
-    endT: number,
-    ticks: number,
-    alpha: number,
-    running: boolean,
-): number | null {
-    if ( ! running ) return null;
-    const t = startT + ( ticks + alpha ) * FIXED_DT;
-    return t >= 0 && t < endT ? t : null;
+export function songTimeAt( map: SongMap, crossTick: number | null, ticks: number, alpha: number ): number | null {
+    return crossTick === null ? null : map.t0 + ( ticks + alpha - crossTick ) * FIXED_DT;
+}
+
+export function shipTimeAt( map: SongMap, z: number ): number {
+    return map.t0 + ( z - map.z0 ) / map.zPerSecond;
+}
+
+export function songTarget( songT: number | null, endT: number, running: boolean ): number | null {
+    if ( ! running || songT === null ) return null;
+    return songT >= 0 && songT < endT ? songT : null;
 }
 
 function clockHolds( a: SongAnalysis ): boolean {
@@ -121,9 +127,19 @@ function watchLeave(): void {
     onFrame( stopOnLeave );
 }
 
-export async function loadSong( file: string ): Promise< void > {
+export function defaultSongMap( a: SongAnalysis ): SongMap {
+    const c = songClock( a );
+    return { z0: c.z0, t0: c.t0, zPerSecond: c.zPerSecond };
+}
+
+export async function loadSong( file: string, map: SongMap | null ): Promise< void > {
     watchLeave();
-    if ( songView.get().file === file && songView.get().status !== 'error' ) return;
+    given = map;
+    if ( loaded && songView.get().file === file && songView.get().status === 'ready' ) {
+        loaded = { ...loaded, map: map ?? defaultSongMap( loaded.analysis ) };
+        return;
+    }
+    if ( songView.get().file === file && songView.get().status === 'loading' ) return;
     loaded = null;
     patch( { file, status: 'loading', error: null } );
     try {
@@ -131,9 +147,8 @@ export async function loadSong( file: string ): Promise< void > {
         if ( ! analysis ) throw new Error( `no analysis for ${ file }` );
         await fillClip( analysis );
         if ( songView.get().file !== file ) return;
-        const clock = songClock( analysis );
         const endT = Math.min( analysis.duration, loopTimes().toS );
-        loaded = { analysis, clock, startT: tAt( clock, SPAWN_Z ), endT };
+        loaded = { analysis, map: given ?? defaultSongMap( analysis ), endT };
         patch( { status: 'ready' } );
     } catch ( e ) {
         if ( songView.get().file === file ) patch( { status: 'error', error: String( e ) } );
@@ -148,19 +163,30 @@ function shipZ( world: World ): number {
     return z;
 }
 
-function barOf( a: SongAnalysis, t: number ): string {
-    const g = gridAt( a, t );
-    return `${ g.bar + 1 }.${ Math.floor( g.beatInBar ) + 1 }`;
+export function barLabel( a: SongAnalysis, t: number, endT: number ): string {
+    const g = gridAt( a, Math.min( Math.max( t, 0 ), endT ) );
+    const bar = Math.min( Math.max( g.bar, -1 ), a.bars.length - 1 );
+    const beat = bar === g.bar ? Math.floor( g.beatInBar ) + 1 : 1;
+    return `${ bar + 1 }.${ beat }`;
 }
 
-function readout( song: LoadedSong, want: number | null, z: number, heard: number | null ): string {
+function readout( song: LoadedSong, songT: number | null, want: number | null, z: number ): string {
     const view = replayView.get();
-    const shipT = tAt( song.clock, z );
-    const songT = heard ?? song.startT + replay.tally.ticks * FIXED_DT;
+    const shipT = shipTimeAt( song.map, z );
+    const shipBar = barLabel( song.analysis, shipT, song.endT );
+    if ( songT === null ) return `song waits for z ${ Math.round( song.map.z0 ) } · ship bar ${ shipBar }`;
+    const state =
+        songT >= song.endT
+            ? 'ended'
+            : view.speed !== 1
+              ? `muted at ${ view.speed }×`
+              : want === null
+                ? 'stopped'
+                : 'playing';
     const lead = shipT - songT;
-    const state = view.speed !== 1 ? `muted at ${ view.speed }×` : want === null ? 'stopped' : 'playing';
     const sign = lead >= 0 ? '+' : '−';
-    return `song ${ state } · song bar ${ barOf( song.analysis, songT ) } · ship bar ${ barOf( song.analysis, shipT ) } (${ sign }${ Math.abs( lead ).toFixed( 2 ) } s)`;
+    const songBar = barLabel( song.analysis, songT, song.endT );
+    return `song ${ state } · song bar ${ songBar } · ship bar ${ shipBar } (${ sign }${ Math.abs( lead ).toFixed( 2 ) } s)`;
 }
 
 function heardNow(): number | null {
@@ -177,14 +203,15 @@ export function syncSong( world: World, alpha: number ): void {
     if ( ! clockHolds( song.analysis ) ) {
         loaded = null;
         patch( { file: '' } );
-        void loadSong( song.analysis.song );
+        void loadSong( song.analysis.song, given );
         return;
     }
     const view = replayView.get();
     const running = view.playing && view.speed === 1 && replayLive();
-    const want = songTarget( song.startT, song.endT, replay.tally.ticks, alpha, running );
+    const songT = songTimeAt( song.map, replay.crossTick, replay.tally.ticks, alpha );
+    const want = songTarget( songT, song.endT, running );
     const heard = heardNow();
-    line = readout( song, want, shipZ( world ), heard );
+    line = readout( song, songT, want, shipZ( world ) );
     if ( want === null ) {
         if ( ours && heard !== null ) stop();
         ours = false;
