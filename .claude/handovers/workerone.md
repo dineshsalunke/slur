@@ -1,9 +1,10 @@
-Agent: workerone · Lane: pacing R3 board (RFC §4; no issue, owner waived) + #246 slope bug · Updated: 2026-09-24
+Agent: workerone · Lane: pacing R3 board (RFC §4; no issue, owner waived) + #246 slope bug (paused) + #248 fracture shadow · Updated: 2026-09-24
 
 The RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/a42d7260-7d77-4e58-93e1-2b90e521bca9/scratchpad/rfc-pacing-branching.md` (§3, §4, §5, §8). The d520f36 version of this file holds the owner rulings Q1–Q5. The 66fefc0 version holds the R2 details. The 68f48bd version holds the trap-rule details (1e7160c). The f6f6962 version holds the R3 board details.
 
 ## Goal
 
+- #248: demote a fractured block whose shadow (x ±2u, z1 → z1 + 0.45×124×1 s ≈ 56u) holds a block or floor gap. Plan sent to slur-supervisor; waiting for go. New files only: sim/fracture-shadow.ts + test + one index.ts export. track.ts/fracture.ts belong to workerthree (#244); the track.ts hook-up goes to the supervisor as a diff.
 - #246: make pacing routes flyable under the sim's strafe acceleration. Waiting for the owner to pick a fix.
 - Held: the generator regenerate step (waits for #244).
 
@@ -40,6 +41,7 @@ None in this lane.
 
 ## Next
 
+0. On go for #248: write sim/fracture-shadow.ts (pure sealShadowed(seg, ahead, clear)), its test (zero violations after the pass; order-independent), scratch sweep of fractured before/after + block/gap violations for pad 2u and 1.3u on 5 seeds + 30-seed totals, build-time cost. Then send the track.ts hook-up diff (runs last, after merge + abut, n = 3 segments ahead).
 1. Wait for the owner's #246 pick (via slur-supervisor). Options: (1, recommended) velocity level in the solver state, a step change needs ~11 rows per 32.5 u/s; (2) diagnostic post-pass only; (3) lower the solver rate. Then build in `reference-path.ts` with a shared test that flies every emitted route with the sim strafe model and bounds the tracking error. Re-check the cost: the route graph, `legalMask` and `rosterPockets` all use `maxStep`.
 2. Wait for the supervisor or owner to review the R3 stills.
 3. HOLD: the generator regenerate step. Wait until workerthree lands #244 (`sim/track.ts` block merge). Then re-run the z 1200–1278 fixture. If the merge dissolves it, pin a hand-built fixture for the freighter and phantom windows.
