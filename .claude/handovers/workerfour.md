@@ -37,12 +37,9 @@ the song-lab line in `apps/client/app/routes.ts`. workerone owns `apps/client/so
 
 ## Next
 
-1. Idle. When the supervisor sends the SHA of workerone's `conductor` bundle, repeat the live check on
-   conductor × perfect freighter: bars 8/28/60/96 + finish, silence until crossTick, digest MATCH, re-seek count.
-   Recreate the driver if the scratchpad is gone. It imports the page modules by resource URL
-   (song-sync, tapper-clock, replay-state, /app/game/ecs/traits.ts, the koota dep), calls restartReplay, and samples
-   ship time − playheadAt(elapsedAtPerf(now)) on each rAF. Run it with `node drift.mjs conductor perfect`.
-   The variant id is passed as `variant=` in the URL.
+1. STAND DOWN (2026-09-25). The owner is winding down the song lab. The conductor re-check is cancelled.
+   workerone archived the work on local branch `archive/song-lab` (b64766f). Do not touch
+   `apps/client/app/routes/song-lab/**` until the owner says which replay code stays. Stay idle.
 
 ## Open questions
 
