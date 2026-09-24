@@ -57,10 +57,19 @@ none of mine.
 - QUEUED for workerfour after #238 (owner): remove the ship picker from the main menu. Keep the ship store.
   Plan + issue first.
 
+- 188 + 225 MERGED on GitHub by workertwo (~04:25). Local dev pushed first (787b7be). Local dev is now BEHIND
+  origin/dev by those two merges.
+- Shared index held workerone's staged renames, so `git merge` here is unsafe. Owner APPROVED a detached worktree
+  `../slur-worktrees/pr-merge` for workertwo: merge 230 → 237 there, `git push origin HEAD:dev`.
+  THEN: sync this checkout (`git merge origin/dev`) ONLY when `git status` shows nothing staged and the workers
+  are idle or committed. Ask workertwo, or do it yourself.
+- workerfour cleared + resumed at ~04:20 (building #238 comp B from its handover spec).
+
 ## Next
 
 1. Relay each lane's result (stills/SHAs) to the owner.
-2. Check workertwo's merge claims against workerone (net-*), workerthree (audio, test-level), workerfour (results).
+2. After workertwo's push: sync the checkout at a clean-index moment (above).
+3. Check workertwo's merge claims against workerone (net-*), workerthree (audio, test-level), workerfour (results).
 
 ## Lessons → memory
 
