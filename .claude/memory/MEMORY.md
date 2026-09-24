@@ -50,3 +50,4 @@ lives in its own file beside this one.
 - [Merge PRs in a detached worktree](merge-prs-in-a-detached-worktree.md) — a staged index blocks `git merge` here; merge off origin/dev in a detached worktree, `push HEAD:dev`, never ff the shared checkout
 - [Seed a finished room with a scratch server](seed-a-finished-room-with-a-scratch-server.md) — subclass RunRoom in the scratchpad, a `__finish` message seeds racers; define `lobby` too; Enter goes on `document.body`
 - [Share a vi.mock through a dynamic import](share-a-vi-mock-through-a-dynamic-import.md) — `vi.mock(p, async () => (await import('./test-room')).sdkMock)`; keep the helper free of overlay imports
+- [Short-course scratch server](short-course-scratch-server.md) — subclass RunRoom in a scratch .mjs with a 30-segment thin course to reach the finish; the bot wedges on the full track
