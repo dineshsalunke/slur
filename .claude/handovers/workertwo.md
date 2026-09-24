@@ -1,38 +1,24 @@
-Agent: workertwo · Lane: merge open PRs into dev (188, 225, 230, 237; no issue) · Updated: 2026-09-24
+Agent: workertwo · Lane: /pacing lag (owner; no issue yet) · Updated: 2026-09-24
 
 ## Goal
 
-Merge the open PRs into `dev` and resolve conflicts. Keep both sides' intent. PR 195 is out of scope.
-DONE, pushed.
+Find out why `/pacing?seed=N` lags, then fix it. Measure first. The owner says something is too big for it.
 
 ## Done
 
-- #188 and #225 merged on GitHub (`42b1c69`, `f7fa82c`). #225 was marked ready first.
-- #230 merged at `546130d`, #237 at `74a7b89`. Both were made in a detached worktree and pushed with
-  `origin HEAD:dev` (`f7fa82c..74a7b89`). GitHub shows both MERGED.
-- The owner, through the supervisor, confirmed the resolution rule. #228's deck material wins for blocks
-  and monoliths. Every other scene change in #230 and #237 is kept.
+- Measured the route and sent the result to slur-supervisor. No code changed.
 
 ## State
 
-- Resolution: `sealed-block-material.ts` stays deleted. `STONE_*`, `Block.envMapIntensity` 2.0 and
-  `Monolith.textureSpan` 8 are dropped. `METAL_ROUGHNESS` is 0.40 and `METAL_BASE_COLOR` is `#7d7a75`.
-  #230's Env/Fill/Deck/Rail light values, the Rock values and no-fog are in. `SceneFog` is also gone
-  from `routes/home/landing-scene.tsx`, which dev added after #230 was branched.
-- `block-debris.tsx` has #237's rigid bodies, built on `floorSurface()` + `applyDeckFinish`, and the
-  material rebuilds on `useRebuildToken`.
-- `ART_MATERIALS.md` §7: item 16 = #228, item 17 = #230 (it carries a "superseded in part by item 16"
-  note), item 18 = #237. The `ADD.md` refs point to 18.
-- Gate at `74a7b89` in the worktree: typecheck clean. Tests: client 272, shared 228, server 15, 0 fail.
-  Biome on the 27 touched app files: 0 errors. One warning (`track-texture.ts` line count) was already
-  on dev. The comment ratchet passes.
-- Stills (git-ignored): `.claude/frame-tap-refs/merge-before-spawn.png` (`f7fa82c`) and
-  `merge-after-spawn.png` (`74a7b89`). They are `/test-level` spawn frames, headless, 1600×900, DPR 1.
-  The after frame is warmer and lighter, with lit monolith faces.
-- A block-break or meteor-strike frame on the merged build was not shot [unmeasured].
-- The shared checkout was NOT synced to origin/dev. The supervisor owns that sync, a real merge.
-- The worktree was removed. No scratch servers or Chrome are running. The `refs/remotes/pr/*` refs
-  were deleted.
+- analyzeDescriptor in Node: 97–147 ms on each of 20 seeds. Grid is 8000 x 102 = 816k cells.
+  `PathSolver.relaxFrom` is the hot spot (40 ms self time).
+- Page load: 574 ms. The one long task is the 120 ms clientLoader analyze.
+- DOM: 1702 nodes. Track strip SVG: 1200 nodes. The clearance and strafe polylines have 8002 points each.
+- Headless scroll and scrub at pps 24 and 240, at DPR 1 and emulated DPR 2: 0 dropped frames. Main
+  thread < 1 ms per frame. Zoom click: 32–34 ms.
+- The lag is NOT reproduced headless. The owner's repro is unknown [unmeasured].
+- Scratch scripts are in the session scratchpad (`cdp.mjs`, `trace.mjs`, `long.mjs`, `top.mjs`,
+  `seeds.mjs`). The Chrome on port 9441 is killed.
 
 ## Uncommitted
 
@@ -40,17 +26,20 @@ None.
 
 ## Held files
 
-None. The PR-merge claims are released.
+None. The proposed claims are pending: option 2 → `routes/pacing/route.tsx` + a new
+`analyze.worker.ts`. Option 6 → `board-scale.ts`, `clearance-plot.tsx`, `strafe-plot.tsx`,
+`pacing-strip.tsx`.
 
 ## Next
 
-1. Wait for the supervisor's next lane.
+1. Wait for the owner's repro steps through the supervisor (which action lags, browser, window, other tabs).
+2. Reproduce it with that action, then build the approved option.
 
 ## Open questions
 
-1. None new. Older: R3 wear patches, the worktree for the `036645c` stills, and the 145 ms bake on the
-   first race frame.
+1. Which action lags for the owner?
+2. Option 4 (PathSolver speed-up) touches `packages/shared/src/pacing`. It needs workerone's RFC agreement.
 
 ## Lessons → memory
 
-`.claude/memory/merge-prs-in-a-detached-worktree.md`
+none
