@@ -21,12 +21,7 @@ export function Overlays() {
             { ( phase === PHASE.countdown || phase === PHASE.racing ) && (
                 <div className="fixed top-[clamp(16px,4.4vh,46px)] right-[clamp(16px,2.7vw,48px)] z-[26] flex items-center gap-2">
                     <AudioToggle />
-                    <LeaveButton />
-                </div>
-            ) }
-            { phase === PHASE.finished && (
-                <div className="fixed bottom-4 left-4 z-20">
-                    <AudioToggle />
+                    <LeaveButton tone="ghost" />
                 </div>
             ) }
             { phase === PHASE.lobby && <LobbyOverlay room={ room } /> }

@@ -241,6 +241,12 @@ The room before GO uses the same lower third over the live track. It shows the r
 - **Keys:** A/D and the arrows cycle the ship. A bare Enter starts the run for the host only. The key hint shows [A D] Ship, plus [Enter] Go for the host.
 - **Audio toggle:** hidden in the lobby, because it would sit over the strip. M still mutes.
 
+### In-race controls
+In countdown and racing, mute and Leave sit top-right at the HUD inset, 8px apart. They use the same ghost treatment as the lobby Leave, so Leave looks the same across GO.
+- **Ghost:** square, 36px tall, a 1px Readout/25 border on Deep Space at 60%, and 600 12px 0.2em uppercase type. Hover raises the border to Readout/60. Focus draws a 2px Readout outline at a 2px offset. There is no colour, glow or blur.
+- **Mute:** a 36px square with a drawn speaker glyph: 2px square-capped strokes, and angled waves that echo the chevron. Muted swaps the waves for an ×. There is no colour change. It is hidden on the results screen, as in the lobby. M still mutes.
+- **Focus:** a mouse click does not focus either control, because Space is the jump key and would press a focused button. Tab still reaches both.
+
 ## Do's and Don'ts
 
 ### Do:
