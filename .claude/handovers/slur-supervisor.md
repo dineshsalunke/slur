@@ -44,6 +44,17 @@ drift < 1 beat at bars 8/28/60/96/finish.
   bump. Re-sync is dropped (not a rhythm game). workerfour re-checks conductor when its bundle lands.
 - workerone cleared + resumed ~00:30 and is building conductor. Swap gate OPENED.
 
+## ~01:00 SONG LAB WOUND DOWN (owner told workerone directly: "this is not really working out")
+
+- conductor landed db8cd1e. The bundle swap never happened (workerone's classifier denied the overwrite). Now moot.
+- All song-lab work is archived on LOCAL branch `archive/song-lab` (b64766f), made with `git branch` and no
+  checkout; HEAD is dev and it is not pushed. CLAUDE.md says "Never create a branch here". Ask the owner whether
+  the archive branch is OK or should become a tag.
+- Replay code stays on dev. Owner to say which files count as replay code.
+- NEW experiment (owner → workerone): a route with a plain empty deck. The owner plays an mp3, flies/strafes
+  on the beats, and the inputs are recorded for analysis. Its name clashes with /tapper (7f397d0). Waiting on owner answers.
+- workerone cleared + resumed idle (handover ef31128). workerfour stood down; conductor re-check cancelled.
+
 ## Landed this session (all local, not pushed)
 
 - 72948ae JJ motifs · 0734e06 gen:'score' switch (`SLUR_TRACK_GEN=score pnpm dev`) · 59ee8df #244 ·
