@@ -35,13 +35,12 @@ Standing owner decisions:
 | workerone | w2P:pD | #253 pipeline DONE: c3d2a63 curve, b5b7b3c pipeline, handover ae61282. Bundle `.songs/lab/believer-s1.json` = 10 variants × 5 classes, all replay-verified; perfect pilot → 50/50 finish, 0 deaths, 0 bumps (times don't separate variants; 65–151 notes do). Human runs LANDED f98f9e5 (handover 639655e): pro/club/rookie, 150 runs, 0 replay mismatches; bundle 16.7 MB. Deaths pro/club/rookie: drum-driven variants easiest (snare-jump 1/15/38, triplet-grid 1/14/39), `mined` hardest (12/44/103). IDLE | none | apps/client/song-lab/**, score/compose.ts + test, score/emit.ts + test, client package.json + vitest.config.ts (1 line each) |
 | workertwo | w2P:pF | none | cleared + resumed idle (d688b79) | none |
 | workerthree | w2P:pG | none | cleared + resumed idle (9674c9f) | none |
-| workerfour | w2P:pH | #253 /song-lab viewer | cleared + resumed; wired to the real bundle (bf70803) + headless check (67a2dfa); waits for workerone's first bundle, then runs MATCH on every variant × class | routes/song-lab/**, tapper/tapper-plugin.ts, 1 line routes.ts |
+| workerfour | w2P:pH | #253 /song-lab viewer DONE: bf70803, 67a2dfa, ddf5bfe, 63b8014 (pilot picker); handover e8ec4dc. 200/200 MATCH, 10/10 digests, load 0.64–0.71 s warm. Owner's return goal is MET. Offered next: intensity strip + note mix per variant (not started) | IDLE | routes/song-lab/**, tapper/tapper-plugin.ts, 1 line routes.ts |
 
 ## Next
 
-1. On workerone's bundle: make sure workerfour runs MATCH on every variant × class.
-2. Before the owner returns: verify `/song-lab` on a scratch port (own PIDs only; headless Chrome DPR 1,
-   muted, killed after), then send the owner the exact command + URL + what each variant is.
+1. /song-lab is ready (all four workers idle). The owner has the how-to message. Take the owner's
+   feedback on which variants feel right → step 3/distil, or #254, or the intensity-strip extra.
 
 ## Open owner questions
 
