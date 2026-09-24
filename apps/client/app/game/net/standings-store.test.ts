@@ -58,6 +58,14 @@ describe( 'readStandings', () => {
         expect( s.selfSpectating ).toBe( true );
     } );
 
+    it( 'marks self finished from the server latch', () => {
+        const before = readStandings( [ racer( 'a', 10, { finished: true } ), racer( 'self', 30 ) ], 'self' );
+        const after = readStandings( [ racer( 'a', 10 ), racer( 'self', 30, { finished: true } ) ], 'self' );
+        expect( before.selfFinished ).toBe( false );
+        expect( after.selfFinished ).toBe( true );
+        expect( standingsKey( after ) ).not.toBe( standingsKey( before ) );
+    } );
+
     it( 'names an empty name Racer', () => {
         expect( readStandings( [ racer( 'self', 0, { name: '' } ) ], 'self' ).entries[ 0 ]?.name ).toBe( 'Racer' );
     } );

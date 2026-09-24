@@ -10,7 +10,7 @@ import { hoverSystem } from '../../game/ecs/hover';
 import { localDeathVfxSystem } from '../../game/ecs/net-systems';
 import { localFlightSystem, syncRenderSystem } from '../../game/ecs/systems';
 import { LocalPlayer, Prev, Sim } from '../../game/ecs/traits';
-import { finishReset, showFinishFade, stepFinishReset } from './finish-reset';
+import { finishReset, showFinishFade, stepFinishReset } from '../../game/finish/finish-reset';
 import { localCombatSystem, restartLocalCombat } from './local-combat';
 import { restartRunClock } from './run-clock';
 

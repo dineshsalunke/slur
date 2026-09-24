@@ -10,6 +10,7 @@ import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context';
 import { Held, LocalPlayer } from './ecs/traits';
 import { world } from './ecs/world';
+import { FinishFade } from './finish/finish-fade';
 import { attachKeyboard } from './input/keyboard';
 import { handlePowerKey } from './input/power-select';
 import { NetHud } from './net-hud';
@@ -55,7 +56,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                 camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
             >
                 <WorldScene track={ track }>
-                    <NetLoop predictor={ predictor } track={ track } />
+                    <NetLoop predictor={ predictor } track={ track } room={ room } />
                     <PickupField room={ room } track={ track } />
                     <ProjectileField />
                     <SeekerField />
@@ -65,6 +66,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                 </WorldScene>
             </Canvas>
             <NetHud track={ track } />
+            <FinishFade />
             <TuningPanelMount />
         </WorldProvider>
     );

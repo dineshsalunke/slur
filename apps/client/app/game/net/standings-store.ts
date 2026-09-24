@@ -14,6 +14,7 @@ export interface StandingsSnapshot {
     field: number;
     rank: number;
     selfSpectating: boolean;
+    selfFinished: boolean;
     entries: readonly RosterEntry[];
 }
 
@@ -30,11 +31,13 @@ export function rosterWindow< T >( rows: readonly T[], centre: number, size = RO
 export function readStandings( players: readonly RacerInput[], selfId: string ): StandingsSnapshot {
     const standings = computeStandings( players );
     const selfIndex = standings.findIndex( ( s ) => s.id === selfId );
+    const self = players.find( ( p ) => p.id === selfId );
     return {
         connected: players.filter( ( p ) => p.connected ).length,
         field: standings.length,
         rank: selfIndex + 1,
-        selfSpectating: players.find( ( p ) => p.id === selfId )?.spectating ?? false,
+        selfSpectating: self?.spectating ?? false,
+        selfFinished: self?.finished ?? false,
         entries: rosterWindow( standings, selfIndex ).map( ( s ) => ( {
             id: s.id,
             rank: s.rank,
@@ -46,7 +49,7 @@ export function readStandings( players: readonly RacerInput[], selfId: string ):
 
 export function standingsKey( s: StandingsSnapshot ): string {
     const rows = s.entries.map( ( e ) => `${ e.rank }:${ e.id }:${ e.name }` ).join( '|' );
-    return `${ s.connected }/${ s.field }/${ s.rank }/${ s.selfSpectating }/${ rows }`;
+    return `${ s.connected }/${ s.field }/${ s.rank }/${ s.selfSpectating }/${ s.selfFinished }/${ rows }`;
 }
 
 function racersOf( room: Room< RunState > ): RacerInput[] {
@@ -144,4 +147,10 @@ export function useSelfSpectating( room: Room< RunState > ): boolean {
     const store = standingsStore( room );
     const spectating = () => store.snapshot().selfSpectating;
     return useSyncExternalStore( store.subscribe, spectating, spectating );
+}
+
+export function useSelfFinished( room: Room< RunState > ): boolean {
+    const store = standingsStore( room );
+    const finished = () => store.snapshot().selfFinished;
+    return useSyncExternalStore( store.subscribe, finished, finished );
 }
