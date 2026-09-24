@@ -72,3 +72,4 @@ lives in its own file beside this one.
 - [Delay the perception, not the loop](delay-the-perception-not-the-loop.md) — a human-like pilot lags what it sees; an input-delayed bang-bang strafe limit-cycles
 - [Score pilot must not lead the note](score-pilot-must-not-lead-the-note.md) — the preview pin holds the line until onset; steer to span.line at ship.z, pick takeoffs by forward sim
 - [Peer edit orphans a live check](peer-edit-orphans-a-live-check.md) — an impossible live reading (tick 0/0) may be HMR from another worker's save; compare mtimes, verify headless in node
+- [Song map runs at freighter speed](song-map-runs-at-freighter-speed.md) — zPerSecond = registerCruise 124; other classes end 23–98 s behind the song (perfect pilots)

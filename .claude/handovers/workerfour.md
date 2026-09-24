@@ -1,32 +1,29 @@
-Agent: workerfour · Lane: /song-lab replay viewer, #253 step 3 · Updated: 2026-09-24 20:40
+Agent: workerfour · Lane: /song-lab replay viewer + background song, #253 step 3 · Updated: 2026-09-24 23:10
 
 ## Goal
 
-A dev-only /song-lab route. Pick a bundle → variant → class → pilot, rebuild the track from bundle data, and replay
-the recorded per-tick inputs through simulate() in the /test-level scene. The panel shows the rules, the score, and
-every run with a MATCH/DIVERGED verdict. Throwaway, like /tapper.
+A dev-only /song-lab route that replays recorded runs over the rebuilt track. The song now plays behind the
+replay so the owner can feel it. Throwaway, like /tapper.
 
 ## Done
 
-- `790c6cb` scaffold (stub type). `bf70803` + `67a2dfa` moved to workerone's `apps/client/song-lab/bundle.ts`.
-  The loader runs labTrack + replayRun as a headless check per run and checks the digest. The live view runs
-  labStep on the ECS Sim against blockWorld. Runs are keyed by ShipClassId; the model comes from shipForClass.
-- `ddf5bfe` shows bumps in results.
-- `63b8014` adds a pilot dimension: perfect | pro | club | rookie (from `humanRuns`, f98f9e5). Runs are keyed
-  `classId/pilot` and the URL gains `pilot`. The results list is a grid of links, one per run. The aside is 26rem.
+- `790c6cb`, `bf70803`, `67a2dfa`, `ddf5bfe`, `63b8014`: the viewer, results, and perfect/pro/club/rookie pilots.
+- `ab88019`: the song plays behind the replay. song time = tAt(songClock(analysis), spawn z) + ticks × FIXED_DT
+  (0.380 s at tick 0). It plays at 1× only and is silent at other speeds. It re-seeks on drift > 80 ms and on
+  every pause, restart, class switch and speed change. Mute button + volume slider + M key. The readout shows
+  the song bar and the ship bar with the lead in seconds.
 
 ## State (verified this session)
 
-- believer-s1.json (16.7 MB, f98f9e5): 200/200 runs MATCH headless, 10/10 digests. The per-skill death sums
-  equal workerone's commit message.
-- Live MATCH checks: mined×freighter×rookie (10 deaths, 58 bumps), kick-jump×comet×club, plus 6 perfect runs.
-- Load: panel shown 0.64–0.71 s after navigate (warm Vite), 1.2 s cold. Bundle fetch 100–155 ms. Node parse
-  123 ms. Headless check per variant 50–110 ms.
-- One spurious live DIVERGED (tick 0/0) was an HMR orphan from a peer's save. See the memory below.
-- vitest song-lab 8/8. Client tsc clean. biome, comment ratchet and canvas isolation pass.
-- Scratch Vite :5194 and Chrome :9474 were killed by PID. The scratchpad scripts (check-all.mjs, live2.mjs)
-  will not survive a /clear.
-- [unmeasured] The camera at the finish looked into a wall (seen with the old stub). Not rechecked.
+- Headless (fighter, mined, perfect, scratch :5194/:9474): 1 source start in 20 s of steady play. Exactly one
+  start each for pause→play, 2×→1× and restart. At 2× the readout shows "muted at 2×".
+- Drift is real and comes from the map, not the sync. zPerSecond = registerCruise 124 = the freighter's
+  maxCruise. The ship's lag behind the song at the finish (perfect pilot): freighter 2.1 s, comet 22.7,
+  fighter 60.4, phantom 78.0, interceptor 97.9. Live fighter at 21 s: song bar 11, ship bar 8 (−5.4 s).
+- The song ends at 204.6 s. Slower ships fly the rest of the course in silence.
+- vitest song-lab + tapper 15/15. Client tsc clean. biome and the comment ratchet pass.
+- [unmeasured] Real speakers: the headless run used --mute-audio. The owner has not listened yet.
+- Scratch Vite and Chrome were killed by PID. The owner's :5173/:2567 stack was not touched.
 
 ## Uncommitted
 
@@ -34,20 +31,19 @@ every run with a MATCH/DIVERGED verdict. Throwaway, like /tapper.
 
 ## Held files
 
-`apps/client/app/routes/song-lab/**`, `apps/client/tapper/tapper-plugin.ts`, the song-lab line in
-`apps/client/app/routes.ts`. From the #253 steps 1-2 lane: `apps/client/app/routes/tapper/**`. workerone owns
-`apps/client/song-lab/**`.
+`apps/client/app/routes/song-lab/**`, `apps/client/app/routes/tapper/**`, `apps/client/tapper/tapper-plugin.ts`,
+the song-lab line in `apps/client/app/routes.ts`. workerone owns `apps/client/song-lab/**`.
 
 ## Next
 
-1. Wait for the supervisor.
-2. Candidates, not started: an intensity strip and note mix per variant (workerone's suggestion); an HMR
-   invalidate on replay-state.ts so a peer's save forces a reload.
+1. Wait for the supervisor or owner feedback on the sound.
+2. Candidates: a per-class zPerSecond option in the map (workerone's lane); an intensity strip per variant.
 
 ## Open questions
 
-- none.
+- Owner: should the song→distance map follow each class's cruise speed, not registerCruise? Today only the
+  freighter lines up with the music.
 
 ## Lessons → memory
 
-`.claude/memory/peer-edit-orphans-a-live-check.md`
+`.claude/memory/song-map-runs-at-freighter-speed.md`
