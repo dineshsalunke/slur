@@ -48,3 +48,5 @@ lives in its own file beside this one.
 - [Two-client check needs two Chromes](two-client-check-needs-two-chromes.md) — headless renders only the front tab; one Chrome per client; count calls with a CDP logpoint
 - [Leave guard blocks CDP navigate](leave-guard-blocks-cdp-navigate.md) — navigating away from /game raises beforeunload and CDP evals hang; use a fresh tab per run
 - [Merge PRs in a detached worktree](merge-prs-in-a-detached-worktree.md) — a staged index blocks `git merge` here; merge off origin/dev in a detached worktree, `push HEAD:dev`, never ff the shared checkout
+- [Seed a finished room with a scratch server](seed-a-finished-room-with-a-scratch-server.md) — subclass RunRoom in the scratchpad, a `__finish` message seeds racers; define `lobby` too; Enter goes on `document.body`
+- [Share a vi.mock through a dynamic import](share-a-vi-mock-through-a-dynamic-import.md) — `vi.mock(p, async () => (await import('./test-room')).sdkMock)`; keep the helper free of overlay imports
