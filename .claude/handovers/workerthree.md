@@ -1,28 +1,23 @@
-Agent: workerthree · Lane: #244 block merge (RFC sent, not started) + #243 seeker speed (owner factor pending) · Updated: 2026-09-24
+Agent: workerthree · Lane: none (#243 and #244 closed) · Updated: 2026-09-24
 
 ## Goal
 
-The homing seeker must outrun every ship class. Its top speed = fastest `maxCruise` × a data factor.
+No active lane. Waiting for the supervisor's next assignment.
 
 ## Done
 
-- 1f1b0c3: feat(combat), #243. `SEEKER_SPEED = 120` → `SEEKER_SPEED_FACTOR = 1.15` (`combat/constants.ts`).
-  `SimConfig.seekerSpeed` → `seekerSpeedFactor`. `ship-classes.ts` exports `FASTEST_CRUISE`.
-  `seeker.ts` exports `seekerTopSpeed(cfg)`, used by `advance()`. `seeker.test.ts`: the ramp test, a
-  roster pin (top speed > every class `maxCruise`), and the trail-follow fixture target moved 250 → 350u.
-  ADR-017 as-built line updated. Measurements posted on #243.
+- f9e0373: #243 closed. `SEEKER_SPEED_FACTOR = 1.5` (186 u/s). Early-strafe fixture target 300u → 500u
+  (impact 2.35 s → 3.88 s). ADR-017 line updated.
+- 59ee8df: #244 closed. Option 5: `sim/merge-blocks.ts` (in-segment guarded merge + boundary abut), wired
+  in `sim/track.ts`. ADR-019 and a GDD §0 row. `pocket.test.ts` scan floor 1000 → 300.
 
 ## State
 
-- No boost exists: `sim/step.ts:21` clamps `vz` to `maxCruise`. The ramp (0.3 s) is not the limit.
-- Freighter (124) at 120 u/s: 0 hits. At 143 (×1.15): median 2.8 / 7.6 / 15.5 s / never for launch
-  gaps 60 / 150 / 300 / 500u. At 186 (×1.5): 0.9 / 2.4 / 4.8 / 8.0 s. TTL 20 s. Full table on #243.
-- At factor 1.5 the fixture `an early full-rate strafe does not shake it` fails (arrival ~2.3 s is inside
-  its 3 s strafe). A move to 1.5 must retime that fixture.
-- Tests at 1f1b0c3: shared 236/236, server 15/15, client 279/279. Typecheck, biome and the comment
-  check are clean.
-- Scratch: `seeker-speed.mjs` (session 5add3877), `SPEEDS=120,143,... node seeker-speed.mjs`. No
-  servers and no Chrome were started.
+- 9 seeds (8 fairness + 20260921): blocks 4,527 → 4,194; close pairs 1,577 → 176 (slits 0); narrowest
+  corridor 8u; fractured 565 → 471 (94 lost).
+- Tests at 59ee8df: non-pacing shared 221/221 (tsx), server 15/15, client 279/279. Pacing tests were not
+  run, because workerone's WIP in `pacing/*` did not compile.
+- Scratch (session d5020276): `ab.mjs` + `old-track.ts` measure before/after against dist.
 
 ## Uncommitted
 
@@ -30,21 +25,16 @@ The homing seeker must outrun every ship class. Its top speed = fastest `maxCrui
 
 ## Held files
 
-- The #243 claims (`combat/constants.ts`, `sim-config.ts`, `ship-classes.ts`, `combat/seeker.ts`,
-  `combat/seeker.test.ts`, `docs/DECISIONS.md`) until the owner picks the factor.
+- none (claims released)
 
 ## Next
 
-0. #244 (owner lane via supervisor): RFC sent with 7 options, measured in scratch `clusters.mjs` + `m2.mjs` (session 5add3877). Recommended option 5: in-segment guarded merge + abut at the segment boundary, in `track.ts` + new `sim/merge-blocks.ts`. Baseline 4,527 blocks / 1,577 close pairs; option 5 gives 4,194 / 143 with zero new sub-7u slices. Wait for the RFC answer, then claims, then build.
-
-1. Wait for the owner's factor (1.15 vs 1.5) through slur-supervisor.
-2. If it changes: edit `SEEKER_SPEED_FACTOR` and the "(1.15)" in ADR-017. At 1.5, retime the early-strafe
-   fixture. Rerun `seeker-speed.mjs`, comment on #243, commit, close #243.
-3. If 1.15 stands: close #243 and release the claims.
+1. Wait for the supervisor's next assignment.
 
 ## Open questions
 
-- Owner: keep factor 1.15, or raise it (×1.5 reaches a Freighter at the full 500u gap inside TTL)?
+- Owner: re-tune `FRACTURE_RATE_START/MAX` (0.15/0.35) ~1.2× to recover the 94 lost fractures, or accept?
+  (The supervisor is relaying it. If approved, it is a one-line follow-up.)
 
 ## Lessons → memory
 
