@@ -1,6 +1,6 @@
-Agent: workerone · Lane: R4 phrase RFC (sent) · #248 fracture shadow (HELD by owner) · #246 slope bug (paused) · Updated: 2026-09-24
+Agent: workerone · Lane: R4 phrase RFC rev 2 (sent) · #248 fracture shadow (HELD by owner) · #246 slope bug (paused) · Updated: 2026-09-24
 
-The R4 RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/fc64b587-409f-4817-b64c-48b632645580/scratchpad/rfc-r4-phrase.md`. Scripts beside it: `beat.mjs`, `tempo.mjs`. The pacing RFC (R1–R3) is `…/a42d7260-7d77-4e58-93e1-2b90e521bca9/scratchpad/rfc-pacing-branching.md`. Older versions of this file hold history: 192787f (R4 brief verbatim), d520f36 (owner rulings Q1–Q5), 68f48bd (trap rule).
+The R4 RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/fc64b587-409f-4817-b64c-48b632645580/scratchpad/rfc-r4-phrase.md`. Scripts beside it: `beat.mjs`, `tempo.mjs`, `register.mjs`, `calm.mjs`. Rev 2 applies the owner register-gap rule (0.5 s calm after every note at FASTEST_CRUISE, from the end of the move). The pacing RFC (R1–R3) is `…/a42d7260-7d77-4e58-93e1-2b90e521bca9/scratchpad/rfc-pacing-branching.md`. Older versions of this file hold history: 192787f (R4 brief verbatim), d520f36 (owner rulings Q1–Q5), 68f48bd (trap rule).
 
 ## Goal
 
@@ -21,11 +21,11 @@ The R4 RFC is `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/fc64b
 
 ## State
 
-- Contract ship 8u rest-to-rest step: 0.521 s = 28.6u at 55 u/s (analytic). Single jump air at 55 u/s: 28.4u (simulate()); double 63.2u. Phantom 31.2 / 67.8.
-- Derived beat pitch: P_min = d 4 + hull 6 + 55·t_clear(4u) = 30.3u → recommended BEAT 32u. At 32u the contract plays a dense reversal stream at 59.7 u/s; the Freighter lifts from 124 to ~94; all others hold full speed (analytic).
-- FASTEST_CRUISE 124 (Freighter); FRACTURE_SHADOW_Z 55.8u = 2 rest beats at 32u.
-- RFC recommendations: pitch C/F (32u, derived) · forcing M4 (score-steered band) + M1 accents · C4 transcriber first then C2 behind `gen: 'weave' | 'score'` · motifs F4 (TS objects holding note strings) · per-class check = simulate() pilot, not PathSolver.
-- #246 / #248 measured state: see 192787f.
+- Contract move times (simulate(), counter-press pilot, settled ±0.25u ±1 u/s): 4u 0.367 s · 8u 0.550 s · J 0.517 s · JJ 1.150 s. Every class settles faster (8u 0.300–0.367 s).
+- Note spacing = 124 × (move + 0.5 s): L1 107.5u · L2 130.2u · J 126.1u · JJ 204.6u. Rounded to 20u: 120 / 140 / 140 / 220.
+- Calm per class at its own vmax: Freighter 0.61–0.76 s (lowest), Interceptor 1.15–1.47 s. No class lifts. At 55 u/s: 2.55 s between L2 onsets.
+- ~28 notes per track [inferred, linear in intensity]; max 56 (L2). Today ~466 blocks per track, so filler (N2 band walls + N3 harmony) is proposed.
+- Rev 2 recommends: TRACK_CONTRACT.registerCruise 124 frozen + roster guard (FASTEST_CRUISE is a roster max, which breaks ADR-013; FRACTURE_SHADOW_Z has the same defect) · G3 note durations on 20u segments · M4 + M1 accents. J,J = 140u apart, so no conflict with "no two gaps in a row".
 
 ## Uncommitted
 
@@ -39,13 +39,13 @@ None in this lane.
 
 ## Next
 
-1. Wait for the owner's answers to RFC §13 Q1–Q7 via slur-supervisor.
+1. Wait for the owner's answers to RFC rev 2 §13 Q1–Q9 via slur-supervisor.
 2. If approved: S0 = the transcriber + a notes lane on `/pacing` (RFC §12). File an issue first unless the owner waives it.
-3. #246 and #248 wait on Q7.
+3. #246 and #248 wait on Q9.
 
 ## Open questions
 
-- **Owner:** RFC §13 Q1–Q7 (ADR-006 departure, pitch, `J, J` meaning, forcing + adherence floor, old seeds, who writes motifs, fold #246/#248).
+- **Owner:** RFC rev 2 §13 Q1–Q9.
 - **Supervisor:** The R3 board does not show quiet-time bands or trapped pockets. Say if either is needed.
 
 ## Lessons → memory
