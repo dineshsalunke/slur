@@ -42,16 +42,33 @@ None.
 - `apps/client/app/routes/pacing/*` · `packages/shared/src/pacing/*` + tests · the pacing export lines in
   `packages/shared/src/index.ts` · `packages/shared/src/sim/fracture-shadow.ts` + test.
 
-## Next
+## Owner answers on S0 (via supervisor, 2026-09-24)
 
-1. Wait for the owner's reply (through the supervisor) on the S0 proposals: an adherence floor of 90%
-   (accents 100%), and a calm tube of ±5u.
-2. S1: claim `constants.ts` (`TRACK_CONTRACT.registerCruise` + the roster guard), then the `noteMove` pilot
-   that replaces `NOTE_MOVE_S`, then the motif library, the parser and load-time validation.
+- Adherence floor **75%** (not the proposed 90%), accents **100%**, calm tube **±5u**.
+- Seed the motif library with the top n3/n4/n5 motifs from the S0 report (see the supervisor message and
+  the table below), spaced to the G3 durations. The owner edits the file later.
+  n3: J l J · l J r · J l r · l J J · l r J — n4: J l J J · J l r J · l J r J · l J l r · J l J r —
+  n5: L J r J J · J l r J l · l J l r J · J < R r l · J L r J J
+- ADR-020 is parked at `.claude/phases/2026-09-24-adr-020-pending.md`. Line 22 already holds 75% / ±5u.
+  No delta is needed from me.
+
+## Next — S1 (approved; NOT started, no claim sent yet)
+
+1. Send slur-supervisor the claim list before the first write: `packages/shared/src/constants.ts`
+   (`TRACK_CONTRACT.registerCruise = 124` + a roster guard in `rosterContractFailures`, plus
+   `SCORE_ADHERENCE_FLOOR 0.75`, `SCORE_ACCENT_ADHERENCE 1.0`, `CALM_TUBE_HALF 5` as named constants),
+   `sim/fracture-shadow.ts` + test (FRACTURE_SHADOW_Z onto registerCruise; already held),
+   `pacing/score.ts` (SCORE_REGISTER_CRUISE → registerCruise; NOTE_MOVE_S → the pilot), and new files for
+   the pilot, the motif library + parser + load-time validation (probably `sim/score/*`, to be named in the
+   claim). **Do not touch `sim/track.ts`** (dirty with #244).
+2. The `noteMove` pilot: a `simulate()` counter-press strafe (settled ±0.25u, ±1 u/s) and a jump air time,
+   at module load. It must reproduce RFC §3 (4u 0.367 s · 8u 0.550 s · J 0.517 s · JJ 1.150 s).
+3. The motif library file, the parser, and load-time validation: every motif spaced to G3, each note
+   playable by the contract ship.
 
 ## Open questions
 
-- **Owner:** approve the adherence floor and the calm-tube width. Edit the draft motif list.
+- none for the owner.
 - **Supervisor:** the R3 board does not show quiet-time bands or trapped pockets. Say if either is needed.
 
 ## Lessons → memory
