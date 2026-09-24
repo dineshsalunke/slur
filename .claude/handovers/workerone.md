@@ -1,30 +1,24 @@
-Agent: workerone · Lane: hosted-room HUD → /test-level HUD set (#236) · Updated: 2026-09-24
+Agent: workerone · Lane: hosted-room finish fade (#241) · Updated: 2026-09-24
 
-This lane comes before pacing step 2. The pacing lane state is in the version of this file before 383b1d4: `git log -p -- .claude/handovers/workerone.md`. Pacing is parked at "step 2 design": the owner approved the direction, and nothing is built yet.
+This lane comes before pacing step 2. The pacing lane state is in the version of this file before 383b1d4: `git log -p -- .claude/handovers/workerone.md`. The #236 HUD lane is done (`b255460`). Its open follow-ups (the Leave tone, the countdown readout check) are in `git log -p` of this file at `062f7f1`.
 
 ## Goal
 
-In countdown and racing, a hosted room shows the `game/hud` set fed by live room data. This replaces `race-hud.tsx`.
+A hosted room uses the /test-level finish curtain: close at the player's own finish, cut the camera at black, open. Results stay on PHASE.finished (#238, workerfour).
 
 ## Done
 
-- `b255460`:
-  - NetHud replaces NetPowerRack.
-  - New `standings-store.ts` + test.
-  - New leaves: NetRoster (5 rows centred on self), NetPilotReadout, SpectatorGate.
-  - FlightReadout reads rank and field from a `standing()` getter.
-  - `race-hud.tsx` is deleted and ThreatHud is kept.
-  - Leave + mute sit top-right in countdown and racing.
-  - The #91 block of `overlays.test.tsx` is rewritten.
+- Filed issue #241.
+- Sent the plan and file claims to slur-supervisor. Hand-off: AGREE with workerfour. Results mount on PHASE.finished with their own entrance and do not read the curtain.
 
 ## State
 
-- Client typecheck exits 0. Vitest 257/257 passes. Biome is clean on my paths. ls-lint, canvas-isolation and the comment ratchet pass.
-- Live check, two tabs in one hosted room at 1600×900. The HUD reads "2 CONNECTED / 1 RACER (self, marigold) / 2 RACER", "124 u/s", "1 / 2  6%  00:13", and the rack BOLT×3. Leave and mute are top right. Still: `…/scratchpad/hosted-new.png` in session c8f8306b's scratchpad.
-- /test-level still reads "4 / 8" from the fixture: `…/scratchpad/testlevel-new.png`.
-- [unmeasured] Whether the readout fills during countdown. The countdown sample came from a background tab and showed a blank speed and rank, and that tab's rAF was likely throttled.
-- `--color-debug` stays. `net-debug-hud.tsx` still uses it; deleting that file is the owner's job.
-- Headless Chrome is killed. I started no dev server.
+- Nothing built. Waiting for the owner to clear the plan through the supervisor.
+- Plan in brief:
+  - Move `finish-reset.ts`, `finish-reset.test.ts` and `finish-fade.tsx` from `routes/test-level/` to `game/finish/`, and add a one-shot mode.
+  - Step the curtain in NetLoop's useFrame.
+  - At black the camera follows the leading unfinished racer (`updateSpectatorCamera`), or cuts to the lobby orbit when no racer is left.
+  - A new file `game/finish/finish-watch.ts` picks that racer.
 
 ## Uncommitted
 
@@ -32,19 +26,22 @@ None.
 
 ## Held files
 
-None after this seam. The lane is done pending owner review.
+Claimed, not yet cleared:
+- `routes/test-level/{finish-reset.ts,finish-reset.test.ts,finish-fade.tsx,local-loop.tsx,test-level-canvas.tsx}`
+- `game/net-loop.tsx`
+- `game/net-canvas.tsx` or `game-shell.tsx`
+- new `game/finish/*`
 
 ## Next
 
-1. Owner review of the hosted-room look. Possible follow-ups, owner's call:
-   - The LeaveButton `hud` tone (magenta box) against the readout style; the `ghost` tone would match it better.
-   - The cyan CountdownOverlay.
-2. Check the countdown readout in a foreground tab.
-3. Then resume pacing step 2.
+1. Wait for the supervisor to clear the plan.
+2. Build it. Run typecheck, test and lint.
+3. Capture a timed still sequence in a hosted room (solo and two clients): t = 0, 0.15, 0.35, 0.55, 0.8 s, then results.
+4. Commit by pathspec and report.
 
 ## Open questions
 
-- Should Leave use the `ghost` tone in the race to match the readout HUD?
+- Should the own-flight readout (speed, rank line) hide after the local finish while the player watches?
 
 ## Lessons → memory
 
