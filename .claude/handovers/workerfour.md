@@ -1,4 +1,4 @@
-Agent: workerfour · Lane: /song-lab replay viewer + background song, #253 step 3 · Updated: 2026-09-24 23:10
+Agent: workerfour · Lane: /song-lab replay viewer + background song, #253 step 3 · Updated: 2026-09-24 23:40
 
 ## Goal
 
@@ -14,6 +14,14 @@ replay so the owner can feel it. Throwaway, like /tapper.
   the song bar and the ship bar with the lead in seconds.
 
 ## State (verified this session)
+
+- 13-variant bundle check (workerone bcbc3d5, believer-s1.json 21.9 MB), viewer at HEAD with no code change:
+  all 13 track digests MATCH, 260/260 runs MATCH (13 × 20 per variant). Load 583–672 ms warm, 1320 ms cold.
+  Full live replays at 8× all MATCH: groove-open × freighter × rookie (403.35 s, 195 bumps), groove-tight ×
+  comet × club (239.38 s), groove × interceptor × perfect (302.13 s). At 8× the song never started (0 starts).
+  Client tsc clean, song-lab vitest 9/9.
+- Cosmetic: after the song ends, the readout's song bar keeps counting past bar 106 (e.g. "song bar 210.3").
+  The audio is correct. Not fixed.
 
 - Headless (fighter, mined, perfect, scratch :5194/:9474): 1 source start in 20 s of steady play. Exactly one
   start each for pause→play, 2×→1× and restart. At 2× the readout shows "muted at 2×".
