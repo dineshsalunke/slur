@@ -57,6 +57,10 @@ drift < 1 beat at bars 8/28/60/96/finish.
 - ~01:15 OWNER: the archive branch is fine (question dropped). "none stay on dev get rid of everything". "yes": /tapper
   goes too, replaced by the new flying deck. workerone dispatched: delete song-lab + tapper + hooks +
   .songs/lab, and revert the c3d2a63 curve. Keep the mp3s. Then a plan for the new deck goes to the owner via the supervisor.
+- DONE 9388a67 (handover e3e67ab): 71 files removed. Score sha256 62f2711c is the same before and after. mp3 + analysis.json
+  kept. archive/song-lab is local only; push is the owner's call.
+- matchmaking.test.ts fails 2/3 at HEAD (supervisor verified): extra descriptor fields (gen:"weave"). → workertwo.
+- /beat-deck plan relayed to the owner. Waiting on (a) the name, (b) download vs dev plugin to .songs/takes/, (c) auto-cruise vs W/S.
 
 ## Landed this session (all local, not pushed)
 
