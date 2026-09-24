@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { createReadStream, existsSync, readdirSync, readFileSync } from 'node:fs';
 import type { ServerResponse } from 'node:http';
 import { join } from 'node:path';
 import type { Plugin } from 'vite';
@@ -7,6 +7,7 @@ import type { Plugin } from 'vite';
 const SONG = /\.(mp3|wav|ogg|flac|m4a)$/i;
 const RATE_MIN = 0.5;
 const RATE_MAX = 1;
+const BUNDLE = /^[\w.-]+\.json$/;
 
 function fail( res: ServerResponse, status: number, error: string ): void {
     res.statusCode = status;
@@ -22,6 +23,24 @@ function listSongs( dir: string ): unknown[] {
             const analysisPath = join( dir, file.replace( SONG, '.analysis.json' ) );
             return existsSync( analysisPath ) ? JSON.parse( readFileSync( analysisPath, 'utf8' ) ) : { song: file };
         } );
+}
+
+function sendJson( res: ServerResponse, body: unknown ): void {
+    res.setHeader( 'content-type', 'application/json' );
+    res.end( JSON.stringify( body ) );
+}
+
+function listBundles( labDir: string ): string[] {
+    return existsSync( labDir ) ? readdirSync( labDir ).filter( ( f ) => BUNDLE.test( f ) ) : [];
+}
+
+function sendBundle( res: ServerResponse, labDir: string, name: string ): void {
+    if ( ! BUNDLE.test( name ) || ! listBundles( labDir ).includes( name ) ) {
+        fail( res, 404, `no bundle ${ JSON.stringify( name ) } in ${ labDir }` );
+        return;
+    }
+    res.setHeader( 'content-type', 'application/json' );
+    createReadStream( join( labDir, name ) ).pipe( res );
 }
 
 function streamClip( res: ServerResponse, file: string, from: number, to: number, rate: number ): void {
@@ -55,6 +74,11 @@ export function tapperPlugin( { dir }: { dir: string } ): Plugin {
                 if ( ! ( from >= 0 && to > from ) ) return fail( res, 400, 'need 0 <= from < to' );
                 if ( ! ( rate >= RATE_MIN && rate <= RATE_MAX ) ) return fail( res, 400, 'rate must be 0.5..1' );
                 streamClip( res, join( dir, song ), from, to, rate );
+            } );
+            const labDir = join( dir, 'lab' );
+            server.middlewares.use( '/__song-lab/list', ( _req, res ) => sendJson( res, listBundles( labDir ) ) );
+            server.middlewares.use( '/__song-lab/bundle', ( req, res ) => {
+                sendBundle( res, labDir, new URL( req.url ?? '', 'http://x' ).searchParams.get( 'name' ) ?? '' );
             } );
         },
     };
