@@ -1,4 +1,4 @@
-import type { ShipClassId, Track } from '@slur/shared';
+import type { Track } from '@slur/shared';
 import {
     type LabBundle,
     type LabRun,
@@ -9,11 +9,13 @@ import {
     replayRun,
     sameResult,
 } from '../../../song-lab/bundle';
+import { type LabEntry, labEntries } from './lab-view';
 
 export interface LabCheck {
     track: Track;
+    entries: LabEntry[];
     digestOk: boolean;
-    matches: Partial< Record< ShipClassId, boolean > >;
+    matches: Record< string, boolean >;
 }
 
 const checks = new Map< string, LabCheck >();
@@ -24,9 +26,10 @@ export function runMatches( track: Track, run: LabRun ): boolean {
 
 export function checkVariant( v: LabVariant ): LabCheck {
     const track = labTrack( v );
+    const entries = labEntries( v );
     const matches: LabCheck[ 'matches' ] = {};
-    for ( const run of v.runs ) matches[ run.classId ] = runMatches( track, run );
-    return { track, digestOk: labDigest( v ) === v.trackDigest, matches };
+    for ( const e of entries ) matches[ e.key ] = runMatches( track, e.run );
+    return { track, entries, digestOk: labDigest( v ) === v.trackDigest, matches };
 }
 
 export function variantCheck( name: string, bundle: LabBundle, v: LabVariant ): LabCheck {

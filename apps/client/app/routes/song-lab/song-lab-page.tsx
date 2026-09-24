@@ -14,7 +14,7 @@ export function SongLabPage( { view, track }: { view: LabView; track: Track } ) 
                 <SongLabCanvas track={ track } shipId={ view.shipId } />
                 <ReplayReadout />
             </div>
-            <aside className="flex w-96 shrink-0 flex-col gap-4 overflow-y-auto border-line-2 border-l p-4">
+            <aside className="flex w-[26rem] shrink-0 flex-col gap-4 overflow-y-auto border-line-2 border-l p-4">
                 <h1 className="text-lg text-marigold">Song Lab</h1>
                 <LabPicker view={ view } />
                 <ReplayTransport />

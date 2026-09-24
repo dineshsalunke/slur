@@ -2,7 +2,9 @@ import { composeScore, emptyInput, SHIP_CLASSES, SHIPS, type ShipClassId } from 
 import { describe, expect, it } from 'vitest';
 import {
     type LabBundle,
+    type LabHumanRun,
     type LabRun,
+    type LabSkill,
     type LabVariant,
     labDigest,
     labResult,
@@ -11,11 +13,11 @@ import {
     replayRun,
 } from '../../../song-lab/bundle';
 import { checkVariant } from './lab-check';
-import { formatResult, labHref, pickClass, pickVariant, shipForClass } from './lab-view';
+import { formatResult, labEntries, labHref, pickEntry, pickVariant, shipForClass } from './lab-view';
 
 const score = composeScore( 11, 12 );
 
-function variant( id: string, runs: LabRun[] ): LabVariant {
+function variant( id: string, runs: LabRun[], humanRuns?: LabHumanRun[] ): LabVariant {
     return {
         id,
         label: id,
@@ -28,6 +30,7 @@ function variant( id: string, runs: LabRun[] ): LabVariant {
         intensity: [],
         trackDigest: labDigest( { score } ),
         runs,
+        humanRuns,
     };
 }
 
@@ -43,11 +46,27 @@ function recorded( classId: ShipClassId, ticks: number ): LabRun {
     return { classId, inputs, result: labResult( r ), trace: r.trace };
 }
 
+function human( classId: ShipClassId, skill: LabSkill, ticks: number ): LabHumanRun {
+    return {
+        ...recorded( classId, ticks ),
+        pilot: { skill, seed: 1, reactTicks: 9, aimSigma: 0.4, takeoffJitter: 6 },
+    };
+}
+
 describe( 'song-lab check', () => {
-    it( 'matches a run against its own recording', () => {
-        const c = checkVariant( variant( 'a', [ recorded( 'fighter', 600 ), recorded( 'freighter', 600 ) ] ) );
+    it( 'matches perfect and human runs against their own recordings', () => {
+        const v = variant(
+            'a',
+            [ recorded( 'fighter', 600 ), recorded( 'freighter', 600 ) ],
+            [ human( 'fighter', 'rookie', 400 ) ],
+        );
+        const c = checkVariant( v );
         expect( c.digestOk ).toBe( true );
-        expect( c.matches ).toEqual( { fighter: true, freighter: true } );
+        expect( c.matches ).toEqual( {
+            'fighter/perfect': true,
+            'fighter/rookie': true,
+            'freighter/perfect': true,
+        } );
     } );
 
     it( 'flags a tampered result and a tampered digest', () => {
@@ -55,21 +74,46 @@ describe( 'song-lab check', () => {
         const v = variant( 'a', [ { ...run, result: { ...run.result, ticks: run.result.ticks + 1 } } ] );
         const c = checkVariant( { ...v, trackDigest: v.trackDigest + 1 } );
         expect( c.digestOk ).toBe( false );
-        expect( c.matches.comet ).toBe( false );
+        expect( c.matches[ 'comet/perfect' ] ).toBe( false );
     } );
 } );
 
 describe( 'song-lab picks', () => {
+    const withHumans = variant(
+        'a',
+        [ recorded( 'comet', 1 ), recorded( 'fighter', 1 ) ],
+        [ human( 'fighter', 'club', 1 ), human( 'comet', 'rookie', 1 ), human( 'comet', 'pro', 1 ) ],
+    );
     const bundle: LabBundle = {
         version: 1,
         createdAt: '',
         song: { file: 's', duration: 0, bpm: 120, beatsPerBar: 4, sections: [] },
-        variants: [ variant( 'a', [ recorded( 'comet', 1 ) ] ), variant( 'b', [] ) ],
+        variants: [ withHumans, variant( 'b', [] ) ],
     };
 
-    it( 'falls back to the first variant and the first flown class', () => {
+    it( 'orders entries by bundle class order, then perfect, pro, club, rookie', () => {
+        expect( labEntries( withHumans ).map( ( e ) => e.key ) ).toEqual( [
+            'comet/perfect',
+            'comet/pro',
+            'comet/rookie',
+            'fighter/perfect',
+            'fighter/club',
+        ] );
+    } );
+
+    it( 'treats a bundle without humanRuns as perfect runs only', () => {
+        expect( labEntries( variant( 'c', [ recorded( 'comet', 1 ) ] ) ).map( ( e ) => e.key ) ).toEqual( [
+            'comet/perfect',
+        ] );
+    } );
+
+    it( 'falls back to the first variant, then perfect, then the first flown class', () => {
+        const entries = labEntries( withHumans );
         expect( pickVariant( bundle, 'nope' ).id ).toBe( 'a' );
-        expect( pickClass( pickVariant( bundle, null ), 'interceptor' ) ).toBe( 'comet' );
+        expect( pickEntry( entries, 'fighter', 'club' )?.key ).toBe( 'fighter/club' );
+        expect( pickEntry( entries, 'fighter', 'rookie' )?.key ).toBe( 'fighter/perfect' );
+        expect( pickEntry( entries, 'interceptor', null )?.key ).toBe( 'comet/perfect' );
+        expect( pickEntry( [], null, null ) ).toBeUndefined();
     } );
 
     it( 'maps every class to the ship that carries it', () => {
@@ -78,8 +122,8 @@ describe( 'song-lab picks', () => {
     } );
 
     it( 'builds a query string for a pick', () => {
-        expect( labHref( { bundle: 'x.json', variant: 'a', classId: 'comet' } ) ).toBe(
-            '?bundle=x.json&variant=a&class=comet',
+        expect( labHref( { bundle: 'x.json', variant: 'a', classId: 'comet', pilot: 'rookie' } ) ).toBe(
+            '?bundle=x.json&variant=a&class=comet&pilot=rookie',
         );
     } );
 

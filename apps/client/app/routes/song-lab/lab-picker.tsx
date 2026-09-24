@@ -6,7 +6,7 @@ const ON = `${ CHIP } border-marigold text-marigold`;
 const OFF = `${ CHIP } border-line-2 text-dim hover:text-fg`;
 
 export function LabPicker( { view }: { view: LabView } ) {
-    const pick: LabPick = { bundle: view.bundle, variant: view.variant, classId: view.classId };
+    const pick: LabPick = { bundle: view.bundle, variant: view.variant, classId: view.classId, pilot: view.pilot };
     const rows = [
         { label: 'bundle', items: view.bundles, current: view.bundle, to: ( b: string ) => ( { ...pick, bundle: b } ) },
         {
@@ -14,6 +14,18 @@ export function LabPicker( { view }: { view: LabView } ) {
             items: view.variants,
             current: view.variant,
             to: ( v: string ) => ( { ...pick, variant: v } ),
+        },
+        {
+            label: 'class',
+            items: view.classes,
+            current: view.classId,
+            to: ( c: string ) => ( { ...pick, classId: c as LabPick[ 'classId' ] } ),
+        },
+        {
+            label: 'pilot',
+            items: view.pilots,
+            current: view.pilot,
+            to: ( p: string ) => ( { ...pick, pilot: p as LabPick[ 'pilot' ] } ),
         },
     ];
     return (
@@ -32,18 +44,6 @@ export function LabPicker( { view }: { view: LabView } ) {
                     ) ) }
                 </div>
             ) ) }
-            <div className="flex flex-wrap items-center gap-1">
-                <span className="w-16 text-dim">class</span>
-                { view.classes.map( ( c ) => (
-                    <Link
-                        key={ c }
-                        className={ c === view.classId ? ON : OFF }
-                        to={ labHref( { ...pick, classId: c } ) }
-                    >
-                        { c }
-                    </Link>
-                ) ) }
-            </div>
             <p className="text-dim">
                 song { view.song } · ship { view.shipId }
             </p>
