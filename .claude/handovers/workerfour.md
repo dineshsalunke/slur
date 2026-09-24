@@ -1,37 +1,26 @@
-Agent: workerfour · Lane: /song-lab replay viewer + background song, #253 step 3 · Updated: 2026-09-24 23:40
+Agent: workerfour · Lane: /song-lab song starts at freighter cruise, #253 · Updated: 2026-09-24 23:59
 
 ## Goal
 
-A dev-only /song-lab route that replays recorded runs over the rebuilt track. The song now plays behind the
-replay so the owner can feel it. Throwaway, like /tapper.
+The /song-lab song starts when the replayed ship passes the bundle's song start z (freighter cruise), not at GO.
+The song-bar readout uses the same origin, the song bar stops at the last bar, and the class defaults to freighter.
 
 ## Done
 
-- `790c6cb`, `bf70803`, `67a2dfa`, `ddf5bfe`, `63b8014`: the viewer, results, and perfect/pro/club/rookie pilots.
-- `ab88019`: the song plays behind the replay. song time = tAt(songClock(analysis), spawn z) + ticks × FIXED_DT
-  (0.380 s at tick 0). It plays at 1× only and is silent at other speeds. It re-seeks on drift > 80 ms and on
-  every pause, restart, class switch and speed change. Mute button + volume slider + M key. The readout shows
-  the song bar and the ship bar with the lead in seconds.
+- `ab88019`: the song plays behind the replay, at 1× only, re-seeking on drift > 80 ms. Mute, volume, M key.
+- `fab0267`: the 13-variant bundle (bcbc3d5) passes: 13/13 digests MATCH, 260/260 runs MATCH, load 583–672 ms.
+- `9b3ab59`: song start at cruise. The field is LabSong.clock { z0, t0, zPerSecond }, agreed with workerone:
+  z = z0 + zPerSecond·(t − t0). Believer: z0 257.3 (freighter cruise, tick 248), t0 0, zPerSecond 124.
+  replay.crossTick is the fractional tick where ship z crosses z0, recorded inside replayFlightSystem.
+  Song time = t0 + (tick − crossTick)·FIXED_DT. Ship bar = t0 + (z − z0)/zPerSecond. The readout clamps the bar
+  to the last bar and shows "ended". The class defaults to freighter.
 
-## State (verified this session)
+## State
 
-- 13-variant bundle check (workerone bcbc3d5, believer-s1.json 21.9 MB), viewer at HEAD with no code change:
-  all 13 track digests MATCH, 260/260 runs MATCH (13 × 20 per variant). Load 583–672 ms warm, 1320 ms cold.
-  Full live replays at 8× all MATCH: groove-open × freighter × rookie (403.35 s, 195 bumps), groove-tight ×
-  comet × club (239.38 s), groove × interceptor × perfect (302.13 s). At 8× the song never started (0 starts).
-  Client tsc clean, song-lab vitest 9/9.
-- Cosmetic: after the song ends, the readout's song bar keeps counting past bar 106 (e.g. "song bar 210.3").
-  The audio is correct. Not fixed.
-
-- Headless (fighter, mined, perfect, scratch :5194/:9474): 1 source start in 20 s of steady play. Exactly one
-  start each for pause→play, 2×→1× and restart. At 2× the readout shows "muted at 2×".
-- Drift is real and comes from the map, not the sync. zPerSecond = registerCruise 124 = the freighter's
-  maxCruise. The ship's lag behind the song at the finish (perfect pilot): freighter 2.1 s, comet 22.7,
-  fighter 60.4, phantom 78.0, interceptor 97.9. Live fighter at 21 s: song bar 11, ship bar 8 (−5.4 s).
-- The song ends at 204.6 s. Slower ships fly the rest of the course in silence.
-- vitest song-lab + tapper 15/15. Client tsc clean. biome and the comment ratchet pass.
-- [unmeasured] Real speakers: the headless run used --mute-audio. The owner has not listened yet.
-- Scratch Vite and Chrome were killed by PID. The owner's :5173/:2567 stack was not touched.
+- tsc clean and song-lab vitest 10/10 against workerone's UNCOMMITTED bundle.ts (LabSong.clock is required
+  there). The route reads song.clock structurally (`'clock' in song`), and the test fixture is a variable, so
+  it should also compile at HEAD before workerone commits. [unmeasured at HEAD: not built in a scratch copy]
+- Live check NOT RUN: workerone has not rebuilt the bundle yet. It will send the SHA.
 
 ## Uncommitted
 
@@ -44,14 +33,22 @@ the song-lab line in `apps/client/app/routes.ts`. workerone owns `apps/client/so
 
 ## Next
 
-1. Wait for the supervisor or owner feedback on the sound.
-2. Candidates: a per-class zPerSecond option in the map (workerone's lane); an intensity strip per variant.
+1. When workerone's bundle SHA lands: replace `bundleSongMap( bundle.song )` in `route.tsx` with the typed
+   `bundle.song.clock`, and drop the helper. Re-run tsc and vitest.
+2. Headless verify (scratch Vite :5194 via `CLIENT_PORT=5194 VITE_SERVER_PORT=2594 npx react-router dev` in
+   apps/client; Chrome :9474 with DPR 1, --mute-audio, --autoplay-policy=no-user-gesture-required). Checks:
+   - MATCH counts for all 13 variants.
+   - On perfect freighter, the ship-bar vs song-bar drift at bars 8/28/60/96 and at the finish.
+   - The song starts silent and begins at crossTick ≈ 248.
+   Recreate the drivers in the scratchpad: a CDP driver that reads `main p.whitespace-pre` (the readout) and
+   the aside `p` with "track digest", and presses keys through Input.dispatchKeyEvent. To reach bar 96 fast,
+   use 8× then drop to 1× near the bar (the song re-seeks on return to 1×).
+3. Kill Chrome and Vite by PID, report SHAs + numbers to slur-supervisor, commit this handover.
 
 ## Open questions
 
-- Owner: should the song→distance map follow each class's cruise speed, not registerCruise? Today only the
-  freighter lines up with the music.
+- none.
 
 ## Lessons → memory
 
-`.claude/memory/song-map-runs-at-freighter-speed.md`
+`.claude/memory/song-map-runs-at-freighter-speed.md` (from ab88019). This seam: none new.
