@@ -1,35 +1,30 @@
-Agent: workerone · Lane: graphite material unification (no issue yet) + Meteor.chance 0.15 · Updated: 2026-09-25
+Agent: workerone · Lane: graphite material unification (#258) + Meteor.chance 0.15 · Updated: 2026-09-25
 
-Older versions hold the monolith-regression diagnosis, #255 groove and /beat-deck history
-(`git log -p -- .claude/handovers/workerone.md`).
+Older versions hold the plan stage, the monolith-regression diagnosis, #255 groove and /beat-deck
+history (`git log -p -- .claude/handovers/workerone.md`).
 
 ## Goal
 
-The owner's definition: one dark graphite pitted metal for everything (deck, monoliths, blocks,
-walls, ships, pickups). Only the deck keeps the 4×4u plate grid. Also set Meteor.chance 0.65 → 0.15.
-Plan first. Build nothing until the supervisor clears it.
+The owner's definition: one dark graphite pitted metal for every built surface. Only the deck keeps the
+4×4u plate grid. Meteor.chance goes to 0.15. Built and pushed. Waiting for the owner's look.
 
 ## Done
 
-- Re-plan sent to slur-supervisor on 2026-09-25. No code commits.
-- Earlier captures (before-base / head-base / fix-uv / fix-uvcol × spawn/monolith/block/gap) are in the
-  old session scratchpad `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/7dd95ed2-8865-4321-9914-997b633bdfc2/scratchpad/`.
+- 37c9d79 (pushed to origin/dev): #3b3e42 base, a pit layer, the jointless graphite set on monoliths,
+  blocks, debris, slab walls and rails, and 2 floor material groups. Ship hulls use box-projected pit
+  maps. Pickup shells are graphite metal. Pit.* tunables added; Monolith.plate and Rail.plate removed.
+  Meteor.chance 0.15. ART_MATERIALS §7 item 19 and the §2 rows.
+- Issue #258 filed.
 
 ## State
 
-- The plate grid is already a switch: `eachJoint` (`track-texture.ts:150`) returns when `joints` is
-  false. Graphite = the same painter with `joints:false`.
-- The texture has no pitting today. It must be added as a new seeded layer (normal + cavity + roughness).
-- The deck texture is anisotropic (ROWS=1): 64 px/u in x, 256 px/u in z. A pit painter needs a
-  separate V density.
-- The block shaders (`sealed-block-shader.ts:83`) and monolith UVs (`monolith-geometry.ts:86`) already
-  divide both axes by TEX_SPAN_X. They stretch only because they sample the plate texture.
-- The floor is one mesh with one material, top and slab sides (`track-floor.tsx:124`). The walls need
-  geometry groups to go jointless. `uvFor` 'zy' (`track-geometry.ts:29`) uses TEX_SPAN_Z on U.
-- Ship hulls = non-emissive MeshStandard materials (`ship-model.tsx:86`). The engine is picked by
-  name (`ship-materials.ts:17`).
-- The pickup shells are dielectric #161b21, metalness 0, roughness 0.3 (`combat-look.ts:14-15`).
-- #230 raised Env.fill 0.14→0.5, Fill 0.35→1, Deck/Rail envMap 1→1.5 (546130d).
+- Gates: typecheck OK, lint 0 errors, client vitest 48 files / 349 tests pass (measured).
+- Draw calls on /test-level: 92 per frame after (measured). The +1 from the floor groups is by
+  construction; no before count was measured.
+- Deck luma at spawn (fixed crop): keep 13.9, pre-#230 4.8, #4a4d52 17.2, before-base 18.9 (measured).
+- Ship projection frame-time cost [unmeasured]. SwiftShader gives no GPU ms.
+- Captures: scratchpad
+  `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/d6ebc3ab-36ec-4063-9ee5-e104e67ccc37/scratchpad/after/`.
 
 ## Uncommitted
 
@@ -37,24 +32,40 @@ None.
 
 ## Held files
 
-None until the supervisor clears the claims. Claimed in the plan: scene/{metal, track-texture,
-track-materials, deck-finish, monolith-group, track-blocks, block-debris, track-floor, track-geometry,
-ship-model, combat-look, bolt-pickups, seeker-pickups}, dev/{tuning-schema, tuning-panel},
-docs/ART_MATERIALS.md.
+None. Claims released at the push.
 
 ## Next
 
-1. Wait for the supervisor: clearance plus the owner's answers to Q1–Q4.
-2. File the issue. Build steps 1–11 of the plan message, then test, lint and capture (DPR 1, frozen, the 4
-   poses + a ship + a pickup; keep vs pre-#230 lights). Commit by pathspec.
+The owner's feedback on a live monolith arch close-up arrived AFTER 37c9d79 was pushed. Fix all
+four, then show a before/after of the same arch close-up (DPR 1, frozen, checked at 1:1). The causes
+below are inferred from the code and not yet verified:
+
+1. **Visible tiling:** one mottle blotch repeats about 6× at an even pitch across the top of the face.
+   Inferred cause: the graphite tile is 16u, and `paintMottle` blobs repeat every 16u on a wide face.
+   Fix: lower the mottle amplitude on the graphite set, and/or add a second octave at a non-integer
+   scale or rotation, or give each face its own offset.
+2. **The pits read as raindrops (stretched vertically, lit like beads, with tails):** check the V
+   density that reaches monolith faces (`monolith-geometry.ts:86` divides by TEX_SPAN_X; graphite
+   pxPerV = pxPerU). Check the normal sign on walls: CanvasTexture flipY, and the derivative tangent
+   frame per face. The pit convention was matched only to the groove bevels, which are proven on the
+   deck, not on walls. A pit must read as a dent: a shadow at the top and a lit lip at the bottom
+   under a key light from above. The tails may be the brush lobes (below).
+3. **Vertical streaking:** `paintBrush` / `paintNormalBrush` paint long along canvas y (1.5–6u). On
+   walls v = y, so the strokes run up the face. Fix: paint the brush along x in the jointless set, or
+   weaken it strongly.
+4. **Inconsistent faces:** the left third of the pillar face is lighter and patterned; the inner arch
+   faces (lintel underside, pillar inner sides) look untextured. Check the per-face UV offsets and
+   the inner-face UVs in `monolith-geometry.ts`, and check that every face gets the graphite maps.
+
+Then: the owner's colour verdict (#3b3e42 or #4a4d52) and pit loudness (Pit.tilt / Pit.density).
+Files to re-claim from the supervisor: scene/track-texture.ts, scene/monolith-geometry.ts (+ its
+test), maybe scene/track-texture.test.ts.
 
 ## Open questions
 
-- Q1 Do the rail bodies go jointless? (read: yes)
-- Q2 Do the asteroids and meteors stay M5 rock? (read: yes)
-- Q3 Are the pits dents only, with no colour change? (read: yes)
-- Q4 Colour: #3b3e42 as the default, with #4a4d52 shown for comparison.
+- Owner: #3b3e42 or #4a4d52?
+- Owner: the pits catch the engine glow as bright specks. Keep, or lower Pit.tilt?
 
 ## Lessons → memory
 
-none
+`.claude/memory/tune-headless-captures-via-own-localstorage.md`
