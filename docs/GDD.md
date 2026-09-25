@@ -277,11 +277,11 @@ server (the netcode "one shared `simulate()`" requirement). Model/scale live cli
 
 | Class | Top speed | Accel | Brake | Strafe accel / clamp | Grip (damp) | Strafe kick | Jump h / jumps | `weaveThreadSpeed` |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| Interceptor | 84 | 60 | 150 | 367 / 166 | 31.5 | 40 | 3.0 / 2 | 122.2 |
-| **Fighter** | 96 | 58 | 130 | 288 / 140 | 24.5 | 34 | 3.2 / 2 | 108.3 |
-| Comet | 112 | 66 | 100 | 290 / 136 | 14.4 | 30 | 2.8 / 2 | 108.7 |
-| Phantom | 90 | 52 | 120 | 270 / 135 | 23.4 | 30 | 4.2 / **3** | 104.9 |
-| Freighter | **124** | 30 | 150 | 236 / 130 | 20 | 26 | 3.6 / 2 | 98.0 |
+| Interceptor | 84 | 60 | 150 | 367 / 166 | 31.5 | 50 | 3.0 / 2 | 122.2 |
+| **Fighter** | 96 | 58 | 130 | 288 / 140 | 24.5 | 42 | 3.2 / 2 | 108.3 |
+| Comet | 112 | 66 | 100 | 290 / 136 | 14.4 | 34 | 2.8 / 2 | 108.7 |
+| Phantom | 90 | 52 | 120 | 270 / 135 | 23.4 | 38 | 4.2 / **3** | 104.9 |
+| Freighter | **124** | 30 | 150 | 236 / 130 | 20 | 33 | 3.6 / 2 | 98.0 |
 
 **Strafe kick (#256).** A strafe press sets the lateral speed to at least `strafeKick · |strafe|` in the press
 direction at once, then ramps at `strafeAccel` as before. A 100 ms tap moves every class one CELL or more. The
