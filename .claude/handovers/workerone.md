@@ -43,9 +43,18 @@ The uncommitted list above.
 
 ## Next
 
-1. Wait for the owner's OK (through the supervisor). A likely tune: raise `Scratch.lift` / `Scratch.roughness` for
+1. **NEW owner feedback (via the supervisor), not started:** *"also the repeat on the deck is noticeable"*.
+   Screenshot: `.claude/frame-tap-refs/owner-refs/deck-repeat.png`. The circled areas show the blotch and scratch
+   pattern repeating tile after tile down the deck (the tile is 16 × 4u, so the z period is 4u). Break the repeat
+   with no extra draw calls. Weigh these options (≥5, per NN-13): sample the blotch mask in world space at a large
+   period (64–128u) in the shader instead of baking it into the tile · a per-plate hashed offset or rotation of the
+   UV in the shader · a second low-frequency world-space breakup layer · a larger deck tile (for example
+   16 × 16u, with the plate grid kept) · stochastic tiling. Find the deck material's `onBeforeCompile` or shader
+   hook first. Measure: capture down a long straight before and after, and state the repeat period you can see.
+   Send the captures to slur-supervisor. Keep holding the commit and push.
+2. Wait for the owner's OK (through the supervisor). A likely tune: raise `Scratch.lift` / `Scratch.roughness` for
    the ship, or scale scratches down on the ship's box projection.
-2. On OK: re-run gates, `git commit -- <uncommitted paths>` with `feat(scene): scratched cast-iron graphite
+3. On OK: re-run gates, `git commit -- <uncommitted paths>` with `feat(scene): scratched cast-iron graphite
    finish (#258)`, `git push origin dev`, commit this handover.
 
 ## Open questions
