@@ -65,7 +65,7 @@ lives in its own file beside this one.
 - [Easiest route moves early](easiest-route-moves-early.md) — referencePath takes least travel, as early as allowed; pin the path at each note, a one-sided tube wall forces only 1u
 - [Fractured blocks rarely have a clear lane](fractured-blocks-rarely-have-a-clear-lane.md) — a post-hoc fracture-shadow demotion costs ~76% at today's density; reserve the rest at placement (#248, R4)
 - [ast-grep trailing comma matches nothing](ast-grep-trailing-comma-matches-nothing.md) — an array-element pattern with its comma is an ERROR node; use Edit for list inserts
-- [Bash tool runs fish](bash-tool-runs-fish.md) — bash loops and `set --` fail with misleading errors; wrap in `bash -c`
+- [Bash tool shell varies](bash-tool-runs-fish.md) — fish one session, zsh the next; loops and `; and` fail misleadingly; use `&&` and `bash -c`
 - [Song tracks are a throwaway experiment](song-tracks-are-a-throwaway-experiment.md) — #253 tooling is disposable; keep it isolated; only a distilled generator survives
 - [Engine light swamps an emissive A/B](engine-light-swamps-emissive-ab.md) — zero EngineLight + Exhaust.glow to see the engine-core bloom; in full scene 1.0 vs 2.2 reads flat
 - [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — a BSD pkill turned `-U 501 --` into patterns and SIGTERMed the owner's apps; record your PIDs
