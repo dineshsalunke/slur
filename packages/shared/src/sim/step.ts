@@ -2,7 +2,7 @@ import type { FlightTuning } from '../constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
-import { type Block, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
+import { type Block, HALF_WIDTH, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
 import type { SimShip, SimWorld } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
@@ -80,7 +80,7 @@ function resolveFlatFloor( s: SimShip, t: FlightTuning ): void {
 }
 
 function deckLimit( t: FlightTuning ): number {
-    return t.halfWidth - t.halfW;
+    return HALF_WIDTH - t.halfW;
 }
 
 function clampToEdges( s: SimShip, t: FlightTuning ): void {

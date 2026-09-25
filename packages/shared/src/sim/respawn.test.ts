@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT, type FlightTuning } from '../constants.js';
 import { emptyInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
-import { isFullSpan, isHole, START_SAFE, TRACK_SEGMENTS, type Track } from './space.js';
+import { HALF_WIDTH, isFullSpan, isHole, START_SAFE, TRACK_SEGMENTS, type Track } from './space.js';
 import { simulate } from './step.js';
 import { resolveTrack } from './track-provider.js';
 import { type SimShip, spawnShip } from './types.js';
@@ -18,7 +18,7 @@ const MAX_TICKS = 3600;
 const GAP_TICKS = 600;
 const RUN_UP = 8;
 const LANE_STEP = 2;
-const DECK_LIMIT = t.halfWidth - t.halfW;
+const DECK_LIMIT = HALF_WIDTH - t.halfW;
 
 interface Probe {
     death: SimShip;

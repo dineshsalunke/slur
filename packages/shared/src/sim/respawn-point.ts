@@ -1,6 +1,6 @@
 import type { FlightTuning } from '../constants.js';
 import { intersectRuns, openRunsAtSlice, type Run, sliceCentres } from './clearance.js';
-import type { Track } from './space.js';
+import { HALF_WIDTH, type Track } from './space.js';
 
 const EDGE_CLEARANCE = 1e-3;
 
@@ -50,7 +50,7 @@ function nearestClearX( runs: Run[], anchor: number, halfW: number, limit: numbe
 }
 
 export function respawnPoint( track: Track, x: number, z: number, t: FlightTuning ): RespawnPoint {
-    const limit = t.halfWidth - t.halfW;
+    const limit = HALF_WIDTH - t.halfW;
     const anchor = Math.min( limit, Math.max( -limit, x ) );
     const step = 2 * t.halfL;
     for ( let zc = z; ; zc -= step ) {

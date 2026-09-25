@@ -330,7 +330,7 @@ test( 'strafing off the deck edge drops the ship into the void and kills it', ()
     inp.strafe = 1;
     for ( let i = 0; i < 400 && ! s.dead; i++ ) simulate( s, inp, FIXED_DT, t, flatTrack( 100 ) );
     assert.equal( s.dead, true, 'the edge still walls the ship in' );
-    assert.ok( s.lastSafeX > t.halfWidth - t.halfW - 1, 'died before ever reaching the old clamp' );
+    assert.ok( s.lastSafeX > HALF_WIDTH - t.halfW - 1, 'died before ever reaching the old clamp' );
 } );
 
 test( 'the deck edge holds a ship that overhangs it, and drops one that clears it', () => {
@@ -355,12 +355,12 @@ test( 'respawn after an edge fall lands fully on the deck, never on the overhang
     for ( let i = 0; i < 400 && ! s.dead; i++ ) simulate( s, inp, FIXED_DT, t, flatTrack( 100 ) );
     assert.equal( s.dead, true, 'never fell off the edge' );
     assert.ok(
-        s.lastSafeX > t.halfWidth - t.halfW,
+        s.lastSafeX > HALF_WIDTH - t.halfW,
         'test setup: fell from an overhang the old code would restore verbatim',
     );
 
     for ( let i = 0; i < 400 && s.dead; i++ ) simulate( s, idle, FIXED_DT, t, flatTrack( 100 ) );
     assert.equal( s.dead, false, 'never respawned' );
-    assert.ok( Math.abs( s.x ) <= t.halfWidth - t.halfW, `respawned off the deck at x=${ s.x }` );
+    assert.ok( Math.abs( s.x ) <= HALF_WIDTH - t.halfW, `respawned off the deck at x=${ s.x }` );
     assert.equal( s.grounded, true, 'respawned into a death loop instead of onto the deck' );
 } );

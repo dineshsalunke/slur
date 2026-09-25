@@ -18,7 +18,7 @@ import {
 import { resolveTrack } from './track-provider.js';
 
 const t = DEFAULT_TUNING;
-const LIMIT = t.halfWidth - t.halfW;
+const LIMIT = HALF_WIDTH - t.halfW;
 const EDGE = 1e-3;
 const SEEDS = [ 1, 13, 28 ];
 const GRID = 0.05;
