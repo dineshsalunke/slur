@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~14:30 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~14:40 IST
 
 ## Goal
 
@@ -49,6 +49,8 @@ The 80u stack is killed (PIDs 94568…94658) and the worktree is removed. Branch
 3. 96u pushed; workerone told to capture. Owner: restart pnpm dev; answer weave a/b/c.
 
 ## Open owner questions
+
+- PITS: the owner says they read as "raindrops on windshield, instead of a rough, pitted metal" (monolith face + deck behind the ship). Sent to workerone: dense, small, irregular clustered pits through roughness/cavity, no glints, no vertical streak; it must show before/after captures BEFORE pushing. Relay those to the owner.
 
 - GROOVE DEFAULT BLOCKER: groove emits NO fractured blocks (groove-track.ts:86 all kind sealed; weave 30/30 seeds, groove 0/30), so hosted bolt-smash disappears. Pickups are fine: 132 per seed vs weave 125–132. Quirk: groove pickup ids = segment index (groove-track.ts:115), so the bolt/seeker order is the same on every seed; salt the id with the seed. Owner options: (a) push as is, (b) push + follow-up so groove emits fractured blocks + salts the pickup ids (supervisor recommends), (c) hold until then. On the answer: tell workerfour to push or hold, and assign the groove follow-up (claim groove/**) to a fresh worker (workertwo 13%, or workerfour).
 
