@@ -82,3 +82,4 @@ lives in its own file beside this one.
 - [Fixtures must be width-relative](fixtures-must-be-width-relative.md) — a hand-typed ±32 edge passes silently at 80u; write `HALF_WIDTH - n`; seed fixtures must be re-found
 - [One stack, dev only](one-stack-dev-only.md) — OWNER RULE: no worktrees, no scratch/second stacks; build on dev, measure on :5173/:2567
 - [Cavity channel is dead](cavity-channel-is-dead.md) — packed R (cavity) reaches no shader; no aoMap anywhere; darken the albedo map instead
+- [Threshold noise makes worm pits](threshold-noise-makes-worm-pits.md) — round pits need a Worley point-distance field; thresholded value noise gives amoeba blotches
