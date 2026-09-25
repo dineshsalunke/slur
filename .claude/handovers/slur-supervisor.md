@@ -32,7 +32,7 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #258 REDIRECT: scratched cast iron (owner ref .claude/frame-tap-refs/owner-refs/scratched-cast-iron.png; the pits still read as raindrops). Plan first, captures, HOLD push | cleared + assigned ~18:30 | dev/tuning-schema.ts, track-texture(.test).ts, pit-field(.test).ts, docs/ART_MATERIALS.md |
-| workertwo | w2P:pF | #263 follow-up: a mine dropped inside a block fizzles like a gap (owner yes) | cleared + assigned ~19:00 | combat/mine.ts, mine.test.ts, mine-drop.test.ts, room-combat.ts |
+| workertwo | w2P:pF | none (#263 in-block fizzle landed 37b615e: in-block 0; total fizzle fwd 1.63%, back 0.83%) | idle | none |
 | workerthree | w2P:pG | #260 cartoon audio: proposal ready, waiting on the owner | idle | none |
 | workerfour | w2P:pH | none (#264 landed 9208d5b: a front seam on every sealed block, 22% → 0 seamless; captures .claude/frame-tap-refs/264-{before,after}.png) | idle | none |
 
