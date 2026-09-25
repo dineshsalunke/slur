@@ -57,6 +57,12 @@ below are inferred from the code and not yet verified:
    faces (lintel underside, pillar inner sides) look untextured. Check the per-face UV offsets and
    the inner-face UVs in `monolith-geometry.ts`, and check that every face gets the graphite maps.
 
+Supervisor's terms (2026-09-25): fix as a follow-up on dev under #258, with the same claims (still
+cleared). Take the arch before/after only AFTER workertwo pushes the 96u width, because the arch
+geometry moves with the width. For the "before" frame, hold the fix in the working tree or use the
+owner's screenshot. Keep the Pit.density / Pit.tilt defaults quiet: the owner already reads the pits
+as loud.
+
 Then: the owner's colour verdict (#3b3e42 or #4a4d52) and pit loudness (Pit.tilt / Pit.density).
 Files to re-claim from the supervisor: scene/track-texture.ts, scene/monolith-geometry.ts (+ its
 test), maybe scene/track-texture.test.ts.
