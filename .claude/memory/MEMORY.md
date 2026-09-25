@@ -87,3 +87,4 @@ lives in its own file beside this one.
 - [Queued message can sit unread](queued-message-can-sit-unread.md) — an idle worker may never act on a SendMessage; check the pane, prompt via herdr
 - [ast-grep drops semicolons](ast-grep-drops-semicolons.md) — rewriting a whole `const` statement loses its `;`; include it in pattern and rewrite, grep after -U
 - [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — `'fighter'` silently falls back to freighter tuning; use `SHIP_CLASSES.<class>.tuning` in tests
+- [Round lobes read as spots](round-lobes-read-as-spots.md) — pits and radial blotches read as raindrops/leopard spots; use angle-random strokes + fBm masks

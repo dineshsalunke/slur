@@ -1,33 +1,41 @@
-Agent: workerone · Lane: #258 follow-up — pit field + graphite grain (round 2) · Updated: 2026-09-25 18:45
+Agent: workerone · Lane: #258 follow-up — scratched cast iron (round 3) · Updated: 2026-09-25 19:05
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Tune the pits to fine, rough pitted metal, not "Swiss cheese" craters. Keep the grain work. HOLD the commit
-and push until the owner OKs the captures.
+Owner: *"the texture on the metal still looks more raindrops on windsheild. i want a scratched cast iron
+sort of feeling."* Replace the round-pit field with multi-direction scratches plus irregular blotches.
+HOLD the commit and push until the owner OKs the captures.
 
 ## Done
 
-- 3b62bc4 arch leg v + groove bevel sign + #4a4d52, pushed (round 1, option c).
-- Pit tune built in the working tree. NOT committed. Captures sent to the supervisor.
+- 3b62bc4 arch leg v + groove bevel sign + #4a4d52, pushed (round 1).
+- Round 3 built in the working tree. NOT committed. Captures sent to the supervisor.
 
 ## State (measured unless marked)
 
-- Pit field now: `PIT_CELLS_U` 6 → 12, `PIT_SIZE` [0.15, 0.4] → [0.1, 0.3] cells, `Pit.density` default
-  2.5 → 1 (coverage 10 % → 4 %). ART_MATERIALS §7 item 19 is updated to match.
-- Variants shot (ship and deck): vA = 9 cells/u, density 1.2. vB = 12 cells/u, density 1.0 (chosen).
-- Gates on the tuned tree: typecheck pass · lint 0 errors / 7 warnings · client vitest 51 files / 364 tests.
-- Draws before = after: 102 at the approach/up/deck/ship/block poses, 95 at face/lintel.
-- Shots: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/6d89e290-fd55-4c34-ad41-c6f4f7d2a72d/scratchpad/shots/{before,after,vA,vB}-*.png`.
-  Script: `.../scratchpad/arch-shoot.mjs <url> 9341 shots <label> '<store json>' [pose]`. It kills its own Chrome.
-- Backup of the pre-tune tree: `.../scratchpad/258-full.patch` + `bk/`.
-- Every Chrome I started is killed (the PIDs are verified gone).
+- Pits removed: pit-field.ts + its test deleted (never committed). `Pit.*` tunables gone.
+- New tunables: `Scratch.density` 3/u² · `Scratch.roughness` 0.18 · `Scratch.lift` 0.35 · `Scratch.tilt`
+  0.15 · `Blotch.dark` 0.3 · `Blotch.bright` 0.15. Panel folders Scratch + Blotch.
+- Scratches: angle uniform 0–π, length log-uniform 0.15–2.5u, width 0.012–0.03u, drawn under
+  setTransform(pxPerU, pxPerV) so world-correct on both tiles; wrapDraw tiles them.
+- Blotches: tileable fBm (0.3 cells/u, 5 octaves). Dark share 0.197 and bright share 0.267 on graphite with
+  the first bright band [0.62, 0.72]. The band moved to [0.7, 0.8], and the test asserts bright < dark.
+  The field costs 140 ms per surface, at rebuild only.
+- A first try used round lobe blotches. They read as leopard spots on the monolith face, so they were replaced.
+- Graphite brushScale 0.4 → 0 (no brush direction). Deck keeps its z-brush + plate grid.
+- Gates: typecheck pass · lint 0 errors / 7 warnings · client vitest 50 files / 365 tests.
+- Draws before = after: 102 (approach/up/deck/ship/block), 95 (face/lintel).
+- Shots: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/781777e4-a44f-4efd-9760-a6edac60c514/scratchpad/shots/`
+  — `before-*` (pit tree), `after-*` (lobe blotches, rejected), `after2-*` (final), `cmp-{deck,ship,block,face}.png`
+  (before over after). Script `../arch-shoot.mjs <url> 9341 shots <label>`; it kills its own Chrome.
+- Ship scratches read faint at the ship pose [observed, not measured].
 
 ## Uncommitted
 
-apps/client/app/dev/tuning-schema.ts · apps/client/app/game/scene/{track-texture.ts, track-texture.test.ts,
-pit-field.ts, pit-field.test.ts} · docs/ART_MATERIALS.md.
+apps/client/app/dev/{tuning-schema.ts, tuning-panel.tsx} · apps/client/app/game/scene/{track-texture.ts,
+track-texture.test.ts} · docs/ART_MATERIALS.md · deletion of the untracked pit-field files (nothing to commit).
 
 ## Held files
 
@@ -35,14 +43,15 @@ The uncommitted list above.
 
 ## Next
 
-1. Wait for the owner's OK on the captures (through the supervisor).
-2. On OK: `git commit -- <the uncommitted paths>` with message `feat(scene): fine pit field + graphite grain
-   (#258)`. Re-run the gates against HEAD first. Then `git push origin dev`, and commit this handover.
+1. Wait for the owner's OK (through the supervisor). A likely tune: raise `Scratch.lift` / `Scratch.roughness` for
+   the ship, or scale scratches down on the ship's box projection.
+2. On OK: re-run gates, `git commit -- <uncommitted paths>` with `feat(scene): scratched cast-iron graphite
+   finish (#258)`, `git push origin dev`, commit this handover.
 
 ## Open questions
 
-- Owner: are the pits at 12 cells/u and 4 % coverage right? Is the graphite grain OK?
+- Owner: is the scratch density/strength right? Should the ship scratches be stronger?
 
 ## Lessons → memory
 
-`.claude/memory/ast-grep-drops-semicolons.md`
+`.claude/memory/round-lobes-read-as-spots.md`
