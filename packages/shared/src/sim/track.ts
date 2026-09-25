@@ -5,6 +5,7 @@ import { type Band, bandAt } from './corridor.js';
 import { placeBlock } from './fracture.js';
 import { gapBlocks } from './gap-blocks.js';
 import { crackCovering, crackFloors, gapFloors, gapOpens } from './gaps.js';
+import { grooveTrack } from './groove/groove-track.js';
 import { flickRate, intensityAt, spacingSegments, wallDensity } from './intensity.js';
 import { abutAcrossBoundary, mergeCloseBlocks } from './merge-blocks.js';
 import { valueNoise2D } from './noise.js';
@@ -172,6 +173,7 @@ export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
     const seed = d.seed;
     const length = d.length || TRACK_SEGMENTS;
     if ( d.gen === 'score' ) return scoreTrack( seed, length );
+    if ( d.gen === 'groove' ) return grooveTrack( seed, length );
     const density: TrackDensity = {
         blocks: d.blockDensity ?? FULL_DENSITY.blocks,
         gaps: d.gapChance ?? FULL_DENSITY.gaps,

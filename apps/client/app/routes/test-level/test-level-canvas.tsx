@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { resolveTrack, type TrackDescriptor } from '@slur/shared';
+import { resolveTrack, type TrackDescriptor, type TrackGen } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { Fragment, useMemo } from 'react';
 import { FrameTap } from '../../dev/frame-tap';
@@ -21,7 +21,7 @@ const TEST_LEVEL_SEGMENTS = 420;
 const TEST_LEVEL_BLOCK_DENSITY = 0.6;
 const TEST_LEVEL_GAP_CHANCE = 1;
 
-function testLevelDescriptor(): TrackDescriptor {
+function testLevelDescriptor( gen: TrackGen ): TrackDescriptor {
     return {
         kind: 'procgen',
         seed: TEST_LEVEL_SEED,
@@ -29,11 +29,12 @@ function testLevelDescriptor(): TrackDescriptor {
         length: TEST_LEVEL_SEGMENTS,
         blockDensity: TEST_LEVEL_BLOCK_DENSITY,
         gapChance: TEST_LEVEL_GAP_CHANCE,
+        gen,
     };
 }
 
-export function TestLevelCanvas() {
-    const track = useMemo( () => resolveTrack( testLevelDescriptor() ), [] );
+export function TestLevelCanvas( { gen }: { gen: TrackGen } ) {
+    const track = useMemo( () => resolveTrack( testLevelDescriptor( gen ) ), [ gen ] );
 
     return (
         <Fragment>

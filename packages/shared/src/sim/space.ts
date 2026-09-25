@@ -126,7 +126,7 @@ export interface ProcgenDescriptor {
     gen?: TrackGen;
 }
 
-export const TRACK_GENS = [ 'weave', 'score' ] as const;
+export const TRACK_GENS = [ 'weave', 'score', 'groove' ] as const;
 
 export type TrackGen = ( typeof TRACK_GENS )[ number ];
 
