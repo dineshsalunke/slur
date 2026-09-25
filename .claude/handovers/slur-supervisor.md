@@ -34,7 +34,7 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 | workerone | w2P:pD | #258 split push (option c), then the pit tune | prompted via herdr ~17:25 to run the split against HEAD f5804af | track-texture(.test).ts, pit-field(.test).ts, monolith-geometry(.test).ts, monolith-group.tsx, track-rail.tsx, world-scene.tsx, metal.ts, dev/tuning-schema.ts, docs/ART_MATERIALS.md |
 | workertwo | w2P:pF | none (#261 done) | idle, not cleared since resume (~? %) | none |
 | workerthree | w2P:pG | #260 cartoon audio: proposal ready, waiting on the owner | idle | none |
-| workerfour | w2P:pH | none (#262 done) | cleared to 0% | none |
+| workerfour | w2P:pH | issue audit (owner: "close them if the work is done"), 65 open; closes only DONE with an evidence comment, lists PARTIAL/OPEN | assigned ~17:55 | none (gh only, no repo writes) |
 
 ## Next
 
