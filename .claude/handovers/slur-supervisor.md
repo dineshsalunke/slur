@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~09:30 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~10:15 IST
 
 ## Goal
 
@@ -33,9 +33,9 @@ after /clear often shows the old percent, so read again.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | groove TrackGen (approved plan) | building | packages/shared/src/sim/groove/**, space.ts, track.ts, routes/test-level/test-level-canvas.tsx, apps/client/beat-deck/extract-grammar.mjs |
-| workerthree | w2P:pG | strafe TAP KICK (owner chose option 2: vx jumps to a per-class kick speed on press; default target freighter ≥4u on a 100 ms tap). Files issue, sends plan + claims first | dispatched ~09:30 after /clear (#195 done: c71634e, PR closed) | none yet |
-| workertwo | w2P:pF | MATERIALS regression, investigate only. Owner: "after the PR merge the materials have messed up very badly". Suspect 3c44038 (origin/dev #230 satin deck/dielectric blocks/graphite) vs local one-metal; or stale localStorage tunables | dispatched ~09:25 | none (read-only) |
+| workerone | w2P:pD | none (#255 groove DONE 20c9e02, pushed via 0c904de) | cleared, idle | none |
+| workerthree | w2P:pG | none (#256 tap kick DONE 0c904de, pushed; dev == origin/dev 4e93085) | idle | none |
+| workertwo | w2P:pF | none (materials traced, 8d87851: #230 stone-lights on one-metal; owner picks A revert lights / B stone blocks / C re-dial) | idle | none |
 | workerfour | w2P:pH | none | idle, stood down (8e62847) | none |
 
 ## Next
