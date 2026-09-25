@@ -78,3 +78,4 @@ lives in its own file beside this one.
 - [Drive /beat-deck headless](drive-beat-deck-headless.md) — setFileInputFiles loads the mp3, dispatchKeyEvent plays, `data-phase` says saved; jq the columns
 - [Song keeps tempo, not a rhythm game](song-keeps-tempo-not-a-rhythm-game.md) — /song-lab audio never re-seeks after a bump; a human run falling behind is expected
 - [Fractional-strafe pilots trip strafe kick](fractional-strafe-pilots-trip-strafe-kick.md) — proportional pilots overshoot under the kick; import the kick-aware `strafeToward` from pacing/pockets.ts
+- [Fixtures must be width-relative](fixtures-must-be-width-relative.md) — a hand-typed ±32 edge passes silently at 80u; write `HALF_WIDTH - n`; seed fixtures must be re-found
