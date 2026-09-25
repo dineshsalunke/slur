@@ -6,8 +6,10 @@ import type * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
 import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
+import { exhaustDrive } from './exhaust-drive';
 import { guardLfsPointer } from './gltf-lfs-guard';
 import { METAL_METALNESS, METAL_ROUGHNESS } from './metal';
+import { type EngineGlow, engineIntensity, engineMaterial } from './ship-materials';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 
 for ( const v of Object.values( SHIP_VISUALS ) ) {
@@ -88,19 +90,36 @@ function hullMaterial( mat: THREE.Material ): THREE.MeshStandardMaterial | null 
     return std;
 }
 
-function collectHulls( grp: THREE.Group, uniforms: DissolveUniforms ): THREE.MeshStandardMaterial[] {
-    const hulls: THREE.MeshStandardMaterial[] = [];
+interface ShipSurfaces {
+    hulls: THREE.MeshStandardMaterial[];
+    engines: THREE.MeshStandardMaterial[];
+}
+
+function collectSurfaces( grp: THREE.Group, uniforms: DissolveUniforms ): ShipSurfaces {
+    const found: ShipSurfaces = { hulls: [], engines: [] };
     grp.traverse( ( o ) => {
         const mesh = o as THREE.Mesh;
         if ( ! mesh.isMesh ) return;
         const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
         for ( const mat of mats ) {
             const hull = hullMaterial( mat );
-            if ( hull ) hulls.push( hull );
+            if ( hull ) found.hulls.push( hull );
+            const engine = engineMaterial( mat );
+            if ( engine ) found.engines.push( engine );
             patchDissolve( mat, uniforms );
         }
     } );
-    return hulls;
+    return found;
+}
+
+const glow: EngineGlow = { idle: 0, cruise: 0 };
+
+function driveEngines( engines: THREE.MeshStandardMaterial[], entity: Entity ): void {
+    if ( engines.length === 0 ) return;
+    glow.idle = num( 'Ship.engineIdle' );
+    glow.cruise = num( 'Ship.engineCruise' );
+    const intensity = engineIntensity( glow, exhaustDrive( entity ) );
+    for ( const mat of engines ) mat.emissiveIntensity = intensity;
 }
 
 function isDead( entity: Entity ): boolean {
@@ -115,7 +134,7 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
     const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
     const patched = useRef( false );
-    const hulls = useRef< THREE.MeshStandardMaterial[] >( [] );
+    const surfaces = useRef< ShipSurfaces >( { hulls: [], engines: [] } );
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
@@ -131,15 +150,16 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
         const grp = cloneRef.current;
         if ( ! grp ) return;
         if ( ! patched.current ) {
-            hulls.current = collectHulls( grp, uniforms );
+            surfaces.current = collectSurfaces( grp, uniforms );
             patched.current = true;
         }
         const base = col( 'Metal.baseColor' );
         const envMapIntensity = num( 'Ship.envMapIntensity' );
-        for ( const hull of hulls.current ) {
+        for ( const hull of surfaces.current.hulls ) {
             hull.color.set( base );
             hull.envMapIntensity = envMapIntensity;
         }
+        driveEngines( surfaces.current.engines, entity );
         const target = isDead( entity ) ? 1 : 0;
         const u = uniforms.uDissolve;
         const step = delta / DISSOLVE_DURATION;
