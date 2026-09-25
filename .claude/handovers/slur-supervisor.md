@@ -66,6 +66,10 @@ drift < 1 beat at bars 8/28/60/96/finish.
   plugin; client 309/309. On the owner's stack the supervisor verified the route (200) and the plugin POST (400 on an empty body).
   workerone cleared + resumed idle. A bot sample take sits in .songs/takes/; delete it before analysis.
   NEXT: the owner records takes → analysis step (key-down vs believer.analysis.json beats).
+- ~07:45 the supervisor analysed the owner's 4 takes (jq, scratch take.jq/rhythm.jq): strafe every 2 beats (then 1), 70–80% alternation,
+  holds of 0.5–1 beat, jumps on the beat, strafes 40–100 ms early. Take 4 is tightest.
+- OWNER: build a track generator from this data, playable in /test-level. NOT a corridor, and LOTS of open space
+  lateral + longitudinal (combat between friends). New songs come later. workerone asked for a PLAN first.
 
 ## Landed this session (all local, not pushed)
 
