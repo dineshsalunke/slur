@@ -1,23 +1,26 @@
-Agent: workertwo · Lane: meteor glow lingers after the hit (#259) · Updated: 2026-09-25
+Agent: workertwo · Lane: mine pickup (#20, mine-only child issue to file on approval) · Updated: 2026-09-25
 
-Older versions hold the #257 width lane (`git log -p -- .claude/handovers/workertwo.md`).
+Older versions hold #259 and #257 (`git log -p -- .claude/handovers/workertwo.md`).
 
 ## Goal
 
-Owner report: "reflections of the meteor fade slowly and stay even after the hit." Owner approved an ember end of 1.0 s.
+Build the Mine: a pickup, a deployed mine on the deck, the trigger, and the HUD entry. Refs: `ingredients.png`
+panel 4 and 9, `cruise-lighting.png` HUD. PLAN ONLY. The owner approves before any edit.
 
 ## Done
 
-- cf09c55 — the ember fades to exactly 0 at `EMBER_END = 1` (a `(1 − age/END)²` window, black at and after the end). The impact light is multiplied by a `(1 − age/1.8)²` window. New `meteor-scorch.test.ts`. Pushed to origin/dev. Closes #259.
+- Survey of Bolt and Seeker, end to end. No code written.
 
 ## State
 
-- The hit lands at t≈1.43 in the harness; the light at t=2.1 is 345 cd = 3189·e^(−age/0.3), so age ≈ 0.67 s. The first report said t≈2.0; that was wrong.
-- Before, at 30u: the light was visible to ~+2.4 s and the ember to ~+10.5 s after the hit.
-- After, at 30u: the ember shows 110 px at +0.67 s, 38 px at +0.77 s and 0 px from +0.87 s. The light fades with no pop: 18,935 px at +0.67 s, 245 px at +1.37 s, 0 px from +1.57 s.
-- A hard light cut at 1.8 s was tried first. It popped from 1,183 px to 0 in one 0.1 s sample, so it was replaced by the fade window.
-- Gates: typecheck green, client 357/357 (50 files), lint green (5 warnings, none mine). The tree held other workers' uncommitted files during the gates.
-- The soot mark is unchanged. A mark stays `live` for the soot, and a black additive ember adds nothing.
+- Wire: `HeldPower = { none: 0, bolt: 1, seeker: 2 }` in `combat/constants.ts`. `slots` is `uint8[3]`, so `mine: 3` needs no schema change on `PlayerState`.
+- `RunState` ends with `@type( { map: Seeker } ) seekers`. A new `mines` map must go after it (append only; memory deprecated-breaks-reflection-decoding).
+- `pickupPower( id )` is a hash of the id: below `seekerRatio` (0.25) it is a seeker, else a bolt.
+- Server: `room-combat.ts` `firePower` routes seeker vs bolt. `run-room.ts` `stepWorld` calls `stepBolts`, `stepSeekers`, `stepPickups`. `clearCombat` clears the maps.
+- Client: `PickupInstances` draws a pickup as instanced parts (shell, glyph, core) plus a pool plane. `SeekerField` reads koota `NetSeeker` entities that `attach-room-to-world.ts` spawns from the map.
+- HUD: `power-cell.tsx` `LABEL` maps power to text. `power-gem.tsx` is one static bolt-diamond SVG.
+- `ART_SCALE_REFERENCE.md` has no pickup or mine sizes. The bolt pickup is 1.4u × 2.6u (`combat-look.ts` HALF_W 0.7, HALF_H 1.3).
+- `ART_MATERIALS.md:463-464`: pickup shells M1 graphite with inset core; deployed mine M1 + M7, "must stay visible on the track".
 
 ## Uncommitted
 
@@ -25,15 +28,16 @@ None.
 
 ## Held files
 
-None. Claims released.
+None. Claims go to the supervisor with the plan.
 
 ## Next
 
-1. The owner flies it on :5173 to confirm the feel.
+1. Wait for the owner's approval of the plan (sent to slur-supervisor).
+2. On approval: file the child issue, send the claim list, then build shared → server → client → HUD → docs.
 
 ## Open questions
 
-None.
+In the plan message to slur-supervisor.
 
 ## Lessons → memory
 
