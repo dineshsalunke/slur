@@ -60,6 +60,19 @@ The uncommitted list above.
 
 ## Next
 
+0. **OWNER ASK (via supervisor, 2026-09-25): make the dark patches 50% subtler on every material.** The owner
+   said the wall fix "looks ok for now". Debris sliding stays as built. Rails stay as they are.
+   - One dial drives all of it (verified by rg): `Blotch.dark` (tuning-schema.ts:102, default 0.3). It feeds the
+     deck shader and the wall shader through `updateBlotchWear` (deck-breakup.ts:41), and the baked tile for the
+     ship and rails through `deckSurfaceParams().blotchDark` (track-texture.ts:836 → :359).
+   - Change the default 0.3 → 0.15. Do not change `Blotch.bright`, coverage or size. Update ART_MATERIALS.md
+     (the "`Blotch.dark` (0.3)" line near 1029). Wear follows automatically: w scales with k·blotch, so the
+     roughness and metal swing on dark patches also halves. Tell the supervisor this.
+   - Report old → new per material: deck 0.3→0.15 · walls (monolith/arch/slab/blocks/debris) 0.3→0.15 ·
+     ship + rail baked 0.3→0.15, all from the one dial.
+   - Taps: `AMBIENT=3 node gate-shoot.mjs http://localhost:5173/test-level 9241 shots dark15-after '{}' front`
+     and the default runs (label dark15). Compare with `amb-after-front-*` and `after-*`. Gates: typecheck,
+     vitest, lint. HOLD the commit.
 1. Wait for the owner's verdict on the wall fix and the Wear captures. If the owner shares their lighting
    (the slur.tuning.v1 value or the knobs), re-shoot AFTER under it with gate-shoot.mjs.
 2. On the owner's OK for all of #258: re-run the gates, then `git commit -- <uncommitted paths>` with
