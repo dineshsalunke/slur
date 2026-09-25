@@ -40,6 +40,8 @@ after /clear often shows the old percent, so read again.
 
 ## Next
 
+0a. ~08:45 OWNER: groove plan APPROVED (all recommendations) → workerone building, claims cleared. archive/song-lab
+    PUSHED to origin (b64766f). #195: the owner asked for a plain explanation; waiting on A/B/C.
 0. SYNC DONE ~08:35: workerthree pushed 277396f. The supervisor merged origin/dev into the shared dev and pushed; dev == origin/dev.
    workerthree is idle (6335e0f). If the owner's dev stack acts up, restart `pnpm dev` (new scene files came in).
    Earlier: workerthree (f1669e1) found the sync merge 277396f clean and green. #195 is SEMANTIC: rail bounce is dead after
