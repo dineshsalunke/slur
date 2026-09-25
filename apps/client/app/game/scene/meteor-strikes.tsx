@@ -37,6 +37,7 @@ const SHAKE_SIZE = 3.5;
 const LIGHT_DISTANCE = 110;
 const LIGHT_GAIN = 700;
 const LIGHT_DECAY = 0.3;
+const LIGHT_END = 1.8;
 const BURST_SIZE = 3.2;
 const SPARK_BURSTS = 3;
 
@@ -226,7 +227,8 @@ function commit( mesh: THREE.InstancedMesh, count: number ): void {
 
 function flash( light: THREE.PointLight, d: Director, now: number ): void {
     light.position.set( d.lightX, d.lightY, d.lightZ );
-    light.intensity = LIGHT_GAIN * d.lightSize * Math.exp( -( now - d.lightAt ) / LIGHT_DECAY );
+    const fade = Math.max( 0, 1 - ( now - d.lightAt ) / LIGHT_END );
+    light.intensity = LIGHT_GAIN * d.lightSize * Math.exp( -( now - d.lightAt ) / LIGHT_DECAY ) * fade * fade;
     light.color.copy( CORE ).lerp( accent(), 0.5 );
 }
 

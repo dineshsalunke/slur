@@ -14,6 +14,7 @@ const LIFT = 0.04;
 const FLASH = 0.35;
 const FLASH_SHARE = 0.7;
 const FLICKER = 0.12;
+export const EMBER_END = 1;
 
 interface Mark {
     x: number;
@@ -61,10 +62,14 @@ function place( m: Mark ): void {
     _o.updateMatrix();
 }
 
-function emberColor( age: number, i: number, gain: number, cool: number ): THREE.Color {
+export function emberColor( age: number, i: number, gain: number, cool: number ): THREE.Color {
+    if ( age >= EMBER_END ) return _c.setRGB( 0, 0, 0 );
     const flash = Math.exp( -age / FLASH );
+    const fade = 1 - age / EMBER_END;
     const k =
         gain *
+        fade *
+        fade *
         ( 1 - FLASH_SHARE + FLASH_SHARE * flash ) *
         Math.exp( -age / cool ) *
         ( 1 + FLICKER * Math.sin( age * 23 + i * 5.1 ) );
