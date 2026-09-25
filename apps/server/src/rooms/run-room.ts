@@ -75,7 +75,10 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     onCreate(): void {
         this.state = new RunState();
         const gen = process.env.SLUR_TRACK_GEN;
-        const descriptor = procgenDescriptor( ( Math.random() * 0xffffffff ) >>> 0, isTrackGen( gen ) ? gen : 'weave' );
+        const descriptor = procgenDescriptor(
+            ( Math.random() * 0xffffffff ) >>> 0,
+            isTrackGen( gen ) ? gen : 'groove',
+        );
         applyDescriptor( this.state.descriptor, descriptor );
         this.track = resolveTrack( descriptor );
         this.pickups = pickupsOf( this.track );

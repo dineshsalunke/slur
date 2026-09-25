@@ -79,8 +79,10 @@ describe( 'RunRoom combat', () => {
         await colyseus.cleanup();
     } );
 
-    async function racingRoom( clients: number ) {
+    async function racingRoom( clients: number, gen?: string ) {
+        if ( gen ) process.env.SLUR_TRACK_GEN = gen;
         const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
+        delete process.env.SLUR_TRACK_GEN;
         room.setSimulationInterval();
         const connections = [];
         for ( let i = 0; i < clients; i++ ) {
@@ -321,7 +323,7 @@ describe( 'RunRoom combat', () => {
     }
 
     test( 'a bolt breaks a fractured block, is spent, and the break is synced', async () => {
-        const { room, host } = await racingRoom( 1 );
+        const { room, host } = await racingRoom( 1, 'weave' );
         host.onMessage( 'hit', () => {} );
         const target = firstBlock( room, 'fractured' );
         aimAt( room, host.sessionId, target );
@@ -349,7 +351,7 @@ describe( 'RunRoom combat', () => {
     } );
 
     test( 'returning to the lobby restores every broken block', async () => {
-        const { room, host } = await racingRoom( 1 );
+        const { room, host } = await racingRoom( 1, 'weave' );
         host.onMessage( 'hit', () => {} );
         aimAt( room, host.sessionId, firstBlock( room, 'fractured' ) );
         host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
@@ -435,13 +437,13 @@ describe( 'RunRoom combat', () => {
         }
     } );
 
-    test( 'a room without SLUR_TRACK_GEN hosts a weave track', async () => {
+    test( 'a room without SLUR_TRACK_GEN hosts a groove track', async () => {
         const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
         const host = await colyseus.connectTo( room, { name: 'Racer0' } );
         await room.waitForNextPatch();
         await delay( 100 );
         const decoded = toDescriptor( host.state.descriptor );
-        assert.equal( decoded.kind === 'procgen' && decoded.gen, 'weave' );
+        assert.equal( decoded.kind === 'procgen' && decoded.gen, 'groove' );
     } );
 
     test( 'a taken pickup slot respawns after PICKUP_RESPAWN_S', async () => {
