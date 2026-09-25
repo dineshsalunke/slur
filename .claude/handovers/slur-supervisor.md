@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~14:40 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~15:00 IST
 
 ## Goal
 
@@ -34,7 +34,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #258 follow-up: 4 arch defects + leg-scale stretch (monolith-group.tsx; no extra draw calls) + lint warnings + METAL_BASE_COLOR #4a4d52 | cleared ~13:40 at the seam and RESUMED; fixing in the tree. Arch captures only after I tell it workertwo pushed 96u | client scene claims from #258 + monolith-group.tsx, track-rail.tsx, world-scene.tsx | workertwo | w2P:pF | none (#257 96u LANDED 07b4d2d + fe40718; feat/width-80 deleted) | idle | none |
+| workerone | w2P:pD | #258 pit/grain rework: noise pit field (new pit-field.ts), pit normal sign, horizontal brush + isotropic mottle (reaches every graphite surface), cavity wired to the shader, leg V fix (no extra draws), deck groove bevel sign (verified), #4a4d52, Pit.roughness 0.3, lint | resumed ~14:50 after its 2nd clear; must send before/after (monolith, deck behind the ship, ship, block) BEFORE pushing | track-texture.ts, pit-field(.test).ts, monolith-geometry(.test).ts, monolith-group.tsx, track-rail.tsx, world-scene.tsx, metal.ts, dev/tuning-schema.ts, docs/ART_MATERIALS.md |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
 | workerfour | w2P:pH | groove hosted default: run-room.ts:80 → groove + run-room.test.ts (fracture tests pass gen weave). Gates green, UNCOMMITTED, HOLDING for the owner | holding | apps/server/src/rooms/run-room.ts, run-room.test.ts |
 
