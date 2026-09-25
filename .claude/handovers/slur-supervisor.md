@@ -33,7 +33,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | GRAPHITE UNIFICATION (owner said "go" ~12:20: rails jointless, rocks stay rock, pits = dents only, #3b3e42 default with #4a4d52 shown, lights KEEP) + Meteor.chance 0.15. Files an issue, builds, pushes | BUILDING | scene/{metal,track-texture,track-materials,deck-finish,track-geometry}.ts, scene/{monolith-group,track-blocks,block-debris,track-floor,ship-model,bolt-pickups,seeker-pickups}.tsx, scene/combat-look.ts, new *.test.ts, dev/{tuning-schema.ts,tuning-panel.tsx}, docs/ART_MATERIALS.md |
-| workertwo | w2P:pF | #257 WIDTH 84u ON DEV: cherry-pick fef094f + HALF_WIDTH 42 + fixtures + GDD line 81. Notes: LANES 21 odd, 5.25 deck tiles | preparing; COMMIT ONLY AFTER workerone pushes (supervisor gives the word); then delete branch feat/width-80 | shared width files (list pending) |
+| workertwo | w2P:pF | #257 WIDTH 84u ON DEV: cherry-pick fef094f + HALF_WIDTH 42 + fixtures + GDD line 81. Notes: LANES 21 odd, 5.25 deck tiles | CLAIMS CLEARED, WAITING: writes NOTHING (not even the working tree; the owner tsc watch would make 84u live under workerone captures) until the supervisor sends "workerone pushed" | shared/src/{constants.ts, sim/space.ts, sim/step(.test).ts, sim/respawn-point(.test).ts, sim/respawn.test.ts, sim/clearance.test.ts, sim/track-contract.test.ts, pacing/{arms,pockets,route-graph}.test.ts}, docs/GDD.md:81 |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
 | workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
 
