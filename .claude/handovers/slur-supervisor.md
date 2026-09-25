@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~10:30 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~11:00 IST
 
 ## Goal
 
@@ -37,8 +37,8 @@ after /clear often shows the old percent, so read again.
 |---|---|---|---|---|
 | workerone | w2P:pD | MONOLITH MATERIAL fix, PLAN FIRST. Owner screenshot: monolith texture looks scaled (blotchy tan, stretched) + colours wrong (warm, not cool blue-grey). Plan = fix UV/texel density + restore pre-#230 lights/finish (option A) | dispatched ~10:30 | none yet |
 | workerthree | w2P:pG | none (#256 tap kick DONE 0c904de, pushed; dev == origin/dev 4e93085) | idle | none |
-| workertwo | w2P:pF | none (materials traced, 8d87851: #230 stone-lights on one-metal; owner picks A revert lights / B stone blocks / C re-dial) | idle | none |
-| workerfour | w2P:pH | none | idle, stood down (8e62847) | none |
+| workertwo | w2P:pF | TRACK WIDTH 64→80: audit + trial in OWNER-APPROVED worktree ../slur-worktrees/width-80, second stack :5174/:2568 for side-by-side. Unify HALF_WIDTH + FlightTuning.halfWidth. Nothing lands on dev until the owner flies it | dispatched ~11:00 after /clear | worktree only |
+| workerfour | w2P:pH | #256 kick raise: 50/42/34/38/33 (Comet capped 34: kick ≥36 fails note-move.test.ts step1, damp 14.4 overshoot) | committing/pushing | ship-classes.ts, docs/GDD.md Kick column |
 
 ## Next
 
