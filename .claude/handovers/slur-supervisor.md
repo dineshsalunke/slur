@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~13:30 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~13:45 IST
 
 ## Goal
 
@@ -32,8 +32,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #258 graphite PUSHED 37c9d79 (lights KEEP, deck luma 13.9, 92 draws). FOLLOW-UP: the owner saw 4 defects on a monolith arch (tiling repeat, raindrop pits, vertical brush, uneven or untextured faces). Captures after workertwo pushes 96u | fixing | same scene claims as #258 |
-| workertwo | w2P:pF | #257 WIDTH 96u (24 lanes, HALF_WIDTH 48) ON DEV: apply fef094f + 48 + fixtures + GDD line 81; 6 whole deck tiles | GO given ~13:30 (after 37c9d79); applying + gates + push | shared/src/{constants.ts, sim/space.ts, sim/step(.test).ts, sim/respawn-point(.test).ts, sim/respawn.test.ts, sim/clearance.test.ts, sim/track-contract.test.ts, pacing/{arms,pockets,route-graph}.test.ts}, docs/GDD.md:81 |
+| workerone | w2P:pD | #258 graphite follow-up: 4 owner arch defects (handover 203d4b8 lists the inferred causes) | cleared ~13:40 at the seam and RESUMED; fixing in the tree. Arch captures only after I tell it workertwo pushed 96u | client scene claims from #258 | workertwo | w2P:pF | #257 WIDTH 96u (24 lanes, HALF_WIDTH 48) ON DEV: apply fef094f + 48 + fixtures + GDD line 81; 6 whole deck tiles | GO given ~13:30 (after 37c9d79); applying + gates + push | shared/src/{constants.ts, sim/space.ts, sim/step(.test).ts, sim/respawn-point(.test).ts, sim/respawn.test.ts, sim/clearance.test.ts, sim/track-contract.test.ts, pacing/{arms,pockets,route-graph}.test.ts}, docs/GDD.md:81 |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
 | workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
 
@@ -45,7 +44,7 @@ The 80u stack is killed (PIDs 94568…94658) and the worktree is removed. Branch
 
 1. When workerone reports the follow-up: relay the arch before/after + the colour pick (#3b3e42 vs #4a4d52; captures in d6ebc3ab…/scratchpad/after/).
 2. (meteors answered: 0.15, in workerone lane)
-3. When workerone pushes: tell workertwo to apply, commit + push 96u. The owner then restarts pnpm dev and flies it.
+3. When workertwo reports the 96u push: tell workerone "workertwo pushed" (it is waiting to capture), tell the owner to restart pnpm dev, and ask the weave question (a/b/c).
 
 ## Open owner questions
 
