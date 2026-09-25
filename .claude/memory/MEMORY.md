@@ -67,6 +67,7 @@ lives in its own file beside this one.
 - [ast-grep trailing comma matches nothing](ast-grep-trailing-comma-matches-nothing.md) — an array-element pattern with its comma is an ERROR node; use Edit for list inserts
 - [Bash tool runs fish](bash-tool-runs-fish.md) — bash loops and `set --` fail with misleading errors; wrap in `bash -c`
 - [Song tracks are a throwaway experiment](song-tracks-are-a-throwaway-experiment.md) — #253 tooling is disposable; keep it isolated; only a distilled generator survives
+- [Engine light swamps an emissive A/B](engine-light-swamps-emissive-ab.md) — zero EngineLight + Exhaust.glow to see the engine-core bloom; in full scene 1.0 vs 2.2 reads flat
 - [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — a BSD pkill turned `-U 501 --` into patterns and SIGTERMed the owner's apps; record your PIDs
 - [Believer is on a triplet grid](believer-is-on-a-triplet-grid.md) — test onsets against thirds of a beat as well as 16ths; kick band catches bass, kick lands +15 ms late
 - [Delay the perception, not the loop](delay-the-perception-not-the-loop.md) — a human-like pilot lags what it sees; an input-delayed bang-bang strafe limit-cycles
