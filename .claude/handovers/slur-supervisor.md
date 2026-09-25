@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~12:40 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~13:30 IST
 
 ## Goal
 
@@ -32,8 +32,8 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | GRAPHITE UNIFICATION (owner said "go" ~12:20: rails jointless, rocks stay rock, pits = dents only, #3b3e42 default with #4a4d52 shown, lights KEEP) + Meteor.chance 0.15. Files an issue, builds, pushes | BUILDING | scene/{metal,track-texture,track-materials,deck-finish,track-geometry}.ts, scene/{monolith-group,track-blocks,block-debris,track-floor,ship-model,bolt-pickups,seeker-pickups}.tsx, scene/combat-look.ts, new *.test.ts, dev/{tuning-schema.ts,tuning-panel.tsx}, docs/ART_MATERIALS.md |
-| workertwo | w2P:pF | #257 WIDTH 96u (24 lanes, HALF_WIDTH 48) ON DEV: apply fef094f + 48 + fixtures + GDD line 81; 6 whole deck tiles | CLAIMS CLEARED, WAITING: writes NOTHING (not even the working tree; the owner tsc watch would make 84u live under workerone captures) until the supervisor sends "workerone pushed" | shared/src/{constants.ts, sim/space.ts, sim/step(.test).ts, sim/respawn-point(.test).ts, sim/respawn.test.ts, sim/clearance.test.ts, sim/track-contract.test.ts, pacing/{arms,pockets,route-graph}.test.ts}, docs/GDD.md:81 |
+| workerone | w2P:pD | #258 graphite PUSHED 37c9d79 (lights KEEP, deck luma 13.9, 92 draws). FOLLOW-UP: the owner saw 4 defects on a monolith arch (tiling repeat, raindrop pits, vertical brush, uneven or untextured faces). Captures after workertwo pushes 96u | fixing | same scene claims as #258 |
+| workertwo | w2P:pF | #257 WIDTH 96u (24 lanes, HALF_WIDTH 48) ON DEV: apply fef094f + 48 + fixtures + GDD line 81; 6 whole deck tiles | GO given ~13:30 (after 37c9d79); applying + gates + push | shared/src/{constants.ts, sim/space.ts, sim/step(.test).ts, sim/respawn-point(.test).ts, sim/respawn.test.ts, sim/clearance.test.ts, sim/track-contract.test.ts, pacing/{arms,pockets,route-graph}.test.ts}, docs/GDD.md:81 |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
 | workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
 
@@ -43,7 +43,7 @@ The 80u stack is killed (PIDs 94568…94658) and the worktree is removed. Branch
 
 ## Next
 
-1. When workerone reports: relay the captures to the owner (colour pick #3b3e42 vs #4a4d52), the luminance and the draw calls.
+1. When workerone reports the follow-up: relay the arch before/after + the colour pick (#3b3e42 vs #4a4d52; captures in d6ebc3ab…/scratchpad/after/).
 2. (meteors answered: 0.15, in workerone lane)
 3. When workerone pushes: tell workertwo to apply, commit + push 96u. The owner then restarts pnpm dev and flies it.
 
