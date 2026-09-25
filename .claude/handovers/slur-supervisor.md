@@ -38,7 +38,7 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 
 ## Next
 
-1. #258: cast iron + deck-repeat built (c52bba8). Owner then approved WEAR: roughness + metalness driven from the albedo value mask (bright = smoother + more metallic; scratches follow the mask, Scratch.roughness dropped). workerone building → relay captures → owner OK → commit + push ALL #258. Owner Q open: "longitudinal seams"?
+1. #258 ALL BUILT incl. Wear (workerone handover 1f8a6ef), held. Captures 57f83fa0…/scratchpad/shots/wear-{before,after}-{deck,far,ship,block}.png, draws 102=102, 373 tests. Scratches now read only in the highlight (dials: Scratch.lift / Scratch.tilt). Waiting for the owner OK → tell workerone to commit + push all #258. Owner Q open: "longitudinal seams"?
 2. Owner: a mine can land INSIDE a block (floorUnder ignores blocks), 1.1% fwd / 0.6% back; it holds a slot 20 s. Fizzle it like a gap? Audit owner calls: close #31 #34 #253 #257? Sign-offs #163 #170 #173 #215 #219 #222 #251. (F key, gap = lose: answered.)
 3. Owner answers on #260 audio (4 decisions): the tone split vs AUDIO.md §1 (needs an ADR), option A–G (rec E hybrid), lobby/run music, CC-BY SFX allowed or CC0-only. Audition page: workerthree scratchpad audition/index.html (path in #260). A #260 comment says checkThreat must use proj.dir.
 4. Owner flies: #259 meteor, #261 mine (restart pnpm dev first; shared + schema changed), #262 groove smash blocks.
