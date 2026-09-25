@@ -32,8 +32,9 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #258 REDIRECT: scratched cast iron (owner ref .claude/frame-tap-refs/owner-refs/scratched-cast-iron.png; the pits still read as raindrops). Plan first, captures, HOLD push | cleared + assigned ~18:30 | dev/tuning-schema.ts, track-texture(.test).ts, pit-field(.test).ts, docs/ART_MATERIALS.md |
-| workertwo | w2P:pF | NEW: mine throw arc + settle + open-up animation (client visual only). Plan first | cleared + assigned ~20:05 | none yet |
-| workerthree | w2P:pG | #260 cartoon audio: proposal ready, waiting on the owner | idle | none |
+| workertwo | w2P:pF | #266 mine throw DONE 336bc1e (bolt-streak shot → land → open, client only). Pending owner: server 'fizzled' broadcast | idle, 21% | none |
+| workerthree | w2P:pG | #260 cartoon audio: SUPERSEDED, the owner wants sci-fi (moved to workerfive) | idle, ~120k, clear before reuse | none |
+| workerfive | w2P:pK | NEW: sci-fi SFX + background score sourcing (engine per class, per-power fire/hit, block break, UI, lobby/race score). Research + scratchpad audition page only; plan first | assigned ~now | none |
 | workerfour | w2P:pH | #265 pickup spread: PLAN sent, awaiting owner (gap 120–180u jittered, ~52/track; 20-pickup shuffled bag 11b/5s/4m, run cap 2; weave ids get the seed salt). Owner Qs: gap range? sideways spread? | holding | none (claims: space.ts, track.ts, groove-track.ts, combat/pickups.ts, new power-bag.ts, GDD) |
 
 ## Next
