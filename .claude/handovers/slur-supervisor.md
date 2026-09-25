@@ -49,6 +49,8 @@ The 80u stack is killed (PIDs 94568…94658) and the worktree is removed. Branch
 
 ## Open owner questions
 
+- WEAVE at 96u (workertwo prep, scratch): groove 150/150, 13 bumps, edge 0%. Weave +60% blocks per km, trapped pockets ~2×, pilot 0/150 (relative only). Hosted rooms default to weave. Options: (a) hosted default → groove, (b) weave density back to a fixed count per metre, (c) accept. Supervisor recommends (a), then (b) only if weave stays. Camera [inferred]: rails enter 24.6u ahead at 96 (11.7 at 64).
+
 - The graphite colour pick after the captures. Width feel at 96 after it lands.
 - Push archive/song-lab? (It was pushed at ~08:45 — b64766f is on origin. Closed.)
 - #254 class roles (later). #244 FRACTURE_RATE raise? #251 device check. Score rooms have no pickups.
