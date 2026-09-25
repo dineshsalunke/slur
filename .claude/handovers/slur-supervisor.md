@@ -31,8 +31,8 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #258 split push (option c), then the pit tune | prompted via herdr ~17:25 to run the split against HEAD f5804af | track-texture(.test).ts, pit-field(.test).ts, monolith-geometry(.test).ts, monolith-group.tsx, track-rail.tsx, world-scene.tsx, metal.ts, dev/tuning-schema.ts, docs/ART_MATERIALS.md |
-| workertwo | w2P:pF | none (#261 done) | idle, not cleared since resume (~? %) | none |
+| workerone | w2P:pD | #258 pit round | BUILT, HOLDING for the owner OK (handover 0f90dd7). PIT_CELLS_U 6→12, PIT_SIZE 0.1–0.3, density 1 (4%). Shots: 6d89e290…/scratchpad/shots/ before-/after-{deck,ship,block,face} | dev/tuning-schema.ts, track-texture(.test).ts, pit-field(.test).ts, docs/ART_MATERIALS.md |
+| workertwo | w2P:pF | mine follow-up: far forward drop + own mine hits the dropper [inferred reading]; PLAN FIRST | cleared, assigned ~18:00 | none yet |
 | workerthree | w2P:pG | #260 cartoon audio: proposal ready, waiting on the owner | idle | none |
 | workerfour | w2P:pH | issue audit (owner: "close them if the work is done"), 65 open; closes only DONE with an evidence comment, lists PARTIAL/OPEN | assigned ~17:55 | none (gh only, no repo writes) |
 
