@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~08:05 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~09:05 IST
 
 ## Goal
 
@@ -33,8 +33,8 @@ after /clear often shows the old percent, so read again.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | PLAN (no build): track generator derived from the takes, playable in /test-level. Owner: "doesn't feel like a corridor … combat game between friends … a lot of open space lateral and longitudinal". The plan must cover the grammar distributions, an open-space metric, the TrackGen/schema impact, 30-seed × 5-class pilot proof, claims, and the issue | planning | none |
-| workerthree | w2P:pG | SYNC: detached worktree ../slur-worktrees/sync off local dev. Merge origin/dev (17 behind: #188 #225 #230 #237), then merge PR #195 feat/ship-feel (CONFLICTING), gates, `push origin HEAD:dev`. STOP on semantic conflicts | dispatched ~08:00 | worktree only |
+| workerone | w2P:pD | groove TrackGen (approved plan) | building | packages/shared/src/sim/groove/**, space.ts, track.ts, routes/test-level/test-level-canvas.tsx, apps/client/beat-deck/extract-grammar.mjs |
+| workerthree | w2P:pG | #195 port, option A (banking + engine glow, GDD.md:338) | claims CLEARED ~09:05, building | game/ecs/{attitude.ts,attitude.test.ts,traits.ts,systems.ts,net-systems.ts}, game/net-loop.tsx, net/attach-room-to-world.ts, routes/test-level/{local-loop,local-ship}.tsx, routes/beat-deck/{deck-loop,deck-ship}.tsx (one line each; workerone told), dev/tuning-schema.ts, game/scene/{ship-model.tsx,ship-materials.ts,ship-materials.test.ts}, docs/GDD.md:338 |
 | workertwo | w2P:pF | none | idle (87524f6) | none |
 | workerfour | w2P:pH | none | idle, stood down (8e62847) | none |
 
