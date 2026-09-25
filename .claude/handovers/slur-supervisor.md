@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~11:45 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~12:00 IST
 
 ## Goal
 
@@ -9,6 +9,8 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 ## Standing owner decisions
 
+- MATERIAL (owner, verbatim): "dark graphite pitted metal as base which will be used for everything in the scene, deck, monolith, blocks, ships, pickups etc. deck is going to be a bit special case where it will be a mix of the dark graphite pitted metal + 4x4u plate grid like what is it now."
+- Meteors: owner wants one every 9–18 s → Meteor.chance 0.15 (folded into workerone lane).
 - Engine light: ACCEPTED as is (2026-09-25).
 - Strafe tap kick: option 2 (stateless kick floor). Owner: "feels better now". Kicks 50/42/34/38/33 (e82cadf).
   Comet is capped at 34: kick ≥36 fails note-move.test.ts step1 (damp 14.4 overshoot). More Comet kick needs more grip.
@@ -28,7 +30,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #? MONOLITH MATERIAL fix (plan 279152c). Cause: d9b7227 ROWS=1 → TEX_SPAN_Z 4u; walls divide V by 16u → 4× stretch. Plan: walls use TEX_SPAN_Z (option A) + restore pre-#230 colours | PLAN relayed, WAITING ON OWNER | claims pending: scene/{monolith-geometry(.test).ts, sealed-block-shader.ts, fractured-block-shader.ts, deck-finish.ts, track-blocks.tsx, track-geometry.ts, metal.ts, nebula-presets.ts}, dev/tuning-schema.ts, docs/ART_MATERIALS.md, docs/ADD.md |
+| workerone | w2P:pD | MATERIAL UNIFICATION to the owner definition (one dark graphite pitted metal everywhere, plate grid on deck only) + Meteor.chance 0.15. Files an issue | cleared + re-briefed ~12:00, PLAN pending | none until cleared |
 | workertwo | w2P:pF | #257 width 80 trial | CLEARED at seam (3553a3b). Its 80u stack is STILL RUNNING for the owner | worktree ../slur-worktrees/width-80, branch feat/width-80 (fef094f, 7266c68), not pushed |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
 | workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
@@ -45,12 +47,8 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 ## Next
 
-1. OWNER, materials: (1) plates option A (walls match the deck, recommended) or B (restore 4×16 deck plates)?
-   (2) hulls back to blue-grey or a split hull colour? (3) rocks back to grey too? On the answers, clear workerone's
-   claims above. It files an issue first.
-2. OWNER, meteors: "too many comets falling, too cluttered". Meteor.chance 0.65 × STRIKE_SPACING 220 ≈ 1 strike / 2.7 s at
-   cruise 124. Proposed default 0.2 (≈ 9 s). The owner may try the live knob first. tuning-schema.ts is in workerone's
-   claim, so fold the new default into its lane.
+1. workerone plan for the one-material world: relay captures + colour + light proposal to the owner; clear claims on approval.
+2. (meteors answered: 0.15, in workerone lane)
 3. OWNER, width: fly :5174 against :5173, then choose 80/72 + weave density. Assign the merge to a fresh worker (workerthree
    after /clear, or workerfour). Kill the 80u stack afterwards.
 
