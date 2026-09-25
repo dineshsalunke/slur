@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~09:05 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~09:30 IST
 
 ## Goal
 
@@ -34,8 +34,8 @@ after /clear often shows the old percent, so read again.
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | groove TrackGen (approved plan) | building | packages/shared/src/sim/groove/**, space.ts, track.ts, routes/test-level/test-level-canvas.tsx, apps/client/beat-deck/extract-grammar.mjs |
-| workerthree | w2P:pG | #195 port, option A (banking + engine glow, GDD.md:338) | claims CLEARED ~09:05, building | game/ecs/{attitude.ts,attitude.test.ts,traits.ts,systems.ts,net-systems.ts}, game/net-loop.tsx, net/attach-room-to-world.ts, routes/test-level/{local-loop,local-ship}.tsx, routes/beat-deck/{deck-loop,deck-ship}.tsx (one line each; workerone told), dev/tuning-schema.ts, game/scene/{ship-model.tsx,ship-materials.ts,ship-materials.test.ts}, docs/GDD.md:338 |
-| workertwo | w2P:pF | none | idle (87524f6) | none |
+| workerthree | w2P:pG | strafe TAP KICK (owner chose option 2: vx jumps to a per-class kick speed on press; default target freighter ≥4u on a 100 ms tap). Files issue, sends plan + claims first | dispatched ~09:30 after /clear (#195 done: c71634e, PR closed) | none yet |
+| workertwo | w2P:pF | MATERIALS regression, investigate only. Owner: "after the PR merge the materials have messed up very badly". Suspect 3c44038 (origin/dev #230 satin deck/dielectric blocks/graphite) vs local one-metal; or stale localStorage tunables | dispatched ~09:25 | none (read-only) |
 | workerfour | w2P:pH | none | idle, stood down (8e62847) | none |
 
 ## Next
@@ -59,6 +59,10 @@ after /clear often shows the old percent, so read again.
 3. Ask the owner: push archive/song-lab?
 
 ## Open owner questions
+
+- Engine light (EngineLight 18) swamps the new idle→cruise engine glow: lower it or accept? (workerthree memory engine-light-swamps-emissive-ab.md)
+- Which surfaces look wrong in the materials regression?
+- Tap kick distance: default 4u on a 100 ms freighter tap, owner may retune.
 
 - Push archive/song-lab?
 - #254 class roles (later). #244 FRACTURE_RATE raise? #251 device check. Score rooms have no pickups.
