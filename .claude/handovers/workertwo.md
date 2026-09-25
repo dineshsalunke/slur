@@ -1,57 +1,47 @@
-Agent: workertwo · Lane: mine pickup + forward/back fire (#261, child of #20) · Updated: 2026-09-25
+Agent: workertwo · Lane: mine pickup + forward/back fire (#261, child of #20) · Updated: 2026-09-25 18:05
 
 Older versions hold the plan, #259 and #257 (`git log -p -- .claude/handovers/workertwo.md`).
 
 ## Goal
 
-Build the Mine (pickup, dropped mine, trigger, bolt-clear, HUD). SCOPE CHANGE from the owner: every power
-(bolt, seeker, mine) fires FORWARD (E) or BACK (a new key). Refs: `ingredients.png` panels 4 and 9,
-`cruise-lighting.png` HUD. `docs/art-direction/` is read-only.
+Build the Mine, and make every power (bolt, seeker, mine) fire FORWARD (E) or BACK (F). Refs: `ingredients.png`
+panels 4 and 9. `docs/art-direction/` is read-only.
 
 ## Done
 
-- Plan approved by the owner. Issue #261 filed.
-- Owner answers: stun 1.5 s + `vz × mineSpeedCut` 0.6; a bolt clears a mine (armed or arming, the owner's own too, nearest hit wins); the same look for every player's mines; numbers: ratio 0.20, arm 0.5 s, trigger +3u, jump clears at 2u, ttl 20 s, 3 per owner.
-- The supervisor cleared the full claim list, and gave me the ART_SCALE_REFERENCE 64u → 96u width fix (width numbers only).
-- The mine core is written but NOT committed (see Uncommitted).
+- The supervisor cleared the addendum and all claims. F = back and mineDropAhead 8u are working defaults; the supervisor relays them to the owner.
+- The whole lane is WRITTEN and green, but NOT committed (see Uncommitted). No SHA yet.
 
 ## State
 
-- Shared: `combat/mine.ts` holds `aimMine` (floor under the drop point via the now-exported `floorUnder`, fizzles over a gap), `evictOldest` (the smallest ttl goes), `stepMines` (arming, trigger box, expiry; one victim, the lowest id), and `mineBoltFront`. `resolveBolt` picks the nearest of ship / mine / block and returns `mine`. `stepBolts(…, cfg, mines = new Map(), onMine)` takes new optional trailing args. Mine constants + 11 SimConfig fields. `HeldPower.mine = 3`. `pickupPower` is 3-way: [0, seekerRatio) seeker, then mineRatio of mine, then bolt.
-- Schema: `Mine` {x, y, z, ownerId, armed} + a plain `ttl` (not synced). `RunState.mines` appended after `seekers`.
-- Server: `room-combat.ts` `firePower` routes mine → `layMine`. New `resolveMineEvent`: a trigger stuns (armour-scaled `mineStunS`), cuts vz and broadcasts 'hit'; every outcome broadcasts `MINE_BURST_MESSAGE` (trigger / cleared / evicted / expired). `FireContext.broadcast` is optional until run-room passes it.
-- Measured: shared `pnpm test` 347/347 (15 new mine tests). Shared and server `tsc -b` are green.
-- `apps/server/src/rooms/mine-sync.test.ts` is written, typechecks, and has NOT been run. It needs the run-room wiring and will fail without it.
-- Client: nothing written yet.
+- Shared: new `combat/fire-dir.ts` (`FireDir`, `fireDir(raw)` → -1 only for -1, `sweptZ`, `entryZ`). `ProjectileState.dir` and `SeekerState.dir` are required. `aimBolt/aimSeeker/lockTarget/aimMine` take a trailing `dir = 1`. The bolt, mine and seeker sweeps mirror on dir. A back seeker launches at vz 0 and ramps to −top. It does NOT use the trail (the target has not flown there yet); when blocked it holds x. Mine: forward = `z + halfL + mineDropAhead` (8); back = the ship's own z. `mineDropGap` was renamed to `mineDropAhead`.
+- Schema: `Projectile.dir` and `Seeker.dir` are `int8`, default 1, APPENDED as the last field of each class.
+- Server: `firePower(..., dir)`. `FireContext.broadcast` is required. run-room.ts: the fire handler passes `fireDir(msg?.dir)` and a broadcast. `stepWorld` passes mines + onMine to `stepBolts`, and calls `stepMines` after the seekers. `clearCombat` clears the mines.
+- Client: `handlePowerKey` E → fire(slot, 1), F → fire(slot, -1). Gamepad B (button 1) → KeyF. Touch "Back" button. HUD hint `E Fire · F Back · Q Cycle · X Drop`. `NetProjectile` trait now holds `{ dir }`; the bolt streak rotates π and sheds embers +z when dir < 0.
+- Client mine: `mine-look.ts` (+test), `mine-pickups.tsx`, `mine-bodies.tsx` (instanced body, core, spokes+ring decal; pulse via instanceColor), `mine-field.tsx` (koota `NetMine`), `mine-shock.tsx` + `mine-shock-events.ts` (`burstMine`: ring on every burst, spark on 'cleared'), `local-mine-field.tsx`. Pickups split 3-way. HUD 'Mine' label; the gem shows the SELECTED slot's glyph. /test-level lays, clears and expires mines.
+- `mine-decal-material.ts` was dropped (not needed). No docs edited yet.
+- Measured: shared 358/358. Server 24/24 in three runs. Client `tsc` is clean. Client `vitest app/game` 308/308.
+- NOT run: `pnpm lint` (biome, comment ratio). NOT looked at in a browser [unmeasured].
 
 ## Uncommitted
 
-Held back on purpose. With no run-room wiring, a pushed build would lay inert mines that never arm, never clear on restart, and fail mine-sync.test.
-- packages/shared/src/combat/{mine.ts, mine.test.ts, constants.ts, pickups.ts, projectiles.ts, combat-step.ts, combat-step.test.ts, seeker-pickups.test.ts}
-- packages/shared/src/{schema.ts, sim-config.ts, index.ts, sim/step.ts}
-- apps/server/src/rooms/{room-combat.ts, mine-sync.test.ts}
+All of it. Shared: combat/{fire-dir.ts, mine.ts, mine.test.ts, constants.ts, pickups.ts, projectiles.ts, combat-step.ts, combat-step.test.ts, combat.test.ts, seeker.ts, seeker.test.ts, seeker-pickups.test.ts}, sim/fracture.test.ts (one literal gets `dir: 1`, report it), schema.ts, sim-config.ts, index.ts, sim/step.ts. Server: rooms/{room-combat.ts, run-room.ts, mine-sync.test.ts}. Client app/: game/input/{power-select.ts, power-select.test.ts, gamepad.ts, gamepad.test.ts}, game/hud/{touch-pad.tsx, power-rack.tsx, power-cell.tsx, power-gem.tsx}, game/ecs/traits.ts, game/net-canvas.tsx, net/attach-room-to-world.ts, game/scene/{projectile-field.tsx, bolt-streaks.tsx, seeker-pickups.tsx, seeker-pickups.test.ts, pickup-field.tsx, mine-look.ts, mine-look.test.ts, mine-pickups.tsx, mine-bodies.tsx, mine-field.tsx, mine-shock.tsx, mine-shock-events.ts}, routes/test-level/{local-combat.ts, local-bolt-field.tsx, local-pickup-field.tsx, local-mine-field.tsx, test-level-canvas.tsx}.
 
 ## Held files
 
-Everything above, plus the approved client/docs list: net/attach-room-to-world.ts · game/ecs/traits.ts · game/net-canvas.tsx · game/scene/{mine-look.ts, mine-look.test.ts, mine-pickups.tsx, mine-bodies.tsx, mine-field.tsx, mine-decal-material.ts, mine-shock.tsx, mine-shock-events.ts, seeker-pickups.tsx, seeker-pickups.test.ts, pickup-field.tsx} · game/hud/{power-cell.tsx, power-gem.tsx} · routes/test-level/{local-combat.ts, local-pickup-field.tsx, local-mine-field.tsx, test-level-canvas.tsx} · docs GDD §5.3, ADD §5, ART_SCALE_REFERENCE §7 (+ width fix). run-room.ts is LATER, after workerfour commits.
+Everything in Uncommitted, plus docs GDD §5.3, ADD §5, ART_SCALE_REFERENCE §7 (+ the 64u → 96u width fix). NOT mine: run-room.test.ts and sim/groove/** (workerfour).
 
 ## Next
 
-1. SCOPE CHANGE addendum, due to the supervisor BEFORE any back-fire code:
-   - The back key: read the input code (`game/input/`, grep for KeyE/KeyQ/KeyX) and pick one. R looks free [unverified]. Report the pick.
-   - The message: `{ slot, dir }`, where a missing dir means forward.
-   - Mine: BACK drops at the ship's position (floor under the ship). FORWARD drops `mineDropAhead` 8u ahead. This replaces the current `halfL + mineDropGap` behind rule, so `aimMine` gets a dir and the tests change.
-   - Bolt BACK: −z from the tail. Needs a direction on ProjectileState and stepProjectiles/boltBlockHit/boltHits sweeping −z.
-   - Seeker BACK: launches rearward and locks the nearest ship BEHIND, mirroring `lockTarget`. Pin the rule and tests.
-   - The revised claim list (projectiles.ts, seeker.ts, input files, HUD hint in power-rack.tsx).
-2. Continue the mine core client side: pickups (3-way split), deployed MineBodies + decal, burst shock, HUD label + gem glyph, test-level wiring.
-3. When workerfour commits run-room.ts: in `stepWorld` add `stepMines(this.state.mines, seekerShipsOf(...), dt, e => resolveMineEvent(...), this.config)`; pass `this.state.mines` and an onMine → resolveMineEvent to `stepBolts`; add `broadcast` to the FireContext in the usePowerUp handler; `this.state.mines.clear()` in `clearCombat`. Then run mine-sync.test.
-4. Gates (typecheck, test, lint), commit by explicit pathspec, push.
+1. `pnpm lint` from the root, and fix what it finds.
+2. Look at /test-level in headless Chrome (DPR 1, muted, kill it after): the pickup star, a laid mine (spokes, ring, pulse after 0.5 s), the burst ring, a back bolt streak, and the HUD gem. Tune the look numbers in mine-look.ts if needed.
+3. Docs: GDD §5.3 (mine rules + forward/back), ADD §5 (mine pulse built), ART_SCALE_REFERENCE §7 (mine sizes) + width fix.
+4. Gates (typecheck, test, lint). Commit by explicit pathspec, push, and comment the scope change on #261.
 
 ## Open questions
 
-- The back key (pending my check, then the owner).
-- `mineDropAhead` 8u, to confirm with the owner.
+- The owner must confirm F = back and mineDropAhead 8u (the supervisor is relaying them).
+- For workerthree / audio: `audio/bind-room-audio.ts` `checkThreat` assumes bolts fly +z (`dz = self.z - proj.z`). A back bolt from a ship ahead gets no threat cue. It should use `proj.dir`. I did not edit it.
 
 ## Lessons → memory
 
