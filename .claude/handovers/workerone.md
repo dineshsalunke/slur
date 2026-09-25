@@ -46,6 +46,10 @@ The uncommitted list above.
 
 ## Next
 
+0. Owner asked (19:40): drive roughness + metalness from the albedo value mask. The answer and plan were sent to the
+   supervisor (bake v = albedo/base, w = clamp((v−1)/Wear.valueSpan); G −= w·roughSpan; B = lerp(metalMin, metalMax)).
+   The deck shader uses the same mapping. Claims are the files already held. Waiting for approval and the scratch
+   decision: (a) scratches smooth, following the mask, or (b) scratches stay rough as an override.
 1. Wait for the owner's OK on both round 3 and the deck repeat (through the supervisor).
 2. Likely tunes: raise `Scratch.lift` / `Scratch.roughness` for the ship. If the plate variants still read as repeats,
    add the 90° rotation (the plates are square).
