@@ -182,9 +182,13 @@ export interface SqueezeAttempt {
     toX: number;
 }
 
-function strafeToward( t: FlightTuning, err: number, vx: number ): number {
+export function strafeToward( t: FlightTuning, err: number, vx: number ): number {
     const want = Math.sign( err ) * Math.min( t.strafeClamp, Math.sqrt( t.strafeAccel * Math.abs( err ) ) );
-    return Math.max( -1, Math.min( 1, ( want - vx ) / ( t.strafeAccel * DT * STRAFE_TICKS ) ) );
+    const s = Math.max( -1, Math.min( 1, ( want - vx ) / ( t.strafeAccel * DT * STRAFE_TICKS ) ) );
+    if ( t.strafeKick <= 0 || s === 0 ) return s;
+    const goal = vx + t.strafeAccel * s * DT;
+    if ( Math.sign( goal ) !== Math.sign( s ) ) return 0;
+    return t.strafeKick * Math.abs( s ) > Math.abs( goal ) ? goal / t.strafeKick : s;
 }
 
 export function squeezesThrough( track: Track, t: FlightTuning, a: SqueezeAttempt ): boolean {

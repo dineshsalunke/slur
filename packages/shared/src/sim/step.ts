@@ -22,8 +22,11 @@ export function applyLongitudinal( s: SimShip, input: PlayerInput, t: FlightTuni
 }
 
 export function applyStrafe( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
-    if ( input.strafe !== 0 ) s.vx += t.strafeAccel * input.strafe * dt;
-    else s.vx -= s.vx * Math.min( 1, t.strafeDamp * dt );
+    if ( input.strafe !== 0 ) {
+        s.vx += t.strafeAccel * input.strafe * dt;
+        const kick = t.strafeKick * input.strafe;
+        if ( t.strafeKick > 0 && ( input.strafe > 0 ? s.vx < kick : s.vx > kick ) ) s.vx = kick;
+    } else s.vx -= s.vx * Math.min( 1, t.strafeDamp * dt );
     s.vx = Math.min( Math.max( s.vx, -t.strafeClamp ), t.strafeClamp );
 }
 

@@ -12,6 +12,7 @@ export interface FlightTuning {
     strafeAccel: number;
     strafeClamp: number;
     strafeDamp: number;
+    strafeKick: number;
     halfWidth: number;
 
     halfW: number;
@@ -75,6 +76,7 @@ export const DEFAULT_TUNING: FlightTuning = {
     strafeAccel: 165,
     strafeClamp: 80,
     strafeDamp: 14,
+    strafeKick: 0,
     halfWidth: 32,
     halfW: 1.3,
     halfL: 1.26,

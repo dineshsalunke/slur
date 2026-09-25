@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { FIXED_DT, type FlightTuning } from '../../constants.js';
 import { freezeTrack } from '../../pacing/grid.js';
-import { rosterPockets } from '../../pacing/pockets.js';
+import { rosterPockets, strafeToward } from '../../pacing/pockets.js';
 import { SHIP_CLASSES } from '../../ship-classes.js';
 import { openRunsAtSlice, type Run } from '../clearance.js';
 import type { PlayerInput } from '../input.js';
@@ -71,11 +71,6 @@ function freeSlices( track: Track, t: FlightTuning ): ( k: number ) => Run[] {
         memo.set( k, out );
         return out;
     };
-}
-
-function strafeToward( t: FlightTuning, err: number, vx: number ): number {
-    const want = Math.sign( err ) * Math.min( t.strafeClamp, Math.sqrt( t.strafeAccel * Math.abs( err ) ) );
-    return Math.max( -1, Math.min( 1, ( want - vx ) / ( t.strafeAccel * FIXED_DT * 3 ) ) );
 }
 
 function floorAhead( track: Track, x: number, z0: number, z1: number ): boolean {
