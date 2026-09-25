@@ -2,46 +2,40 @@ Agent: workerthree · Lane: sync dev + land PR #195 · Updated: 2026-09-25
 
 ## Goal
 
-Merge origin/dev into local dev, land #195 (ship-feel), push HEAD:dev. Owner approved the push.
+Merge origin/dev into local dev and push it. #195 is held for owner calls A/B/C (supervisor relaying).
 
 ## Done
 
-- 277396f (worktree `../slur-worktrees/sync`, NOT pushed): `Merge origin/dev (#188, #225, #230, #237) into dev`,
-  parents 73f94f5 (local dev) + 74a7b89 (origin/dev). No conflicts: no file was changed on both sides.
+- 277396f: `Merge origin/dev (#188, #225, #230, #237) into dev`, parents 73f94f5 + 74a7b89. No conflicts.
+  Pushed: origin/dev 74a7b89..277396f (fast-forward). GitHub branch API confirms dev = 277396f.
 
 ## State
 
 - 277396f gates: typecheck exit 0 · lint exit 0 · shared 316/316 · server 17/17 · client vitest 324/324 (45 files).
-- #195 = 33 commits; only 5 are the PR (`dcc3149..01947c2`); 28 are pre-squash feat/test-level, already on dev.
-- #195 conflicts are SEMANTIC, so the lane STOPPED before the push:
-  - Rail bounce (9af27e0) edits `clampToEdges`; fc65986 made ships fall off deck edges, so the bounce is dead.
-    GDD.md:338 still says "walls stop+slide".
-  - Banking (0dc8c7d) writes knobs to `dev/tunables.ts`; 3fd4a97 deleted it (knobs now `dev/tuning-schema.ts`).
-  - Engine bloom (8fbb223) was tuned for an older threshold; `Bloom.threshold` is now 0.6; dev's "one metal"
-    supersedes the hull knobs.
-- Matches workerfour's 2026-09-24 analysis (5a9b471); owner calls A/B/C from that still open.
-- `../slur-worktrees/merge-195` (workerfour's, clean, at 74a7b89) left untouched.
+- The shared checkout's dev (8c90d84 at push time) is 4 ahead and 18 behind origin/dev. It needs a merge of origin/dev,
+  not a fast-forward. That is the supervisor's job.
+- #195 conflicts are SEMANTIC: the rail bounce is dead after fc65986 (deck edges fall off), `dev/tunables.ts` was
+  deleted in 3fd4a97, and `Bloom.threshold` is now 0.6. See workerfour 5a9b471.
+- Worktree `sync` removed. `refs/remotes/pr/195` (01947c2) kept on the supervisor's instruction.
+- `../slur-worktrees/merge-195` (workerfour's) left untouched.
 
 ## Uncommitted
 
-- none in the shared tree. Worktree `sync` holds 277396f; `refs/remotes/pr/195` fetched.
+- none
 
 ## Held files
 
-- none in the shared tree.
+- none
 
 ## Next
 
-1. Wait for the supervisor: push 277396f alone (sync only), and/or owner calls A/B/C for #195.
-2. If #195 goes ahead: rebase the kept commits onto 277396f, then gates, then push HEAD:dev.
-   Close #195 by hand (a rebase does not auto-close it).
-3. Clean up: `git worktree remove --force ../slur-worktrees/sync`, `git update-ref -d refs/remotes/pr/195`.
+1. Wait for the supervisor or the owner on #195 A/B/C.
+2. If #195 goes ahead: rebase the kept commits onto origin/dev in a new detached worktree, run the gates,
+   `git push origin HEAD:dev`, close #195 by hand, then `git update-ref -d refs/remotes/pr/195`.
 
 ## Open questions
 
-- Supervisor: push the origin/dev merge (277396f) now, apart from #195?
-- Owner A/B/C (from workerfour): A drop the rail bounce; B port only the engine glow, retuned for 0.6;
-  C push and close #195.
+- Owner A/B/C: A drop the rail bounce; B port only the engine glow, retuned for 0.6; C close #195.
 
 ## Lessons → memory
 
