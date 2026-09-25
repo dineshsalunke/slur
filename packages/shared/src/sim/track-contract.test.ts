@@ -75,9 +75,9 @@ test( 'the racing line a seed generates is frozen (re-pin only for a deliberate 
         0.09823100936524454,
         'WEAVE_CURVATURE_CAP moved: every seed now weaves differently',
     );
-    assert.equal( FZ_ROWS, 49 );
-    assert.equal( WEAVE_PERIOD_ROWS, 67 );
-    assert.equal( weaveDigest( 1, 4000 ), 4017613166 );
-    assert.equal( weaveDigest( 20260921, 4000 ), 3771230904 );
-    assert.equal( weaveDigest( 0xdeadbeef, 4000 ), 1799438663 );
+    assert.equal( FZ_ROWS, 63 );
+    assert.equal( WEAVE_PERIOD_ROWS, 98 );
+    assert.equal( weaveDigest( 1, 4000 ), 3647193385 );
+    assert.equal( weaveDigest( 20260921, 4000 ), 2095466698 );
+    assert.equal( weaveDigest( 0xdeadbeef, 4000 ), 372694567 );
 } );

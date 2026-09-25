@@ -52,11 +52,11 @@ const FIXTURE = freezeTrack( resolveTrack( procgenDescriptor( 20260921 ) ) );
 
 function fixturePockets( id: ShipClassId ): PacingPocket[] {
     return classPockets( FIXTURE, id, SHIP_CLASSES[ id ].tuning ).filter(
-        ( p ) => p.trapped && inBox( p, 1200, 1278, 9, 30 ),
+        ( p ) => p.trapped && inBox( p, 2446, 2460, 9, 11 ),
     );
 }
 
-test( 'seed 20260921 z 1200-1278 traps the freighter by its 1.3u right slot', () => {
+test( 'seed 20260921 z 2446-2460 traps the freighter by its 2.2u slot', () => {
     const [ pocket, ...rest ] = fixturePockets( 'freighter' );
     assert.deepEqual( rest, [] );
     assert.ok(
@@ -65,7 +65,7 @@ test( 'seed 20260921 z 1200-1278 traps the freighter by its 1.3u right slot', ()
     );
 } );
 
-test( 'seed 20260921 z 1200-1278 traps the phantom: a 2.3u window is shorter than its own length', () => {
+test( 'seed 20260921 z 2446-2460 traps the phantom: a 3.2u window is shorter than its own length', () => {
     const [ pocket, ...rest ] = fixturePockets( 'phantom' );
     assert.deepEqual( rest, [] );
     assert.ok(
@@ -74,15 +74,15 @@ test( 'seed 20260921 z 1200-1278 traps the phantom: a 2.3u window is shorter tha
     );
 } );
 
-test( 'seed 20260921 z 1200-1278 frees every other class', () => {
+test( 'seed 20260921 z 2446-2460 frees every other class', () => {
     for ( const id of [ 'comet', 'interceptor', 'fighter' ] as const ) {
         assert.deepEqual( fixturePockets( id ), [], id );
     }
 } );
 
-test( 'the phantom leaves the fixture pocket right, through a 2.3u stop window', () => {
+test( 'the phantom leaves the fixture pocket left, through a 3.2u stop window', () => {
     const t = SHIP_CLASSES.phantom.tuning;
-    const squeeze = ( stopZ: number ): boolean => squeezesThrough( FIXTURE.track, t, { fromX: 18, stopZ, toX: 30 } );
-    assert.ok( squeeze( 1220.3 ) && squeeze( 1222.5 ) );
-    assert.ok( ! squeeze( 1220.0 ) && ! squeeze( 1222.8 ) );
+    const squeeze = ( stopZ: number ): boolean => squeezesThrough( FIXTURE.track, t, { fromX: 10, stopZ, toX: 3 } );
+    assert.ok( squeeze( 2459.8 ) && squeeze( 2463.0 ) );
+    assert.ok( ! squeeze( 2459.7 ) && ! squeeze( 2463.1 ) );
 } );

@@ -8,6 +8,7 @@ import {
     buildGrid,
     DEFAULT_TUNING,
     freezeTrack,
+    HALF_WIDTH,
     maxColumnStep,
     procgenDescriptor,
     referencePath,
@@ -49,7 +50,7 @@ test( 'two mirror arms measure the same and neither is dominated', () => {
 test( 'a weave in one arm makes it the hard arm, and the named routes take opposite arms', () => {
     const track = forkTrack( ( s ) => {
         if ( s.index === 6 ) return { ...s, blocks: [ wall( 6, 6, 22 ) ] };
-        if ( s.index === 8 ) return { ...s, blocks: [ wall( 8, 16, 32 ) ] };
+        if ( s.index === 8 ) return { ...s, blocks: [ wall( 8, 16, HALF_WIDTH ) ] };
         return s;
     } );
     const { forks, easiest, hardest } = armsOf( track );
@@ -75,8 +76,8 @@ test( 'a hole in one arm only is an optional gap on that arm', () => {
             ? {
                   ...s,
                   floors: [
-                      { x0: -32, x1: 6, y: 0 },
-                      { x0: 6, x1: 32, y: 0, z0: s.z0 + 12, z1: s.z1 },
+                      { x0: -HALF_WIDTH, x1: 6, y: 0 },
+                      { x0: 6, x1: HALF_WIDTH, y: 0, z0: s.z0 + 12, z1: s.z1 },
                   ],
               }
             : s,

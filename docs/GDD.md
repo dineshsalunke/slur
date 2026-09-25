@@ -78,7 +78,7 @@ just moved every track in the game.
 | Thing | Value | Note |
 |---|---|---|
 | `CELL` | `4u` | **authoring snap grid only** (procgen + hand-authored) — not a runtime/gameplay unit |
-| Track width | `64u` (`HALF_WIDTH 32`) | 16 lanes *in the current generator*; the width, not the lane count, is what matters |
+| Track width | `96u` (`HALF_WIDTH 48`) | 24 lanes *in the current generator*; the width, not the lane count, is what matters |
 | Segment depth | `SEG_LEN` `20u` | one segment; a gap is one segment long |
 | Deadly block height | `8u` (`BLOCK_HEIGHT`) | **above double-jump reach on purpose** — strafe around, never hop |
 | Deadly block width/depth | 1–3 lanes wide; depth drawn from `BLOCK_DEPTHS` `4/8/16u` at a varied z-offset; close blocks then merge into one (ADR-019) | a *generation artifact*, **not** a rule — any size is legal |

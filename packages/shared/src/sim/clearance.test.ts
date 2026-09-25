@@ -37,25 +37,28 @@ test( 'an empty segment is open across the full width', () => {
 } );
 
 test( 'a full-depth centred block is measured the same as before', () => {
-    const seg = makeSegment( [ block( -HALF_WIDTH, 20, Z0 + 6, Z0 + 14 ) ] );
+    const seg = makeSegment( [ block( -HALF_WIDTH, HALF_WIDTH - 12, Z0 + 6, Z0 + 14 ) ] );
     assert.equal( passableCorridorWidth( seg ), 12 );
-    assert.equal( openCenterX( seg ), 26 );
+    assert.equal( openCenterX( seg ), HALF_WIDTH - 6 );
 } );
 
 test( 'a shallow block lying between the legacy row centres is still measured', () => {
-    const seg = makeSegment( [ block( -HALF_WIDTH, 29, Z0 + 3, Z0 + 5 ) ] );
+    const seg = makeSegment( [ block( -HALF_WIDTH, HALF_WIDTH - 3, Z0 + 3, Z0 + 5 ) ] );
     assert.equal( passableCorridorWidth( seg ), 3 );
     assert.ok( passableCorridorWidth( seg ) < MIN_LANE, 'the sampler must see the pinch, not the open slices' );
 } );
 
 test( 'clearance is the worst slice in the segment, not the mid slice', () => {
-    const seg = makeSegment( [ block( -HALF_WIDTH, 26, Z0, Z0 + 4 ), block( -26, HALF_WIDTH, Z0 + 16, Z1 ) ] );
+    const seg = makeSegment( [
+        block( -HALF_WIDTH, HALF_WIDTH - 6, Z0, Z0 + 4 ),
+        block( 6 - HALF_WIDTH, HALF_WIDTH, Z0 + 16, Z1 ),
+    ] );
     assert.equal( passableCorridorWidth( seg ), 6 );
 } );
 
 test( 'a block flush to one z-boundary is sampled, not skipped', () => {
-    const front = makeSegment( [ block( -HALF_WIDTH, 28, Z0, Z0 + 2 ) ] );
-    const back = makeSegment( [ block( -HALF_WIDTH, 28, Z1 - 2, Z1 ) ] );
+    const front = makeSegment( [ block( -HALF_WIDTH, HALF_WIDTH - 4, Z0, Z0 + 2 ) ] );
+    const back = makeSegment( [ block( -HALF_WIDTH, HALF_WIDTH - 4, Z1 - 2, Z1 ) ] );
     assert.equal( passableCorridorWidth( front ), 4 );
     assert.equal( passableCorridorWidth( back ), 4 );
 } );
@@ -73,7 +76,7 @@ test( 'floors with a z-extent pinch the corridor to nothing where they stop', ()
 
 test( 'the open centre avoids a lane that is blocked anywhere in the segment', () => {
     const seg = makeSegment( [ block( -HALF_WIDTH, -8, Z0, Z0 + 8 ) ] );
-    assert.equal( openCenterX( seg ), 12 );
+    assert.equal( openCenterX( seg ), ( HALF_WIDTH - 8 ) / 2 );
 } );
 
 test( 'the open centre falls back to the mid slice when no lane threads the whole segment', () => {
@@ -86,5 +89,5 @@ test( 'the open centre is deterministic and inside the rails for varied depths',
     const x = openCenterX( seg );
     assert.equal( x, openCenterX( seg ) );
     assert.ok( Math.abs( x ) <= HALF_WIDTH );
-    assert.equal( x, 22 );
+    assert.equal( x, ( HALF_WIDTH + 12 ) / 2 );
 } );

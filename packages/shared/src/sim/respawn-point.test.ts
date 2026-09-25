@@ -103,7 +103,7 @@ test( 'an open anchor is kept exactly', () => {
 } );
 
 test( 'an anchor past the deck edge is clamped onto the deck', () => {
-    assert.deepEqual( respawnPoint( handTrack( [] ), 40, 210, t ), { x: LIMIT, z: 210 } );
+    assert.deepEqual( respawnPoint( handTrack( [] ), HALF_WIDTH + 8, 210, t ), { x: LIMIT, z: 210 } );
 } );
 
 test( 'a block over the anchor moves the ship to the nearer side of it', () => {

@@ -11,6 +11,7 @@ import {
     FORK_MIN_ARM_U,
     FORK_MIN_SEPARATION_U,
     freezeTrack,
+    HALF_WIDTH,
     legalMask,
     maxColumnStep,
     nearestColumn,
@@ -55,7 +56,7 @@ test( 'a pillar shorter than the reaction distance is a dodge; a long one is a f
 
 test( 'a fractured block opens a conditional region that the base graph lacks', () => {
     const track = syntheticTrack( 8, ( s ) =>
-        s.index === 4 ? { ...s, blocks: [ wall( 4, -32, -10 ), fractured( 4, -10, 10 ) ] } : s,
+        s.index === 4 ? { ...s, blocks: [ wall( 4, -HALF_WIDTH, -10 ), fractured( 4, -10, 10 ) ] } : s,
     );
     const { conditional } = routesOf( track ).routes;
     const hit = conditional.find( ( r ) => r.k0 <= 4 * SEG_LEN && r.k1 >= 5 * SEG_LEN - 1 && r.x0 <= 0 && r.x1 >= 0 );
@@ -68,8 +69,8 @@ test( 'a long lengthwise crack is crossable sideways, not a wall', () => {
             ? {
                   ...s,
                   floors: [
-                      { x0: -32, x1: -1, y: 0 },
-                      { x0: 1, x1: 32, y: 0 },
+                      { x0: -HALF_WIDTH, x1: -1, y: 0 },
+                      { x0: 1, x1: HALF_WIDTH, y: 0 },
                   ],
               }
             : s,
