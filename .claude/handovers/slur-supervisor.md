@@ -38,7 +38,7 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 
 ## Next
 
-1. workerone reports the #258 split SHA → relay. Then the pit round: lower Pit.density, smaller PIT_SIZE / higher PIT_CELLS_U, re-shoot deck/ship/block, owner OK before push.
+1. #258 split LANDED 3b62bc4. workerone is WORKING on the pit round (PIT_CELLS_U 9→12 variant seen ~17:45). Relay its before/after captures to the owner; it commits only on the owner's OK.
 2. Owner answers on #261: keep F and 8u? Refund a mine dropped over a gap (room-combat.ts:47 spends it)? Bigger mine star (it reads small next to its ring)?
 3. Owner answers on #260 audio (4 decisions): the tone split vs AUDIO.md §1 (needs an ADR), option A–G (rec E hybrid), lobby/run music, CC-BY SFX allowed or CC0-only. Audition page: workerthree scratchpad audition/index.html (path in #260). A #260 comment says checkThreat must use proj.dir.
 4. Owner flies: #259 meteor, #261 mine (restart pnpm dev first; shared + schema changed), #262 groove smash blocks.
