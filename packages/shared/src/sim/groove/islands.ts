@@ -1,8 +1,9 @@
-import { CELL, MAX_SHIP_WIDTH } from '../../constants.js';
+import { CELL, FRACTURE_MAX_DEPTH, FRACTURE_MAX_WIDTH, MAX_SHIP_WIDTH } from '../../constants.js';
+import { FRACTURE_SHADOW_Z } from '../fracture-shadow.js';
 import { hash2, mulberry32 } from '../rng.js';
 import { HALF_WIDTH, MIN_LANE, SEG_LEN } from '../space.js';
 import { GROOVE_BEAT_Z, type GrooveBand, pickWeighted } from './grammar.js';
-import type { GrooveEvent, GrooveLine } from './line.js';
+import { GROOVE_MOVE_BEATS, type GrooveEvent, type GrooveLine } from './line.js';
 
 export const ISLAND_CHANCE: Readonly< Record< GrooveBand, number > > = { low: 0.7, mid: 0.85, high: 1 };
 export const ISLAND_WIDTHS = [ CELL, 2 * CELL, 3 * CELL ] as const;
@@ -16,10 +17,13 @@ export const HOLE_DEPTH = SEG_LEN;
 export const HOLE_SPACING_BEATS = 2;
 export const SEP_X = 2 * MIN_LANE;
 export const SEP_Z = 3 * CELL;
+export const SMASH_WIDTH = Math.min( 3 * CELL, FRACTURE_MAX_WIDTH );
+export const SMASH_DEPTH = Math.min( 2 * CELL, FRACTURE_MAX_DEPTH );
+export const SMASH_LEAD = CELL;
 
 const SALT_ISLAND = 0x6e21b4f7 | 0;
 
-export type ObstacleKind = 'island' | 'hole';
+export type ObstacleKind = 'island' | 'hole' | 'smash';
 
 export interface GrooveObstacle {
     kind: ObstacleKind;
@@ -34,10 +38,14 @@ function snapZ( z: number ): number {
     return Math.round( z / CELL ) * CELL;
 }
 
+export function reachZ( o: GrooveObstacle ): number {
+    return o.kind === 'smash' ? o.z1 + FRACTURE_SHADOW_Z : o.z1;
+}
+
 export function conflicts( a: GrooveObstacle, b: GrooveObstacle ): boolean {
     if ( a.kind === 'hole' && b.kind === 'hole' && Math.abs( a.z0 - b.z0 ) < HOLE_SPACING_BEATS * GROOVE_BEAT_Z )
         return true;
-    const zNear = a.z0 < b.z1 + SEP_Z && b.z0 < a.z1 + SEP_Z;
+    const zNear = a.z0 < reachZ( b ) + SEP_Z && b.z0 < reachZ( a ) + SEP_Z;
     const xGap = Math.max( a.x0 - b.x1, b.x0 - a.x1 );
     return zNear && xGap < SEP_X;
 }
@@ -70,13 +78,28 @@ function islandOf( e: GrooveEvent, k: number, rand: () => number ): GrooveObstac
     return { kind: 'island', x0, x1, z0, z1, event: k };
 }
 
+function inOneSegment( z0: number ): number {
+    const segEnd = ( Math.floor( z0 / SEG_LEN ) + 1 ) * SEG_LEN;
+    return z0 + SMASH_DEPTH <= segEnd ? z0 : segEnd;
+}
+
+function smashesOf( e: GrooveEvent, k: number ): GrooveObstacle[] {
+    const x0 = Math.max( -HALF_WIDTH, Math.min( HALF_WIDTH - SMASH_WIDTH, e.to - SMASH_WIDTH / 2 ) );
+    const out: GrooveObstacle[] = [];
+    for ( let z = snapZ( e.z + GROOVE_MOVE_BEATS * GROOVE_BEAT_Z + SMASH_LEAD ); ; z += CELL ) {
+        const z0 = inOneSegment( z );
+        const z1 = z0 + SMASH_DEPTH;
+        if ( z1 + FRACTURE_SHADOW_Z > e.nextZ ) return out;
+        out.push( { kind: 'smash', x0, x1: x0 + SMASH_WIDTH, z0, z1, event: k } );
+    }
+}
+
 export function placeObstacles( line: GrooveLine ): GrooveObstacle[] {
     const placed: GrooveObstacle[] = [];
-    const place = ( o: GrooveObstacle | null ): void => {
-        if ( o === null ) return;
-        if ( line.arenas.some( ( a ) => o.z0 < a.z1 && a.z0 < o.z1 ) ) return;
-        if ( placed.some( ( p ) => conflicts( p, o ) ) ) return;
-        placed.push( o );
+    const fits = ( o: GrooveObstacle ): boolean =>
+        ! line.arenas.some( ( a ) => o.z0 < a.z1 && a.z0 < o.z1 ) && ! placed.some( ( p ) => conflicts( p, o ) );
+    const place = ( o: GrooveObstacle | null | undefined ): void => {
+        if ( o !== null && o !== undefined && fits( o ) ) placed.push( o );
     };
     const rolls = line.events.map( ( _, k ) => mulberry32( hash2( ( line.seed ^ SALT_ISLAND ) | 0, k ) ) );
     line.events.forEach( ( e, k ) => {
@@ -84,6 +107,9 @@ export function placeObstacles( line: GrooveLine ): GrooveObstacle[] {
     } );
     line.events.forEach( ( e, k ) => {
         if ( e.kind === 'strafe' ) place( islandOf( e, k, rolls[ k ] ) );
+    } );
+    line.events.forEach( ( e, k ) => {
+        if ( e.kind === 'strafe' ) place( smashesOf( e, k ).find( fits ) );
     } );
     return placed.sort( ( a, b ) => a.z0 - b.z0 || a.x0 - b.x0 );
 }

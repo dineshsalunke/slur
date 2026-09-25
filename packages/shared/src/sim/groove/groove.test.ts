@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { pickupPower } from '../../combat/pickups.js';
 import { FIXED_DT, type FlightTuning } from '../../constants.js';
 import { freezeTrack } from '../../pacing/grid.js';
 import { rosterPockets, strafeToward } from '../../pacing/pockets.js';
 import { SHIP_CLASSES } from '../../ship-classes.js';
+import { DEFAULT_SIM_CONFIG } from '../../sim-config.js';
 import { openRunsAtSlice, type Run } from '../clearance.js';
+import { shadowHazard } from '../fracture-shadow.js';
 import type { PlayerInput } from '../input.js';
 import { HALF_WIDTH, type Segment, segIndexForZ, type Track } from '../space.js';
 import { simulate } from '../step.js';
 import { procgenDescriptor, resolveTrack } from '../track-provider.js';
-import { spawnShip } from '../types.js';
+import { createSimWorld, spawnShip } from '../types.js';
 import { GROOVE_BANDS, GROOVE_GRAMMAR, jumpChance, switchChance } from './grammar.js';
-import { buildGroove, grooveTrack } from './groove-track.js';
+import { buildGroove, grooveTrack, pickupSalt } from './groove-track.js';
 import type { GrooveEvent } from './line.js';
 import { openSpace, openSpaceFailures } from './open-space.js';
 
@@ -88,6 +91,7 @@ interface Flight {
     finished: boolean;
     deaths: number;
     bumps: number;
+    smashes: number;
 }
 
 type Steer = ( tick: number, s: ReturnType< typeof spawnShip > ) => { target: number; jump: boolean; brake: boolean };
@@ -104,6 +108,7 @@ function edgeCounter(): ( on: boolean ) => number {
 
 function fly( track: Track, t: FlightTuning, steer: Steer ): Flight {
     const s = spawnShip( 0, 0 );
+    const world = createSimWorld();
     const maxTicks = Math.ceil( track.finishZ / ( 0.4 * t.maxCruise ) / FIXED_DT ) + 600;
     const deaths = edgeCounter();
     const bumps = edgeCounter();
@@ -119,11 +124,16 @@ function fly( track: Track, t: FlightTuning, steer: Steer ): Flight {
             strafe: strafeToward( t, plan.target - s.x, s.vx ),
             jump: jumpHold > 0,
         };
-        simulate( s, input, FIXED_DT, t, track );
+        simulate( s, input, FIXED_DT, t, track, DEFAULT_SIM_CONFIG, world );
         deaths( s.dead );
         bumps( s.stunTimer > 0 );
     }
-    return { finished: s.finished, deaths: deaths( s.dead ), bumps: bumps( s.stunTimer > 0 ) };
+    return {
+        finished: s.finished,
+        deaths: deaths( s.dead ),
+        bumps: bumps( s.stunTimer > 0 ),
+        smashes: world.broken.size,
+    };
 }
 
 function avoidPilot( track: Track, t: FlightTuning ): Steer {
@@ -246,9 +256,60 @@ test( 'every class finishes groove seeds with a late-reacting avoidance pilot an
     }
 } );
 
-test( 'the freighter flies the groove line itself with no death and no bump', () => {
+test( 'the freighter flies the groove line itself with no death and no bump, smashing through fractured blocks', () => {
+    let smashed = 0;
+    let placed = 0;
     for ( const seed of SEEDS ) {
+        const smashes = buildGroove( seed, LENGTH ).obstacles.filter( ( o ) => o.kind === 'smash' ).length;
         const f = fly( cached( grooveTrack( seed, LENGTH ) ), SHIP_CLASSES.freighter.tuning, linePilot( seed ) );
-        assert.deepEqual( f, { finished: true, deaths: 0, bumps: 0 }, `seed ${ seed }` );
+        assert.deepEqual(
+            { ...f, smashes: 0 },
+            { finished: true, deaths: 0, bumps: 0, smashes: 0 },
+            `seed ${ seed }: ${ JSON.stringify( f ) }`,
+        );
+        assert.ok( f.smashes >= 1 && f.smashes <= smashes, `seed ${ seed }: smashed ${ f.smashes } of ${ smashes }` );
+        smashed += f.smashes;
+        placed += smashes;
     }
+    assert.ok( smashed >= 0.5 * placed, `the line met ${ smashed } of ${ placed } fractured blocks` );
+} );
+
+function fracturedWithShadow( track: Track ): [ number, number ] {
+    const segs = Array.from( { length: LENGTH }, ( _, i ) => track.segmentAt( i ) );
+    let fractured = 0;
+    let clear = 0;
+    for ( const seg of segs )
+        for ( const b of seg.blocks ) {
+            if ( b.kind !== 'fractured' ) continue;
+            fractured++;
+            if ( shadowHazard( b, segs ) === null ) clear++;
+        }
+    return [ fractured, clear ];
+}
+
+test( 'every groove seed emits fractured blocks, each with a clear shadow', () => {
+    const counts: number[] = [];
+    for ( const seed of SEEDS ) {
+        const [ fractured, clear ] = fracturedWithShadow( cached( grooveTrack( seed, LENGTH ) ) );
+        assert.equal( clear, fractured, `seed ${ seed }: a fractured block has a hazard in its shadow` );
+        counts.push( fractured );
+    }
+    counts.sort( ( a, b ) => a - b );
+    assert.ok( counts[ 0 ] >= 5, `min ${ counts[ 0 ] }` );
+    assert.ok( counts[ counts.length >> 1 ] >= 15, `median ${ counts[ counts.length >> 1 ] }` );
+} );
+
+test( 'groove pickup ids are unique, stable, and deal a different power order per seed', () => {
+    const orders = new Set< string >();
+    for ( const seed of SEEDS ) {
+        const ids = grooveTrack( seed, LENGTH ).anchors.map( ( a ) => a.id );
+        assert.equal( new Set( ids ).size, ids.length, `seed ${ seed }: duplicate pickup id` );
+        assert.deepEqual(
+            ids,
+            grooveTrack( seed, LENGTH ).anchors.map( ( a ) => a.id ),
+        );
+        assert.ok( ids.every( ( id ) => id.endsWith( `.${ pickupSalt( seed ) }` ) ) );
+        orders.add( ids.map( ( id ) => pickupPower( id ) ).join( '' ) );
+    }
+    assert.ok( orders.size >= SEEDS.length - 1, `${ orders.size } distinct power orders over ${ SEEDS.length } seeds` );
 } );

@@ -16,23 +16,29 @@ import {
     emptyInput,
     FIXED_DT,
     HeldPower,
+    MAX_SHIP_WIDTH,
     PHASE,
     PICKUP_RESPAWN_S,
     type PlayerInput,
     type PlayerState,
     POWER_SLOTS,
     pickupLayout,
+    pickupPower,
     ROOM_NAME,
     resolveTrack,
     SEEKER_HIT_MESSAGE,
     SEEKER_MISS_MESSAGE,
     START_MESSAGE,
     STUN_SECONDS,
+    segIndexForZ,
     TRACK_SEGMENTS,
+    type Track,
     toDescriptor,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { RunRoom } from './run-room.js';
+
+const AIM_BACK = 5;
 
 interface FixedStepRoom {
     fixedStep( dt: number ): void;
@@ -306,10 +312,22 @@ describe( 'RunRoom combat', () => {
         assert.equal( room.state.seekers.size, 0, 'a drop fires no seeker' );
     } );
 
+    function approachClear( track: Track, b: Block ): boolean {
+        const x = ( b.x0 + b.x1 ) / 2;
+        const z0 = b.z0 - AIM_BACK - MAX_SHIP_WIDTH;
+        for ( let i = segIndexForZ( z0 ); i <= segIndexForZ( b.z0 ); i++ ) {
+            for ( const o of track.segmentAt( i ).blocks ) {
+                if ( o.id === b.id ) continue;
+                if ( o.x0 < x + MAX_SHIP_WIDTH && o.x1 > x - MAX_SHIP_WIDTH && o.z0 < b.z0 && o.z1 > z0 ) return false;
+            }
+        }
+        return true;
+    }
+
     function firstBlock( room: RunRoom, kind: Block[ 'kind' ] ): Block {
         const track = resolveTrack( toDescriptor( room.state.descriptor ) );
         for ( let i = 0; i < TRACK_SEGMENTS; i++ ) {
-            const b = track.segmentAt( i ).blocks.find( ( x ) => x.kind === kind );
+            const b = track.segmentAt( i ).blocks.find( ( x ) => x.kind === kind && approachClear( track, x ) );
             if ( b ) return b;
         }
         assert.fail( `the seeded track has no ${ kind } block` );
@@ -318,7 +336,7 @@ describe( 'RunRoom combat', () => {
     function aimAt( room: RunRoom, sessionId: string, b: Block ): void {
         const shooter = playerOf( room, sessionId );
         shooter.x = ( b.x0 + b.x1 ) / 2;
-        shooter.z = b.z0 - 5;
+        shooter.z = b.z0 - AIM_BACK;
         arm( shooter, HeldPower.bolt );
     }
 
@@ -377,7 +395,7 @@ describe( 'RunRoom combat', () => {
 
         tick( room, FIXED_DT );
 
-        assert.deepEqual( rack( racer ), [ HeldPower.seeker, HeldPower.bolt, HeldPower.none ] );
+        assert.deepEqual( rack( racer ), [ HeldPower.seeker, pickupPower( pickup.id ), HeldPower.none ] );
         assert.equal( room.state.pickupTaken.get( pickup.id ), true, 'the grabbed pickup hides' );
     } );
 

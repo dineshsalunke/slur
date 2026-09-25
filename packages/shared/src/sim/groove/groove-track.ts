@@ -1,4 +1,5 @@
 import { openCenterX } from '../clearance.js';
+import { hash2 } from '../rng.js';
 import { segmentsTrack } from '../score/emit.js';
 import {
     type Anchor,
@@ -19,6 +20,12 @@ import { type GrooveObstacle, placeObstacles } from './islands.js';
 import { composeGroove, type GrooveLine, grooveLineX } from './line.js';
 
 export const PICKUP_CLEAR = 2;
+
+const SALT_PICKUP_ID = 0x51c7e02b | 0;
+
+export function pickupSalt( seed: number ): string {
+    return ( hash2( ( seed ^ SALT_PICKUP_ID ) | 0, 0 ) >>> 0 ).toString( 36 );
+}
 
 export interface GrooveBuild {
     line: GrooveLine;
@@ -80,10 +87,10 @@ function segmentOf( i: number, obstacles: readonly GrooveObstacle[] ): Segment {
     const here = obstacles.map( ( o ) => clipZ( o, z0, z1 ) ).filter( ( o ) => o !== null );
     const holes = here.filter( ( o ) => o.kind === 'hole' );
     const blocks: Block[] = here
-        .filter( ( o ) => o.kind === 'island' )
+        .filter( ( o ) => o.kind !== 'hole' )
         .map( ( o, k ) => ( {
             id: blockId( i, k ),
-            kind: 'sealed',
+            kind: o.kind === 'smash' ? 'fractured' : 'sealed',
             x0: o.x0,
             x1: o.x1,
             y0: 0,
@@ -112,10 +119,11 @@ export function buildGroove( seed: number, length: number = TRACK_SEGMENTS ): Gr
     const obstacles = placeObstacles( line );
     const segments = Array.from( { length }, ( _, i ) => segmentOf( i, obstacles ) );
     const anchors: Anchor[] = [];
+    const salt = pickupSalt( seed );
     for ( let i = START_SAFE; i < length; i += PICKUP_SPACING ) {
         const z = i * SEG_LEN + SEG_LEN / 2;
         anchors.push( {
-            id: String( i ),
+            id: `${ i }.${ salt }`,
             kind: 'pickup',
             x: pickupX( segments[ i ], grooveLineX( line, z ), z, obstacles ),
             y: 0,
