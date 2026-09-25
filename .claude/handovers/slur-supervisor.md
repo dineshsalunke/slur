@@ -40,7 +40,9 @@ after /clear often shows the old percent, so read again.
 
 ## Next
 
-0. workerthree (f1669e1): the sync merge 277396f is clean and green, so the supervisor told it to PUSH (~08:25). #195 is SEMANTIC: rail bounce is dead after
+0. SYNC DONE ~08:35: workerthree pushed 277396f. The supervisor merged origin/dev into the shared dev and pushed; dev == origin/dev.
+   workerthree is idle (6335e0f). If the owner's dev stack acts up, restart `pnpm dev` (new scene files came in).
+   Earlier: workerthree (f1669e1) found the sync merge 277396f clean and green. #195 is SEMANTIC: rail bounce is dead after
    fc65986 (ships fall off edges), banking writes to the deleted dev/tunables.ts, engine bloom was tuned before threshold 0.6.
    Owner options A (drop the rail bounce), B (port only the engine glow and retune it for 0.6), C (close #195). Relayed. refs/remotes/pr/195 is kept.
    ../slur-worktrees/merge-195 belongs to workerfour (stale); ask whether to remove it.
