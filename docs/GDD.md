@@ -335,7 +335,7 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Ingredient | Status | Notes |
 |---|---|---|
 | Throttle · brake · coast · cruise cap | **LIVE** | player-controlled speed (§5.1) |
-| Strafe (analog, drifty→snappy) + corridor walls | **LIVE** | walls stop+slide, non-lethal |
+| Strafe (analog, drifty→snappy) + open deck edges | **LIVE** | no side wall: a ship that strafes past the deck edge falls, like at a gap edge (same footprint rule, strafe back to land mid-fall); a fall is a death with respawn on the deck (fc65986) |
 | Jump — variable (tap/hold) + double + coyote/buffer | **LIVE** | derived from a jump-feel spec (GDC "Building a Better Jump") |
 | Track — deterministic from a descriptor; **rhythm-paced generator** (ADR-006): arrangement envelope + discrete slalom/flick + varied gaps | **LIVE** | plain / block / gap / finish; fairness caps asserted in `sim/track.test.ts` |
 | Hazards + collision — **AABB** (footprint = model box), swept land + swept body-bounce | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable), hit = bounce + stun (ADR-014); generous grounded rule; WYSIWYG |
