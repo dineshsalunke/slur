@@ -1,78 +1,69 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~11:00 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~11:45 IST
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. Clear and resume steps: memory `supervisor-clears-workers-via-herdr.md`.
 Standing approval to clear workers at a seam. Grep the status line with `│ [█░]* [0-9]*%`; the first read
-after /clear often shows the old percent, so read again.
+after /clear often shows the old percent, so read again. Clear a worker before assigning if it is past 10%.
 
 ## Standing owner decisions
 
 - Engine light: ACCEPTED as is (2026-09-25).
+- Strafe tap kick: option 2 (stateless kick floor). Owner: "feels better now". Kicks 50/42/34/38/33 (e82cadf).
+  Comet is capped at 34: kick ≥36 fails note-move.test.ts step1 (damp 14.4 overshoot). More Comet kick needs more grip.
+- The width trial worktree ../slur-worktrees/width-80 is OWNER-APPROVED.
+- Workers commit to LOCAL dev by explicit pathspec without asking, and push dev to origin.
+- The song work is a lens, not a rhythm game. Never propose audio re-sync or timing scores.
+- Freighter-only while experimenting.
 
-- Workers commit to LOCAL dev by explicit pathspec without asking. The owner approved pushing dev to origin
-  this morning ("merge them on dev and then sync everything").
-- The song work is a lens, not a rhythm game (memory `song-tracks-are-a-throwaway-experiment.md`, 82137b9).
-  Never propose audio re-sync or timing scores.
-- Freighter-only while experimenting. Other classes come after a good result.
+## Done today (2026-09-25)
 
-## What happened (2026-09-24 night → 09-25 morning)
-
-- Song lab: the freighter sync worked (live drift ≤16 ms). `conductor` variant db8cd1e. Then the owner said "this is
-  not really working out". EVERYTHING removed from dev at 9388a67 (71 files), including /tapper and the
-  c3d2a63 curve revert (score sha 62f2711c unchanged). Archived on LOCAL branch `archive/song-lab` (b64766f),
-  not pushed; the owner has not said whether to push it.
-- matchmaking.test.ts stale fixture fixed c0a7a90 (workertwo).
-- /beat-deck v1 1ab0a3f (workerone): an empty deck; the owner flies to an mp3; takes are written to
-  apps/client/.songs/takes/. Believer mp3 + imgaine_dragons-believer.analysis.json are kept. A bot take
-  (…2026-09-24T19-21…) is still there; delete it before any analysis.
-- The supervisor analysed the owner's 4 takes (jq; scripts in the old session scratchpad, gone): strafe every 2 beats
-  (then 1), 70–80% L/R alternation, holds of 0.5–1 beat, jumps on the beat (−10..−16 ms), strafes 40–100 ms early,
-  take 4 tightest. The owner will record new songs later. The beat-analysis script lives only on archive/song-lab.
+- #195 ported (0c8594b banking, 9d45eb3 engine glow, c71634e GDD). PR closed.
+- #255 groove generator (20c9e02). /test-level defaults to groove; ?gen=weave compares.
+- #256 strafe tap kick (0c904de), then the raise (e82cadf). Both are pushed.
+- Materials traced (workertwo 8d87851, workerone 279152c).
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | MONOLITH MATERIAL fix, PLAN FIRST. Owner screenshot: monolith texture looks scaled (blotchy tan, stretched) + colours wrong (warm, not cool blue-grey). Plan = fix UV/texel density + restore pre-#230 lights/finish (option A) | dispatched ~10:30 | none yet |
-| workerthree | w2P:pG | none (#256 tap kick DONE 0c904de, pushed; dev == origin/dev 4e93085) | idle | none |
-| workertwo | w2P:pF | TRACK WIDTH 64→80: audit + trial in OWNER-APPROVED worktree ../slur-worktrees/width-80, second stack :5174/:2568 for side-by-side. Unify HALF_WIDTH + FlightTuning.halfWidth. Nothing lands on dev until the owner flies it | dispatched ~11:00 after /clear | worktree only |
-| workerfour | w2P:pH | #256 kick raise: 50/42/34/38/33 (Comet capped 34: kick ≥36 fails note-move.test.ts step1, damp 14.4 overshoot) | committing/pushing | ship-classes.ts, docs/GDD.md Kick column |
+| workerone | w2P:pD | #? MONOLITH MATERIAL fix (plan 279152c). Cause: d9b7227 ROWS=1 → TEX_SPAN_Z 4u; walls divide V by 16u → 4× stretch. Plan: walls use TEX_SPAN_Z (option A) + restore pre-#230 colours | PLAN relayed, WAITING ON OWNER | claims pending: scene/{monolith-geometry(.test).ts, sealed-block-shader.ts, fractured-block-shader.ts, deck-finish.ts, track-blocks.tsx, track-geometry.ts, metal.ts, nebula-presets.ts}, dev/tuning-schema.ts, docs/ART_MATERIALS.md, docs/ADD.md |
+| workertwo | w2P:pF | #257 width 80 trial | CLEARED at seam (3553a3b). Its 80u stack is STILL RUNNING for the owner | worktree ../slur-worktrees/width-80, branch feat/width-80 (fef094f, 7266c68), not pushed |
+| workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
+| workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
+
+## Width-80 trial (#257), from workertwo 3553a3b
+
+- Stack: client http://localhost:5174 (PID 94656), server :2568 (PID 94657), pnpm parent 94568. Kill with
+  `kill 94568 94656 94657` when the owner is done. :5173 is the 64u baseline; the main tree is clean now.
+- fef094f unifies the width: FlightTuning.halfWidth is removed. 7266c68 sets HALF_WIDTH 40. All gates green.
+- Groove 64 → 80, 30 seeds × 5 classes: 150/150 both; bumps 41 → 29; open floor 98.0 → 98.4%; widest run 61 → 76u;
+  obstacles per area −20%. Weave block count scales with LANES: +29% blocks per km, harder. Deck-edge exposure falls at 80.
+- Camera [inferred]: the rails enter the frame ~11u ahead at 64u and ~18u ahead at 80u.
+- Owner decisions: 80 or 72; weave density per metre or per area. Then rebase, update GDD §0 (line 81), merge.
 
 ## Next
 
-0a. ~08:45 OWNER: groove plan APPROVED (all recommendations) → workerone building, claims cleared. archive/song-lab
-    PUSHED to origin (b64766f). #195: the OWNER CHOSE A (keep banking + the engine glow, drop the rail bounce). workerthree
-    dispatched ~08:55 to port by hand onto dev, fix GDD.md:338, push, close #195 with a comment, and delete the pr ref. Its claims are pending.
-0. SYNC DONE ~08:35: workerthree pushed 277396f. The supervisor merged origin/dev into the shared dev and pushed; dev == origin/dev.
-   workerthree is idle (6335e0f). If the owner's dev stack acts up, restart `pnpm dev` (new scene files came in).
-   Earlier: workerthree (f1669e1) found the sync merge 277396f clean and green. #195 is SEMANTIC: rail bounce is dead after
-   fc65986 (ships fall off edges), banking writes to the deleted dev/tunables.ts, engine bloom was tuned before threshold 0.6.
-   Owner options A (drop the rail bounce), B (port only the engine glow and retune it for 0.6), C (close #195). Relayed. refs/remotes/pr/195 is kept.
-   ../slur-worktrees/merge-195 belongs to workerfour (stale); ask whether to remove it.
-1. When workerthree reports the push: check `git status` in the shared tree. When the index is clean,
-   `git merge --ff-only origin/dev` in the shared checkout (never while a worker has staged files). Confirm that
-   `gh pr view 195` shows it merged. Tell the owner.
-2. workerone's 'groove' TrackGen plan (~08:15) has been RELAYED to the owner. Waiting on (i) the name, (ii) high energy = fewer strafes + more jumps,
-   (iii) partial vs full-width gaps (supervisor recommends partial), (iv) /test-level default vs ?gen=groove. On approval, clear its
-   claims (new packages/shared/src/sim/groove/**, space.ts, track.ts, test-level-canvas.tsx, beat-deck/extract-grammar.mjs).
-   Check test-level-canvas.tsx does not collide with workerthree's #195 merge first.
-3. Ask the owner: push archive/song-lab?
+1. OWNER, materials: (1) plates option A (walls match the deck, recommended) or B (restore 4×16 deck plates)?
+   (2) hulls back to blue-grey or a split hull colour? (3) rocks back to grey too? On the answers, clear workerone's
+   claims above. It files an issue first.
+2. OWNER, meteors: "too many comets falling, too cluttered". Meteor.chance 0.65 × STRIKE_SPACING 220 ≈ 1 strike / 2.7 s at
+   cruise 124. Proposed default 0.2 (≈ 9 s). The owner may try the live knob first. tuning-schema.ts is in workerone's
+   claim, so fold the new default into its lane.
+3. OWNER, width: fly :5174 against :5173, then choose 80/72 + weave density. Assign the merge to a fresh worker (workerthree
+   after /clear, or workerfour). Kill the 80u stack afterwards.
 
 ## Open owner questions
 
-- Which surfaces look wrong in the materials regression?
-- Tap kick distance: default 4u on a 100 ms freighter tap, owner may retune.
-
-- Push archive/song-lab?
+- The three material questions, the meteor rate, and the width choice (above).
+- Push archive/song-lab? (It was pushed at ~08:45 — b64766f is on origin. Closed.)
 - #254 class roles (later). #244 FRACTURE_RATE raise? #251 device check. Score rooms have no pickups.
 - Older: `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
 
 ## Owner's dev stack
 
-The previous supervisor session started `pnpm dev` at ~21:39 (server pid 85262, :2567; client :5173). It was still
-serving at 07:40.
+The main stack: server :2567 (PID 74300, started 08:52), client :5173 (PID 85264). The owner restarts it to pick up shared changes.
 
 ## Uncommitted
 
@@ -80,4 +71,4 @@ none of mine. docs/art-direction/* changes are ChatGPT's; never touch them.
 
 ## Lessons → memory
 
-song-tracks-are-a-throwaway-experiment.md updated (82137b9).
+none this seam.
