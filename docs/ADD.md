@@ -143,7 +143,12 @@ cosmetic and client-side — ADR-002 clean). This is the single highest-leverage
 ## 5. VFX (the juice)
 - **Bloom** (postprocessing EffectComposer) — the signature. Emissive materials + selective bloom on ships/pickups/track lines. See `conventions/r3f.md`.
 - **Speed cues:** motion streaks, FOV/camera-shake on boost, star/grid parallax, chromatic aberration ramp with speed.
-- **Combat VFX:** **(S5 built)** marigold bolt tracers with an Energy Glow head (instanced+interpolated), marigold hit-spark burst (additive HDR, bolt hits and block bounces), on-ship stun-flicker. **Planned:** shield shimmer, mine pulse, hit-spin, ship light-trails.
+- **Combat VFX:** **(S5 built)** marigold bolt tracers with an Energy Glow head (instanced+interpolated), marigold hit-spark burst (additive HDR, bolt hits and block bounces), on-ship stun-flicker. **(#261 built)** the mine: a spiked graphite pickup with a marigold seam glyph
+  and a hot core; a laid mine is a 6-sided puck with an emissive core and a floor decal of six spokes
+  and a ring at the 3u trigger radius. It glows dim while it arms, then pulses at 1.2 Hz once armed
+  (per-instance colour, phase-offset per mine). Every burst draws an expanding ring; a bolt clear also
+  throws a hit-spark. A back bolt's streak turns round and sheds embers toward +z. Look numbers:
+  `apps/client/app/game/scene/mine-look.ts`. **Planned:** shield shimmer, hit-spin, ship light-trails.
 - **Trails:** each ship leaves a fading light-trail in its hue (identity + speed read).
 - VFX are **client-local** (not networked) — driven by ECS/game events. See TDD §5.
 

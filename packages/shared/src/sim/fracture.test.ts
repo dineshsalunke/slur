@@ -170,7 +170,7 @@ test( 'replaying the same inputs over a fresh world reproduces the smash exactly
 } );
 
 function bolt( x: number, z: number ): ProjectileState {
-    return { x, y: 0, z, ownerId: 'a', ttl: 1 };
+    return { x, y: 0, z, ownerId: 'a', ttl: 1, dir: 1 };
 }
 
 test( 'a swept bolt finds the nearest standing block it crossed', () => {

@@ -3,6 +3,7 @@ import {
     BOUNCE_MESSAGE,
     type BounceMessage,
     INPUT_MESSAGE,
+    MINE_BURST_MESSAGE,
     type PlayerState,
     type ProjectileState,
     type RunState,
@@ -20,6 +21,7 @@ import {
     Interp,
     LocalPlayer,
     Net,
+    NetMine,
     NetProjectile,
     NetSeeker,
     Prev,
@@ -31,6 +33,7 @@ import {
 } from '../game/ecs/traits';
 import { settleSlot } from '../game/input/power-select';
 import { pushHit } from '../game/scene/hit-events';
+import { burstMine } from '../game/scene/mine-shock-events';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
 
@@ -107,6 +110,8 @@ export function attachRoomToWorld(
     const perPlayer = new Map< string, () => void >();
     const perProjectile = new Map< string, () => void >();
     const perSeeker = new Map< string, () => void >();
+    const mineById = new Map< string, Entity >();
+    const perMine = new Map< string, () => void >();
 
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
         runPhase.value = v;
@@ -153,7 +158,7 @@ export function attachRoomToWorld(
     } );
 
     const offProjAdd = $( room.state ).projectiles.onAdd( ( proj, id ) => {
-        const e = world.spawn( ProjInterp, NetProjectile );
+        const e = world.spawn( ProjInterp, NetProjectile( { dir: proj.dir } ) );
         projById.set( id, e );
         pushProjectile( e, proj );
         const offProjChange = $( proj ).onChange( () => {
@@ -194,6 +199,26 @@ export function attachRoomToWorld(
         }
     } );
 
+    const offMineAdd = $( room.state ).mines.onAdd( ( m, id ) => {
+        const e = world.spawn( NetMine( { x: m.x, y: m.y, z: m.z, armed: m.armed } ) );
+        mineById.set( id, e );
+        perMine.set(
+            id,
+            $( m ).listen( 'armed', ( armed ) =>
+                mineById.get( id )?.set( NetMine, { x: m.x, y: m.y, z: m.z, armed } ),
+            ),
+        );
+    } );
+
+    const offMineRemove = $( room.state ).mines.onRemove( ( _m, id ) => {
+        perMine.get( id )?.();
+        perMine.delete( id );
+        mineById.get( id )?.destroy();
+        mineById.delete( id );
+    } );
+
+    const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, burstMine );
+
     const offBreak = $( room.state ).blockBroken.onAdd( ( _v, key ) => confirmBreak( Number( key ) ) );
     const offUnbreak = $( room.state ).blockBroken.onRemove( ( _v, key ) => unconfirmBreak( Number( key ) ) );
 
@@ -220,22 +245,25 @@ export function attachRoomToWorld(
         offProjRemove();
         offSeekerAdd();
         offSeekerRemove();
+        offMineAdd();
+        offMineRemove();
+        offMineBurst();
         offHit();
         offBounce();
         offBreak();
         offUnbreak();
         clearBlockState();
-        for ( const off of perPlayer.values() ) off();
-        for ( const off of perProjectile.values() ) off();
-        for ( const off of perSeeker.values() ) off();
-        for ( const e of byId.values() ) e.destroy();
-        for ( const e of projById.values() ) e.destroy();
-        for ( const e of seekerById.values() ) e.destroy();
-        perPlayer.clear();
-        perProjectile.clear();
-        perSeeker.clear();
-        byId.clear();
-        projById.clear();
-        seekerById.clear();
+        for ( const offs of [ perPlayer, perProjectile, perSeeker, perMine ] ) drainOffs( offs );
+        for ( const entities of [ byId, projById, seekerById, mineById ] ) destroyAll( entities );
     };
+}
+
+function drainOffs( offs: Map< string, () => void > ): void {
+    for ( const off of offs.values() ) off();
+    offs.clear();
+}
+
+function destroyAll( entities: Map< string, Entity > ): void {
+    for ( const e of entities.values() ) e.destroy();
+    entities.clear();
 }

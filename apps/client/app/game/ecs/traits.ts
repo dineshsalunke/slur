@@ -32,7 +32,7 @@ export interface Snapshot {
 }
 export const Interp = trait( () => ( { buffer: [] as Snapshot[] } ) );
 
-export const NetProjectile = trait();
+export const NetProjectile = trait( { dir: 1 } );
 
 export interface ProjSnapshot {
     t: number;
@@ -43,5 +43,7 @@ export interface ProjSnapshot {
 export const ProjInterp = trait( () => ( { buffer: [] as ProjSnapshot[] } ) );
 
 export const NetSeeker = trait( { ownerId: '', targetId: '' } );
+
+export const NetMine = trait( { x: 0, y: 0, z: 0, armed: false } );
 
 export const SeekerTrail = trait( makeSeekerTrail );

@@ -70,7 +70,7 @@ function ship( id: string, over: Partial< SeekerShip > = {} ): SeekerShip {
 }
 
 function launched( targetId: string, over: Partial< SeekerState > = {}, cfg = DEFAULT_SIM_CONFIG ): SeekerState {
-    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false };
+    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false, dir: 1 };
     aimSeeker( s, { x: 0, y: 0, z: 0, vz: 55 }, 'me', targetId, cfg );
     return Object.assign( s, over );
 }
@@ -102,6 +102,60 @@ test( 'lock picks the nearest living racer ahead within range', () => {
     ];
     assert.equal( lockTarget( { x: 0, z: 0 }, 'me', ships, OPEN, new Set() ), 'near' );
     assert.equal( lockTarget( { x: 0, z: 0 }, 'me', [ ships[ 0 ], ships[ 1 ] ], OPEN, new Set() ), '' );
+} );
+
+test( 'a back lock picks the nearest living racer behind and ignores the racers ahead', () => {
+    const cfg = DEFAULT_SIM_CONFIG;
+    const ships = [
+        ship( 'me', { z: 500 } ),
+        ship( 'ahead', { z: 510 } ),
+        ship( 'far', { z: 100 } ),
+        ship( 'near', { z: 350 } ),
+        ship( 'dead', { z: 490, dead: true } ),
+        ship( 'beyond', { z: 500 - cfg.seekerLockRange - 1 } ),
+    ];
+    assert.equal( lockTarget( { x: 0, z: 500 }, 'me', ships, OPEN, new Set(), cfg, -1 ), 'near' );
+    assert.equal( lockTarget( { x: 0, z: 500 }, 'me', [ ships[ 0 ], ships[ 1 ] ], OPEN, new Set(), cfg, -1 ), '' );
+} );
+
+test( 'a seeker fired back launches behind the shooter from rest and ramps to top speed toward -z', () => {
+    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false, dir: 1 };
+    aimSeeker( s, { x: 0, y: 0, z: 500, vz: 90 }, 'me', '', DEFAULT_SIM_CONFIG, -1 );
+    assert.deepEqual( [ s.z, s.vz, s.dir ], [ 500 - 3, 0, -1 ] );
+    let out: SeekerOutcome = 'flying';
+    for ( let i = 0; i < 60 && out === 'flying'; i++ ) out = stepSeeker( s, [], OPEN, new Set(), FIXED_DT );
+    assert.equal( out, 'flying' );
+    assert.equal( s.vz, -seekerTopSpeed() );
+    assert.ok( s.z < 500 - 100 );
+} );
+
+test( 'a seeker fired back homes on a strafing racer behind and hits it', () => {
+    const t = ship( 't', { z: 200, vz: 90 } );
+    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false, dir: 1 };
+    aimSeeker( s, { x: 0, y: 0, z: 500, vz: 90 }, 'me', 't', DEFAULT_SIM_CONFIG, -1 );
+    assert.equal(
+        fly( s, t, ( _s, ship ) => ( ship.x < 12 ? 20 : 0 ) ),
+        'hit',
+    );
+} );
+
+test( 'a seeker fired back misses when its target jumps over it', () => {
+    const t = ship( 't', { z: 200, vz: 90, y: 3 } );
+    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false, dir: 1 };
+    aimSeeker( s, { x: 0, y: 0, z: 500, vz: 90 }, 'me', 't', DEFAULT_SIM_CONFIG, -1 );
+    assert.equal( fly( s, t, still ), 'miss' );
+} );
+
+test( 'a seeker fired back is destroyed by a block between it and its target', () => {
+    const wall = block( 15, -4, 4 );
+    const track = trackWith( [ wall ] );
+    const t = ship( 't', { z: 200, vz: 0 } );
+    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false, dir: 1 };
+    aimSeeker( s, { x: 0, y: 0, z: 500, vz: 90 }, 'me', 't', DEFAULT_SIM_CONFIG, -1 );
+    let out: SeekerOutcome = 'flying';
+    for ( let i = 0; i < 600 && out === 'flying'; i++ ) out = stepSeeker( s, [ t ], track, new Set(), FIXED_DT );
+    assert.equal( out, 'blocked' );
+    assert.ok( s.z < wall.z1 + 1 + seekerTopSpeed() * FIXED_DT );
 } );
 
 test( 'a standing block hides a racer; a broken one does not', () => {
@@ -206,7 +260,7 @@ test( 'a tap jump does not clear the band', () => {
 test( 'it flies at fly height, even when fired mid-jump, and drops to strike height before impact', () => {
     const cfg = DEFAULT_SIM_CONFIG;
     const t = ship( 't', { z: 300 } );
-    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false };
+    const s: SeekerState = { x: 0, y: 0, z: 0, vz: 0, ownerId: '', targetId: '', ttl: 0, committed: false, dir: 1 };
     aimSeeker( s, { x: 0, y: 3, z: 0, vz: 55 }, 'me', 't' );
     let out: SeekerOutcome = 'flying';
     while ( out === 'flying' ) {

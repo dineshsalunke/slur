@@ -3,7 +3,11 @@ import { useQueryFirst, useTrait } from 'koota/react';
 import { Held, LocalPlayer } from '../ecs/traits';
 import { useSelectedSlot } from '../input/power-select';
 
-const LABEL: Record< number, string > = { [ HeldPower.bolt ]: 'Bolt', [ HeldPower.seeker ]: 'Seeker' };
+const LABEL: Record< number, string > = {
+    [ HeldPower.bolt ]: 'Bolt',
+    [ HeldPower.seeker ]: 'Seeker',
+    [ HeldPower.mine ]: 'Mine',
+};
 
 export function PowerCell( { slot }: { slot: number } ) {
     const ship = useQueryFirst( LocalPlayer );

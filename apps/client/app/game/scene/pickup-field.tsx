@@ -2,6 +2,7 @@ import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import { pickupsOf, type RunState, type Track } from '@slur/shared';
 import { Fragment, useEffect, useMemo } from 'react';
 import { BoltPickups } from './bolt-pickups';
+import { MinePickups } from './mine-pickups';
 import { SeekerPickups, splitPickupLayout } from './seeker-pickups';
 
 export function PickupField( { room, track }: { room: Room< RunState >; track: Track } ) {
@@ -32,6 +33,7 @@ export function PickupField( { room, track }: { room: Room< RunState >; track: T
         <Fragment>
             <BoltPickups layout={ layout.bolts } isTaken={ isTaken } />
             <SeekerPickups layout={ layout.seekers } isTaken={ isTaken } />
+            <MinePickups layout={ layout.mines } isTaken={ isTaken } />
         </Fragment>
     );
 }

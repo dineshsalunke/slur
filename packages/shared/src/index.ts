@@ -1,5 +1,7 @@
 export * from './combat/combat-step.js';
 export * from './combat/constants.js';
+export * from './combat/fire-dir.js';
+export * from './combat/mine.js';
 export * from './combat/pickups.js';
 export * from './combat/projectiles.js';
 export * from './combat/seeker.js';

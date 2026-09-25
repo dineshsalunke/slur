@@ -4,7 +4,7 @@ import { localCombat } from './local-combat';
 
 function collect( sink: BoltSink ): void {
     for ( const bolt of localCombat.bolts.values() ) {
-        sink( bolt.x, bolt.y, bolt.z, ( BOLT_TTL - bolt.ttl ) * BOLT_SPEED + BOLT_SPAWN_AHEAD );
+        sink( bolt.x, bolt.y, bolt.z, ( BOLT_TTL - bolt.ttl ) * BOLT_SPEED + BOLT_SPAWN_AHEAD, bolt.dir );
     }
 }
 

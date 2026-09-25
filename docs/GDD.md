@@ -215,13 +215,34 @@ racer skips the pickup, and the pickup stays. A dropped power is gone (ADR-017 a
 | Type | Example | Effect |
 |------|---------|--------|
 | Offensive | **Bolt** | Fire forward; hit ship = stun/knock/brief loss of control |
-| Offensive | **Mine** | Drop behind; trailing ship that hits it is disrupted |
+| Offensive | **Mine** | Lay on the deck; the next rival that drives over it is stunned and slowed |
 | Defensive | **Shield** | Absorb one hit for a few seconds |
 | Utility | **Boost** | Burst of speed |
 | Utility | **Warp/Blink** | Short teleport/dodge (also SkyRoads-y gap crosser) |
 | Chaos | **Scramble** | Invert/blur a nearby rival's controls or view briefly |
 
-*OPEN: full roster + cooldowns. **S5 resolved:** v1 roster = **Bolt** (fire→stun); **three slots** (#223, replaces the single held slot); owner-immune only — everyone else is a target (teams / friendly-fire are a later mode). Mine/Shield/Boost = fast-follows.*
+*OPEN: full roster + cooldowns. **S5 resolved:** v1 roster = **Bolt** (fire→stun); **three slots** (#223, replaces the single held slot); owner-immune only — everyone else is a target (teams / friendly-fire are a later mode). Shield/Boost = fast-follows.*
+
+**Fire forward or back (#261, built).** Every power can go either way. **E** fires forward, **F** fires
+back. The gamepad uses **B** for back, and the touch pad has a **Back** button. A back bolt flies −z. A
+back seeker locks onto the nearest rival behind, launches at 0 u/s and ramps to top speed toward −z.
+The owner still has to confirm F as the back key.
+
+**Mine (#261, built).** A pickup gives a Mine in about 1 in 5 pickups (`MINE_RATIO` = 0.2).
+
+- **Lay.** Forward puts the mine **8u** ahead of the nose (`MINE_DROP_AHEAD`), so you can mine the
+  line you are on. Back puts it at the ship's own z, for the rivals behind you. The mine sits on the
+  floor under that point. Over a gap there is no floor, so no mine is laid and the power is lost.
+- **Arm.** A mine arms **0.5 s** after it is laid (`MINE_ARM_S`). Before that it does nothing.
+- **Trigger.** An armed mine goes off when a rival's hull comes within **3u** of it in x and z
+  (`MINE_TRIGGER_R`, added to the hull's half-extents) and less than **2u** above it. The owner is
+  immune. The victim is stunned for **1.5 s** (`MINE_STUN_S`, scaled by class like every stun) and
+  keeps **60%** of its forward speed (`MINE_SPEED_CUT`).
+- **Clear.** A bolt that hits a mine destroys it. Seekers fly over mines.
+- **Limits.** A mine lasts **20 s** (`MINE_TTL`). An owner can have **3** live mines
+  (`MINE_MAX_PER_OWNER`). A fourth removes the oldest.
+- **Sync.** Mines are server state (`RunState.mines`). The server sends a `mineBurst` message on every
+  trigger, clear, eviction and expiry, and the client shows the burst from it.
 
 > The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the redefined **Tractor** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 

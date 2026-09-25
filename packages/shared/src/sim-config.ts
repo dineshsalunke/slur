@@ -2,6 +2,17 @@ import {
     BOLT_HALF,
     BOLT_SPEED,
     BOLT_TTL,
+    MINE_ARM_S,
+    MINE_DROP_AHEAD,
+    MINE_HALF,
+    MINE_HEIGHT,
+    MINE_MAX_PER_OWNER,
+    MINE_RATIO,
+    MINE_SPEED_CUT,
+    MINE_STUN_S,
+    MINE_TRIGGER_H,
+    MINE_TRIGGER_R,
+    MINE_TTL,
     PICKUP_RESPAWN_S,
     SEEKER_DROP_RATE,
     SEEKER_FLY_Y,
@@ -49,6 +60,17 @@ export interface SimConfig {
     seekerHalf: number;
     seekerTtl: number;
     seekerStunS: number;
+    mineRatio: number;
+    mineDropAhead: number;
+    mineArmS: number;
+    mineTriggerR: number;
+    mineTriggerH: number;
+    mineStunS: number;
+    mineSpeedCut: number;
+    mineTtl: number;
+    mineMaxPerOwner: number;
+    mineHalf: number;
+    mineHeight: number;
 }
 
 export const DEFAULT_SIM_CONFIG: SimConfig = {
@@ -75,4 +97,15 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     seekerHalf: SEEKER_HALF,
     seekerTtl: SEEKER_TTL,
     seekerStunS: SEEKER_STUN_S,
+    mineRatio: MINE_RATIO,
+    mineDropAhead: MINE_DROP_AHEAD,
+    mineArmS: MINE_ARM_S,
+    mineTriggerR: MINE_TRIGGER_R,
+    mineTriggerH: MINE_TRIGGER_H,
+    mineStunS: MINE_STUN_S,
+    mineSpeedCut: MINE_SPEED_CUT,
+    mineTtl: MINE_TTL,
+    mineMaxPerOwner: MINE_MAX_PER_OWNER,
+    mineHalf: MINE_HALF,
+    mineHeight: MINE_HEIGHT,
 };

@@ -8,7 +8,10 @@ export function TouchPad() {
                 <TouchButton name="Steer right" label="▶" control="right" className="size-20 text-[20px]" />
             </div>
             <div className="grid grid-cols-2 items-end justify-items-center gap-3">
-                <TouchButton name="Use power-up" label="Fire" code="KeyE" className="size-16" />
+                <div className="flex flex-col items-center gap-3">
+                    <TouchButton name="Fire power-up back" label="Back" code="KeyF" className="size-12" />
+                    <TouchButton name="Use power-up" label="Fire" code="KeyE" className="size-16" />
+                </div>
                 <TouchButton name="Jump" label="Jump" control="jump" className="size-20" />
                 <TouchButton name="Brake" label="Brake" control="brake" className="size-16" />
                 <TouchButton name="Throttle" label="Thrust" control="throttle" className="size-24 border-marigold/60" />

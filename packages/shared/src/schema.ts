@@ -1,5 +1,6 @@
 import { ArraySchema, MapSchema, Schema, type } from '@colyseus/schema';
 import { emptySlots } from './combat/combat-step.js';
+import type { MineState } from './combat/mine.js';
 import type { ProjectileState } from './combat/projectiles.js';
 import type { SeekerState } from './combat/seeker.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
@@ -51,6 +52,7 @@ export class Projectile extends Schema implements ProjectileState {
     @type( 'float32' ) z = 0;
     @type( 'string' ) ownerId = '';
     @type( 'float32' ) ttl = 0;
+    @type( 'int8' ) dir = 1;
 }
 
 export class Seeker extends Schema implements SeekerState {
@@ -62,6 +64,16 @@ export class Seeker extends Schema implements SeekerState {
     @type( 'string' ) targetId = '';
     @type( 'float32' ) ttl = 0;
     @type( 'boolean' ) committed = false;
+    @type( 'int8' ) dir = 1;
+}
+
+export class Mine extends Schema implements MineState {
+    @type( 'float32' ) x = 0;
+    @type( 'float32' ) y = 0;
+    @type( 'float32' ) z = 0;
+    @type( 'string' ) ownerId = '';
+    @type( 'boolean' ) armed = false;
+    ttl = 0;
 }
 
 export class TrackDescriptorState extends Schema {
@@ -122,4 +134,5 @@ export class RunState extends Schema {
     @type( { map: 'boolean' } ) pickupTaken = new MapSchema< boolean >();
     @type( { map: 'boolean' } ) blockBroken = new MapSchema< boolean >();
     @type( { map: Seeker } ) seekers = new MapSchema< Seeker >();
+    @type( { map: Mine } ) mines = new MapSchema< Mine >();
 }

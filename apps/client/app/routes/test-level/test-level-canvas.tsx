@@ -7,10 +7,12 @@ import { TuningPanelMount } from '../../dev/tuning-panel-mount';
 import { world } from '../../game/ecs/world';
 import { FinishFade } from '../../game/finish/finish-fade';
 import { CANVAS_GL } from '../../game/scene/canvas-gl';
+import { MineShock } from '../../game/scene/mine-shock';
 import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
 import { LocalBoltField } from './local-bolt-field';
 import { LocalLoop } from './local-loop';
+import { LocalMineField } from './local-mine-field';
 import { LocalPickupField } from './local-pickup-field';
 import { LocalSeekerField } from './local-seeker-field';
 import { LocalShip } from './local-ship';
@@ -50,6 +52,8 @@ export function TestLevelCanvas( { gen }: { gen: TrackGen } ) {
                         <LocalPickupField track={ track } />
                         <LocalBoltField />
                         <LocalSeekerField />
+                        <LocalMineField />
+                        <MineShock />
                         <RearView />
                         <FrameTap />
                     </WorldScene>

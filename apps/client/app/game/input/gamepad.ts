@@ -15,6 +15,7 @@ export const JUMP_EDGE = 'jump';
 
 export const PAD_KEYS: readonly ( readonly [ number, string ] )[] = [
     [ A, JUMP_EDGE ],
+    [ 1, 'KeyF' ],
     [ 2, 'KeyE' ],
     [ 5, 'KeyE' ],
     [ 3, 'KeyQ' ],

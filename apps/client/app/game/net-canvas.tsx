@@ -1,5 +1,11 @@
 import { Canvas } from '@react-three/fiber';
-import { DROP_POWERUP_MESSAGE, resolveTrack, type TrackDescriptor, USE_POWERUP_MESSAGE } from '@slur/shared';
+import {
+    DROP_POWERUP_MESSAGE,
+    type FireDir,
+    resolveTrack,
+    type TrackDescriptor,
+    USE_POWERUP_MESSAGE,
+} from '@slur/shared';
 import { WorldProvider } from 'koota/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio';
@@ -16,6 +22,8 @@ import { handlePowerKey } from './input/power-select';
 import { NetHud } from './net-hud';
 import { NetLoop } from './net-loop';
 import { CANVAS_GL } from './scene/canvas-gl';
+import { MineField } from './scene/mine-field';
+import { MineShock } from './scene/mine-shock';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field';
 import { RearView } from './scene/rear-view';
@@ -37,7 +45,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     useEffect( () => {
         const actions = {
             rack: () => world.queryFirst( LocalPlayer, Held )?.get( Held )?.slots ?? [],
-            fire: ( slot: number ) => room.send( USE_POWERUP_MESSAGE, { slot } ),
+            fire: ( slot: number, dir: FireDir ) => room.send( USE_POWERUP_MESSAGE, { slot, dir } ),
             drop: ( slot: number ) => room.send( DROP_POWERUP_MESSAGE, { slot } ),
         };
         const onKey = ( e: KeyboardEvent ) => handlePowerKey( e, actions );
@@ -60,6 +68,8 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                     <PickupField room={ room } track={ track } />
                     <ProjectileField />
                     <SeekerField />
+                    <MineField />
+                    <MineShock />
                     <RearView />
                     <GameAudio />
                     <RemoteEngineAudio />

@@ -1,6 +1,8 @@
 import { tuningForShip } from '../ship-classes.js';
 import { type Block, segIndexForZ, type Track } from '../sim/space.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
+import { entryZ, sweptZ } from './fire-dir.js';
+import { type MineState, mineBoltFront } from './mine.js';
 
 export interface ProjectileState {
     x: number;
@@ -8,6 +10,7 @@ export interface ProjectileState {
     z: number;
     ownerId: string;
     ttl: number;
+    dir: number;
 }
 
 export function stepProjectiles(
@@ -16,7 +19,7 @@ export function stepProjectiles(
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
 ): void {
     for ( const p of projectiles ) {
-        p.z += cfg.boltSpeed * dt;
+        p.z += p.dir * cfg.boltSpeed * dt;
         p.ttl -= dt;
     }
 }
@@ -40,13 +43,13 @@ export function boltBlockHit(
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
 ): Block | null {
     const half = cfg.boltHalf;
-    const zLo = bolt.z - half - sweep;
-    const zHi = bolt.z + half;
+    const dir = bolt.dir;
+    const [ zLo, zHi ] = sweptZ( bolt.z, half, sweep, dir );
     let hit: Block | null = null;
     for ( let i = segIndexForZ( zLo ); i <= segIndexForZ( zHi ); i++ ) {
         for ( const b of track.segmentAt( i ).blocks ) {
             if ( broken.has( b.id ) || ! boltOverlaps( bolt, b, half, zLo, zHi ) ) continue;
-            if ( hit === null || b.z0 < hit.z0 ) hit = b;
+            if ( hit === null || dir * entryZ( b.z0, b.z1, dir ) < dir * entryZ( hit.z0, hit.z1, dir ) ) hit = b;
         }
     }
     return hit;
@@ -71,13 +74,14 @@ export function boltHits(
 ): string[] {
     const victims: string[] = [];
     const half = cfg.boltHalf;
+    const [ zLo, zHi ] = sweptZ( bolt.z, half, sweep, bolt.dir );
     for ( const s of ships ) {
         if ( s.id === bolt.ownerId || s.dead || s.spectating ) continue;
         if (
             bolt.x + half > s.x - s.halfW &&
             bolt.x - half < s.x + s.halfW &&
-            bolt.z + half > s.z - s.halfL &&
-            bolt.z - half - sweep < s.z + s.halfL
+            zHi > s.z - s.halfL &&
+            zLo < s.z + s.halfL
         ) {
             victims.push( s.id );
         }
@@ -107,7 +111,26 @@ export function hitShipsOf( racers: Iterable< [ string, Racer ] > ): HitShip[] {
 export interface BoltOutcome {
     victims: string[];
     block: Block | null;
+    mine: string | null;
     spent: boolean;
+}
+
+function nearestMine(
+    bolt: ProjectileState,
+    mines: Iterable< [ string, MineState ] >,
+    sweep: number,
+    cfg: SimConfig,
+): [ string | null, number ] {
+    let nearest: string | null = null;
+    let front = Number.POSITIVE_INFINITY;
+    for ( const [ id, m ] of mines ) {
+        const z = mineBoltFront( m, bolt, sweep, cfg.boltHalf, cfg );
+        if ( z !== null && bolt.dir * z < front ) {
+            nearest = id;
+            front = bolt.dir * z;
+        }
+    }
+    return [ nearest, front ];
 }
 
 export function resolveBolt(
@@ -117,16 +140,23 @@ export function resolveBolt(
     broken: ReadonlySet< number >,
     sweep = 0,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
+    mines: Iterable< [ string, MineState ] > = [],
 ): BoltOutcome {
+    const dir = bolt.dir;
     const wall = boltBlockHit( bolt, track, broken, sweep, cfg );
-    const wallZ = wall?.z0 ?? Number.POSITIVE_INFINITY;
+    const wallAt = wall ? dir * entryZ( wall.z0, wall.z1, dir ) : Number.POSITIVE_INFINITY;
+    const [ mine, mineAt ] = nearestMine( bolt, mines, sweep, cfg );
+    const stopAt = Math.min( wallAt, mineAt );
     const victims = boltHits( bolt, ships, sweep, cfg ).filter( ( id ) => {
         const s = ships.find( ( ship ) => ship.id === id );
-        return s !== undefined && s.z - s.halfL < wallZ;
+        return s !== undefined && dir * entryZ( s.z - s.halfL, s.z + s.halfL, dir ) < stopAt;
     } );
+    const hitMine = victims.length === 0 && mine !== null && mineAt < wallAt ? mine : null;
+    const block = victims.length === 0 && hitMine === null ? wall : null;
     return {
         victims,
-        block: victims.length === 0 ? wall : null,
-        spent: victims.length > 0 || wall !== null || bolt.ttl <= 0,
+        block,
+        mine: hitMine,
+        spent: victims.length > 0 || hitMine !== null || wall !== null || bolt.ttl <= 0,
     };
 }

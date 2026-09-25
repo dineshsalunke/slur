@@ -31,10 +31,10 @@ export function ProjectileField() {
     const collect = useCallback(
         ( sink: BoltSink ) => {
             const renderTime = performance.now() - RENDER_DELAY_MS;
-            world.query( ProjInterp, NetProjectile ).readEach( ( [ interp ] ) => {
+            world.query( ProjInterp, NetProjectile ).readEach( ( [ interp, net ] ) => {
                 const pos = sampleAt( interp.buffer, renderTime );
                 if ( ! pos ) return;
-                sink( pos.x, pos.y, pos.z, pos.z - interp.buffer[ 0 ].z + BOLT_SPAWN_AHEAD );
+                sink( pos.x, pos.y, pos.z, Math.abs( pos.z - interp.buffer[ 0 ].z ) + BOLT_SPAWN_AHEAD, net.dir );
             } );
         },
         [ world ],

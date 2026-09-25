@@ -15,7 +15,7 @@ export function PowerRack() {
                     ) ) }
                 </div>
                 <span className="text-[0.78em] font-normal tracking-[0.2em] text-readout-dim pointer-coarse:hidden">
-                    E Fire · Q Cycle · X Drop
+                    E Fire · F Back · Q Cycle · X Drop
                 </span>
             </div>
         </div>

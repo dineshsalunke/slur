@@ -35,5 +35,8 @@ function hashId( id: string ): number {
 }
 
 export function pickupPower( id: string, cfg: SimConfig = DEFAULT_SIM_CONFIG ): HeldPower {
-    return hashId( id ) / HASH_SCALE < cfg.seekerRatio ? HeldPower.seeker : HeldPower.bolt;
+    const u = hashId( id ) / HASH_SCALE;
+    if ( u < cfg.seekerRatio ) return HeldPower.seeker;
+    if ( u < cfg.seekerRatio + cfg.mineRatio ) return HeldPower.mine;
+    return HeldPower.bolt;
 }

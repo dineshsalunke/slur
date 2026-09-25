@@ -94,7 +94,7 @@ function clampToEdges( s: SimShip, t: FlightTuning ): void {
     }
 }
 
-function floorUnder( seg: Segment, x: number, z: number, y: number, stepTol: number ): number | null {
+export function floorUnder( seg: Segment, x: number, z: number, y: number, stepTol: number ): number | null {
     let best: number | null = null;
     for ( const f of seg.floors ) {
         if ( ! spanHasZ( seg, f, z ) ) continue;

@@ -2,6 +2,7 @@ import { FASTEST_CRUISE, tuningForShip } from '../ship-classes.js';
 import { type Block, segIndexForZ, type Track } from '../sim/space.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { SEEKER_SPAWN_AHEAD } from './constants.js';
+import { sweptZ } from './fire-dir.js';
 import type { HitShip } from './projectiles.js';
 import { forgetTrail, recordTrail, trailX } from './seeker-trail.js';
 
@@ -14,6 +15,7 @@ export interface SeekerState {
     targetId: string;
     ttl: number;
     committed: boolean;
+    dir: number;
 }
 
 export interface SeekerShip extends HitShip {
@@ -126,12 +128,14 @@ export function lockTarget(
     track: Track,
     broken: ReadonlySet< number >,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
+    dir = 1,
 ): string {
     let best: SeekerShip | null = null;
     for ( const s of ships ) {
-        const dz = s.z - shooter.z;
+        const dz = dir * ( s.z - shooter.z );
         if ( ! lockable( s, ownerId ) || dz <= 0 || dz > cfg.seekerLockRange ) continue;
-        if ( best !== null && ( dz > best.z - shooter.z || ( dz === best.z - shooter.z && s.id > best.id ) ) ) continue;
+        const bestDz = best === null ? 0 : dir * ( best.z - shooter.z );
+        if ( best !== null && ( dz > bestDz || ( dz === bestDz && s.id > best.id ) ) ) continue;
         if ( ! lineOfSight( track, broken, shooter.x, shooter.z, s.x, s.z, cfg.seekerHalf ) ) continue;
         best = s;
     }
@@ -144,15 +148,17 @@ export function aimSeeker(
     ownerId: string,
     targetId: string,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
+    dir = 1,
 ): void {
     seeker.x = shooter.x;
     seeker.y = cfg.seekerFlyY;
-    seeker.z = shooter.z + SEEKER_SPAWN_AHEAD;
-    seeker.vz = shooter.vz;
+    seeker.z = shooter.z + dir * SEEKER_SPAWN_AHEAD;
+    seeker.vz = dir < 0 ? 0 : shooter.vz;
     seeker.ownerId = ownerId;
     seeker.targetId = targetId;
     seeker.ttl = cfg.seekerTtl;
     seeker.committed = false;
+    seeker.dir = dir;
     forgetTrail( seeker );
 }
 
@@ -161,9 +167,9 @@ export function inTerminalWindow(
     target: SeekerShip,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
 ): boolean {
-    const dz = target.z - seeker.z;
+    const dz = seeker.dir * ( target.z - seeker.z );
     if ( cfg.seekerWindowMode === 'distance' ) return dz <= cfg.seekerWindowU;
-    const closing = seeker.vz - target.vz;
+    const closing = seeker.dir * ( seeker.vz - target.vz );
     if ( closing <= CLOSING_EPS ) return false;
     return dz / closing <= cfg.seekerWindowS;
 }
@@ -174,12 +180,13 @@ function approach( from: number, to: number, maxStep: number ): number {
 
 function strikes( seeker: SeekerState, t: SeekerShip, sweep: number, cfg: SimConfig ): boolean {
     const half = cfg.seekerHalf;
+    const [ zLo, zHi ] = sweptZ( seeker.z, half, sweep, seeker.dir );
     return (
         t.y < cfg.seekerHitBand &&
         seeker.x + half > t.x - t.halfW &&
         seeker.x - half < t.x + t.halfW &&
-        seeker.z + half > t.z - t.halfL &&
-        seeker.z - half - sweep < t.z + t.halfL
+        zHi > t.z - t.halfL &&
+        zLo < t.z + t.halfL
     );
 }
 
@@ -211,8 +218,9 @@ function blockAt(
 ): Block | null {
     const half = cfg.seekerHalf;
     const { y, z } = seeker;
+    const [ zLo, zHi ] = sweptZ( z, half, sweep, seeker.dir );
     return (
-        standingBlockIn( track, broken, prevX - half, prevX + half, y - half, z - half - sweep, z + half ) ??
+        standingBlockIn( track, broken, prevX - half, prevX + half, y - half, zLo, zHi ) ??
         standingBlockIn( track, broken, seeker.x - half, seeker.x + half, y - half, z - half, z + half )
     );
 }
@@ -227,7 +235,8 @@ function clearTo(
     const half = cfg.seekerHalf;
     const x0 = Math.min( seeker.x, target.x ) - half;
     const x1 = Math.max( seeker.x, target.x ) + half;
-    return standingBlockIn( track, broken, x0, x1, seeker.y - half, seeker.z - half, target.z ) === null;
+    const [ z0, z1 ] = seeker.dir < 0 ? [ target.z, seeker.z + half ] : [ seeker.z - half, target.z ];
+    return standingBlockIn( track, broken, x0, x1, seeker.y - half, z0, z1 ) === null;
 }
 
 function crashed(
@@ -274,9 +283,11 @@ export function seekerTopSpeed( cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
 function advance( seeker: SeekerState, dt: number, cfg: SimConfig ): number {
     const top = seekerTopSpeed( cfg );
     const accel = top / cfg.seekerRampS;
-    seeker.vz = seeker.vz < top ? Math.min( top, seeker.vz + accel * dt ) : top;
-    const sweep = seeker.vz * dt;
-    seeker.z += sweep;
+    const along = seeker.dir * seeker.vz;
+    const next = along < top ? Math.min( top, along + accel * dt ) : top;
+    seeker.vz = seeker.dir * next;
+    const sweep = next * dt;
+    seeker.z += seeker.dir * sweep;
     return sweep;
 }
 
@@ -289,20 +300,22 @@ function homeOn(
     dt: number,
     cfg: SimConfig,
 ): SeekerOutcome {
-    recordTrail( seeker, target, cfg );
+    const forward = seeker.dir > 0;
+    if ( forward ) recordTrail( seeker, target, cfg );
     if ( ! seeker.committed && inTerminalWindow( seeker, target, cfg ) ) seeker.committed = true;
     const prevX = seeker.x;
     if ( seeker.committed ) {
         seeker.x = approach( seeker.x, target.x, cfg.seekerTurn * dt );
         seeker.y = approach( seeker.y, cfg.seekerStrikeY, cfg.seekerDropRate * dt );
     } else {
-        const goal = clearTo( seeker, target, track, broken, cfg ) ? target.x : trailX( seeker );
+        const hold = forward ? trailX( seeker ) : seeker.x;
+        const goal = clearTo( seeker, target, track, broken, cfg ) ? target.x : hold;
         seeker.x = approach( seeker.x, goal, cfg.seekerTrackTurn * dt );
     }
 
     if ( crashed( seeker, prevX, track, broken, sweep, cfg ) ) return 'blocked';
     if ( strikes( seeker, target, sweep, cfg ) ) return 'hit';
-    if ( seeker.z - cfg.seekerHalf > target.z + target.halfL ) return 'miss';
+    if ( seeker.dir * ( seeker.z - target.z ) - cfg.seekerHalf > target.halfL ) return 'miss';
     return seeker.ttl <= 0 ? 'expired' : 'flying';
 }
 

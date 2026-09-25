@@ -19,13 +19,17 @@ function key( code: string, extra: Partial< KeyboardEvent > = {} ): KeyboardEven
 
 function actions( rack: number[] ) {
     const fired: number[] = [];
+    const dirs: number[] = [];
     const dropped: number[] = [];
     const act: PowerActions = {
         rack: () => rack,
-        fire: ( s ) => fired.push( s ),
+        fire: ( s, dir ) => {
+            fired.push( s );
+            dirs.push( dir );
+        },
         drop: ( s ) => dropped.push( s ),
     };
-    return { act, fired, dropped };
+    return { act, fired, dirs, dropped };
 }
 
 describe( 'power slot selection', () => {
@@ -40,6 +44,15 @@ describe( 'power slot selection', () => {
         handlePowerKey( key( 'KeyX' ), act );
         expect( fired ).toEqual( [ 1 ] );
         expect( dropped ).toEqual( [ 2 ] );
+    } );
+
+    it( 'E fires the selected slot forward and F fires it back', () => {
+        const { act, fired, dirs } = actions( [ bolt, seeker, bolt ] );
+        handlePowerKey( key( 'Digit2' ), act );
+        handlePowerKey( key( 'KeyE' ), act );
+        handlePowerKey( key( 'KeyF' ), act );
+        expect( fired ).toEqual( [ 1, 1 ] );
+        expect( dirs ).toEqual( [ 1, -1 ] );
     } );
 
     it( 'Q cycles to the next full slot and wraps', () => {

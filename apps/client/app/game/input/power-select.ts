@@ -1,4 +1,4 @@
-import { HeldPower, POWER_SLOTS } from '@slur/shared';
+import { type FireDir, HeldPower, POWER_SLOTS } from '@slur/shared';
 import { useSyncExternalStore } from 'react';
 import { typingTarget } from '../../dev/typing-target';
 
@@ -49,7 +49,7 @@ export function resetSlot(): void {
 
 export interface PowerActions {
     rack(): readonly number[];
-    fire( slot: number ): void;
+    fire( slot: number, dir: FireDir ): void;
     drop( slot: number ): void;
 }
 
@@ -60,6 +60,7 @@ export function handlePowerKey( e: KeyboardEvent, act: PowerActions ): void {
     else if ( e.code === 'KeyQ' ) {
         const next = nextFull( act.rack(), selected );
         select( next >= 0 ? next : ( selected + 1 ) % POWER_SLOTS );
-    } else if ( e.code === 'KeyE' ) act.fire( selected );
+    } else if ( e.code === 'KeyE' ) act.fire( selected, 1 );
+    else if ( e.code === 'KeyF' ) act.fire( selected, -1 );
     else if ( e.code === 'KeyX' ) act.drop( selected );
 }

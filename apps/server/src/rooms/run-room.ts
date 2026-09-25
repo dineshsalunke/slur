@@ -10,6 +10,7 @@ import {
     DROP_POWERUP_MESSAGE,
     dropPower,
     FIXED_DT,
+    fireDir,
     HeldPower,
     hitShipsOf,
     INPUT_MESSAGE,
@@ -18,6 +19,7 @@ import {
     isShipId,
     isSlot,
     isTrackGen,
+    type MineEvent,
     PHASE,
     type Pickup,
     type PlayerInput,
@@ -42,6 +44,7 @@ import {
     seekerShipsOf,
     shouldSpectateOnJoin,
     stepBolts,
+    stepMines,
     stepPickups,
     stepSeekers,
     stunDurationForShip,
@@ -49,7 +52,7 @@ import {
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { type RaceWorld, stepRacer } from './room-bounce.js';
-import { firePower, resolveSeekerEvent } from './room-combat.js';
+import { firePower, resolveMineEvent, resolveSeekerEvent } from './room-combat.js';
 
 const RECONNECT_SECONDS = 20;
 const MAX_QUEUED_INPUTS = 120;
@@ -115,8 +118,14 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             const p = this.state.players.get( client.sessionId );
             const slot = msg?.slot;
             if ( ! p || ! isSlot( slot ) || ! canFire( p, slot ) ) return;
-            const ctx = { state: this.state, track: this.track, broken: this.blocks.broken, config: this.config };
-            firePower( ctx, String( this.nextProjectileId++ ), p, client.sessionId, slot );
+            const ctx = {
+                state: this.state,
+                track: this.track,
+                broken: this.blocks.broken,
+                config: this.config,
+                broadcast: ( t: string, m: unknown ) => this.broadcast( t, m ),
+            };
+            firePower( ctx, String( this.nextProjectileId++ ), p, client.sessionId, slot, fireDir( msg?.dir ) );
         } );
         this.onMessage< PowerSlotMessage >( DROP_POWERUP_MESSAGE, ( client, msg ) => {
             if ( this.state.phase !== PHASE.racing ) return;
@@ -189,6 +198,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
     private stepWorld( dt: number ): void {
         const ships = hitShipsOf( this.state.players.entries() );
+        const onMine = ( event: MineEvent ) =>
+            resolveMineEvent( this.state, event, ( t, m ) => this.broadcast( t, m ), this.config );
         stepBolts(
             this.state.projectiles,
             ships,
@@ -201,16 +212,20 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
                 this.broadcast( 'hit', strike );
             },
             this.config,
+            this.state.mines,
+            onMine,
         );
+        const seekerShips = seekerShipsOf( this.state.players.entries() );
         stepSeekers(
             this.state.seekers,
-            seekerShipsOf( this.state.players.entries() ),
+            seekerShips,
             this.track,
             this.blocks.broken,
             dt,
             ( event ) => resolveSeekerEvent( this.state, event, ( t, m ) => this.broadcast( t, m ), this.config ),
             this.config,
         );
+        stepMines( this.state.mines, seekerShips, dt, onMine, this.config );
         this.mirrorBreaks();
         stepPickups(
             this.state.players.values(),
@@ -233,6 +248,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     private clearCombat(): void {
         this.state.projectiles.clear();
         this.state.seekers.clear();
+        this.state.mines.clear();
         this.state.pickupTaken.clear();
         this.state.blockBroken.clear();
         this.blocks.broken.clear();

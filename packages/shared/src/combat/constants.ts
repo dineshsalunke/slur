@@ -3,6 +3,7 @@ export const DROP_POWERUP_MESSAGE = 'dropPowerUp';
 
 export interface PowerSlotMessage {
     slot: number;
+    dir?: number;
 }
 
 export const POWER_SLOTS = 3;
@@ -15,7 +16,7 @@ export const BOLT_SPAWN_AHEAD = 3;
 export const STUN_SECONDS = 1.2;
 export const PICKUP_RESPAWN_S = 3;
 
-export const HeldPower = { none: 0, bolt: 1, seeker: 2 } as const;
+export const HeldPower = { none: 0, bolt: 1, seeker: 2, mine: 3 } as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
 
 export type SeekerWindowMode = 'time' | 'distance';
@@ -42,3 +43,17 @@ export const SEEKER_HALF = 1;
 export const SEEKER_TTL = 20;
 export const SEEKER_STUN_S = 2;
 export const SEEKER_SPAWN_AHEAD = 3;
+
+export const MINE_BURST_MESSAGE = 'mineBurst';
+
+export const MINE_RATIO = 0.2;
+export const MINE_DROP_AHEAD = 8;
+export const MINE_ARM_S = 0.5;
+export const MINE_TRIGGER_R = 3;
+export const MINE_TRIGGER_H = 2;
+export const MINE_STUN_S = 1.5;
+export const MINE_SPEED_CUT = 0.6;
+export const MINE_TTL = 20;
+export const MINE_MAX_PER_OWNER = 3;
+export const MINE_HALF = 1.1;
+export const MINE_HEIGHT = 0.9;

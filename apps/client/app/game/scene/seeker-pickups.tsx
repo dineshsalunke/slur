@@ -16,11 +16,15 @@ import { graphiteShellMaterial } from './track-materials';
 export interface PickupLayouts {
     bolts: Anchor[];
     seekers: Anchor[];
+    mines: Anchor[];
 }
 
 export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
-    const out: PickupLayouts = { bolts: [], seekers: [] };
-    for ( const a of layout ) ( pickupPower( a.id ) === HeldPower.seeker ? out.seekers : out.bolts ).push( a );
+    const out: PickupLayouts = { bolts: [], seekers: [], mines: [] };
+    for ( const a of layout ) {
+        const power = pickupPower( a.id );
+        ( power === HeldPower.seeker ? out.seekers : power === HeldPower.mine ? out.mines : out.bolts ).push( a );
+    }
     return out;
 }
 

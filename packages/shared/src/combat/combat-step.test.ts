@@ -64,7 +64,7 @@ function gunner( over: Partial< Gunner > = {} ): Gunner {
 }
 
 function boltBefore( z: number ): ProjectileState {
-    return { x: 0, y: 1, z: z - 2, ownerId: 'me', ttl: 1 };
+    return { x: 0, y: 1, z: z - 2, ownerId: 'me', ttl: 1, dir: 1 };
 }
 
 test( 'only an armed, upright, unstunned racer can fire', () => {
@@ -78,9 +78,16 @@ test( 'only an armed, upright, unstunned racer can fire', () => {
 } );
 
 test( 'aimBolt spawns the bolt ahead of the gunner with a full ttl', () => {
-    const bolt: ProjectileState = { x: 0, y: 0, z: 0, ownerId: '', ttl: 0 };
+    const bolt: ProjectileState = { x: 0, y: 0, z: 0, ownerId: '', ttl: 0, dir: 1 };
     aimBolt( bolt, gunner( { x: 2, y: 3, z: 40 } ), 'me' );
-    assert.deepEqual( bolt, { x: 2, y: 3, z: 40 + BOLT_SPAWN_AHEAD, ownerId: 'me', ttl: DEFAULT_SIM_CONFIG.boltTtl } );
+    assert.deepEqual( bolt, {
+        x: 2,
+        y: 3,
+        z: 40 + BOLT_SPAWN_AHEAD,
+        ownerId: 'me',
+        ttl: DEFAULT_SIM_CONFIG.boltTtl,
+        dir: 1,
+    } );
 } );
 
 test( 'a bolt breaks the fractured block it reaches and is spent', () => {
@@ -118,7 +125,7 @@ test( 'an empty-handed racer grabs a pickup, which respawns after pickupRespawnS
     const taken = new Map< string, boolean >();
     const respawn = new Map< string, number >();
     const me = gunner( { z: 10, slots: emptySlots() } );
-    stepPickups( [ me ], pickups, taken, respawn, FIXED_DT, { ...DEFAULT_SIM_CONFIG, seekerRatio: 0 } );
+    stepPickups( [ me ], pickups, taken, respawn, FIXED_DT, { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0 } );
     assert.deepEqual( me.slots, [ HeldPower.bolt, HeldPower.none, HeldPower.none ] );
     assert.equal( taken.get( 'p' ), true );
 

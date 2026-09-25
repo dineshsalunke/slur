@@ -10,18 +10,18 @@
 
 ## 0. The headline correction
 
-**The track is 64 units wide. The widest ship is 2.6 units wide.**
+**The track is 96 units wide. The widest ship is 2.6 units wide.**
 
-A ship spans **~4% of the track width** — about **1/24th**. The `docs/art-direction/boards/` boards draw the ship at
-roughly **1/8th to 1/10th** of the track, so the real track is **~2.5–3× wider, relative to the ship,**
-than every board shows.
+A ship spans **~2.7% of the track width** — about **1/37th**. The `docs/art-direction/boards/` boards draw the ship at
+roughly **1/8th to 1/10th** of the track, so the real track is **~3.7–4.6× wider, relative to the ship,**
+than every board shows. (The track grew from 64u to 96u in #257, `fe40718`.)
 
 This is the single correction that matters most. Consequences for art direction:
 
 - The real ribbon reads **vaster, emptier, and more lonely** than the boards. That may be *better* —
   "Cold Space. Warm Energy." — but it is not what was drawn.
 - **Marigold edge-glow is a weak guide at true scale.** The handoff makes track edges the primary
-  navigational read, but at true scale each edge sits **32u** off-centre — over 12 ship-widths away.
+  navigational read, but at true scale each edge sits **48u** off-centre — over 18 ship-widths away.
   A pilot threading the middle of the track cannot use them for fine positioning. Some interior
   functional read (lane seams, the racing line, hazard-local cues) likely has to carry that load.
   **Flagging this as an open art problem, not solving it here.**
@@ -30,37 +30,37 @@ This is the single correction that matters most. Consequences for art direction:
 
 | Thing | Value | Constant | Note |
 |---|---:|---|---|
-| Track width | **64u** | `HALF_WIDTH = 32` | full width = 2 × 32 |
-| Authoring lanes across | **16** | `2·HALF_WIDTH / CELL` | authoring scaffolding **only** — not a runtime unit |
+| Track width | **96u** | `HALF_WIDTH = 48` | full width = 2 × 48 |
+| Authoring lanes across | **24** | `2·HALF_WIDTH / CELL` | authoring scaffolding **only** — not a runtime unit |
 | Segment length (z) | **20u** | `SEG_LEN` | one segment; **a gap is exactly one segment long** |
 | Total track length | **8000u** | `TRACK_SEGMENTS(400) × SEG_LEN(20)` | ≈2.4 min at cruise, ~2.8 min real average |
 | Track thickness (visual) | *free* | — | **not a sim constant.** The sim floor is a plane; thickness is pure art. Board 07's "1u" is a legal choice, not a requirement. |
 | Authoring snap grid | **4u** | `CELL` | design-time only. The sim is continuous float-AABB; **never quantize art to this at runtime** |
-| Edge rail width (x) | **2u** | `RAIL_W` | sits **outboard**: inner face at ±32, outer face at ±34 |
+| Edge rail width (x) | **2u** | `RAIL_W` | sits **outboard**: inner face at ±48, outer face at ±50 |
 | Edge rail height (y) | **0u metal · 0.125u strip** | `RAIL_LIP_H` | the metal top face is **coplanar with the deck top**. Only the emissive strip stands proud, as a 0.25u × 0.125u lip. Its inboard face turns the strip toward the camera: a flat strip was sub-pixel from the chase camera and barely bloomed (#229). The box drops `SLAB_THICKNESS` below |
 | Rail slab depth (y) | **24u** | `SLAB_THICKNESS` | shared with the deck slab, so rail and deck present one underside |
 | Emissive share of the rail | **12.5%** | `RAIL_EMISSIVE_SHARE` | of `RAIL_W`, centred on the top face → **0.25u** marigold at 2u |
 | Rail metal margin (x) | **0.875u** | `RAIL_MARGIN` | `RAIL_W × (1 − RAIL_EMISSIVE_SHARE) / 2`, one each side of the strip |
 | Interior seam insert width (x) | **0.12u** | `SEAM_WIDTH` | `seam-inserts.ts`; the M7 inserts in the deck face, inboard of both rails |
-| Interior seam lane spacing (x) | **8u** | `SEAM_SPACING` | first lane at `SEAM_INSET` = 4u, mirrored → 8 lanes across 64u |
+| Interior seam lane spacing (x) | **8u** | `SEAM_SPACING` | first lane at `SEAM_INSET` = 4u, mirrored → 12 lanes across 96u |
 | Interior seam length (z) | **3 – 11u** | `SEAM_LEN_MIN/MAX` | varied per insert; never crosses its own segment boundary |
 | Interior seam lift (y) | **0.02u** | `SEAM_LIFT` | plus `polygonOffset`, so the insert never z-fights the deck it sits on |
 
 ### 1a. No visual element may take playable width — ADR-012
 
 > **The deck's rendered top face ends at exactly ±`HALF_WIDTH`, always.** Rails, trim, edge strips and
-> any future border art live **outboard** of that, in `[32, 32+w]`, mirrored. Nothing that is drawn may
+> any future border art live **outboard** of that, in `[48, 48+w]`, mirrored. Nothing that is drawn may
 > move where the deck is drawn to end.
 
-The rail is positioned by **span**, not by pivot: inner face `x = 32`, outer face `x = 32 + RAIL_W`.
-Stated for a centred pivot that is `±(32 + RAIL_W/2)` = **±33**, *not* ±32 (which straddles the edge
-and eats `RAIL_W/2` of deck) and *not* ±34 (which leaves a `RAIL_W/2` gap).
+The rail is positioned by **span**, not by pivot: inner face `x = 48`, outer face `x = 48 + RAIL_W`.
+Stated for a centred pivot that is `±(48 + RAIL_W/2)` = **±49**, *not* ±48 (which straddles the edge
+and eats `RAIL_W/2` of deck) and *not* ±50 (which leaves a `RAIL_W/2` gap).
 
 **The rail is its own mesh, not part of the deck.** `apps/client/app/game/scene/track-rail.tsx` builds
 it from the same `RailRun` list that feeds the rail emitters, so geometry and lighting can never drift
 apart. `track-floor.tsx` draws the deck slab and stops at ±`HALF_WIDTH`; it no longer extends itself
 outboard to lend the rail an outer wall. The rail box draws top, outer wall, underside and end caps —
-**no inner face**, because the deck slab's own side wall at ±32 already seals that plane, and drawing
+**no inner face**, because the deck slab's own side wall at ±48 already seals that plane, and drawing
 both would be coincident geometry.
 
 The top face is split into two material groups: group 0 is the metal (`railBodySurface()`, the same
@@ -116,7 +116,7 @@ must not vary.
 | **`MIN_CLEAR`** | **7u** | at every z-slice the widest lethal-free floor run must be ≥ this |
 
 Art must never depict a threadable route narrower than **7u** — that is 1.75 lanes, and at true scale
-it's a *slot*, visibly tight against a 64u ribbon. Conversely a corridor is never guaranteed wider
+it's a *slot*, visibly tight against a 96u ribbon. Conversely a corridor is never guaranteed wider
 than 7u, so compositions that assume a generous open lane are not always truthful.
 
 ## 4. Ships (footprint = collision hitbox = visible box — WYSIWYG, locked)
@@ -140,15 +140,15 @@ longer than they are wide, and art should reflect that.
 These come from the concept boards, which used a *correct* ship reference (2.6u), so they are
 internally consistent — unlike board 07's track figure.
 
-| Thing | Board value | × track width (64u) | Verdict |
+| Thing | Board value | × track width (96u) | Verdict |
 |---|---:|---:|---|
-| Obelisk | 200–400u | 3–6× | plausible for monumental framing |
-| Gate | 200–350u | 3–5× | plausible |
-| Arch | 150–300u | 2–5× | plausible |
-| Asteroid S | 10–50u | 0.2–0.8× | fine |
-| Asteroid M | 50–200u | 0.8–3× | fine |
-| Asteroid L | 200–400u | 3–6× | fine |
-| Asteroid XL | 400u+ | 6×+ | fine, background only |
+| Obelisk | 200–400u | 2–4× | plausible for monumental framing |
+| Gate | 200–350u | 2–3.6× | plausible |
+| Arch | 150–300u | 1.6–3× | plausible |
+| Asteroid S | 10–50u | 0.1–0.5× | fine |
+| Asteroid M | 50–200u | 0.5–2× | fine |
+| Asteroid L | 200–400u | 2–4× | fine |
+| Asteroid XL | 400u+ | 4×+ | fine, background only |
 
 **Board 03 and 04 are trustworthy on scale. Board 07 and 09 are not.**
 
@@ -156,14 +156,14 @@ internally consistent — unlike board 07's track figure.
 
 | Board | Printed | Actual | Error |
 |---|---|---|---|
-| `07` panel 8 | track width "~6u–8u" | **64u** | **8–10× too small** |
+| `07` panel 8 | track width "~6u–8u" | **96u** | **12–16× too small** |
 | `07` panel 8 | obstacle height "~3u" | **8u** | ~2.7× too small |
 | `07` panel 8 | obstacle width "~2u" | **4u** | 2× too small |
 | `07` panel 8 | track thickness "1u" | *free choice* | not a constraint — fine as-is |
 | `09` panel 1 | "1-lane partial gap, 1u × 2u" | **4u wide × 20u long** | 4× / 10× too small |
 | `09` panel 4 | "2-lane 2u×2u / 4-lane 4u×2u" | **8u×20u / 16u×20u** | same error |
 | `10` panel 3 | "CUBE (1x1) / WIDE (2x1) / TALL (1x2)" | cell notation | **do not ship this as a runtime rule** — sim is continuous |
-| `10` panel 4 | "LEFT / CENTER / RIGHT LANE" | 16 lanes exist | three-lane framing is misleading |
+| `10` panel 4 | "LEFT / CENTER / RIGHT LANE" | 24 lanes exist | three-lane framing is misleading |
 
 **Gaps are 20u long.** Every board draws them far too short. A gap is a full segment — at 55 u/s you
 are airborne over it for roughly a third of a second, and it should look like a genuine chasm, not a
@@ -179,9 +179,27 @@ seam.
 | Bolt half-extent | **1.5u** | `BOLT_HALF` |
 | Stun on hit | **1.2s** | `STUN_SECONDS` |
 
-The bolt travels at **~16× the Fighter's cruise speed** and crosses **~24 track-widths** before
+The bolt travels at **~16× the Fighter's cruise speed** and crosses **~16 track-widths** before
 expiring. It is emphatically a streak, not a projectile you watch fly — board 05's "elongated energy
 tracer" read is correct and should be pushed further.
+
+### 7a. Mine (#261)
+
+| Thing | Value | Constant |
+|---|---:|---|
+| Trigger radius (x and z, added to the ship's half-extents) | **3u** | `MINE_TRIGGER_R` |
+| Trigger height above the mine | **2u** | `MINE_TRIGGER_H` |
+| Hit box half-extent (a bolt clears it) | **1.1u** | `MINE_HALF` |
+| Hit box height | **0.9u** | `MINE_HEIGHT` |
+| Drop distance ahead of the nose (forward) | **8u** | `MINE_DROP_AHEAD` |
+| Arming time | **0.5s** | `MINE_ARM_S` |
+| Lifetime | **20s** | `MINE_TTL` |
+| Live mines per owner | **3** | `MINE_MAX_PER_OWNER` |
+
+The visible mine is smaller than its trigger. The body is a 6-sided puck, **1.9u** across and **0.4u**
+tall, with six short spikes. The ground decal is six spokes and a ring at the **3u** trigger radius, so
+the ring shows the danger area. A mine is ~2.2 ship-widths across at the ring. Sizes live in
+`apps/client/app/game/scene/mine-look.ts`.
 
 ## 8. Player colour
 
@@ -192,9 +210,9 @@ opponent ships if and when that proves necessary.
 
 ## 9. A quick shot-framing cheat sheet
 
-For regenerating concept art at true scale, per **one 64u-wide track**:
+For regenerating concept art at true scale, per **one 96u-wide track**:
 
-- Fighter ship = **2.6u** → **1/24th of track width**
+- Fighter ship = **2.6u** → **1/37th of track width**
 - Block height = **8u, always** → ~3× the ship's width; **never varies**
 - Block width/depth = **free** (4u × 8u today) → vary these for silhouette interest, never the height
 - One authoring lane = **4u** → **1/16th of track width**

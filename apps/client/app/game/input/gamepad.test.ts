@@ -64,6 +64,10 @@ describe( 'padEdges', () => {
         expect( edges( pad( { down: { 2: 1 } } ), was ) ).toEqual( [ 'KeyE' ] );
     } );
 
+    it( 'maps B to fire back', () => {
+        expect( edges( pad( { down: { 1: 1 } } ), [] ) ).toEqual( [ 'KeyF' ] );
+    } );
+
     it( 'maps cycle and mute', () => {
         expect( edges( pad( { down: { 3: 1, 8: 1 } } ), [] ) ).toEqual( [ 'KeyQ', 'KeyM' ] );
     } );
