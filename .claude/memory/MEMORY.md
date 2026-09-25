@@ -83,3 +83,4 @@ lives in its own file beside this one.
 - [One stack, dev only](one-stack-dev-only.md) — OWNER RULE: no worktrees, no scratch/second stacks; build on dev, measure on :5173/:2567
 - [Cavity channel is dead](cavity-channel-is-dead.md) — packed R (cavity) reaches no shader; no aoMap anywhere; darken the albedo map instead
 - [Threshold noise makes worm pits](threshold-noise-makes-worm-pits.md) — round pits need a Worley point-distance field; thresholded value noise gives amoeba blotches
+- [Aim tests need a clear approach](aim-tests-need-a-clear-approach.md) — a test aiming at the first block of a kind flakes when another block butts on it; seed Math.random, run the whole file

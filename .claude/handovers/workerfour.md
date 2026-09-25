@@ -1,30 +1,24 @@
-Agent: workerfour · Lane: /song-lab song starts at freighter cruise, #253 · Updated: 2026-09-25 00:10
+Agent: workerfour · Lane: groove follow-up — fractures, pickup salt, bolt flake, #262 · Updated: 2026-09-25 18:20
 
 ## Goal
 
-The /song-lab song starts when the replayed ship passes the bundle's song start z (freighter cruise), not at GO.
-Verify it live against workerone's bundle (61063be).
+Hosted groove rooms get fractured blocks (bolt-smash) with clear shadows, per-seed pickup power order, and
+no bolt-break test flake.
 
 ## Done
 
-- `ab88019`: the song plays behind the replay, at 1× only, re-seeking on drift > 80 ms. Mute, volume, M key.
-- `fab0267`: the 13-variant bundle (bcbc3d5) passes: 13/13 digests MATCH, 260/260 runs MATCH.
-- `9b3ab59`: song start at cruise from LabSong.clock { z0, t0, zPerSecond }; crossTick; readout clamps at the end.
-- `b0be2cc`: the loader reads the typed `bundle.song.clock`; the structural helper is gone.
+- `f5804af` (pushed to origin/dev): all three parts of #262. Results posted on #262.
 
 ## State
 
-- tsc clean; vitest song-lab 17/17 (with 61063be).
-- Live check, headless Chrome :9474 + scratch Vite :5194, believer-s1.json at 61063be, freighter.
-  Drift = ship time − the LIVE audio playhead (playheadAt(elapsedAtPerf(now))), sampled when ship time passes the bar.
-  - groove perfect: bar 8/28/60/96 = −10/−8/−5/−1 ms; last audible −16 ms. 0 re-seeks.
-  - groove-tight perfect: −10/−8/−5/−3 ms; last −1 ms. 0 re-seeks.
-  - envelope perfect: −14/−13/−11/−8 ms; last −7 ms. 0 re-seeks.
-  - All three: silent (status ready, not playing) until tick 248; crossTick 248.0; first playhead ≈ 0.09 s.
-    Finish at tick 12521, ship time 204.55 s; the song (204.43 s) ends first; readout "song ended · bar 106.4".
-  - envelope pro (8 bumps): each bump adds ≈ −25 ms. Drift −15/−68/−119/−197 ms at bars 8/28/60/96, −214 ms
-    (analytic) at finish. Audio never re-seeks: song time is tick-based, so the song keeps tempo and leads the ship.
-  - Digest line: "track digest MATCH · 20 / 20 runs MATCH" for groove, groove-tight, envelope.
+- Measured on HEAD 44596d8 plus the four #262 files (scratch build under the session scratchpad).
+- Groove seeds 1–30, length 400: fractured 10/18/23 per seed (min/med/max); 100% shadow-clear; islands 61.9 per seed (unchanged).
+- Weave, for reference: fractured 57/74/100, shadow-clear 5/15/25 (20.2%).
+- Open space: minLanes max 10.11 → 9.00; everything else unchanged.
+- The freighter line pilot smashes 366 of 516 (71%), 0 deaths, 0 bumps.
+- Pickup power orders over 30 seeds: 1 → 30 distinct.
+- Flake: seeded full-file loop, 2/30 fail before, 0/40 after. Suites: shared 360/360, server 24/24.
+- Biome clean for my paths. The run-room.test.ts >300-line warning was already there at HEAD.
 
 ## Uncommitted
 
@@ -32,19 +26,17 @@ Verify it live against workerone's bundle (61063be).
 
 ## Held files
 
-`apps/client/app/routes/song-lab/**`, `apps/client/app/routes/tapper/**`, `apps/client/tapper/tapper-plugin.ts`,
-the song-lab line in `apps/client/app/routes.ts`. workerone owns `apps/client/song-lab/**`.
+- none. The lane is done; I release packages/shared/src/sim/groove/** and apps/server/src/rooms/run-room.test.ts.
 
 ## Next
 
-1. STAND DOWN (2026-09-25). The owner is winding down the song lab. The conductor re-check is cancelled.
-   workerone archived the work on local branch `archive/song-lab` (b64766f). Do not touch
-   `apps/client/app/routes/song-lab/**` until the owner says which replay code stays. Stay idle.
+1. Wait for the supervisor. The lane is complete.
 
 ## Open questions
 
-- none. Re-seek after a bump is DROPPED: the song keeps tempo (owner decision).
+- Weave pickup ids are still `String( seg )` (ADR-002), so weave's power order is almost fixed. Owner call.
+- Smash size is 12×8u (SMASH_WIDTH/SMASH_DEPTH in groove/islands.ts); it has not been looked at live.
 
 ## Lessons → memory
 
-`.claude/memory/song-keeps-tempo-not-a-rhythm-game.md`.
+`.claude/memory/aim-tests-need-a-clear-approach.md`.
