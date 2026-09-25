@@ -4,20 +4,20 @@ Older versions hold the #257 width lane (`git log -p -- .claude/handovers/worker
 
 ## Goal
 
-Owner report: "reflections of the meteor fade slowly and stay even after the hit." Find the cause and fix it.
+Owner report: "reflections of the meteor fade slowly and stay even after the hit." Owner approved an ember end of 1.0 s.
 
 ## Done
 
-- Issue #259 filed.
-- Cause measured and plan sent to slur-supervisor. Claims cleared. No code written.
+- cf09c55 — the ember fades to exactly 0 at `EMBER_END = 1` (a `(1 − age/END)²` window, black at and after the end). The impact light is multiplied by a `(1 − age/1.8)²` window. New `meteor-scorch.test.ts`. Pushed to origin/dev. Closes #259.
 
 ## State
 
-- Harness: headless Chrome :9471 (killed), /test-level on :5173. `Meteor.chance` 1 in the headless localStorage only. Ship pinned 30u or 90u behind strike slot 2 (z 503.8, size 4.56). Clock stepped with `advance`. Each sample rendered 4 ways (all / no light / no ember / neither). Threshold: RGB-sum diff > 9 at 960x540.
-- Ship 30u from the hit: the pointLight shows 32,827 px at +0.1 s and 0 px from +2.0 s. The ember shows ~380 px at the hit, 208 px at +3.8 s, and 0 px only at ~+11.9 s.
-- Ship 90u from the hit: the ember shows ~35 px and is visible for ~4 s. The light's timing is the same as at 30u.
-- Cause: `emberColor` in meteor-scorch.tsx keeps 30% (1 − FLASH_SHARE) of the glow on `exp(-age / Meteor.cool)`, where cool is 3.5 s. No age cut-off; a mark is retired only when it falls behind the camera.
-- Scripts: this session's scratchpad `m/run2.mjs` and `m/cdp.mjs`. Frames are `m/b30-*.png` and `m/b90-*.png`.
+- The hit lands at t≈1.43 in the harness; the light at t=2.1 is 345 cd = 3189·e^(−age/0.3), so age ≈ 0.67 s. The first report said t≈2.0; that was wrong.
+- Before, at 30u: the light was visible to ~+2.4 s and the ember to ~+10.5 s after the hit.
+- After, at 30u: the ember shows 110 px at +0.67 s, 38 px at +0.77 s and 0 px from +0.87 s. The light fades with no pop: 18,935 px at +0.67 s, 245 px at +1.37 s, 0 px from +1.57 s.
+- A hard light cut at 1.8 s was tried first. It popped from 1,183 px to 0 in one 0.1 s sample, so it was replaced by the fade window.
+- Gates: typecheck green, client 357/357 (50 files), lint green (5 warnings, none mine). The tree held other workers' uncommitted files during the gates.
+- The soot mark is unchanged. A mark stays `live` for the soot, and a black additive ember adds nothing.
 
 ## Uncommitted
 
@@ -25,18 +25,15 @@ None.
 
 ## Held files
 
-apps/client/app/game/scene/meteor-scorch.tsx, apps/client/app/game/scene/meteor-scorch.test.ts (new), apps/client/app/game/scene/meteor-strikes.tsx. Claims cleared by the supervisor.
+None. Claims released.
 
 ## Next
 
-1. WAIT for the owner's ember choice, which the supervisor is relaying.
-2. Build: a hard end for the ember, fading to exactly 0 at EMBER_END ≈ 2.5 s, then `live = false`; or remove the ember if the owner picks that. Set the light intensity to 0 after ~1.8 s. Add a test that `emberColor` is 0 at and after the end.
-3. Re-measure with `run2.mjs 30`. The ember should read 0 px by +2.5 s.
-4. Run the gates, commit by pathspec, report to the supervisor.
+1. The owner flies it on :5173 to confirm the feel.
 
 ## Open questions
 
-- Owner: should the ember end at ~2.5 s, or be removed so only the soot mark is left?
+None.
 
 ## Lessons → memory
 
