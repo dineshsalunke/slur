@@ -1,5 +1,8 @@
+import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import {
+    cellGeometry,
+    cellHull,
     cellVolume,
     FRACTURE_ORIENTS,
     FRACTURE_OUTER,
@@ -8,17 +11,18 @@ import {
     fracturedBlockGeometry,
     fractureOrient,
     fractureSeeds,
+    fractureTurn,
 } from './fractured-block-geometry';
 
 describe( 'fractured block geometry', () => {
-    it( 'splits the block into about twelve cells', () => {
-        expect( fractureCells() ).toHaveLength( 12 );
+    it( 'splits the block into a coarse body and a shard cluster', () => {
+        expect( fractureCells() ).toHaveLength( 18 );
     } );
 
     it( 'tiles the unit box with no overlap and no hole', () => {
         const total = fractureCells().reduce( ( sum, c ) => sum + cellVolume( c ), 0 );
         expect( total ).toBeCloseTo( 1, 6 );
-        for ( const c of fractureCells() ) expect( cellVolume( c ) ).toBeGreaterThan( 0.02 );
+        for ( const c of fractureCells() ) expect( cellVolume( c ) ).toBeGreaterThan( 0.001 );
     } );
 
     it( 'keeps every cell convex', () => {
@@ -77,11 +81,49 @@ describe( 'fractured block geometry', () => {
     } );
 
     it( 'stays under the triangle budget', () => {
-        expect( fracturedBlockGeometry().getAttribute( 'position' ).count / 3 ).toBeLessThanOrEqual( 600 );
+        expect( fracturedBlockGeometry().getAttribute( 'position' ).count / 3 ).toBeLessThanOrEqual( 900 );
     } );
 
     it( 'builds the same fracture every time', () => {
         expect( fractureSeeds() ).toEqual( fractureSeeds() );
+    } );
+
+    it( 'breaks into shards far smaller than the coarse body', () => {
+        const volumes = fractureCells()
+            .map( cellVolume )
+            .sort( ( a, b ) => a - b );
+        expect( volumes[ volumes.length - 1 ] / volumes[ 0 ] ).toBeGreaterThan( 8 );
+    } );
+
+    it( 'turns a vector the same way as the shader, keeping its length', () => {
+        const v = new THREE.Vector3( 0.3, -0.2, 0.45 );
+        const seen = new Set< string >();
+        for ( let o = 0; o < FRACTURE_ORIENTS; o++ ) {
+            const t = fractureTurn( v, o, new THREE.Vector3() );
+            expect( t.length() ).toBeCloseTo( v.length(), 9 );
+            seen.add(
+                t
+                    .toArray()
+                    .map( ( n ) => n.toFixed( 3 ) )
+                    .join(),
+            );
+        }
+        expect( seen.size ).toBe( FRACTURE_ORIENTS );
+        expect( fractureTurn( v, 1, new THREE.Vector3() ).toArray() ).toEqual( [ 0.45, -0.2, -0.3 ] );
+    } );
+
+    it( 'builds each cell alone with its hull on its own vertices', () => {
+        fractureCells().forEach( ( cell, i ) => {
+            const g = cellGeometry( i );
+            const hull = cellHull( cell );
+            const pos = g.getAttribute( 'position' );
+            expect( hull.length ).toBeGreaterThanOrEqual( 4 );
+            for ( let k = 0; k < pos.count; k++ ) {
+                const p = new THREE.Vector3( pos.getX( k ), pos.getY( k ), pos.getZ( k ) );
+                expect( hull.some( ( h ) => h.distanceToSquared( p ) < 1e-10 ) ).toBe( true );
+            }
+            expect( new Set( g.getAttribute( 'aCellSeed' ).array ) ).toEqual( new Set( [ i ] ) );
+        } );
     } );
 
     it( 'picks every orientation from block ids', () => {

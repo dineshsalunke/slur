@@ -60,14 +60,14 @@ export const NEBULA_PRESET: SkyPreset = {
     planetElevation: 22,
     planetPhase: 104,
     planetTilt: -121,
-    planetLight: 1.55,
+    planetLight: 1.95,
     planetGlow: 0.8,
     planetRelief: 0.05,
     moons: 0,
     moonSize: 0.2,
     motion: 4,
-    environment: 0.85,
-    keyLight: 8,
+    environment: 1.85,
+    keyLight: 4.45,
 };
 
 export const DEEP_SPACE_PRESET: SkyPreset = {

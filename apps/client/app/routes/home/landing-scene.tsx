@@ -10,7 +10,6 @@ import { GameEnvironment } from '../../game/scene/game-environment';
 import { NearFill } from '../../game/scene/near-fill';
 import { SceneEffects } from '../../game/scene/scene-effects';
 import { SceneEnvironment } from '../../game/scene/scene-environment';
-import { SceneFog } from '../../game/scene/scene-fog';
 import { TrackView } from '../../game/scene/track-view';
 import { LandingRig } from './landing-rig';
 import { LandingShip } from './landing-ship';
@@ -38,7 +37,6 @@ export function LandingScene() {
                 <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
                 <GameEnvironment track={ track } />
                 <SceneEnvironment />
-                <SceneFog />
                 <BackFill />
                 <NearFill />
                 <EngineLight />

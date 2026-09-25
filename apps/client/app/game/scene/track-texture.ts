@@ -5,7 +5,7 @@ import { rebuildToken, subscribeRebuild } from '../../dev/tuning-rebuild';
 export const AUTHOR_PLATE_U = 4;
 
 const COLS = 4;
-const ROWS = 4;
+const ROWS = 1;
 
 export const TEX_SPAN_X = AUTHOR_PLATE_U * COLS;
 export const TEX_SPAN_Z = AUTHOR_PLATE_U * ROWS;
@@ -17,23 +17,23 @@ export const NORMAL_SIGN_Y = 1;
 
 export const ROUGHNESS_MAP_BASE = 0.8;
 
-const PLATE_VALUE_JITTER = 0.1;
-const MOTTLE_BLOBS = 26;
+const PLATE_VALUE_JITTER = 0.16;
+const MOTTLE_BLOBS = 34;
 const MOTTLE_RADIUS_U: readonly [ number, number ] = [ 1.2, 3.2 ];
 const MOTTLE_STRETCH = 3.5;
-const MOTTLE_AMOUNT = 0.16;
+const MOTTLE_AMOUNT = 0.26;
 const MOTTLE_TILT_RAD = 0.1;
-const FINISH_PATCHES = 7;
-const FINISH_ROUGHER_MIN = 0.06;
-const FINISH_ROUGHER_MAX = 0.13;
-const FINISH_SMOOTHER_MIN = 0.04;
-const FINISH_SMOOTHER_MAX = 0.1;
-const FINISH_ROUGHER_SHARE = 0.72;
+const FINISH_PATCHES = 11;
+const FINISH_ROUGHER_MIN = 0.08;
+const FINISH_ROUGHER_MAX = 0.18;
+const FINISH_SMOOTHER_MIN = 0.08;
+const FINISH_SMOOTHER_MAX = 0.2;
+const FINISH_ROUGHER_SHARE = 0.6;
 const FINISH_LOBE_RADIUS_U: readonly [ number, number ] = [ 1, 2.6 ];
 const FINISH_LOBE_SPREAD_U = 2.2;
-const SCUFF_CLUSTERS = 4;
-const SCUFF_ROUGHER_MIN = 0.05;
-const SCUFF_ROUGHER_MAX = 0.1;
+const SCUFF_CLUSTERS = 7;
+const SCUFF_ROUGHER_MIN = 0.08;
+const SCUFF_ROUGHER_MAX = 0.16;
 const SCUFF_SPREAD_U = 1.6;
 const SCUFF_TILT_RAD = 0.2;
 const RUB_SEGMENT_CHANCE = 0.22;

@@ -35,7 +35,7 @@ export const FLANK_BAND: AsteroidBand = {
     spacing: 12,
     density: 1,
     variants: 3,
-    detail: 6,
+    detail: 9,
     limit: 176,
 };
 
@@ -51,7 +51,7 @@ export const MID_BAND: AsteroidBand = {
     spacing: 16,
     density: 1,
     variants: 2,
-    detail: 5,
+    detail: 7,
     limit: 132,
 };
 
@@ -67,7 +67,7 @@ export const BELT_BAND: AsteroidBand = {
     spacing: 20,
     density: 1,
     variants: 2,
-    detail: 4,
+    detail: 6,
     limit: 112,
 };
 

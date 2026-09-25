@@ -5,8 +5,12 @@ export const FRACTURE_OUTER = 0;
 export const FRACTURE_WALL = 1;
 export const FRACTURE_ORIENTS = 8;
 
-const GRID = { x: 2, y: 3, z: 2 } as const;
-const JITTER = 0.42;
+const COARSE = { x: 2, y: 2, z: 2 } as const;
+const COARSE_JITTER = 0.4;
+const SHARDS = 10;
+const SHARD_CENTRE = new THREE.Vector3( 0.12, 0.16, -0.33 );
+const SHARD_SPREAD = new THREE.Vector3( 0.3, 0.28, 0.15 );
+const SEED_LIMIT = 0.47;
 const SEED = 0x51ab_c0de;
 const EPS = 1e-6;
 
@@ -59,19 +63,24 @@ function clipPolygon( points: THREE.Vector3[], n: THREE.Vector3, d: number, cut:
     return out;
 }
 
+function unique( points: THREE.Vector3[] ): THREE.Vector3[] {
+    const out: THREE.Vector3[] = [];
+    for ( const p of points ) if ( ! out.some( ( u ) => u.distanceToSquared( p ) < 1e-10 ) ) out.push( p );
+    return out;
+}
+
 function capFace( cut: THREE.Vector3[], n: THREE.Vector3 ): FractureFace | null {
-    const unique: THREE.Vector3[] = [];
-    for ( const p of cut ) if ( ! unique.some( ( u ) => u.distanceToSquared( p ) < 1e-10 ) ) unique.push( p );
-    if ( unique.length < 3 ) return null;
-    const c = unique.reduce( ( a, p ) => a.add( p ), new THREE.Vector3() ).divideScalar( unique.length );
-    const u = new THREE.Vector3().subVectors( unique[ 0 ], c ).normalize();
+    const points = unique( cut );
+    if ( points.length < 3 ) return null;
+    const c = points.reduce( ( a, p ) => a.add( p ), new THREE.Vector3() ).divideScalar( points.length );
+    const u = new THREE.Vector3().subVectors( points[ 0 ], c ).normalize();
     const v = new THREE.Vector3().crossVectors( n, u );
     const angle = ( p: THREE.Vector3 ) => {
         const r = new THREE.Vector3().subVectors( p, c );
         return Math.atan2( r.dot( v ), r.dot( u ) );
     };
-    unique.sort( ( a, b ) => angle( a ) - angle( b ) );
-    return { points: unique, normal: n.clone(), tag: FRACTURE_WALL };
+    points.sort( ( a, b ) => angle( a ) - angle( b ) );
+    return { points, normal: n.clone(), tag: FRACTURE_WALL };
 }
 
 function clipCell( faces: FractureFace[], n: THREE.Vector3, d: number ): FractureFace[] {
@@ -86,16 +95,29 @@ function clipCell( faces: FractureFace[], n: THREE.Vector3, d: number ): Fractur
     return kept;
 }
 
+function clampSeed( v: number ): number {
+    return Math.max( -SEED_LIMIT, Math.min( SEED_LIMIT, v ) );
+}
+
 export function fractureSeeds(): THREE.Vector3[] {
     const rand = mulberry32( SEED );
     const seeds: THREE.Vector3[] = [];
-    for ( let i = 0; i < GRID.x; i++ ) {
-        for ( let j = 0; j < GRID.y; j++ ) {
-            for ( let k = 0; k < GRID.z; k++ ) {
-                const at = ( n: number, cells: number ) => ( n + 0.5 + ( rand() - 0.5 ) * 2 * JITTER ) / cells - 0.5;
-                seeds.push( new THREE.Vector3( at( i, GRID.x ), at( j, GRID.y ), at( k, GRID.z ) ) );
+    const at = ( n: number, cells: number ) => ( n + 0.5 + ( rand() - 0.5 ) * 2 * COARSE_JITTER ) / cells - 0.5;
+    for ( let i = 0; i < COARSE.x; i++ ) {
+        for ( let j = 0; j < COARSE.y; j++ ) {
+            for ( let k = 0; k < COARSE.z; k++ ) {
+                seeds.push( new THREE.Vector3( at( i, COARSE.x ), at( j, COARSE.y ), at( k, COARSE.z ) ) );
             }
         }
+    }
+    for ( let s = 0; s < SHARDS; s++ ) {
+        seeds.push(
+            new THREE.Vector3(
+                clampSeed( SHARD_CENTRE.x + ( rand() - 0.5 ) * 2 * SHARD_SPREAD.x ),
+                clampSeed( SHARD_CENTRE.y + ( rand() - 0.5 ) * 2 * SHARD_SPREAD.y ),
+                clampSeed( SHARD_CENTRE.z + ( rand() - 0.5 ) * 2 * SHARD_SPREAD.z ),
+            ),
+        );
     }
     return seeds;
 }
@@ -138,14 +160,18 @@ export function cellVolume( cell: FractureCell ): number {
     return v / 6;
 }
 
-export function fracturedBlockGeometry(): THREE.BufferGeometry {
+export function cellHull( cell: FractureCell ): THREE.Vector3[] {
+    return unique( cell.faces.flatMap( ( f ) => f.points ) );
+}
+
+function cellsGeometry( list: readonly FractureCell[], first: number ): THREE.BufferGeometry {
     const position: number[] = [];
     const normal: number[] = [];
     const fracture: number[] = [];
     const centre: number[] = [];
     const half: number[] = [];
     const seed: number[] = [];
-    fractureCells().forEach( ( cell, index ) => {
+    list.forEach( ( cell, offset ) => {
         for ( const f of cell.faces ) {
             for ( let i = 1; i < f.points.length - 1; i++ ) {
                 for ( const p of [ f.points[ 0 ], f.points[ i ], f.points[ i + 1 ] ] ) {
@@ -154,7 +180,7 @@ export function fracturedBlockGeometry(): THREE.BufferGeometry {
                     fracture.push( f.tag );
                     centre.push( cell.centre.x, cell.centre.y, cell.centre.z );
                     half.push( cell.half.x, cell.half.y, cell.half.z );
-                    seed.push( index );
+                    seed.push( first + offset );
                 }
             }
         }
@@ -169,6 +195,14 @@ export function fracturedBlockGeometry(): THREE.BufferGeometry {
     return g;
 }
 
+export function fracturedBlockGeometry(): THREE.BufferGeometry {
+    return cellsGeometry( fractureCells(), 0 );
+}
+
+export function cellGeometry( index: number ): THREE.BufferGeometry {
+    return cellsGeometry( [ fractureCells()[ index ] ], index );
+}
+
 export function shareCells( g: THREE.BufferGeometry ): THREE.BufferGeometry {
     const out = new THREE.BufferGeometry();
     for ( const name of [ 'position', 'normal', 'aFracture', 'aCellCentre', 'aCellHalf', 'aCellSeed' ] ) {
@@ -179,4 +213,26 @@ export function shareCells( g: THREE.BufferGeometry ): THREE.BufferGeometry {
 
 export function fractureOrient( id: number ): number {
     return ( Math.imul( id, 0x9e37_79b1 ) >>> 16 ) % FRACTURE_ORIENTS;
+}
+
+export function fractureTurn( v: THREE.Vector3, orient: number, out: THREE.Vector3 ): THREE.Vector3 {
+    let x = v.x;
+    let y = v.y;
+    let z = v.z;
+    if ( orient >= 4 ) {
+        y = -y;
+        z = -z;
+    }
+    let q = orient % 4;
+    if ( q >= 2 ) {
+        x = -x;
+        z = -z;
+        q -= 2;
+    }
+    if ( q >= 1 ) {
+        const t = x;
+        x = z;
+        z = -t;
+    }
+    return out.set( x, y, z );
 }
