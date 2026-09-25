@@ -86,3 +86,4 @@ lives in its own file beside this one.
 - [Aim tests need a clear approach](aim-tests-need-a-clear-approach.md) — a test aiming at the first block of a kind flakes when another block butts on it; seed Math.random, run the whole file
 - [Queued message can sit unread](queued-message-can-sit-unread.md) — an idle worker may never act on a SendMessage; check the pane, prompt via herdr
 - [ast-grep drops semicolons](ast-grep-drops-semicolons.md) — rewriting a whole `const` statement loses its `;`; include it in pattern and rewrite, grep after -U
+- [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — `'fighter'` silently falls back to freighter tuning; use `SHIP_CLASSES.<class>.tuning` in tests

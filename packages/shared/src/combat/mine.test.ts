@@ -57,7 +57,8 @@ function blank(): MineState {
 
 function laid( x: number, z: number, ownerId = 'owner', t = track() ): MineState {
     const m = blank();
-    assert.ok( aimMine( m, { x, y: 0, z }, HULL, ownerId, t, DEFAULT_SIM_CONFIG, -1 ) );
+    const behind = HULL.halfL + DEFAULT_SIM_CONFIG.mineTriggerR + DEFAULT_SIM_CONFIG.mineBackGap;
+    assert.ok( aimMine( m, { x, y: 0, z: z + behind, vz: 0 }, HULL, ownerId, t, DEFAULT_SIM_CONFIG, -1 ) );
     return m;
 }
 
@@ -99,31 +100,18 @@ test( 'the pickup split keeps every seeker and turns about mineRatio of the rest
     assert.ok( Math.abs( mines / ids.length - DEFAULT_SIM_CONFIG.mineRatio ) < 0.04, `ratio ${ mines / ids.length }` );
 } );
 
-test( 'a mine fired forward lands on the deck mineDropAhead past the nose, unarmed, with the full ttl', () => {
-    const m = blank();
-    const shipAt = { x: 5, y: 3.2, z: 100 };
-    assert.ok( aimMine( m, shipAt, HULL, 'owner', track( -1, -1, 1.5 ) ) );
-    assert.deepEqual( m, {
-        x: 5,
-        y: 1.5,
-        z: 100 + HULL.halfL + DEFAULT_SIM_CONFIG.mineDropAhead,
-        ownerId: 'owner',
-        armed: false,
-        ttl: DEFAULT_SIM_CONFIG.mineTtl,
-    } );
-} );
-
-test( 'a mine fired back lands on the deck under the ship', () => {
-    const m = blank();
-    assert.ok( aimMine( m, { x: -4, y: 3.2, z: 100 }, HULL, 'owner', track( -1, -1, 1.5 ), DEFAULT_SIM_CONFIG, -1 ) );
-    assert.deepEqual( [ m.x, m.y, m.z ], [ -4, 1.5, 100 ] );
-} );
-
 test( 'a mine dropped over a gap fizzles, forward or back', () => {
     const m = blank();
-    const over = { x: 0, y: 2, z: 5 * SEG_LEN + 5 };
-    assert.equal( aimMine( m, over, HULL, 'owner', track( 5 ) ), false );
-    assert.equal( aimMine( m, over, HULL, 'owner', track( 5 ), DEFAULT_SIM_CONFIG, -1 ), false );
+    const gap = 5 * SEG_LEN + SEG_LEN / 2;
+    const ahead = { x: 0, y: 2, z: gap - HULL.halfL - DEFAULT_SIM_CONFIG.mineTriggerR, vz: 0 };
+    const behind = {
+        x: 0,
+        y: 2,
+        z: gap + HULL.halfL + DEFAULT_SIM_CONFIG.mineTriggerR + DEFAULT_SIM_CONFIG.mineBackGap,
+        vz: 0,
+    };
+    assert.equal( aimMine( m, ahead, HULL, 'owner', track( 5 ) ), false );
+    assert.equal( aimMine( m, behind, HULL, 'owner', track( 5 ), DEFAULT_SIM_CONFIG, -1 ), false );
 } );
 
 test( 'a mine arms after mineArmS and not before', () => {
@@ -140,10 +128,13 @@ test( 'a mine arms after mineArmS and not before', () => {
     assert.equal( mines.size, 0 );
 } );
 
-test( 'the owner never triggers its own mine', () => {
+test( 'the owner triggers its own armed mine', () => {
     const mines = new Map( [ [ 'm', laid( 0, 50 ) ] ] );
-    assert.deepEqual( run( mines, [ ship( 'owner', { z: 50 } ) ], 2 ), [] );
-    assert.equal( mines.size, 1 );
+    assert.deepEqual(
+        run( mines, [ ship( 'owner', { z: 50 } ) ], 1 ).map( ( e ) => [ e.outcome, e.victimId ] ),
+        [ [ 'trigger', 'owner' ] ],
+    );
+    assert.equal( mines.size, 0 );
 } );
 
 test( 'dead, spectating and finished ships do not trigger it', () => {

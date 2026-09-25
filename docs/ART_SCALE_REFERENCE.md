@@ -191,7 +191,8 @@ tracer" read is correct and should be pushed further.
 | Trigger height above the mine | **2u** | `MINE_TRIGGER_H` |
 | Hit box half-extent (a bolt clears it) | **1.1u** | `MINE_HALF` |
 | Hit box height | **0.9u** | `MINE_HEIGHT` |
-| Drop distance ahead of the nose (forward) | **8u** | `MINE_DROP_AHEAD` |
+| Forward drop: time ahead at the layer's speed, past the 3u trigger radius from the nose (70u to 102u at top speed) | **0.8s** | `MINE_LEAD_S` |
+| Back drop: gap behind the trigger radius from the tail | **1u** | `MINE_BACK_GAP` |
 | Arming time | **0.5s** | `MINE_ARM_S` |
 | Lifetime | **20s** | `MINE_TTL` |
 | Live mines per owner | **3** | `MINE_MAX_PER_OWNER` |

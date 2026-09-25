@@ -17,6 +17,7 @@ export interface MineLayer {
     x: number;
     y: number;
     z: number;
+    vz: number;
 }
 
 export interface MineHull {
@@ -35,6 +36,12 @@ export interface MineEvent {
     ownerId: string;
 }
 
+export function mineDropZ( ship: MineLayer, halfL: number, cfg: SimConfig = DEFAULT_SIM_CONFIG, dir = 1 ): number {
+    const clear = halfL + cfg.mineTriggerR;
+    if ( dir < 0 ) return ship.z - clear - cfg.mineBackGap;
+    return ship.z + clear + Math.max( 0, ship.vz ) * cfg.mineLeadS;
+}
+
 export function aimMine(
     mine: MineState,
     ship: MineLayer,
@@ -44,7 +51,7 @@ export function aimMine(
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
     dir = 1,
 ): boolean {
-    const z = dir < 0 ? ship.z : ship.z + hull.halfL + cfg.mineDropAhead;
+    const z = mineDropZ( ship, hull.halfL, cfg, dir );
     const y = floorUnder( track.segmentAtZ( z ), ship.x, z, ship.y, hull.stepTol );
     if ( y === null ) return false;
     mine.x = ship.x;
@@ -91,7 +98,7 @@ export function evictOldest(
 }
 
 export function mineTriggers( mine: MineState, s: SeekerShip, cfg: SimConfig = DEFAULT_SIM_CONFIG ): boolean {
-    if ( ! mine.armed || s.id === mine.ownerId || s.dead || s.spectating || s.finished ) return false;
+    if ( ! mine.armed || s.dead || s.spectating || s.finished ) return false;
     const r = cfg.mineTriggerR;
     return (
         s.y - mine.y < cfg.mineTriggerH &&

@@ -109,7 +109,7 @@ describe( 'RunRoom mines', () => {
         assert.equal( decoded.length, 1, 'the client decodes one mine' );
         const [ m ] = decoded;
         assert.ok( m );
-        const wantZ = DROP_Z + tuningForShip( SHIP ).halfL + DEFAULT_SIM_CONFIG.mineDropAhead;
+        const wantZ = DROP_Z + tuningForShip( SHIP ).halfL + DEFAULT_SIM_CONFIG.mineTriggerR;
         assert.equal( m.x, 0 );
         assert.ok( Math.abs( m.z - wantZ ) < 1e-3, `z ${ m.z } vs ${ wantZ }` );
         assert.equal( m.ownerId, host.sessionId );
@@ -165,11 +165,31 @@ describe( 'RunRoom mines', () => {
         );
     } );
 
-    test( 'a mine fired back lands under the layer', async () => {
+    test( 'a mine fired back lands behind the layer tail', async () => {
         const { room } = await layingRoom( { slot: 0, dir: -1 } );
         const [ mine ] = [ ...room.state.mines.values() ];
         assert.ok( mine );
-        assert.ok( Math.abs( mine.z - DROP_Z ) < 1e-3, `z ${ mine.z }` );
+        const { mineTriggerR, mineBackGap } = DEFAULT_SIM_CONFIG;
+        const wantZ = DROP_Z - tuningForShip( SHIP ).halfL - mineTriggerR - mineBackGap;
+        assert.ok( Math.abs( mine.z - wantZ ) < 1e-3, `z ${ mine.z } vs ${ wantZ }` );
+    } );
+
+    test( 'the layer on its own armed mine is stunned too', async () => {
+        const { room, host, layer, bursts } = await layingRoom();
+        tick( room, DEFAULT_SIM_CONFIG.mineArmS + 0.05 );
+        const [ mine ] = [ ...room.state.mines.values() ];
+        assert.ok( mine );
+        park( layer, mine.x, mine.z );
+        layer.y = mine.y;
+        tick( room, FIXED_DT );
+
+        assert.equal( room.state.mines.size, 0, 'the mine is spent' );
+        assert.ok( layer.stunTimer > 0, `stun ${ layer.stunTimer }` );
+        await delay( 100 );
+        assert.deepEqual(
+            bursts.map( ( b ) => [ b.outcome, b.victimId ] ),
+            [ [ 'trigger', host.sessionId ] ],
+        );
     } );
 
     test( 'a bolt and a seeker fired back decode on the client with dir -1', async () => {

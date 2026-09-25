@@ -230,14 +230,18 @@ The owner still has to confirm F as the back key.
 
 **Mine (#261, built).** A pickup gives a Mine in about 1 in 5 pickups (`MINE_RATIO` = 0.2).
 
-- **Lay.** Forward puts the mine **8u** ahead of the nose (`MINE_DROP_AHEAD`), so you can mine the
-  line you are on. Back puts it at the ship's own z, for the rivals behind you. The mine sits on the
-  floor under that point. Over a gap there is no floor, so no mine is laid and the power is lost.
+- **Lay (#263).** Forward puts the mine **0.8 s** ahead at the layer's own speed (`MINE_LEAD_S`),
+  past the trigger radius from the nose: 70u for the Interceptor to 102u for the Freighter at top
+  speed. A rival in that stretch reaches the mine first. The layer gets 0.8 s to strafe or jump around
+  it. Back puts it behind the tail, clear of the trigger radius by **1u** (`MINE_BACK_GAP`), for the
+  rivals behind you. The mine sits on the floor under that point. Over a gap there is no floor, so no
+  mine is laid and the power is lost.
 - **Arm.** A mine arms **0.5 s** after it is laid (`MINE_ARM_S`). Before that it does nothing.
-- **Trigger.** An armed mine goes off when a rival's hull comes within **3u** of it in x and z
+- **Trigger.** An armed mine goes off when a hull comes within **3u** of it in x and z
   (`MINE_TRIGGER_R`, added to the hull's half-extents) and less than **2u** above it. The owner is
-  immune. The victim is stunned for **1.5 s** (`MINE_STUN_S`, scaled by class like every stun) and
-  keeps **60%** of its forward speed (`MINE_SPEED_CUT`).
+  not immune: a layer that flies onto its own armed mine is hit. The victim is stunned for **1.5 s**
+  (`MINE_STUN_S`, scaled by class like every stun) and keeps **60%** of its forward speed
+  (`MINE_SPEED_CUT`).
 - **Clear.** A bolt that hits a mine destroys it. Seekers fly over mines.
 - **Limits.** A mine lasts **20 s** (`MINE_TTL`). An owner can have **3** live mines
   (`MINE_MAX_PER_OWNER`). A fourth removes the oldest.

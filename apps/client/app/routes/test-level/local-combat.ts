@@ -110,9 +110,10 @@ function fireSeeker( me: Gunner, vz: number, track: Track, dir: FireDir ): void 
     localCombat.seekers.set( String( localCombat.nextId++ ), seeker );
 }
 
-function layMine( me: Gunner, shipId: string, track: Track, dir: FireDir ): void {
+function layMine( me: Gunner, vz: number, shipId: string, track: Track, dir: FireDir ): void {
     const mine: MineState = { x: 0, y: 0, z: 0, ownerId: '', armed: false, ttl: 0 };
-    if ( ! aimMine( mine, me, tuningForShip( shipId ), OWNER, track, DEFAULT_SIM_CONFIG, dir ) ) return;
+    const layer = { x: me.x, y: me.y, z: me.z, vz };
+    if ( ! aimMine( mine, layer, tuningForShip( shipId ), OWNER, track, DEFAULT_SIM_CONFIG, dir ) ) return;
     evictOldest( localCombat.mines, OWNER, burstMine );
     localCombat.mines.set( String( localCombat.nextId++ ), mine );
 }
@@ -122,7 +123,7 @@ function fire( me: Gunner, slot: number, vz: number, shipId: string, track: Trac
     const power = powerIn( me, slot );
     spendPower( me, slot );
     if ( power === HeldPower.seeker ) fireSeeker( me, vz, track, dir );
-    else if ( power === HeldPower.mine ) layMine( me, shipId, track, dir );
+    else if ( power === HeldPower.mine ) layMine( me, vz, shipId, track, dir );
     else fireBolt( me, dir );
 }
 
