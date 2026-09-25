@@ -17,9 +17,13 @@ animation is feedback. The dropper must see the forward mine land 70–102u ahea
 - Forward drop z = ship.z + halfL + 3 + 0.8·vz. Back drop = tail − 4u. Arm = 0.5 s [measured from source].
 - At arm the mine is ~0.3·vz (25–40u) ahead of the nose. The ship reaches it at ~0.8 s [derived].
 - A fizzle returns silently at `apps/server/src/rooms/room-combat.ts:69`, and no message is sent [read].
-- Plan: throw 0–0.28 s (peak clamp(0.07·d, 2, 7)u, tumble, closed), settle 0.28–0.38 s, open 0.38–0.50 s.
-  Arc trail + vertical landing spike (fog:false) in one new instanced mesh. Body/decal/core stay at +0 draw calls
-  (aHinge + aOpen attributes via onBeforeCompile). Fizzle needs a server `'fizzled'` MineOutcome broadcast.
+- OWNER REDIRECT: the in-flight mine uses the bolt look. Revised plan sent. The shot is extra instances in
+  `BoltStreaks` (`game/scene/bolt-streaks.tsx:38`), fed by a new `collectMineShots` from ProjectileField and
+  LocalBoltField. BoltSink gets an optional `pitch = 0`. Shallow arc (≤1.5u rise) lands at 0.25 s, the streak
+  collapses by 0.30 s, a vertical bolt spike flashes at the landing point, and the mine opens 0.32–0.50 s
+  (aHinge + aOpen). Back drop: a short dir −1 shot, 0.12 s. +0 draw calls.
+- Pending with the owner: the fizzle broadcast, and other players' mines (now default identical, since bolt
+  meshes have no per-instance colour).
 
 ## Uncommitted
 
