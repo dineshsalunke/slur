@@ -59,12 +59,10 @@ export const NUMBER_TUNABLES = {
     'Rail.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
     'Rail.envMapIntensity': { value: 1.5, min: 0, max: 6, step: 0.05, rebuild: false },
     'Rail.normalScale': { value: 0.8, min: 0, max: 3, step: 0.01, rebuild: false },
-    'Rail.plate': { value: 4, min: 1, max: 24, step: 1, rebuild: true },
     'Rail.railEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
     'Rail.rimEmissive': { value: 2, min: 0, max: 30, step: 0.05, rebuild: false },
 
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
-    'Monolith.plate': { value: 2, min: 0, max: 24, step: 1, rebuild: true },
 
     'Block.seamEmissive': { value: 6, min: 0, max: 20, step: 0.05, rebuild: false },
     'Block.wear': { value: 0.6, min: 0, max: 1, step: 0.01, rebuild: false },
@@ -96,6 +94,11 @@ export const NUMBER_TUNABLES = {
     'Groove.roughness': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.darkening': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.cavity': { value: 0.3, min: 0, max: 1, step: 0.01, rebuild: true },
+
+    'Pit.density': { value: 2.5, min: 0, max: 12, step: 0.1, rebuild: true },
+    'Pit.tilt': { value: 0.35, min: 0, max: 0.9, step: 0.01, rebuild: true },
+    'Pit.roughness': { value: 0.12, min: 0, max: 0.5, step: 0.01, rebuild: true },
+    'Pit.cavity': { value: 0.5, min: 0, max: 1, step: 0.01, rebuild: true },
 
     'Hover.base': { value: 0.35, min: 0, max: 4, step: 0.01, rebuild: false },
     'Hover.speedLift': { value: 0.9, min: 0, max: 6, step: 0.01, rebuild: false },
@@ -182,7 +185,7 @@ export const NUMBER_TUNABLES = {
     'Rock.cycle': { value: 36, min: 10, max: 200, step: 1, rebuild: false },
     'Rock.heat': { value: 3, min: 0, max: 20, step: 0.1, rebuild: false },
 
-    'Meteor.chance': { value: 0.65, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Meteor.chance': { value: 0.15, min: 0, max: 1, step: 0.01, rebuild: false },
     'Meteor.speed': { value: 170, min: 40, max: 400, step: 5, rebuild: false },
     'Meteor.size': { value: 1, min: 0.3, max: 3, step: 0.05, rebuild: false },
     'Meteor.flight': { value: 1.4, min: 0.4, max: 4, step: 0.05, rebuild: false },

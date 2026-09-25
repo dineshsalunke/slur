@@ -24,7 +24,7 @@ import {
 } from './fractured-block-geometry';
 import { type FracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
 import { pushHit } from './hit-events';
-import { floorSurface } from './track-materials';
+import { graphiteSurface } from './track-materials';
 
 const SLOTS = 12;
 const LIFE = 14;
@@ -218,7 +218,7 @@ export function BlockDebris( { track, uniforms }: { track: Track; uniforms: Frac
     const ground = useMemo( () => trackGround( track, blockWorld.broken ), [ track ] );
     const meshes = useRef< ( THREE.InstancedMesh | null )[] >( [] );
     const material = useMemo( () => {
-        const m = new THREE.MeshStandardMaterial( floorSurface() );
+        const m = new THREE.MeshStandardMaterial( graphiteSurface() );
         patchFracturedBlock( m, uniforms, true );
         return m;
     }, [ rebuild, uniforms ] );

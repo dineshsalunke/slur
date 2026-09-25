@@ -124,14 +124,12 @@ export function TuningPanel() {
         roughness: numberControl( 'Rail.roughness' ),
         envMapIntensity: numberControl( 'Rail.envMapIntensity' ),
         normalScale: numberControl( 'Rail.normalScale' ),
-        plate: numberControl( 'Rail.plate' ),
         railEmissive: numberControl( 'Rail.railEmissive' ),
         rimEmissive: numberControl( 'Rail.rimEmissive' ),
     } );
 
     useControls( 'Monolith', {
         seamEmissive: numberControl( 'Monolith.seamEmissive' ),
-        plate: numberControl( 'Monolith.plate' ),
     } );
 
     useControls( 'Block', {
@@ -147,6 +145,13 @@ export function TuningPanel() {
         roughness: numberControl( 'Groove.roughness' ),
         darkening: numberControl( 'Groove.darkening' ),
         cavity: numberControl( 'Groove.cavity' ),
+    } );
+
+    useControls( 'Pit', {
+        density: numberControl( 'Pit.density' ),
+        tilt: numberControl( 'Pit.tilt' ),
+        roughness: numberControl( 'Pit.roughness' ),
+        cavity: numberControl( 'Pit.cavity' ),
     } );
 
     useControls( 'Exhaust', {

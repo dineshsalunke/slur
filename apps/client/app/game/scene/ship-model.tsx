@@ -4,6 +4,7 @@ import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
+import { rebuildToken } from '../../dev/tuning-rebuild';
 import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
 import { exhaustDrive } from './exhaust-drive';
@@ -11,6 +12,8 @@ import { guardLfsPointer } from './gltf-lfs-guard';
 import { METAL_METALNESS, METAL_ROUGHNESS } from './metal';
 import { type EngineGlow, engineIntensity, engineMaterial } from './ship-materials';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
+import { cleanToMapRoughness } from './track-materials';
+import { graphiteSurfaceParams, surfaceMaps, TEX_SPAN_X } from './track-texture';
 
 for ( const v of Object.values( SHIP_VISUALS ) ) {
     useGLTF.preload( v.url, undefined, undefined, guardLfsPointer );
@@ -59,9 +62,33 @@ const DISSOLVE_EDGE = `
     }
 `;
 
-function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void {
+const HULL_PROJECTION = `
+#include <uv_vertex>
+{
+	vec3 hullAxis = abs( normal );
+	vec3 hullP = position * length( modelMatrix[ 0 ].xyz );
+	vec2 hullUv = hullAxis.y > max( hullAxis.x, hullAxis.z )
+		? hullP.xz
+		: ( hullAxis.x > hullAxis.z ? hullP.zy : hullP.xy );
+	hullUv /= uHullTexSpan;
+	#ifdef USE_NORMALMAP
+	vNormalMapUv = hullUv;
+	#endif
+	#ifdef USE_ROUGHNESSMAP
+	vRoughnessMapUv = hullUv;
+	#endif
+	#ifdef USE_METALNESSMAP
+	vMetalnessMapUv = hullUv;
+	#endif
+}
+`;
+
+const hullTexSpan = { value: TEX_SPAN_X };
+
+function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms, hull: boolean ): void {
     if ( mat.userData.dissolvePatched ) return;
     mat.userData.dissolvePatched = true;
+    mat.customProgramCacheKey = () => ( hull ? 'slur-ship-hull' : 'slur-ship' );
     mat.onBeforeCompile = ( shader ) => {
         shader.uniforms.uDissolve = uniforms.uDissolve;
         shader.uniforms.uNoiseScale = uniforms.uNoiseScale;
@@ -72,6 +99,13 @@ function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms ): void 
             '#include <begin_vertex>',
             '#include <begin_vertex>\n\tvDissolvePos = position;',
         );
+        if ( hull ) {
+            shader.uniforms.uHullTexSpan = hullTexSpan;
+            shader.vertexShader = `uniform float uHullTexSpan;\n${ shader.vertexShader }`.replace(
+                '#include <uv_vertex>',
+                HULL_PROJECTION,
+            );
+        }
         shader.fragmentShader = ( DISSOLVE_FRAG_HEAD + shader.fragmentShader )
             .replace(
                 '#include <clipping_planes_fragment>',
@@ -86,8 +120,18 @@ function hullMaterial( mat: THREE.Material ): THREE.MeshStandardMaterial | null 
     const std = mat as THREE.MeshStandardMaterial;
     if ( ! std.isMeshStandardMaterial || std.emissive.getHex() !== 0 ) return null;
     std.metalness = METAL_METALNESS;
-    std.roughness = METAL_ROUGHNESS;
+    std.roughness = cleanToMapRoughness( METAL_ROUGHNESS );
     return std;
+}
+
+function dressHulls( hulls: THREE.MeshStandardMaterial[] ): void {
+    const maps = surfaceMaps( graphiteSurfaceParams() );
+    for ( const hull of hulls ) {
+        hull.normalMap = maps.normalMap;
+        hull.roughnessMap = maps.roughnessMap;
+        hull.metalnessMap = maps.metalnessMap;
+        hull.needsUpdate = true;
+    }
 }
 
 interface ShipSurfaces {
@@ -106,7 +150,7 @@ function collectSurfaces( grp: THREE.Group, uniforms: DissolveUniforms ): ShipSu
             if ( hull ) found.hulls.push( hull );
             const engine = engineMaterial( mat );
             if ( engine ) found.engines.push( engine );
-            patchDissolve( mat, uniforms );
+            patchDissolve( mat, uniforms, hull !== null );
         }
     } );
     return found;
@@ -134,6 +178,7 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
     const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
     const patched = useRef( false );
+    const dressed = useRef( -1 );
     const surfaces = useRef< ShipSurfaces >( { hulls: [], engines: [] } );
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
@@ -153,11 +198,17 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
             surfaces.current = collectSurfaces( grp, uniforms );
             patched.current = true;
         }
+        if ( dressed.current !== rebuildToken() ) {
+            dressed.current = rebuildToken();
+            dressHulls( surfaces.current.hulls );
+        }
         const base = col( 'Metal.baseColor' );
         const envMapIntensity = num( 'Ship.envMapIntensity' );
+        const normalScale = num( 'Deck.normalScale' );
         for ( const hull of surfaces.current.hulls ) {
             hull.color.set( base );
             hull.envMapIntensity = envMapIntensity;
+            hull.normalScale.set( normalScale, normalScale );
         }
         driveEngines( surfaces.current.engines, entity );
         const target = isDead( entity ) ? 1 : 0;

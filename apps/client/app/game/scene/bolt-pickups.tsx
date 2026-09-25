@@ -8,24 +8,15 @@ import {
     boltPickupShellGeometry,
     PICKUP_CORE_INTENSITY,
     PICKUP_GLYPH_INTENSITY,
-    PICKUP_SHELL_COLOR,
-    PICKUP_SHELL_ROUGHNESS,
 } from './combat-look';
 import { PickupInstances, type PickupPart } from './pickup-instances';
+import { graphiteShellMaterial } from './track-materials';
 
 function buildBoltBody(): PickupPart[] {
     const glyph = new THREE.MeshStandardMaterial( { color: '#000000', emissiveIntensity: PICKUP_GLYPH_INTENSITY } );
     glyph.emissive = accent();
     return [
-        {
-            geometry: boltPickupShellGeometry(),
-            material: new THREE.MeshStandardMaterial( {
-                color: PICKUP_SHELL_COLOR,
-                metalness: 0,
-                roughness: PICKUP_SHELL_ROUGHNESS,
-                flatShading: true,
-            } ),
-        },
+        { geometry: boltPickupShellGeometry(), material: graphiteShellMaterial() },
         { geometry: boltPickupGlyphGeometry(), material: glyph },
         {
             geometry: boltPickupCoreGeometry(),

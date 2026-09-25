@@ -52,6 +52,9 @@ const METAL_PLATE = 1;
 const METAL_PATCH_MIN = 0.5;
 const METAL_PATCH_MAX = 1;
 const CAVITY_BEVEL_LIFT = 0.37;
+const PIT_RADIUS_U: readonly [ number, number ] = [ 0.05, 0.16 ];
+const PIT_DEPTH_MIN = 0.4;
+const PIT_SLOPE_PEAK = 1.54;
 
 export interface SurfaceParams {
     plate: number;
@@ -64,23 +67,40 @@ export interface SurfaceParams {
     jointRough: number;
     jointContrast: number;
     cavity: number;
+    pitDensity: number;
+    pitTilt: number;
+    pitRough: number;
+    pitCavity: number;
 }
 
 interface Ctx extends SurfaceParams {
     pxPerU: number;
+    pxPerV: number;
     plateW: number;
     plateL: number;
     jointPx: number;
     rgb: readonly [ number, number, number ];
 }
 
+export interface Pit {
+    x: number;
+    y: number;
+    rx: number;
+    ry: number;
+    depth: number;
+}
+
+export function texelDensity( p: SurfaceParams ): { pxPerU: number; pxPerV: number } {
+    return { pxPerU: RES / ( p.plate * COLS ), pxPerV: RES / ( p.plate * ( p.joints ? ROWS : COLS ) ) };
+}
+
 function context( p: SurfaceParams ): Ctx {
-    const span = p.plate * COLS;
-    const pxPerU = RES / span;
+    const { pxPerU, pxPerV } = texelDensity( p );
     const hex = new THREE.Color( p.base ).getHex( THREE.SRGBColorSpace );
     return {
         ...p,
         pxPerU,
+        pxPerV,
         plateW: RES / COLS,
         plateL: RES / ROWS,
         jointPx: Math.max( 1, p.jointWidth * pxPerU ),
@@ -243,10 +263,81 @@ function paintNormalBrush( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     }
 }
 
+export function pitPlan( p: SurfaceParams ): Pit[] {
+    const { pxPerU, pxPerV } = texelDensity( p );
+    const count = Math.round( ( RES / pxPerU ) * ( RES / pxPerV ) * p.pitDensity );
+    const r = seeded( 0x5c0ff8 );
+    const pits: Pit[] = [];
+    for ( let i = 0; i < count; i++ ) {
+        const radius = between( r, PIT_RADIUS_U[ 0 ], PIT_RADIUS_U[ 1 ] );
+        pits.push( {
+            x: r() * RES,
+            y: r() * RES,
+            rx: radius * pxPerU,
+            ry: radius * pxPerV,
+            depth: between( r, PIT_DEPTH_MIN, 1 ),
+        } );
+    }
+    return pits;
+}
+
+function eachPitTexel(
+    c: Ctx,
+    visit: ( i: number, ux: number, uy: number, bowl: number, depth: number ) => void,
+): void {
+    const wrap = ( v: number ) => ( ( v % RES ) + RES ) % RES;
+    for ( const pit of pitPlan( c ) ) {
+        const y0 = Math.floor( pit.y - pit.ry );
+        const y1 = Math.ceil( pit.y + pit.ry );
+        const x0 = Math.floor( pit.x - pit.rx );
+        const x1 = Math.ceil( pit.x + pit.rx );
+        for ( let py = y0; py <= y1; py++ ) {
+            const uy = ( py + 0.5 - pit.y ) / pit.ry;
+            for ( let px = x0; px <= x1; px++ ) {
+                const ux = ( px + 0.5 - pit.x ) / pit.rx;
+                const rho2 = ux * ux + uy * uy;
+                if ( rho2 >= 1 ) continue;
+                visit( ( wrap( py ) * RES + wrap( px ) ) * 4, ux, uy, 1 - rho2, pit.depth );
+            }
+        }
+    }
+}
+
+function stampPitNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    if ( c.pitDensity <= 0 || c.pitTilt <= 0 ) return;
+    const img = ctx.getImageData( 0, 0, RES, RES );
+    const d = img.data;
+    const k = ( 4 * c.pitTilt ) / PIT_SLOPE_PEAK;
+    eachPitTexel( c, ( i, ux, uy, bowl, depth ) => {
+        const nx = ( d[ i ] / 255 ) * 2 - 1 - k * depth * bowl * ux;
+        const ny = ( d[ i + 1 ] / 255 ) * 2 - 1 - k * depth * bowl * uy;
+        const len = Math.hypot( nx, ny );
+        const s = len > 0.95 ? 0.95 / len : 1;
+        const nz = Math.sqrt( Math.max( 0, 1 - ( nx * s ) ** 2 - ( ny * s ) ** 2 ) );
+        d[ i ] = Math.round( ( nx * s * 0.5 + 0.5 ) * 255 );
+        d[ i + 1 ] = Math.round( ( ny * s * 0.5 + 0.5 ) * 255 );
+        d[ i + 2 ] = Math.round( ( nz * 0.5 + 0.5 ) * 255 );
+    } );
+    ctx.putImageData( img, 0, 0 );
+}
+
+function stampPitSurface( c: Ctx, d: Uint8ClampedArray ): void {
+    if ( c.pitDensity <= 0 ) return;
+    eachPitTexel( c, ( i, _ux, _uy, bowl, depth ) => {
+        d[ i ] = Math.round( d[ i ] * ( 1 - c.pitCavity * depth * bowl ) );
+        d[ i + 1 ] = Math.min( 255, Math.round( d[ i + 1 ] + c.pitRough * depth * bowl * 255 ) );
+    } );
+}
+
 function paintNormal( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     ctx.fillStyle = normal( 0, 0 );
     ctx.fillRect( 0, 0, RES, RES );
     paintNormalBrush( c, ctx );
+    paintJointNormals( c, ctx );
+    stampPitNormals( c, ctx );
+}
+
+function paintJointNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     if ( c.wallTilt <= 0 ) return;
 
     const hw = c.jointPx / 2;
@@ -538,6 +629,7 @@ function packedSurfaceCanvas( c: Ctx ): HTMLCanvasElement {
         out.data[ i + 2 ] = md[ i + 2 ];
         out.data[ i + 3 ] = 255;
     }
+    stampPitSurface( c, out.data );
     ctx.putImageData( out, 0, 0 );
     return canvas;
 }
@@ -598,8 +690,10 @@ export function surfaceMaps( p: SurfaceParams ): TrackSurfaceMaps {
     return maps;
 }
 
-function grooveParams(): Omit< SurfaceParams, 'plate' | 'base' > {
+export function deckSurfaceParams(): SurfaceParams {
     return {
+        plate: num( 'Deck.plate' ),
+        base: col( 'Metal.baseColor' ),
         joints: true,
         jointWidth: num( 'Groove.width' ),
         wallTilt: num( 'Groove.wallTilt' ),
@@ -608,18 +702,13 @@ function grooveParams(): Omit< SurfaceParams, 'plate' | 'base' > {
         jointRough: num( 'Groove.roughness' ),
         jointContrast: num( 'Groove.darkening' ),
         cavity: num( 'Groove.cavity' ),
+        pitDensity: num( 'Pit.density' ),
+        pitTilt: num( 'Pit.tilt' ),
+        pitRough: num( 'Pit.roughness' ),
+        pitCavity: num( 'Pit.cavity' ),
     };
 }
 
-export function deckSurfaceParams(): SurfaceParams {
-    return { plate: num( 'Deck.plate' ), base: col( 'Metal.baseColor' ), ...grooveParams() };
-}
-
-export function monolithSurfaceParams(): SurfaceParams {
-    const plate = num( 'Monolith.plate' );
-    return { ...deckSurfaceParams(), plate: plate > 0 ? plate : num( 'Deck.plate' ), joints: plate > 0 };
-}
-
-export function railSurfaceParams(): SurfaceParams {
-    return { plate: num( 'Rail.plate' ), base: col( 'Metal.baseColor' ), ...grooveParams() };
+export function graphiteSurfaceParams(): SurfaceParams {
+    return { ...deckSurfaceParams(), joints: false };
 }

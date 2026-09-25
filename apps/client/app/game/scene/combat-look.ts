@@ -11,8 +11,6 @@ export const BOLT_STREAK_INTENSITY = 7;
 export const BOLT_SHEATH_GIRTH = 4;
 export const BOLT_SHEATH_INTENSITY = 0.9;
 
-export const PICKUP_SHELL_COLOR = '#161b21';
-export const PICKUP_SHELL_ROUGHNESS = 0.3;
 export const PICKUP_GLYPH_INTENSITY = 3;
 export const PICKUP_CORE_INTENSITY = 4.5;
 export const PICKUP_HOVER = 2.4;

@@ -444,28 +444,28 @@ Every element in the package, and what it is made of. No row reads "shared with 
 
 | Element | Material | Marigold tier |
 |---|---|---|
-| Track deck | **M1** bare metal | — |
+| Track deck | **M1** graphite + the 4 × 4u plate grid (item 19) | — |
 | Track boundary / edge strip | M1 carrier + **M7**, embedded at the outer edge — never a raised rail | gameplay |
 | Interior joints | **M1**, value/roughness — dark by default | none |
 | Interior seam inserts | **M7**, sparse · short · varied length · irregular spacing | gameplay |
 | Track deck wear — finish patches, scuffs, edge rub | **M1**, roughness only | none |
 | Hazard-to-floor contact shading | **M1**, lighting only | none |
-| Gap slab side walls and underside | **M8** (M1 family, cut face) | — |
+| Gap slab side walls and underside | **M1** graphite, no plates (item 19) | — |
 | Gap rim and inner lip | **M7**, thin | gameplay |
-| Standard deadly block | **M1** deck material (rev. 8) with M2's seam, wear and variation rules | gameplay — sparse functional **vertical** seams; broad wear patches carry the family's variation |
-| Destructible block, intact | **M1** (rev. 8) + **M7** in recessed fractures | gameplay |
-| Destructible block, fragments / burst | **M1** (rev. 8) + **M7** | gameplay |
+| Standard deadly block | **M1** graphite, no plates (item 19), with M2's seam, wear and variation rules | gameplay — sparse functional **vertical** seams; broad wear patches carry the family's variation |
+| Destructible block, intact | **M1** graphite, no plates (item 19) + **M7** in recessed fractures | gameplay |
+| Destructible block, fragments / burst | **M1** graphite, no plates (item 19) + **M7** | gameplay |
 | Finish-line structure | **M1** + **M7** | gameplay |
-| Monolith — obelisk, gate, arch | **M1** deck material (rev. 8; M3/M4 before rev. 6, M2 in rev. 6–7) | **environmental** — sparse seams |
+| Monolith — obelisk, gate, arch | **M1** graphite, no plates (item 19; M3/M4 before rev. 6, M2 in rev. 6–7) | **environmental** — sparse seams |
 | Asteroid — all forms | **M5** | **environmental** — rare veins |
 | Gas giant, moon, crescent/eclipse | **M9** | none |
 | Nebula / backdrop | not a surface — colour and depth layers | n/a |
-| Pickup shells — bolt, boost, shield, mine, seeker | **M6** coated | gameplay — inset core |
-| Deployed mine | **M6** + **M7** | gameplay — must stay visible on the track |
-| Seeker in flight | **M6** + **M7** rear core | gameplay — sized for rear-view resolution |
+| Pickup shells — bolt, boost, shield, mine, seeker | **M1** graphite (item 19; M6 before) | gameplay — inset core |
+| Deployed mine | **M1** graphite + **M7** (item 19) | gameplay — must stay visible on the track |
+| Seeker in flight | **M1** graphite + **M7** rear core (item 19) | gameplay — sized for rear-view resolution |
 | Bolt tracer, boost thrust, shield envelope | **M7** only — no shell | gameplay |
 | Engines / thrust | **M7** | gameplay |
-| Ship hulls | **M6** family when designed — *deferred*, §6 | gameplay — engines |
+| Ship hulls | **M1** graphite, pit maps box-projected (item 19) | gameplay — engines |
 | HUD / UI | 2D; graphite and marigold — *deferred*, §6 | n/a |
 
 ## 3. The two marigold tiers
@@ -988,6 +988,36 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     **Departures from package wording.** M5 says *"Emissive | rare marigold veins at environmental
     intensity"*. Hot meteor chunks add a short-lived emissive at impact. Item 15 said *"There is no
     point light"* for a block break. That stays true. A meteor impact has one.
+
+19. **One dark graphite pitted metal for every built surface. Only the deck has plates —
+    2026-09-25 (#258).** Owner's words: *"dark graphite pitted metal as base which will be used for
+    everything in the scene, deck, monolith, blocks, ships, pickups etc. deck is going to be a bit
+    special case where it will be a mix of the dark graphite pitted metal + 4x4u plate grid like what
+    is it now."*
+
+    - **`Metal.baseColor` moves from `#7d7a75` to `#3b3e42`.** This is a neutral dark graphite with a
+      small cool bias. `#4a4d52` was captured beside it for the owner to compare. The value stays one
+      value for every surface (item 12).
+    - **Pitting is surface detail only.** A seeded layer of small dents, 0.05–0.16u radius, goes
+      into the normal map, the cavity channel and the roughness channel. It does not change the
+      colour. The `Pit.*` tunables control density, tilt, roughness and cavity.
+    - **Only the deck top has the 4 × 4u plate grid, as it is now.** Monoliths, sealed and fractured
+      blocks, fragments, gap slab walls and undersides, and rail bodies use the same painter with no
+      joints. They sample it at world ÷ 16u on both axes. This removes the tall-face stretch, because
+      no wall now samples the plate texture. The floor mesh has two material groups, deck top and
+      sides. This adds one draw call.
+    - **Ship hulls use the graphite colour, finish and pit maps.** The pit maps are box-projected in
+      object space, so the ship model UVs have no effect. Engine and emissive slots do not change.
+    - **Pickup shells change from the M6 coated `#161b21` (metalness 0, roughness 0.3) to graphite
+      metal.** This includes the seeker in flight. Glyphs, cores and the ground pool do not change.
+    - **The #230 lights stay (item 17).** At spawn, the mean deck luma was 13.9/255 with them and
+      4.8/255 with the pre-#230 values. A dark metal needs the light.
+    - **Asteroids and meteors stay M5.** They are rock, not built things.
+
+    **Departures from package wording.** M6 says pickup shells are a *coated* metal. They are now
+    bare graphite. M8 describes the gap slab edge as a cut face of the deck. It is now jointless
+    graphite with no plates. Item 17's dielectric finish for blocks and monoliths is withdrawn. All
+    built surfaces use the one metal finish again, as in item 12.
 
 ## 8. Review log
 

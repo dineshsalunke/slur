@@ -30,7 +30,7 @@ import {
     sealedBlockWearSeed,
 } from './sealed-block-variation';
 import { AHEAD, BACK, put } from './track-instancing';
-import { floorSurface } from './track-materials';
+import { graphiteSurface } from './track-materials';
 
 const BLOCK_LIMIT = 320;
 const FRACTURED_LIMIT = 160;
@@ -142,7 +142,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
     const fracturedRef = useRef< THREE.InstancedMesh | null >( null );
     const emitRef = useRef< Emit | null >( null );
     const rebuild = useRebuildToken();
-    const surface = useMemo( floorSurface, [ rebuild ] );
+    const surface = useMemo( graphiteSurface, [ rebuild ] );
 
     const uniforms = useMemo( () => sealedBlockUniforms(), [] );
     const fractureUniforms = useMemo( () => fracturedBlockUniforms(), [] );

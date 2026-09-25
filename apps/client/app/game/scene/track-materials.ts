@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { num } from '../../dev/tuning';
+import { col, num } from '../../dev/tuning';
 import { ACCENT_ANCHOR } from './accent';
+import { METAL_METALNESS, METAL_ROUGHNESS } from './metal';
 import {
     deckSurfaceParams,
-    monolithSurfaceParams,
+    graphiteSurfaceParams,
     NORMAL_SIGN_X,
     NORMAL_SIGN_Y,
     ROUGHNESS_MAP_BASE,
-    railSurfaceParams,
     type SurfaceParams,
     surfaceMaps,
 } from './track-texture';
@@ -35,9 +35,9 @@ export function floorSurface() {
     );
 }
 
-export function monolithSurface() {
+export function graphiteSurface() {
     return plateSurface(
-        monolithSurfaceParams(),
+        graphiteSurfaceParams(),
         num( 'Deck.roughness' ),
         num( 'Deck.metalness' ),
         num( 'Deck.normalScale' ),
@@ -46,11 +46,20 @@ export function monolithSurface() {
 
 export function railBodySurface() {
     return plateSurface(
-        railSurfaceParams(),
+        graphiteSurfaceParams(),
         num( 'Rail.roughness' ),
         num( 'Rail.metalness' ),
         num( 'Rail.normalScale' ),
     );
+}
+
+export function graphiteShellMaterial(): THREE.MeshStandardMaterial {
+    return new THREE.MeshStandardMaterial( {
+        color: col( 'Metal.baseColor' ),
+        metalness: METAL_METALNESS,
+        roughness: METAL_ROUGHNESS,
+        flatShading: true,
+    } );
 }
 
 export const MARIGOLD_REFERENCE_INTENSITY = 2.0;

@@ -2,8 +2,8 @@ import { useFrame } from '@react-three/fiber';
 import { CELL, LEAD_SEGMENTS, SEG_LEN, type Track } from '@slur/shared';
 import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
-import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
+import { applyDeckFinish } from './deck-finish';
 import { buildRailMask, patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
 import {
     BACKWARD,
@@ -18,9 +18,19 @@ import {
     type V3,
 } from './track-geometry';
 import { AHEAD } from './track-instancing';
-import { cleanToMapRoughness, floorSurface } from './track-materials';
+import { floorSurface, graphiteSurface } from './track-materials';
 import { spanEdges } from './track-openings';
 import { buildRailRuns } from './track-rails';
+
+export const FLOOR_TOP_GROUP = 0;
+export const FLOOR_SIDE_GROUP = 1;
+
+interface Buffers {
+    pos: number[];
+    uv: number[];
+}
+
+const buffers = (): Buffers => ( { pos: [], uv: [] } );
 
 const isOffGrid = ( v: number ) => {
     const m = Math.abs( v % CELL );
@@ -28,8 +38,8 @@ const isOffGrid = ( v: number ) => {
 };
 
 function emitSpan(
-    pos: number[],
-    uv: number[],
+    top: Buffers,
+    sides: Buffers,
     span: { x0: number; x1: number; y: number },
     z0: number,
     z1: number,
@@ -39,8 +49,9 @@ function emitSpan(
     const { x0, x1 } = span;
     const t = span.y;
     const b = span.y - SLAB_THICKNESS;
+    const { pos, uv } = sides;
 
-    pushQuad( pos, uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'xz', UP );
+    pushQuad( top.pos, top.uv, [ x0, t, z0 ], [ x0, t, z1 ], [ x1, t, z1 ], [ x1, t, z0 ], 'deck', UP );
 
     pushQuad( pos, uv, [ x0, b, z0 ], [ x0, t, z0 ], [ x0, t, z1 ], [ x0, b, z1 ], 'zy', LEFT );
     pushQuad( pos, uv, [ x1, t, z0 ], [ x1, b, z0 ], [ x1, b, z1 ], [ x1, t, z1 ], 'zy', RIGHT );
@@ -53,11 +64,19 @@ function emitSpan(
     pushQuad( pos, uv, [ x0, b, z0 ], [ x0, b, z1 ], [ x1, b, z1 ], [ x1, b, z0 ], 'xz', DOWN );
 }
 
+function packFloor( top: Buffers, sides: Buffers ): THREE.BufferGeometry {
+    const geo = packGeometry( top.pos.concat( sides.pos ), top.uv.concat( sides.uv ) );
+    const topCount = top.pos.length / 3;
+    geo.addGroup( 0, topCount, FLOOR_TOP_GROUP );
+    geo.addGroup( topCount, sides.pos.length / 3, FLOOR_SIDE_GROUP );
+    return geo;
+}
+
 export function buildSpanGeometry( x0: number, x1: number, z0: number, z1: number ): THREE.BufferGeometry {
-    const pos: number[] = [];
-    const uv: number[] = [];
-    emitSpan( pos, uv, { x0, x1, y: 0 }, z0, z1, true, true );
-    return packGeometry( pos, uv );
+    const top = buffers();
+    const sides = buffers();
+    emitSpan( top, sides, { x0, x1, y: 0 }, z0, z1, true, true );
+    return packFloor( top, sides );
 }
 
 export function segmentCount( track: Track ): number {
@@ -65,8 +84,8 @@ export function segmentCount( track: Track ): number {
 }
 
 function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
-    const pos: number[] = [];
-    const uv: number[] = [];
+    const top = buffers();
+    const sides = buffers();
     const last = segmentCount( track );
 
     for ( let i = -LEAD_SEGMENTS; i < last; i++ ) {
@@ -79,23 +98,29 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
                 console.warn( `[track-floor] seg ${ i } span not CELL-aligned: ${ f.x0 }..${ f.x1 }` );
             }
             const e = spanEdges( seg, prev, next, f );
-            emitSpan( pos, uv, f, e.z0, e.z1, e.capFront, e.capBack );
+            emitSpan( top, sides, f, e.z0, e.z1, e.capFront, e.capBack );
         }
     }
 
-    return packGeometry( pos, uv );
+    return packFloor( top, sides );
 }
 
 export function TrackFloor( { track }: { track: Track } ) {
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
     const segments = segmentCount( track );
     const mask = useMemo( () => buildRailMask( buildRailRuns( track, segments ), segments ), [ track, segments ] );
-    const matRef = useRef< THREE.MeshStandardMaterial | null >( null );
+    const deckRef = useRef< THREE.MeshStandardMaterial | null >( null );
+    const sideRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const rebuild = useRebuildToken();
-    const surface = useMemo( floorSurface, [ rebuild ] );
+    const deck = useMemo( floorSurface, [ rebuild ] );
+    const side = useMemo( graphiteSurface, [ rebuild ] );
     const glow = useMemo( railGlowUniforms, [] );
-    const attachMaterial = ( mat: THREE.MeshStandardMaterial | null ) => {
-        matRef.current = mat;
+    const attachDeck = ( mat: THREE.MeshStandardMaterial | null ) => {
+        deckRef.current = mat;
+        if ( mat ) patchRailGlow( mat, glow );
+    };
+    const attachSide = ( mat: THREE.MeshStandardMaterial | null ) => {
+        sideRef.current = mat;
         if ( mat ) patchRailGlow( mat, glow );
     };
 
@@ -109,20 +134,15 @@ export function TrackFloor( { track }: { track: Track } ) {
     );
 
     useFrame( () => {
-        const mat = matRef.current;
-        if ( ! mat ) return;
-
         updateRailGlow( glow, mask, segments + LEAD_SEGMENTS );
-        mat.metalness = num( 'Deck.metalness' );
-        mat.roughness = cleanToMapRoughness( num( 'Deck.roughness' ) );
-        mat.envMapIntensity = num( 'Deck.envMapIntensity' );
-        const scale = num( 'Deck.normalScale' );
-        mat.normalScale.set( scale, scale );
+        if ( deckRef.current ) applyDeckFinish( deckRef.current );
+        if ( sideRef.current ) applyDeckFinish( sideRef.current );
     } );
 
     return (
         <mesh geometry={ geo }>
-            <meshStandardMaterial ref={ attachMaterial } { ...surface } />
+            <meshStandardMaterial attach={ `material-${ FLOOR_TOP_GROUP }` } ref={ attachDeck } { ...deck } />
+            <meshStandardMaterial attach={ `material-${ FLOOR_SIDE_GROUP }` } ref={ attachSide } { ...side } />
         </mesh>
     );
 }

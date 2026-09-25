@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { TEX_SPAN_X, TEX_SPAN_Z } from './track-texture';
 
 export type V3 = readonly [ number, number, number ];
-export type UvPlane = 'xz' | 'zy' | 'xy';
+export type UvPlane = 'deck' | 'xz' | 'zy' | 'xy';
 
 export const UP: V3 = [ 0, 1, 0 ];
 export const DOWN: V3 = [ 0, -1, 0 ];
@@ -25,8 +25,9 @@ export function isOuterEdge( x: number ): boolean {
 
 export function uvFor( p: V3, plane: UvPlane ): [ number, number ] {
     const [ x, y, z ] = p;
-    if ( plane === 'xz' ) return [ x / TEX_SPAN_X, z / TEX_SPAN_Z ];
-    if ( plane === 'zy' ) return [ z / TEX_SPAN_Z, y / TEX_SPAN_X ];
+    if ( plane === 'deck' ) return [ x / TEX_SPAN_X, z / TEX_SPAN_Z ];
+    if ( plane === 'xz' ) return [ x / TEX_SPAN_X, z / TEX_SPAN_X ];
+    if ( plane === 'zy' ) return [ z / TEX_SPAN_X, y / TEX_SPAN_X ];
     return [ x / TEX_SPAN_X, y / TEX_SPAN_X ];
 }
 
