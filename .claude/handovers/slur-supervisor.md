@@ -10,7 +10,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 ## Standing owner decisions
 
 - OWNER RULE: dev only, ONE stack (:5173/:2567). No worktrees, no scratch/second stacks (CLAUDE.local.md §7, memory one-stack-dev-only.md 7926fec). All 4 workers told.
-- WIDTH: the owner chose to try 84u (HALF_WIDTH 42).
+- WIDTH: the owner changed 84u → 24 LANES = 96u (HALF_WIDTH 48), "lets not have odd numbers".
 
 - MATERIAL (owner, verbatim): "dark graphite pitted metal as base which will be used for everything in the scene, deck, monolith, blocks, ships, pickups etc. deck is going to be a bit special case where it will be a mix of the dark graphite pitted metal + 4x4u plate grid like what is it now."
 - Meteors: owner wants one every 9–18 s → Meteor.chance 0.15 (folded into workerone lane).
@@ -33,7 +33,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | GRAPHITE UNIFICATION (owner said "go" ~12:20: rails jointless, rocks stay rock, pits = dents only, #3b3e42 default with #4a4d52 shown, lights KEEP) + Meteor.chance 0.15. Files an issue, builds, pushes | BUILDING | scene/{metal,track-texture,track-materials,deck-finish,track-geometry}.ts, scene/{monolith-group,track-blocks,block-debris,track-floor,ship-model,bolt-pickups,seeker-pickups}.tsx, scene/combat-look.ts, new *.test.ts, dev/{tuning-schema.ts,tuning-panel.tsx}, docs/ART_MATERIALS.md |
-| workertwo | w2P:pF | #257 WIDTH 84u ON DEV: cherry-pick fef094f + HALF_WIDTH 42 + fixtures + GDD line 81. Notes: LANES 21 odd, 5.25 deck tiles | CLAIMS CLEARED, WAITING: writes NOTHING (not even the working tree; the owner tsc watch would make 84u live under workerone captures) until the supervisor sends "workerone pushed" | shared/src/{constants.ts, sim/space.ts, sim/step(.test).ts, sim/respawn-point(.test).ts, sim/respawn.test.ts, sim/clearance.test.ts, sim/track-contract.test.ts, pacing/{arms,pockets,route-graph}.test.ts}, docs/GDD.md:81 |
+| workertwo | w2P:pF | #257 WIDTH 96u (24 lanes, HALF_WIDTH 48) ON DEV: apply fef094f + 48 + fixtures + GDD line 81; 6 whole deck tiles | CLAIMS CLEARED, WAITING: writes NOTHING (not even the working tree; the owner tsc watch would make 84u live under workerone captures) until the supervisor sends "workerone pushed" | shared/src/{constants.ts, sim/space.ts, sim/step(.test).ts, sim/respawn-point(.test).ts, sim/respawn.test.ts, sim/clearance.test.ts, sim/track-contract.test.ts, pacing/{arms,pockets,route-graph}.test.ts}, docs/GDD.md:81 |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
 | workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
 
@@ -45,11 +45,11 @@ The 80u stack is killed (PIDs 94568…94658) and the worktree is removed. Branch
 
 1. When workerone reports: relay the captures to the owner (colour pick #3b3e42 vs #4a4d52), the luminance and the draw calls.
 2. (meteors answered: 0.15, in workerone lane)
-3. When workerone pushes: tell workertwo to commit + push 84u. The owner then restarts pnpm dev and flies it.
+3. When workerone pushes: tell workertwo to apply, commit + push 96u. The owner then restarts pnpm dev and flies it.
 
 ## Open owner questions
 
-- The graphite colour pick after the captures. Width feel at 84 after it lands.
+- The graphite colour pick after the captures. Width feel at 96 after it lands.
 - Push archive/song-lab? (It was pushed at ~08:45 — b64766f is on origin. Closed.)
 - #254 class roles (later). #244 FRACTURE_RATE raise? #251 device check. Score rooms have no pickups.
 - Older: `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
