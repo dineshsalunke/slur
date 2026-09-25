@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~10:15 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~10:30 IST
 
 ## Goal
 
@@ -8,6 +8,8 @@ Standing approval to clear workers at a seam. Grep the status line with `│ [�
 after /clear often shows the old percent, so read again.
 
 ## Standing owner decisions
+
+- Engine light: ACCEPTED as is (2026-09-25).
 
 - Workers commit to LOCAL dev by explicit pathspec without asking. The owner approved pushing dev to origin
   this morning ("merge them on dev and then sync everything").
@@ -33,7 +35,7 @@ after /clear often shows the old percent, so read again.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none (#255 groove DONE 20c9e02, pushed via 0c904de) | cleared, idle | none |
+| workerone | w2P:pD | MONOLITH MATERIAL fix, PLAN FIRST. Owner screenshot: monolith texture looks scaled (blotchy tan, stretched) + colours wrong (warm, not cool blue-grey). Plan = fix UV/texel density + restore pre-#230 lights/finish (option A) | dispatched ~10:30 | none yet |
 | workerthree | w2P:pG | none (#256 tap kick DONE 0c904de, pushed; dev == origin/dev 4e93085) | idle | none |
 | workertwo | w2P:pF | none (materials traced, 8d87851: #230 stone-lights on one-metal; owner picks A revert lights / B stone blocks / C re-dial) | idle | none |
 | workerfour | w2P:pH | none | idle, stood down (8e62847) | none |
@@ -60,7 +62,6 @@ after /clear often shows the old percent, so read again.
 
 ## Open owner questions
 
-- Engine light (EngineLight 18) swamps the new idle→cruise engine glow: lower it or accept? (workerthree memory engine-light-swamps-emissive-ab.md)
 - Which surfaces look wrong in the materials regression?
 - Tap kick distance: default 4u on a 100 ms freighter tap, owner may retune.
 
