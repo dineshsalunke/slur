@@ -40,6 +40,10 @@ after /clear often shows the old percent, so read again.
 
 ## Next
 
+0. workerthree (f1669e1): the sync merge 277396f is clean and green, so the supervisor told it to PUSH (~08:25). #195 is SEMANTIC: rail bounce is dead after
+   fc65986 (ships fall off edges), banking writes to the deleted dev/tunables.ts, engine bloom was tuned before threshold 0.6.
+   Owner options A (drop the rail bounce), B (port only the engine glow and retune it for 0.6), C (close #195). Relayed. refs/remotes/pr/195 is kept.
+   ../slur-worktrees/merge-195 belongs to workerfour (stale); ask whether to remove it.
 1. When workerthree reports the push: check `git status` in the shared tree. When the index is clean,
    `git merge --ff-only origin/dev` in the shared checkout (never while a worker has staged files). Confirm that
    `gh pr view 195` shows it merged. Tell the owner.
