@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~12:00 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~12:20 IST
 
 ## Goal
 
@@ -30,7 +30,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | MATERIAL UNIFICATION to the owner definition (one dark graphite pitted metal everywhere, plate grid on deck only) + Meteor.chance 0.15. Files an issue | cleared + re-briefed ~12:00, PLAN pending | none until cleared |
+| workerone | w2P:pD | GRAPHITE UNIFICATION (owner said "go" ~12:20: rails jointless, rocks stay rock, pits = dents only, #3b3e42 default with #4a4d52 shown, lights KEEP) + Meteor.chance 0.15. Files an issue, builds, pushes | BUILDING | scene/{metal,track-texture,track-materials,deck-finish,track-geometry}.ts, scene/{monolith-group,track-blocks,block-debris,track-floor,ship-model,bolt-pickups,seeker-pickups}.tsx, scene/combat-look.ts, new *.test.ts, dev/{tuning-schema.ts,tuning-panel.tsx}, docs/ART_MATERIALS.md |
 | workertwo | w2P:pF | #257 width 80 trial | CLEARED at seam (3553a3b). Its 80u stack is STILL RUNNING for the owner | worktree ../slur-worktrees/width-80, branch feat/width-80 (fef094f, 7266c68), not pushed |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
 | workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
@@ -47,14 +47,14 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 ## Next
 
-1. workerone plan for the one-material world: relay captures + colour + light proposal to the owner; clear claims on approval.
+1. When workerone reports: relay the captures to the owner (colour pick #3b3e42 vs #4a4d52), the luminance and the draw calls.
 2. (meteors answered: 0.15, in workerone lane)
 3. OWNER, width: fly :5174 against :5173, then choose 80/72 + weave density. Assign the merge to a fresh worker (workerthree
    after /clear, or workerfour). Kill the 80u stack afterwards.
 
 ## Open owner questions
 
-- The three material questions, the meteor rate, and the width choice (above).
+- The width choice (above). The graphite colour pick after the captures.
 - Push archive/song-lab? (It was pushed at ~08:45 — b64766f is on origin. Closed.)
 - #254 class roles (later). #244 FRACTURE_RATE raise? #251 device check. Score rooms have no pickups.
 - Older: `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
