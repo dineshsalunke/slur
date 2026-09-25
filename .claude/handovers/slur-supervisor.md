@@ -43,7 +43,10 @@ after /clear often shows the old percent, so read again.
 1. When workerthree reports the push: check `git status` in the shared tree. When the index is clean,
    `git merge --ff-only origin/dev` in the shared checkout (never while a worker has staged files). Confirm that
    `gh pr view 195` shows it merged. Tell the owner.
-2. Relay workerone's generator plan to the owner. Build only after approval.
+2. workerone's 'groove' TrackGen plan (~08:15) has been RELAYED to the owner. Waiting on (i) the name, (ii) high energy = fewer strafes + more jumps,
+   (iii) partial vs full-width gaps (supervisor recommends partial), (iv) /test-level default vs ?gen=groove. On approval, clear its
+   claims (new packages/shared/src/sim/groove/**, space.ts, track.ts, test-level-canvas.tsx, beat-deck/extract-grammar.mjs).
+   Check test-level-canvas.tsx does not collide with workerthree's #195 merge first.
 3. Ask the owner: push archive/song-lab?
 
 ## Open owner questions
