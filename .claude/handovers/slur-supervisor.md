@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~14:00 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~14:15 IST
 
 ## Goal
 
@@ -8,6 +8,8 @@ Standing approval to clear workers at a seam. Grep the status line with `│ [�
 after /clear often shows the old percent, so read again. Clear a worker before assigning if it is past 10%.
 
 ## Standing owner decisions
+
+- Hosted rooms default to GROOVE (option a) → workerfour. Graphite colour = #4a4d52 (the lighter one) → workerone.
 
 - OWNER RULE: dev only, ONE stack (:5173/:2567). No worktrees, no scratch/second stacks (CLAUDE.local.md §7, memory one-stack-dev-only.md 7926fec). All 4 workers told.
 - WIDTH: the owner changed 84u → 24 LANES = 96u (HALF_WIDTH 48), "lets not have odd numbers".
@@ -32,9 +34,9 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #258 graphite follow-up: 4 owner arch defects (handover 203d4b8 lists the inferred causes) | cleared ~13:40 at the seam and RESUMED; fixing in the tree. Arch captures only after I tell it workertwo pushed 96u | client scene claims from #258 | workertwo | w2P:pF | none (#257 96u LANDED 07b4d2d + fe40718; feat/width-80 deleted) | idle | none |
+| workerone | w2P:pD | #258 follow-up: 4 arch defects + leg-scale stretch (monolith-group.tsx; no extra draw calls) + lint warnings + METAL_BASE_COLOR #4a4d52 | cleared ~13:40 at the seam and RESUMED; fixing in the tree. Arch captures only after I tell it workertwo pushed 96u | client scene claims from #258 + monolith-group.tsx, track-rail.tsx, world-scene.tsx | workertwo | w2P:pF | none (#257 96u LANDED 07b4d2d + fe40718; feat/width-80 deleted) | idle | none |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
-| workerfour | w2P:pH | none (kick raise e82cadf done) | idle | none |
+| workerfour | w2P:pH | hosted default weave→groove (run-room.ts:78) + docs that state it | dispatched ~14:15 | apps/server/src/rooms/run-room.ts, server tests; docs paths pending |
 
 ## Width trial
 
@@ -48,7 +50,6 @@ The 80u stack is killed (PIDs 94568…94658) and the worktree is removed. Branch
 
 ## Open owner questions
 
-- WEAVE at 96u (workertwo prep, scratch): groove 150/150, 13 bumps, edge 0%. Weave +60% blocks per km, trapped pockets ~2×, pilot 0/150 (relative only). Hosted rooms default to weave. Options: (a) hosted default → groove, (b) weave density back to a fixed count per metre, (c) accept. Supervisor recommends (a), then (b) only if weave stays. Camera [inferred]: rails enter 24.6u ahead at 96 (11.7 at 64).
 
 - The graphite colour pick after the captures. Width feel at 96 after it lands.
 - Push archive/song-lab? (It was pushed at ~08:45 — b64766f is on origin. Closed.)
