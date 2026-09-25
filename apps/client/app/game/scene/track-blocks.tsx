@@ -45,7 +45,10 @@ const variations = new Map< number, SealedVariation >();
 
 function variationFor( x: number, z: number, dims: BlockDims ): SealedVariation {
     const seed = sealedBlockSeed( x, z );
-    const key = seed ^ Math.imul( Math.round( dims.w * 16 ), 0x9e37_79b1 );
+    const key =
+        seed ^
+        Math.imul( Math.round( dims.w * 16 ), 0x9e37_79b1 ) ^
+        Math.imul( Math.round( dims.d * 16 ), 0x85eb_ca6b );
     const cached = variations.get( key );
     if ( cached ) return cached;
 

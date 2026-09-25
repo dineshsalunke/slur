@@ -80,6 +80,22 @@ describe( 'sealed block seams', () => {
         expect( worst.corner ).toBeGreaterThan( SEALED_BLOCK_SEAM_WIDTH );
     } );
 
+    it( 'puts one seam on the front face of every block, off its corners', () => {
+        for ( const dims of [ ...FOOTPRINTS, { w: 4, h: 8, d: 4 }, { w: 48, h: 8, d: 20 } ] ) {
+            const [ a, b ] = sealedBlockInset( dims );
+            const frontStart = 4 * b + 2 * a;
+            const p = sealedBlockPerimeter( dims );
+            for ( let seed = -300; seed < 300; seed++ ) {
+                for ( let n = 1; n <= SEALED_BLOCK_MAX_SEAMS; n++ ) {
+                    const front = sealedBlockSeams( seed, n, dims ).filter( ( u ) => u > frontStart && u < p );
+                    expect( front ).toHaveLength( 1 );
+                    expect( front[ 0 ] - frontStart ).toBeGreaterThan( SEALED_BLOCK_SEAM_WIDTH );
+                    expect( p - front[ 0 ] ).toBeGreaterThan( SEALED_BLOCK_SEAM_WIDTH );
+                }
+            }
+        }
+    } );
+
     it( "caps at the shader's seam slots and accepts none", () => {
         const dims = FOOTPRINTS[ 0 ];
         expect( sealedBlockSeams( 7, 99, dims ) ).toHaveLength( SEALED_BLOCK_MAX_SEAMS );

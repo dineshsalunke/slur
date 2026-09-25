@@ -72,9 +72,13 @@ function offCorner( u: number, corners: number[] ): number {
 export function sealedBlockSeams( seed: number, count: number, dims: BlockDims ): number[] {
     const [ a, b ] = sealedBlockInset( dims );
     const perimeter = 4 * ( a + b );
-    const corners = [ 0, 2 * b, 2 * b + 2 * a, 4 * b + 2 * a, perimeter ];
+    const frontStart = 4 * b + 2 * a;
+    const corners = [ 0, 2 * b, 2 * b + 2 * a, frontStart, perimeter ];
     const n = Math.max( 0, Math.min( Math.floor( count ), SEALED_BLOCK_MAX_SEAMS ) );
-    return Array.from( { length: n }, ( _, i ) =>
-        offCorner( ( ( i + 0.15 + 0.7 * hash01( seed, i ) ) / n ) * perimeter, corners ),
+    if ( n === 0 ) return [];
+    const rest = Array.from( { length: n - 1 }, ( _, i ) =>
+        offCorner( ( ( i + 0.15 + 0.7 * hash01( seed, i + 1 ) ) / ( n - 1 ) ) * frontStart, corners ),
     );
+    const front = offCorner( frontStart + ( 0.15 + 0.7 * hash01( seed, 0 ) ) * 2 * a, corners );
+    return [ ...rest, front ];
 }
