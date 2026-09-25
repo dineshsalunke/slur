@@ -14,6 +14,7 @@ import type { RefObject } from 'react';
 import { clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import { sparkAt } from '../game/ecs/bounce-spark';
 import {
+    Attitude,
     Held,
     Hover,
     Interp,
@@ -89,8 +90,8 @@ function spawnPlayer(
     net: { sessionId: string; shipId: string; colorId: number },
 ): Entity {
     return isLocal
-        ? world.spawn( Render, Hover, Net( net ), Sim, Prev, LocalPlayer, Held )
-        : world.spawn( Render, Hover, Net( net ), Remote, Interp );
+        ? world.spawn( Render, Hover, Attitude, Net( net ), Sim, Prev, LocalPlayer, Held )
+        : world.spawn( Render, Hover, Attitude, Net( net ), Remote, Interp );
 }
 
 export function attachRoomToWorld(

@@ -51,8 +51,8 @@ export function NetLoop( {
             if ( racing ) netFlightSystem( world, dt, predictor, track );
         } );
         if ( ! racing ) freezeLocalPrev( world );
-        syncRenderSystem( world, alpha );
-        remoteInterpSystem( world );
+        syncRenderSystem( world, alpha, delta );
+        remoteInterpSystem( world, delta );
         hoverSystem( world, delta );
         localDeathVfxSystem( world );
         const cut = stepFinishCurtain( world, phase, delta );

@@ -1,6 +1,6 @@
 import { useWorld } from 'koota/react';
 import { useEffect } from 'react';
-import { Hover, LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
+import { Attitude, Hover, LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
 import { attachKeyboard } from '../../game/input/keyboard';
 import { localRole } from '../../game/spectator';
 import { deckState } from './take-recorder';
@@ -17,6 +17,7 @@ export function DeckShip() {
         const ship = world.spawn(
             Render,
             Hover,
+            Attitude,
             Net( { sessionId: 'beat-deck', shipId: deckState().shipId, colorId: 0 } ),
             Sim,
             Prev,

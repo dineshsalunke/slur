@@ -44,7 +44,7 @@ export function DeckLoop( { track }: { track: Track } ) {
         const now = performance.now();
         const alpha = advance( delta, ( dt ) => deckFlightSystem( world, dt, track, now ) );
         if ( recording() && deckFinished( world ) ) void stopTake( 'finish' );
-        syncRenderSystem( world, alpha );
+        syncRenderSystem( world, alpha, delta );
         hoverSystem( world, delta );
         updateChaseCamera( state.camera as PerspectiveCamera, world, delta );
     } );

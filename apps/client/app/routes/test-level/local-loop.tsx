@@ -45,7 +45,7 @@ export function LocalLoop( { track }: { track: Track } ) {
             if ( stepFinishReset( finishReset, localFinished( world ), delta ) === 'reset' ) {
                 restartTestRun( world, track );
             }
-            syncRenderSystem( world, alpha );
+            syncRenderSystem( world, alpha, delta );
             hoverSystem( world, delta );
             localDeathVfxSystem( world );
         }

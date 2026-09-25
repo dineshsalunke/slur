@@ -197,6 +197,14 @@ export const NUMBER_TUNABLES = {
     'Shake.strength': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
 
     'Ship.envMapIntensity': { value: 0.45, min: 0, max: 3, step: 0.05, rebuild: false },
+    'Ship.engineIdle': { value: 1, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Ship.engineCruise': { value: 2.2, min: 0, max: 20, step: 0.05, rebuild: false },
+
+    'Bank.roll': { value: 0.5, min: 0, max: 1.2, step: 0.01, rebuild: false },
+    'Bank.yaw': { value: 0.12, min: 0, max: 0.6, step: 0.01, rebuild: false },
+    'Bank.pitch': { value: 0.18, min: 0, max: 0.8, step: 0.01, rebuild: false },
+    'Bank.stiffness': { value: 90, min: 5, max: 400, step: 1, rebuild: false },
+    'Bank.damping': { value: 0.75, min: 0.2, max: 2, step: 0.01, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
