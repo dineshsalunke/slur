@@ -77,3 +77,4 @@ lives in its own file beside this one.
 - [Open islands can wedge a ship](open-islands-can-wedge-a-ship.md) — a thin post + rail corner traps a late ship forever (no pilot reverses); scan human DNFs with static z
 - [Drive /beat-deck headless](drive-beat-deck-headless.md) — setFileInputFiles loads the mp3, dispatchKeyEvent plays, `data-phase` says saved; jq the columns
 - [Song keeps tempo, not a rhythm game](song-keeps-tempo-not-a-rhythm-game.md) — /song-lab audio never re-seeks after a bump; a human run falling behind is expected
+- [Fractional-strafe pilots trip strafe kick](fractional-strafe-pilots-trip-strafe-kick.md) — the kick snaps vx on any nonzero strafe; proportional test pilots wedge; use −1/0/+1 with a deadband
