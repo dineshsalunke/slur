@@ -88,3 +88,4 @@ lives in its own file beside this one.
 - [ast-grep drops semicolons](ast-grep-drops-semicolons.md) — rewriting a whole `const` statement loses its `;`; include it in pattern and rewrite, grep after -U
 - [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — `'fighter'` silently falls back to freighter tuning; use `SHIP_CLASSES.<class>.tuning` in tests
 - [Round lobes read as spots](round-lobes-read-as-spots.md) — pits and radial blotches read as raindrops/leopard spots; use angle-random strokes + fBm masks
+- [Fake performance.now for timed taps](fake-performance-now-for-timed-taps.md) — advance(t) skips performance.now VFX (bolts, mine throw); override it in-page and step both clocks

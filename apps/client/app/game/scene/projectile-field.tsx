@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { RENDER_DELAY_MS } from '../ecs/net-systems';
 import { NetProjectile, ProjInterp, type ProjSnapshot } from '../ecs/traits';
 import { type BoltSink, BoltStreaks } from './bolt-streaks';
+import { collectMineShots } from './mine-shots';
 
 const _pos: ProjSnapshot = { t: 0, x: 0, y: 0, z: 0 };
 
@@ -36,6 +37,7 @@ export function ProjectileField() {
                 if ( ! pos ) return;
                 sink( pos.x, pos.y, pos.z, Math.abs( pos.z - interp.buffer[ 0 ].z ) + BOLT_SPAWN_AHEAD, net.dir );
             } );
+            collectMineShots( world, sink );
         },
         [ world ],
     );

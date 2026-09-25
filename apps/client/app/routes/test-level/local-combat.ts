@@ -36,6 +36,8 @@ import { Held, LocalPlayer, Net, Sim } from '../../game/ecs/traits';
 import { resetSlot, settleSlot } from '../../game/input/power-select';
 import { pushHit } from '../../game/scene/hit-events';
 import { burstMine } from '../../game/scene/mine-shock-events';
+import { mineNow } from '../../game/scene/mine-shots';
+import { type MineThrow, throwFrom } from '../../game/scene/mine-throw';
 
 const OWNER = 'test-level';
 
@@ -45,6 +47,7 @@ export const localCombat = {
     bolts: new Map< string, ProjectileState >(),
     seekers: new Map< string, SeekerState >(),
     mines: new Map< string, MineState >(),
+    throws: new Map< string, MineThrow >(),
     taken: new Map< string, boolean >(),
     respawn: new Map< string, number >(),
     nextId: 0,
@@ -68,6 +71,7 @@ function resetFor( track: Track ): void {
     localCombat.bolts.clear();
     localCombat.seekers.clear();
     localCombat.mines.clear();
+    localCombat.throws.clear();
     localCombat.taken.clear();
     localCombat.respawn.clear();
     localCombat.nextId = 0;
@@ -113,10 +117,13 @@ function fireSeeker( me: Gunner, vz: number, track: Track, dir: FireDir ): void 
 function layMine( me: Gunner, vz: number, shipId: string, track: Track, dir: FireDir ): void {
     const mine: MineState = { x: 0, y: 0, z: 0, ownerId: '', armed: false, ttl: 0 };
     const layer = { x: me.x, y: me.y, z: me.z, vz };
-    if ( ! aimMine( mine, layer, tuningForShip( shipId ), OWNER, track, blockWorld.broken, DEFAULT_SIM_CONFIG, dir ) )
-        return;
+    const tuning = tuningForShip( shipId );
+    if ( ! aimMine( mine, layer, tuning, OWNER, track, blockWorld.broken, DEFAULT_SIM_CONFIG, dir ) ) return;
     evictOldest( localCombat.mines, OWNER, burstMine );
-    localCombat.mines.set( String( localCombat.nextId++ ), mine );
+    const id = String( localCombat.nextId++ );
+    localCombat.mines.set( id, mine );
+    const from = { x: me.x, y: me.y, z: me.z, halfL: tuning.halfL };
+    localCombat.throws.set( id, throwFrom( { bornAt: 0, fromX: 0, fromY: 0, fromZ: 0, dir }, mine, from, mineNow() ) );
 }
 
 function fire( me: Gunner, slot: number, vz: number, shipId: string, track: Track, dir: FireDir ): void {

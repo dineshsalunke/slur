@@ -34,6 +34,7 @@ import {
 import { settleSlot } from '../game/input/power-select';
 import { pushHit } from '../game/scene/hit-events';
 import { burstMine } from '../game/scene/mine-shock-events';
+import { launchMine } from '../game/scene/mine-shots';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
 
@@ -200,12 +201,12 @@ export function attachRoomToWorld(
     } );
 
     const offMineAdd = $( room.state ).mines.onAdd( ( m, id ) => {
-        const e = world.spawn( NetMine( { x: m.x, y: m.y, z: m.z, armed: m.armed } ) );
+        const e = world.spawn( NetMine( launchMine( m, byId.get( m.ownerId ) ) ) );
         mineById.set( id, e );
         perMine.set(
             id,
             $( m ).listen( 'armed', ( armed ) =>
-                mineById.get( id )?.set( NetMine, { x: m.x, y: m.y, z: m.z, armed } ),
+                mineById.get( id )?.set( NetMine, ( prev ) => ( { ...prev, armed } ) ),
             ),
         );
     } );

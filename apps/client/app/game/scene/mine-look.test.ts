@@ -51,6 +51,25 @@ describe( 'deployed mine', () => {
         }
     } );
 
+    it( 'folds every spike into the puck rim while the puck stays put', () => {
+        const g = mineBodyGeometry();
+        const pos = g.getAttribute( 'position' );
+        const hinge = g.getAttribute( 'aHinge' );
+        expect( hinge.count ).toBe( pos.count );
+        let fixed = 0;
+        let folded = 0;
+        for ( let i = 0; i < pos.count; i++ ) {
+            const p = new THREE.Vector3().fromBufferAttribute( pos, i );
+            const h = new THREE.Vector3().fromBufferAttribute( hinge, i );
+            if ( p.distanceTo( h ) < 1e-6 ) fixed++;
+            else folded++;
+            expect( Math.hypot( h.x, h.z ) ).toBeLessThanOrEqual( 0.95 + 1e-6 );
+            expect( h.y ).toBeGreaterThan( -1e-6 );
+        }
+        expect( folded ).toBeGreaterThan( 0 );
+        expect( fixed ).toBeGreaterThanOrEqual( 72 );
+    } );
+
     it( 'paints its trigger ring on the deck at the trigger radius', () => {
         const b = bounds( mineDecalGeometry() );
         expect( b.max.x ).toBeCloseTo( DEFAULT_SIM_CONFIG.mineTriggerR, 1 );

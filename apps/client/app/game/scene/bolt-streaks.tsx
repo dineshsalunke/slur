@@ -7,7 +7,7 @@ import { advanceEmbers, type EmberPool, MAX_EMBERS, makeEmberPool, shedEmbers } 
 import { buildBoltCoreMaterial, buildBoltSheathMaterial } from './bolt-streak-material';
 import { BOLT_STREAK_LENGTH, boltStreakGeometry, MAX_BOLTS } from './combat-look';
 
-export type BoltSink = ( x: number, y: number, z: number, traveled: number, dir: number ) => void;
+export type BoltSink = ( x: number, y: number, z: number, traveled: number, dir: number, pitch?: number ) => void;
 
 const _o = new THREE.Object3D();
 const _black = new THREE.Color( 0, 0, 0 );
@@ -51,20 +51,21 @@ export function BoltStreaks( { collect }: { collect: ( sink: BoltSink ) => void 
     );
 
     const sink = useMemo< BoltSink >(
-        () => ( x, y, z, traveled, dir ) => {
-            const { core, sheath } = frame;
-            if ( ! core || ! sheath || frame.count >= MAX_BOLTS ) return;
-            const length = Math.max( 0.5, Math.min( BOLT_STREAK_LENGTH, traveled ) );
-            _o.position.set( x, y, z );
-            _o.rotation.set( 0, dir < 0 ? Math.PI : 0, 0 );
-            _o.scale.set( 1, 1, length );
-            _o.updateMatrix();
-            core.setMatrixAt( frame.count, _o.matrix );
-            sheath.setMatrixAt( frame.count, _o.matrix );
-            frame.count++;
-            noteBolt( x, y, z );
-            shedEmbers( frame.pool, x, y, z, dir * Math.min( length, frame.shed ) );
-        },
+        () =>
+            ( x, y, z, traveled, dir, pitch = 0 ) => {
+                const { core, sheath } = frame;
+                if ( ! core || ! sheath || frame.count >= MAX_BOLTS ) return;
+                const length = Math.max( 0.5, Math.min( BOLT_STREAK_LENGTH, traveled ) );
+                _o.position.set( x, y, z );
+                _o.rotation.set( dir < 0 ? pitch : -pitch, dir < 0 ? Math.PI : 0, 0 );
+                _o.scale.set( 1, 1, length );
+                _o.updateMatrix();
+                core.setMatrixAt( frame.count, _o.matrix );
+                sheath.setMatrixAt( frame.count, _o.matrix );
+                frame.count++;
+                noteBolt( x, y, z );
+                shedEmbers( frame.pool, x, y, z, dir * Math.min( length, frame.shed ) );
+            },
         [ frame ],
     );
 

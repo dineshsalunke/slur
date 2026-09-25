@@ -81,6 +81,17 @@ export function mineReach(): number {
     return PICKUP_SPIKE_BASE + PICKUP_SPIKE_LEN;
 }
 
+function hingedAt( g: THREE.BufferGeometry, hinge: THREE.Vector3 | null ): THREE.BufferGeometry {
+    const pos = g.getAttribute( 'position' );
+    const out = new Float32Array( pos.count * 3 );
+    for ( let i = 0; i < pos.count; i++ ) {
+        if ( hinge ) hinge.toArray( out, i * 3 );
+        else out.set( [ pos.getX( i ), pos.getY( i ), pos.getZ( i ) ], i * 3 );
+    }
+    g.setAttribute( 'aHinge', new THREE.BufferAttribute( out, 3 ) );
+    return g;
+}
+
 export function mineBodyGeometry(): THREE.BufferGeometry {
     const puck = new THREE.CylinderGeometry( BODY_TOP_R, BODY_BOTTOM_R, BODY_H, 6, 1 );
     puck.translate( 0, BODY_H / 2, 0 );
@@ -90,9 +101,13 @@ export function mineBodyGeometry(): THREE.BufferGeometry {
         const dir = new THREE.Vector3( Math.cos( a ), 0.35, Math.sin( a ) );
         const spike = spikeAlong( dir, BODY_TOP_R, BODY_SPIKE_LEN, BODY_SPIKE_R );
         spike.translate( 0, BODY_H * 0.55, 0 );
-        spikes.push( spike );
+        const hinge = dir
+            .normalize()
+            .multiplyScalar( BODY_TOP_R )
+            .add( new THREE.Vector3( 0, BODY_H * 0.55, 0 ) );
+        spikes.push( hingedAt( spike, hinge ) );
     }
-    return merged( [ puck, ...spikes ] );
+    return merged( [ hingedAt( puck, null ), ...spikes ] );
 }
 
 export function mineCoreGeometry(): THREE.BufferGeometry {

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { accent } from './accent';
 import { BOLT_HOT } from './combat-look';
+import { mineBodyMaterial } from './mine-body-material';
 import {
     MAX_MINES,
     MINE_CORE_INTENSITY,
@@ -12,13 +13,14 @@ import {
     mineDecalGeometry,
     mineGlow,
 } from './mine-look';
-import { graphiteShellMaterial } from './track-materials';
+import type { BodyPose } from './mine-throw';
 
-export type MineSink = ( x: number, y: number, z: number, armed: boolean ) => void;
+export type MineSink = ( x: number, y: number, z: number, armed: boolean, pose: BodyPose ) => void;
 
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
 const HOT = new THREE.Color( BOLT_HOT );
+const MIN_SCALE = 0.01;
 
 interface Frame {
     body: THREE.InstancedMesh | null;
@@ -38,11 +40,15 @@ function glowMaterial(): THREE.MeshBasicMaterial {
 }
 
 function buildLook() {
+    const bodyGeo = mineBodyGeometry();
+    const open = new THREE.InstancedBufferAttribute( new Float32Array( MAX_MINES ).fill( 1 ), 1 );
+    open.setUsage( THREE.DynamicDrawUsage );
+    bodyGeo.setAttribute( 'aOpen', open );
     return {
-        bodyGeo: mineBodyGeometry(),
+        bodyGeo,
         coreGeo: mineCoreGeometry(),
         decalGeo: mineDecalGeometry(),
-        body: graphiteShellMaterial(),
+        body: mineBodyMaterial(),
         core: glowMaterial(),
         decal: glowMaterial(),
     };
@@ -51,6 +57,12 @@ function buildLook() {
 function phaseOf( x: number, z: number ): number {
     const h = Math.sin( x * 12.9898 + z * 78.233 ) * 43758.5453;
     return h - Math.floor( h );
+}
+
+function place( mesh: THREE.InstancedMesh, i: number, sx: number, sy: number, sz: number ): void {
+    _o.scale.set( Math.max( MIN_SCALE, sx ), Math.max( MIN_SCALE, sy ), Math.max( MIN_SCALE, sz ) );
+    _o.updateMatrix();
+    mesh.setMatrixAt( i, _o.matrix );
 }
 
 export function MineBodies( { collect }: { collect: ( sink: MineSink ) => void } ) {
@@ -66,20 +78,21 @@ export function MineBodies( { collect }: { collect: ( sink: MineSink ) => void }
     );
 
     const sink = useMemo< MineSink >(
-        () => ( x, y, z, armed ) => {
+        () => ( x, y, z, armed, pose ) => {
             const { body, core, decal } = frame;
-            if ( ! body || ! core || ! decal || frame.count >= MAX_MINES ) return;
+            if ( ! body || ! core || ! decal || ! pose.visible || frame.count >= MAX_MINES ) return;
             const i = frame.count++;
             _o.position.set( x, y, z );
-            _o.updateMatrix();
-            body.setMatrixAt( i, _o.matrix );
-            core.setMatrixAt( i, _o.matrix );
-            decal.setMatrixAt( i, _o.matrix );
-            const glow = mineGlow( armed, frame.t, phaseOf( x, z ) );
+            const wide = 1 + ( 1 - pose.squash ) * 0.5;
+            place( body, i, wide, pose.squash, wide );
+            place( core, i, 1, pose.squash * pose.open, 1 );
+            place( decal, i, pose.open, 1, pose.open );
+            look.bodyGeo.getAttribute( 'aOpen' ).setX( i, pose.open );
+            const glow = mineGlow( armed, frame.t, phaseOf( x, z ) ) * pose.open;
             core.setColorAt( i, _c.copy( HOT ).multiplyScalar( MINE_CORE_INTENSITY * glow ) );
             decal.setColorAt( i, _c.copy( accent() ).multiplyScalar( MINE_DECAL_INTENSITY * glow ) );
         },
-        [ frame ],
+        [ frame, look ],
     );
 
     const setBody = useCallback(
@@ -115,6 +128,7 @@ export function MineBodies( { collect }: { collect: ( sink: MineSink ) => void }
             m.instanceMatrix.needsUpdate = true;
             if ( m.instanceColor ) m.instanceColor.needsUpdate = true;
         }
+        look.bodyGeo.getAttribute( 'aOpen' ).needsUpdate = true;
     } );
 
     return (

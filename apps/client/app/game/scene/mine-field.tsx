@@ -1,17 +1,12 @@
 import { useWorld } from 'koota/react';
 import { useCallback } from 'react';
-import { NetMine } from '../ecs/traits';
 import { MineBodies, type MineSink } from './mine-bodies';
+import { collectMineBodies } from './mine-shots';
 
 export function MineField() {
     const world = useWorld();
 
-    const collect = useCallback(
-        ( sink: MineSink ) => {
-            world.query( NetMine ).readEach( ( [ m ] ) => sink( m.x, m.y, m.z, m.armed ) );
-        },
-        [ world ],
-    );
+    const collect = useCallback( ( sink: MineSink ) => collectMineBodies( world, sink ), [ world ] );
 
     return <MineBodies collect={ collect } />;
 }
