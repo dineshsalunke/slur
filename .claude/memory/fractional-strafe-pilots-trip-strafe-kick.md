@@ -1,22 +1,27 @@
 ---
 name: fractional-strafe-pilots-trip-strafe-kick
-description: A sim pilot with a proportional (fractional) strafe command breaks under the strafe-kick change; every nonzero strafe snaps vx to the kick
+description: A sim pilot with a proportional (fractional) strafe command overshoots under the strafe kick; reuse the kick-aware strafeToward exported from pacing/pockets.ts
 metadata:
   node_type: memory
   type: project
-  originSessionId: 9da5a971-b8fe-478a-ba18-6b4197d16326
-  modified: 2026-09-25T03:20:45.963Z
+  originSessionId: 8440309d-cf86-4842-a08b-26f7235f48f1
+  modified: 2026-09-25T03:25:01.724Z
 ---
 
-The strafe-kick change (another lane, uncommitted in the tree on 2026-09-25) edits `applyStrafe` in
-`step.ts`. Any `input.strafe !== 0` sets `vx` to at least `strafeKick × strafe` (26–40 u/s per class).
-Test pilots such as the stoppable profile (`strafe = clamp((want − vx)/(strafeAccel·dt·3))`) send small
-fractional strafes every tick. Under the kick they overshoot and oscillate. On groove seed 13, the
-freighter wedged at z 280 with 314 bumps. At HEAD without the kick it finished with 1 bump.
+The strafe kick (#256, `0c904de`) is in `applyStrafe` in `step.ts`. When `strafeKick > 0`, any nonzero strafe
+sets `vx` to at least `strafeKick × strafe` in the press direction (26–40 u/s per class). A pilot that sends
+small fractional strafes every tick (`strafe = clamp((want − vx)/(strafeAccel·dt·3))`) then overshoots and
+oscillates. Before the fix, pocket escape sweeps read window 0, and groove seed 13 wedged the freighter at
+z 280 with 314 bumps.
 
-**Why:** `groove.test.ts` flyability and the `pockets.ts` escape sweeps use this profile. They will read
-"trapped" or "wedged" for a pilot reason, not a track reason, once the kick lands.
+The fix is `strafeToward` in `packages/shared/src/pacing/pockets.ts` (exported). It scales `s` to `goal/kick`
+when the kick would pass the pilot's own ramp goal, and it releases (`s = 0`) when the goal is still on the
+old side of zero. `groove.test.ts` imports it.
 
-**How to apply:** when the kick lands, give such pilots a deadband and whole-key strafes (−1/0/+1), the
-way a keyboard does, or model the kick in the stop profile. Measure your own lane at HEAD first
-([[test-your-lane-against-head]]). Related: [[escape-sweep-pilot-must-stop]].
+**Why:** a new pilot copied from the old profile reads "trapped" or "wedged" for a pilot reason, not a
+track reason.
+
+**How to apply:** a new sim pilot imports `strafeToward` from `pacing/pockets.ts`. Do not write a new
+proportional profile. Keep `strafeKick` gated on `> 0`: the ungated form snapped `vx` to −0 on a reverse
+press, and that moved the contract ship's `NOTE_MOVE_S`. Related: [[test-your-lane-against-head]],
+[[escape-sweep-pilot-must-stop]].

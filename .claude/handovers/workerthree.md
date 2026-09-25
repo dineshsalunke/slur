@@ -1,25 +1,26 @@
-Agent: workerthree · Lane: #195 port (owner decision A) — DONE · Updated: 2026-09-25
+Agent: workerthree · Lane: strafe tap kick #256 — DONE · Updated: 2026-09-25
 
 ## Goal
 
-Port #195's banking and engine glow onto dev by hand, drop the rail bounce, fix GDD, close #195.
+A quick A/D tap moves the ship substantially at once. A held key flies as before.
 
 ## Done
 
-- 277396f: origin/dev (#188, #225, #230, #237) merged into dev and pushed (earlier seam).
-- 0c8594b: spring-damped banking (from 0dc8c7d). Bank.* knobs in dev/tuning-schema.ts. Attitude trait at 4 spawn sites.
-- 9d45eb3: Engine_core emissive driven idle 1.0 → cruise 2.2 off exhaustDrive (from 8fbb223).
-- c71634e: GDD §5.6 strafe row states the open deck edge (fc65986).
-- Pushed 7760aa8..c71634e. #195 CLOSED with a comment. refs/remotes/pr/195 deleted.
+- 0c904de: per-class `FlightTuning.strafeKick` (interceptor 40 · fighter 34 · comet 30 · phantom 30 ·
+  freighter 26; DEFAULT_TUNING 0). `applyStrafe` sets vx to at least kick·strafe on a press, gated on
+  kick > 0. Kick-aware `strafeToward` in pacing/pockets.ts, exported, and reused by groove.test.ts. New
+  sim/strafe-kick.test.ts. GDD class table has a kick column, and the §5.6 strafe row is updated.
+- Pushed c71634e..0c904de (carries 20c9e02 and 500de7b). #256 CLOSED (auto-closed by the push).
 
 ## State
 
-- Gates at c71634e: typecheck 0; client 340/340 (47 files); shared 316/316; server 17/17; biome clean on my files.
-  Repo-wide lint fails only on workerone's untracked sim/groove/open-space.ts and beat-deck/extract-grammar.mjs.
-- Tap (headless /test-level, DPR 1, frozen): engine light and plume off, engineCruise 0/1.0/2.2 → core
-  pixels over 200: 0/0/134. Full scene: 1.0 vs 2.2 halo mean 77.95 → 78.52. EngineLight dominates.
-- Rail bounce and "default to Split Crown" not ported: the first is dead after fc65986, the second already on dev.
-- Chrome and the scratch vite (:5291) killed by PID.
+- 100 ms tap travel, before → after: interceptor 2.7 → 6.6, fighter 2.4 → 6.0, comet 3.2 → 7.1,
+  phantom 2.3 → 5.5, freighter 2.2 → 5.1 u. Full table in the 0c904de body.
+- HEAD scratch copy: shared 323 → 331 pass, server 17/17. Tree: client 340/340, pnpm typecheck clean,
+  biome and the comment ratchet clean on the touched files.
+- Pocket A/B, 10 seeds: trapped counts are the same, or freighter 425 → 424. Groove avoid pilot, 30 seeds × 5
+  classes: 150/150 finish, 0 deaths, before and after.
+- Not play-tested by feel in a hosted room [unmeasured]. The owner tunes the kicks.
 
 ## Uncommitted
 
@@ -35,10 +36,10 @@ Port #195's banking and engine glow onto dev by hand, drop the rail bounce, fix 
 
 ## Open questions
 
-- Owner: the engine glow is hard to see in play, because EngineLight 18 already saturates the rear faces. Lower
-  EngineLight, or accept?
-- workerfour: can ../slur-worktrees/merge-195 be removed? (asked)
+- Owner: are the kick values right by feel? One field per class in ship-classes.ts.
+- Owner (carried over): the engine glow is hard to see because EngineLight 18 saturates the rear faces.
+  Lower EngineLight, or accept?
 
 ## Lessons → memory
 
-- .claude/memory/engine-light-swamps-emissive-ab.md
+- .claude/memory/fractional-strafe-pilots-trip-strafe-kick.md (updated: the fix and the > 0 gate)
