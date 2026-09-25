@@ -1,77 +1,94 @@
-Agent: workerone · Lane: graphite material unification (#258) + Meteor.chance 0.15 · Updated: 2026-09-25
+Agent: workerone · Lane: #258 follow-up — arch defects + pit redesign + #4a4d52 · Updated: 2026-09-25
 
-Older versions hold the plan stage, the monolith-regression diagnosis, #255 groove and /beat-deck
-history (`git log -p -- .claude/handovers/workerone.md`).
+Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-The owner's definition: one dark graphite pitted metal for every built surface. Only the deck keeps the
-4×4u plate grid. Meteor.chance goes to 0.15. Built and pushed. Waiting for the owner's look.
+Fix the owner's monolith-arch defects and the "raindrops on a windshield" pits (arch face and the deck
+behind the ship). Set Metal.baseColor to #4a4d52 (owner pick). Send before/after captures at 1:1 to the
+supervisor BEFORE the push.
 
 ## Done
 
-- 37c9d79 (pushed to origin/dev): #3b3e42 base, a pit layer, the jointless graphite set on monoliths,
-  blocks, debris, slab walls and rails, and 2 floor material groups. Ship hulls use box-projected pit
-  maps. Pickup shells are graphite metal. Pit.* tunables added; Monolith.plate and Rail.plate removed.
-  Meteor.chance 0.15. ART_MATERIALS §7 item 19 and the §2 rows.
-- Issue #258 filed.
+- No source edits yet. The "before" captures were taken on a clean tree after workertwo's 96u push (fe40718).
+- Claims CLEARED by supervisor: game/scene/track-texture.ts (+test), monolith-geometry.ts (+test),
+  monolith-group.tsx, track-rail.tsx, world-scene.tsx, metal.ts, docs/ART_MATERIALS.md.
 
-## State
+## State (measured unless marked)
 
-- Gates: typecheck OK, lint 0 errors, client vitest 48 files / 349 tests pass (measured).
-- Draw calls on /test-level: 92 per frame after (measured). The +1 from the floor groups is by
-  construction; no before count was measured.
-- Deck luma at spawn (fixed crop): keep 13.9, pre-#230 4.8, #4a4d52 17.2, before-base 18.9 (measured).
-- Ship projection frame-time cost [unmeasured]. SwiftShader gives no GPU ms.
-- Captures: scratchpad
-  `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/d6ebc3ab-36ec-4063-9ee5-e104e67ccc37/scratchpad/after/`.
+- Draw calls on /test-level at spawn: 92 (measured this session). A draw-call condition applies: the leg
+  fix must not add draws.
+- Before captures (1280×720, DPR 1, frozen, first arch z 2070.66, height 200.4):
+  `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/9ca02a71-d600-49aa-8187-69d600538369/scratchpad/shots/before-{approach,face,lintel,up}.png`.
+  `before-up` shows the defects best: bead-like pits with tails, vertical streaks, a lighter band.
+  The deck close-up (`deck` pose) HUNG and was killed. It is NOT captured. Re-take it before any edit,
+  or use the owner's screenshot as the "before".
+- Script: `.../scratchpad/arch-shoot.mjs <url> <cdpPort> <outDir> <label> '<extra store json>' <poseName>`
+  (the last arg filters to one run). Chrome PIDs were killed. Nothing is left running.
+- Verified causes:
+  1. **Pit normal sign in v is inverted.** In three 0.185.1 `getTangentFrame`, B follows +v and
+     normal-map G maps to +v. `Texture.flipY` defaults to true, so canvas-down = −v.
+     `stampPitNormals` sets `ny = … − k·uy`, which is a dent in u but a BUMP in v. Under a key light
+     from above it reads as a bead. The transverse groove bevels in `paintJointNormals` have the same
+     v-inversion. [inferred; deck grooves were approved, so ask before touching them]
+  2. **Arch legs are stretched vertically.** `monolith-frames.tsx` builds the leg geometry with
+     `legShape(frame)` at the BASE height, and the UV v uses that sy. `frameParts` scales each leg to
+     `legShape(frame, placement.height)`, so arch heights 200/189/173 vs base 150 give a V stretch of up
+     to (200−40+60)/170 ≈ 1.29×.
+  3. **Vertical streaks.** `paintBrush`/`paintNormalBrush` strokes run long along canvas y
+     (1.5–6u), and on walls v = height. Mottle is also stretched 3.5× along y.
+  4. **The cavity channel is dead.** No material reads the packed R channel, and no aoMap is set
+     anywhere. So `Pit.cavity` and the groove cavity have no visible effect. Pit darkening must go into
+     the albedo map.
+  5. The tiling and the lighter band: 16u tile, big mottle blobs (MOTTLE_AMOUNT 0.26), and metal
+     patches down to metalness 0.5 (they read as lighter diffuse patches) repeat every 16u. [inferred]
+- Lint warnings in track-rail.tsx (unused `LocalPlayer, Sim` import, unused `world = useWorld()`) and
+  world-scene.tsx (unused `blocks` prop; no caller passes it) are NOT from 37c9d79. That commit does not
+  touch those files; they date from #230 (5002032). Clean them anyway, since the claims are held.
 
 ## Uncommitted
 
-None.
+None of mine. (The tree has other workers' files: apps/server/src/rooms/run-room*.ts and shared tests.)
 
 ## Held files
 
-None. Claims released at the push.
+The claims listed under Done.
 
 ## Next
 
-The owner's feedback on a live monolith arch close-up arrived AFTER 37c9d79 was pushed. Fix all
-four, then show a before/after of the same arch close-up (DPR 1, frozen, checked at 1:1). The causes
-below are inferred from the code and not yet verified:
-
-1. **Visible tiling:** one mottle blotch repeats about 6× at an even pitch across the top of the face.
-   Inferred cause: the graphite tile is 16u, and `paintMottle` blobs repeat every 16u on a wide face.
-   Fix: lower the mottle amplitude on the graphite set, and/or add a second octave at a non-integer
-   scale or rotation, or give each face its own offset.
-2. **The pits read as raindrops (stretched vertically, lit like beads, with tails):** check the V
-   density that reaches monolith faces (`monolith-geometry.ts:86` divides by TEX_SPAN_X; graphite
-   pxPerV = pxPerU). Check the normal sign on walls: CanvasTexture flipY, and the derivative tangent
-   frame per face. The pit convention was matched only to the groove bevels, which are proven on the
-   deck, not on walls. A pit must read as a dent: a shadow at the top and a lit lip at the bottom
-   under a key light from above. The tails may be the brush lobes (below).
-3. **Vertical streaking:** `paintBrush` / `paintNormalBrush` paint long along canvas y (1.5–6u). On
-   walls v = y, so the strokes run up the face. Fix: paint the brush along x in the jointless set, or
-   weaken it strongly.
-4. **Inconsistent faces:** the left third of the pillar face is lighter and patterned; the inner arch
-   faces (lintel underside, pillar inner sides) look untextured. Check the per-face UV offsets and
-   the inner-face UVs in `monolith-geometry.ts`, and check that every face gets the graphite maps.
-
-Supervisor's terms (2026-09-25): fix as a follow-up on dev under #258, with the same claims (still
-cleared). Take the arch before/after only AFTER workertwo pushes the 96u width, because the arch
-geometry moves with the width. For the "before" frame, hold the fix in the working tree or use the
-owner's screenshot. Keep the Pit.density / Pit.tilt defaults quiet: the owner already reads the pits
-as loud.
-
-Then: the owner's colour verdict (#3b3e42 or #4a4d52) and pit loudness (Pit.tilt / Pit.density).
-Files to re-claim from the supervisor: scene/track-texture.ts, scene/monolith-geometry.ts (+ its
-test), maybe scene/track-texture.test.ts.
+1. Re-take `before-deck` on a clean tree (x 6, z ≈ 370, close chase: back 7, height 2.5, lookAhead 4,
+   lookAtLift 0.3). If it hangs again, check the favicon navigate first.
+2. `track-texture.ts`, the pit redesign (supervisor's brief): replace `pitPlan`'s stamped discs with a
+   noise pit field computed once per build. It must be tileable value noise sampled in WORLD units
+   (periods 16u × 16u on graphite, 16u × 4u on the deck; lattice cells/u an integer, e.g. 9 and 23, plus a
+   3rd octave). Add a low-frequency cluster term (0.5 cells/u). Set the threshold by quantile so coverage
+   is exact: coverage = Pit.density × 0.04 (2.5 → 10%). Depth D = clamp((s−thr)/edge). Normal from the
+   gradient of D, dent-correct: `nx = +depthU·dD/du`, `ny = −depthU·dD/dy_canvas·(pxPerV)`. Keep it
+   shallow (depthU = Pit.tilt × ~0.03, clamp slope ~0.6). Put roughness +Pit.roughness·D (raise the
+   default, ~0.3, to kill glints) in G. Put albedo darkening ×(1 − Pit.cavity·D) in the MAP (it was the
+   dead R channel). Rewrite the pitPlan tests for the field (determinism, coverage ≈ target, zero at
+   density 0, isotropic in world units on both tiles).
+3. `track-texture.ts`, jointless grain: a `Grain` constant per set (joints ? DECK : GRAPHITE).
+   GRAPHITE: brush strokes rotated to run along x (rot π/2; normal tilt in y — generalise `normalLobe`
+   to (nx, ny)), weaker (×0.4); mottle isotropic (stretch 1), smaller (0.6–1.6u), more blobs (~90),
+   amount ~0.08; metal patch min ~0.85; finish-patch deltas ×0.5. The DECK keeps its current grain.
+4. Leg stretch with no extra draw calls (supervisor condition): in `monolith-group.tsx`, after
+   `patchRailGlow`, wrap `onBeforeCompile` to replace `#include <uv_vertex>` with
+   `vec2 monolithUv = abs(normal.y) < 0.5 ? vec2(uv.x, uv.y * length(instanceMatrix[1].xyz) / uMonolithSpanY) : uv;`
+   `#define uv monolithUv` / `#include <uv_vertex>` / `#undef uv`. Pass uniform `uMonolithSpanY = size[1]`
+   per group. Set `customProgramCacheKey` to 'slur-rail-glow-monolith' so the program does not collide
+   with the rails. Add a pure helper + test in monolith-geometry.ts if one is useful.
+5. metal.ts `METAL_BASE_COLOR = '#4a4d52'`; test fixture `base`. ART_MATERIALS.md §7 item 19: record the
+   owner pick, the pit field, the dead cavity channel, and the v-sign fix (no comments in source).
+6. Lint cleanup (track-rail.tsx, world-scene.tsx). Gates: `pnpm typecheck`, `pnpm lint`, client vitest.
+7. After captures with the same script (label `after`) and the draw count (must stay 92). Send the
+   before/after paths to the supervisor, wait for OK, commit by pathspec, push.
 
 ## Open questions
 
-- Owner: #3b3e42 or #4a4d52?
-- Owner: the pits catch the engine glow as bright specks. Keep, or lower Pit.tilt?
+- Supervisor/owner: the transverse deck groove bevels have the same v-inversion as the pits
+  [inferred]. Fix them too, or leave the approved deck alone?
 
 ## Lessons → memory
 
-`.claude/memory/tune-headless-captures-via-own-localstorage.md`
+`.claude/memory/cavity-channel-is-dead.md`

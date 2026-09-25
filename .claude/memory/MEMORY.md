@@ -81,3 +81,4 @@ lives in its own file beside this one.
 - [Tune headless captures via their own localStorage](tune-headless-captures-via-own-localstorage.md) — write slur.tuning.v1 with the matching `from`, then reload; no HMR orphan, no leak to the owner
 - [Fixtures must be width-relative](fixtures-must-be-width-relative.md) — a hand-typed ±32 edge passes silently at 80u; write `HALF_WIDTH - n`; seed fixtures must be re-found
 - [One stack, dev only](one-stack-dev-only.md) — OWNER RULE: no worktrees, no scratch/second stacks; build on dev, measure on :5173/:2567
+- [Cavity channel is dead](cavity-channel-is-dead.md) — packed R (cavity) reaches no shader; no aoMap anywhere; darken the albedo map instead
