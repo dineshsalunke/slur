@@ -5,13 +5,19 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: 879e0b3a-18a7-40b8-9b86-032f9600de1e
-  modified: 2026-09-23T14:51:24.554Z
+  modified: 2026-09-25T13:26:48.938Z
 ---
 
 To read or move the ship in a driven `/test-level` tab, import koota by the **exact** URL the page
 loaded (`/node_modules/.vite/deps/koota.js?v=<hash>`, from `performance.getEntriesByType('resource')`)
 and take `universe.worlds.find(w => w && w.queryFirst(LocalPlayer, Sim))`. The world lives in React
 context, so there is no other handle to it from outside.
+
+**The resource list is capped at 250 entries** (verified 2026-09-25, #264). Vite dev loads more modules
+than that, so the traits URL can be missing, or only a stale `?t=` copy can be there. Then the query
+finds no ship, with no error. Before the reload, send
+`Page.addScriptToEvaluateOnNewDocument({source:'performance.setResourceTimingBufferSize(10000)'})`, then
+take the **last** `ecs/traits.ts` entry.
 
 To stage a seeker (or any local combat object) for a still: freeze with KeyP, then write entries
 straight into `localCombat.seekers` and move them from an in-page `requestAnimationFrame` loop. The
