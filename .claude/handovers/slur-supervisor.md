@@ -34,11 +34,11 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 | workerone | w2P:pD | #258 REDIRECT: scratched cast iron (owner ref .claude/frame-tap-refs/owner-refs/scratched-cast-iron.png; the pits still read as raindrops). Plan first, captures, HOLD push | cleared + assigned ~18:30 | dev/tuning-schema.ts, track-texture(.test).ts, pit-field(.test).ts, docs/ART_MATERIALS.md |
 | workertwo | w2P:pF | none (#263 landed 5e2ccab: 0.8 s forward lead, own armed mine hits, back mine behind the tail) | idle 16% | none |
 | workerthree | w2P:pG | #260 cartoon audio: proposal ready, waiting on the owner | idle | none |
-| workerfour | w2P:pH | NEW bug: blocks with no longitudinal seam, near invisible in the dark. Suspect #262 smash blocks [inferred]. Plan first | cleared + assigned ~18:30 (audit done: 19 closed, table in its 08f6f8f5 scratchpad) | none yet |
+| workerfour | w2P:pH | none (#264 landed 9208d5b: a front seam on every sealed block, 22% → 0 seamless; captures .claude/frame-tap-refs/264-{before,after}.png) | idle | none |
 
 ## Next
 
-1. workerone scratched-cast-iron plan → relay; then captures → owner OK → push. workerfour seam-bug cause → relay.
+1. workerone is BUILDING #258 scratched cast iron (claims cleared incl. tuning-panel.tsx) → relay its captures; push only on the owner OK. Owner Q open: did "longitudinal seams" mean a new lengthwise line on the block top/edge (#264 fixed the missing side seams)?
 2. Owner: a mine can land INSIDE a block (floorUnder ignores blocks), 1.1% fwd / 0.6% back; it holds a slot 20 s. Fizzle it like a gap? Audit owner calls: close #31 #34 #253 #257? Sign-offs #163 #170 #173 #215 #219 #222 #251. (F key, gap = lose: answered.)
 3. Owner answers on #260 audio (4 decisions): the tone split vs AUDIO.md §1 (needs an ADR), option A–G (rec E hybrid), lobby/run music, CC-BY SFX allowed or CC0-only. Audition page: workerthree scratchpad audition/index.html (path in #260). A #260 comment says checkThreat must use proj.dir.
 4. Owner flies: #259 meteor, #261 mine (restart pnpm dev first; shared + schema changed), #262 groove smash blocks.
