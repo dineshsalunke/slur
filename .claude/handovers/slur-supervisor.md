@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~14:15 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~14:30 IST
 
 ## Goal
 
@@ -36,7 +36,7 @@ after /clear often shows the old percent, so read again. Clear a worker before a
 |---|---|---|---|---|
 | workerone | w2P:pD | #258 follow-up: 4 arch defects + leg-scale stretch (monolith-group.tsx; no extra draw calls) + lint warnings + METAL_BASE_COLOR #4a4d52 | cleared ~13:40 at the seam and RESUMED; fixing in the tree. Arch captures only after I tell it workertwo pushed 96u | client scene claims from #258 + monolith-group.tsx, track-rail.tsx, world-scene.tsx | workertwo | w2P:pF | none (#257 96u LANDED 07b4d2d + fe40718; feat/width-80 deleted) | idle | none |
 | workerthree | w2P:pG | none | idle, 15% (clear before the next lane) | none |
-| workerfour | w2P:pH | hosted default weave→groove (run-room.ts:78) + docs that state it | dispatched ~14:15 | apps/server/src/rooms/run-room.ts, server tests; docs paths pending |
+| workerfour | w2P:pH | groove hosted default: run-room.ts:80 → groove + run-room.test.ts (fracture tests pass gen weave). Gates green, UNCOMMITTED, HOLDING for the owner | holding | apps/server/src/rooms/run-room.ts, run-room.test.ts |
 
 ## Width trial
 
@@ -49,6 +49,8 @@ The 80u stack is killed (PIDs 94568…94658) and the worktree is removed. Branch
 3. 96u pushed; workerone told to capture. Owner: restart pnpm dev; answer weave a/b/c.
 
 ## Open owner questions
+
+- GROOVE DEFAULT BLOCKER: groove emits NO fractured blocks (groove-track.ts:86 all kind sealed; weave 30/30 seeds, groove 0/30), so hosted bolt-smash disappears. Pickups are fine: 132 per seed vs weave 125–132. Quirk: groove pickup ids = segment index (groove-track.ts:115), so the bolt/seeker order is the same on every seed; salt the id with the seed. Owner options: (a) push as is, (b) push + follow-up so groove emits fractured blocks + salts the pickup ids (supervisor recommends), (c) hold until then. On the answer: tell workerfour to push or hold, and assign the groove follow-up (claim groove/**) to a fresh worker (workertwo 13%, or workerfour).
 
 
 - The graphite colour pick after the captures. Width feel at 96 after it lands.
