@@ -1,72 +1,55 @@
-Agent: workerone · Lane: #255 groove track generator (follow-up to #253) · Updated: 2026-09-25
+Agent: workerone · Lane: monolith material regression (supervisor-assigned, plan stage, no issue yet) · Updated: 2026-09-25
 
-Older versions hold the /beat-deck and song-lab history (`git log -p -- .claude/handovers/workerone.md`).
+Older versions hold the #255 groove and /beat-deck history (`git log -p -- .claude/handovers/workerone.md`).
 
 ## Goal
 
-- A `'groove'` TrackGen: its move grammar comes from the owner's /beat-deck takes, and it keeps wide open space
-  for combat. /test-level uses it by default.
+Fix two faults on monoliths (and blocks): a texture that looks stretched up tall faces, and warm tan
+colour in place of the old cool blue-grey. Plan first. Build nothing until the supervisor clears it.
 
 ## Done
 
-- `20c9e02` groove generator, open-space metric, tests, extractor and the /test-level hook-up (#255).
-  - `packages/shared/src/sim/groove/`:
-    - `grammar.ts`: the frozen take table.
-    - `line.ts`: sections, beat events, arenas.
-    - `islands.ts`: islands and partial holes, with a separation rule.
-    - `groove-track.ts`: segments and pickups on the line.
-    - `open-space.ts`: the metric and its targets.
-    - `groove.test.ts`: 7 tests.
-  - `TRACK_GENS` has `'groove'`, and `makeProcgenTrack` has a branch for it.
-  - /test-level: `clientLoader` reads `?gen=`, default `groove`.
-  - `apps/client/beat-deck/extract-grammar.mjs`: the dev-only extractor.
+- Cause of fault 1 found (read from code, confirmed by captures). No commits yet.
+- Captures at DPR 1, headless, frozen, `/test-level?gen=weave`, in the scratchpad
+  `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/7dd95ed2-8865-4321-9914-997b633bdfc2/scratchpad/`:
+  `{before-base,head-base,fix-uv,fix-uvcol}-{spawn,monolith,block,gap}.png`.
+  before = 3c44038^1, head = 2a2626b, fix-uv = HEAD + UV prototype, fix-uvcol = prototype + pre-#230
+  lights and finish.
 
-## State (measured this session at HEAD + my files, in a scratch copy)
+## State
 
-- Grammar is from 5 owner takes (not 4). Switch side 196/267 = 0.73. Jump share: low 2/75, mid 4/174,
-  high 33/61. The high-band result is weak: 28 of the 39 jumps come from take 02-02.
-- Open space, seeds 1–30, length 400:
-
-  | Gen | ≥5 lanes | min lanes | longest <4 lanes | longest wall | longest gap between arenas (≥240u fully open) |
-  |---|---|---|---|---|---|
-  | groove | 0.980–1.000 | 3.03 | 20u | 48u | 1104u |
-  | weave | 0.767–0.816 | 0 | 110u | 236u | 7880u |
-  | score | 0 | 0 | 7880u | 7880u | 7880u |
-
-  All groove targets pass: ≥0.8 · ≥2 · ≤60 · ≤60 · ≤1200.
-- Density: about 29 islands and 8 holes per seed, one obstacle per 214u.
-- Flyability, 30 seeds × 5 classes: a delayed-perception avoidance pilot finished 150/150 with 0 deaths.
-  Bumps over 30 seeds: interceptor 8, fighter 9, comet 7, phantom 9, freighter 9. The line pilot
-  (freighter) finished 30/30 with 0 deaths and 0 bumps.
-- There are no roster pockets on seeds 1–10.
-- Gates: typecheck green, lint green, shared 323/323 (scratch at HEAD), server 17/17, client 340/340.
-- The in-tree uncommitted strafe-kick work (`step.ts`, `constants.ts`, `ship-classes.ts`, not mine) makes the
-  freighter wedge on groove seed 13 under the test pilot. That is a pilot artifact
-  (`.claude/memory/fractional-strafe-pilots-trip-strafe-kick.md`). `groove.test.ts` may fail when the kick lands.
-- /test-level has no headless visual tap yet [unmeasured]. It typechecks and the owner has not playtested it.
+- d9b7227 set `ROWS` 1 in `track-texture.ts`, and `TEX_SPAN_Z = AUTHOR_PLATE_U * ROWS` fell from 16u
+  to 4u. The deck UV is `[x / TEX_SPAN_X, z / TEX_SPAN_Z]` (`track-geometry.ts:28`), so the deck shows
+  the 16u-tall painted tile squeezed into 4u. Deck plates are still 4u × 4u, not 4u × 16u.
+- Monolith UVs (`monolith-geometry.ts:86`) and block UVs (`sealed-block-shader.ts:83`,
+  `fractured-block-shader.ts:82`) divide both axes by 16u. Their vertical texel density is 4× lower
+  than the deck. Plates read 2u × 8u on monoliths, 4u × 16u on blocks, with 6u brush streaks upright.
+- Deck slab sides (`uvFor` 'zy') have the mirror fault: z / 4u on U, y / 16u on V. Seen in the gap
+  walls (`head-base-gap.png`).
+- The prototype (walls divide V by `TEX_SPAN_Z`) brings back the 2u square grid on monoliths
+  (`fix-uv-monolith.png` against `before-base-monolith.png`). Deck unchanged.
+- The old lights and finish set live over the prototype bring the cool blue-grey back
+  (`fix-uvcol-*.png`).
 
 ## Uncommitted
 
-- None.
+None.
 
 ## Held files
 
-- `packages/shared/src/sim/groove/**` · `apps/client/beat-deck/extract-grammar.mjs` ·
-  `apps/client/app/routes/test-level/route.tsx` · `apps/client/app/routes/test-level/test-level-canvas.tsx`.
+None until the supervisor clears the claims.
 
 ## Next
 
-1. The owner playtests `/test-level` (groove), and `?gen=weave` for comparison.
-2. Tune from feedback. Density: `ISLAND_CHANCE`, `ISLAND_WIDTHS`, `ISLAND_DEPTHS` in `islands.ts`. Arenas:
-   `GROOVE_ARENA_EVERY`/`_BEATS` in `line.ts`.
-3. When the strafe kick lands, give the `groove.test.ts` pilot whole-key strafes with a deadband.
-4. Push `20c9e02` (the supervisor decides).
+1. Wait for the supervisor: plan approval, file claims, issue number.
+2. Then build the plan sent in the message of 2026-09-25, test, lint, capture, commit.
 
 ## Open questions
 
-- Is groove's obstacle density right (1 per ~214u, about 1.7 s at 124 u/s)? The owner judges in play.
-- Push `archive/song-lab` to origin? This is still the owner's decision.
+- Owner: walls match the current deck (recommended, deck unchanged) or the deck gets the real 4u × 16u
+  plates (`TEX_SPAN_Z` back to 16u, a visible deck change)?
+- Owner: `Metal.baseColor` back to #7c8590 also re-tints the ship hulls (`ship-model.tsx:156`).
 
 ## Lessons → memory
 
-- `.claude/memory/fractional-strafe-pilots-trip-strafe-kick.md`.
+none
