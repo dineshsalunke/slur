@@ -995,12 +995,18 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     special case where it will be a mix of the dark graphite pitted metal + 4x4u plate grid like what
     is it now."*
 
-    - **`Metal.baseColor` moves from `#7d7a75` to `#3b3e42`.** This is a neutral dark graphite with a
-      small cool bias. `#4a4d52` was captured beside it for the owner to compare. The value stays one
-      value for every surface (item 12).
+    - **`Metal.baseColor` is `#4a4d52`.** This is a neutral dark graphite with a small cool bias.
+      The first value was `#3b3e42`. The owner compared the two and chose `#4a4d52`. The value stays
+      one value for every surface (item 12).
     - **Pitting is surface detail only.** A seeded layer of small dents, 0.05–0.16u radius, goes
       into the normal map, the cavity channel and the roughness channel. It does not change the
       colour. The `Pit.*` tunables control density, tilt, roughness and cavity.
+    - **Transverse groove bevels face the right way.** Three's tangent frame takes B along +v. A
+      canvas texture is flipped (`flipY`), so canvas-down is −v. The transverse bevels had their v
+      sign inverted, so they read as ridges under a key light from above. The sign is flipped.
+    - **Arch legs are no longer stretched.** All the legs share one geometry, built at the base
+      frame height, but each is scaled to its own arch height. The vertex shader now scales wall v
+      by the instance's y scale ÷ the geometry span. This adds no draw call.
     - **Only the deck top has the 4 × 4u plate grid, as it is now.** Monoliths, sealed and fractured
       blocks, fragments, gap slab walls and undersides, and rail bodies use the same painter with no
       joints. They sample it at world ÷ 16u on both axes. This removes the tall-face stretch, because

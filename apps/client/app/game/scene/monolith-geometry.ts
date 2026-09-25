@@ -126,6 +126,33 @@ export function monolithProfileGeometry(
     return geometry;
 }
 
+const WALL_UV_HEAD = 'uniform float uMonolithSpanY;\n';
+
+const WALL_UV = `
+#ifdef USE_INSTANCING
+	vec2 monolithUv = abs( normal.y ) < 0.5 ? vec2( uv.x, uv.y * length( instanceMatrix[ 1 ].xyz ) / uMonolithSpanY ) : uv;
+#else
+	vec2 monolithUv = uv;
+#endif
+#define uv monolithUv
+#include <uv_vertex>
+#undef uv
+`;
+
+export function wallUvVertex( vertexShader: string ): string {
+    return WALL_UV_HEAD + vertexShader.replace( '#include <uv_vertex>', WALL_UV );
+}
+
+export function patchWallSpan( material: THREE.Material, span: { value: number } ): void {
+    const prior = material.onBeforeCompile;
+    material.onBeforeCompile = ( shader, renderer ) => {
+        prior.call( material, shader, renderer );
+        shader.uniforms.uMonolithSpanY = span;
+        shader.vertexShader = wallUvVertex( shader.vertexShader );
+    };
+    material.customProgramCacheKey = () => 'slur-rail-glow-monolith';
+}
+
 const cache = new Map< string, THREE.BufferGeometry >();
 
 export function monolithGeometry( profile: MonolithProfile, size: MonolithSize = UNIT_SIZE ): THREE.BufferGeometry {

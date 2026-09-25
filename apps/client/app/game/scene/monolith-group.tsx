@@ -5,7 +5,7 @@ import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
 import { applyDeckFinish } from './deck-finish';
 import type { MonolithShapeConfig } from './monolith-config';
-import { type MonolithSize, monolithGeometry } from './monolith-geometry';
+import { type MonolithSize, monolithGeometry, patchWallSpan } from './monolith-geometry';
 import { bodySpan, type MonolithTransform, shapeProfile } from './monolith-transforms';
 import { patchRailGlow, type RailMask, railGlowUniforms, updateRailGlow } from './rail-glow';
 import { graphiteSurface } from './track-materials';
@@ -40,6 +40,7 @@ export function MonolithGroup( {
     const rebuild = useRebuildToken();
     const surface = useMemo( graphiteSurface, [ rebuild ] );
     const glow = useMemo( railGlowUniforms, [] );
+    const span = useMemo( () => ( { value: 1 } ), [] );
 
     const bodyRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const seamRef = useRef< THREE.MeshStandardMaterial | null >( null );
@@ -47,7 +48,9 @@ export function MonolithGroup( {
 
     const attachBody = ( mat: THREE.MeshStandardMaterial | null ) => {
         bodyRef.current = mat;
-        if ( mat ) patchRailGlow( mat, glow );
+        if ( ! mat ) return;
+        patchRailGlow( mat, glow );
+        patchWallSpan( mat, span );
     };
 
     const fillBodies = useCallback(
@@ -67,6 +70,7 @@ export function MonolithGroup( {
     useFrame( () => {
         const body = bodyRef.current;
         if ( body ) {
+            span.value = size[ 1 ];
             applyDeckFinish( body );
             if ( railMask ) updateRailGlow( glow, railMask.texture.current, railMask.count );
         }

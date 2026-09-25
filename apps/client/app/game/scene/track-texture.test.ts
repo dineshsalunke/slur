@@ -5,7 +5,7 @@ import { pitPlan, type SurfaceParams, TEX_SPAN_X, TEX_SPAN_Z, texelDensity } fro
 
 const deck: SurfaceParams = {
     plate: 4,
-    base: '#3b3e42',
+    base: '#4a4d52',
     joints: true,
     jointWidth: 0.15,
     wallTilt: 0.05,

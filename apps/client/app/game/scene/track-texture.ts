@@ -354,11 +354,11 @@ function paintJointNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
             wrapRect( ctx, cx + hw - bevel, 0, bevel, RES );
         },
         ( cy ) => {
-            ctx.fillStyle = normal( 0, c.wallTilt );
+            ctx.fillStyle = normal( 0, -c.wallTilt );
             wrapRect( ctx, 0, cy - hw, RES, bevel );
             ctx.fillStyle = normal( 0, 0 );
             wrapRect( ctx, 0, cy - hw + bevel, RES, floorPx );
-            ctx.fillStyle = normal( 0, -c.wallTilt );
+            ctx.fillStyle = normal( 0, c.wallTilt );
             wrapRect( ctx, 0, cy + hw - bevel, RES, bevel );
         },
     );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { crossSection, monolithGeometry, monolithProfileGeometry } from './monolith-geometry';
+import { crossSection, monolithGeometry, monolithProfileGeometry, wallUvVertex } from './monolith-geometry';
 
 function extent( geometry: ReturnType< typeof monolithProfileGeometry >, axis: 'x' | 'z', top: boolean ): number {
     const position = geometry.attributes.position;
@@ -69,5 +69,18 @@ describe( 'monolithGeometry', () => {
         const profile = { taper: 0.62, chamferX: 0.0375, chamferZ: 0.0375 };
         expect( monolithGeometry( profile ) ).toBe( monolithGeometry( { ...profile } ) );
         expect( monolithGeometry( profile ) ).not.toBe( monolithGeometry( { ...profile, taper: 1 } ) );
+    } );
+} );
+
+describe( 'wall uv span', () => {
+    it( 'rescales wall v by the instance height before the uv chunk and restores uv after it', () => {
+        const out = wallUvVertex( 'void main() {\n#include <uv_vertex>\n}' );
+        expect( out.startsWith( 'uniform float uMonolithSpanY;' ) ).toBe( true );
+        const scaled = out.indexOf( 'length( instanceMatrix[ 1 ].xyz ) / uMonolithSpanY' );
+        const define = out.indexOf( '#define uv monolithUv' );
+        const chunk = out.indexOf( '#include <uv_vertex>' );
+        const undef = out.indexOf( '#undef uv' );
+        expect( scaled ).toBeGreaterThan( 0 );
+        expect( scaled < define && define < chunk && chunk < undef ).toBe( true );
     } );
 } );

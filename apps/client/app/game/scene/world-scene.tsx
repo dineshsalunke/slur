@@ -14,15 +14,7 @@ import { SceneEnvironment } from './scene-environment';
 import { Ships } from './ship';
 import { TrackView } from './track-view';
 
-export function WorldScene( {
-    track,
-    blocks = true,
-    children,
-}: {
-    track: Track;
-    blocks?: boolean;
-    children?: ReactNode;
-} ) {
+export function WorldScene( { track, children }: { track: Track; children?: ReactNode } ) {
     return (
         <Fragment>
             <GameEnvironment track={ track } />
