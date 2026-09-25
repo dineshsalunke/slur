@@ -1,116 +1,66 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-24, ~21:30 IST
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-25, ~08:05 IST
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. Clear and resume steps: memory `supervisor-clears-workers-via-herdr.md`.
 Standing approval to clear workers at a seam. Grep the status line with `│ [█░]* [0-9]*%`; the first read
-after /clear can still show the old percent, so read again.
+after /clear often shows the old percent, so read again.
 
-## Owner is AWAY (from ~20:10), on remote control
+## Standing owner decisions
 
-Goal on return: open `/song-lab`, switch between many generated song tracks, and watch each one replayed
-for all 5 classes. The plan is on issue #253 (last comments).
-Standing owner decisions:
-- Workers commit to LOCAL dev by explicit pathspec without asking. No push, no merge.
-- `/song-lab` is a new dev-only route. `/test-level` stays untouched.
-- All 5 classes fly every track.
-- The song work is a THROWAWAY experiment (memory `song-tracks-are-a-throwaway-experiment.md`). The
-  allowed shared change: an optional intensity-curve parameter on `composeScore` AND `emitScore`
-  (with no curve passed, output must be byte-identical; digest + seeds 1–30 adherence unchanged).
-- The bundle must store each variant's curve so the viewer's rebuild matches (trackDigest).
+- Workers commit to LOCAL dev by explicit pathspec without asking. The owner approved pushing dev to origin
+  this morning ("merge them on dev and then sync everything").
+- The song work is a lens, not a rhythm game (memory `song-tracks-are-a-throwaway-experiment.md`, 82137b9).
+  Never propose audio re-sync or timing scores.
+- Freighter-only while experimenting. Other classes come after a good result.
 
-## Owner decision ~23:35: FREIGHTER ONLY
+## What happened (2026-09-24 night → 09-25 morning)
 
-"for now we will only test this with freighter, if the experiment gives good result we will then continue with
-other classes and features or fixes". Sync fix = option 1: the song starts when the freighter reaches cruise
-(notes at z = zCruise + 124·t). No physics change and no per-class maps. Dispatched: workerone does map +
-bundle, workerfour does the viewer (audio start, readout origin, bar-106 stop, freighter default). Target:
-drift < 1 beat at bars 8/28/60/96/finish.
-- Field: LabSong.clock {z0 257.3 (freighter cruise at tick 248, 4.133 s), t0 0, zPerSecond 124}.
-- workerfour viewer DONE 9b3ab59 (handover 50c2a1a), cleared + resumed ~23:55. It waits for workerone's
-  bundle SHA and then runs the live drift check. Send it that SHA.
-- workerone DONE 61063be (handover f194d47): perfect-freighter drift 0.000 beats at every checkpoint on all
-  13 variants (bundle analysis). 260/260 replay match. groove.ts gridStart = 260. IDLE, holds nothing.
-  Human freighter drifts after bumps (pro −5 beats by bar 96; rookie −350 to −520 at the finish).
-  The re-sync question is DROPPED. Owner: "we are not making a rythm game"; the song only helps the owner see the moves
-  (memory updated 82137b9).
-- ~00:15 workerone dispatched: 14th variant `conductor` (4/4 pattern down-in-out-up, landing on the
-  downbeat, half-time, size = loudness, legato/staccato, prep beat, fermata = open stretch).
-  Claims CLEAR: conductor.ts (new), bundle.ts, song-lab-build.ts, variants.ts, song-lab.test.ts. Old-13
-  hash 809ff7fd. It builds to believer-s1.next.json; SWAP ONLY AFTER workerfour's live check reports.
-- workerfour LIVE check PASSED (b0be2cc typed song.clock, handover c688b57): perfect freighter live-audio
-  drift ≤16 ms at bars 8/28/60/96 on groove/groove-tight/envelope, 0 re-seeks. Pro: about −25 ms per
-  bump. Re-sync is dropped (not a rhythm game). workerfour re-checks conductor when its bundle lands.
-- workerone cleared + resumed ~00:30 and is building conductor. Swap gate OPENED.
-
-## ~01:00 SONG LAB WOUND DOWN (owner told workerone directly: "this is not really working out")
-
-- conductor landed db8cd1e. The bundle swap never happened (workerone's classifier denied the overwrite). Now moot.
-- All song-lab work is archived on LOCAL branch `archive/song-lab` (b64766f), made with `git branch` and no
-  checkout; HEAD is dev and it is not pushed. CLAUDE.md says "Never create a branch here". Ask the owner whether
-  the archive branch is OK or should become a tag.
-- Replay code stays on dev. Owner to say which files count as replay code.
-- NEW experiment (owner → workerone): a route with a plain empty deck. The owner plays an mp3, flies/strafes
-  on the beats, and the inputs are recorded for analysis. Its name clashes with /tapper (7f397d0). Waiting on owner answers.
-- workerone cleared + resumed idle (handover ef31128). workerfour stood down (8e62847).
-- ~01:15 OWNER: the archive branch is fine (question dropped). "none stay on dev get rid of everything". "yes": /tapper
-  goes too, replaced by the new flying deck. workerone dispatched: delete song-lab + tapper + hooks +
-  .songs/lab, and revert the c3d2a63 curve. Keep the mp3s. Then a plan for the new deck goes to the owner via the supervisor.
-- DONE 9388a67 (handover e3e67ab): 71 files removed. Score sha256 62f2711c is the same before and after. mp3 + analysis.json
-  kept. archive/song-lab is local only; push is the owner's call.
-- matchmaking.test.ts FIXED c0a7a90 (workertwo, handover 87524f6): the fixture was stale; client 299/299. workertwo idle.
-- /beat-deck APPROVED (~01:45): the name /beat-deck, a dev plugin writes takes to .songs/takes/, AUTO-CRUISE (held throttle
-  in the input layer, no sim change). workerone dispatched to build v1 (no analysis yet).
-- /beat-deck v1 LANDED 1ab0a3f (handover 17c71c7): headless take of 6.6 s = 17 KB, 399 ticks, 18 keys; mp3 sha OK; path-safe
-  plugin; client 309/309. On the owner's stack the supervisor verified the route (200) and the plugin POST (400 on an empty body).
-  workerone cleared + resumed idle. A bot sample take sits in .songs/takes/; delete it before analysis.
-  NEXT: the owner records takes → analysis step (key-down vs believer.analysis.json beats).
-- ~07:45 the supervisor analysed the owner's 4 takes (jq, scratch take.jq/rhythm.jq): strafe every 2 beats (then 1), 70–80% alternation,
-  holds of 0.5–1 beat, jumps on the beat, strafes 40–100 ms early. Take 4 is tightest.
-- OWNER: build a track generator from this data, playable in /test-level. NOT a corridor, and LOTS of open space
-  lateral + longitudinal (combat between friends). New songs come later. workerone asked for a PLAN first.
-
-## Landed this session (all local, not pushed)
-
-- 72948ae JJ motifs · 0734e06 gen:'score' switch (`SLUR_TRACK_GEN=score pnpm dev`) · 59ee8df #244 ·
-  333530e ADR-020 + GDD §5.5 · 7f397d0 beat analysis + /tapper · 4f84bbe drum onsets (Believer is on a
-  triplet grid) · 0099d73 bundle type + replay loop · 790c6cb, bf70803, 67a2dfa /song-lab viewer.
-- Issues filed: #253 (song lab), #254 (class rework: Freighter should NOT be fastest; later).
-- 19:49 pkill incident; memory `kill-by-pid-never-pkill.md`. Owner told.
+- Song lab: the freighter sync worked (live drift ≤16 ms). `conductor` variant db8cd1e. Then the owner said "this is
+  not really working out". EVERYTHING removed from dev at 9388a67 (71 files), including /tapper and the
+  c3d2a63 curve revert (score sha 62f2711c unchanged). Archived on LOCAL branch `archive/song-lab` (b64766f),
+  not pushed; the owner has not said whether to push it.
+- matchmaking.test.ts stale fixture fixed c0a7a90 (workertwo).
+- /beat-deck v1 1ab0a3f (workerone): an empty deck; the owner flies to an mp3; takes are written to
+  apps/client/.songs/takes/. Believer mp3 + imgaine_dragons-believer.analysis.json are kept. A bot take
+  (…2026-09-24T19-21…) is still there; delete it before any analysis.
+- The supervisor analysed the owner's 4 takes (jq; scripts in the old session scratchpad, gone): strafe every 2 beats
+  (then 1), 70–80% L/R alternation, holds of 0.5–1 beat, jumps on the beat (−10..−16 ms), strafes 40–100 ms early,
+  take 4 tightest. The owner will record new songs later. The beat-analysis script lives only on archive/song-lab.
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone (NOW ~22:00, cleared + dispatched) | w2P:pD | OWNER FEEDBACK: timing/feel good; track is "just a corridor"; strafing too simple. New variants: (1) signature intro groove `L R L R L R r l r l r ×2` on kick/snare; (2) "Believer" hook = a PAIR: full move, then a shorter echo: normal jump → short tap jump, OR long held strafe → short snap; alternate the two forms (owner clarified ~22:10; lab-only tap-jump token); (3) open stretches: islands/gates, not continuous walls. LANDED bcbc3d5 (handover 657c10e): 13 variants (groove, groove-tight, groove-open), 260/260 replay match, old 10 byte-identical. Human deaths pro/club/rookie: groove 0/1/6, tight 0/1/2, open 0/0/8. Cleared + resumed ~23:25, waiting idle. Owner Qs: register gap vs backbeat grid; Believer curve lateral vs height | none (committed) |
-| workerone (earlier) | w2P:pD | #253 pipeline DONE: c3d2a63 curve, b5b7b3c pipeline, handover ae61282. Bundle `.songs/lab/believer-s1.json` = 10 variants × 5 classes, all replay-verified; perfect pilot → 50/50 finish, 0 deaths, 0 bumps (times don't separate variants; 65–151 notes do). Human runs LANDED f98f9e5 (handover 639655e): pro/club/rookie, 150 runs, 0 replay mismatches; bundle 16.7 MB. Deaths pro/club/rookie: drum-driven variants easiest (snare-jump 1/15/38, triplet-grid 1/14/39), `mined` hardest (12/44/103). IDLE | none | apps/client/song-lab/**, score/compose.ts + test, score/emit.ts + test, client package.json + vitest.config.ts (1 line each) |
-| workertwo | w2P:pF | none | cleared + resumed idle (d688b79) | none |
-| workerthree | w2P:pG | none | cleared + resumed idle (9674c9f) | none |
-| workerfour | w2P:pH | #253 /song-lab viewer DONE: bf70803, 67a2dfa, ddf5bfe, 63b8014 (pilot picker); handover e8ec4dc. 200/200 MATCH, 10/10 digests, load 0.64–0.71 s warm. Owner's return goal is MET. Song playback DONE ab88019 (handover dcf4e46): 1× only, re-seek > 80 ms. Drift from map.ts songClock zPerSecond = registerCruise 124 (= freighter only): finish lag freighter 2.1 s, comet 22.7, fighter 60.4, phantom 78.0, interceptor 97.9. OWNER QUESTION pending: per-class map vs one reference speed. Not heard on real speakers yet | 13-variant check DONE (handover fab0267): 13/13 digests, 260/260 MATCH, no code change; load 583–672 ms warm. Cosmetic open: song-bar readout counts past bar 106 after the song ends. IDLE | routes/song-lab/**, tapper/tapper-plugin.ts, 1 line routes.ts |
+| workerone | w2P:pD | PLAN (no build): track generator derived from the takes, playable in /test-level. Owner: "doesn't feel like a corridor … combat game between friends … a lot of open space lateral and longitudinal". The plan must cover the grammar distributions, an open-space metric, the TrackGen/schema impact, 30-seed × 5-class pilot proof, claims, and the issue | planning | none |
+| workerthree | w2P:pG | SYNC: detached worktree ../slur-worktrees/sync off local dev. Merge origin/dev (17 behind: #188 #225 #230 #237), then merge PR #195 feat/ship-feel (CONFLICTING), gates, `push origin HEAD:dev`. STOP on semantic conflicts | dispatched ~08:00 | worktree only |
+| workertwo | w2P:pF | none | idle (87524f6) | none |
+| workerfour | w2P:pH | none | idle, stood down (8e62847) | none |
 
 ## Next
 
-1. /song-lab is ready (all four workers idle). The owner has the how-to message. Take the owner's
-   feedback on which variants feel right → step 3/distil, or #254, or the intensity-strip extra.
+1. When workerthree reports the push: check `git status` in the shared tree. When the index is clean,
+   `git merge --ff-only origin/dev` in the shared checkout (never while a worker has staged files). Confirm that
+   `gh pr view 195` shows it merged. Tell the owner.
+2. Relay workerone's generator plan to the owner. Build only after approval.
+3. Ask the owner: push archive/song-lab?
 
 ## Open owner questions
 
-- #254 class roles (later). GDD class-matrix Comet "fastest" wording.
-- #244 dropped 94 fractured blocks over 9 seeds; FRACTURE_RATE unchanged. Raise it?
-- #251: maskable icon? Landscape notch safe-area? Device check pending (97dc750, b58923f, a5cd9a2).
-- Score rooms have no pickups (S4).
-- PR #195 paused. Older: `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
+- Push archive/song-lab?
+- #254 class roles (later). #244 FRACTURE_RATE raise? #251 device check. Score rooms have no pickups.
+- Older: `git rm apps/client/app/game/net-debug-hud.tsx` + drop `--color-debug`; review #236.
 
 ## Owner's dev stack
 
-The supervisor started `pnpm dev` (background task in its session) at ~21:39: client :5173, server :2567
-(pid 85262). A /clear of the supervisor may end it; tell the owner to restart `pnpm dev` if so.
+The previous supervisor session started `pnpm dev` at ~21:39 (server pid 85262, :2567; client :5173). It was still
+serving at 07:40.
 
 ## Uncommitted
 
-none of mine.
+none of mine. docs/art-direction/* changes are ChatGPT's; never touch them.
 
 ## Lessons → memory
 
-kill-by-pid-never-pkill.md (f16a56c); song-tracks-are-a-throwaway-experiment.md (1cca5dd).
+song-tracks-are-a-throwaway-experiment.md updated (82137b9).
