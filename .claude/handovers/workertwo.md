@@ -1,34 +1,29 @@
-Agent: workertwo · Lane: mine follow-up — far forward drop, self-hit, tail back drop (#263, child of #261) · Updated: 2026-09-25
+Agent: workertwo · Lane: mine inside a block fizzles (#263 follow-up, child of #261) · Updated: 2026-09-25
 
-Older versions hold #261, #259 and #257 (`git log -p -- .claude/handovers/workertwo.md`).
+Older versions hold #263, #261, #259 and #257 (`git log -p -- .claude/handovers/workertwo.md`).
 
 ## Goal
 
-The owner said: "mines should be dropped quite far so the player can avoid it himself." Make the forward drop far
-enough to dodge, let the layer's own armed mine hit the layer, and put the back mine behind the tail.
+The owner said: "yes, mines inside a block should fizzle like a gap." A mine whose drop point is inside a standing
+block is spent and not laid, the same as a mine dropped over a gap.
 
 ## Done
 
-- `71b64c4`: #261, the mine and forward/back fire.
-- This commit (#263): `MINE_DROP_AHEAD` 8u → `MINE_LEAD_S` 0.8 s. The forward mine goes at z = nose + R + vz×0.8.
-  New `mineDropZ` in `combat/mine.ts`. `MINE_BACK_GAP` 1u: the back mine goes at z − halfL − R − 1.
-  `mineTriggers` no longer excludes the owner. `/test-level` passes vz. GDD §5.3 and ART_SCALE §7a are updated.
-  New `combat/mine-drop.test.ts`: drop placement, a stopped layer survives, a rival ahead is hit first, and the
-  per-class idle, strafe and jump pilots.
+- `5e2ccab`: #263, the far forward drop, the self-hit and the back drop behind the tail.
+- This commit (#263 follow-up): `aimMine` takes `broken: ReadonlySet<number>` after `track`, in the same position
+  as `lockTarget`. It returns false when the drop point is inside a block that is not in `broken`. The test is the
+  sim's `overlapsBlock` with a zero hull: `x0<x<x1`, `z0<z<z1`, `y<y1`, `y+stepTol>=y0`. Callers: the server
+  (`room-combat.ts`, `ctx.broken`) and `/test-level` (`local-combat.ts`, `blockWorld.broken`). New tests in
+  `mine-drop.test.ts`: a drop inside a sealed block fizzles, forward and back. A drop onto a broken fractured
+  block lands. A drop onto a standing fractured block fizzles.
 
 ## State
 
-- Sim, flat floor, at top speed [measured]. With the old 8u drop, every class passed the mine before it armed.
-  The new forward drop, nose to mine: interceptor 70u, phantom 75u, fighter 80u, comet 93u, freighter 102u
-  [computed from maxCruise × 0.8 + 3].
-- Dodge test, 0.5 s reaction [measured, `mine-drop.test.ts`]: every class is hit if it holds its line. Every
-  class clears the mine with the kick-aware `strafeToward` strafe, and every class clears it with a jump.
-  The freighter strafe has the least slack: 0.783 s of the 0.8 s.
-- Fizzle rate, 30 groove seeds [measured, scratch `fizzle.mjs`]: uniform open-deck points, every 8u in z and every
-  4u in x. Forward new 0.5–0.6% (old 8u: 0.3%). Back new 0.2% (old: 0%). `floorUnder` ignores blocks, so a
-  mine can land inside a block without fizzling: forward new 1.1% (old 0.7%), back new 0.6%.
-- Gates: typecheck clean. shared 377/377, server 25/25, client 364/364. Lint 0 errors, 7 line-count warnings
-  (none new).
+- In-block rate after the fix, 30 groove seeds, every 5 classes, 3,451,420 drops per direction [measured, scratch
+  `fizzle2.mjs`]: forward 0 (was 1.1%), back 0 (was 0.6%).
+- Fizzle rate now [measured]: forward 1.63% (was 0.5–0.6% gap + 1.1% in-block), back 0.83% (was 0.2% + 0.6%).
+- Gates: typecheck clean. shared 379/379, server 25/25, client 365/365. Lint 0 errors, 7 line-count warnings
+  (none new; the block tests went to `mine-drop.test.ts` to keep `mine.test.ts` under 300 lines).
 
 ## Uncommitted
 
@@ -41,13 +36,11 @@ None. Released on this commit.
 ## Next
 
 1. Supervisor: relay the numbers to the owner.
-2. If wanted: stop a mine landing inside a block (1.1% of forward drops). A fizzle or a skip is the owner's call.
 
 ## Open questions
 
-- A mine that lands inside a block sits hidden and nobody can reach it. Should it fizzle like a gap?
 - Still open from #261: F = back key; the `checkThreat` audio cue ignores `proj.dir` (workerthree).
 
 ## Lessons → memory
 
-`.claude/memory/tuningforship-takes-a-ship-id.md`
+none

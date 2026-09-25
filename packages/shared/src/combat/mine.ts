@@ -1,4 +1,4 @@
-import type { Track } from '../sim/space.js';
+import type { Segment, Track } from '../sim/space.js';
 import { floorUnder } from '../sim/step.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { entryZ, sweptZ } from './fire-dir.js';
@@ -42,18 +42,34 @@ export function mineDropZ( ship: MineLayer, halfL: number, cfg: SimConfig = DEFA
     return ship.z + clear + Math.max( 0, ship.vz ) * cfg.mineLeadS;
 }
 
+function insideStandingBlock(
+    seg: Segment,
+    x: number,
+    y: number,
+    z: number,
+    stepTol: number,
+    broken: ReadonlySet< number >,
+): boolean {
+    return seg.blocks.some(
+        ( b ) =>
+            ! broken.has( b.id ) && x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 && y < b.y1 && y + stepTol >= b.y0,
+    );
+}
+
 export function aimMine(
     mine: MineState,
     ship: MineLayer,
     hull: MineHull,
     ownerId: string,
     track: Track,
+    broken: ReadonlySet< number >,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
     dir = 1,
 ): boolean {
     const z = mineDropZ( ship, hull.halfL, cfg, dir );
-    const y = floorUnder( track.segmentAtZ( z ), ship.x, z, ship.y, hull.stepTol );
-    if ( y === null ) return false;
+    const seg = track.segmentAtZ( z );
+    const y = floorUnder( seg, ship.x, z, ship.y, hull.stepTol );
+    if ( y === null || insideStandingBlock( seg, ship.x, y, z, hull.stepTol, broken ) ) return false;
     mine.x = ship.x;
     mine.y = y;
     mine.z = z;

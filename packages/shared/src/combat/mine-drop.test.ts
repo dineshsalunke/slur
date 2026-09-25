@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     aimMine,
+    BLOCK_HEIGHT,
+    BLOCK_ID_STRIDE,
+    type Block,
     DEFAULT_SIM_CONFIG,
     FIXED_DT,
     type FlightTuning,
@@ -25,14 +28,23 @@ const HULL = SHIP_CLASSES.fighter.tuning;
 const R = DEFAULT_SIM_CONFIG.mineTriggerR;
 const REACT_S = 0.5;
 
-function flat( deckY = 0 ): Track {
+const WALL_SEG = 5;
+const WALL_MID = WALL_SEG * SEG_LEN + 3;
+
+function wall( kind: Block[ 'kind' ] ): Block {
+    const z0 = WALL_SEG * SEG_LEN;
+    const id = WALL_SEG * BLOCK_ID_STRIDE;
+    return { x0: -HALF_WIDTH, x1: HALF_WIDTH, y0: 0, y1: BLOCK_HEIGHT, z0, z1: z0 + 6, id, kind };
+}
+
+function flat( deckY = 0, block?: Block ): Track {
     const seg = ( i: number ): Segment => ( {
         index: i,
         z0: i * SEG_LEN,
         z1: ( i + 1 ) * SEG_LEN,
         kind: 'plain',
         floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: deckY } ],
-        blocks: [],
+        blocks: block && i === WALL_SEG ? [ block ] : [],
         isFinish: false,
     } );
     return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ), anchors: [] };
@@ -74,7 +86,7 @@ function flyOverOwnMine( t: FlightTuning, pilot: Pilot ): MineEvent[] {
     const s = spawnShip( 0, 100 );
     s.vz = t.maxCruise;
     const mine = blank();
-    assert.ok( aimMine( mine, s, t, 'owner', track ) );
+    assert.ok( aimMine( mine, s, t, 'owner', track, new Set() ) );
     const mines = new Map( [ [ 'm', mine ] ] );
     const events: MineEvent[] = [];
     for ( let n = 0; n * FIXED_DT < 3 && mines.size > 0; n++ ) {
@@ -86,7 +98,7 @@ function flyOverOwnMine( t: FlightTuning, pilot: Pilot ): MineEvent[] {
 
 test( 'a forward mine lands mineLeadS of the layer speed past the trigger reach of the nose', () => {
     const m = blank();
-    assert.ok( aimMine( m, { x: 5, y: 3.2, z: 100, vz: 90 }, HULL, 'owner', flat( 1.5 ) ) );
+    assert.ok( aimMine( m, { x: 5, y: 3.2, z: 100, vz: 90 }, HULL, 'owner', flat( 1.5 ), new Set() ) );
     assert.deepEqual( m, {
         x: 5,
         y: 1.5,
@@ -99,14 +111,38 @@ test( 'a forward mine lands mineLeadS of the layer speed past the trigger reach 
 
 test( 'a back mine lands behind the tail, clear of the trigger reach', () => {
     const m = blank();
-    assert.ok( aimMine( m, { x: -4, y: 3.2, z: 100, vz: 90 }, HULL, 'owner', flat( 1.5 ), DEFAULT_SIM_CONFIG, -1 ) );
+    assert.ok(
+        aimMine( m, { x: -4, y: 3.2, z: 100, vz: 90 }, HULL, 'owner', flat( 1.5 ), new Set(), DEFAULT_SIM_CONFIG, -1 ),
+    );
     assert.deepEqual( [ m.x, m.y, m.z ], [ -4, 1.5, 100 - HULL.halfL - R - DEFAULT_SIM_CONFIG.mineBackGap ] );
+} );
+
+function dropIntoWall( kind: Block[ 'kind' ], broken: ReadonlySet< number >, dir: number ): boolean {
+    const z = dir > 0 ? WALL_MID - HULL.halfL - R : WALL_MID + HULL.halfL + R + DEFAULT_SIM_CONFIG.mineBackGap;
+    const m = blank();
+    const ok = aimMine( m, { x: 0, y: 0, z, vz: 0 }, HULL, 'owner', flat( 0, wall( kind ) ), broken, undefined, dir );
+    if ( ok ) assert.equal( m.z, WALL_MID );
+    return ok;
+}
+
+test( 'a mine dropped inside a sealed block fizzles, forward or back', () => {
+    for ( const dir of [ 1, -1 ] ) assert.equal( dropIntoWall( 'sealed', new Set(), dir ), false, `dir ${ dir }` );
+} );
+
+test( 'a mine dropped onto a broken fractured block lands; a standing one fizzles', () => {
+    const broken = new Set( [ WALL_SEG * BLOCK_ID_STRIDE ] );
+    for ( const dir of [ 1, -1 ] ) {
+        assert.equal( dropIntoWall( 'fractured', broken, dir ), true, `dir ${ dir }` );
+        assert.equal( dropIntoWall( 'fractured', new Set(), dir ), false, `dir ${ dir }` );
+    }
 } );
 
 test( 'a stopped layer survives its own mine arming, forward or back', () => {
     for ( const dir of [ 1, -1 ] ) {
         const m = blank();
-        assert.ok( aimMine( m, { x: 0, y: 0, z: 100, vz: 0 }, HULL, 'owner', flat(), DEFAULT_SIM_CONFIG, dir ) );
+        assert.ok(
+            aimMine( m, { x: 0, y: 0, z: 100, vz: 0 }, HULL, 'owner', flat(), new Set(), DEFAULT_SIM_CONFIG, dir ),
+        );
         const mines = new Map( [ [ 'm', m ] ] );
         const s = spawnShip( 0, 100 );
         const events: MineEvent[] = [];
@@ -124,7 +160,7 @@ test( 'a rival just ahead of the layer reaches the forward mine first', () => {
     const rival = spawnShip( 0, 150 );
     rival.vz = 40;
     const m = blank();
-    assert.ok( aimMine( m, layer, t, 'owner', flat() ) );
+    assert.ok( aimMine( m, layer, t, 'owner', flat(), new Set() ) );
     const mines = new Map( [ [ 'm', m ] ] );
     const events: MineEvent[] = [];
     for ( let n = 0; n * FIXED_DT < 3 && mines.size > 0; n++ ) {

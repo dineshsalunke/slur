@@ -66,7 +66,7 @@ function fireSeeker( ctx: FireContext, id: string, p: PlayerState, ownerId: stri
 
 function layMine( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {
     const mine = new Mine();
-    if ( ! aimMine( mine, p, tuningForShip( p.shipId ), ownerId, ctx.track, ctx.config, dir ) ) return;
+    if ( ! aimMine( mine, p, tuningForShip( p.shipId ), ownerId, ctx.track, ctx.broken, ctx.config, dir ) ) return;
     const onEvict = ( e: MineEvent ) => resolveMineEvent( ctx.state, e, ctx.broadcast, ctx.config );
     evictOldest( ctx.state.mines, ownerId, onEvict, ctx.config );
     ctx.state.mines.set( id, mine );

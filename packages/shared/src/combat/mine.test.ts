@@ -58,7 +58,7 @@ function blank(): MineState {
 function laid( x: number, z: number, ownerId = 'owner', t = track() ): MineState {
     const m = blank();
     const behind = HULL.halfL + DEFAULT_SIM_CONFIG.mineTriggerR + DEFAULT_SIM_CONFIG.mineBackGap;
-    assert.ok( aimMine( m, { x, y: 0, z: z + behind, vz: 0 }, HULL, ownerId, t, DEFAULT_SIM_CONFIG, -1 ) );
+    assert.ok( aimMine( m, { x, y: 0, z: z + behind, vz: 0 }, HULL, ownerId, t, new Set(), DEFAULT_SIM_CONFIG, -1 ) );
     return m;
 }
 
@@ -110,8 +110,8 @@ test( 'a mine dropped over a gap fizzles, forward or back', () => {
         z: gap + HULL.halfL + DEFAULT_SIM_CONFIG.mineTriggerR + DEFAULT_SIM_CONFIG.mineBackGap,
         vz: 0,
     };
-    assert.equal( aimMine( m, ahead, HULL, 'owner', track( 5 ) ), false );
-    assert.equal( aimMine( m, behind, HULL, 'owner', track( 5 ), DEFAULT_SIM_CONFIG, -1 ), false );
+    assert.equal( aimMine( m, ahead, HULL, 'owner', track( 5 ), new Set() ), false );
+    assert.equal( aimMine( m, behind, HULL, 'owner', track( 5 ), new Set(), DEFAULT_SIM_CONFIG, -1 ), false );
 } );
 
 test( 'a mine arms after mineArmS and not before', () => {
