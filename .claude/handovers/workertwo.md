@@ -1,20 +1,32 @@
-Agent: workertwo · Lane: matchmaking test fix (no issue, supervisor-assigned) · Updated: 2026-09-25 00:45
+Agent: workertwo · Lane: material regression investigation (supervisor-assigned, no edits) · Updated: 2026-09-25
 
 ## Goal
 
-Make `apps/client/app/net/matchmaking.test.ts` green (2/3 failed at HEAD).
+Find why the materials look wrong after the 3c44038 merge of origin/dev. Propose a fix. Build nothing.
 
 ## Done
 
-- c0a7a90 test(net): matchmaking fixture carries the full wire descriptor.
-  - Cause: 0734e06 made `toDescriptor` default `gen` to `'weave'` (`packages/shared/src/schema.ts:101`).
-    The plain-object mock had no `gen`. `toEqual` skips undefined keys, so `blockDensity`/`gapChance`
-    (3d724d8) never failed. `gen` was the first defaulted field.
-  - The fixture was wrong, not the code. All three are real `TrackDescriptorState` wire fields.
+- Before/after captures of /test-level at the spawn pose, frozen, DPR 1, headless, each worktree on
+  its own origin (:5181 = 3c44038^1, :5182 = HEAD 16b7268). Files are in the session scratchpad:
+  `before-base.png`, `after-base.png`, `after-lights-old.png`, `after-lights-finish-old.png`,
+  `after-stone.png`.
+- Earlier lane: c0a7a90 matchmaking fixture fix.
 
 ## State
 
-- Client vitest: 41 files, 299 tests passed. Client typecheck clean. Biome and comment ratchet clean.
+- 3c44038 introduced no conflict: `git diff 277396f 3c44038 -- apps/client/app` is empty.
+- The change is the #230 and #237 defaults, as merged on origin in 546130d and 74a7b89:
+  `Sky.environment` 0.85→1.85, `Sky.keyLight` 8→4.45, `Sky.planetLight` 1.55→1.95,
+  `Env.fillIntensity` 0.14→0.5, `Fill.intensity` 0.35→1, `Deck`/`Rail.envMapIntensity` 1→1.5,
+  `METAL_ROUGHNESS` 0.25→0.4, `METAL_BASE_COLOR` #7c8590→#7d7a75 (c9fdb96, which also tints the ship
+  hull), deck texture 4×16 plates with heavier wear, fog removed.
+- 546130d's merge note says the #228 conflict was resolved by dropping #230's stone finish
+  (STONE_* 0.15/0.75, Block.envMapIntensity 2.0). The #230 lights were dialled for stone blocks and
+  monoliths. They now light metalness-1 blocks, monoliths, deck and ship.
+- Setting the pre-merge light and finish values live on HEAD brings the frame close to the pre-merge
+  frame. Remaining differences: the 4×16 plates, brown rocks, no fog.
+- Stale localStorage cannot cause this (restore() drops entries whose `from` is not the new default).
+  The owner's dev server was not inspected [unmeasured].
 
 ## Uncommitted
 
@@ -22,16 +34,17 @@ None.
 
 ## Held files
 
-None after this commit.
+None.
 
 ## Next
 
-1. Stay idle until the supervisor assigns new work.
-2. Parked follow-ups from #253 (not approved): kick lag of about -15 ms; triplet or swing flag per song.
+1. Idle until the supervisor or owner picks a fix option.
 
 ## Open questions
 
-None.
+- Owner: which fix? (A) restore the pre-#230 light and finish values; (B) put the stone finish back
+  on blocks and monoliths, which partly reverses #228; (C) re-dial the lights live on /test-level
+  for the one-metal world.
 
 ## Lessons → memory
 
