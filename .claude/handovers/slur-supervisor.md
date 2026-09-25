@@ -38,7 +38,7 @@ f5804af #262 groove fractured smash blocks (10/18/23 per seed, 100% shadow-clear
 
 ## Next
 
-1. #258 cast iron BUILT, held (handover a4f5dde). Sheets: 781777e4…/scratchpad/shots/cmp-{deck,ship,block,face}.png. Waiting for the owner OK → tell workerone to commit + push. Owner Q open: "longitudinal seams" = a new lengthwise block line?
+1. #258 cast iron built; owner: deck REPEAT is noticeable (.claude/frame-tap-refs/owner-refs/deck-repeat.png) → workerone is breaking the tile repeat (world-space blotch / per-plate hash), no new draws, then new captures; push only on the owner OK. Owner Q open: "longitudinal seams" = a new lengthwise block line?
 2. Owner: a mine can land INSIDE a block (floorUnder ignores blocks), 1.1% fwd / 0.6% back; it holds a slot 20 s. Fizzle it like a gap? Audit owner calls: close #31 #34 #253 #257? Sign-offs #163 #170 #173 #215 #219 #222 #251. (F key, gap = lose: answered.)
 3. Owner answers on #260 audio (4 decisions): the tone split vs AUDIO.md §1 (needs an ADR), option A–G (rec E hybrid), lobby/run music, CC-BY SFX allowed or CC0-only. Audition page: workerthree scratchpad audition/index.html (path in #260). A #260 comment says checkThreat must use proj.dir.
 4. Owner flies: #259 meteor, #261 mine (restart pnpm dev first; shared + schema changed), #262 groove smash blocks.
