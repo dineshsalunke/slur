@@ -46,8 +46,26 @@ track-texture.test.ts, track-floor.tsx, deck-breakup.ts (new), deck-breakup.test
 
 The uncommitted list above.
 
+## Gate/monolith repeat (owner issue, 2026-09-25) — diagnosed, NOT built, no taps yet
+
+- Screenshot: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/4baf1e00-ebb0-41b5-9dbb-ea63969ef3f6/images/10.png`.
+- Verified: gate legs/lintel and pillars all render through `monolith-group.tsx:41` `graphiteSurface()` →
+  `track-materials.ts:38` → `graphiteSurfaceParams()` (`bakedBlotches: true`). One 16 × 16u tile (1024 px,
+  64 px/u), repeat = 16 / (Deck.plate × 4) (`track-texture.ts` build). UVs are world-scaled per face:
+  `monolith-geometry.ts:83-86` u = along/16, v = sy/16, and `WALL_UV` (:131) rescales v by instance y ÷ span.
+  ARCH lintel = 176 × 40u → 11 tiles across. PILLAR 12 × 50u (+ below) → 3–4 tiles down.
+- Open: the supervisor counts ~40 glyphs across the lintel, which is a ~4u period, not 16u. Hypothesis A: the owner's
+  `slur.tuning.v1` has Deck.plate = 1, which makes the graphite tile 4u, and the blotch field then has 1 cell per
+  tile. Hypothesis B: a 4u feature inside the 16u tile. Check A first (read the owner's localStorage), then tap.
+- Proposed fix: world-space shader blotches on graphite walls (reuse the deck-breakup noise). Graphite walls stop
+  baking blotches; the ship keeps baked blotches. Shared blotch/wear GLSL is split out of deck-breakup.ts.
+  Claims: track-texture.ts, deck-breakup.ts, track-materials.ts, monolith-group.tsx, track-blocks.tsx,
+  track-floor.tsx (+ block-debris.tsx if the debris must match). Maybe new: wall-breakup.ts (+ test).
+
 ## Next
 
+0. Gate/monolith: wait for the owner's go on the plan above. Check hypothesis A, take before taps of the gate and a
+   pillar at owner-like lighting, build, then take the after taps.
 1. Wait for the owner's verdict on the Wear captures. Tune if asked (Wear.* / Scratch.lift / Scratch.tilt), and
    re-shoot with the same script.
 2. On the owner's OK for all of #258: re-run the gates, then `git commit -- <uncommitted paths>` with
