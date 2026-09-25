@@ -918,6 +918,77 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     items 11 and 12. One close still (x 20, z 132) shows the sealed block face darker than the deck
     beside it: rgb(25–35) against rgb(50). That is one sample, not a gate.
 
+17. **Monoliths and blocks go back to a dielectric finish; the deck goes satin; the plates are
+    4u × 16u — 2026-09-23 (#224), provisional.**
+
+    **Superseded in part by item 16 (#228).** This item was written before item 16 and merged after
+    it. The monolith and block finish (metalness 0.15, roughness 0.75, `Monolith.textureSpan` 8,
+    `Block.envMapIntensity` 2.0) is not in the engine. Blocks and monoliths use the deck material and
+    its `Deck.*` keys. The deck and rail roughness 0.40, the plates, no fog and the fill values below
+    are in the engine.
+
+    Measured against `action-lighting.png` with the
+    nebula cube as the only environment. Item 12's `1.0 / 0.25` on monoliths and blocks rendered them
+    as black mirrors: a conductor has no diffuse term, and the cube's side faces hold only the dark
+    nebula and the ground disc, so a wall reflects nothing. The reference shows both as matte dark
+    stone with visible grain and a lit face against a shadow face.
+
+    - **Monoliths: metalness 0.15, roughness 0.75.** That is M3 as written (*"Metalness | 0.0"*,
+      *"Roughness | 0.75 – 0.90"*) with a little conductor left for the marigold band, and it undoes
+      the material half of item 11 while keeping its `Metal046B` maps. `Monolith.textureSpan` goes
+      from 2 to 8 so the panel division reads at monolith scale instead of dissolving into noise.
+    - **Blocks: metalness 0.15, roughness 0.75.** M2's *"Metalness | 0.0"* and its stated reason,
+      *"it keeps the block from going black when there is little for a conductor to reflect"*, were
+      right. This reopens the finish line between block and deck that item 12 closed.
+    - **Deck and rail: roughness 0.40.** Inside M1's *"0.35 – 0.50"*. The reference's rail reflections
+      are soft streaks, not edges, and the wear is invisible at 0.25 because the reflection is too
+      sharp to interrupt.
+    - **Plates 4u × 16u, straight bond.** Revision 5 decided this; the texture was still authored as
+      four 4u rows, so the engine drew 4u × 4u tiles. One row per 16u span now.
+    - **No scene fog.** Owner's call, 2026-09-24. At 420u the far monolith frames took the nebula's
+      horizon colour and read as pale grey while the sky behind them stayed sharp; the reference
+      keeps them dark at every distance, and a vacuum has no haze.
+    - **Cold fill 0.50, the directional fill 1.0, and environment intensity 1.5 on deck and rail and
+      2.0 on blocks,** on the owner's "too unlit" call against `action-lighting.png`, so a dielectric
+      wall has something to be lit by and the plates read. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
+      `Env.*` tunables; nothing is frozen until the owner gates §4 criterion 2 against this set.
+
+18. **Heavy fracture, travelling rock, meteor strikes, and a neutral graphite — 2026-09-24 (#234),
+    provisional.** Owner's words: *"the meteors should have velocity rather than swing around"*,
+    *"the meteors may collide with the track and fracture and debris bounce off around the track"*,
+    and the fractured block *"looks like styrofoam box in 0.8g bouncing around right now rather than
+    something with immense weight"*. The owner chose the direction called impact theatre, visual only.
+
+    - **Fragments are rigid bodies and they come to rest on the deck.** This reverses item 15,
+      departure 3. Each piece has its own hull, inertia, gravity, restitution and friction. The pieces
+      land on the deck and on standing blocks, bounce off block sides, and fall through gaps. They
+      keep their size. The piece near the hit gets the most speed. The far side slumps.
+    - **The block breaks into 18 cells, not 12.** Eight are coarse. Ten are small shards in a cluster
+      near one face, so the break reads as stone that failed at a point. The 8 orientations move the
+      cluster from block to block.
+    - **Fresh fracture walls cool.** The M7 flare on the walls fades in about 0.7 s. Item 15 said
+      *"The walls flare and then fade"*. That is unchanged. Only the rate is set.
+    - **M5 is warmer and craggier.** The base colour moves from `#4a525a` to `#524c47`. The
+      reference rock is warm dark stone, not blue-grey. Each rock gets rounded knobs that meet in
+      crevices, so the silhouette reads as a clump of boulders, as in `action-lighting.png`.
+    - **Rocks travel on straight lines.** Each rock moves at a constant velocity, tangent to its
+      orbit radius. Its placed position is therefore its nearest approach to the track. It
+      dissolves at the ends of its travel cycle.
+    - **Meteor strikes.** Seeded rocks fly into the deck ahead of the player, with a heat trail.
+      At contact there is a flash, sparks, a short point light, a camera shake, a soot and ember
+      scorch, and hot rock chunks. Hot chunks glow in their crevices only. This is the one M5
+      emissive outside *"rare veins"*. It is an event, not a rock type, and it cools in under a
+      second. The strikes do not touch the sim (#235 designs a sim hazard).
+    - **`Metal.baseColor` moves from `#7c8590` to `#7d7a75`.** The old value is blue-grey, and the
+      deck read slate-blue against the reference's neutral graphite. Item 12 made this one value for
+      deck, rail and ship hulls. It stays one value.
+    - **Deck wear is wider.** More finish patches and scuffs, with a wider roughness range, and more
+      value mottle. Item 17 said the wear was invisible at roughness 0.40.
+
+    **Departures from package wording.** M5 says *"Emissive | rare marigold veins at environmental
+    intensity"*. Hot meteor chunks add a short-lived emissive at impact. Item 15 said *"There is no
+    point light"* for a block break. That stays true. A meteor impact has one.
+
 ## 8. Review log
 
 **Revision 7 → 8, the deck material on blocks and monoliths (2026-09-24).** No family table changes.

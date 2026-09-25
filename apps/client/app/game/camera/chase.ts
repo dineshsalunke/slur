@@ -3,6 +3,7 @@ import type { Entity, World } from 'koota';
 import type { PerspectiveCamera } from 'three';
 import { num } from '../../dev/tuning';
 import { Hover, LocalPlayer, Net, Remote, Render, Sim } from '../ecs/traits';
+import { applyShake } from './shake';
 
 let followBack = num( 'Chase.back' );
 
@@ -32,6 +33,7 @@ export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: num
     cam.position.y += ( baseY + num( 'Chase.height' ) - cam.position.y ) * k;
     cam.position.z = p.z - followBack;
     cam.lookAt( p.x, baseY + num( 'Chase.lookAtLift' ), p.z + num( 'Chase.lookAhead' ) );
+    applyShake( cam, dt );
 
     const fov = num( 'Chase.fov' ) + stretch * num( 'Chase.fovStretch' );
     if ( Math.abs( cam.fov - fov ) > 0.1 ) {

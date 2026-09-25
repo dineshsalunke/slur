@@ -95,11 +95,6 @@ export function TuningPanel() {
         color: colorControl( 'Fill.color' ),
     } );
 
-    useControls( 'Fog', {
-        near: numberControl( 'Fog.near' ),
-        far: numberControl( 'Fog.far' ),
-    } );
-
     useControls( 'Metal', {
         baseColor: colorControl( 'Metal.baseColor' ),
     } );
@@ -214,7 +209,40 @@ export function TuningPanel() {
         roughness: numberControl( 'Rock.roughness' ),
         detail: numberControl( 'Rock.detail' ),
         spin: numberControl( 'Rock.spin' ),
-        drift: numberControl( 'Rock.drift' ),
+        speed: numberControl( 'Rock.speed' ),
+        cycle: numberControl( 'Rock.cycle' ),
+        heat: numberControl( 'Rock.heat' ),
+    } );
+
+    useControls( 'Meteor', {
+        chance: numberControl( 'Meteor.chance' ),
+        speed: numberControl( 'Meteor.speed' ),
+        size: numberControl( 'Meteor.size' ),
+        flight: numberControl( 'Meteor.flight' ),
+        ahead: numberControl( 'Meteor.ahead' ),
+        trail: numberControl( 'Meteor.trail' ),
+        spray: numberControl( 'Meteor.spray' ),
+        chunks: numberControl( 'Meteor.chunks' ),
+        shake: numberControl( 'Meteor.shake' ),
+        ember: numberControl( 'Meteor.ember' ),
+        cool: numberControl( 'Meteor.cool' ),
+    } );
+
+    useControls( 'Break', {
+        speed: numberControl( 'Break.speed' ),
+        up: numberControl( 'Break.up' ),
+        carry: numberControl( 'Break.carry' ),
+        spin: numberControl( 'Break.spin' ),
+        gravity: numberControl( 'Break.gravity' ),
+        bounce: numberControl( 'Break.bounce' ),
+        friction: numberControl( 'Break.friction' ),
+        spinDrag: numberControl( 'Break.spinDrag' ),
+        flare: numberControl( 'Break.flare' ),
+        cool: numberControl( 'Break.cool' ),
+    } );
+
+    useControls( 'Shake', {
+        strength: numberControl( 'Shake.strength' ),
     } );
 
     return null;
