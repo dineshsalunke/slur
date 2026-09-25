@@ -1,24 +1,23 @@
-Agent: workerfour · Lane: seamless sealed blocks (#264) · Updated: 2026-09-25
+Agent: workerfour · Lane: pickup spread (#265) · Updated: 2026-09-25
 
 ## Goal
 
-Every sealed block shows a marigold seam on a face the player sees when approaching it.
+Space pickups further apart and stop long same-power runs (mostly bolts). Deterministic on both ends.
 
 ## Done
 
-- `9208d5b` (pushed to origin/dev): seam 0 always lands on the front (−z) face. The other seams are
-  spread over the rest of the perimeter. Block depth is now in the `variationFor` cache key. There is a
-  new test for the front-face seam.
+- Filed #265 with the measurements below.
+- Plan sent to slur-supervisor. Nothing built.
 
 ## State
 
-- Seeds 1–30, blocks with no seam on the front or inner side face. Before: weave 4886/21092, groove
-  375/1803, score 6216/27500. After: 0 for all three. Measured in node with the renderer's functions.
-- Live capture on :5173 `/test-level?gen=weave`, ship at x −6, z 636, frozen. Block 2112 draws dark in
-  `.claude/frame-tap-refs/264-before.png` and shows a front seam in `264-after.png` (both gitignored).
-- Gates: client vitest 364/364, client tsc clean, biome clean on my paths, comment ratchet OK.
-- The cache-key change has no unit test. `variationFor` is module-private.
-- My headless Chrome was killed by PID. No stray processes are left.
+- Measured in node on dist, seeds 1–30, length 400. Script: scratchpad `measure-pickups.mjs` (session-local).
+- groove: 132 pickups/track, every gap 60u, same-as-previous 0.403 (i.i.d. 0.403), bolt runs ≥3: 285, longest run 12.
+- weave: 129.5 pickups/track, 98% of gaps 60u, bolt runs ≥3: 295, longest 7. Same power order on every seed.
+- Cause 1: `PICKUP_SPACING = 3` segments (`sim/space.ts:12`) × `SEG_LEN` 20u.
+- Cause 2: independent hash draws at 55% bolt. The hash is not correlated.
+- Cause 3: weave ids are `String(seg)`, no salt (`sim/track.ts:162`).
+- `SimConfig` ratios are never tuned live. Only tests override them.
 
 ## Uncommitted
 
@@ -26,19 +25,17 @@ Every sealed block shows a marigold seam on a face the player sees when approach
 
 ## Held files
 
-- none. The lane is done and the three #264 files are released.
+- none yet. Planned: `sim/space.ts`, `sim/track.ts`, `sim/groove/groove-track.ts`, `combat/pickups.ts`, new `combat/power-bag.ts` + test, pickup tests, `docs/GDD.md` pickup text.
 
 ## Next
 
-1. Wait for the supervisor.
+1. Wait for owner approval via the supervisor.
+2. Claim files, build, measure after-numbers with the same script.
 
 ## Open questions
 
-- The owner said "longitudinal". Block seams are vertical stripes, so I read it as "no visible seam".
-  The supervisor asked the owner. If they meant a lengthwise line on the block top, that is a new
-  feature.
-- With one seam, a block now always shows it on its front face. That leaves slightly less variety.
+- Owner: target gap (plan proposes 120–180u, about 52 pickups per track).
 
 ## Lessons → memory
 
-`.claude/memory/koota-universe-reaches-the-page-world.md`: the resource-timing buffer is capped at 250.
+none
