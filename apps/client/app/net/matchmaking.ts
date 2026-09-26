@@ -10,22 +10,54 @@ import {
 import { attachLobbyStore } from '../lobby/lobby-store';
 import { currentShip } from '../ship/ship-choice';
 import { getClient } from './client';
+import { setConnectionStatus } from './connection-status';
 import { session } from './session';
 
 const LOBBY_ROOM = 'lobby';
 
-function enter( room: Room< RunState > ): Room< RunState > {
+function watchRoom( room: Room< RunState > ): void {
+    room.onDrop( () => {
+        if ( session.room === room ) setConnectionStatus( 'reconnecting' );
+    } );
+    room.onReconnect( () => {
+        if ( session.room === room ) setConnectionStatus( 'live' );
+    } );
+    room.onLeave( () => {
+        if ( session.room !== room ) return;
+        session.room = null;
+        setConnectionStatus( 'lost' );
+    } );
+}
+
+let leaves = 0;
+
+export class AbandonedJoinError extends Error {
+    constructor() {
+        super( 'The player left before the join finished.' );
+    }
+}
+
+async function enter( joining: Promise< Room< RunState > > ): Promise< Room< RunState > > {
+    const leavesAtStart = leaves;
+    const room = await joining;
+    if ( leaves !== leavesAtStart ) {
+        room.leave();
+        throw new AbandonedJoinError();
+    }
+    leaveRoom();
     session.room = room;
+    setConnectionStatus( 'live' );
+    watchRoom( room );
     room.send( SET_CLASS_MESSAGE, currentShip().id );
     return room;
 }
 
-export async function hostRoom( name: string ): Promise< Room< RunState > > {
-    return enter( await getClient().create< RunState >( ROOM_NAME, { name } ) );
+export function hostRoom( name: string ): Promise< Room< RunState > > {
+    return enter( getClient().create< RunState >( ROOM_NAME, { name } ) );
 }
 
-export async function joinRoom( roomId: string, name: string ): Promise< Room< RunState > > {
-    return enter( await getClient().joinById< RunState >( roomId, { name } ) );
+export function joinRoom( roomId: string, name: string ): Promise< Room< RunState > > {
+    return enter( getClient().joinById< RunState >( roomId, { name } ) );
 }
 
 let linkJoin: { roomId: string; room: Promise< Room< RunState > > } | null = null;
@@ -41,16 +73,33 @@ export function joinByLink( roomId: string, name: string ): Promise< Room< RunSt
     return room;
 }
 
-export async function joinLobby(): Promise< void > {
-    if ( session.lobby ) return;
+let lobbyJoin: Promise< void > | null = null;
+
+async function connectLobby(): Promise< void > {
     const lobby = await getClient().joinOrCreate( LOBBY_ROOM );
     session.lobby = lobby;
+    lobby.onLeave( () => {
+        if ( session.lobby !== lobby ) return;
+        session.lobby = null;
+        lobbyJoin = null;
+    } );
     attachLobbyStore( lobby );
 }
 
+export function joinLobby(): Promise< void > {
+    lobbyJoin ??= connectLobby().catch( ( error: unknown ) => {
+        lobbyJoin = null;
+        throw error;
+    } );
+    return lobbyJoin;
+}
+
 export function leaveRoom(): void {
-    session.room?.leave();
+    const room = session.room;
+    leaves += 1;
     session.room = null;
+    setConnectionStatus( 'live' );
+    room?.leave();
 }
 
 export function waitForDescriptor( room: Room< RunState > ): Promise< TrackDescriptor > {

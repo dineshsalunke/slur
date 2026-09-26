@@ -3,6 +3,7 @@ import { Fragment } from 'react';
 import { useRoom } from '../../net/room-context';
 import { useRunPhase } from '../net/use-run-view';
 import { AudioToggle } from './audio-toggle';
+import { ConnectionNotice } from './connection-notice';
 import { CountdownOverlay } from './countdown-overlay';
 import { FullscreenToggle } from './fullscreen-toggle';
 import { LeaveButton } from './leave-button';
@@ -19,6 +20,7 @@ export function Overlays() {
     return (
         <Fragment>
             <LeaveGuard phase={ phase } />
+            <ConnectionNotice />
 
             { ( phase === PHASE.countdown || phase === PHASE.racing ) && (
                 <div className="fixed top-[clamp(16px,4.4vh,46px)] right-[clamp(16px,2.7vw,48px)] z-[26] flex items-center gap-2">

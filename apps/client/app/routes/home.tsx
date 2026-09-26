@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { redirect } from 'react-router';
 import { RoomList } from '../lobby/room-list';
-import { hostRoom, joinLobby, joinRoom } from '../net/matchmaking';
+import { hostRoom, joinLobby, joinRoom, leaveRoom } from '../net/matchmaking';
 import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { NAME_KEY } from './home/call-sign-field';
@@ -17,6 +17,7 @@ export function meta( _args: Route.MetaArgs ) {
 }
 
 export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
+    leaveRoom();
     await joinLobby();
     const closed = new URL( request.url ).searchParams.get( 'run' ) === 'closed';
     return { savedName: localStorage.getItem( NAME_KEY ) ?? '', notice: closed ? RUN_CLOSED : null };

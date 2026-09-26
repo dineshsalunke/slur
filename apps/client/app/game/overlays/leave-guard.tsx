@@ -1,11 +1,13 @@
 import { PHASE } from '@slur/shared';
 import { useEffect } from 'react';
 import { useBlocker } from 'react-router';
+import { useConnectionStatus } from '../../net/connection-status';
 import { HudButton } from '../../ui/hud-button';
 import { HudPanel } from '../../ui/hud-panel';
 
 export function LeaveGuard( { phase }: { phase: number } ) {
-    const racing = phase === PHASE.racing;
+    const connected = useConnectionStatus() !== 'lost';
+    const racing = phase === PHASE.racing && connected;
     const blocker = useBlocker( racing );
 
     // JUSTIFIED EFFECT — syncs with an external system: the browser's beforeunload (hard tab close/reload),
