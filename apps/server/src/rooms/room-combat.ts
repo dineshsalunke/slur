@@ -6,6 +6,8 @@ import {
     evictOldest,
     type FireDir,
     HeldPower,
+    HIT_MESSAGE,
+    type HitMessage,
     lockTarget,
     MINE_BURST_MESSAGE,
     Mine,
@@ -57,14 +59,7 @@ export function firePower(
     else if ( power === HeldPower.shield ) raiseShield( p, ctx.config.shieldS );
 }
 
-export interface HitAt {
-    x: number;
-    y: number;
-    z: number;
-    victimId: string;
-}
-
-export function shieldAbsorbs( v: PlayerState, at: HitAt, broadcast: Broadcast ): boolean {
+export function shieldAbsorbs( v: PlayerState, at: HitMessage, broadcast: Broadcast ): boolean {
     if ( ! absorbHit( v ) ) return false;
     broadcast( SHIELD_POP_MESSAGE, at );
     return true;
@@ -102,7 +97,7 @@ export function resolveMineEvent( state: RunState, event: MineEvent, broadcast: 
     if ( v && ! shieldAbsorbs( v, { x, y, z, victimId }, broadcast ) ) {
         v.stunTimer = stunDurationForShip( v.shipId, config, config.mineStunS );
         v.vz *= config.mineSpeedCut;
-        broadcast( 'hit', { x, y, z, victimId } );
+        broadcast( HIT_MESSAGE, { x, y, z, victimId } );
     }
     broadcast( MINE_BURST_MESSAGE, event );
 }
@@ -119,12 +114,12 @@ export function resolveSeekerEvent(
         return;
     }
     if ( event.outcome === 'blocked' ) {
-        broadcast( 'hit', { x, y, z, victimId: '' } );
+        broadcast( HIT_MESSAGE, { x, y, z, victimId: '' } );
         return;
     }
     const v = state.players.get( event.targetId );
     if ( v && shieldAbsorbs( v, { x, y, z, victimId: event.targetId }, broadcast ) ) return;
     if ( v ) v.stunTimer = stunDurationForShip( v.shipId, config, config.seekerStunS );
-    broadcast( 'hit', { x, y, z, victimId: event.targetId } );
+    broadcast( HIT_MESSAGE, { x, y, z, victimId: event.targetId } );
     broadcast( SEEKER_HIT_MESSAGE, event );
 }

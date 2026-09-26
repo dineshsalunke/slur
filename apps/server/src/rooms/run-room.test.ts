@@ -135,6 +135,24 @@ describe( 'RunRoom combat', () => {
         assert.equal( playerOf( room, afterFinish.sessionId ).spectating, true, 'a finished joiner spectates' );
     } );
 
+    test( 'a dropped host hands START to a connected racer at once, and keeps its seat', async () => {
+        const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
+        room.setSimulationInterval();
+        const host = await colyseus.connectTo( room, { name: 'Host' } );
+        const other = await colyseus.connectTo( room, { name: 'Other' } );
+        assert.equal( room.state.hostId, host.sessionId );
+
+        host.reconnection.enabled = false;
+        host.connection.close( 4010 );
+        for ( let i = 0; i < 50 && room.state.hostId !== other.sessionId; i++ ) await delay( 10 );
+        assert.equal( room.state.hostId, other.sessionId, 'the connected racer is host' );
+        assert.equal( playerOf( room, host.sessionId ).connected, false, 'the dropped host keeps its seat' );
+
+        other.send( START_MESSAGE );
+        await room.waitForMessage( START_MESSAGE );
+        assert.equal( room.state.phase, PHASE.countdown, 'the new host starts the run' );
+    } );
+
     test( 'a bolt stuns the ship it hits, spares its owner, and is pruned', async () => {
         const { room, connections, host } = await racingRoom( 2 );
         const [ , otherClient ] = connections;

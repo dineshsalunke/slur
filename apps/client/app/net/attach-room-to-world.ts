@@ -2,6 +2,8 @@ import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import {
     BOUNCE_MESSAGE,
     type BounceMessage,
+    HIT_MESSAGE,
+    type HitMessage,
     INPUT_MESSAGE,
     MINE_BURST_MESSAGE,
     type PlayerState,
@@ -242,17 +244,14 @@ export function attachRoomToWorld(
     const offBreak = $( room.state ).blockBroken.onAdd( ( _v, key ) => confirmBreak( Number( key ) ) );
     const offUnbreak = $( room.state ).blockBroken.onRemove( ( _v, key ) => unconfirmBreak( Number( key ) ) );
 
-    const offHit = room.onMessage( 'hit', ( m: { x: number; y: number; z: number; victimId: string } ) => {
+    const offHit = room.onMessage( HIT_MESSAGE, ( m: HitMessage ) => {
         pushHit( { x: m.x, y: m.y, z: m.z } );
     } );
 
-    const offShieldPop = room.onMessage(
-        SHIELD_POP_MESSAGE,
-        ( m: { x: number; y: number; z: number; victimId: string } ) => {
-            popShield( byId.get( m.victimId ) );
-            pushHit( { x: m.x, y: m.y, z: m.z } );
-        },
-    );
+    const offShieldPop = room.onMessage( SHIELD_POP_MESSAGE, ( m: HitMessage ) => {
+        popShield( byId.get( m.victimId ) );
+        pushHit( { x: m.x, y: m.y, z: m.z } );
+    } );
 
     const offBounce = room.onMessage( BOUNCE_MESSAGE, ( m: BounceMessage ) => {
         if ( m.victimId !== room.sessionId ) sparkAt( m );

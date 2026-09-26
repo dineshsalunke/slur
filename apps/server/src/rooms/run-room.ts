@@ -13,6 +13,7 @@ import {
     FIXED_DT,
     froundSimShip,
     HeldPower,
+    HIT_MESSAGE,
     hitShipsOf,
     INPUT_MESSAGE,
     type InputMessage,
@@ -240,7 +241,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
                 const v = this.state.players.get( strike.victimId );
                 if ( v && shieldAbsorbs( v, strike, ( t, m ) => this.broadcast( t, m ) ) ) return;
                 if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config );
-                this.broadcast( 'hit', strike );
+                this.broadcast( HIT_MESSAGE, strike );
             },
             this.config,
             this.state.mines,
@@ -338,6 +339,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     async onDrop( client: Client ): Promise< void > {
         const p = this.state.players.get( client.sessionId );
         if ( p ) p.connected = false;
+        this.reassignHost();
         try {
             await this.allowReconnection( client, RECONNECT_SECONDS );
             if ( p ) p.connected = true;
@@ -351,6 +353,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     onReconnect( client: Client ): void {
         const p = this.state.players.get( client.sessionId );
         if ( p ) p.connected = true;
+        this.reassignHost();
     }
 
     onLeave( client: Client ): void {
@@ -360,8 +363,18 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     }
 
     private reassignHost(): void {
-        if ( this.state.hostId && this.state.players.has( this.state.hostId ) ) return;
-        this.state.hostId = ( this.state.players.keys().next().value as string | undefined ) ?? '';
+        const host = this.state.players.get( this.state.hostId );
+        if ( host?.connected ) return;
+        let next = host ? this.state.hostId : '';
+        for ( const [ id, p ] of this.state.players ) {
+            if ( p.connected ) {
+                next = id;
+                break;
+            }
+        }
+        if ( next === '' ) next = ( this.state.players.keys().next().value as string | undefined ) ?? '';
+        if ( next === this.state.hostId ) return;
+        this.state.hostId = next;
         this.refreshMetadata();
     }
 

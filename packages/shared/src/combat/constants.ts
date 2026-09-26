@@ -7,6 +7,15 @@ export interface PowerSlotMessage {
     seq?: number;
 }
 
+export const HIT_MESSAGE = 'hit';
+
+export interface HitMessage {
+    x: number;
+    y: number;
+    z: number;
+    victimId: string;
+}
+
 export const POWER_SLOTS = 3;
 
 export const BOLT_SPEED = 900;
