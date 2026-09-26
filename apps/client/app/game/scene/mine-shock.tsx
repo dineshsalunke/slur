@@ -58,6 +58,7 @@ export function MineShock() {
     const look = useMemo( buildLook, [] );
     const rings = useMemo< Ring[] >( () => [], [] );
     const frame = useMemo( () => ( { mesh: null as THREE.InstancedMesh | null } ), [] );
+    const onShock = useMemo( () => ( e: Shock ) => spawn( rings, e ), [ rings ] );
 
     // Effect justified: brackets GPU resources built in useMemo, which R3F does not dispose.
     useEffect(
@@ -79,7 +80,7 @@ export function MineShock() {
     useFrame( ( _state, delta ) => {
         const mesh = frame.mesh;
         if ( ! mesh ) return;
-        drainMineShocks( ( e ) => spawn( rings, e ) );
+        drainMineShocks( onShock );
         let n = 0;
         for ( const r of rings ) {
             r.age += delta;

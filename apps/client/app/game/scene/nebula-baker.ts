@@ -3,7 +3,7 @@ import { num } from '../../dev/tuning';
 import { NebulaEnvShell } from './nebula-env-shell';
 import { noiseVolume } from './nebula-noise-volume';
 import { applyPlanets, planetUniforms } from './nebula-planets';
-import { SKY_BAKE_KEYS, SKY_LOOK_KEYS, type SkyKey } from './nebula-presets';
+import { SKY_BAKE_KEYS, SKY_LIVE_KEYS, SKY_LOOK_KEYS, type SkyKey } from './nebula-presets';
 import { measureProbe, PROBE_H, PROBE_W, type ProbeResult } from './nebula-probe';
 import {
     NEBULA_BACKGROUND_FRAGMENT,
@@ -34,8 +34,12 @@ const NEBULA_PROBE: ProbeResult = {
     color: NEBULA_LIGHT.color,
 };
 
+const SKY_PATHS = Object.fromEntries(
+    [ ...SKY_BAKE_KEYS, ...SKY_LOOK_KEYS, ...SKY_LIVE_KEYS ].map( ( key ) => [ key, `Sky.${ key }` ] ),
+) as Record< SkyKey, `Sky.${ SkyKey }` >;
+
 function sky( key: SkyKey ): number {
-    return num( `Sky.${ key }` );
+    return num( SKY_PATHS[ key ] );
 }
 
 function readInto( keys: readonly SkyKey[], state: Float64Array ): boolean {
