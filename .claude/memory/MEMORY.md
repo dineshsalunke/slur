@@ -118,3 +118,4 @@ lives in its own file beside this one.
 - [Doors cannot force a 1-cell step](doors-cannot-force-a-one-cell-step.md) — 8u doors 4u apart share a lane for the 4u hull; use one-sided pins and full-width holes, measure adherence
 - [Zoom the chase camera over CDP](zoom-the-chase-camera-over-cdp.md) — pin the main camera's fov with a defineProperty getter; pick it by aspect, not fov (rear view is 36)
 - [Avoid pilot sidestep needs a dense check](avoid-pilot-sidestep-needs-dense-check.md) — at vz≈0 the per-slice check tests only the endpoint; it crossed a hole divider and wedged on a wall
+- [Obstacle spacing from ship physics](obstacle-spacing-from-ship-physics.md) — OWNER RULE: pitch = reaction + kick/accel cross + settle + hull at act speed 100/90/75%; never a fixed pitch
