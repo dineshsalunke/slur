@@ -7,4 +7,6 @@ export const LABEL: Record< number, string > = {
     [ HeldPower.boost ]: 'Boost',
     [ HeldPower.shield ]: 'Shield',
     [ HeldPower.tug ]: 'Tug',
+    [ HeldPower.portal ]: 'Portal',
+    [ HeldPower.portalB ]: 'Portal B',
 };

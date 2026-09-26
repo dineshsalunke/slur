@@ -1,6 +1,6 @@
 import { HeldPower } from '@slur/shared';
 import { Fragment } from 'react';
-import { BOOST_LEAD, BOOST_TRAIL, MINE_STAR, SHIELD_HEX } from './power-gem.constants';
+import { BOOST_LEAD, BOOST_TRAIL, MINE_STAR, PORTAL_B_HALF, SHIELD_HEX } from './power-gem.constants';
 
 export function GemGlyph( { power }: { power: number } ) {
     switch ( power ) {
@@ -59,6 +59,22 @@ export function GemGlyph( { power }: { power: number } ) {
                     />
                     <path d="M24 12 V28 A6 6 0 0 1 12 28" className="fill-none stroke-marigold" strokeWidth="3" />
                     <circle cx="24" cy="12" r="3.2" className="fill-gold" />
+                </Fragment>
+            );
+        case HeldPower.portal:
+            return (
+                <Fragment>
+                    <circle cx="24" cy="24" r="19" className="fill-void-2 stroke-marigold" strokeWidth="1.6" />
+                    <ellipse cx="24" cy="24" rx="9" ry="14" className="fill-none stroke-marigold" strokeWidth="3" />
+                    <ellipse cx="24" cy="24" rx="4" ry="8" className="fill-none stroke-gold" strokeWidth="2" />
+                </Fragment>
+            );
+        case HeldPower.portalB:
+            return (
+                <Fragment>
+                    <circle cx="24" cy="24" r="19" className="fill-void-2 stroke-marigold" strokeWidth="1.6" />
+                    <ellipse cx="24" cy="24" rx="9" ry="14" className="fill-none stroke-marigold" strokeWidth="3" />
+                    <path d={ PORTAL_B_HALF } className="fill-gold" />
                 </Fragment>
             );
         default:

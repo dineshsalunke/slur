@@ -6,6 +6,10 @@ import {
     INPUT_MESSAGE,
     MINE_BURST_MESSAGE,
     type PlayerState,
+    PORTAL_FIZZLE_MESSAGE,
+    PORTAL_HOP_MESSAGE,
+    type PortalFizzleMessage,
+    type PortalHopMessage,
     type ProjectileState,
     type SeekerState,
     SHIELD_POP_MESSAGE,
@@ -37,7 +41,7 @@ import {
 import { settleSlot } from '../game/input/power-select';
 import { clearPickupState, markPickup } from '../game/pickup-state';
 import { pushHit } from '../game/scene/hit-events';
-import { burstMine } from '../game/scene/mine-shock-events';
+import { burstMine, pushMineShock } from '../game/scene/mine-shock-events';
 import { launchMine } from '../game/scene/mine-shots';
 import { pushTug } from '../game/scene/tug-events';
 import { localRole, runPhase } from '../game/spectator';
@@ -251,6 +255,13 @@ export function attachRoomToWorld(
 
     const offPortalAdd = $( room.state ).portals.onAdd( ( p, id ) => blockWorld.portals.set( id, p ) );
     const offPortalRemove = $( room.state ).portals.onRemove( ( _p, id ) => blockWorld.portals.delete( id ) );
+    const offPortalHop = room.onMessage( PORTAL_HOP_MESSAGE, ( m: PortalHopMessage ) => {
+        pushHit( { x: m.fromX, y: m.fromY, z: m.fromZ } );
+        pushHit( { x: m.x, y: m.y, z: m.z } );
+    } );
+    const offPortalFizzle = room.onMessage( PORTAL_FIZZLE_MESSAGE, ( m: PortalFizzleMessage ) =>
+        pushMineShock( { x: m.x, y: m.y, z: m.z, kind: 'fizzle' } ),
+    );
 
     const onTaken = ( v: boolean, id: string ) => markPickup( id, v === true );
     const offTaken = $( room.state ).pickupTaken.onAdd( onTaken );
@@ -294,6 +305,8 @@ export function attachRoomToWorld(
         offTug();
         offPortalAdd();
         offPortalRemove();
+        offPortalHop();
+        offPortalFizzle();
         offHit();
         offShieldPop();
         offBounce();

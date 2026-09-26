@@ -4,6 +4,10 @@ import {
     type MineEvent,
     PHASE,
     type PlayerState,
+    PORTAL_FIZZLE_MESSAGE,
+    PORTAL_HOP_MESSAGE,
+    type PortalFizzleMessage,
+    type PortalHopMessage,
     type ProjectileState,
     SEEKER_HIT_MESSAGE,
     type SeekerState,
@@ -24,6 +28,7 @@ const FAR_GAIN = { mineBurst: 0.85 * MINE_FAR_GAIN, mineFizzle: 0.55 * MINE_FAR_
 const BOOST_EDGE_S = 0.05;
 const TUG_RATE = 0.7;
 const TUG_FAR_GAIN = 0.4;
+const PORTAL_FAR_GAIN = 0.35;
 
 export function playTugEvent( e: TugEvent, me: string ): void {
     if ( e.targetId === me ) {
@@ -31,6 +36,14 @@ export function playTugEvent( e: TugEvent, me: string ): void {
         return;
     }
     playSfx( 'seekerFire', e.ownerId === me ? { rate: TUG_RATE } : { rate: TUG_RATE, gain: TUG_FAR_GAIN } );
+}
+
+export function playPortalHop( m: PortalHopMessage, me: string ): void {
+    playSfx( 'portalHop', m.victimId === me ? {} : { gain: PORTAL_FAR_GAIN } );
+}
+
+export function playPortalFizzle( m: PortalFizzleMessage, me: string ): void {
+    playSfx( 'portalFizzle', m.ownerId === me ? {} : { gain: PORTAL_FAR_GAIN } );
 }
 
 export function playMineEvent( e: MineEvent, me: string ): void {
@@ -168,6 +181,10 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
     const offShieldPop = room.onMessage( SHIELD_POP_MESSAGE, () => playSfx( 'shieldPop' ) );
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) => playMineEvent( e, me ) );
     const offTug = room.onMessage( TUG_MESSAGE, ( e: TugEvent ) => playTugEvent( e, me ) );
+    const offPortalHop = room.onMessage( PORTAL_HOP_MESSAGE, ( m: PortalHopMessage ) => playPortalHop( m, me ) );
+    const offPortalFizzle = room.onMessage( PORTAL_FIZZLE_MESSAGE, ( m: PortalFizzleMessage ) =>
+        playPortalFizzle( m, me ),
+    );
 
     let prevPhase = room.state.phase;
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
@@ -194,6 +211,8 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
         offShieldPop();
         offMineBurst();
         offTug();
+        offPortalHop();
+        offPortalFizzle();
         offPhase();
         offCd();
         for ( const off of perPlayer.values() ) off();

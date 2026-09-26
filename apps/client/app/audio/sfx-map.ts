@@ -25,6 +25,8 @@ export type Sfx =
     | 'mineBurst'
     | 'mineFizzle'
     | 'shieldPop'
+    | 'portalHop'
+    | 'portalFizzle'
     | 'countdown'
     | 'go'
     | 'uiNav'
@@ -62,6 +64,8 @@ const TABLE: Record< Sfx, SfxDef > = {
     mineBurst: { file: 'mine_burst.ogg', bus: 'combat', gain: 0.85 },
     mineFizzle: { file: 'death_derezz.ogg', bus: 'combat', gain: 0.55, rate: 1.8 },
     shieldPop: { file: 'hit_ship.ogg', bus: 'combat', gain: 0.9, rate: 1.5 },
+    portalHop: { file: 'respawn.ogg', bus: 'combat', gain: 0.8, rate: 1.6 },
+    portalFizzle: { file: 'death_derezz.ogg', bus: 'combat', gain: 0.45, rate: 2.2 },
     countdown: { file: 'countdown_blip.ogg', bus: 'ui', gain: 0.9 },
     go: { file: 'go.ogg', bus: 'ui', gain: 1 },
     uiNav: { file: 'ui_nav.ogg', bus: 'ui', gain: 0.5 },

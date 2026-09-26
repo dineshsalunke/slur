@@ -26,6 +26,7 @@ import { CANVAS_GL } from './scene/canvas-gl';
 import { MineField } from './scene/mine-field';
 import { MineShock } from './scene/mine-shock/mine-shock';
 import { PickupField } from './scene/pickup-field';
+import { PortalField } from './scene/portal-field/portal-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
 import { RearView } from './scene/rear-view';
 import { SeekerField } from './scene/seeker-field';
@@ -73,6 +74,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <MineField />
                             <MineShock />
                             <TugLine />
+                            <PortalField />
                             <RearView />
                             <GameAudio />
                             <RemoteEngineAudio />
