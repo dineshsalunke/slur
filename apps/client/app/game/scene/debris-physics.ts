@@ -179,12 +179,3 @@ export function stepBody( b: DebrisBody, h: number, p: DebrisParams, ground: Deb
         }
     } else b.rest = 0;
 }
-
-export function lowestHullY( b: DebrisBody ): number {
-    let low = Number.POSITIVE_INFINITY;
-    for ( let i = 0; i < b.count; i++ ) {
-        _r.set( b.hull[ i * 3 ], b.hull[ i * 3 + 1 ], b.hull[ i * 3 + 2 ] ).applyQuaternion( b.q );
-        low = Math.min( low, b.p.y + _r.y );
-    }
-    return low;
-}

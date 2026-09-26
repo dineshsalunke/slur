@@ -32,7 +32,3 @@ export function pillarPairs( rows: readonly number[] ): MonolithPlacement[] {
         { z, side: 1 },
     ] );
 }
-
-export function pillarField( finishZ: number, config: PillarFieldConfig ): MonolithPlacement[] {
-    return pillarPairs( pillarRows( finishZ, config ) );
-}

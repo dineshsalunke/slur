@@ -5,12 +5,22 @@ import {
     type DebrisBody,
     type DebrisGround,
     type DebrisParams,
-    lowestHullY,
     makeBody,
     resetBody,
     setBoxInertia,
     stepBody,
 } from './debris-physics';
+
+const _r = new THREE.Vector3();
+
+function lowestHullY( b: DebrisBody ): number {
+    let low = Number.POSITIVE_INFINITY;
+    for ( let i = 0; i < b.count; i++ ) {
+        _r.set( b.hull[ i * 3 ], b.hull[ i * 3 + 1 ], b.hull[ i * 3 + 2 ] ).applyQuaternion( b.q );
+        low = Math.min( low, b.p.y + _r.y );
+    }
+    return low;
+}
 
 const PARAMS: DebrisParams = { gravity: 46, bounce: 0.2, friction: 0.6, spinDrag: 0.2 };
 const H = 1 / 120;

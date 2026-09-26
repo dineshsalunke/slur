@@ -1,7 +1,7 @@
 import { SEG_LEN, START_SAFE } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { PILLAR_FIELD } from './monolith-config';
-import { MIN_SPACING, monolithSpacing, pillarField, pillarRows } from './monolith-field';
+import { MIN_SPACING, monolithSpacing, pillarPairs, pillarRows } from './monolith-field';
 
 describe( 'monolithSpacing', () => {
     it( 'lerps from calm to intense', () => {
@@ -15,8 +15,8 @@ describe( 'monolithSpacing', () => {
     } );
 } );
 
-describe( 'pillarField', () => {
-    const field = pillarField( 8000, PILLAR_FIELD );
+describe( 'pillarPairs', () => {
+    const field = pillarPairs( pillarRows( 8000, PILLAR_FIELD ) );
     const zs = ( side: number ) => field.filter( ( p ) => p.side === side ).map( ( p ) => p.z );
 
     it( 'stands every pillar opposite its twin', () => {

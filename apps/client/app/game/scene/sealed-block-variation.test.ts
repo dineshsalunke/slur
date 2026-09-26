@@ -1,16 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { SEALED_BLOCK_BEVEL } from './sealed-block-geometry';
+import { type BlockDims, SEALED_BLOCK_BEVEL } from './sealed-block-geometry';
 import {
     SEALED_BLOCK_MAX_SEAMS,
     SEALED_BLOCK_SEAM_WIDTH,
-    SEALED_BLOCK_WEAR,
     sealedBlockInset,
-    sealedBlockPerimeter,
     sealedBlockSeamCount,
     sealedBlockSeams,
     sealedBlockSeed,
     sealedBlockWearSeed,
 } from './sealed-block-variation';
+
+function sealedBlockPerimeter( dims: BlockDims ): number {
+    const [ a, b ] = sealedBlockInset( dims );
+    return 4 * ( a + b );
+}
 
 const FOOTPRINTS = [
     { w: 4, h: 8, d: 8 },
@@ -112,10 +115,6 @@ describe( 'sealed block seams', () => {
 } );
 
 describe( 'sealed block wear', () => {
-    it( 'ships clean', () => {
-        expect( SEALED_BLOCK_WEAR.strength ).toBe( 0 );
-    } );
-
     it( 'seeds a distinct block per placement', () => {
         const seeds = new Set< number >();
         for ( let x = -32; x <= 32; x += 4 ) {

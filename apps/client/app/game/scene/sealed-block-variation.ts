@@ -9,7 +9,6 @@ export interface SealedBlockWear {
     coverage: number;
     contrast: number;
     grain: number;
-    strength: number;
 }
 
 export const SEALED_BLOCK_WEAR: SealedBlockWear = {
@@ -17,7 +16,6 @@ export const SEALED_BLOCK_WEAR: SealedBlockWear = {
     coverage: 0.45,
     contrast: 0.55,
     grain: 9,
-    strength: 0,
 };
 
 export const SEALED_BLOCK_WEAR_COLOR = '#2c3138';
@@ -26,11 +24,6 @@ export const SEALED_BLOCK_WEAR_ROUGHNESS = 0.3;
 export function sealedBlockInset( dims: BlockDims ): [ number, number ] {
     const c = sealedBlockBevel( dims );
     return [ dims.w / 2 - c, dims.d / 2 - c ];
-}
-
-export function sealedBlockPerimeter( dims: BlockDims ): number {
-    const [ a, b ] = sealedBlockInset( dims );
-    return 4 * ( a + b );
 }
 
 function hash01( seed: number, salt: number ): number {
