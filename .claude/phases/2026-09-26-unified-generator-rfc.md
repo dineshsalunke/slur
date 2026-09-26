@@ -1,7 +1,19 @@
 # RFC — #300: one track generator (weave feel + motifs + arenas + power-up set pieces)
 
-Author: workerthree · For: slur-supervisor → owner · Date: 2026-09-26 · Status: **DRAFT, awaiting owner** ·
-Absorbs: #292 (forks) as a set piece · Build nothing until the owner approves.
+Author: workerthree · For: slur-supervisor → owner · Date: 2026-09-26 · Status: **APPROVED with amendments
+(owner, via slur-supervisor, 2026-09-26)** · Absorbs: #292 (forks) as a set piece
+
+## Owner rulings on §8
+
+- Q1: 12,000u (600 segments) to start. It may grow. **No code may assume a length**: the sequencer scales
+  the section count from `descriptor.length`.
+- Q2: grace **45 s**; the 180 s cap is **removed**. Both are #301 (workertwo). This lane does not touch
+  `run-sim.ts`, `director.ts` or the race-end constants. With 45 s, the §1.4 spread (33–35 s at w 0.25) fits.
+- Q3: yes. Q5–Q9: yes as recommended: gen `'phrase'`, retire `weave`/`score` at S7, the §4 set-piece list,
+  fork divider 50/50 wall/gap in acts 2–3.
+- Q4: yes, plus an **owner addition**: several patterns side by side on the 96u deck. Folded in as the
+  **parallel weave**, a `W` option (§2.3).
+- #300 stays open until the build lands.
 
 Scripts cited below (`runtimes.mjs`, `penalty2.mjs`, `weavephrase.mjs`, `model.mjs`) are throwaway files in the
 session scratchpad. They import `packages/shared/dist` at HEAD `8d7d798` (clean tree, dist newer than src).
@@ -140,6 +152,32 @@ A · M-teach · M-repeat · S · W · M-twist · .
 
 - The choice at each slot is a seeded roll (`mulberry32(hash2(seed ^ SALT, slot))`), as in groove and score.
   Same seed, same track.
+
+### 2.3 Parallel weave (owner addition) — a `W` option, not a new phrase type
+
+Two weaves side by side in one `W` slot. It is a `W` option because it has the same job (thread at speed),
+the same length cap (480u) and the same band dial. Only the band count changes.
+
+- **Layout:** outer wall · band L · divider · band R · outer wall. The divider is a **hole strip 4–8u** wide
+  (drift across = fall) or a sealed wall. Each band follows its own `weaveRaw` line (separate salts) inside
+  its half of the deck.
+- **Clearance:** each band is threadable on its own (GDD §0): each band ≥ the act's band width, checked with
+  the contract ship. The divider never counts as floor.
+- **Switching:** a 4–8u hole strip is shorter than any jump, so a ship can hop between weaves on purpose. A
+  sealed divider allows no switch and hides the other band (as the fork wall does).
+- **Act dials:**
+
+| Act | `W` options | Bands |
+|---|---|---|
+| 1 low | single only | 20u |
+| 2 mid | single or parallel (seeded, ~1 in 3) | parallel: one 20u + one 16u, an easy/hard choice |
+| 3 high | single or parallel (~1 in 2) | parallel: 16u + 14u |
+
+- **Targets:** the divider is exempt from (d) longestWall, like fork dividers (§5.3).
+- **Unmeasured:** a band in half the deck swings through half the amplitude, so it may be gentler at the
+  same width **[inferred]**. S3 re-measures the §1.3 table for single and parallel bands.
+- Side-by-side **motifs** (two motif lines in the two halves) use the same layout rule. They are deferred to
+  S2 as an option, measured before they ship.
 
 ## 3. The motif library
 
@@ -293,13 +331,13 @@ Each slice is one commit set with tests. Verify each look on /test-level (owner 
 | **S0** | Owner answers §8. ADR-023 draft. | Answers in this file |
 | **S1** | `'phrase'` gen, per-gen length 600, section sequencer emitting arenas + groove-style motif phrases; digest row; per-phrase `openSpace()` | Determinism; weave/groove digests unchanged; 5 classes × 30 seeds, 0 deaths; draw calls + build ms at 600 segments measured |
 | **S2** | Motif library per run (4–6), teach/repeat/twist, gate posts | Adherence ≥ 75%; line pilot not slower than avoid pilot |
-| **S3** | Weave phrase, band dial 20/16/14u, 480u cap, contract-ship check | Contract ship passes each band; class speed table re-measured |
+| **S3** | Weave phrase, band dial 20/16/14u, 480u cap, contract-ship check; parallel weave option (§2.3) | Contract ship passes each band, single and parallel; class speed table re-measured |
 | **S4** | Set pieces batch 1: forced pickup ids; boost, shield, bolt, mine | Each flyable without its power; node-bot checks for bolt and mine |
 | **S5** | Fork (#292) + portal; tug; seeker | Fork lanes each threadable; node-bot checks |
 | **S6** | Blink set piece | After #295 ships |
 | **S7** | Make `'phrase'` the default; retire `weave`/`score` if the owner agrees | Owner look test on /test-level |
 
-The race-end change (Q2) is its own issue, outside the generator. It should land before S7.
+The race-end change (Q2) is #301 (workertwo), outside the generator. It should land before S7.
 
 ## 8. Owner questions
 

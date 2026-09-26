@@ -29,13 +29,17 @@ None after the seam commit.
 
 ## Next
 
-1. Wait for the owner's answers to RFC §8 (relayed by slur-supervisor).
-2. On approval: fold answers into the RFC, draft ADR-023, then S1 (§7).
-3. Q2 (race end) needs its own issue before S7.
+The owner APPROVED the RFC with amendments (2026-09-26). The rulings are folded into the RFC header; the parallel weave is §2.3.
+1. S1 (RFC §7): claim files with slur-supervisor BEFORE the first write. Expected set: new `packages/shared/src/sim/phrase/*`
+   (+ tests), `sim/space.ts` (TRACK_GENS + 'phrase'), `sim/track.ts` (dispatch), `sim/track-provider.ts` (per-gen length 600),
+   `sim/track-digest.test.ts` (phrase row; weave/groove rows unchanged), `sim/groove/open-space.ts` (per-phrase targets).
+2. No hard-coded length anywhere: the sequencer derives the section count from `descriptor.length`.
+3. Do NOT touch run-sim/director/race-end constants (#301, workertwo).
+4. Draft ADR-023 alongside S1 (docs/DECISIONS.md: claim it first).
 
 ## Open questions
 
-RFC §8, questions 1–9. Q2 (race-end grace vs class spread) blocks a longer track.
+None open. #300 stays open until the build lands.
 
 ## Lessons → memory
 
