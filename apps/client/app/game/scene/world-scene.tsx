@@ -4,7 +4,7 @@ import { BackFill } from './back-fill';
 import { BoostStreaks } from './boost-streaks';
 import { EngineLight } from './engine-light';
 import { ExhaustField } from './exhaust-field';
-import { ExplosionField } from './explosions';
+import { ExplosionField } from './explosion-field';
 import { FinishGate } from './finish-gate';
 import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark';

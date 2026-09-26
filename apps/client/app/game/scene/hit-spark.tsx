@@ -2,16 +2,19 @@ import { useFrame } from '@react-three/fiber';
 import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { ACCENT_ANCHOR } from './accent';
-import { drainHits } from './hit-events';
+import { drainHits, type HitEvent } from './hit-events';
+import { advanceShards, initShardMesh, makeShardPool, type Shard, type ShardSpec, spawnBurst } from './vfx-shard-pool';
 
-const MAX = 200;
-const PER_BURST = 22;
-const LIFE_MIN = 0.18;
-const LIFE_MAX = 0.4;
-const SPEED = 22;
-const UP_BIAS = 2;
-const DRAG = 4;
-const GRAV = 12;
+const SPEC: ShardSpec = {
+    max: 200,
+    perBurst: 22,
+    lifeMin: 0.18,
+    lifeMax: 0.4,
+    speed: 22,
+    upBias: 2,
+    drag: 4,
+    grav: 12,
+};
 const WIDTH = 0.07;
 const STREAK_S = 0.035;
 const BRIGHT = 6;
@@ -23,67 +26,7 @@ const FORWARD = new THREE.Vector3( 0, 0, 1 );
 const ENERGY_CORE = new THREE.Color( '#FFFBE7' );
 const SPARK = new THREE.Color( ACCENT_ANCHOR );
 
-interface Spark {
-    active: boolean;
-    x: number;
-    y: number;
-    z: number;
-    vx: number;
-    vy: number;
-    vz: number;
-    life: number;
-    maxLife: number;
-}
-
-function makePool(): Spark[] {
-    return Array.from( { length: MAX }, () => ( {
-        active: false,
-        x: 0,
-        y: 0,
-        z: 0,
-        vx: 0,
-        vy: 0,
-        vz: 0,
-        life: 0,
-        maxLife: 1,
-    } ) );
-}
-
-function spawnBurst( pool: Spark[], x: number, y: number, z: number ): void {
-    let n = 0;
-    for ( let i = 0; i < MAX && n < PER_BURST; i++ ) {
-        const p = pool[ i ];
-        if ( p.active ) continue;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos( 2 * Math.random() - 1 );
-        const speed = SPEED * ( 0.5 + Math.random() );
-        p.active = true;
-        p.x = x;
-        p.y = y;
-        p.z = z;
-        p.vx = Math.sin( phi ) * Math.cos( theta ) * speed;
-        p.vz = Math.sin( phi ) * Math.sin( theta ) * speed;
-        p.vy = Math.cos( phi ) * speed + UP_BIAS;
-        p.maxLife = p.life = LIFE_MIN + Math.random() * ( LIFE_MAX - LIFE_MIN );
-        n++;
-    }
-}
-
-function park( mesh: THREE.InstancedMesh, i: number ): void {
-    _o.position.set( 0, -9999, 0 );
-    _o.scale.set( 0, 0, 0 );
-    _o.updateMatrix();
-    mesh.setMatrixAt( i, _o.matrix );
-}
-
-function initPool( mesh: THREE.InstancedMesh ): void {
-    for ( let i = 0; i < MAX; i++ ) {
-        park( mesh, i );
-        mesh.setColorAt( i, _c.setRGB( 0, 0, 0 ) );
-    }
-}
-
-function placeStreak( mesh: THREE.InstancedMesh, i: number, p: Spark, f: number ): void {
+function placeStreak( mesh: THREE.InstancedMesh, i: number, p: Shard, f: number ): void {
     _dir.set( p.vx, p.vy, p.vz );
     const speed = _dir.length();
     if ( speed > 1e-4 ) _o.quaternion.setFromUnitVectors( FORWARD, _dir.divideScalar( speed ) );
@@ -103,53 +46,29 @@ function placeStreak( mesh: THREE.InstancedMesh, i: number, p: Spark, f: number 
     );
 }
 
-function advanceSparks( mesh: THREE.InstancedMesh, pool: Spark[], dt: number ): void {
-    const damp = Math.max( 0, 1 - DRAG * dt );
-    for ( let i = 0; i < MAX; i++ ) {
-        const p = pool[ i ];
-        if ( ! p.active ) continue;
-        p.life -= dt;
-        if ( p.life <= 0 ) {
-            p.active = false;
-            park( mesh, i );
-            continue;
-        }
-        p.vy -= GRAV * dt;
-        p.vx *= damp;
-        p.vy *= damp;
-        p.vz *= damp;
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.z += p.vz * dt;
-        placeStreak( mesh, i, p, p.life / p.maxLife );
-    }
-    _o.quaternion.identity();
-    mesh.instanceMatrix.needsUpdate = true;
-    if ( mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;
-}
-
 export function HitSpark() {
     const meshRef = useRef< THREE.InstancedMesh | null >( null );
-    const pool = useMemo( makePool, [] );
-    const inited = useRef( false );
+    const pool = useMemo( () => makeShardPool( SPEC ), [] );
+    const onHit = useMemo( () => ( e: HitEvent ) => spawnBurst( pool, e.x, e.y, e.z ), [ pool ] );
 
-    const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
-        meshRef.current = mesh;
-        if ( mesh && ! inited.current ) {
-            initPool( mesh );
-            inited.current = true;
-        }
-    }, [] );
+    const setMesh = useCallback(
+        ( mesh: THREE.InstancedMesh | null ) => {
+            meshRef.current = mesh;
+            if ( mesh ) initShardMesh( mesh, pool );
+        },
+        [ pool ],
+    );
 
     useFrame( ( _state, delta ) => {
         const mesh = meshRef.current;
         if ( ! mesh ) return;
-        drainHits( ( e ) => spawnBurst( pool, e.x, e.y, e.z ) );
-        advanceSparks( mesh, pool, delta );
+        drainHits( onHit );
+        advanceShards( pool, mesh, delta, placeStreak );
+        _o.quaternion.identity();
     } );
 
     return (
-        <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, MAX ] }>
+        <instancedMesh ref={ setMesh } frustumCulled={ false } args={ [ undefined, undefined, SPEC.max ] }>
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial transparent depthWrite={ false } blending={ THREE.AdditiveBlending } />
         </instancedMesh>
