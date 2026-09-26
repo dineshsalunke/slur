@@ -1,28 +1,9 @@
 import type { Room } from '@colyseus/sdk';
 import { addEffect } from '@react-three/fiber';
-import { BOLT_SPEED, type RunState } from '@slur/shared';
+import type { RunState } from '@slur/shared';
 import { Fragment, useEffect, useRef } from 'react';
-
-export const THREAT_Z = 70;
-export const MIN_THREAT_WINDOW_S = THREAT_Z / BOLT_SPEED;
-const THREAT_X = 6;
-const CENTER_X = 2.5;
-export const VIGNETTE_MAX = 0.42;
-export const VIGNETTE_RAMP_Z = THREAT_Z;
-export const VIGNETTE_FALLOFF = 1;
-
-export function threatTick( dx: number | null ): string | null {
-    if ( dx === null ) return null;
-    if ( dx > CENTER_X ) return '◀ ⚠';
-    if ( dx < -CENTER_X ) return '⚠ ▶';
-    return '⚠';
-}
-
-export function vignetteOpacity( bestDz: number ): number {
-    if ( ! Number.isFinite( bestDz ) ) return 0;
-    const clamped = Math.min( Math.max( bestDz, 0 ), VIGNETTE_RAMP_Z );
-    return ( 1 - clamped / VIGNETTE_RAMP_Z ) ** VIGNETTE_FALLOFF * VIGNETTE_MAX;
-}
+import { THREAT_X, THREAT_Z } from './threat-hud.constants';
+import { threatTick, vignetteOpacity } from './threat-hud.utils';
 
 export function ThreatHud( { room }: { room: Room< RunState > } ) {
     const tickRef = useRef< HTMLDivElement >( null );

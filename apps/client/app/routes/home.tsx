@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { redirect } from 'react-router';
-import { RoomList } from '../lobby/room-list';
+import { RoomList } from '../lobby/room-list/room-list';
 import { hostRoom, joinLobby, joinRoom, leaveRoom } from '../net/matchmaking';
 import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';

@@ -1,14 +1,11 @@
 import type { Room } from '@colyseus/sdk';
 import { type RunState, START_MESSAGE } from '@slur/shared';
 import { Fragment } from 'react';
-import { Button } from '../../ui/button';
-import { Chevron } from '../../ui/chevron';
-import { KeyHint } from '../../ui/key-hint';
-import { useHostId, useRunPlayers } from '../net/run-view-store';
-
-const SHIP_HINT = { keys: [ 'A', 'D' ], does: 'Ship' } as const;
-const HOST_HINTS = [ SHIP_HINT, { keys: [ 'Enter' ], does: 'Go' } ] as const;
-const GUEST_HINTS = [ SHIP_HINT ] as const;
+import { Button } from '../../../ui/button';
+import { Chevron } from '../../../ui/chevron';
+import { KeyHint } from '../../../ui/key-hint';
+import { useHostId, useRunPlayers } from '../../net/run-view-store';
+import { GUEST_HINTS, HOST_HINTS } from './start-control.constants';
 
 export function StartControl( { room }: { room: Room< RunState > } ) {
     const hostId = useHostId( room );

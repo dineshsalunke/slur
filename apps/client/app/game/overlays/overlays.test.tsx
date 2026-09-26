@@ -21,8 +21,8 @@ vi.mock( './spec-tag', async ( importOriginal ) => {
     };
 } );
 
-vi.mock( './roster', async ( importOriginal ) => {
-    const actual = await importOriginal< typeof import('./roster') >();
+vi.mock( './roster/roster', async ( importOriginal ) => {
+    const actual = await importOriginal< typeof import('./roster/roster') >();
     return {
         Roster: ( props: Parameters< typeof actual.Roster >[ 0 ] ) => {
             counts.Roster += 1;

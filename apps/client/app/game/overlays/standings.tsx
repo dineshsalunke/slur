@@ -1,7 +1,7 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
 import { useHostId, useRunStandings } from '../net/run-view-store';
-import { StandingRow } from './standing-row';
+import { StandingRow } from './standing-row/standing-row';
 
 export function Standings( { room }: { room: Room< RunState > } ) {
     const hostId = useHostId( room );

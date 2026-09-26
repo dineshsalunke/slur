@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useConnectionStatus } from '../../net/connection-status';
-import { HudButton } from '../../ui/hud-button';
-import { HudPanel } from '../../ui/hud-panel';
+import { HudButton } from '../../ui/hud-button/hud-button';
+import { HudPanel } from '../../ui/hud-panel/hud-panel';
 
 export function ConnectionNotice() {
     const status = useConnectionStatus();

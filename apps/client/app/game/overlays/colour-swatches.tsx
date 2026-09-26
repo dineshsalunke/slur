@@ -1,6 +1,6 @@
 import type { Room } from '@colyseus/sdk';
 import { type RunState, SET_COLOR_MESSAGE } from '@slur/shared';
-import { LABEL } from '../../ui/field-label';
+import { LABEL } from '../../ui/field-label/field-label.constants';
 import { PLAYER_BG } from '../colors';
 import { useRunPlayers } from '../net/run-view-store';
 

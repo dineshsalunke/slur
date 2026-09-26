@@ -3,7 +3,7 @@ import type { RunState } from '@slur/shared';
 import { Fragment } from 'react';
 import { Scrim } from '../../ui/scrim';
 import { LeaveButton } from './leave-button';
-import { RaceAgain } from './race-again';
+import { RaceAgain } from './race-again/race-again';
 import { Standings } from './standings';
 import { WinnerCard } from './winner-card';
 import { YourFinish } from './your-finish';

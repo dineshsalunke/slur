@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { GHOST, keepFocusOff } from '../../ui/ghost';
-import { HudButton } from '../../ui/hud-button';
+import { HudButton } from '../../ui/hud-button/hud-button';
 
 export function LeaveButton( { tone = 'hud' }: { tone?: 'hud' | 'ghost' } ) {
     const navigate = useNavigate();

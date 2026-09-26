@@ -1,13 +1,7 @@
 import { PHASE, ROOM_NAME } from '@slur/shared';
 import { useNavigation } from 'react-router';
-import { useLobbyRooms } from './lobby-store';
-
-const PHASE_VIEW: Record< number, { label: string; live: boolean; action: string } > = {
-    [ PHASE.lobby ]: { label: 'Lobby', live: false, action: 'Join' },
-    [ PHASE.countdown ]: { label: 'Starting', live: false, action: 'Join' },
-    [ PHASE.racing ]: { label: 'Racing', live: true, action: 'Spectate' },
-    [ PHASE.finished ]: { label: 'Results', live: true, action: 'Spectate' },
-};
+import { useLobbyRooms } from '../lobby-store';
+import { PHASE_VIEW } from './room-list.constants';
 
 export function RoomList( { form }: { form: string } ) {
     const rooms = useLobbyRooms().filter( ( r ) => r.name === ROOM_NAME );

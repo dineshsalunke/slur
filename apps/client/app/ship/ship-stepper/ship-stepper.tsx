@@ -1,10 +1,8 @@
 import { SHIP_CLASSES, SHIPS } from '@slur/shared';
-import { Chevron } from '../ui/chevron';
-import { LABEL } from '../ui/field-label';
-import { useShipChoice } from './ship-choice';
-
-const STEP =
-    'grid h-11 w-10 flex-none cursor-pointer place-items-center text-readout-dim transition-colors duration-150 enabled:hover:text-readout focus-visible:text-readout focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-readout disabled:cursor-default';
+import { Chevron } from '../../ui/chevron';
+import { LABEL } from '../../ui/field-label/field-label.constants';
+import { useShipChoice } from '../ship-choice';
+import { STEP } from './ship-stepper.constants';
 
 export function ShipStepper( {
     onStep,

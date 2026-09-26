@@ -2,7 +2,7 @@ import { SHIP_CLASSES, SHIPS } from '@slur/shared';
 import type { CSSProperties } from 'react';
 import { useShipChoice } from '../../ship/ship-choice';
 import { STAT_AXES, statFill } from '../../ship/ship-stats';
-import { LABEL } from '../../ui/field-label';
+import { LABEL } from '../../ui/field-label/field-label.constants';
 
 export function SpecTag( { className = '' }: { className?: string } ) {
     const ship = useShipChoice();

@@ -1,9 +1,8 @@
 import type { Standing } from '@slur/shared';
 import type { CSSProperties } from 'react';
-import { playerBg } from '../colors';
-import { gapTo, raceTime, shipName } from './results-format';
-
-const TAG = 'text-[11px] font-bold uppercase tracking-[0.2em]';
+import { playerBg } from '../../colors';
+import { gapTo, raceTime, shipName } from '../results-format';
+import { TAG } from './standing-row.constants';
 
 export function StandingRow( {
     standing: s,

@@ -1,7 +1,7 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
 import { Fragment } from 'react';
-import { LABEL } from '../../ui/field-label';
+import { LABEL } from '../../ui/field-label/field-label.constants';
 import { useRunStandings } from '../net/run-view-store';
 import { gapTo, ordinal, raceTime } from './results-format';
 

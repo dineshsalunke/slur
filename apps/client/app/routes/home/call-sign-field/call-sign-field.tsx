@@ -1,4 +1,4 @@
-import { FieldLabel } from '../../../ui/field-label';
+import { FieldLabel } from '../../../ui/field-label/field-label';
 
 export function CallSignField( { savedName }: { savedName: string } ) {
     return (

@@ -2,8 +2,8 @@ import { PHASE } from '@slur/shared';
 import { useEffect } from 'react';
 import { useBlocker } from 'react-router';
 import { useConnectionStatus } from '../../net/connection-status';
-import { HudButton } from '../../ui/hud-button';
-import { HudPanel } from '../../ui/hud-panel';
+import { HudButton } from '../../ui/hud-button/hud-button';
+import { HudPanel } from '../../ui/hud-panel/hud-panel';
 
 export function LeaveGuard( { phase }: { phase: number } ) {
     const connected = useConnectionStatus() !== 'lost';

@@ -1,7 +1,7 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
 import { useEffect, useReducer, useRef } from 'react';
-import { HudPanel } from '../../ui/hud-panel';
+import { HudPanel } from '../../ui/hud-panel/hud-panel';
 import { useRunPlayers } from '../net/run-view-store';
 import { cycleSpectatorTarget, resolveSpectatorTarget } from '../spectator';
 

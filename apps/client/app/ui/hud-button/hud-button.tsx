@@ -1,9 +1,5 @@
 import type { ReactNode } from 'react';
-
-const VARIANT = {
-    go: 'border-cyan bg-cyan/12 font-bold shadow-go disabled:cursor-default disabled:opacity-40 disabled:shadow-none',
-    leave: 'border-magenta bg-magenta/12',
-} as const;
+import { VARIANT } from './hud-button.constants';
 
 export function HudButton( {
     variant,

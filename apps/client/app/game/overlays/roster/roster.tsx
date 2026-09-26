@@ -1,9 +1,8 @@
 import type { Room } from '@colyseus/sdk';
 import { isShipId, type RunState, SHIPS } from '@slur/shared';
-import { playerBg } from '../colors';
-import { useHostId, useRunPlayers } from '../net/run-view-store';
-
-const TAG = 'text-[11px] font-bold uppercase tracking-[0.2em]';
+import { playerBg } from '../../colors';
+import { useHostId, useRunPlayers } from '../../net/run-view-store';
+import { TAG } from './roster.constants';
 
 export function Roster( { room, className = '' }: { room: Room< RunState >; className?: string } ) {
     const hostId = useHostId( room );

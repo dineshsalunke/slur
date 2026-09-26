@@ -5,11 +5,11 @@ import { Scrim } from '../../ui/scrim';
 import { ColourSwatches } from './colour-swatches';
 import { CopyLink } from './copy-link';
 import { LeaveButton } from './leave-button';
-import { LobbyShipPicker } from './lobby-ship-picker';
+import { LobbyShipPicker } from './lobby-ship-picker/lobby-ship-picker';
 import { RoomTitle } from './room-title';
-import { Roster } from './roster';
+import { Roster } from './roster/roster';
 import { SpecTag } from './spec-tag';
-import { StartControl } from './start-control';
+import { StartControl } from './start-control/start-control';
 
 export function LobbyOverlay( { room }: { room: Room< RunState > } ) {
     return (
