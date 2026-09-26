@@ -38,7 +38,7 @@ The unsent text in an idle prompt box is Claude Code's suggested reply, not the 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #273 netcode, all 4 items | building | sim/types.ts, sim/fround.test.ts, combat/constants.ts, run-room.ts, room-input.ts(+test), run-room.test.ts, net/prediction.ts(+test), attach-room-to-world.ts, ecs/net-systems.ts, input/current-input.ts, net-canvas.tsx |
-| workertwo | w2P:pF | #283 file layout | B0 GO (docs/config/lint at warn); B1-B3 may follow; B4/B5 HELD for #285; B7 after #274 | CLAUDE.md, conventions/r3f.md, rules/react-house-style.md, rules/component-files.md, .ls-lint.yml, biome.json, biome-plugins/component-module-scope.grit |
+| workertwo | w2P:pF | #283 file layout | B0 landed 2034287 (92 files warn). B2+B3 cleared. B1 folded into B7 (after #274). B4/B5 HELD for #285 | routes/pacing/**, routes/home/** + home.tsx, routes/beat-deck/**, 1 import line in routes/game/route.tsx |
 | workerthree | w2P:pG | #280 mine fizzle (+ bind-room-audio:154 → musicForPhase, + mine-shock toneMapped from #275) | building | combat/mine.ts, mine-drop.test.ts, room-combat.ts, room-mine-fizzle.test.ts (new), mine-shock-events.ts, mine-shock.tsx, sfx-map.ts, bind-room-audio.ts, local-combat.ts(+test) |
 | workerfour | w2P:pH | #276 item 3 (pow) | resumed (cleared); must report weave digest diff and wait for owner OK | block-depth.ts(+test), track-digest.test.ts |
 | workerfive | w2P:pK | #274 run-view store | building | use-run-view.ts, run-view-store.test.ts, 10 overlay consumers, overlays.tsx, net-hud.tsx, test-room.ts, overlay tests |
