@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, midday
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, afternoon
 
 ## Goal
 
@@ -18,47 +18,44 @@ message can sit unread. Use `bash -c '…'` for herdr loops (the Bash tool shell
 - Hosted rooms default to GROOVE. The song work is a throwaway lens, freighter-only.
 - #261 mine rules (stun 1.5 s, ×0.6, arm 0.5 s, trigger 3u, ttl 20 s, 3/owner). Every power fires forward (E) or back (F).
 - Workers commit by explicit pathspec and push dev without asking.
-- Audio direction: SCI-FI, not cartoon (#267). CC-BY and CC-BY-SA accepted.
+- Audio direction: SCI-FI, not cartoon. CC-BY and CC-BY-SA accepted.
+- Ship trails (#10) parked until after beta, in the polish pass.
 
 ## Landed this session
 
-3948541 #258 graphite (closed by me: workerone's `gh issue close` was denied by its permission check) ·
-2ce75a4 #265 pickup spread (closed by workerfour) · 107413c dead RearView.featherX/Y removed ·
-a13fa8e memory: worker closes its issue.
-Closed on owner say-so: #173 #34 #31 #253. #20 commented: mine OK in /test-level, needs multiplayer test;
-shield/boost not built.
+ab12a98 #267 sci-fi audio (closed by workerfive) · 84a2ff7 #252 server input validation (closed by workerfour)
+· #227 closed by workerone: a–c were already in c99c40d; sky bake ≈112 ms per re-bake at DPR 1 (≈98 ms field,
+13.6 ms relight); old/new still skipped on owner say-so.
+Closed on owner say-so: #163 #170 #215 #222 #251 #264 (sign-offs), #20 (split), #10 and #109 (not planned).
+Filed: #269 Boost pickup, #270 Shield pickup (both Backlog; each lists owner questions before build).
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #258 done | idle, ~8%+ | none |
+| workerone | w2P:pD | #227 done | idle, ~9%+ | none |
 | workertwo | w2P:pF | none | idle, 21%: clear before reuse | none |
 | workerthree | w2P:pG | none | idle, ~120k: clear before reuse | none |
-| workerfour | w2P:pH | featherX/Y done | idle, fresh after clear | none |
-| workerfive | w2P:pK | #267 sci-fi audio: BUILDING (owner GO: Opus .ogg no brew, Safari check by version, mp3 fallback; jump B; 3 most-distinct bolts; engine values as planned; boost unbound). Full plan text re-sent by message after its /clear | working | apps/client/app/audio/**, public/audio/**, docs/AUDIO.md, docs/DECISIONS.md (ADR-021) |
-
-Audition page backup: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/469ab117-3ee3-402b-8588-c8760d2324fd/scratchpad/cuts/index.html`.
+| workerfour | w2P:pH | #252 done | idle, ~7%+ | none |
+| workerfive | w2P:pK | #267 done | idle, cleared to 0% | none |
 
 ## Next
 
-1. workerfive reports #267 SHA → relay to the owner; it closes #267 itself.
-2. Owner to name the next issues for workerone/two/three/four (all idle; clear two + three before reuse).
-3. `Bash(gh issue close:*)` added to .claude/settings.local.json (owner approved). Running workers may need a
-   restart to pick it up [unverified].
-4. Dev stack: server (PID 72031) auto-reloaded on the #265 dist (11:08); client (85264) needs only a browser
-   reload [inferred]. No restart done.
+1. Owner to name the next lanes. Candidates: #6 respawn death-loop, #246 pacing accel, #172 frame-tap crash,
+   #138/#127 canvas guard (may be stale: names deleted routes), #269/#270 once the owner answers their questions.
+2. #267 follow-ups: owner ear check in a hosted room (pass-by, remote engine, lock loop unheard in play); a new
+   issue for the 16 unchosen sound events and Q4–Q6 — owner has not said yes to filing it.
 
 ## Open owner questions
 
+- File the #267 follow-up issue?
 - Server 'fizzled' mine broadcast (visible fizzle feedback). Unanswered.
-- Sign-offs: #163 #170 #215 #222 #251. #20 needs a multiplayer mine test.
 - Older: lint files over 300 lines; weave a/b/c; #254 class roles; #244 FRACTURE_RATE; net-debug-hud removal; review #236.
 
 ## Uncommitted
 
-None of mine. CLAUDE.local.md edited (§2 close rule); it is not tracked by git.
+None of mine.
 
 ## Lessons → memory
 
-worker-closes-its-issue.md (a13fa8e).
+none
