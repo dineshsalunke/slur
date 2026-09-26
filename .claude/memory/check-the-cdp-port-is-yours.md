@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 4df80f84-a1ec-4920-93a2-fbc002227c3f
-  modified: 2026-09-26T08:19:17.935Z
+  modified: 2026-09-26T08:19:46.629Z
 ---
 
 Before driving a headless Chrome over CDP, pick a port nobody holds (`lsof -nP -iTCP:<port> -sTCP:LISTEN`
@@ -20,10 +20,11 @@ side.
 **How to apply:** use a per-session port (for example 9400 plus a random offset), run the `lsof` check
 before launch, and after launch check the `ps` command line for your profile directory.
 
-**Recheck during a run, not only at launch.** On 2026-09-26 (#275 check) workerthree's Chrome passed both
-checks on :9471. Mid-run, a page eval then found a different room (`iGzcBHiR6`, lobby, 1 player). After
-the kill, :9471 was held by another session's Chrome. A long run must confirm the `/json/list` page URL
-and room id before each reading, and the driver must address the target by id, not "first page".
+**Check IPv4 AND IPv6.** On 2026-09-26 workertwo's Chrome bound only `[::1]:9471`, because
+workerthree's Chrome already held 127.0.0.1:9471. Its probe fetched `127.0.0.1` and drove workerthree's
+Chrome for ~25 s: it opened a tab, hosted `/game/iGzcBHiR6` and pressed GO. `lsof -iTCP:<port>` must be
+empty for both families. After launch, match `/json/version` to your own PID. A driver must address its
+page target by id, not "first page", and print the URL and room with every reading.
 Related:
 [[headless-chrome-for-frame-taps]], [[count-draw-calls-without-repo-edits]],
 [[frame-tap-may-answer-from-another-tab]].
