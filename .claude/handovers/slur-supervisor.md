@@ -45,8 +45,9 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 
 #290 tug (workertwo plan): Q1 back-fire effect on the chaser: (a) same slow, (b) sideways yank toward your
 lane [my pick], (c) literal pull forward. Q2 audio: reuse existing sfx [my pick]. Q3 start values: range 150u,
-kick +40 u/s, cap +50% 0.6 s, target ×0.7 then cap 60% 1 s. ALSO tell workertwo: its plan predates the grapple
-fold; "no target → no fire" must become "no rival → latch nearest block ahead and reel in".
+kick +40 u/s, cap +50% 0.6 s, target ×0.7 then cap 60% 1 s. Grapple fold is now IN the plan (addendum): Q4 back
+with no rival = no fire [its pick]; Q5 block reel pulls along z only, releases 0.35 s before the block [its pick].
+Third appended PlayerState float: tugAnchorZ.
 
 #289 portal (workerfour plan): 1 lone first end expires at 9 s? 2 arm delay 0.3 s + near lead 0.4 s? 3 one live
 pair per owner? 4 mix 2/20 portals taken from bolt 6→5, seeker 4→3? 5 seeker misses when target hops? 6 can jump
