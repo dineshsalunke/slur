@@ -2,6 +2,7 @@ import {
     BOLT_HALF,
     BOLT_SPEED,
     BOLT_TTL,
+    BOOST_RATIO,
     MINE_ARM_S,
     MINE_BACK_GAP,
     MINE_HALF,
@@ -34,6 +35,7 @@ import {
     SEEKER_WINDOW_S,
     SEEKER_WINDOW_U,
     type SeekerWindowMode,
+    SHIELD_RATIO,
     STUN_SECONDS,
 } from './combat/constants.js';
 
@@ -73,6 +75,8 @@ export interface SimConfig {
     mineMaxPerOwner: number;
     mineHalf: number;
     mineHeight: number;
+    boostRatio: number;
+    shieldRatio: number;
 }
 
 export const DEFAULT_SIM_CONFIG: SimConfig = {
@@ -111,4 +115,6 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     mineMaxPerOwner: MINE_MAX_PER_OWNER,
     mineHalf: MINE_HALF,
     mineHeight: MINE_HEIGHT,
+    boostRatio: BOOST_RATIO,
+    shieldRatio: SHIELD_RATIO,
 };

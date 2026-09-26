@@ -132,7 +132,7 @@ function fire( me: Gunner, slot: number, vz: number, shipId: string, track: Trac
     spendPower( me, slot );
     if ( power === HeldPower.seeker ) fireSeeker( me, vz, track, dir );
     else if ( power === HeldPower.mine ) layMine( me, vz, shipId, track, dir );
-    else fireBolt( me, dir );
+    else if ( power === HeldPower.bolt ) fireBolt( me, dir );
 }
 
 function onSeekerEvent( e: SeekerEvent ): void {

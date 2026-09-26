@@ -16,7 +16,7 @@ export const BOLT_SPAWN_AHEAD = 3;
 export const STUN_SECONDS = 1.2;
 export const PICKUP_RESPAWN_S = 3;
 
-export const HeldPower = { none: 0, bolt: 1, seeker: 2, mine: 3 } as const;
+export const HeldPower = { none: 0, bolt: 1, seeker: 2, mine: 3, boost: 4, shield: 5 } as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
 
 export type SeekerWindowMode = 'time' | 'distance';
@@ -58,3 +58,7 @@ export const MINE_TTL = 20;
 export const MINE_MAX_PER_OWNER = 3;
 export const MINE_HALF = 1.1;
 export const MINE_HEIGHT = 0.9;
+
+export const BOOST_RATIO = 0;
+
+export const SHIELD_RATIO = 0;

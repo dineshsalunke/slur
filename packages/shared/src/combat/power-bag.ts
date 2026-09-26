@@ -15,25 +15,31 @@ export interface PowerCount {
 }
 
 export function bagCounts( cfg: SimConfig = DEFAULT_SIM_CONFIG ): PowerCount[] {
-    const seeker = Math.max( 0, cfg.seekerRatio );
-    const mine = Math.max( 0, Math.min( cfg.mineRatio, 1 - seeker ) );
-    const shares: [ HeldPower, number ][] = [
-        [ HeldPower.bolt, Math.max( 0, 1 - seeker - mine ) ],
-        [ HeldPower.seeker, Math.min( seeker, 1 ) ],
-        [ HeldPower.mine, mine ],
+    let left = 1;
+    const take = ( ratio: number ): number => {
+        const share = Math.max( 0, Math.min( ratio, left ) );
+        left -= share;
+        return share;
+    };
+    const drawn: [ HeldPower, number ][] = [
+        [ HeldPower.seeker, take( cfg.seekerRatio ) ],
+        [ HeldPower.mine, take( cfg.mineRatio ) ],
+        [ HeldPower.boost, take( cfg.boostRatio ) ],
+        [ HeldPower.shield, take( cfg.shieldRatio ) ],
     ];
+    const shares: [ HeldPower, number ][] = [ [ HeldPower.bolt, left ], ...drawn ];
     const counts = shares.map( ( [ power, share ] ) => ( {
         power,
         count: Math.floor( share * POWER_BAG_SIZE ),
         rest: share * POWER_BAG_SIZE - Math.floor( share * POWER_BAG_SIZE ),
     } ) );
-    let left = POWER_BAG_SIZE - counts.reduce( ( s, c ) => s + c.count, 0 );
+    let spare = POWER_BAG_SIZE - counts.reduce( ( s, c ) => s + c.count, 0 );
     for ( const c of [ ...counts ].sort( ( a, b ) => b.rest - a.rest ) ) {
-        if ( left <= 0 ) break;
+        if ( spare <= 0 ) break;
         c.count++;
-        left--;
+        spare--;
     }
-    return counts.map( ( { power, count } ) => ( { power, count } ) );
+    return counts.filter( ( c ) => c.count > 0 ).map( ( { power, count } ) => ( { power, count } ) );
 }
 
 function saltNumber( salt: string ): number {
@@ -81,7 +87,7 @@ function dealBag( salt: string, index: number, cfg: SimConfig ): HeldPower[] {
 const bags = new Map< string, HeldPower[] >();
 
 export function powerBag( salt: string, index: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): readonly HeldPower[] {
-    const key = `${ salt }|${ index }|${ cfg.seekerRatio }|${ cfg.mineRatio }`;
+    const key = `${ salt }|${ index }|${ cfg.seekerRatio }|${ cfg.mineRatio }|${ cfg.boostRatio }|${ cfg.shieldRatio }`;
     let bag = bags.get( key );
     if ( bag === undefined ) {
         if ( bags.size >= BAG_CACHE_LIMIT ) bags.clear();

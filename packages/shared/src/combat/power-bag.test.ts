@@ -15,6 +15,24 @@ test( 'the default bag deals 8 bolts, 6 seekers and 6 mines', () => {
     ] );
 } );
 
+test( 'boost and shield ratios take their share from the bolts', () => {
+    assert.deepEqual(
+        bagCounts( { ...DEFAULT_SIM_CONFIG, boostRatio: 0.15, shieldRatio: 0.15, seekerRatio: 0.2, mineRatio: 0.2 } ),
+        [
+            { power: HeldPower.bolt, count: 6 },
+            { power: HeldPower.seeker, count: 4 },
+            { power: HeldPower.mine, count: 4 },
+            { power: HeldPower.boost, count: 3 },
+            { power: HeldPower.shield, count: 3 },
+        ],
+    );
+    assert.deepEqual( bagCounts( { ...DEFAULT_SIM_CONFIG, seekerRatio: 0.6, mineRatio: 0.3, boostRatio: 0.5 } ), [
+        { power: HeldPower.seeker, count: 12 },
+        { power: HeldPower.mine, count: 6 },
+        { power: HeldPower.boost, count: 2 },
+    ] );
+} );
+
 test( 'every bag holds its counts and no power runs past the cap, across bag seams too', () => {
     const want = bagCounts();
     for ( const salt of SALTS ) {

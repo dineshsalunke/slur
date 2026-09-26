@@ -47,7 +47,7 @@ export function firePower(
     spendPower( p, slot );
     if ( power === HeldPower.seeker ) fireSeeker( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.mine ) layMine( ctx, id, p, ownerId, dir );
-    else fireBolt( ctx, id, p, ownerId, dir );
+    else if ( power === HeldPower.bolt ) fireBolt( ctx, id, p, ownerId, dir );
 }
 
 function fireBolt( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {
