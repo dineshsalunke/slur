@@ -10,8 +10,8 @@ import { boltHits, type HitShip, type ProjectileState, stepProjectiles } from '.
 
 const DT = 1 / 60;
 
-const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed ) );
-const layout = ( seed: number ): Pickup[] => pickupLayout( procgenDescriptor( seed ) );
+const makeTrack = ( seed: number ): Track => resolveTrack( procgenDescriptor( seed, 'weave' ) );
+const layout = ( seed: number ): Pickup[] => pickupLayout( procgenDescriptor( seed, 'weave' ) );
 
 function victim( over: Partial< HitShip > = {} ): HitShip {
     return { id: 'v', x: 0, y: 0, z: 0, halfW: 1.3, halfL: 1.26, dead: false, spectating: false, ...over };

@@ -4,7 +4,6 @@ import type { ReferencePath } from './reference-path.js';
 export const DEMAND_BIN_S = 1;
 export const MOVE_MERGE_U = 4;
 export const STRAFE_WINDOW_U = 8;
-export const REST_MIN_S = 2;
 
 export type MoveKind = 'strafe' | 'jump';
 

@@ -93,7 +93,7 @@ test( 'a hole in one arm only is an optional gap on that arm', () => {
 } );
 
 test( 'on the seed track every arm and both named routes thread without a stuck sample', () => {
-    const r = analyzeDescriptor( procgenDescriptor( 20260921 ), { arms: true } );
+    const r = analyzeDescriptor( procgenDescriptor( 20260921, 'weave' ), { arms: true } );
     assert.ok( r.arms !== null && r.routes !== null );
     const { forks, easiest, hardest } = r.arms;
     assert.equal( forks.length, r.routes.forks.filter( ( f ) => f.kind === 'fork' ).length );

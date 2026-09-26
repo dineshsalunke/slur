@@ -29,7 +29,7 @@ test( 'gaps and blocks now co-occur on the same segment', () => {
     let carrying = 0;
     let total = 0;
     for ( const seed of SEEDS ) {
-        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed ) ) ) ) {
+        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed, 'weave' ) ) ) ) {
             total++;
             if ( s.blocks.length > 0 ) carrying++;
         }
@@ -40,7 +40,7 @@ test( 'gaps and blocks now co-occur on the same segment', () => {
 
 test( 'a full-width gap never carries a block, because there is nothing to stand on', () => {
     for ( const seed of SEEDS ) {
-        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed ) ) ) ) {
+        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed, 'weave' ) ) ) ) {
             if ( ! isHole( s ) ) continue;
             assert.equal( s.blocks.length, 0, `seed ${ seed } seg ${ s.index }: a block floating over a full gap` );
         }
@@ -49,7 +49,7 @@ test( 'a full-width gap never carries a block, because there is nothing to stand
 
 test( 'a gap block sits on a full-span deck and on the landing side of the segment', () => {
     for ( const seed of SEEDS ) {
-        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed ) ) ) ) {
+        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed, 'weave' ) ) ) ) {
             for ( const b of s.blocks ) {
                 assert.ok(
                     b.z0 >= s.z0 + SEG_LEN / 2 - 1e-6,
@@ -68,7 +68,7 @@ test( 'a gap block sits on a full-span deck and on the landing side of the segme
 
 test( 'the combined gap-plus-block result still clears MIN_LANE at every slice', () => {
     for ( const seed of SEEDS ) {
-        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed ) ) ) ) {
+        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed, 'weave' ) ) ) ) {
             if ( isHole( s ) ) continue;
             assert.ok(
                 passableCorridorWidth( s ) >= MIN_LANE - 1e-6,
@@ -80,8 +80,8 @@ test( 'the combined gap-plus-block result still clears MIN_LANE at every slice',
 
 test( 'the bounded retry leaves gap segments identical across two materializations', () => {
     for ( const seed of SEEDS ) {
-        const a = gapSegments( resolveTrack( procgenDescriptor( seed ) ) );
-        const b = gapSegments( resolveTrack( procgenDescriptor( seed ) ) );
+        const a = gapSegments( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
+        const b = gapSegments( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
         assert.equal( JSON.stringify( a ), JSON.stringify( b ), `seed ${ seed }: gap blocks are not deterministic` );
     }
 } );

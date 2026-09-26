@@ -48,7 +48,7 @@ test( 'a side slot longer than every ship frees the corridor', () => {
     }
 } );
 
-const FIXTURE = freezeTrack( resolveTrack( procgenDescriptor( 20260921 ) ) );
+const FIXTURE = freezeTrack( resolveTrack( procgenDescriptor( 20260921, 'weave' ) ) );
 
 function fixturePockets( id: ShipClassId ): PacingPocket[] {
     return classPockets( FIXTURE, id, SHIP_CLASSES[ id ].tuning ).filter(

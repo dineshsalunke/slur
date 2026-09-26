@@ -13,7 +13,7 @@ const DT = 1 / 60;
 const { none, bolt, seeker, mine } = HeldPower;
 
 function atPickup( power: HeldPower, slots: number[] = [ none, none, none ] ) {
-    const track = resolveTrack( procgenDescriptor( 7 ) );
+    const track = resolveTrack( procgenDescriptor( 7, 'weave' ) );
     const pk = pickupsOf( track ).find( ( a ) => pickupPower( a.id ) === power );
     if ( ! pk ) throw new Error( `no pickup of power ${ power }` );
     const world = createWorld();

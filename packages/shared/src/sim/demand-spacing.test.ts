@@ -66,7 +66,7 @@ test( 'rest sections space demands further apart than peak sections', () => {
 
 test( 'consecutive gap events keep at least the peak reaction window between them', () => {
     for ( const seed of SEEDS ) {
-        const events = gapEvents( resolveTrack( procgenDescriptor( seed ) ) );
+        const events = gapEvents( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
         for ( let k = 1; k < events.length; k++ ) {
             const clear = events[ k ][ 0 ] - events[ k - 1 ][ 1 ] - 1;
             const seconds = ( clear * SEG_LEN ) / DEFAULT_TUNING.maxCruise;
@@ -84,7 +84,7 @@ test( 'a rest section really does space its demands further apart than a peak on
     let peakClear = 0;
     let peakN = 0;
     for ( const seed of SEEDS ) {
-        const events = gapEvents( resolveTrack( procgenDescriptor( seed ) ) );
+        const events = gapEvents( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
         for ( let k = 1; k < events.length; k++ ) {
             const clear = events[ k ][ 0 ] - events[ k - 1 ][ 1 ] - 1;
             if ( intensityAt( events[ k ][ 0 ], TRACK_SEGMENTS ) < 0.35 ) {

@@ -129,6 +129,8 @@ export const TRACK_GENS = [ 'weave', 'score', 'groove' ] as const;
 
 export type TrackGen = ( typeof TRACK_GENS )[ number ];
 
+export const DEFAULT_TRACK_GEN: TrackGen = 'groove';
+
 export function isTrackGen( v: unknown ): v is TrackGen {
     return TRACK_GENS.includes( v as TrackGen );
 }

@@ -17,7 +17,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { clearBlockState } from '../game/block-state';
 import { createPredictor } from './prediction';
 
-const track = resolveTrack( procgenDescriptor( 7 ) );
+const track = resolveTrack( procgenDescriptor( 7, 'weave' ) );
 
 function inputAt( seq: number ): PlayerInput {
     return {

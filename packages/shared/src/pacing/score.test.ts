@@ -181,7 +181,7 @@ test( 'a gap on the reference path transcribes as a jump note', () => {
 } );
 
 test( 'a procgen report carries a line score and its adherence', () => {
-    const r = analyzeDescriptor( procgenDescriptor( 20260921 ) );
+    const r = analyzeDescriptor( procgenDescriptor( 20260921, 'weave' ) );
     assert.ok( r.line !== null && r.line.notes.length > 0 );
     assert.ok( r.adherence !== null && r.adherence.share >= 0 && r.adherence.share <= 1 );
     assert.ok( r.score.notes.length > 0 );

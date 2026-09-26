@@ -44,7 +44,7 @@ test( 'a rest section really empties out, not just thins', () => {
 
 test( 'every track carries a real breather, measured in seconds', () => {
     for ( const seed of SEEDS ) {
-        const rest = longestRest( resolveTrack( procgenDescriptor( seed ) ) );
+        const rest = longestRest( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
         const seconds = ( rest * SEG_LEN ) / DEFAULT_TUNING.maxCruise;
         assert.ok( seconds >= 2, `seed ${ seed }: longest breather is only ${ seconds.toFixed( 1 ) }s` );
     }
@@ -88,7 +88,7 @@ function busyShare( lo: number, hi: number ): { share: number; n: number } {
     let busyN = 0;
     let n = 0;
     for ( const seed of SEEDS ) {
-        const t = resolveTrack( procgenDescriptor( seed ) );
+        const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
             const intensity = intensityAt( i, TRACK_SEGMENTS );
             if ( intensity < lo || intensity > hi ) continue;
@@ -111,7 +111,7 @@ test( 'spike stretches really are tighter than rest stretches', () => {
 
 test( 'a rest stretch still keeps its floor — a breather is flat, not a hole', () => {
     for ( const seed of SEEDS ) {
-        const t = resolveTrack( procgenDescriptor( seed ) );
+        const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
             if ( intensityAt( i, TRACK_SEGMENTS ) > 0.06 ) continue;
             const s = t.segmentAt( i );

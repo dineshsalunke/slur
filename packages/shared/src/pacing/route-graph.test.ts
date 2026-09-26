@@ -82,7 +82,7 @@ test( 'a long lengthwise crack is crossable sideways, not a wall', () => {
 } );
 
 test( 'the seed track threads end to end and offers at least one real fork', () => {
-    const { routes } = analyzeDescriptor( procgenDescriptor( 20260921 ), { routes: true } );
+    const { routes } = analyzeDescriptor( procgenDescriptor( 20260921, 'weave' ), { routes: true } );
     assert.ok( routes !== null );
     const empty = routes.corridors.indexOf( 0 );
     assert.equal( empty, -1, `no viable corridor at z ${ empty }` );

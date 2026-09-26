@@ -34,7 +34,7 @@ test( 'each section span holds the segments intensityAt ramps inside it', () => 
 } );
 
 test( 'intent carries the intensity curve and a band for every non-gap racing segment', () => {
-    const d = procgenDescriptor( 20260921 );
+    const d = procgenDescriptor( 20260921, 'weave' );
     const track = resolveTrack( d );
     const segments = Array.from( { length: TRACK_SEGMENTS }, ( _, i ) => track.segmentAt( i ) );
     if ( d.kind !== 'procgen' ) throw new Error( 'expected a procgen descriptor' );

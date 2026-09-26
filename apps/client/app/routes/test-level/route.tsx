@@ -1,7 +1,6 @@
-import { isTrackGen } from '@slur/shared';
+import { DEFAULT_TRACK_GEN, isTrackGen } from '@slur/shared';
 import { loadSfx } from '../../audio/sfx-map';
 import type { Route } from './+types/route';
-import { DEFAULT_GEN } from './route.constants';
 import { TestLevelCanvas } from './test-level-canvas/test-level-canvas';
 
 export function meta() {
@@ -14,7 +13,7 @@ export function meta() {
 export function clientLoader( { request }: Route.ClientLoaderArgs ) {
     void loadSfx( 'pickup' );
     const gen = new URL( request.url ).searchParams.get( 'gen' );
-    return { gen: isTrackGen( gen ) ? gen : DEFAULT_GEN };
+    return { gen: isTrackGen( gen ) ? gen : DEFAULT_TRACK_GEN };
 }
 
 export default function TestLevel( { loaderData }: Route.ComponentProps ) {

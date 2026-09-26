@@ -72,7 +72,7 @@ test( 'two resolveTrack(procgenDescriptor) are byte-identical for every segment 
 
 test( 'resolveTrack builds byte-identical tracks from the same descriptor (determinism)', () => {
     for ( const seed of SEEDS ) {
-        const descriptor = procgenDescriptor( seed );
+        const descriptor = procgenDescriptor( seed, 'weave' );
         const a = resolveTrack( descriptor );
         const b = resolveTrack( descriptor );
         assert.equal( a.finishZ, b.finishZ, `seed ${ seed } finishZ diverged` );
@@ -84,7 +84,7 @@ test( 'resolveTrack builds byte-identical tracks from the same descriptor (deter
 
 test( 'a procgen descriptor round-trips through the wire schema unchanged', () => {
     for ( const seed of SEEDS ) {
-        const base = procgenDescriptor( seed );
+        const base = procgenDescriptor( seed, 'weave' );
         if ( base.kind !== 'procgen' ) continue;
         const descriptor: ProcgenDescriptor = { ...base, blockDensity: 0.4, gapChance: 0.7 };
         const state = new TrackDescriptorState();
@@ -101,7 +101,7 @@ test( 'a procgen descriptor round-trips through the wire schema unchanged', () =
 
 test( 'an omitted density normalizes to full on the wire', () => {
     const state = new TrackDescriptorState();
-    applyDescriptor( state, procgenDescriptor( 1 ) );
+    applyDescriptor( state, procgenDescriptor( 1, 'weave' ) );
     const back = toDescriptor( state );
     assert.equal( back.kind, 'procgen' );
     if ( back.kind !== 'procgen' ) return;
@@ -363,7 +363,7 @@ test( 'ADR-002: pickupLayout is exactly track.anchors filtered to kind "pickup" 
     for ( const seed of SEEDS ) {
         const anchors = makeTrack( seed ).anchors.filter( ( a ) => a.kind === 'pickup' );
         assert.deepEqual(
-            pickupLayout( procgenDescriptor( seed ) ),
+            pickupLayout( procgenDescriptor( seed, 'weave' ) ),
             anchors,
             `seed ${ seed }: helper diverged from the read`,
         );

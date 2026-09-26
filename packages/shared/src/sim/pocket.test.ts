@@ -77,13 +77,13 @@ function stunTicks( t: FlightTuning ): number {
 
 test( 'seed 1 z≈6019: a Fighter holding throttle gets control back after one bounce', () => {
     const t = SHIP_CLASSES.fighter.tuning;
-    const track = cachedTrack( resolveTrack( procgenDescriptor( 1 ) ) );
+    const track = cachedTrack( resolveTrack( procgenDescriptor( 1, 'weave' ) ) );
     assert.ok( longestStun( track, t, -26, 6019.235 ) <= stunTicks( t ) );
 } );
 
 test( 'seed 1 z≈6019: a Fighter that steers out leaves the pocket in under a second', () => {
     const t = SHIP_CLASSES.fighter.tuning;
-    const track = cachedTrack( resolveTrack( procgenDescriptor( 1 ) ) );
+    const track = cachedTrack( resolveTrack( procgenDescriptor( 1, 'weave' ) ) );
     const s = spawnShip( -26, 6019.235 );
     s.vz = 0;
     const inp = emptyInput();
@@ -102,7 +102,7 @@ test( 'no pocket on the fairness seeds stun-locks any class holding throttle', (
     let checked = 0;
     const locked: string[] = [];
     for ( const seed of SEEDS ) {
-        const track = cachedTrack( resolveTrack( procgenDescriptor( seed ) ) );
+        const track = cachedTrack( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
         const blocks = sealedBlocks( track );
         for ( const c of Object.values( SHIP_CLASSES ) ) {
             for ( const p of pockets( blocks, c.tuning ) ) {

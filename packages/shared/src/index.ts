@@ -14,7 +14,6 @@ export * from './pacing/demand.js';
 export * from './pacing/grid.js';
 export * from './pacing/intent.js';
 export * from './pacing/jump-window.js';
-export * from './pacing/ngrams.js';
 export * from './pacing/pockets.js';
 export * from './pacing/reference-path.js';
 export * from './pacing/route-graph.js';

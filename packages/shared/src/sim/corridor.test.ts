@@ -72,7 +72,7 @@ function walkLine( t: Track ): { moves: number[]; peak: number } {
 
 test( 'no stretch of track lets the player coast without steering for too long', () => {
     for ( const seed of SEEDS ) {
-        const { moves } = walkLine( resolveTrack( procgenDescriptor( seed ) ) );
+        const { moves } = walkLine( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
         let run = 0;
         let longest = 0;
         for ( const dx of moves ) {
@@ -92,7 +92,7 @@ test( 'pinches really close the corridor, and never below the threadable floor',
     let pinched = 0;
     let narrowest = Number.POSITIVE_INFINITY;
     for ( const seed of SEEDS ) {
-        const t = resolveTrack( procgenDescriptor( seed ) );
+        const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         for ( let i = 0; i < TRACK_SEGMENTS; i++ ) {
             if ( ! bandAt( seed, i, TRACK_SEGMENTS, FULL_DENSITY ).pinched ) continue;
             pinched++;
@@ -109,7 +109,7 @@ test( 'pinches really close the corridor, and never below the threadable floor',
 
 test( 'a pinch gate is a wall with one hole, not a suggestion', () => {
     for ( const seed of SEEDS ) {
-        const t = resolveTrack( procgenDescriptor( seed ) );
+        const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         for ( let i = 0; i < TRACK_SEGMENTS; i++ ) {
             const band = bandAt( seed, i, TRACK_SEGMENTS, FULL_DENSITY );
             if ( ! band.pinched ) continue;

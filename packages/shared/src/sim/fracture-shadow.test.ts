@@ -132,7 +132,7 @@ test( 'the result does not depend on block order', () => {
 
 test( 'on procgen tracks, no fractured block keeps a hazard in its shadow after the pass', () => {
     for ( const seed of SEEDS ) {
-        const track = resolveTrack( procgenDescriptor( seed ) );
+        const track = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         const memo = new Map< number, Segment >();
         const at = ( i: number ): Segment => {
             const hit = memo.get( i );

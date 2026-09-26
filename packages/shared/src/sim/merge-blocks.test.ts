@@ -67,7 +67,7 @@ test( 'a partner a ship fits behind does not pull the block to the edge', () => 
 
 test( 'on the fairness seeds no segment is left with a pair it could still merge', () => {
     for ( const seed of SEEDS ) {
-        const t = resolveTrack( procgenDescriptor( seed ) );
+        const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
             const s = t.segmentAt( i );
             if ( isHole( s ) ) continue;

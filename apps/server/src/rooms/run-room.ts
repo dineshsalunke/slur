@@ -7,6 +7,7 @@ import {
     createFixedStep,
     createSimWorld,
     DEFAULT_SIM_CONFIG,
+    DEFAULT_TRACK_GEN,
     DROP_POWERUP_MESSAGE,
     dropPower,
     dropShield,
@@ -91,7 +92,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         const gen = process.env.SLUR_TRACK_GEN;
         const descriptor = procgenDescriptor(
             ( Math.random() * 0xffffffff ) >>> 0,
-            isTrackGen( gen ) ? gen : 'groove',
+            isTrackGen( gen ) ? gen : DEFAULT_TRACK_GEN,
         );
         applyDescriptor( this.state.descriptor, descriptor );
         this.track = resolveTrack( descriptor );

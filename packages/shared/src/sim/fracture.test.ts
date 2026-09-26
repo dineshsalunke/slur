@@ -58,8 +58,8 @@ function allBlocks( track: Track ): Block[] {
 
 test( 'the generator marks some blocks fractured, the same ones every time, with unique ids', () => {
     for ( const seed of SEEDS ) {
-        const a = allBlocks( resolveTrack( procgenDescriptor( seed ) ) );
-        const b = allBlocks( resolveTrack( procgenDescriptor( seed ) ) );
+        const a = allBlocks( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
+        const b = allBlocks( resolveTrack( procgenDescriptor( seed, 'weave' ) ) );
         assert.deepEqual(
             a.map( ( x ) => [ x.id, x.kind ] ),
             b.map( ( x ) => [ x.id, x.kind ] ),
@@ -73,7 +73,7 @@ test( 'the generator marks some blocks fractured, the same ones every time, with
 } );
 
 test( 'block ids decode back to their segment', () => {
-    const track = resolveTrack( procgenDescriptor( 1234 ) );
+    const track = resolveTrack( procgenDescriptor( 1234, 'weave' ) );
     for ( let i = 0; i < TRACK_SEGMENTS; i++ ) {
         for ( const b of track.segmentAt( i ).blocks ) {
             assert.equal( Math.floor( b.id / BLOCK_ID_STRIDE ), i, `block ${ b.id } is not in segment ${ i }` );
@@ -83,7 +83,7 @@ test( 'block ids decode back to their segment', () => {
 
 test( 'a fractured block stays within the size caps', () => {
     for ( const seed of SEEDS ) {
-        for ( const b of allBlocks( resolveTrack( procgenDescriptor( seed ) ) ) ) {
+        for ( const b of allBlocks( resolveTrack( procgenDescriptor( seed, 'weave' ) ) ) ) {
             if ( b.kind !== 'fractured' ) continue;
             assert.ok( b.x1 - b.x0 <= FRACTURE_MAX_WIDTH + 1e-9, `seed ${ seed }: fractured block ${ b.id } too wide` );
             assert.ok( b.z1 - b.z0 <= FRACTURE_MAX_DEPTH + 1e-9, `seed ${ seed }: fractured block ${ b.id } too deep` );

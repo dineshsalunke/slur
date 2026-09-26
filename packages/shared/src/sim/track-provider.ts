@@ -1,4 +1,4 @@
-import { type ProcgenDescriptor, TRACK_SEGMENTS, type Track, type TrackGen } from './space.js';
+import { DEFAULT_TRACK_GEN, type ProcgenDescriptor, TRACK_SEGMENTS, type Track, type TrackGen } from './space.js';
 import { makeProcgenTrack } from './track.js';
 
 export type TrackDescriptor = ProcgenDescriptor | { kind: 'authored'; levelId: string };
@@ -12,6 +12,6 @@ export function resolveTrack( d: TrackDescriptor ): Track {
     }
 }
 
-export function procgenDescriptor( seed: number, gen: TrackGen = 'weave' ): TrackDescriptor {
+export function procgenDescriptor( seed: number, gen: TrackGen = DEFAULT_TRACK_GEN ): TrackDescriptor {
     return { kind: 'procgen', seed, tier: 0, length: TRACK_SEGMENTS, gen };
 }

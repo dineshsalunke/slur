@@ -17,7 +17,7 @@ import {
 const SEEDS = [ 1, 2, 1234, 0xdeadbeef, 42, 99991 ];
 
 function depths( seed: number ): number[] {
-    const t = resolveTrack( procgenDescriptor( seed ) );
+    const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
     const out: number[] = [];
     for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
         for ( const b of t.segmentAt( i ).blocks ) out.push( b.z1 - b.z0 );
@@ -34,7 +34,7 @@ test( 'block depth is continuous, not a menu of a few sizes', () => {
 test( 'block width is continuous, not snapped to the lane grid', () => {
     const seen = new Set< number >();
     for ( const seed of SEEDS ) {
-        const t = resolveTrack( procgenDescriptor( seed ) );
+        const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
             for ( const b of t.segmentAt( i ).blocks ) seen.add( Math.round( ( b.x1 - b.x0 ) * 100 ) );
         }
@@ -54,7 +54,7 @@ test( 'no block is deeper than its segment or shallower than the floor', () => {
 
 test( 'blocks no longer all share one centred z-offset', () => {
     const offsets = new Set< number >();
-    const t = resolveTrack( procgenDescriptor( 1234 ) );
+    const t = resolveTrack( procgenDescriptor( 1234, 'weave' ) );
     for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
         const s = t.segmentAt( i );
         if ( isHole( s ) ) continue;
@@ -103,7 +103,7 @@ test( 'a shallower segment clamps every tier to fit', () => {
 function widths(): number[] {
     const out: number[] = [];
     for ( const seed of SEEDS ) {
-        const t = resolveTrack( procgenDescriptor( seed ) );
+        const t = resolveTrack( procgenDescriptor( seed, 'weave' ) );
         for ( let i = START_SAFE; i < TRACK_SEGMENTS; i++ ) {
             for ( const b of t.segmentAt( i ).blocks ) out.push( b.x1 - b.x0 );
         }

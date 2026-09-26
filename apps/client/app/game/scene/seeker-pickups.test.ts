@@ -11,7 +11,7 @@ function bounds( g: THREE.BufferGeometry ): THREE.Box3 {
 
 describe( 'splitPickupLayout', () => {
     it( 'puts every pickup in exactly one field, by its shared power', () => {
-        const layout = pickupsOf( resolveTrack( procgenDescriptor( 7 ) ) );
+        const layout = pickupsOf( resolveTrack( procgenDescriptor( 7, 'weave' ) ) );
         const { bolts, seekers, mines, boosts, shields } = splitPickupLayout( layout );
 
         expect( bolts.length + seekers.length + mines.length + boosts.length + shields.length ).toBe( layout.length );
