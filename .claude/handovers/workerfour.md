@@ -25,21 +25,21 @@ no `**` in the shared path, cached weave `segmentAt`, and resolve the SimConfig 
 
 ## Uncommitted
 
-`packages/shared/src/sim/block-depth.ts`, `packages/shared/src/constants.ts` (lines 218–223 only).
+`sim/block-depth.ts`, `constants.ts` (218–223), `sim/track-digest.test.ts` (new weave FROZEN), `pacing/pockets.test.ts`
+(phantom squeeze re-pinned 2459.7/2463.2; names now 2.6u / 3.6u / 3.5u). HEAD copy + these 4: 404/404 (measured).
 
 ## Held files
 
 `sim/block-depth.ts`, `sim/block-depth.test.ts`, `sim/track-digest.test.ts`, `constants.ts` 218–223.
-Requested: `pacing/pockets.test.ts`.
+`pacing/pockets.test.ts` (cleared by the supervisor).
 
 ## Next
 
-1. WAIT for the owner's OK (via the supervisor) and the pockets.test.ts claim.
-2. Re-pin the weave `FROZEN` values in `track-digest.test.ts`. Re-pin the phantom squeeze to 2459.7/2463.2
-   (and 2459.6/2463.3 as the fail edges), and rename the test to "3.5u". Run the suite on a HEAD copy.
+1. WAIT for the owner's OK (via the supervisor). The edits are already in the tree.
+2. Re-run the suite on a HEAD copy if HEAD moved.
 3. Commit by pathspec, push, then `gh issue close 276` with SHAs 888a682, e4485e7, f32a72c and the item-3
    SHA, plus a note that item 5 was fixed by 3b466ea.
-4. If the owner refuses: revert both files with `git restore -- <paths>` (they're my own edits).
+4. If the owner refuses: revert the 4 files with `git restore -- <paths>` (they're my own edits).
 
 ## Open questions
 
