@@ -1184,3 +1184,20 @@ merge removes most pockets it scanned).
 - ADR-006 *Fairness* says: *"gaps ≤ `GAP-REACH`, no two in a row."* On `'score'` tracks a `JJ` note is two adjacent hole segments (40u). So the rule does not hold by construction. This amendment replaces the earlier claim that it did.
 - Ruling (owner, via slur-supervisor): on `'score'` tracks only, two holes in a row are allowed when they are one `JJ` note. Three or more holes in a row are never allowed. `'weave'` tracks keep the ADR-006 rule.
 - Tests: `sim/track.test.ts` "weave: no two gaps in a row and none in start-safe" runs on `gen: 'weave'` only. `sim/track-gen.test.ts` "score: the only two gaps in a row are a JJ, never three, none in start-safe" runs on standard `'score'` tracks and on a test library with `JJ`. The standard motif library has no `JJ` today (0 of 200 seeds), so only the test library exercises the exemption.
+
+## ADR-021 — Grounded sci-fi audio: sampled engine, Freesound cues, Ogg Opus
+
+**Date:** 2026-09-26 · **Status:** Accepted (owner picks on #267, comment 5843537599; the five build answers approved via slur-supervisor) · **Supersedes:** `docs/AUDIO.md` §8 item 1 (Neon Laser Horizon, "the SFX layer is zero-attribution") and the synthesized engine hum · **Issue:** #267 (supersedes the cartoon direction of #260)
+
+### Decision
+
+1. **Direction.** Sounds are grounded sci-fi, not cartoon. CC0, CC-BY and CC-BY-SA are accepted. Every CC-BY/SA asset has a required-attribution block in `CREDITS.md` and `apps/client/public/audio/CREDITS.md`.
+2. **Format.** New cues ship as Ogg Opus (SFX mono 64 kbps, music stereo 96 kbps). Safari decodes Ogg Opus from 18.4 on ([WebKit Features in Safari 18.4](https://webkit.org/blog/16574/webkit-features-in-safari-18-4/)). The local ffmpeg has libopus and no libvorbis.
+3. **Engine.** One sampled loop (`hover_engine.ogg`, 6.0 s, seam crossfaded) replaces the oscillator hum for every class. Speed `v` in 0–1 drives rate = lerp(0.7, 1.4, v) × pitch, lowpass cutoff = lerp(600, 6000, v) × bright, gain = lerp(0.25, 0.6, v). Per-class `pitch`/`bright` live in client data (`app/audio/engine-voice.ts`), not in `@slur/shared`: interceptor 1.15/1.2, fighter 1.0/1.0, comet 1.08/1.1, phantom 0.95/0.7, freighter 0.78/0.8. Remote ships use the same loop through a `PositionalAudio` filter, with speed taken from their interpolated position.
+4. **Cues and hooks.** Bolt fire plays three shots round-robin. Seeker launch, lock (a loop, then a "locked" tone on `committed`), seeker hit and mine burst bind to room state and messages. Jump, double jump (rate 1.12), land (gain from fall speed), brake and pass-by come from a pure edge detector (`app/audio/movement-edges.ts`) that reads the local predicted `Sim` and the input sources without `currentInput()`, which bumps the input sequence. Boost is loaded but unbound until a boost mechanic exists (GDD §5.1).
+5. **Music.** The in-run track is Technodono's *Vector Racing* hard loop (CC-BY-SA 4.0). The lobby track is unchanged.
+
+### Consequences
+
+- The retired files are `laser_fire`, `hit_impact`, `boost`, `engine_loop` (Kenney) and `neon_laser_horizon.mp3`. The other Kenney cues stay until their events are chosen (16 events are open on #267).
+- Cuts come from the Freesound 128 kbps previews (#267 Q4 open). Cut points and gains are in the #267 thread and `CREDITS.md`.

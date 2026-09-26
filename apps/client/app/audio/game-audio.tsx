@@ -1,30 +1,37 @@
 import { useFrame, useThree } from '@react-three/fiber';
-import { tuningForShip } from '@slur/shared';
+import { classOfShip } from '@slur/shared';
 import { useWorld } from 'koota/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { LocalPlayer, Net, Sim } from '../game/ecs/traits';
+import { gamepadInput } from '../game/input/gamepad';
+import { keyboardInput } from '../game/input/keyboard';
+import { touchInput } from '../game/input/touch-state';
 import { useRoom } from '../net/room-context';
 import { isMuted, playMusic, setMuted, stopMusic } from './audio-engine';
 import { bindRoomAudio } from './bind-room-audio';
-import { setEngineSpeed, startEngineHum, stopEngineHum } from './engine-hum';
+import { setEngineSpeed, startEngineLoop, stopEngineLoop } from './engine-loop';
+import { createMoveEdges, type MoveTuning, stepMoveEdges } from './movement-edges';
 import { ensureListener } from './positional';
-import { MUSIC, preloadAudio } from './sfx-map';
+import { MUSIC, playSfx, preloadAudio } from './sfx-map';
+
+const tuning: MoveTuning = { maxCruise: 0, jumpImpulse: 0, heavy: false };
 
 export function GameAudio() {
     const room = useRoom();
     const world = useWorld();
     const camera = useThree( ( s ) => s.camera );
+    const edges = useRef( createMoveEdges() );
 
-    // JUSTIFIED EFFECT — syncs with external systems: the Web Audio engine (preload/hum) + the Colyseus room
+    // JUSTIFIED EFFECT — syncs with external systems: the Web Audio engine (preload/engine loop) + the Colyseus room
     useEffect( () => {
         ensureListener( camera );
-        startEngineHum();
+        startEngineLoop();
         const unbind = bindRoomAudio( room );
         playMusic( MUSIC.lobby.name );
         void preloadAudio().then( () => playMusic( MUSIC.lobby.name ) );
         return () => {
             unbind();
-            stopEngineHum();
+            stopEngineLoop();
             stopMusic();
         };
     }, [ room, camera ] );
@@ -40,8 +47,18 @@ export function GameAudio() {
 
     useFrame( () => {
         world.query( Sim, Net, LocalPlayer ).readEach( ( [ s, net ] ) => {
-            const max = tuningForShip( net.shipId ).maxCruise;
-            setEngineSpeed( max > 0 ? s.vz / max : 0 );
+            const cls = classOfShip( net.shipId );
+            const max = cls.tuning.maxCruise;
+            setEngineSpeed( max > 0 ? s.vz / max : 0, net.shipId );
+            const brake = Math.max( keyboardInput.brake, touchInput.brake, gamepadInput.brake );
+            tuning.maxCruise = max;
+            tuning.jumpImpulse = cls.tuning.jumpImpulse;
+            tuning.heavy = cls.id === 'freighter';
+            for ( const cue of stepMoveEdges( edges.current, s, brake, tuning ) ) {
+                if ( cue.sfx === 'brake' ) playSfx( 'brake' );
+                else if ( cue.sfx === 'jump' ) playSfx( 'jump', { rate: cue.rate } );
+                else playSfx( 'land', { gain: 0.9 * cue.gain, rate: cue.rate } );
+            }
         } );
     } );
 

@@ -1,43 +1,66 @@
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
+import { tuningForShip } from '@slur/shared';
 import type { Entity } from 'koota';
-import { useQuery } from 'koota/react';
+import { useQuery, useWorld } from 'koota/react';
 import { useEffect, useRef, useState } from 'react';
 import type * as THREE from 'three';
-import { Remote, Render } from '../game/ecs/traits';
-import { loadSample } from './audio-engine';
+import { Interp, LocalPlayer, Net, Remote, Render, Sim } from '../game/ecs/traits';
+import { getContext, loadSample } from './audio-engine';
+import { createEngineParams, engineParams, engineVoice } from './engine-voice';
+import { type PassFrame, passByEdge } from './movement-edges';
 import { attachPositionalLoop, detachPositional, ensureListener } from './positional';
+import { ENGINE_LOOP, playSfx } from './sfx-map';
 
-const LOOP_NAME = 'engineLoop';
-const LOOP_URL = '/audio/sfx/engine_loop.ogg';
+const SMOOTH_S = 0.08;
+const VZ_TAU_S = 0.15;
+const params = createEngineParams();
+const mine: PassFrame = { x: 0, z: 0, vz: 0 };
+const theirs: PassFrame = { x: 0, z: 0, vz: 0 };
 
-function syncEmitters( remotes: readonly Entity[], map: Map< number, THREE.PositionalAudio > ): void {
+interface Emitter {
+    audio: THREE.PositionalAudio;
+    filter: BiquadFilterNode;
+    z: number;
+    vz: number;
+    armed: boolean;
+}
+
+function syncEmitters( remotes: readonly Entity[], map: Map< number, Emitter > ): void {
     const present = new Set( remotes.map( ( e ) => e.id() ) );
-    for ( const [ id, audio ] of map ) {
+    for ( const [ id, em ] of map ) {
         if ( ! present.has( id ) ) {
-            detachPositional( audio );
+            detachPositional( em.audio );
             map.delete( id );
         }
     }
+    const ctx = getContext();
+    if ( ! ctx ) return;
     for ( const e of remotes ) {
         if ( map.has( e.id() ) ) continue;
         const grp = e.get( Render );
         if ( ! grp ) continue;
-        const audio = attachPositionalLoop( grp, LOOP_NAME, { volume: 0.32, refDistance: 12 } );
-        if ( audio ) map.set( e.id(), audio );
+        const audio = attachPositionalLoop( grp, ENGINE_LOOP.name, { volume: 0.32, refDistance: 12 } );
+        if ( ! audio ) continue;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.Q.value = 0.7;
+        audio.setFilter( filter );
+        map.set( e.id(), { audio, filter, z: grp.position.z, vz: 0, armed: true } );
     }
 }
 
 export function RemoteEngineAudio() {
+    const world = useWorld();
     const remotes = useQuery( Remote, Render );
     const camera = useThree( ( s ) => s.camera );
     const [ ready, setReady ] = useState( false );
-    const active = useRef( new Map< number, THREE.PositionalAudio >() );
+    const active = useRef( new Map< number, Emitter >() );
 
     // JUSTIFIED EFFECT — syncs with TWO external systems: the three.js object graph (parenting the shared
     useEffect( () => {
         let live = true;
         ensureListener( camera );
-        void loadSample( LOOP_NAME, LOOP_URL ).then( () => {
+        void loadSample( ENGINE_LOOP.name, ENGINE_LOOP.file ).then( () => {
             if ( live ) setReady( true );
         } );
         return () => {
@@ -54,10 +77,39 @@ export function RemoteEngineAudio() {
     useEffect( () => {
         const map = active.current;
         return () => {
-            for ( const audio of map.values() ) detachPositional( audio );
+            for ( const em of map.values() ) detachPositional( em.audio );
             map.clear();
         };
     }, [] );
+
+    useFrame( ( _s, dt ) => {
+        const map = active.current;
+        const ctx = getContext();
+        if ( map.size === 0 || ! ctx || dt <= 0 ) return;
+        const me = world.queryFirst( Sim, LocalPlayer )?.get( Sim );
+        const now = ctx.currentTime;
+        const k = 1 - Math.exp( -dt / VZ_TAU_S );
+        world.query( Remote, Render, Net, Interp ).readEach( ( [ grp, net, interp ], e ) => {
+            const em = map.get( e.id() );
+            if ( ! em ) return;
+            const max = tuningForShip( net.shipId ).maxCruise;
+            const raw = ( grp.position.z - em.z ) / dt;
+            em.z = grp.position.z;
+            em.vz += ( Math.min( Math.max( raw, -max ), 1.5 * max ) - em.vz ) * k;
+            const p = engineParams( max > 0 ? em.vz / max : 0, engineVoice( net.shipId ), params );
+            em.audio.setPlaybackRate( p.rate );
+            em.filter.frequency.setTargetAtTime( p.cutoff, now, SMOOTH_S );
+            const dead = interp.buffer[ interp.buffer.length - 1 ]?.dead ?? false;
+            if ( ! me || me.dead || dead ) return;
+            mine.x = me.x;
+            mine.z = me.z;
+            mine.vz = me.vz;
+            theirs.x = grp.position.x;
+            theirs.z = grp.position.z;
+            theirs.vz = em.vz;
+            if ( passByEdge( em, mine, theirs ) ) playSfx( 'passBy' );
+        } );
+    } );
 
     return null;
 }

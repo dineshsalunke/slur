@@ -1,21 +1,34 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { HeldPower, PHASE, type PlayerState, type ProjectileState, type RunState } from '@slur/shared';
+import {
+    HeldPower,
+    MINE_BURST_MESSAGE,
+    type MineEvent,
+    PHASE,
+    type PlayerState,
+    type ProjectileState,
+    type RunState,
+    SEEKER_HIT_MESSAGE,
+    type SeekerState,
+} from '@slur/shared';
 import { playMusic } from './audio-engine';
-import { MUSIC, playSfx } from './sfx-map';
+import { MUSIC, playBolt, playSfx, startSfxLoop, stopSfxLoop } from './sfx-map';
 
 const THREAT_Z = 90;
 const THREAT_X = 8;
+const MINE_FAR_GAIN = 0.6;
 
 export function bindRoomAudio( room: Room< RunState > ): () => void {
     const $ = getStateCallbacks( room );
     const me = room.sessionId;
     const perPlayer = new Map< string, () => void >();
     const perProjectile = new Map< string, () => void >();
+    const perSeeker = new Map< string, () => void >();
 
     const prevStun = new Map< string, number >();
     const prevSlots: number[] = [];
     const prevDead = new Map< string, boolean >();
     const threatened = new Set< string >();
+    const locked = new Set< string >();
 
     const slotEdge = ( power: number, slot: number ): void => {
         if ( ( prevSlots[ slot ] ?? HeldPower.none ) === HeldPower.none && power !== HeldPower.none ) {
@@ -76,7 +89,7 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
 
     const offProjAdd = $( room.state ).projectiles.onAdd( ( proj, id ) => {
         if ( proj.ownerId === me ) {
-            playSfx( 'fire' );
+            playBolt();
             return;
         }
         checkThreat( proj, id );
@@ -90,6 +103,46 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
         perProjectile.delete( id );
         threatened.delete( id );
     } );
+
+    const seekerKey = ( id: string ): string => `seeker:${ id }`;
+
+    const trackLock = ( s: SeekerState, id: string ): void => {
+        const key = seekerKey( id );
+        if ( s.targetId !== me ) {
+            stopSfxLoop( key );
+            locked.delete( id );
+            return;
+        }
+        if ( s.committed ) {
+            stopSfxLoop( key );
+            if ( ! locked.has( id ) ) {
+                locked.add( id );
+                playSfx( 'seekerLocked' );
+            }
+            return;
+        }
+        startSfxLoop( key, 'seekerLocking' );
+    };
+
+    const offSeekerAdd = $( room.state ).seekers.onAdd( ( s, id ) => {
+        if ( s.ownerId === me ) playSfx( 'seekerFire' );
+        trackLock( s, id );
+        perSeeker.set(
+            id,
+            $( s ).onChange( () => trackLock( s, id ) ),
+        );
+    } );
+    const offSeekerRemove = $( room.state ).seekers.onRemove( ( _s, id ) => {
+        perSeeker.get( id )?.();
+        perSeeker.delete( id );
+        stopSfxLoop( seekerKey( id ) );
+        locked.delete( id );
+    } );
+
+    const offSeekerHit = room.onMessage( SEEKER_HIT_MESSAGE, () => playSfx( 'seekerHit' ) );
+    const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) =>
+        playSfx( 'mineBurst', e.outcome === 'trigger' ? {} : { gain: 0.85 * MINE_FAR_GAIN } ),
+    );
 
     let prevPhase = room.state.phase;
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
@@ -110,11 +163,20 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
         offRemove();
         offProjAdd();
         offProjRemove();
+        offSeekerAdd();
+        offSeekerRemove();
+        offSeekerHit();
+        offMineBurst();
         offPhase();
         offCd();
         for ( const off of perPlayer.values() ) off();
         for ( const off of perProjectile.values() ) off();
+        for ( const [ id, off ] of perSeeker ) {
+            off();
+            stopSfxLoop( seekerKey( id ) );
+        }
         perPlayer.clear();
         perProjectile.clear();
+        perSeeker.clear();
     };
 }

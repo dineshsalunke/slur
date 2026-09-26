@@ -1,9 +1,11 @@
 # SLUR — Audio / Sound Design Document
 
-> Status: **v0 draft** → **IMPLEMENTED (S6, 2026-08-10)**. Subsystem built: `apps/client/app/audio/**` —
-> singleton engine (context/buses/limiter/voice-pool OUTSIDE React), synthesized engine hum (pitch∝speed),
-> 15 Kenney CC0 SFX + CC-BY MacLeod / Cynic CC0 music, bound to S5 events + positional remote hum, `M`=mute.
-> Credits: `apps/client/public/audio/CREDITS.md`. `RemoteEngineAudio` built but not yet hear-verified (feel-gate).
+> Status: **IMPLEMENTED (S6, 2026-08-10)**, re-sourced as grounded sci-fi (**#267, ADR-021, 2026-09-26**).
+> Subsystem: `apps/client/app/audio/**`. Singleton engine (context/buses/limiter/voice-pool OUTSIDE React).
+> A sampled engine loop (`hover_engine.ogg`) with per-class pitch/brightness (`engine-voice.ts`), local and
+> positional-remote. Freesound cues for bolt, hit, seeker, mine, jump, land, brake and pass-by. Kenney CC0
+> for the UI and the still-unchosen events. Music: Technodono *Vector Racing* (CC-BY-SA) in-run, Cynic CC0
+> lobby. `M` = mute. Credits: `CREDITS.md` and `apps/client/public/audio/CREDITS.md`.
 
 ## 1. Audio pillar
 
@@ -33,7 +35,7 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 
 | Event | Sound | Notes |
 |-------|-------|-------|
-| Engine | Continuous synth hum, **pitch ∝ speed** | The core "speed you can hear" cue |
+| Engine | Sampled hover loop; **rate, lowpass and level ∝ speed**; pitch/brightness per class | The core "speed you can hear" cue (ADR-021 §3) |
 | Boost | Rising whoosh + bass drop | Physical, brief, punchy |
 | Pickup collect | Bright confirm chime, category-tinted | Ties to the pickup color-code |
 | Fire (bolt) | Zappy laser transient | Directional |
@@ -66,14 +68,14 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 Dynamic adaptive music engine, voice-over/announcer (maybe later — a cool TRON-style "system" announcer would be *chef's kiss*), per-surface footstep-style detail.
 
 ## 8. OPEN QUESTIONS → RESOLVED (2026-08-10)
-1. **Music sourcing** — **CC-BY accepted:** in-run = Kevin MacLeod *"Neon Laser Horizon"* (CC-BY, one credit
-   line); lobby idle = The Cynic Project *"Calm Ambient 1/2"* (CC0). SFX backbone = **Kenney CC0** packs
-   (Sci-Fi / Interface / Digital / Impact) + a few Freesound CC0 one-shots → the SFX layer is zero-attribution.
+1. **Music sourcing** — **CC-BY and CC-BY-SA accepted** (#267). In-run = Technodono *"Vector Racing"* hard
+   loop (CC-BY-SA 4.0). Lobby idle = The Cynic Project *"Calm Ambient 1"* (CC0). Flight and combat SFX =
+   Freesound picks (CC0 + three CC-BY); UI = Kenney CC0. See ADR-021, which supersedes the 2026-08-10
+   choice (Kevin MacLeod *"Neon Laser Horizon"*, a zero-attribution SFX layer, a synthesized engine hum).
 2. **Layered stems vs single loop** — **single loop first** (add intensity layers later only if it feels flat).
 3. **Audio tech** — **three.js `PositionalAudio` only for v1** (no Howler); revisit only if bus/ducking needs it.
 4. **Announcer** — **SFX-only for v1** (a TRON-style "system" voice is a maybe-later, per §7 non-goals).
 5. **Threat telegraph timing** — still a **feel-gate** tune (start ~0.6–0.8 s lead; adjust in playtest).
 
 *Asset shortlist + exact licenses live in `.claude/phases/2026-08-10-s6-identity.md` (audio sourcing block) →
-folded into a `CREDITS.md` at Implement. Engine hum is **synthesized** (no asset). The two aiff picks must be
-transcoded — `decodeAudioData` needs mp3/ogg/wav.*
+folded into a `CREDITS.md` at Implement. New cues ship as **Ogg Opus** (ADR-021 §2).*
