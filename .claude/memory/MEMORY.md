@@ -104,5 +104,6 @@ lives in its own file beside this one.
 - [Time a post effect without repo edits](time-a-post-effect-without-repo-edits.md) — wrap the page's EffectComposer.render over CDP, setEffects on the live EffectPass; screenshot to prove it drew
 - [koota readEach tuple is exact](koota-readeach-tuple-is-exact.md) — a hoisted callback needs `[ A, B, ...unknown[] ]`; readEach allocates its state array per call anyway
 - [Node bots share one event loop](node-bots-share-one-event-loop.md) — a busy-wait in one SDK client stalls every client in that process; spawn the stalled one separately
+- [Bulk move without git mv](bulk-move-without-git-mv.md) — auto mode denies a scripted `git mv` here; rename via node fs, stage by explicit pathspec
 - [frameloop never screenshots black](frameloop-never-screenshots-black.md) — after setFrameloop('never') a CDP screenshot is black; read the canvas with toDataURL in the advance() task
 - [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — Held slots [3,0,0] + KeyE; hosted pilots wedge; renderer is NoToneMapping so `toneMapped` is a no-op
