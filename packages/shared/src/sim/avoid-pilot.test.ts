@@ -14,6 +14,7 @@ const DELAY_TICKS = 12;
 const REPLAN_TICKS = 3;
 const HOLE_SCAN = 200;
 const COMMIT = 0.5;
+const RAY_STRAFE = 0.7;
 
 export function cached( track: Track ): Track {
     const memo = new Map< number, Segment >();
@@ -167,6 +168,31 @@ export function avoidPilot( track: Track, t: FlightTuning ): Steer {
         while ( k <= kN && inRuns( free( k ), x ) ) k++;
         return k - k0;
     };
+    const path = ( x0: number, x: number, vz: number ): { hold: number; travel: number } => {
+        const slicesPerSecond = Math.max( vz, 1 ) / SLICE;
+        return {
+            hold: Math.floor( DELAY_TICKS * FIXED_DT * slicesPerSecond ),
+            travel: Math.floor( ( Math.abs( x - x0 ) / ( t.strafeClamp * RAY_STRAFE ) ) * slicesPerSecond ),
+        };
+    };
+    const sidestep = ( x0: number, x: number, k0: number, vz: number ): boolean => {
+        const { hold, travel } = path( x0, x, vz );
+        const steps = Math.ceil( Math.abs( x - x0 ) / 0.5 );
+        for ( let i = 1; i <= steps; i++ ) {
+            const z = ( k0 + hold + ( i * travel ) / steps ) * SLICE;
+            const px = x0 + ( ( x - x0 ) * i ) / steps;
+            if ( ! floorAt( track, px, z ) || ! inRuns( openRunsAtSlice( track.segmentAtZ( z ), z ), px ) )
+                return false;
+        }
+        return true;
+    };
+    const reachable = ( x0: number, x: number, k0: number, vz: number ): boolean => {
+        const { hold, travel } = path( x0, x, vz );
+        for ( let j = 1; j <= hold; j++ ) if ( ! inRuns( free( k0 + j ), x0 ) ) return false;
+        for ( let i = 1; i <= travel + 1; i++ )
+            if ( ! inRuns( free( k0 + hold + i - 1 ), x0 + ( ( x - x0 ) * i ) / ( travel + 1 ) ) ) return false;
+        return sidestep( x0, x, k0, vz );
+    };
     const queue: [ number, number ][] = [];
     let target = 0;
     let chosen = 0;
@@ -175,16 +201,15 @@ export function avoidPilot( track: Track, t: FlightTuning ): Steer {
         const k0 = Math.floor( s.z / SLICE );
         const kN = Math.ceil( ( s.z + Math.max( s.vz, 20 ) * 1.2 + 20 ) / SLICE );
         if ( tick % REPLAN_TICKS === 0 && ! s.dead ) {
-            let best = s.x;
-            let bestKey = Number.NEGATIVE_INFINITY;
+            const ranked: [ number, number ][] = [];
             for ( let x = -HALF_WIDTH; x <= HALF_WIDTH; x += 0.5 ) {
                 const reach = Math.abs( x - s.x ) + COMMIT * Math.abs( x - chosen );
-                const key = Math.min( clearFrom( x, k0, kN ), kN - k0 + 1 ) * 1000 - reach;
-                if ( key > bestKey ) {
-                    bestKey = key;
-                    best = x;
-                }
+                ranked.push( [ Math.min( clearFrom( x, k0, kN ), kN - k0 + 1 ) * 1000 - reach, x ] );
             }
+            ranked.sort( ( a, b ) => b[ 0 ] - a[ 0 ] );
+            const best = ( ranked.find( ( [ , x ] ) => reachable( s.x, x, k0, s.vz ) ) ??
+                ranked.find( ( [ , x ] ) => sidestep( s.x, x, k0, s.vz ) ) ??
+                ranked[ 0 ] )[ 1 ];
             chosen = best;
             queue.push( [ tick + DELAY_TICKS, best ] );
             clearHere = clearFrom( s.x, k0, kN ) * SLICE;

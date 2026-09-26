@@ -3,10 +3,11 @@ import type { MotifNote } from '../score/notes.js';
 import { SEG_LEN, START_SAFE } from '../space.js';
 import { centredStart, motifPhraseLen, snapCell } from './motif-emit.js';
 import { drawVocabulary, type SectionMotif, type TwistKind } from './vocabulary.js';
+import { rollWeave, type WeaveSpec } from './weave-emit.js';
 
 export type PhraseRole = 'open' | 'teach' | 'repeat' | 'set' | 'weave' | 'twist' | 'rest' | 'finish';
 
-export type PhraseKind = 'arena' | 'motif' | 'rest';
+export type PhraseKind = 'arena' | 'motif' | 'weave' | 'rest';
 
 export interface Phrase {
     role: PhraseRole;
@@ -19,6 +20,7 @@ export interface Phrase {
     x0: number;
     motif: string | null;
     twist: TwistKind | null;
+    weave: WeaveSpec | null;
 }
 
 export interface PhrasePlan {
@@ -36,7 +38,7 @@ export const PHRASE_ROLE_KIND: Readonly< Record< PhraseRole, PhraseKind > > = {
     teach: 'motif',
     repeat: 'motif',
     set: 'arena',
-    weave: 'motif',
+    weave: 'weave',
     twist: 'motif',
     rest: 'rest',
     finish: 'arena',
@@ -103,7 +105,31 @@ function phraseNotes( role: PhraseRole, m: SectionMotif ): MotifNote[] | null {
     return null;
 }
 
-function sectionPhrases( k: number, sections: number, m: SectionMotif, z0: number, z1: number ): Phrase[] {
+function rolePhrase( seed: number, role: PhraseRole, m: SectionMotif, act: GrooveBand, k: number ): Phrase {
+    const notes = phraseNotes( role, m );
+    return {
+        role,
+        kind: PHRASE_ROLE_KIND[ role ],
+        act,
+        section: k,
+        z0: 0,
+        z1: 0,
+        notes,
+        x0: notes === null ? 0 : centredStart( notes ),
+        motif: notes === null ? null : m.motif.id,
+        twist: role === 'twist' ? m.twistKind : null,
+        weave: role === 'weave' ? rollWeave( seed, act, k ) : null,
+    };
+}
+
+function sectionPhrases(
+    seed: number,
+    k: number,
+    sections: number,
+    m: SectionMotif,
+    z0: number,
+    z1: number,
+): Phrase[] {
     const lens = roleLengths( m );
     const slack = Math.max( 0, z1 - z0 - sectionMinLen( m ) );
     lens.weave += Math.min( slack, PHRASE_WEAVE_MAX - PHRASE_WEAVE_MIN );
@@ -113,20 +139,7 @@ function sectionPhrases( k: number, sections: number, m: SectionMotif, z0: numbe
     let z = z0;
     for ( const role of PHRASE_SECTION ) {
         const end = Math.min( z1, snapCell( z + lens[ role ] ) );
-        const notes = phraseNotes( role, m );
-        if ( end > z )
-            out.push( {
-                role,
-                kind: PHRASE_ROLE_KIND[ role ],
-                act,
-                section: k,
-                z0: z,
-                z1: end,
-                notes,
-                x0: notes === null ? 0 : centredStart( notes ),
-                motif: notes === null ? null : m.motif.id,
-                twist: role === 'twist' ? m.twistKind : null,
-            } );
+        if ( end > z ) out.push( { ...rolePhrase( seed, role, m, act, k ), z0: z, z1: end } );
         z = Math.max( z, end );
     }
     const last = out[ out.length - 1 ];
@@ -147,7 +160,7 @@ export function planPhrases( seed: number, length: number ): PhrasePlan {
     for ( let k = 0; k < sections; k++ ) {
         before += mins[ k ];
         const end = k === sections - 1 ? finish : snapCell( start + ( before * ( finish - start ) ) / total );
-        phrases.push( ...sectionPhrases( k, sections, vocabulary[ k ], z, Math.max( z, end ) ) );
+        phrases.push( ...sectionPhrases( seed, k, sections, vocabulary[ k ], z, Math.max( z, end ) ) );
         z = Math.max( z, end );
     }
     const end = length * SEG_LEN;
@@ -163,6 +176,7 @@ export function planPhrases( seed: number, length: number ): PhrasePlan {
             x0: 0,
             motif: null,
             twist: null,
+            weave: null,
         } );
     return { seed, length, sections, vocabulary, phrases };
 }

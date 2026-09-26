@@ -3,15 +3,17 @@ import { test } from 'node:test';
 import { CELL, type FlightTuning, SCORE_ADHERENCE_FLOOR } from '../../constants.js';
 import { analyzeTrack } from '../../pacing/analyze.js';
 import { freezeTrack } from '../../pacing/grid.js';
-import { rosterPockets } from '../../pacing/pockets.js';
+import { type PacingPocket, rosterPockets } from '../../pacing/pockets.js';
 import { type ScoreNote, scoreAdherence } from '../../pacing/score.js';
 import { SHIP_CLASSES } from '../../ship-classes.js';
 import { avoidPilot, cached, fly, type Steer } from '../avoid-pilot.test.js';
-import { SEG_LEN, TRACK_GEN_SEGMENTS, type Track } from '../space.js';
+import type { GrooveObstacle } from '../groove/islands.js';
+import { HALF_WIDTH, SEG_LEN, TRACK_GEN_SEGMENTS, type Track } from '../space.js';
 import { procgenDescriptor, resolveTrack } from '../track-provider.js';
 import { phraseOpenFailures, phraseOpenSpace } from './open-space.js';
 import { buildPhrase, phraseTrack } from './phrase-track.js';
 import { PHRASE_SECTION, phraseStartZ, planPhrases } from './plan.js';
+import { phraseWeaves, weaveTarget } from './weave.test.js';
 
 const SEEDS = Array.from( { length: 30 }, ( _, k ) => k + 1 );
 const FLIGHT_SEEDS = [ 1, 2, 3, 4, 5, 17 ];
@@ -38,12 +40,15 @@ function motifLinePilot( seed: number, track: Track, t: FlightTuning ): Steer {
         ...motifs.map( ( p ) => ( { z: p.z0, to: p.x0 } ) ),
         ...notes.map( ( n ) => ( { z: n.z, to: n.to } ) ),
     ].sort( ( a, b ) => a.z - b.z );
+    const weaves = phraseWeaves( seed );
     const avoid = avoidPilot( track, t );
     let next = 0;
     let target = 0;
     return ( tick, s ) => {
         const off = avoid( tick, s );
         while ( next < marks.length && s.z - t.halfL >= marks[ next ].z ) target = marks[ next++ ].to;
+        const band = weaveTarget( weaves, s.x, s.z, s.vz, t.halfL );
+        if ( band !== null ) return { target: band, jump: false, brake: false };
         const on = motifs.some( ( p ) => s.z + t.halfL >= p.z0 && s.z - t.halfL < p.z1 );
         return on ? { target, jump: false, brake: false } : off;
     };
@@ -120,20 +125,22 @@ test( 'a run teaches one motif per section, repeats it exactly, and twists it on
     }
 } );
 
-test( 'obstacles sit only inside motif phrases, and every motif phrase has moves', () => {
+test( 'obstacles sit only inside motif and weave phrases, and every one of those has content', () => {
     for ( const seed of SEEDS.slice( 0, 10 ) ) {
-        const { plan, line, notes, obstacles } = buildPhrase( seed );
-        const open = plan.phrases.filter( ( p ) => p.kind !== 'motif' );
+        const { plan, notes, obstacles } = buildPhrase( seed );
+        const open = plan.phrases.filter( ( p ) => p.kind === 'arena' || p.kind === 'rest' );
         for ( const o of obstacles )
             assert.ok( ! open.some( ( p ) => o.z0 < p.z1 && p.z0 < o.z1 ), `seed ${ seed }: obstacle at ${ o.z0 }` );
         plan.phrases.forEach( ( p, k ) => {
-            if ( p.kind !== 'motif' ) return;
-            const moves =
-                p.notes === null
-                    ? line.events.some( ( e ) => e.z >= p.z0 && e.z < p.z1 )
-                    : notes.filter( ( n ) => n.phrase === k ).length ===
-                      p.notes.filter( ( n ) => n.kind !== 'rest' ).length;
-            assert.ok( moves, `seed ${ seed }: ${ p.role } at ${ p.z0 }` );
+            const at = `seed ${ seed }: ${ p.role } at ${ p.z0 }`;
+            if ( p.kind === 'weave' )
+                assert.ok(
+                    obstacles.some( ( o ) => o.z0 >= p.z0 && o.z1 <= p.z1 ),
+                    at,
+                );
+            if ( p.kind !== 'motif' || p.notes === null ) return;
+            const played = notes.filter( ( n ) => n.phrase === k ).length;
+            assert.equal( played, p.notes.filter( ( n ) => n.kind !== 'rest' ).length, at );
         } );
     }
 } );
@@ -147,9 +154,16 @@ test( 'seeds 1–30 meet every open-space target, and every arena is fully open'
     }
 } );
 
-test( 'no roster pocket on phrase seeds', () => {
+function overDividerHole( obstacles: readonly GrooveObstacle[] ): ( p: PacingPocket ) => boolean {
+    const strips = obstacles.filter( ( o ) => o.kind === 'hole' && o.x1 - o.x0 < 2 * HALF_WIDTH );
+    return ( p ) => strips.some( ( h ) => h.z0 <= p.k0 && p.k1 <= h.z1 && h.x0 <= p.x0 && p.x1 <= h.x1 );
+}
+
+test( 'no roster pocket on phrase seeds, except the fall zone over a weave hole divider', () => {
     for ( const seed of SEEDS.slice( 0, 10 ) ) {
-        assert.deepEqual( rosterPockets( freezeTrack( phraseTrack( seed ) ) ), [], `seed ${ seed }` );
+        const fall = overDividerHole( buildPhrase( seed ).obstacles );
+        const pockets = rosterPockets( freezeTrack( phraseTrack( seed ) ) ).filter( ( p ) => ! fall( p ) );
+        assert.deepEqual( pockets, [], `seed ${ seed }` );
     }
 } );
 
