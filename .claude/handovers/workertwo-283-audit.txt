@@ -1,0 +1,94 @@
+audio/game-audio.tsx (1): tuning
+audio/remote-engine-audio.tsx (6): SMOOTH_S, VZ_TAU_S, params = createEngineParams(, mine, theirs, fn syncEmitters
+dev/tuning-panel-mount.tsx (1): TuningPanel
+dev/tuning-panel.tsx (3): fn numberControl, fn colorControl, fn skyControls
+game/hud/power-cell.tsx (1): LABEL
+game/hud/power-gem.tsx (5): fn starPoints, MINE_STAR = starPoints(, SHIELD_HEX = starPoints(, BOOST_LEAD, BOOST_TRAIL
+game/hud/power-rack.tsx (1): SLOTS = Array.from(
+game/hud/touch-button.tsx (3): BASE, lift, noMenu
+game/net-debug-hud.tsx (4): KIND, SAMPLE_MS, fn playerLines, fn localShipLines
+game/net-loop.tsx (2): fn stepFinishCurtain, fn updateFinishCamera
+game/overlays/lobby-ship-picker.tsx (1): fn stepShip
+game/overlays/mount-overlays.tsx (5): let root, fn mountOverlays, fn unmountOverlays, fn pressEnter, let host
+game/overlays/race-again.tsx (1): HOST_HINTS
+game/overlays/roster.tsx (1): TAG
+game/overlays/standing-row.tsx (1): TAG
+game/overlays/start-control.tsx (3): SHIP_HINT, HOST_HINTS, GUEST_HINTS
+game/overlays/threat-hud.tsx (9): VIGNETTE_RAMP_Z, THREAT_Z, MIN_THREAT_WINDOW_S, THREAT_X, CENTER_X, VIGNETTE_MAX, VIGNETTE_FALLOFF, fn threatTick, fn vignetteOpacity
+game/scene/asteroid-band.tsx (5): SPIN_RANGE, SPIN_REFERENCE_SIZE, _o = new THREE.Object3D, fn writeSpin, SPIN_FLOOR
+game/scene/back-fill.tsx (1): FILL_DISTANCE
+game/scene/block-burst.tsx (8): SLOTS, pending, _o = new THREE.Object3D, _c = new THREE.Color, CORE = new THREE.Color, GEOMETRY = new THREE.IcosahedronGeometry, fn queueBurst, fn draw
+game/scene/block-debris.tsx (31): _zero = new THREE.Matrix4, fn advance, SLOTS, LIFE, LIGHT_MIN, LIGHT_MAX, LIFT, SPARK_SLAM, SMASH_SHAKE, BOLT_SHAKE, BOLT_SHAKE_REACH, THUD_SLAM, THUD_SHAKE, THUD_REACH, _one = new THREE.Vector3, _size = new THREE.Vector3, _centre = new THREE.Vector3, _offset = new THREE.Vector3, _half = new THREE.Vector3, _shrink = new THREE.Vector3, _point = new THREE.Vector3, _away = new THREE.Vector3, _tick = makeTick(, fn buildDebris, fn free, fn rnd, fn launch, fn spawn, fn mend, fn advanceSlot, _m = new THREE.Matrix4
+game/scene/bolt-pickups.tsx (1): fn buildBoltBody
+game/scene/bolt-streaks.tsx (3): fn buildLook, _black = new THREE.Color, _o = new THREE.Object3D
+game/scene/boost-pickups.tsx (1): fn buildBoostPickup
+game/scene/boost-streaks.tsx (14): MAX_SHIPS, PER_SHIP, MAX_STREAKS, AFTER_RENDER_SYNC, SIDES, _ship = new THREE.Matrix4, _local = new THREE.Matrix4, _instance = new THREE.Matrix4, _offset = new THREE.Vector3, _scale = new THREE.Vector3, _identity = new THREE.Quaternion, fn boostTimerOf, fn boostLevel, fn writeShip
+game/scene/deep-space-sky.tsx (2): STARS_RENDER_ORDER, fn behindEverything
+game/scene/engine-light.tsx (1): AFTER_RENDER_SYNC
+game/scene/exhaust-field.tsx (9): fn writeShip, MAX_SHIPS, MAX_PLUMES, SPREAD_AT_IDLE, AFTER_RENDER_SYNC, _ship = new THREE.Matrix4, _port = new THREE.Matrix4, _instance = new THREE.Matrix4, fn syncPalette
+game/scene/explosions.tsx (21): PER_BURST, _o = new THREE.Object3D, fn park, fn initPool, fn detectDeaths, fn advanceShards, _c = new THREE.Color, LOCAL_CORE = new THREE.Color, REMOTE_CORE = new THREE.Color, MARIGOLD = new THREE.Color, fn makePool, fn spawnBurst, MAX, BRIGHT, LIFE_MIN, LIFE_MAX, SPEED, UP_BIAS, DRAG, GRAV, SIZE
+game/scene/finish-gate.tsx (8): BAND_WIDTH, BAND_PROUD, CORE_WIDTH, CORE_PROUD, GLOW_INTENSITY, TILE_ROWS, TILE_HEIGHT, fn finishTiles
+game/scene/finish-outline.tsx (2): scratch = new THREE.Object3D, STRIP_GEOMETRY = new THREE.BoxGeometry
+game/scene/gradient-dome.tsx (1): fn makeGradientTexture
+game/scene/hit-spark.tsx (23): BRIGHT, fn placeStreak, MAX, fn advanceSparks, LIFE_MIN, LIFE_MAX, SPEED, UP_BIAS, DRAG, GRAV, WIDTH, STREAK_S, _o = new THREE.Object3D, _c = new THREE.Color, _dir = new THREE.Vector3, FORWARD = new THREE.Vector3, ENERGY_CORE = new THREE.Color, SPARK = new THREE.Color, fn makePool, fn spawnBurst, fn park, fn initPool, PER_BURST
+game/scene/meteor-chunks.tsx (18): LIMIT, SPARK_SLAM, HEAT_SHARE, CHUNK_SEED, CHUNK_DETAIL, BASE_COUNT, COUNT_PER_SIZE, pending, fn queueChunks, _m = new THREE.Matrix4, _zero = new THREE.Matrix4, _tick = makeTick(, fn launch, fn spawnPending, QUEUE, LIFE, CARRY, HULL_SHRINK
+game/scene/meteor-scorch.tsx (17): LIFT, _c = new THREE.Color, EMBER_END, FLASH_SHARE, FLICKER, fn place, fn emberColor, CORE = new THREE.Color, fn flatPlane, fn stamp, LIMIT, QUEUE, SPREAD, _o = new THREE.Object3D, FLASH, fn queueScorch, pending
+game/scene/meteor-strikes.tsx (41): fn makeFlight, fn flash, FLIGHTS, HEAD_SEED, HEAD_DETAIL, TRAIL_SECONDS, TRAIL_WIDTH, TRAIL_GAIN, GLOW_GAIN, COLLAPSE, MIN_LEAD, MIN_SPEED, PIT_DEPTH, SCAN, SHAKE_REACH, SHAKE_SIZE, LIGHT_DISTANCE, LIGHT_GAIN, LIGHT_DECAY, LIGHT_END, BURST_SIZE, SPARK_BURSTS, UP = new THREE.Vector3, CORE = new THREE.Color, _p = new THREE.Vector3, _dir = new THREE.Vector3, _q = new THREE.Quaternion, _s = new THREE.Vector3, _m = new THREE.Matrix4, _c = new THREE.Color, _zero = new THREE.Matrix4, fn makeDirector, fn isPit, fn launch, fn schedule, fn land, fn advance, fn hide, fn draw, fn commit, GLOW_SIZE
+game/scene/mine-bodies.tsx (8): HOT = new THREE.Color, MIN_SCALE, fn glowMaterial, fn buildLook, fn phaseOf, fn place, _o = new THREE.Object3D, _c = new THREE.Color
+game/scene/mine-pickups.tsx (1): fn buildMinePickup
+game/scene/mine-shock.tsx (10): BRIGHT, fn buildLook, LIFT, MAX, LIFE_S, BIG_R, SMALL_R, fn spawn, _c = new THREE.Color, _o = new THREE.Object3D
+game/scene/monolith-frames.tsx (1): NO_SEAMS
+game/scene/monolith-group.tsx (3): scratch = new THREE.Object3D, SEAM_GEOMETRY = monolithGeometry(, fn fill
+game/scene/near-fill.tsx (1): forward = new THREE.Vector3
+game/scene/pickup-instances.tsx (8): fn markUploaded, _o = new THREE.Object3D, _pool = new THREE.Object3D, _pose, TAU, fn buildPool, fn advanceLife, fn writeInstance
+game/scene/projectile-field.tsx (2): _pos, fn sampleAt
+game/scene/rear-view-panel.tsx (1): TOP_MARGIN
+game/scene/rear-view-pass.tsx (5): REAR_FAR, REAR_SAMPLES, PASS_PRIORITY, HUD_PRIORITY, REAR_NEAR
+game/scene/rock-field.tsx (2): ROCK_TEXTURES, fn rockMaterial
+game/scene/scene-effects.tsx (3): AUTO_MSAA_SAMPLES, fn msaaSamples, AUTO_MSAA_MAX_DPR
+game/scene/seeker-bodies.tsx (10): MAX_SEGMENTS, HOT = new THREE.Color, FORWARD = new THREE.Vector3, _o = new THREE.Object3D, _dir = new THREE.Vector3, _c = new THREE.Color, _black = new THREE.Color, fn buildLook, fn writeSegment, fn writeTrail
+game/scene/seeker-pickups.tsx (5): fn bucketOf, fn splitPickupLayout, fn seekerParts, fn buildSeekerBody, fn buildSeekerPickup
+game/scene/shield-dome.tsx (1): DOME = shieldDomeGeometry(
+game/scene/shield-pickups.tsx (1): fn buildShieldPickup
+game/scene/ship-model.tsx (16): DISSOLVE_EDGE_INTENSITY, fn isDead, DISSOLVE_DURATION, DISSOLVE_NOISE_SCALE, DISSOLVE_EDGE_WIDTH, DISSOLVE_FRAG_HEAD, DISSOLVE_DISCARD, DISSOLVE_EDGE, HULL_PROJECTION, hullTexSpan, fn patchDissolve, fn hullMaterial, fn dressHulls, fn collectSurfaces, glow, fn driveEngines
+game/scene/ship-shadow.tsx (4): fn isDead, VERTEX, FRAGMENT, fn floorBelow
+game/scene/track-blocks.tsx (10): BLOCK_LIMIT, FRACTURED_LIMIT, variations = new Map, fn variationFor, _m = new THREE.Matrix4, fn writeVariation, fn emitSealed, fn emitFractured, fn emitSegment, fn fracturedAttributes
+game/scene/track-floor.tsx (9): fn segmentCount, fn buildFloorGeometry, FLOOR_TOP_GROUP, FLOOR_SIDE_GROUP, buffers, isOffGrid, fn emitSpan, fn packFloor, fn buildSpanGeometry
+game/scene/track-rail.tsx (1): fn buildRailGeometry
+game/scene/track-rim.tsx (16): fn capCords, CORD_RADIUS, CORD_SEGMENTS, CORD_INTENSITY, CORD_DEPTH_BIAS, fn floorAt, fn openRuns, fn sideCords, fn buildCords, _m = new THREE.Matrix4, _q = new THREE.Quaternion, _pos = new THREE.Vector3, _scale = new THREE.Vector3, ALONG_Z = new THREE.Euler, ALONG_X = new THREE.Euler, fn buildCordMesh
+lobby/room-list.tsx (1): PHASE_VIEW
+net/room-context.tsx (2): RoomContext = createContext, fn useRoom
+routes/beat-deck/deck-loop.tsx (3): fn restartDeckRun, fn deckFinished, fn applyShipChoice
+routes/beat-deck/deck-status.tsx (1): HINT
+routes/beat-deck/song-picker.tsx (1): BUSY = new Set
+routes/home/call-sign-field.tsx (1): NAME_KEY
+routes/home/landing-rig.tsx (6): LOOK_AHEAD, CRUISE, CAMERA_BACK, CAMERA_HEIGHT, LOOK_HEIGHT, PORTRAIT_LOOK_HEIGHT
+routes/home/landing-scene.tsx (3): BACKDROP, LOOP_MARGIN, track = resolveTrack(
+routes/home/landing-ship.tsx (9): AHEAD, PORTRAIT_AHEAD, LANE_X, WIDE_ASPECT, REST_Y, BOB_AMP, BOB_HZ, IDLE_BANK, TWO_PI
+routes/home/menu-strip.tsx (1): HINTS
+routes/pacing/fork-arm-row.tsx (3): LEAD_S, CELL, fn scrollToFork
+routes/pacing/fork-lane.tsx (1): fn placeAt
+routes/pacing/fork-table.tsx (2): HEAD, fn armRows
+routes/pacing/gap-plot.tsx (2): WINDOW_MAX_S, MARK_S
+routes/pacing/intensity-plot.tsx (1): fn steps
+routes/pacing/lateral-bars.tsx (1): BAR_GAP_S
+routes/pacing/note-row.tsx (4): MIN_NOTE_S, REGISTER_BAR, VOICE_CLASS, fn noteClass
+routes/pacing/notes-lane.tsx (2): ROW, ROW_GAP
+routes/pacing/pacing-board.tsx (1): fn initScale
+routes/pacing/pacing-strip.tsx (2): fn airRuns, LEGEND
+routes/pacing/quiet-plot.tsx (4): QUIET_MAX_S, BAR_GAP_S, fn quietClass, fn spacingSteps
+routes/pacing/route.tsx (2): DEFAULT_SEED, fn parseSeed
+routes/pacing/seed-form.tsx (1): LINK
+routes/pacing/zoom-controls.tsx (4): GUTTER_PX, BUTTON, fn currentPps, fn applyPps
+routes/test-level/local-bolt-field.tsx (1): fn collect
+routes/test-level/local-loop.tsx (2): fn localFinished, fn restartTestRun
+routes/test-level/local-mine-field.tsx (2): fn collect, SETTLED
+routes/test-level/local-pickup-field.tsx (1): fn isTaken
+routes/test-level/local-seeker-field.tsx (2): trails = new Map, fn collect
+routes/test-level/route.tsx (1): DEFAULT_GEN
+routes/test-level/test-level-canvas.tsx (5): TEST_LEVEL_SEED, TEST_LEVEL_SEGMENTS, TEST_LEVEL_BLOCK_DENSITY, TEST_LEVEL_GAP_CHANCE, fn testLevelDescriptor
+ship/ship-stepper.tsx (1): STEP
+ui/field-label.tsx (1): LABEL
+ui/hud-button.tsx (1): VARIANT
+ui/hud-panel.tsx (1): ACCENT
+ui/tag.tsx (1): VARIANT
