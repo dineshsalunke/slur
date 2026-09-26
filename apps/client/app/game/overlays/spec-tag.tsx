@@ -1,4 +1,5 @@
 import { SHIP_CLASSES, SHIPS } from '@slur/shared';
+import type { CSSProperties } from 'react';
 import { useShipChoice } from '../../ship/ship-choice';
 import { STAT_AXES, statFill } from '../../ship/ship-stats';
 import { LABEL } from '../../ui/field-label';
@@ -24,8 +25,8 @@ export function SpecTag( { className = '' }: { className?: string } ) {
                         </dt>
                         <dd className="m-0 h-1 bg-readout/10">
                             <div
-                                className="h-full bg-marigold transition-[width] duration-300 ease-out"
-                                style={ { width: `${ statFill( i, shipClass ) }%` } }
+                                className="h-full w-[calc(var(--fill)*1%)] bg-marigold transition-[width] duration-300 ease-out"
+                                style={ { '--fill': statFill( i, shipClass ) } as CSSProperties }
                             />
                         </dd>
                     </div>

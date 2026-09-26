@@ -1,7 +1,7 @@
 import type { Room } from '@colyseus/sdk';
 import { type RunState, SET_COLOR_MESSAGE } from '@slur/shared';
 import { LABEL } from '../../ui/field-label';
-import { COLORS } from '../colors';
+import { PLAYER_BG } from '../colors';
 import { useRunPlayers } from '../net/run-view-store';
 
 export function ColourSwatches( { room }: { room: Room< RunState > } ) {
@@ -11,14 +11,13 @@ export function ColourSwatches( { room }: { room: Room< RunState > } ) {
         <fieldset className="m-0 min-w-0 border-0 p-0">
             <legend className={ `float-left mb-1.5 w-full ${ LABEL } flex` }>Colour</legend>
             <div className="clear-left grid w-max grid-cols-6 gap-2">
-                { COLORS.map( ( hex, id ) => (
+                { PLAYER_BG.map( ( bg, id ) => (
                     <button
-                        key={ hex }
+                        key={ bg }
                         type="button"
                         aria-label={ `Colour ${ id + 1 }` }
                         aria-pressed={ colorId === id }
-                        className={ `size-[22px] cursor-pointer p-0 outline-offset-2 focus-visible:outline-2 focus-visible:outline-readout/60 ${ colorId === id ? 'outline-2 outline-readout' : '' }` }
-                        style={ { background: hex } }
+                        className={ `size-[22px] cursor-pointer p-0 outline-offset-2 focus-visible:outline-2 focus-visible:outline-readout/60 ${ bg } ${ colorId === id ? 'outline-2 outline-readout' : '' }` }
                         onClick={ () => room.send( SET_COLOR_MESSAGE, id ) }
                     />
                 ) ) }

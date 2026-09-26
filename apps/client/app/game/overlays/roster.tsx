@@ -1,6 +1,6 @@
 import type { Room } from '@colyseus/sdk';
 import { isShipId, type RunState, SHIPS } from '@slur/shared';
-import { colorHex } from '../colors';
+import { playerBg } from '../colors';
 import { useHostId, useRunPlayers } from '../net/run-view-store';
 
 const TAG = 'text-[11px] font-bold uppercase tracking-[0.2em]';
@@ -21,11 +21,7 @@ export function Roster( { room, className = '' }: { room: Room< RunState >; clas
                         key={ p.id }
                         className={ `flex flex-none items-center gap-2.5 border bg-deep/85 px-3 py-2 ${ self ? 'border-readout/45' : 'border-readout/15' } ${ p.connected ? '' : 'opacity-40' }` }
                     >
-                        <span
-                            aria-hidden="true"
-                            className="size-2.5 flex-none"
-                            style={ { background: colorHex( p.colorId ) } }
-                        />
+                        <span aria-hidden="true" className={ `size-2.5 flex-none ${ playerBg( p.colorId ) }` } />
                         <span className="max-w-[14ch] truncate text-[15px] font-semibold text-readout">
                             { p.name || 'Racer' }
                             { p.connected ? '' : ' · reconnecting' }

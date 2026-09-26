@@ -1,0 +1,17 @@
+language js
+
+JsxAttribute(name=$n) as $a where {
+    $n <: "style",
+    $a <: not contains JsxExpressionAttributeValue(expression=or {
+        JsObjectExpression(members=$m),
+        TsAsExpression(expression=JsObjectExpression(members=$m))
+    }) where {
+        $m <: not contains or {
+            JsPropertyObjectMember(name=$k) where { $k <: not r"['\"]--[^'\"]*['\"]" },
+            JsShorthandPropertyObjectMember(),
+            JsSpread()
+        }
+    }
+} where {
+    register_diagnostic(span=$a, message="`style` may set only CSS custom properties (`style={ { '--x': v } as CSSProperties }`, read by a class). Everything else is a Tailwind class (issue #284).", severity="error")
+}

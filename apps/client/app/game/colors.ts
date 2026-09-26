@@ -1,20 +1,20 @@
 import type { COLOR_COUNT } from '@slur/shared';
 
-export const COLORS = [
-    '#00e5ff',
-    '#ff9f1c',
-    '#00ff85',
-    '#ff3b6b',
-    '#b26bff',
-    '#ffe600',
-    '#25a0ff',
-    '#ff6a00',
-    '#a6ff1a',
-    '#ff5cc8',
-    '#6b7bff',
-    '#ff3b3b',
+export const PLAYER_BG = [
+    'bg-player-0',
+    'bg-player-1',
+    'bg-player-2',
+    'bg-player-3',
+    'bg-player-4',
+    'bg-player-5',
+    'bg-player-6',
+    'bg-player-7',
+    'bg-player-8',
+    'bg-player-9',
+    'bg-player-10',
+    'bg-player-11',
 ] as const;
 
-const _paletteMatchesColorCount: typeof COLOR_COUNT = COLORS.length;
+const _paletteMatchesColorCount: typeof COLOR_COUNT = PLAYER_BG.length;
 
-export const colorHex = ( id: number ): string => COLORS[ id ] ?? COLORS[ 0 ];
+export const playerBg = ( id: number ): string => PLAYER_BG[ id ] ?? PLAYER_BG[ 0 ];

@@ -1,6 +1,6 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
-import { colorHex } from '../colors';
+import { playerBg } from '../colors';
 import { useRunStandings } from '../net/run-view-store';
 import { raceTime, shipName } from './results-format';
 
@@ -16,8 +16,7 @@ export function WinnerCard( { room }: { room: Room< RunState > } ) {
                 <p className="m-0 mt-4 flex items-baseline gap-4 tabular-nums">
                     <span
                         aria-hidden="true"
-                        className="size-2.5 flex-none self-center"
-                        style={ { background: colorHex( winner.colorId ) } }
+                        className={ `size-2.5 flex-none self-center ${ playerBg( winner.colorId ) }` }
                     />
                     <span className="text-[22px] font-semibold text-readout text-shadow-readout sm:text-[28px]">
                         { raceTime( winner.finishTime ) }

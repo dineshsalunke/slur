@@ -49,6 +49,10 @@
                 "!apps/client/app/game/overlays/mount-overlays.tsx"
             ],
             "plugins": [ "./biome-plugins/component-module-scope.grit" ]
+        },
+        {
+            "includes": [ "apps/client/app/**/*.tsx" ],
+            "plugins": [ "./biome-plugins/style-custom-properties-only.grit" ]
         }
     ]
 }

@@ -18,25 +18,26 @@ import { LOOP_MARGIN, track } from './landing-scene.constants';
 export function LandingScene() {
     return (
         <WorldProvider world={ world }>
-            <Canvas
-                gl={ CANVAS_GL }
-                aria-hidden="true"
-                style={ { position: 'fixed', inset: 0, zIndex: 0 } }
-                camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
-            >
-                <TrackContext value={ track }>
-                    <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
-                    <GameEnvironment />
-                    <SceneEnvironment />
-                    <BackFill />
-                    <NearFill />
-                    <EngineLight />
-                    <ExhaustField />
-                    <TrackView />
-                    <LandingShip />
-                    <SceneEffects />
-                </TrackContext>
-            </Canvas>
+            <div className="fixed inset-0 z-0">
+                <Canvas
+                    gl={ CANVAS_GL }
+                    aria-hidden="true"
+                    camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
+                >
+                    <TrackContext value={ track }>
+                        <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
+                        <GameEnvironment />
+                        <SceneEnvironment />
+                        <BackFill />
+                        <NearFill />
+                        <EngineLight />
+                        <ExhaustField />
+                        <TrackView />
+                        <LandingShip />
+                        <SceneEffects />
+                    </TrackContext>
+                </Canvas>
+            </div>
         </WorldProvider>
     );
 }

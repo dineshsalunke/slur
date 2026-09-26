@@ -6,9 +6,8 @@
    de-rounded (chamfered) corners, hard edges, glass panels. Palette locked to marigold-primary over a
    near-black void (ADR-008): marigold is the only energy colour, cyan a sparing support accent.
 
-   NOTE: the ~12 player HUES are NOT tokens here. They live in game/colors.ts as a data registry indexed by the
-   synced colorId (with a COLOR_COUNT compile-time guard); duplicating them into CSS would break that guard and
-   they are applied by index at runtime, not referenced by name. @theme carries the brand + semantic palette. */
+   The 12 player hues are the --color-player-N tokens below, the only copy of them. game/colors.ts maps the
+   synced colorId to a static bg-player-N class; colors.test.ts keeps the two lists in step. */
 @import "tailwindcss";
 
 @theme {
@@ -33,6 +32,19 @@
     --color-debug: #00ff88; /* dev-only net-debug readout — terminal green, distinct from the finisher --color-fin */
     --color-readout: #eceff2; /* in-game HUD primary type — NEUTRAL white, not the cool --color-hud of the panels */
     --color-readout-dim: #8b929b; /* HUD secondary type — the u/s unit, the key hint, the stat row */
+
+    --color-player-0: #00e5ff;
+    --color-player-1: #ff9f1c;
+    --color-player-2: #00ff85;
+    --color-player-3: #ff3b6b;
+    --color-player-4: #b26bff;
+    --color-player-5: #ffe600;
+    --color-player-6: #25a0ff;
+    --color-player-7: #ff6a00;
+    --color-player-8: #a6ff1a;
+    --color-player-9: #ff5cc8;
+    --color-player-10: #6b7bff;
+    --color-player-11: #ff3b3b;
 
     /* Type. display = UI sans; mono = the LCARS-ish label/readout face. */
     --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
