@@ -3,13 +3,14 @@ import type { RunState } from '@slur/shared';
 import { useEffect, useRef } from 'react';
 import { HudPanel } from '../../ui/hud-panel';
 import { useRunView } from '../net/use-run-view';
-import { cycleSpectatorTarget, spectatorCam } from '../spectator';
+import { cycleSpectatorTarget, resolveSpectatorTarget } from '../spectator';
 
 export function SpectatorBar( { room }: { room: Room< RunState > } ) {
     const view = useRunView( room );
     const racers = view.players.filter( ( p ) => ! p.spectating );
     const racerIds = racers.map( ( p ) => p.id );
-    const target = racers.find( ( p ) => p.id === spectatorCam.targetSessionId ) ?? racers[ 0 ];
+    const targetId = resolveSpectatorTarget( racers.map( ( p ) => [ p.id, p ] as const ) );
+    const target = racers.find( ( p ) => p.id === targetId );
 
     const racerIdsRef = useRef( racerIds );
     racerIdsRef.current = racerIds;

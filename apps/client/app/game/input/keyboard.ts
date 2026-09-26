@@ -24,10 +24,21 @@ export function attachKeyboard(): () => void {
         down.delete( e.code );
         recompute();
     };
+    const releaseAll = () => {
+        down.clear();
+        recompute();
+    };
+    const onVisibility = () => {
+        if ( document.hidden ) releaseAll();
+    };
     addEventListener( 'keydown', on );
     addEventListener( 'keyup', off );
+    addEventListener( 'blur', releaseAll );
+    document.addEventListener( 'visibilitychange', onVisibility );
     return () => {
         removeEventListener( 'keydown', on );
         removeEventListener( 'keyup', off );
+        removeEventListener( 'blur', releaseAll );
+        document.removeEventListener( 'visibilitychange', onVisibility );
     };
 }

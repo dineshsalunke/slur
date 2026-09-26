@@ -11,8 +11,9 @@ import { isMuted, playMusic, setMuted, stopMusic } from './audio-engine';
 import { bindRoomAudio } from './bind-room-audio';
 import { setEngineSpeed, startEngineLoop, stopEngineLoop } from './engine-loop';
 import { createMoveEdges, type MoveTuning, stepMoveEdges } from './movement-edges';
+import { musicForPhase } from './music-for-phase';
 import { ensureListener } from './positional';
-import { MUSIC, playSfx, preloadAudio } from './sfx-map';
+import { playSfx, preloadAudio } from './sfx-map';
 
 const tuning: MoveTuning = { maxCruise: 0, jumpImpulse: 0, heavy: false };
 
@@ -27,8 +28,7 @@ export function GameAudio() {
         ensureListener( camera );
         startEngineLoop();
         const unbind = bindRoomAudio( room );
-        playMusic( MUSIC.lobby.name );
-        void preloadAudio().then( () => playMusic( MUSIC.lobby.name ) );
+        void preloadAudio().then( () => playMusic( musicForPhase( room.state.phase ) ) );
         return () => {
             unbind();
             stopEngineLoop();

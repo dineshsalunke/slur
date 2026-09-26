@@ -1,8 +1,26 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { STUN_SECONDS } from './combat/constants.js';
-import { armourForShip, DEFAULT_SHIP, SHIP_CLASSES, SHIP_ORDER, stunDurationForShip } from './ship-classes.js';
+import {
+    armourForShip,
+    DEFAULT_SHIP,
+    isShipId,
+    SHIP_CLASSES,
+    SHIP_ORDER,
+    shipOf,
+    stunDurationForShip,
+    tuningForShip,
+} from './ship-classes.js';
 import { DEFAULT_SIM_CONFIG } from './sim-config.js';
+
+test( 'prototype keys are not ship ids and fall back to the default ship', () => {
+    for ( const key of [ 'constructor', 'toString', '__proto__', 'hasOwnProperty' ] ) {
+        assert.equal( isShipId( key ), false, key );
+        assert.equal( shipOf( key ).id, DEFAULT_SHIP, key );
+        assert.doesNotThrow( () => tuningForShip( key ), key );
+    }
+    for ( const id of SHIP_ORDER ) assert.equal( isShipId( id ), true, id );
+} );
 
 test( 'every class declares armour inside the 0..1 band', () => {
     for ( const c of Object.values( SHIP_CLASSES ) ) {

@@ -12,7 +12,7 @@ import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSyst
 import { syncRenderSystem } from './ecs/systems';
 import { finishReset, showFinishFade, stepFinishReset } from './finish/finish-reset';
 import { CUT_DT, finishWatch, localFinished, pickWatchTarget, resetFinishWatch } from './finish/finish-watch';
-import { localRole, runPhase, spectatorCam } from './spectator';
+import { localRole, resetSpectatorTarget, resolveSpectatorTarget, runPhase } from './spectator';
 
 function stepFinishCurtain( world: World, phase: number, delta: number ): boolean {
     if ( phase === PHASE.lobby || phase === PHASE.countdown ) resetFinishWatch( finishWatch );
@@ -58,8 +58,11 @@ export function NetLoop( {
         const cut = stepFinishCurtain( world, phase, delta );
 
         const cam = state.camera as PerspectiveCamera;
-        if ( phase === PHASE.lobby ) updateLobbyCamera( cam, world, delta );
-        else if ( localRole.spectating ) updateSpectatorCamera( cam, world, delta, spectatorCam.targetSessionId );
+        if ( phase === PHASE.lobby ) {
+            resetSpectatorTarget();
+            updateLobbyCamera( cam, world, delta );
+        } else if ( localRole.spectating )
+            updateSpectatorCamera( cam, world, delta, resolveSpectatorTarget( room.state.players ) );
         else if ( finishWatch.cut ) updateFinishCamera( cam, world, cut ? CUT_DT : delta, room );
         else updateChaseCamera( cam, world, delta );
     } );

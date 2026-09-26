@@ -124,13 +124,13 @@ export const DEFAULT_SHIP: ShipId = 'split-crown';
 export const SET_CLASS_MESSAGE = 'setClass';
 
 export function isShipId( id: unknown ): id is ShipId {
-    return typeof id === 'string' && id in SHIPS;
+    return typeof id === 'string' && Object.hasOwn( SHIPS, id );
 }
 
 export const SHIP_ORDER: ShipId[] = [ 'executioner', 'challenger', 'bob', 'dispatcher', 'split-crown' ];
 
 export function shipOf( id: string ): Ship {
-    return SHIPS[ id as ShipId ] ?? SHIPS[ DEFAULT_SHIP ];
+    return isShipId( id ) ? SHIPS[ id ] : SHIPS[ DEFAULT_SHIP ];
 }
 export function classOfShip( id: string ): ShipClass {
     return SHIP_CLASSES[ shipOf( id ).classId ];

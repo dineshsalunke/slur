@@ -81,20 +81,13 @@ export function updateSpectatorCamera(
     dt: number,
     targetSessionId: string | null,
 ): void {
-    let target: Entity | null = null;
-    let leader: Entity | null = null;
-    let leaderZ = Number.NEGATIVE_INFINITY;
-    for ( const e of world.query( Net, Render, Remote ) ) {
-        const net = e.get( Net );
-        const grp = e.get( Render );
-        if ( ! net || ! grp ) continue;
-        if ( net.sessionId === targetSessionId ) target = e;
-        if ( grp.position.z > leaderZ ) {
-            leaderZ = grp.position.z;
-            leader = e;
+    let e: Entity | null = null;
+    for ( const candidate of world.query( Net, Render, Remote ) ) {
+        if ( candidate.get( Net )?.sessionId === targetSessionId ) {
+            e = candidate;
+            break;
         }
     }
-    const e = target ?? leader;
     const grp = e?.get( Render );
     if ( ! e || ! grp ) return;
     const p = grp.position;
