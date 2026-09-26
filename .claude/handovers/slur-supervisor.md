@@ -42,7 +42,13 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
 
 ## Open owner questions
 
-- Plans for #292, #295 and #14 are coming. Relay each to the owner and build nothing until approval.
+- #14 PLAN RELAYED to owner (from workerfive, awaiting approval). S1: sessionStorage reconnection token per roomId,
+  reload reclaims the seat (client: matchmaking.ts + test, NEW reconnect-token.ts + test). S2: stop inputs while not
+  live, reset prediction on reconnect, clear the server input queue on drop (run-sim.ts + attach: AFTER #295).
+  S3: real reconnect tests. S4: dropped racer stops holding race end. Cut: 3D ghosting, START grid gaps, #15
+  dispose race. Owner Qs: Q1 ex-host gets host back? Q2 exclude a dropped racer from race end at once or after N s?
+  SDK finding: messages sent while dropped are buffered and flushed on reconnect, so stale inputs replay.
+- Plans for #292 and #295 are still coming. Relay each to the owner and build nothing until approval.
 - Owner said "go ahead" to 4 items (2026-09-26): #14 lane, close #248, KEEP the exit-ring flash, start #292 + #295.
   "Keep" is my reading of "go ahead" on a keep-or-dim question; I told the owner so.
 
