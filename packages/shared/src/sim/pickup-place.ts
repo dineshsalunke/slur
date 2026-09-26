@@ -1,4 +1,4 @@
-import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
+import { TRACK_CONTRACT } from '../constants.js';
 import { intersectRuns, openRunsAtSlice, type Run } from './clearance.js';
 import { hash2 } from './rng.js';
 import { type Anchor, HALF_WIDTH, isHole, SEG_LEN, type Segment, START_SAFE, segIndexForZ } from './space.js';
@@ -13,10 +13,8 @@ export const PICKUP_CLEAR = 2;
 export const PICKUP_APPROACH = SEG_LEN;
 export const PICKUP_SAMPLE_STEP = 1;
 
-const WIDEST_HALF_W = Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfW ) );
-const LONGEST_HALF_L = Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfL ) );
-export const PICKUP_COLUMN_HALF = WIDEST_HALF_W + PICKUP_CLEAR;
-export const PICKUP_OVERRUN = LONGEST_HALF_L + PICKUP_CLEAR;
+export const PICKUP_COLUMN_HALF = TRACK_CONTRACT.shipHalfW + PICKUP_CLEAR;
+export const PICKUP_OVERRUN = TRACK_CONTRACT.shipHalfL + PICKUP_CLEAR;
 
 const SALT_PICKUP_ID = 0x51c7e02b | 0;
 const SALT_PICKUP_ROW = 0x2f6a91d3 | 0;

@@ -1,11 +1,10 @@
-import { MAX_SHIP_WIDTH } from '../constants.js';
-import { SHIP_CLASSES } from '../ship-classes.js';
+import { MAX_SHIP_WIDTH, TRACK_CONTRACT } from '../constants.js';
 import { passableCorridorWidth } from './clearance.js';
 import { fractureFits } from './fracture.js';
 import { type Block, MIN_LANE, type Segment } from './space.js';
 
 export const MERGE_SLIT_X = MAX_SHIP_WIDTH;
-export const MERGE_POCKET_Z = 2 * Math.max( ...Object.values( SHIP_CLASSES ).map( ( c ) => c.tuning.halfL ) );
+export const MERGE_POCKET_Z = 2 * TRACK_CONTRACT.shipHalfL;
 
 export function closePair( a: Block, b: Block ): boolean {
     const xGap = Math.max( a.x0, b.x0 ) - Math.min( a.x1, b.x1 );

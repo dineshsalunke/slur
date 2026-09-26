@@ -126,6 +126,9 @@ export interface TrackContract {
     weaveStrafeClamp: number;
     weaveStrafeAccel: number;
     registerCruise: number;
+    smashKeep: number;
+    shipHalfW: number;
+    shipHalfL: number;
 }
 
 export const TRACK_CONTRACT: TrackContract = {
@@ -134,7 +137,16 @@ export const TRACK_CONTRACT: TrackContract = {
     weaveStrafeClamp: 65,
     weaveStrafeAccel: 118,
     registerCruise: 124,
+    smashKeep: 0.45,
+    shipHalfW: 1.3,
+    shipHalfL: 3,
 };
+
+const ROSTER_BOUNDS = [
+    [ 'smashKeep', 'smashKeep' ],
+    [ 'halfW', 'shipHalfW' ],
+    [ 'halfL', 'shipHalfL' ],
+] as const;
 
 export const SCORE_ADHERENCE_FLOOR = 0.75;
 export const SCORE_ACCENT_ADHERENCE = 1;
@@ -168,6 +180,11 @@ export function rosterContractFailures( classes: { id: string; tuning: FlightTun
             out.push(
                 `${ c.id }: maxCruise ${ c.tuning.maxCruise }u/s exceeds the ${ TRACK_CONTRACT.registerCruise }u/s register cruise`,
             );
+        for ( const [ field, bound ] of ROSTER_BOUNDS )
+            if ( c.tuning[ field ] > TRACK_CONTRACT[ bound ] )
+                out.push(
+                    `${ c.id }: ${ field } ${ c.tuning[ field ] } exceeds the track contract ${ TRACK_CONTRACT[ bound ] }`,
+                );
     }
     return out;
 }

@@ -1,12 +1,8 @@
 import { MAX_SHIP_WIDTH, TRACK_CONTRACT } from '../constants.js';
-import { SHIP_CLASSES } from '../ship-classes.js';
 import { type Block, type FloorSpan, HALF_WIDTH, SEG_LEN, type Segment } from './space.js';
 
 export const FRACTURE_SHADOW_S = 1;
-export const FRACTURE_SHADOW_Z =
-    FRACTURE_SHADOW_S *
-    TRACK_CONTRACT.registerCruise *
-    Math.max( ...Object.values( SHIP_CLASSES ).map( ( c ) => c.tuning.smashKeep ) );
+export const FRACTURE_SHADOW_Z = FRACTURE_SHADOW_S * TRACK_CONTRACT.registerCruise * TRACK_CONTRACT.smashKeep;
 export const FRACTURE_SHADOW_PAD = MAX_SHIP_WIDTH / 2;
 export const FRACTURE_SHADOW_SEGMENTS = Math.ceil( FRACTURE_SHADOW_Z / SEG_LEN );
 

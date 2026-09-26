@@ -52,6 +52,15 @@ test( 'no class may outrun the frozen register cruise', () => {
     ] );
 } );
 
+test( 'a class larger or harder-smashing than the track contract fails the roster instead of reshaping seeds', () => {
+    const big = { ...SHIP_CLASSES.freighter.tuning, smashKeep: 0.5, halfW: 1.5, halfL: 3.5 };
+    assert.deepEqual( rosterContractFailures( [ { id: 'big', tuning: big } ] ), [
+        'big: smashKeep 0.5 exceeds the track contract 0.45',
+        'big: halfW 1.5 exceeds the track contract 1.3',
+        'big: halfL 3.5 exceeds the track contract 3',
+    ] );
+} );
+
 test( 'the motif library is frozen (re-pin only for a deliberate reshape of every score seed)', () => {
     assert.equal( motifDigest( MOTIF_LIBRARY ), 2694968437 );
 } );
