@@ -10,6 +10,9 @@ Owner decision: the default power bag is 6 bolt / 4 seeker / 4 mine / 3 boost / 
   Boost and shield stay 0.15. `power-bag.test.ts` pins the new default; the override case now uses the
   old 0.3/0.3 split (2/6/6/3/3). SHA commented on #269 and #270 (left open for the owner).
 
+- 074ceee: docs to match. `docs/DECISIONS.md` ADR-002 amendment (Power bullet) and `docs/GDD.md`
+  "Placement and mix" + "Mine" lines now say 6/4/4/3/3, seeker/mine 0.2, boost/shield 0.15.
+
 ## State
 
 - `bagCounts()` = bolt 6, seeker 4, mine 4, boost 3, shield 3 (measured from dist after `tsc -b --force`).
@@ -27,12 +30,11 @@ None (claim released on commit).
 
 ## Next
 
-- If the supervisor approves: fix stale doc lines `docs/DECISIONS.md:154-155` and `docs/GDD.md:235`
-  (both still say the ratios are 0.3).
+- Idle. Await the next lane.
 
 ## Open questions
 
-- Supervisor: claim and fix the two stale doc lines above?
+- Owner: close #269 and #270, or do they cover more than the bag mix?
 
 ## Lessons → memory
 
