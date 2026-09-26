@@ -15,7 +15,7 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch --preserveWatchOutput",
-        "typecheck": "tsc -b",
+        "typecheck": "tsc -b && tsc -p tsconfig.test.json --noEmit",
         "test": "rm -rf test-dist && tsc -p tsconfig.test.json && node --test \"test-dist/**/*.test.js\""
     },
     "dependencies": {

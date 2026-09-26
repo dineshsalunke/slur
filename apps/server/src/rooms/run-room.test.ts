@@ -16,6 +16,7 @@ import {
     emptyInput,
     FIXED_DT,
     HeldPower,
+    HIT_MESSAGE,
     MAX_SHIP_WIDTH,
     PHASE,
     PICKUP_RESPAWN_S,
@@ -28,9 +29,9 @@ import {
     SEEKER_HIT_MESSAGE,
     SEEKER_MISS_MESSAGE,
     START_MESSAGE,
-    START_STAGGER,
     STUN_SECONDS,
     segIndexForZ,
+    startGridX,
     TRACK_SEGMENTS,
     type Track,
     toDescriptor,
@@ -118,7 +119,7 @@ describe( 'RunRoom combat', () => {
         const early = await colyseus.connectTo( room, { name: 'Early' } );
         const joiner = playerOf( room, early.sessionId );
         assert.equal( joiner.spectating, false, 'a countdown joiner races' );
-        assert.equal( joiner.x, START_STAGGER, 'the joiner takes the next grid slot' );
+        assert.equal( joiner.x, startGridX( 1 ), 'the joiner takes the next grid slot' );
         assert.equal( joiner.lastSafeX, joiner.x, 'the respawn line starts at the grid slot' );
         assert.equal( joiner.finishTime, 0 );
         assert.deepEqual( rack( joiner ), Array( POWER_SLOTS ).fill( HeldPower.none ) );
@@ -170,10 +171,10 @@ describe( 'RunRoom combat', () => {
         arm( shooter, HeldPower.bolt );
 
         let broadcastHits = 0;
-        otherClient.onMessage( 'hit', () => {
+        otherClient.onMessage( HIT_MESSAGE, () => {
             broadcastHits++;
         } );
-        host.onMessage( 'hit', () => {} );
+        host.onMessage( HIT_MESSAGE, () => {} );
 
         host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );
@@ -265,8 +266,8 @@ describe( 'RunRoom combat', () => {
         victim.x = 0;
         victim.z = 20;
         arm( shooter, HeldPower.bolt );
-        host.onMessage( 'hit', () => {} );
-        otherClient.onMessage( 'hit', () => {} );
+        host.onMessage( HIT_MESSAGE, () => {} );
+        otherClient.onMessage( HIT_MESSAGE, () => {} );
 
         const added: string[] = [];
         const removed: string[] = [];
@@ -306,7 +307,7 @@ describe( 'RunRoom combat', () => {
 
         let seekerHits = 0;
         for ( const c of [ host, otherClient ] ) {
-            c.onMessage( 'hit', () => {} );
+            c.onMessage( HIT_MESSAGE, () => {} );
             c.onMessage( SEEKER_MISS_MESSAGE, () => {} );
         }
         host.onMessage( SEEKER_HIT_MESSAGE, () => {} );
@@ -453,7 +454,7 @@ describe( 'RunRoom combat', () => {
 
     test( 'a bolt breaks a fractured block, is spent, and the break is synced', async () => {
         const { room, host } = await racingRoom( 1, 'weave' );
-        host.onMessage( 'hit', () => {} );
+        host.onMessage( HIT_MESSAGE, () => {} );
         const target = firstBlock( room, 'fractured' );
         aimAt( room, host.sessionId, target );
 
@@ -467,7 +468,7 @@ describe( 'RunRoom combat', () => {
 
     test( 'a sealed block eats the bolt and stays standing', async () => {
         const { room, host } = await racingRoom( 1 );
-        host.onMessage( 'hit', () => {} );
+        host.onMessage( HIT_MESSAGE, () => {} );
         const target = firstBlock( room, 'sealed' );
         aimAt( room, host.sessionId, target );
 
@@ -481,7 +482,7 @@ describe( 'RunRoom combat', () => {
 
     test( 'returning to the lobby restores every broken block', async () => {
         const { room, host } = await racingRoom( 1, 'weave' );
-        host.onMessage( 'hit', () => {} );
+        host.onMessage( HIT_MESSAGE, () => {} );
         aimAt( room, host.sessionId, firstBlock( room, 'fractured' ) );
         host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
         await room.waitForMessage( USE_POWERUP_MESSAGE );

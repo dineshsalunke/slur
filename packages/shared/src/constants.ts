@@ -107,7 +107,7 @@ export const COUNTDOWN_SECONDS = 3;
 export const RACE_GRACE_SECONDS = 20;
 export const MAX_RACE_SECONDS = 180;
 export const COLOR_COUNT = 12;
-export const START_STAGGER = CELL;
+export const START_STAGGER_U = 4;
 
 export const WEAVE_SLOPE_SAFETY = 0.8;
 export const WEAVE_CURV_SAFETY = 0.8;

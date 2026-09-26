@@ -41,9 +41,9 @@ import {
     type SimConfig,
     type SimWorld,
     START_MESSAGE,
-    START_STAGGER,
     seekerShipsOf,
     shouldSpectateOnJoin,
+    startGridX,
     stepBolts,
     stepMines,
     stepPickups,
@@ -327,7 +327,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         p.colorId = this.state.players.size % COLOR_COUNT;
         p.spectating = shouldSpectateOnJoin( this.state.phase );
         if ( ! p.spectating ) {
-            p.x = this.state.players.size * START_STAGGER;
+            p.x = startGridX( this.state.players.size );
             p.lastSafeX = p.x;
         }
         this.state.players.set( client.sessionId, p );

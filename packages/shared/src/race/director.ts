@@ -1,8 +1,7 @@
-import { COLOR_COUNT, MAX_RACE_SECONDS, START_STAGGER } from '../constants.js';
+import { COLOR_COUNT, MAX_RACE_SECONDS, START_STAGGER_U } from '../constants.js';
 import { copySimShip, type SimShip, spawnShip } from '../sim/types.js';
 
 export const PHASE = { lobby: 0, countdown: 1, racing: 2, finished: 3 } as const;
-export type Phase = ( typeof PHASE )[ keyof typeof PHASE ];
 
 export const START_MESSAGE = 'start';
 export const RESTART_MESSAGE = 'restart';
@@ -23,9 +22,14 @@ export interface RunMetadata {
 
 type RacerState = SimShip & { finishTime: number };
 
-export function resetPlayerForRace( p: RacerState, index: number ): void {
-    const x = index * START_STAGGER;
-    copySimShip( p, spawnShip( x, 0 ) );
+export function startGridX( seat: number ): number {
+    if ( seat === 0 ) return 0;
+    const rank = Math.ceil( seat / 2 );
+    return seat % 2 === 1 ? rank * START_STAGGER_U : -rank * START_STAGGER_U;
+}
+
+export function resetPlayerForRace( p: RacerState, seat: number ): void {
+    copySimShip( p, spawnShip( startGridX( seat ), 0 ) );
     p.finishTime = 0;
 }
 

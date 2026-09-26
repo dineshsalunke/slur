@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { COLOR_COUNT, MAX_RACE_SECONDS, RACE_GRACE_SECONDS, START_STAGGER } from '../constants.js';
+import { COLOR_COUNT, MAX_RACE_SECONDS, RACE_GRACE_SECONDS, START_STAGGER_U } from '../constants.js';
 import {
     computeStandings,
     isColorId,
@@ -9,6 +9,7 @@ import {
     resetPlayerForRace,
     type StandingInput,
     shouldSpectateOnJoin,
+    startGridX,
 } from './director.js';
 
 function racer( over: Partial< StandingInput > ): StandingInput {
@@ -92,6 +93,15 @@ test( 'raceShouldEnd: empty field ends (everyone left)', () => {
     assert.equal( raceShouldEnd( { elapsed: 5, finishDeadline: 0, racerCount: 0, finishedCount: 0 } ), true );
 } );
 
+test( 'startGridX: seats alternate right and left of the centre line, one stagger apart', () => {
+    const xs = Array.from( { length: COLOR_COUNT }, ( _, seat ) => startGridX( seat ) );
+    assert.deepEqual(
+        xs.map( ( x ) => x / START_STAGGER_U ),
+        [ 0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6 ],
+    );
+    assert.ok( Object.is( xs[ 0 ], 0 ), 'seat 0 sits on +0, not -0' );
+} );
+
 test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchors safe point', () => {
     const dirty = {
         x: 999,
@@ -115,8 +125,8 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
         boostTimer: 1.1,
     };
     resetPlayerForRace( dirty, 3 );
-    assert.equal( dirty.x, 3 * START_STAGGER );
-    assert.equal( dirty.lastSafeX, 3 * START_STAGGER );
+    assert.equal( dirty.x, 2 * START_STAGGER_U );
+    assert.equal( dirty.lastSafeX, 2 * START_STAGGER_U );
     assert.deepEqual(
         [
             dirty.y,

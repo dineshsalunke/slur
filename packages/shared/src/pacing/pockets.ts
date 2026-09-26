@@ -39,14 +39,6 @@ export interface PacingPocket extends RouteRegion {
     trapped: boolean;
 }
 
-export interface PocketGroup {
-    k0: number;
-    k1: number;
-    x0: number;
-    x1: number;
-    classes: ShipClassId[];
-}
-
 interface Reach {
     grid: PacingGrid;
     legal: Uint8Array;
@@ -258,25 +250,4 @@ export function classPockets( frozen: FrozenTrack, classId: ShipClassId, t: Flig
 
 export function rosterPockets( frozen: FrozenTrack ): PacingPocket[] {
     return Object.values( SHIP_CLASSES ).flatMap( ( c ) => classPockets( frozen, c.id, c.tuning ) );
-}
-
-function overlaps( g: PocketGroup, p: PacingPocket ): boolean {
-    return p.k0 <= g.k1 && g.k0 <= p.k1 && p.x0 <= g.x1 && g.x0 <= p.x1;
-}
-
-export function groupPockets( pockets: PacingPocket[] ): PocketGroup[] {
-    const out: PocketGroup[] = [];
-    for ( const p of pockets.filter( ( q ) => q.trapped ).sort( ( a, b ) => a.k0 - b.k0 ) ) {
-        const g = out.find( ( q ) => overlaps( q, p ) );
-        if ( g === undefined ) {
-            out.push( { k0: p.k0, k1: p.k1, x0: p.x0, x1: p.x1, classes: [ p.classId ] } );
-            continue;
-        }
-        g.k0 = Math.min( g.k0, p.k0 );
-        g.k1 = Math.max( g.k1, p.k1 );
-        g.x0 = Math.min( g.x0, p.x0 );
-        g.x1 = Math.max( g.x1, p.x1 );
-        if ( ! g.classes.includes( p.classId ) ) g.classes.push( p.classId );
-    }
-    return out;
 }

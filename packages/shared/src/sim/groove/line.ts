@@ -122,15 +122,3 @@ export function composeGroove( seed: number, length: number, g: GrooveGrammar = 
     }
     return { seed, length, events, sections: secs, arenas };
 }
-
-export function grooveLineX( line: GrooveLine, z: number ): number {
-    const moveZ = GROOVE_MOVE_BEATS * GROOVE_BEAT_Z;
-    let x = 0;
-    for ( const e of line.events ) {
-        if ( e.z > z ) break;
-        if ( e.kind !== 'strafe' ) continue;
-        const t = Math.min( 1, ( z - e.z ) / moveZ );
-        x = e.from + ( e.to - e.from ) * t;
-    }
-    return x;
-}
