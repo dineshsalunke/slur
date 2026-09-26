@@ -36,6 +36,7 @@ import {
     Sim,
 } from '../game/ecs/traits';
 import { settleSlot } from '../game/input/power-select';
+import { clearPickupState, markPickup } from '../game/pickup-state';
 import { pushHit } from '../game/scene/hit-events';
 import { burstMine } from '../game/scene/mine-shock-events';
 import { launchMine } from '../game/scene/mine-shots';
@@ -241,6 +242,11 @@ export function attachRoomToWorld(
 
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, burstMine );
 
+    const onTaken = ( v: boolean, id: string ) => markPickup( id, v === true );
+    const offTaken = $( room.state ).pickupTaken.onAdd( onTaken );
+    const offTakenChange = $( room.state ).pickupTaken.onChange( onTaken );
+    const offTakenRemove = $( room.state ).pickupTaken.onRemove( ( _v, id ) => markPickup( id, false ) );
+
     const offBreak = $( room.state ).blockBroken.onAdd( ( _v, key ) => confirmBreak( Number( key ) ) );
     const offUnbreak = $( room.state ).blockBroken.onRemove( ( _v, key ) => unconfirmBreak( Number( key ) ) );
 
@@ -280,7 +286,11 @@ export function attachRoomToWorld(
         offBounce();
         offBreak();
         offUnbreak();
+        offTaken();
+        offTakenChange();
+        offTakenRemove();
         clearBlockState();
+        clearPickupState();
         for ( const offs of [ perPlayer, perProjectile, perSeeker, perMine ] ) drainOffs( offs );
         for ( const entities of [ byId, projById, seekerById, mineById ] ) destroyAll( entities );
     };

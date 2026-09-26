@@ -66,7 +66,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                     <Canvas gl={ CANVAS_GL } camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }>
                         <WorldScene>
                             <NetLoop predictor={ predictor } room={ room } />
-                            <PickupField room={ room } />
+                            <PickupField />
                             <ProjectileField />
                             <SeekerField />
                             <MineField />
