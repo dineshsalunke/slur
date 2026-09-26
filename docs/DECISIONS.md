@@ -1234,7 +1234,7 @@ merge removes most pockets it scanned).
 
 ## ADR-023 — One phrase generator: weave, motifs, arenas and set pieces in three acts
 
-**Date:** 2026-09-26 · **Status:** Proposed (owner approved the RFC with amendments, via slur-supervisor; S1 built in `8a4f1dd`, S2–S7 not built) · **Issue:** #300 (absorbs #292) · **RFC:** `.claude/phases/2026-09-26-unified-generator-rfc.md`
+**Date:** 2026-09-26 · **Status:** Proposed (owner approved the RFC with amendments, via slur-supervisor; S1 built in `8a4f1dd`, S2 built in `0ae9967` and the S2 close commit, S3–S7 not built) · **Issue:** #300 (absorbs #292) · **RFC:** `.claude/phases/2026-09-26-unified-generator-rfc.md`
 
 ### Decision
 
@@ -1253,4 +1253,11 @@ merge removes most pockets it scanned).
 - A longer track needs the race-end change (#301, grace 45 s, no 180 s cap) before `'phrase'` becomes the default.
 - S1 cost at 600 segments (measured 2026-09-27, headless Chrome at DPR 1, `/test-level` seed 20260921, two loads each). Draw calls: 127 for `phrase` and 127 for `groove` at 420 segments. JS per frame: 1.3–1.4 ms for both. First scene frame: 1.5 s for `phrase` and 1.6–2.0 s for `groove`. Long tasks: the same for both. In Node, `resolveTrack` plus a walk of every segment takes 2.3 ms for `phrase` and 2.2 ms for `groove`. The longer track adds no draw calls and no measurable build time.
 - S2 sizing (owner ruling 2026-09-27, option A): every act uses 3-note motifs. Difficulty rises through the twist (act 1 mirror; acts 2–3 mirror or one note swap; the last section replays the act 1 motif mirrored as a callback), the weave band and the set pieces. Motif notes sit on a half-beat grid: each note gets its move time plus the 0.5 s register calm at 124u/s, rounded up to half a beat. A 3-note motif phrase is 476–536u, so a section is 2,204–2,372u. The section count is the largest count that fits the length: 5 at 600 segments (acts low, low, mid, mid, high) on seeds 1–30. Longer motifs (4 notes ≈ 655u, 5 notes ≈ 833u) would break the ≤ 1,200u open-stretch target, because teach and repeat sit between two arenas.
+- S2 acceptance (measured 2026-09-27). With the S2-part-1 gate posts, adherence on motif notes was 0.000 on seeds 1–30. The deck is 96u wide, so the easiest route held x = 22.5 past the 8u posts and 16u holes. Three changes force the line:
+  - **Pin:** a 4u-deep wall just before each lateral onset. It runs from `from ± SCORE_PIN_HALF` (2.5u) to the deck edge on the move side, so the route cannot move early. This is the ADR-020 score-generator pin.
+  - **Gate:** the near wall runs from the far deck edge to `to ∓ 2.5u`. The far post starts at `MIN_LANE − 2.5u`, so the door stays ≥ 8u. A gate ends before the next note's pin.
+  - **Holes:** `J` and `JJ` holes span the full deck width.
+
+  Result: adherence 1.000 (1,350/1,350 notes) on seeds 1–30. A line pilot (motif line on motif phrases, avoid pilot elsewhere) is no slower than the avoid pilot on 5 classes × seeds 1–5 and 17. It was faster in all 30 runs of the measurement, with 0 deaths; `phrase.test.ts` asserts ≤. The avoid pilot finishes all 30 runs with 0 deaths, but the Freighter takes 19–23 pin bumps per run (about 25% slower). The owner will decide this after a playtest. A pure groove-line pilot is still up to 66 ticks slower in the `weave` slot, which is S3 scope.
+- **Departures from the RFC (S2).** (1) RFC §3.2 says *"`J` — A hole under the line, width 16–32u"*. Motif holes now span the full deck width, because the route goes round a 16u hole. (2) RFC §3.3 says *"posts on **both** sides of the line (a gate)"*. The near side is now a wall to the deck edge, plus a one-sided pin before the onset. A 1-cell step cannot be forced otherwise: the pacing hull is 4u wide, so two 8u doors 4u apart share a lane. (3) The phrase open-space measure counts a slice with no floor across the whole deck as open deck. A full-width hole is a jump, not a narrow lane. This is an early part of the S3 per-kind exemptions.
 - Open: per-kind open-space exemptions for `W` and chokes (RFC §5.3) arrive with S3/S4.

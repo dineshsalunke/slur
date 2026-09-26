@@ -3,16 +3,17 @@ import { FRACTURE_SHADOW_Z } from '../fracture-shadow.js';
 import { GROOVE_BEAT_Z } from '../groove/grammar.js';
 import { type GrooveObstacle, HOLE_LEAD, ISLAND_MIN_DEPTH, SMASH_DEPTH, SMASH_WIDTH } from '../groove/islands.js';
 import { GROOVE_LINE_LIMIT } from '../groove/line.js';
+import { SCORE_PIN_HALF } from '../score/emit.js';
 import type { MotifNote, MotifNoteKind, NoteToken } from '../score/notes.js';
 import { HALF_WIDTH, MIN_LANE, SEG_LEN } from '../space.js';
 import { noteBeats } from './vocabulary.js';
 
 export const MOTIF_LEAD_BEATS = 1;
-export const GATE_HALF = MIN_LANE / 2;
+export const PIN_HALF = SCORE_PIN_HALF;
+export const PIN_DEPTH = CELL;
+export const GATE_FAR = MIN_LANE - PIN_HALF;
 export const GATE_POST = 2 * CELL;
 export const GATE_DEPTH = 6 * CELL;
-export const GATE_NEAR_REACH = 2 * CELL;
-export const JUMP_HOLE_HALF = 2 * CELL;
 export const MOVE_CRUISE = TRACK_CONTRACT.registerCruise;
 
 export interface PlacedNote {
@@ -90,21 +91,34 @@ function post( a: number, b: number, z0: number, z1: number, event: number ): Gr
     return { kind: 'island', x0, x1, z0, z1, event };
 }
 
+function isLateral( n: PlacedNote ): boolean {
+    return n.kind === 'step' || n.kind === 'held';
+}
+
+function noteEnd( next: PlacedNote | undefined, phraseEnd: number ): number {
+    if ( next === undefined ) return phraseEnd;
+    return Math.min( phraseEnd, next.z - ( isLateral( next ) ? PIN_DEPTH : 0 ) );
+}
+
+function pinOf( n: PlacedNote, event: number ): GrooveObstacle | null {
+    const d = Math.sign( n.to - n.from );
+    return post( n.from + d * PIN_HALF, d * HALF_WIDTH, n.z - PIN_DEPTH, n.z, event );
+}
+
 function gateOf( n: PlacedNote, endZ: number, event: number ): GrooveObstacle[] {
     const d = Math.sign( n.to - n.from );
     const z0 = snapUp( n.z + n.move * MOVE_CRUISE );
     const z1 = Math.min( z0 + GATE_DEPTH, snapCell( endZ ) );
     if ( z1 - z0 < ISLAND_MIN_DEPTH ) return [];
-    const near = post( n.from - d * GATE_NEAR_REACH, n.to - d * GATE_HALF, z0, z1, event );
-    const far = post( n.to + d * GATE_HALF, n.to + d * ( GATE_HALF + GATE_POST ), z0, z1, event );
+    const near = post( -d * HALF_WIDTH, n.to - d * PIN_HALF, z0, z1, event );
+    const far = post( n.to + d * GATE_FAR, n.to + d * ( GATE_FAR + GATE_POST ), z0, z1, event );
     return [ near, far ].filter( ( o ) => o !== null );
 }
 
 function holeOf( n: PlacedNote, event: number ): GrooveObstacle {
-    const [ x0, x1 ] = toWalls( n.from - JUMP_HOLE_HALF, n.from + JUMP_HOLE_HALF );
     const z0 = snapCell( n.z + HOLE_LEAD );
     const depth = n.kind === 'double' ? 2 * SEG_LEN : SEG_LEN;
-    return { kind: 'hole', x0, x1, z0, z1: z0 + depth, event };
+    return { kind: 'hole', x0: -HALF_WIDTH, x1: HALF_WIDTH, z0, z1: z0 + depth, event };
 }
 
 function smashOf( n: PlacedNote, endZ: number, event: number ): GrooveObstacle | null {
@@ -118,9 +132,10 @@ function smashOf( n: PlacedNote, endZ: number, event: number ): GrooveObstacle |
 export function emitMotif( placed: readonly PlacedNote[], phraseEnd: number, event0: number ): GrooveObstacle[] {
     const out: GrooveObstacle[] = [];
     placed.forEach( ( n, i ) => {
-        const endZ = Math.min( phraseEnd, placed[ i + 1 ]?.z ?? phraseEnd );
+        const endZ = noteEnd( placed[ i + 1 ], phraseEnd );
         const event = event0 + i;
-        if ( n.kind === 'step' || n.kind === 'held' ) out.push( ...gateOf( n, endZ, event ) );
+        if ( isLateral( n ) )
+            out.push( ...[ pinOf( n, event ) ].filter( ( o ) => o !== null ), ...gateOf( n, endZ, event ) );
         else if ( n.kind === 'jump' || n.kind === 'double' ) out.push( holeOf( n, event ) );
         else if ( n.kind === 'smash' ) {
             const s = smashOf( n, endZ, event );

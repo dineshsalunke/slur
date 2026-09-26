@@ -1,17 +1,18 @@
 import { FIXED_DT, type FlightTuning } from '../constants.js';
+import { airDistance, type JumpMode, type JumpPilot, newJumpPilot, steerJump } from '../pacing/jump-window.js';
 import { strafeToward } from '../pacing/pockets.js';
 import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
 import { openRunsAtSlice, type Run } from './clearance.js';
 import type { PlayerInput } from './input.js';
-import { HALF_WIDTH, type Segment, segIndexForZ, type Track } from './space.js';
+import { HALF_WIDTH, type Segment, segIndexForZ, spanHasZ, type Track } from './space.js';
 import { simulate } from './step.js';
-import { createSimWorld, spawnShip } from './types.js';
+import { createSimWorld, type SimShip, spawnShip } from './types.js';
 
 const SLICE = 2;
 const MARGIN = 0.4;
 const DELAY_TICKS = 12;
 const REPLAN_TICKS = 3;
-const JUMP_TICKS = 18;
+const HOLE_SCAN = 200;
 const COMMIT = 0.5;
 
 export function cached( track: Track ): Track {
@@ -50,8 +51,12 @@ function intersect( a: Run[], b: Run[] ): Run[] {
 
 function freeSlices( track: Track, t: FlightTuning ): ( k: number ) => Run[] {
     const memo = new Map< number, Run[] >();
-    const raw = ( z: number ): Run[] =>
-        z >= track.finishZ ? [ [ -HALF_WIDTH, HALF_WIDTH ] ] : merged( openRunsAtSlice( track.segmentAtZ( z ), z ) );
+    const raw = ( z: number ): Run[] => {
+        const seg = track.segmentAtZ( z );
+        if ( z >= track.finishZ || ! seg.floors.some( ( f ) => spanHasZ( seg, f, z ) ) )
+            return [ [ -HALF_WIDTH, HALF_WIDTH ] ];
+        return merged( openRunsAtSlice( seg, z ) );
+    };
     return ( k ) => {
         const hit = memo.get( k );
         if ( hit !== undefined ) return hit;
@@ -64,15 +69,22 @@ function freeSlices( track: Track, t: FlightTuning ): ( k: number ) => Run[] {
     };
 }
 
+function floorAt( track: Track, x: number, z: number ): boolean {
+    const seg = track.segmentAtZ( z );
+    return seg.floors.some( ( f ) => ( f.z0 ?? seg.z0 ) <= z && z <= ( f.z1 ?? seg.z1 ) && x >= f.x0 && x <= f.x1 );
+}
+
 function floorAhead( track: Track, x: number, z0: number, z1: number ): boolean {
-    for ( let z = z0; z <= z1; z += 1 ) {
-        const seg = track.segmentAtZ( z );
-        const on = seg.floors.some(
-            ( f ) => ( f.z0 ?? seg.z0 ) <= z && z <= ( f.z1 ?? seg.z1 ) && x >= f.x0 && x <= f.x1,
-        );
-        if ( ! on ) return false;
-    }
+    for ( let z = z0; z <= z1; z += 1 ) if ( ! floorAt( track, x, z ) ) return false;
     return true;
+}
+
+function holeEnd( track: Track, x: number, z0: number ): number {
+    const stop = Math.min( z0 + HOLE_SCAN, track.finishZ );
+    let z = z0;
+    while ( z < stop && floorAt( track, x, z ) ) z += 1;
+    while ( z < stop && ! floorAt( track, x, z ) ) z += 1;
+    return z;
 }
 
 export interface Flight {
@@ -98,24 +110,41 @@ function edgeCounter(): ( on: boolean ) => number {
     };
 }
 
+interface JumpState {
+    single: number;
+    pilot: JumpPilot | null;
+    mode: JumpMode;
+}
+
+function nextJump( j: JumpState, track: Track, t: FlightTuning, s: SimShip, want: boolean ): boolean {
+    if ( j.pilot?.done || s.dead ) j.pilot = null;
+    const lip = s.z + t.halfL + s.vz * 0.1;
+    if ( j.pilot === null && s.grounded && ( want || ! floorAhead( track, s.x, s.z + t.halfL, lip ) ) ) {
+        j.pilot = newJumpPilot();
+        const reach = holeEnd( track, s.x, s.z + t.halfL ) + t.halfL - s.z;
+        j.mode = reach > ( j.single * s.vz ) / t.maxCruise ? 'double' : 'single';
+    }
+    if ( j.pilot === null ) return false;
+    steerJump( j.pilot, j.mode, s, s.z );
+    return j.pilot.input.jump;
+}
+
 export function fly( track: Track, t: FlightTuning, steer: Steer ): Flight {
     const s = spawnShip( 0, 0 );
     const world = createSimWorld();
     const maxTicks = Math.ceil( track.finishZ / ( 0.4 * t.maxCruise ) / FIXED_DT ) + 600;
     const deaths = edgeCounter();
     const bumps = edgeCounter();
-    let jumpHold = 0;
+    const jump: JumpState = { single: airDistance( t, 'single' ), pilot: null, mode: 'single' };
     let tick = 0;
     for ( ; tick < maxTicks && ! s.finished; tick++ ) {
         const plan = steer( tick, s );
-        const edge = s.grounded && ! floorAhead( track, s.x, s.z + t.halfL, s.z + t.halfL + s.vz * 0.1 );
-        jumpHold = plan.jump || edge ? JUMP_TICKS : Math.max( 0, jumpHold - 1 );
         const input: PlayerInput = {
             seq: tick,
             throttle: plan.brake ? 0 : 1,
             brake: plan.brake ? 1 : 0,
             strafe: strafeToward( t, plan.target - s.x, s.vx ),
-            jump: jumpHold > 0,
+            jump: nextJump( jump, track, t, s, plan.jump ),
         };
         simulate( s, input, FIXED_DT, t, track, DEFAULT_SIM_CONFIG, world );
         deaths( s.dead );

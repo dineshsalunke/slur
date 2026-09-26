@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { CELL } from '../../constants.js';
+import { CELL, type FlightTuning, SCORE_ADHERENCE_FLOOR } from '../../constants.js';
+import { analyzeTrack } from '../../pacing/analyze.js';
 import { freezeTrack } from '../../pacing/grid.js';
 import { rosterPockets } from '../../pacing/pockets.js';
+import { type ScoreNote, scoreAdherence } from '../../pacing/score.js';
 import { SHIP_CLASSES } from '../../ship-classes.js';
-import { avoidPilot, cached, fly } from '../avoid-pilot.test.js';
-import { SEG_LEN, TRACK_GEN_SEGMENTS } from '../space.js';
+import { avoidPilot, cached, fly, type Steer } from '../avoid-pilot.test.js';
+import { SEG_LEN, TRACK_GEN_SEGMENTS, type Track } from '../space.js';
 import { procgenDescriptor, resolveTrack } from '../track-provider.js';
 import { phraseOpenFailures, phraseOpenSpace } from './open-space.js';
 import { buildPhrase, phraseTrack } from './phrase-track.js';
@@ -14,6 +16,38 @@ import { PHRASE_SECTION, phraseStartZ, planPhrases } from './plan.js';
 const SEEDS = Array.from( { length: 30 }, ( _, k ) => k + 1 );
 const FLIGHT_SEEDS = [ 1, 2, 3, 4, 5, 17 ];
 const LENGTH = TRACK_GEN_SEGMENTS.phrase;
+
+function placedScore( seed: number ): ScoreNote[] {
+    return buildPhrase( seed ).notes.map( ( n ) => ( {
+        kind: n.kind === 'rest' ? 'step' : n.kind,
+        k0: n.z,
+        k1: n.z,
+        dir: Math.sign( n.to - n.from ),
+        cells: Math.abs( n.to - n.from ) / CELL,
+        token: n.token,
+        spacing: 0,
+        early: 0,
+        rests: 0,
+    } ) );
+}
+
+function motifLinePilot( seed: number, track: Track, t: FlightTuning ): Steer {
+    const { plan, notes } = buildPhrase( seed );
+    const motifs = plan.phrases.filter( ( p ) => p.notes !== null );
+    const marks = [
+        ...motifs.map( ( p ) => ( { z: p.z0, to: p.x0 } ) ),
+        ...notes.map( ( n ) => ( { z: n.z, to: n.to } ) ),
+    ].sort( ( a, b ) => a.z - b.z );
+    const avoid = avoidPilot( track, t );
+    let next = 0;
+    let target = 0;
+    return ( tick, s ) => {
+        const off = avoid( tick, s );
+        while ( next < marks.length && s.z - t.halfL >= marks[ next ].z ) target = marks[ next++ ].to;
+        const on = motifs.some( ( p ) => s.z + t.halfL >= p.z0 && s.z - t.halfL < p.z1 );
+        return on ? { target, jump: false, brake: false } : off;
+    };
+}
 
 test( 'a phrase seed emits the same geometry every time', () => {
     assert.deepEqual( buildPhrase( 7 ), buildPhrase( 7 ) );
@@ -119,12 +153,23 @@ test( 'no roster pocket on phrase seeds', () => {
     }
 } );
 
-test( 'every class finishes phrase seeds with a late-reacting avoidance pilot and no death', () => {
+test( 'the easiest route plays the motif notes: adherence meets the ADR-020 floor on seeds 1–30', () => {
+    for ( const seed of SEEDS ) {
+        const played = analyzeTrack( cached( phraseTrack( seed ) ) ).score.notes;
+        const a = scoreAdherence( placedScore( seed ), played );
+        assert.ok( a.share >= SCORE_ADHERENCE_FLOOR, `seed ${ seed } adherence ${ a.share }` );
+    }
+} );
+
+test( 'every class finishes with the avoid pilot and no death, and the motif line is no slower', () => {
     for ( const c of Object.values( SHIP_CLASSES ) ) {
         for ( const seed of FLIGHT_SEEDS ) {
             const track = cached( phraseTrack( seed ) );
-            const f = fly( track, c.tuning, avoidPilot( track, c.tuning ) );
-            assert.ok( f.finished && f.deaths === 0, `${ c.id } seed ${ seed }: ${ JSON.stringify( f ) }` );
+            const avoid = fly( track, c.tuning, avoidPilot( track, c.tuning ) );
+            const line = fly( track, c.tuning, motifLinePilot( seed, track, c.tuning ) );
+            const at = `${ c.id } seed ${ seed }: avoid ${ JSON.stringify( avoid ) } line ${ JSON.stringify( line ) }`;
+            assert.ok( avoid.finished && avoid.deaths === 0, at );
+            assert.ok( line.finished && line.deaths === 0 && line.ticks <= avoid.ticks, at );
         }
     }
 } );
