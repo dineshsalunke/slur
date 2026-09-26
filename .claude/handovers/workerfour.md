@@ -1,4 +1,4 @@
-Agent: workerfour · Lane: #289 portal pickup (BC4) · Updated: 2026-09-26, night
+Agent: workerfour · Lane: #289 portal pickup (BC4) · Updated: 2026-09-26, late night
 
 ## Goal
 
@@ -8,22 +8,24 @@ The teleport runs in the shared `simulate()`, so prediction replays it (BC4). Th
 
 ## Done
 
-- 21bb3fb — `combat/portal.ts` (pure): `portalTargetZ`, `placePortalEnd` (clear-spot search: MIN_CLEAR-wide box,
-  block/gap/deck-edge, steps back toward the ship, finish clamp, null = fizzle), `hopThroughPortal` (two-way
-  plane crossing, velocity kept, `portalHops` += 1 wrapping at 255, lastSafe = the exit end). `portal.test.ts` has 18 tests.
-- 6dd1368 — slice 1 wiring. `SimWorld.portals: Map<string, PortalState>`; `SimShip`/`PlayerState.portalHops` (uint8,
-  appended after tug's fields, in SIM_SHIP_KEYS, not a float key); `simulate()` calls the hop after collisions when
-  `world.portals.size > 0`; `SimConfig extends PortalConfig` (spreads `DEFAULT_PORTAL_CONFIG`); index exports
-  portal.js; `sim/portal-hop.test.ts` (3 tests through simulate, including replay equality).
+- 21bb3fb — `combat/portal.ts` (pure): placement, clear-spot search, `hopThroughPortal`. 18 tests.
+- 6dd1368 — slice 1: `SimWorld.portals`, `portalHops` on the ship, the hop inside `simulate()`, replay test.
+- 664cc60 — slice 2: schema `Portal` + `RunState.portals` (appended); `HeldPower.portal=6`, `portalB=7`;
+  `PORTAL_HOP_MESSAGE`/`PORTAL_FIZZLE_MESSAGE` (+ message types); `SEEKER_RATIO` 0.2 → 0.15; `portalRatio` in
+  `PortalConfig` (default `PORTAL_RATIO = 0`); bag row + cache key; new `run/portal-run.ts` (placePortal,
+  isDoubleTap, throwPortalFar, stepPortals, portalHopped); `firePower` returns `PortalEnd | null`; RunSim holds
+  `portalTaps`, passes `state.portals` to simulate, broadcasts hops, clears portals in `clearCombat`/`leave`.
+  `run/portal-run.test.ts` has 10 tests.
 
 ## State
 
-- At 6dd1368: typecheck clean; shared 462/462, server 38/38, client 437/437; Biome clean except the pre-existing
-  step.ts file-length warning (337 lines, now +2) (measured).
-- Portal config lives in `DEFAULT_PORTAL_CONFIG` in combat/portal.ts: R 3, H 5, nearLead 0.4 s, far 1 s × hull
-  maxCruise, backGap 1, arm 0.3 s, ttl 9, doubleTap 15 ticks, clearW 7, clearHalfL 6, exitGap 0.5, finishGap 20, zStep 1.
-- There is no MIN_CLEAR constant in code; portalClearW = MAX_SHIP_WIDTH + 3.
-- Nothing places portals yet. The server and the client never fill `world.portals`, so the game is unchanged.
+- At 664cc60: typecheck 0, lint 0 (7 old file-length warnings, none mine), shared 472/472, client 437/437,
+  server 38/38 (measured).
+- Supervisor decision: `portalRatio` ships at 0. The default bag is bolt 7 / seeker 3 / mine 4 / boost 3 / shield 3.
+  At 0.1 it is 5/3/4/3/3/2 (tested).
+- The pair lifetime restarts when end B lands. A lone end lives 9 s from end A.
+- Double tap = same slot + same dir, `intent.seq − tap.seq` in 0..15. It works on end A and on end B.
+- The client neither mirrors nor draws portals yet. With ratio 0, the game is unchanged.
 
 ## Uncommitted
 
@@ -31,29 +33,22 @@ None of mine.
 
 ## Held files
 
-None. Slice 1 files are released. Supervisor order: my S2 goes FIRST on the shared fire/bag files, and workertwo's S2 queues
-behind me. **Tell workertwo directly when my S2 commits.**
+None. All S2 files are released. workertwo and the supervisor were told at 664cc60.
 
 ## Next
 
-1. Claim S2 with the supervisor: schema.ts (Portal class + RunState.portals), combat/constants.ts (HeldPower portal=6,
-   portalB=7, PORTAL_HOP_MESSAGE, PORTAL_FIZZLE?), run/combat.ts (firePower dispatch + a stepPortals call),
-   combat/power-bag.ts + sim-config ratio (owner: 2/20, Bolt 6→5, Seeker 4→3), run/run-sim.ts (double-tap
-   pending before `canFire`; set `world.blocks.portals` from state; clearCombat clears), new run/portal-run.ts
-   (place/move/arm/ttl/lone-end expiry takes the portalB slot; 1 pair per owner), run-sim.test.ts.
-   - Double tap: in `RunSim.fire`, if pending {slot, dir, seq} matches and `intent.seq − pending.seq ≤ 15`,
-     move that end to far (reset its arm) and spend nothing. Otherwise the normal fire.
-   - A seeker misses when its target's portalHops changes (seeker.ts; check the tug S2 overlap).
-   - Hop broadcast: compare portalHops before/after stepRacer, then broadcast {from, to, victimId}.
-2. Slice 3, client net: portal-state.ts mirrors into blockWorld.portals; snap on a portalHops change (Prev, Interp, camera).
-3. Slice 4: VFX (placeholder marigold rings), HUD glyph, sfx. Slice 5: GDD §5.3 + §5.7 BC4 LIVE, ADR, /test-level
-   live check, `gh issue close 289` with the SHA.
+1. Slice 3, client net. First claim with the supervisor: portal-state mirror into `blockWorld.portals`
+   (prediction world), and a snap on a `portalHops` change (Prev, Interp, camera). Add a `portals` bucket to
+   `scene/seeker-pickups/seeker-pickups.tsx` + `.utils.ts` + `scene/seeker-pickups.test.ts` + `scene/pickup-field.tsx`
+   (the supervisor cleared these once; re-claim). Then set `PORTAL_RATIO = 0.1` and update the default-bag test.
+2. Slice 4: VFX (placeholder marigold rings), HUD glyph + `LABEL` in `hud/power-cell/power-cell.constants.ts`,
+   `power-gem.tsx`, sfx for hop/fizzle.
+3. Slice 5: GDD §5.3 + §5.7 BC4 LIVE, ADR, /test-level live check, `gh issue close 289` with the SHA.
 
 ## Open questions
 
-- A far end ahead can loop a chaser: each forward pass throws them back until they strafe round or the TTL ends.
-  Sent to the supervisor as a note; a per-ship hop cooldown is the fix if play shows it is too harsh.
+- A far end ahead can loop a chaser. A per-ship hop cooldown is the fix if play shows it is too harsh (with the owner).
 
 ## Lessons → memory
 
-- `.claude/memory/shared-tests-need-in-package-outdir.md`
+- none. (The fish `$F` no-split trap is already in `bash-tool-runs-fish.md`.)
