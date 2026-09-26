@@ -138,9 +138,9 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
     assert.equal( dirty.jumpsUsed, 0 );
 } );
 
-test( 'shouldSpectateOnJoin: Race policy — only lobby joins race, everything else spectates', () => {
+test( 'shouldSpectateOnJoin: the field locks at GO — lobby and countdown joins race', () => {
     assert.equal( shouldSpectateOnJoin( PHASE.lobby ), false );
-    assert.equal( shouldSpectateOnJoin( PHASE.countdown ), true );
+    assert.equal( shouldSpectateOnJoin( PHASE.countdown ), false );
     assert.equal( shouldSpectateOnJoin( PHASE.racing ), true );
     assert.equal( shouldSpectateOnJoin( PHASE.finished ), true );
 } );

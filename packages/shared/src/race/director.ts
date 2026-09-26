@@ -13,7 +13,7 @@ export function isColorId( n: unknown ): n is number {
 }
 
 export function shouldSpectateOnJoin( phase: number ): boolean {
-    return phase !== PHASE.lobby;
+    return phase >= PHASE.racing;
 }
 
 export interface RunMetadata {

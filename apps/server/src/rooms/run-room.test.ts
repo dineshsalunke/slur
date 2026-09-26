@@ -29,6 +29,7 @@ import {
     SEEKER_HIT_MESSAGE,
     SEEKER_MISS_MESSAGE,
     START_MESSAGE,
+    START_STAGGER,
     STUN_SECONDS,
     segIndexForZ,
     TRACK_SEGMENTS,
@@ -104,6 +105,35 @@ describe( 'RunRoom combat', () => {
         assert.equal( room.state.phase, PHASE.racing, 'the countdown hands over to racing' );
         return { room, connections, host };
     }
+
+    test( 'a countdown joiner races from a clean grid slot; racing and finished joiners spectate', async () => {
+        const room = await colyseus.createRoom< RunRoom >( ROOM_NAME );
+        room.setSimulationInterval();
+        const host = await colyseus.connectTo( room, { name: 'Host' } );
+        host.send( START_MESSAGE );
+        await room.waitForMessage( START_MESSAGE );
+        tick( room, COUNTDOWN_SECONDS / 2 );
+        assert.equal( room.state.phase, PHASE.countdown );
+
+        const early = await colyseus.connectTo( room, { name: 'Early' } );
+        const joiner = playerOf( room, early.sessionId );
+        assert.equal( joiner.spectating, false, 'a countdown joiner races' );
+        assert.equal( joiner.x, START_STAGGER, 'the joiner takes the next grid slot' );
+        assert.equal( joiner.lastSafeX, joiner.x, 'the respawn line starts at the grid slot' );
+        assert.equal( joiner.finishTime, 0 );
+        assert.deepEqual( rack( joiner ), Array( POWER_SLOTS ).fill( HeldPower.none ) );
+
+        tick( room, COUNTDOWN_SECONDS );
+        assert.equal( room.state.phase, PHASE.racing );
+        assert.equal( joiner.spectating, false, 'the countdown joiner is still racing after GO' );
+
+        const late = await colyseus.connectTo( room, { name: 'Late' } );
+        assert.equal( playerOf( room, late.sessionId ).spectating, true, 'a racing joiner spectates' );
+
+        room.state.phase = PHASE.finished;
+        const afterFinish = await colyseus.connectTo( room, { name: 'After' } );
+        assert.equal( playerOf( room, afterFinish.sessionId ).spectating, true, 'a finished joiner spectates' );
+    } );
 
     test( 'a bolt stuns the ship it hits, spares its owner, and is pruned', async () => {
         const { room, connections, host } = await racingRoom( 2 );
