@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, evening (seam at ~157k)
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, late evening
 
 ## Goal
 
@@ -37,11 +37,14 @@ The unsent text in an idle prompt box is Claude Code's suggested reply, not the 
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #273 netcode, all 4 items | building | sim/types.ts, sim/fround.test.ts, combat/constants.ts, run-room.ts, room-input.ts(+test), run-room.test.ts, net/prediction.ts(+test), attach-room-to-world.ts, ecs/net-systems.ts, input/current-input.ts, net-canvas.tsx |
-| workertwo | w2P:pF | #283 file layout | B0 landed 2034287 (92 files warn). B2+B3 cleared. B1 folded into B7 (after #274). B4/B5 HELD for #285 | routes/pacing/**, routes/home/** + home.tsx, routes/beat-deck/**, 1 import line in routes/game/route.tsx |
-| workerthree | w2P:pG | #280 mine fizzle (+ bind-room-audio:154 → musicForPhase, + mine-shock toneMapped from #275) | building | combat/mine.ts, mine-drop.test.ts, room-combat.ts, room-mine-fizzle.test.ts (new), mine-shock-events.ts, mine-shock.tsx, sfx-map.ts, bind-room-audio.ts, local-combat.ts(+test) |
-| workerfour | w2P:pH | #276 item 3 (pow) | READY, uncommitted, WAITING owner OK: weave digest changes on all 5 seeds (groove unchanged); depth ≤0.6u shallower at mid intensity; pockets fixture window 3.2u → 3.5u | block-depth.ts(+test), track-digest.test.ts, constants.ts:218-223, pacing/pockets.test.ts |
-| workerfive | w2P:pK | #284 style → Tailwind (after #274 done afcd0e7: CountdownOverlay renders 60→3, SpectatorBar 158→0) | resumed, claims pending; net-canvas.tsx last (workerone holds it) | pending |
+| workerone | w2P:pD | #275 render P1s (mine-shock done) | cleared, resumed, claims pending | pending |
+| workertwo | w2P:pF | fix workertwo-move.mjs lint → #285 phase 2 → #283 B1/B7 + test-level-canvas → B4/B5 | cleared, resumed | pending |
+| workerthree | w2P:pG | #281 remove invuln | assigned (8%, not cleared) | pending |
+| workerfour | w2P:pH | #277 P2 sweep | cleared, resumed | pending |
+| workerfive | w2P:pK | #172 frame-tap double write | cleared, resumed | pending |
+
+#284 DONE 9d9779c. #273 DONE c3ab18d. #270 CLOSED. Dead code deleted e40e89d. The older log below is history.
+
 
 #283 B1/B7 and landing-scene wait for #284 (told workertwo).
 #283 B2+B3 committed fa42f18 (58 files; push pending by workertwo). workertwo AT SEAM ~185k: when idle and
