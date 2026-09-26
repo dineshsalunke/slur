@@ -1,18 +1,18 @@
-Agent: workerfour · Lane: #268 follow-up (dead tunables) · Updated: 2026-09-26
+Agent: workerfour · Lane: server input validation (#252, closed) · Updated: 2026-09-26
 
 ## Goal
 
-Remove the dead `RearView.featherX/Y` tunables left after the solid rear-view mirror (#268).
+Clamp and validate client inputs on the server before they reach the queue.
 
 ## Done
 
-- `107413c`: dropped `RearView.featherX/Y` from `apps/client/app/dev/tuning-schema.ts`. No readers existed.
-- `2ce75a4` (pushed): #265 pickup spread + power bag (closed).
-- `1199218` (pushed): #268 solid rear-view mirror.
+- `84a2ff7` (pushed): #252. New `apps/server/src/rooms/room-input.ts` `sanitizeInputs()` + `MAX_QUEUED_INPUTS` (moved from run-room.ts). `run-room.ts` INPUT_MESSAGE handler queues only sanitized inputs. 8 tests in `room-input.test.ts`. #252 closed.
+- `107413c` (pushed): dropped dead `RearView.featherX/Y` tunables.
 
 ## State
 
-- Gates at 107413c: client typecheck clean, client 391/391, biome clean on the file, comment ratchet OK.
+- Gates at 84a2ff7: server 33/33, `pnpm typecheck` clean, `pnpm lint` clean (7 biome warnings, all line-count warnings from before; run-room.ts is 342 lines at HEAD and after).
+- jump is `jump === true`, so the string "true" becomes false. The client sends a real boolean [unmeasured on the wire; read from `PlayerInput`].
 
 ## Uncommitted
 
