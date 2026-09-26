@@ -39,13 +39,13 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 | workerone | w2P:pD | none | cleared, idle | none |
 | workertwo | w2P:pF | none (#283 moves done; last step handed to workerfive) | idle | none |
 | workerthree | w2P:pG | none (#169 stopped: owner says #160/#161/#169 already done; closed) | idle | none |
-| workerfour | w2P:pH | #287 remove /pacing + DEFAULT_TRACK_GEN=groove, closes #246 | resumed | claim pending |
+| workerfour | w2P:pH | none. #287 DONE 2bc0292 (/pacing gone, DEFAULT_TRACK_GEN=groove); #287 + #246 closed | idle | none |
 | workerfive | w2P:pK | none. #269 blur + pull-back SHIPPED f0056b3 (open for owner feel test); #283 CLOSED, grit rule at error | idle | none |
 
 ## Open owner questions
 
 1. #160 #161 #169 were already done (owner); closed with a comment. Stale open issues exist: check before assigning.
-2. Idle: workerone, workertwo, workerthree. Candidate left: #248 (procgen shadow rule).
+2. ALL FIVE workers idle. Candidate: #248. Owner Q: landing backdrop still weave (omitted gen = weave in schema/makeProcgenTrack) — switch to groove?
 3. Older: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle.
 
 ## Next
