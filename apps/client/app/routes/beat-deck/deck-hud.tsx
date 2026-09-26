@@ -1,6 +1,6 @@
-import { DeckStatus } from './deck-status';
+import { DeckStatus } from './deck-status/deck-status';
 import { ShipPicker } from './ship-picker';
-import { SongPicker } from './song-picker';
+import { SongPicker } from './song-picker/song-picker';
 
 export function DeckHud() {
     return (

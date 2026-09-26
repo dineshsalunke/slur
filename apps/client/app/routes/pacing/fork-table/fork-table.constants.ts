@@ -1,0 +1,16 @@
+export const HEAD = [
+    'fork',
+    'split',
+    'length',
+    'sep',
+    'verdict',
+    'arm',
+    'lateral u',
+    'rev',
+    'peak u/s',
+    'jumps',
+    'air u',
+    'gaps',
+    'stuck',
+    '',
+];

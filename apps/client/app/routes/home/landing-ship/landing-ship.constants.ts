@@ -1,0 +1,9 @@
+export const AHEAD = 2;
+export const PORTRAIT_AHEAD = 15;
+export const LANE_X = -2.6;
+export const WIDE_ASPECT = 1.6;
+export const REST_Y = 1.1;
+export const BOB_AMP = 0.14;
+export const BOB_HZ = 0.45;
+export const IDLE_BANK = 0.05;
+export const TWO_PI = Math.PI * 2;

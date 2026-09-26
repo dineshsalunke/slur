@@ -1,15 +1,8 @@
 import type { Route } from './+types/route';
 import { analyzeSeed } from './analyze-client';
-import { PacingBoard } from './pacing-board';
+import { PacingBoard } from './pacing-board/pacing-board';
 import { PacingReportContext } from './pacing-report-context';
-
-const DEFAULT_SEED = 20260921;
-
-function parseSeed( raw: string | null ): number {
-    if ( raw === null || raw.trim() === '' ) return DEFAULT_SEED;
-    const n = Number( raw );
-    return Number.isSafeInteger( n ) ? n : DEFAULT_SEED;
-}
+import { parseSeed } from './route.utils';
 
 export function meta() {
     return [

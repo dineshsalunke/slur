@@ -4,10 +4,10 @@ import { RoomList } from '../lobby/room-list';
 import { hostRoom, joinLobby, joinRoom, leaveRoom } from '../net/matchmaking';
 import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
-import { NAME_KEY } from './home/call-sign-field';
-import { LandingScene } from './home/landing-scene';
+import { NAME_KEY } from './home/call-sign-field/call-sign-field.constants';
+import { LandingScene } from './home/landing-scene/landing-scene';
 import { MENU_FORM, RUN_CLOSED } from './home/menu-form';
-import { MenuStrip } from './home/menu-strip';
+import { MenuStrip } from './home/menu-strip/menu-strip';
 
 export function meta( _args: Route.MetaArgs ) {
     return [

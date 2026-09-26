@@ -5,7 +5,7 @@ import { world } from '../../game/ecs/world';
 import { CANVAS_GL } from '../../game/scene/canvas-gl';
 import { WorldScene } from '../../game/scene/world-scene';
 import { DeckHud } from './deck-hud';
-import { DeckLoop } from './deck-loop';
+import { DeckLoop } from './deck-loop/deck-loop';
 import { DeckShip } from './deck-ship';
 import { deckTrack } from './deck-track';
 
