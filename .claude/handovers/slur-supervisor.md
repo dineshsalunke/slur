@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, afternoon
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, late afternoon
 
 ## Goal
 
@@ -7,50 +7,56 @@ The rules are in `CLAUDE.local.md`. Clear and resume steps: memory `supervisor-c
 Standing approval to clear workers at a seam. Grep the status line with `│ [█░]* [0-9]*%`; the first read
 after /clear often shows the old percent, so read again. Clear a worker before assigning if it is past 10%.
 After sending to an idle worker, check the pane (`herdr pane read <pane> | grep -E "Message from|⏺"`); a queued
-message can sit unread. Use `bash -c '…'` for herdr loops (the Bash tool shell varies).
+message can sit unread, so nudge with `herdr agent prompt <pane> "..."`. Use `bash -c '…'` for herdr loops.
 
 ## Standing owner decisions
 
 - OWNER RULE: dev only, ONE stack (:5173/:2567). No worktrees, no scratch stacks.
-- OWNER RULE (2026-09-26): the worker who fixes an issue closes it with a SHA comment (CLAUDE.local.md §2,
-  memory `worker-closes-its-issue.md`). Put it in every lane brief.
+- OWNER RULE: the worker who fixes an issue closes it with a SHA comment. Put it in every lane brief.
 - WIDTH 96u (24 lanes). MATERIAL: dark graphite pitted metal everywhere; the deck adds the 4×4u plate grid.
 - Hosted rooms default to GROOVE. The song work is a throwaway lens, freighter-only.
 - #261 mine rules (stun 1.5 s, ×0.6, arm 0.5 s, trigger 3u, ttl 20 s, 3/owner). Every power fires forward (E) or back (F).
-- Workers commit by explicit pathspec and push dev without asking.
-- Audio direction: SCI-FI, not cartoon. CC-BY and CC-BY-SA accepted.
-- Ship trails (#10) parked until after beta, in the polish pass.
+- Audio: SCI-FI, not cartoon. CC-BY and CC-BY-SA accepted.
+- Ship trails (#10) parked until after beta.
+- #269 Boost: +40% of class top speed, 2 s, 0.2 s ease-out, a second use resets the timer, cannot break a stun.
+- #270 Shield: 5 s window, absorbs ONE hit; blocks bolt, mine AND homing seeker; not block crashes; visible dome.
+  Visual ref for both: `docs/art-direction/ingredients/ingredients.png` panels 2 and 3 (decisions posted on the issues).
 
-## Landed this session
+## Landed / closed today
 
-ab12a98 #267 sci-fi audio (closed by workerfive) · 84a2ff7 #252 server input validation (closed by workerfour)
-· #227 closed by workerone: a–c were already in c99c40d; sky bake ≈112 ms per re-bake at DPR 1 (≈98 ms field,
-13.6 ms relight); old/new still skipped on owner say-so.
-Closed on owner say-so: #163 #170 #215 #222 #251 #264 (sign-offs), #20 (split), #10 and #109 (not planned).
-Filed: #269 Boost pickup, #270 Shield pickup (both Backlog; each lists owner questions before build).
+#267 ab12a98 · #252 84a2ff7 · #227 closed (a–c in c99c40d; bake ≈112 ms) · sign-offs closed: #163 #170 #215
+#222 #251 #264 · #20 split into #269/#270 · #10 #109 #138 #127 closed not-planned.
+Code review: 5 reports + merged `.claude/phases/2026-09-26-review/SUMMARY.md` (115abd8). 7 P0 · 15 P1 · ~48 P2.
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #227 done | idle, ~9%+ | none |
-| workertwo | w2P:pF | none | idle, 21%: clear before reuse | none |
-| workerthree | w2P:pG | none | idle, ~120k: clear before reuse | none |
-| workerfour | w2P:pH | #252 done | idle, ~7%+ | none |
-| workerfive | w2P:pK | #267 done | idle, cleared to 0% | none |
+| workerone | w2P:pD | #269 Boost, CLEARED for 2 commits | building | constants.ts, sim-config.ts, power-bag.ts, schema.ts, sim/types.ts, step.ts, combat-step.ts, room-combat.ts, local-combat.ts, power-cell.tsx, power-gem.tsx, seeker-pickups.tsx (+ new boost-* files) until its commit 2 is pushed |
+| workerthree | w2P:pG | #270 Shield, plan APPROVED | building new files | CLEARED: combat/shield.ts(+test), shield-dome.tsx, shield-look.ts, shield-pickups.tsx, room-shield.test.ts, run-room.ts, ecs/traits.ts, net/attach-room-to-world.ts. WAITS for workerone commit 2: constants.ts, sim-config.ts, schema.ts, room-combat.ts, local-combat.ts, power-gem/cell.tsx, seeker-pickups.tsx, pickup-field.tsx, ship-view.tsx, sfx-map.ts, bind-room-audio.ts, index.ts |
+| workertwo | w2P:pF | review done | idle, >10%: clear before reuse | none |
+| workerfour | w2P:pH | review done | idle, 24%: clear before reuse | none |
+| workerfive | w2P:pK | review done | idle, 25%: clear before reuse | none |
+
+Conditions given to workerone: boost and shield bag shares ship at 0; each lane turns its own kind on. Proposal
+6/4/4/3/3 (bolt/seeker/mine/boost/shield of 20) goes to the owner in the #269 close comment. schema fields are
+APPENDED and plain (never @deprecated): boostTimer, then shield's field.
 
 ## Next
 
-1. Owner to name the next lanes. Candidates: #6 respawn death-loop, #246 pacing accel, #172 frame-tap crash,
-   #138/#127 canvas guard (may be stale: names deleted routes), #269/#270 once the owner answers their questions.
-2. #267 follow-ups: owner ear check in a hosted room (pass-by, remote engine, lock loop unheard in play); a new
-   issue for the 16 unchosen sound events and Q4–Q6 — owner has not said yes to filing it.
+1. workerone: commit-1 SHA → confirm workerthree got it; commit 2 pushed → clear the held files for workerthree.
+2. workerthree: review its claims + plan and clear them against the hold above.
+3. Owner to pick review fix lanes (SUMMARY.md: A room lifetime, B small P0s, C netcode, D run-view store,
+   E render P1s, F track contract, G P2 sweep). Recommended A + B first. Clear two/four/five before assigning.
+4. Owner to pick the final bag shares when #269/#270 ship.
 
 ## Open owner questions
 
-- File the #267 follow-up issue?
-- Server 'fizzled' mine broadcast (visible fizzle feedback). Unanswered.
-- Older: lint files over 300 lines; weave a/b/c; #254 class roles; #244 FRACTURE_RATE; net-debug-hud removal; review #236.
+- Review decisions (SUMMARY.md "Owner decisions needed"): @deprecated rule text; room-in-loader rule vs
+  convention; /test-level + /pacing in production; mine spent on failed aim (refund or fizzle); dead post-respawn
+  invuln; countdown joiner spectates vs "locks at GO".
+- #267 follow-ups: owner ear check in a hosted room; file an issue for the 16 unchosen sound events + Q4–Q6?
+- Older: lint files over 300 lines; weave a/b/c; #254 class roles; #244 FRACTURE_RATE; review #236.
 
 ## Uncommitted
 
