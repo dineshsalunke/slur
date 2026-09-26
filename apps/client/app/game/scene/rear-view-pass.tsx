@@ -35,8 +35,7 @@ export function RearViewPass() {
         const uniforms = surface.uniforms;
         uniforms.uExposure.value = state.gl.toneMappingExposure;
         uniforms.uGain.value = num( 'RearView.gain' );
-        uniforms.uFeatherX.value = num( 'RearView.featherX' );
-        uniforms.uFeatherY.value = num( 'RearView.featherY' );
+        uniforms.uSize.value.set( width, height );
         state.gl.setRenderTarget( target );
         state.gl.clear( true, true, true );
         state.gl.render( state.scene, camera );

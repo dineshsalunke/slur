@@ -1,5 +1,10 @@
 import * as THREE from 'three';
 
+const BEZEL_PX = 3;
+const LIP_PX = 1;
+const BEZEL_COLOR = '#1C252C';
+const LIP_COLOR = '#F59A24';
+
 const vertexShader = /* glsl */ `
 varying vec2 vUv;
 
@@ -13,8 +18,11 @@ const fragmentShader = /* glsl */ `
 uniform sampler2D uMap;
 uniform float uExposure;
 uniform float uGain;
-uniform float uFeatherX;
-uniform float uFeatherY;
+uniform vec2 uSize;
+uniform float uBezelPx;
+uniform float uLipPx;
+uniform vec3 uBezel;
+uniform vec3 uLip;
 
 varying vec2 vUv;
 
@@ -39,19 +47,26 @@ vec3 neutralToneMap( vec3 color ) {
     return mix( color, vec3( newPeak ), g );
 }
 
-float edgeMask( vec2 uv ) {
-    float x = smoothstep( 0.0, uFeatherX, uv.x ) * smoothstep( 1.0, 1.0 - uFeatherX, uv.x );
-    float y = smoothstep( 0.0, uFeatherY, uv.y ) * smoothstep( 1.0, 1.0 - uFeatherY, uv.y );
-    return x * y;
+float edgeDistancePx( vec2 uv ) {
+    vec2 d = min( uv, 1.0 - uv ) * uSize;
+    return min( d.x, d.y );
 }
 
 void main() {
     vec3 color = texture2D( uMap, vec2( 1.0 - vUv.x, vUv.y ) ).rgb;
     gl_FragColor = vec4( neutralToneMap( max( color, 0.0 ) ), 1.0 );
     #include <colorspace_fragment>
-    gl_FragColor.rgb *= uGain * edgeMask( vUv );
+    gl_FragColor.rgb *= uGain;
+
+    float edge = edgeDistancePx( vUv );
+    if ( edge < uBezelPx + uLipPx ) gl_FragColor.rgb = uLip;
+    if ( edge < uBezelPx ) gl_FragColor.rgb = uBezel;
 }
 `;
+
+function srgbTriple( hex: string ): THREE.Color {
+    return new THREE.Color( hex ).convertLinearToSRGB();
+}
 
 export function rearViewSurface( map: THREE.Texture ): THREE.ShaderMaterial {
     return new THREE.ShaderMaterial( {
@@ -59,13 +74,14 @@ export function rearViewSurface( map: THREE.Texture ): THREE.ShaderMaterial {
             uMap: { value: map },
             uExposure: { value: 1 },
             uGain: { value: 1 },
-            uFeatherX: { value: 0.35 },
-            uFeatherY: { value: 0.3 },
+            uSize: { value: new THREE.Vector2( 1, 1 ) },
+            uBezelPx: { value: BEZEL_PX },
+            uLipPx: { value: LIP_PX },
+            uBezel: { value: srgbTriple( BEZEL_COLOR ) },
+            uLip: { value: srgbTriple( LIP_COLOR ) },
         },
         vertexShader,
         fragmentShader,
-        transparent: true,
-        blending: THREE.AdditiveBlending,
         depthTest: false,
         depthWrite: false,
     } );
