@@ -1,59 +1,74 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, night (seam at ~150k)
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, late night (seam at ~153k)
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. Clear and resume steps: memory `supervisor-clears-workers-via-herdr.md`.
-Standing approval to clear workers at a seam. Grep the status line with `│ [█░]* [0-9]*%`; the first read
-after /clear often shows the old percent, so read again. Clear a worker before assigning if it is past 10%.
-SendMessage and a worker's own message often cross; if a worker says it is still waiting, send the answer
-straight to its pane with `herdr agent prompt <pane> "..."`. Use `bash -c '…'` for herdr loops.
+Standing approval to clear workers at a seam. Read the context bar with `grep -oE "│ [█░]* [0-9]*%"` (a bare
+`[0-9]+%` catches the weekly-usage figure). The first reads after /clear often show the old percent; loop
+reads until 0%. Clear a worker before assigning if it is past 10%. Use `bash -c '…'` for herdr loops.
 Never brief a worker to build or serve an old commit: that is a scratch stack (owner rule).
 
 ## Standing owner decisions
 
 - OWNER RULE: dev only, ONE stack (:5173/:2567). No worktrees, no scratch stacks.
 - OWNER RULE: the worker who fixes an issue closes it with a SHA comment. Put it in every lane brief.
-- WIDTH 96u (24 lanes). MATERIAL: dark graphite pitted metal everywhere; the deck adds the 4×4u plate grid.
-- Hosted rooms default to GROOVE. The song work is a throwaway lens, freighter-only.
-- #261 mine rules (stun 1.5 s, ×0.6, arm 0.5 s, trigger 3u, ttl 20 s, 3/owner). Every power fires forward (E) or back (F).
-- Audio: SCI-FI, not cartoon. CC-BY and CC-BY-SA accepted.
-- Ship trails (#10) parked until after beta.
-- #269 Boost: now +75% (owner, 9be7439), 2 s, rise 0.25 s, ease 0.2 s. Owner wants motion blur and a camera
-  pull-back with it (plan below). #270 Shield: 5 s, absorbs one hit.
-- Bag 6/4/4/3/3. Review decisions: dead schema fields plain · dev routes dev-only · remove dead invuln (done).
+- OWNER RULE (new, memory owner-tests-on-test-level): the owner tests everything on /test-level. Every brief
+  says "verify on /test-level".
+- Single-player mode will come later and must run without a server room. #288's loopback room is its base
+  (not dev-gated; dev extras in a separate layer).
+- WIDTH 96u. MATERIAL: dark graphite pitted metal. Hosted rooms default to GROOVE.
+- Every power fires forward (E) or back (F). Audio sci-fi. CC-BY/CC-BY-SA ok. Ship trails parked.
+- Bag today 6/4/4/3/3 (bolt/seeker/mine/boost/shield).
 
-## Closed this session
+## Closed / shipped this session
 
-#172 4a8e1a8 (workerfive) · #273 c3ab18d · #275 fed4ac2 c2b9ac4 0afbef2 5ded0a4 (workerone) · #281 e13f35d
-(workerthree) · #284 9d9779c · #285 7325f12 (workertwo).
-#277: every slice is in. workerfour b7df188 62f663f 1b111b6 d342d6d 8ad39b0 e7ce4e7 b706baa bb433b0 47cce3e
-5505ed8 6b0fc62 acdffa9 50c6e17; workertwo fc008d0 b06bd73. CLOSED by workerfour after the look check PASSED
-(workertwo 446aa95, HEAD taps only). DEFAULT_TRACK_GEN is split out and waits for the owner (below).
-#283: B1/B7 492e8d2, test-level 6ad8055. B4/B5 (game/scene moves) released to workertwo after the look check.
+- #269 blur made readable 16bc5ef (workerfive). #269 OPEN for owner feel test on /test-level.
+- #268 rear-view: reopened, fixed 09cb486 (workerthree): opaque, feathered, no bezel/lip. OPEN for owner look.
+- #288 one run path DONE + CLOSED (workerone): dab29d4 268dcb2 d39de1c a79bfc3 5336f7e, pushed to 851ed25.
+  RunSim is shared; /test-level runs it through LoopbackRoom.
+- Filed: #289 portal, #290 tug line (= Tractor beam; grapple folded in as no-rival → latch nearest block),
+  #291 boomerang, #292 forks (wall OR gap divider), #293 triggered hazards, #294 parry (shield timing),
+  #295 blink (blocked by #289), #296 RFC polarity lanes (new `rfc` label).
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none | cleared, idle | none |
-| workertwo | w2P:pF | none (#283 moves done; last step handed to workerfive) | idle | none |
-| workerthree | w2P:pG | none (#169 stopped: owner says #160/#161/#169 already done; closed) | idle | none |
-| workerfour | w2P:pH | none. #287 DONE 2bc0292 (/pacing gone, DEFAULT_TRACK_GEN=groove); #287 + #246 closed | idle | none |
-| workerfive | w2P:pK | none. #269 blur + pull-back SHIPPED f0056b3 (open for owner feel test); #283 CLOSED, grit rule at error | idle | none |
+| workerone | w2P:pD | none (#288 done) | idle, ~14% | none |
+| workertwo | w2P:pF | #290 tug line, PLAN sent, waiting on owner | idle | none |
+| workerthree | w2P:pG | none | idle, ~11% | none |
+| workerfour | w2P:pH | #289 portal, PLAN sent, waiting on owner | idle | none |
+| workerfive | w2P:pK | none | idle, ~11% | none |
 
-## Open owner questions
+## Open owner questions (relayed, unanswered)
 
-1. #160 #161 #169 were already done (owner); closed with a comment. Stale open issues exist: check before assigning.
-2. ALL FIVE workers idle. Candidate: #248. Owner Q: landing backdrop still weave (omitted gen = weave in schema/makeProcgenTrack) — switch to groove?
-3. Older: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle.
+#290 tug (workertwo plan): Q1 back-fire effect on the chaser: (a) same slow, (b) sideways yank toward your
+lane [my pick], (c) literal pull forward. Q2 audio: reuse existing sfx [my pick]. Q3 start values: range 150u,
+kick +40 u/s, cap +50% 0.6 s, target ×0.7 then cap 60% 1 s. ALSO tell workertwo: its plan predates the grapple
+fold; "no target → no fire" must become "no rival → latch nearest block ahead and reel in".
+
+#289 portal (workerfour plan): 1 lone first end expires at 9 s? 2 arm delay 0.3 s + near lead 0.4 s? 3 one live
+pair per owner? 4 mix 2/20 portals taken from bolt 6→5, seeker 4→3? 5 seeker misses when target hops? 6 can jump
+over an end? 7 fizzle keeps the charge? 8 placeholder marigold rings, Codex review later?
+
+Other: one-way membrane (sideways) — file/park/drop? #293 trigger input (interact key vs shoot) + trigger delay.
+Older: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle; landing backdrop weave→groove.
+
+## File serialization (#289 vs #290) — decide before clearing either build
+
+Both plans list as "mine only" files the other also writes: packages/shared/src/schema.ts (PlayerState appends:
+tug tugTimer+slowTimer, portal portalHops), sim/types.ts (SimShip keys), sim/step.ts, sim-config.ts, shared
+index.ts. Plus the declared shared set: combat/constants.ts, combat/power-bag.ts, run/combat.ts, run/run-sim.ts,
+HUD power-cell/power-gem, sfx-map + bind-room-audio, pickup-field, net-canvas/world-scene, attach-room-to-world.
+Plan: run tug S1 (sim) to commit first, then portal S1 on top; S2 fire-dispatch/bag slices one at a time. Field
+append order in schema = commit order. Bag totals must be agreed across both (20 per run).
 
 ## Next
 
-1. On boost approval: tell workerfive to build. Its files are free; keep workertwo's B4/B5 out of them.
-2. On the look-check result: close #277, or route a deviation to workerfour.
-3. On the workerthree report: note the #275 result on the issue (it is already closed).
-4. On the /pacing answer: workerfour does DEFAULT_TRACK_GEN (its claim was in cb704b2's handover).
+1. Get the owner's answers above; send each worker its answers and the serialization order; clear claims per slice.
+2. Idle workerone/three/five: candidates #291 boomerang, #292 forks, #294 parry (#294 touches shield + combat —
+   serialize with #289/#290). Clear a worker past 10% before assigning.
 
 ## Uncommitted
 
@@ -61,4 +76,4 @@ None of mine.
 
 ## Lessons → memory
 
-none (the IPv4/IPv6 CDP port note is already in check-the-cdp-port-is-yours.md, per workertwo)
+owner-tests-on-test-level.md (2208026).
