@@ -102,4 +102,5 @@ lives in its own file beside this one.
 - [Server rounds floats each tick](fround-makes-float-asserts-fail.md) — since 36b67f2 assert `Math.fround(CONST)` on stun/timers; new synced floats go in SIM_FLOAT_KEYS
 - [R3F disposes only the object](r3f-disposes-only-the-object.md) — geometry/material props and primitives leak on unmount; free them from a ref-callback cleanup
 - [Time a post effect without repo edits](time-a-post-effect-without-repo-edits.md) — wrap the page's EffectComposer.render over CDP, setEffects on the live EffectPass; screenshot to prove it drew
+- [koota readEach tuple is exact](koota-readeach-tuple-is-exact.md) — a hoisted callback needs `[ A, B, ...unknown[] ]`; readEach allocates its state array per call anyway
 - [Node bots share one event loop](node-bots-share-one-event-loop.md) — a busy-wait in one SDK client stalls every client in that process; spawn the stalled one separately
