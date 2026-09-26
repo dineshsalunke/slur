@@ -49,12 +49,30 @@ export function emitMineBody( sink: MineSink, t: MineThrow, mine: MinePoint & { 
     sink( mine.x, mine.y, mine.z, mine.armed, bodyAt( t, now - t.bornAt, _body ) );
 }
 
+type NetMineState = MineThrow & MinePoint & { armed: boolean };
+
+const collecting = {
+    now: 0,
+    shots: ( () => {} ) as BoltSink,
+    bodies: ( () => {} ) as MineSink,
+};
+
+function eachShot( [ m ]: [ NetMineState ] ): void {
+    emitMineShot( collecting.shots, m, m, collecting.now );
+}
+
+function eachBody( [ m ]: [ NetMineState ] ): void {
+    emitMineBody( collecting.bodies, m, m, collecting.now );
+}
+
 export function collectMineShots( world: World, sink: BoltSink ): void {
-    const now = mineNow();
-    world.query( NetMine ).readEach( ( [ m ] ) => emitMineShot( sink, m, m, now ) );
+    collecting.now = mineNow();
+    collecting.shots = sink;
+    world.query( NetMine ).readEach( eachShot );
 }
 
 export function collectMineBodies( world: World, sink: MineSink ): void {
-    const now = mineNow();
-    world.query( NetMine ).readEach( ( [ m ] ) => emitMineBody( sink, m, m, now ) );
+    collecting.now = mineNow();
+    collecting.bodies = sink;
+    world.query( NetMine ).readEach( eachBody );
 }

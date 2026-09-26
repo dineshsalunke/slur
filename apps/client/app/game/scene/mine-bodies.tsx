@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { accent } from './accent';
 import { BOLT_HOT } from './combat-look';
+import { commitInstances } from './instanced-commit';
 import { mineBodyMaterial } from './mine-body-material';
 import {
     MAX_MINES,
@@ -122,11 +123,9 @@ export function MineBodies( { collect }: { collect: ( sink: MineSink ) => void }
         frame.count = 0;
         frame.t = state.clock.elapsedTime;
         collect( sink );
-        for ( const m of [ body, core, decal ] ) {
-            m.count = frame.count;
-            m.instanceMatrix.needsUpdate = true;
-            if ( m.instanceColor ) m.instanceColor.needsUpdate = true;
-        }
+        commitInstances( body, frame.count );
+        commitInstances( core, frame.count );
+        commitInstances( decal, frame.count );
         look.bodyGeo.getAttribute( 'aOpen' ).needsUpdate = true;
     } );
 
