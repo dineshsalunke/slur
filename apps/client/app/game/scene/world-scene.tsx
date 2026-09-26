@@ -11,7 +11,7 @@ import { HitSpark } from './hit-spark';
 import { NearFill } from './near-fill';
 import { SceneEffects } from './scene-effects';
 import { SceneEnvironment } from './scene-environment';
-import { Ships } from './ship';
+import { Ships } from './ships';
 import { TrackView } from './track-view';
 
 export function WorldScene( { children }: { children?: ReactNode } ) {
