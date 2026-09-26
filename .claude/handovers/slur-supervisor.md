@@ -36,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | none (#303 DONE 5e9abd0, closed; handover ae5416d) | idle | none |
 | workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
-| workerthree | w2P:pG | #300 S3: rewriting weave to straight walls + slalom (handover 2810208) | resumed 2026-09-27, working | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
+| workerthree | w2P:pG | #300 S3 DONE 4ca02e7 (straight lanes + slalom; handover a27af92) | CLEARED 0%, NOT resumed: resume after owner look test → ADR-023 → S4 | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
@@ -46,8 +46,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 ## Open owner questions
 
 - **WEAVE SHAPE — ANSWERED 2026-09-27: B, straight sealed walls + slalom inside.** Owner wants the curved
-  corridor gone first. workerthree resumed with it (top priority); parallel = two straight lanes, each with
-  its own slalom.
+  corridor gone first. LANDED 4ca02e7. Pending owner: look test on /test-level?gen=phrase; Comet 72 in a
+  14u lane (curved band gave 102–112) OK as class identity?
 
 - **Amber** `#FFB52E` (hue 41°) now ≈ new marigold hue; core→amber→marigold ramp differs only in value. Keep,
   or pick a hotter amber? (Open in ADD §3 / ART_MATERIALS §7 item 20.) ChatGPT paste note already given.
