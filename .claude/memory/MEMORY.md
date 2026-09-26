@@ -34,7 +34,7 @@ lives in its own file beside this one.
 - [Place the ship over CDP](place-the-ship-over-cdp.md) — loaderData room → write `room.sim.state` x/z while unfrozen; client follows next patch
 - [Step the R3F clock for timed taps](step-the-r3f-clock-for-timed-taps.md) — frameloop 'never' + `advance(t)` gives exact VFX ages; import the page's `?t=` module URLs
 - [@deprecated breaks reflection decoding](deprecated-breaks-reflection-decoding.md) — the client decodes by reflection; a deprecated field shifts later indexes. Keep dead fields plain
-- [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + a gap-aware bot; races stop at 180 s; reverse through a pickup for a duplicate
+- [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + a gap-aware bot; no race time cap since #301, a wedged bot never ends; reverse through a pickup for a duplicate
 - [Thin emissive needs pixel coverage](thin-emissive-needs-pixel-coverage.md) — bloom follows lit-pixel area; an edge-on 0.25u strip is 1 px and barely blooms even at lum 0.85
 - [Check the CDP port is yours](check-the-cdp-port-is-yours.md) — Chrome on a taken port fails silently and your driver steers another agent's tab
 - [Count draw calls without repo edits](count-draw-calls-without-repo-edits.md) — CDP-inject a WebGL + rAF wrapper; exact draws on any route, ms is JS only
@@ -112,4 +112,4 @@ lives in its own file beside this one.
 - [ast-grep type patterns need context](ast-grep-type-patterns-need-context.md) — `-p 'let a: T<U>' --selector generic_type`; a no-match exits non-zero and kills a `set -e` loop
 - [Shared tests need an in-package outDir](shared-tests-need-in-package-outdir.md) — a scratch outDir cannot resolve @colyseus/schema; 36 fake failures; use `pnpm test`
 - [Short bolts skip the patch](short-bolts-skip-the-patch.md) — 900 u/s bolt hitting within ~45 u lives under one 50 ms patch; the client sees only the HIT
-- [Band width is the weave speed dial](band-width-is-the-weave-speed-dial.md) — groove costs a clean pilot 0 s; ≤16u walled band makes long ships lift; 20 s grace < 29 s class spread
+- [Band width is the weave speed dial](band-width-is-the-weave-speed-dial.md) — groove costs a clean pilot 0 s; ≤16u walled band makes long ships lift; 29 s class spread set grace to 45 s (#301)

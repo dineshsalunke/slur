@@ -5,10 +5,10 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: 3209736f-f6e4-4423-b820-43350e0f3d02
-  modified: 2026-09-24T03:32:16.490Z
+  modified: 2026-09-26T18:20:21.113Z
 ---
 
-A full hosted track is 400 segments (8000u). The CDP bot wedges between blocks and stays stunned: a bounce sets `stunTimer`, and a stunned ship ignores input. Two runs ran to the 180 s cap at z 2239 and z 557. A live check that needs the **finish** should shorten the course and leave the bot alone.
+A full hosted track is 400 segments (8000u). The CDP bot wedges between blocks and stays stunned: a bounce sets `stunTimer`, and a stunned ship ignores input. Two runs ran to the old 180 s cap at z 2239 and z 557. Since #301 there is no cap, so a wedged bot now races forever until it leaves. A live check that needs the **finish** should shorten the course and leave the bot alone.
 
 What worked on 2026-09-24 (#241): a scratch `.mjs` in your own scratchpad, started with `node --import tsx` from `apps/server`.
 - **Imports:** load `@colyseus/core` and `@colyseus/ws-transport` by their resolved `file://` URLs. Get each one with `node --input-type=module -e "console.log(import.meta.resolve('<pkg>'))"`, run in `apps/server`. A bare specifier does not resolve from outside the repo. Load `@slur/shared` from `packages/shared/dist/index.js`, and `RunRoom` from `apps/server/src/rooms/run-room.ts`.
