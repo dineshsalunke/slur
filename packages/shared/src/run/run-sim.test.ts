@@ -33,6 +33,18 @@ test( 'only the host starts the run, and the countdown hands over to racing', ()
     assert.deepEqual( metas.at( -1 ), { hostName: 'Host', phase: PHASE.racing } );
 } );
 
+test( 'a zero countdown starts the run straight into racing', () => {
+    const sim = new RunSim(
+        procgenDescriptor( 1 ),
+        { broadcast: () => {}, onMeta: () => {} },
+        { countdownSeconds: 0 },
+    );
+    sim.join( 'a' );
+    sim.start( 'a' );
+    assert.equal( sim.state.phase, PHASE.racing );
+    assert.equal( sim.state.countdown, 0 );
+} );
+
 test( 'a bolt stuns the ship it hits and broadcasts one hit', () => {
     const { sim, sent } = harness();
     sim.join( 'a' );

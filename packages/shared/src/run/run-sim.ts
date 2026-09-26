@@ -40,6 +40,10 @@ export interface RunSimHooks {
     onMeta: ( meta: RunMetadata ) => void;
 }
 
+export interface RunSimOptions {
+    countdownSeconds?: number;
+}
+
 export class RunSim {
     readonly state = new RunState();
     readonly queues = new Map< string, PlayerQueue >();
@@ -51,11 +55,14 @@ export class RunSim {
     private readonly pickupRespawn = new Map< string, number >();
     private readonly config: SimConfig = DEFAULT_SIM_CONFIG;
     private nextProjectileId = 0;
+    private readonly countdownSeconds: number;
 
     constructor(
         descriptor: TrackDescriptor,
         private readonly hooks: RunSimHooks,
+        options: RunSimOptions = {},
     ) {
+        this.countdownSeconds = options.countdownSeconds ?? COUNTDOWN_SECONDS;
         applyDescriptor( this.state.descriptor, descriptor );
         this.track = resolveTrack( descriptor );
         this.world = { track: this.track, config: this.config, blocks: createSimWorld() };
@@ -250,7 +257,8 @@ export class RunSim {
 
     private startRace(): void {
         this.queues.forEach( clearQueue );
-        this.resetRun( PHASE.countdown, COUNTDOWN_SECONDS );
+        if ( this.countdownSeconds > 0 ) this.resetRun( PHASE.countdown, this.countdownSeconds );
+        else this.resetRun( PHASE.racing, 0 );
     }
 
     private resetRun( phase: number, countdown: number ): void {

@@ -19,7 +19,7 @@ function stepFor( room: LoopbackRoom, seconds: number ): void {
 
 describe( 'LoopbackRoom', () => {
     it( 'joins the local racer as host and decodes it into the client state', () => {
-        const room = new LoopbackRoom( procgenDescriptor( 1, DEFAULT_TRACK_GEN ), 'Pilot' );
+        const room = new LoopbackRoom( procgenDescriptor( 1, DEFAULT_TRACK_GEN ), { name: 'Pilot' } );
 
         expect( room.state ).not.toBe( room.sim.state );
         expect( room.state.hostId ).toBe( room.sessionId );

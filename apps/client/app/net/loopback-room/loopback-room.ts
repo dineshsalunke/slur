@@ -7,6 +7,7 @@ import {
     type PowerSlotMessage,
     RESTART_MESSAGE,
     RunSim,
+    type RunSimOptions,
     RunState,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
@@ -24,6 +25,10 @@ import {
 
 type Handler = ( payload: unknown ) => void;
 
+export interface LoopbackOptions extends RunSimOptions {
+    name?: string;
+}
+
 export class LoopbackRoom implements RunRoomLike {
     readonly roomId = LOOPBACK_ROOM_ID;
     readonly sessionId = LOOPBACK_SESSION_ID;
@@ -36,11 +41,15 @@ export class LoopbackRoom implements RunRoomLike {
     private readonly commands: Record< string, Handler >;
     private sincePatch = 0;
 
-    constructor( descriptor: TrackDescriptor, name?: string ) {
-        this.sim = new RunSim( descriptor, {
-            broadcast: ( type, message ) => this.outbox.push( [ type, structuredClone( message ) ] ),
-            onMeta: () => {},
-        } );
+    constructor( descriptor: TrackDescriptor, { name, ...options }: LoopbackOptions = {} ) {
+        this.sim = new RunSim(
+            descriptor,
+            {
+                broadcast: ( type, message ) => this.outbox.push( [ type, structuredClone( message ) ] ),
+                onMeta: () => {},
+            },
+            options,
+        );
         const id = this.sessionId;
         this.commands = {
             [ INPUT_MESSAGE ]: ( p ) => this.sim.input( id, p as InputMessage ),
@@ -83,12 +92,12 @@ export class LoopbackRoom implements RunRoomLike {
         this.patch();
     }
 
-    run(): () => void {
+    run( paused: () => boolean = () => false ): () => void {
         let last = -1;
         return addEffect( ( timestamp ) => {
             const seconds = last < 0 ? 0 : Math.min( ( timestamp - last ) / 1000, LOOPBACK_MAX_FRAME_SECONDS );
             last = timestamp;
-            this.step( seconds );
+            if ( ! paused() ) this.step( seconds );
         } );
     }
 

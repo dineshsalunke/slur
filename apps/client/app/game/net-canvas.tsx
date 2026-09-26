@@ -7,7 +7,7 @@ import {
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { WorldProvider } from 'koota/react';
-import { useEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio/remote-engine-audio';
 import { TuningPanelMount } from '../dev/tuning-panel-mount';
@@ -32,7 +32,7 @@ import { SeekerField } from './scene/seeker-field';
 import { WorldScene } from './scene/world-scene';
 import { TrackContext } from './track-context/track-context.constants';
 
-export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
+export function NetCanvas( { descriptor, children }: { descriptor: TrackDescriptor; children?: ReactNode } ) {
     const room = useRoom();
     const predictor = useMemo( createPredictor, [] );
 
@@ -74,6 +74,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
                             <RearView />
                             <GameAudio />
                             <RemoteEngineAudio />
+                            { children }
                         </WorldScene>
                     </Canvas>
                 </div>
