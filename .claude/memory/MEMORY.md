@@ -96,6 +96,7 @@ lives in its own file beside this one.
 - [Typegen runs in production mode](typegen-runs-in-production-mode.md) — dev-gated routes lose `+types`; the client typecheck sets NODE_ENV=development
 - [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s; reconnection off for lost; seats via a node lobby client
 - [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook; count fibers with a new actualStartTime AND flags&1, or bailouts inflate counts
+- [Live HMR sees half-applied edits](live-hmr-sees-half-applied-edits.md) — each save is live on :5173; add providers first, switch consumers leaf-first, drop the old prop last
 - [ls-lint skips unlisted sub-extensions](ls-lint-skips-unlisted-sub-extensions.md) — `x.constants.ts` is unchecked until `.constants.ts` has a rule; Biome GritQL plugins add lint rules with no new dependency
 - [Server rounds floats each tick](fround-makes-float-asserts-fail.md) — since 36b67f2 assert `Math.fround(CONST)` on stun/timers; new synced floats go in SIM_FLOAT_KEYS
 - [Node bots share one event loop](node-bots-share-one-event-loop.md) — a busy-wait in one SDK client stalls every client in that process; spawn the stalled one separately
