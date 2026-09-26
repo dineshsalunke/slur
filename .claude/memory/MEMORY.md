@@ -110,4 +110,5 @@ lives in its own file beside this one.
 - [Playwright from the npx cache](playwright-from-npx-cache-needs-system-chrome.md) — import playwright-core from ~/.npm/_npx and pass executablePath = system Chrome
 - [Owner tests on /test-level](owner-tests-on-test-level.md) — OWNER RULE: brief and verify every change on /test-level, not a hosted room
 - [ast-grep type patterns need context](ast-grep-type-patterns-need-context.md) — `-p 'let a: T<U>' --selector generic_type`; a no-match exits non-zero and kills a `set -e` loop
+- [Shared tests need an in-package outDir](shared-tests-need-in-package-outdir.md) — a scratch outDir cannot resolve @colyseus/schema; 36 fake failures; use `pnpm test`
 - [Short bolts skip the patch](short-bolts-skip-the-patch.md) — 900 u/s bolt hitting within ~45 u lives under one 50 ms patch; the client sees only the HIT
