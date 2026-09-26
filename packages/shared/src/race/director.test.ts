@@ -107,7 +107,6 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
         bufferTimer: 0.2,
         dead: true,
         respawnTimer: 1,
-        invulnTimer: 1.5,
         lastSafeX: 40,
         lastSafeZ: 3900,
         finished: true,

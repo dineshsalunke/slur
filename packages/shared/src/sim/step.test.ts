@@ -193,25 +193,6 @@ test( 'the bounce shoves the ship back off the face and the stun holds control f
     assert.ok( s.vz > 0, 'control never came back after the stun' );
 } );
 
-test( 'post-respawn invuln does not let a ship phase through a LATER hazard', () => {
-    const track = trackWithSeg3(
-        ( i ): Segment => ( {
-            index: i,
-            z0: i * SEG_LEN,
-            z1: ( i + 1 ) * SEG_LEN,
-            kind: 'block',
-            floors: [ { x0: -HALF_WIDTH, x1: HALF_WIDTH, y: 0 } ],
-            blocks: [ sealedBox( -HALF_WIDTH, HALF_WIDTH, i ) ],
-            isFinish: false,
-        } ),
-    );
-    const s = spawnShip( 0, SEG_LEN * 2.2 );
-    s.invulnTimer = t.invulnTime;
-    cruiseUntilHit( s, track );
-    assert.ok( s.stunTimer > 0, 'invuln let the ship phase through the wall' );
-    assert.ok( s.z < SEG_LEN * 4, 'ship flew past the wall instead of bouncing off it' );
-} );
-
 test( 'falling through a gap kills, then respawns at the last safe anchor', () => {
     const seg = ( i: number ): Segment => ( {
         index: i,
@@ -247,7 +228,6 @@ test( 'falling through a gap kills, then respawns at the last safe anchor', () =
     assert.equal( s.dead, false );
     assert.equal( s.x, 0 );
     assert.ok( s.z <= SEG_LEN * 1.5, `respawn z ${ s.z } not set back from anchor` );
-    assert.ok( s.invulnTimer > 0, 'no post-respawn invuln' );
 } );
 
 test( 'crossing the finish gate latches finished', () => {

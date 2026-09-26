@@ -13,7 +13,6 @@ export interface SimShip {
 
     dead: boolean;
     respawnTimer: number;
-    invulnTimer: number;
     lastSafeX: number;
     lastSafeZ: number;
     finished: boolean;
@@ -37,7 +36,6 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         bufferTimer: 0,
         dead: false,
         respawnTimer: 0,
-        invulnTimer: 0,
         lastSafeX: x,
         lastSafeZ: z,
         finished: false,
@@ -74,7 +72,6 @@ export const SIM_SHIP_KEYS = keyTuple< SimShip >()(
     'bufferTimer',
     'dead',
     'respawnTimer',
-    'invulnTimer',
     'lastSafeX',
     'lastSafeZ',
     'finished',
@@ -102,7 +99,6 @@ export const SIM_FLOAT_KEYS = [
     'coyoteTimer',
     'bufferTimer',
     'respawnTimer',
-    'invulnTimer',
     'lastSafeX',
     'lastSafeZ',
     'stunTimer',

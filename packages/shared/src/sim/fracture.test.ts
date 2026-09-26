@@ -145,19 +145,6 @@ test( 'without a world a fractured block behaves as sealed', () => {
     assert.ok( s.z < SEG_LEN * 3, 'the ship went through a fractured block with nowhere to record the break' );
 } );
 
-test( 'an invulnerable ship phases through a fractured block without breaking it', () => {
-    const track = trackWith( ( i ) => ( i === 3 ? [ wall( 3, 'fractured' ) ] : [] ) );
-    const world = createSimWorld();
-    const s = spawnShip( 0, SEG_LEN * 3 + 3 );
-    s.vz = t.maxCruise;
-    s.invulnTimer = t.invulnTime;
-    const inp = emptyInput();
-    inp.throttle = 1;
-    simulate( s, inp, FIXED_DT, t, track, undefined, world );
-    assert.equal( world.broken.size, 0, 'an invulnerable ship broke the block' );
-    assert.ok( s.invulnTimer > 0, 'invulnerability was spent while still inside the block' );
-} );
-
 test( 'replaying the same inputs over a fresh world reproduces the smash exactly', () => {
     const track = trackWith( ( i ) => ( i === 3 ? [ wall( 3, 'fractured' ) ] : [] ) );
     const run = () => {

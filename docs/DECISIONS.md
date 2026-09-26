@@ -732,6 +732,8 @@ a pillar is nudged sideways and flies on, which is the glance-off the owner want
 the first tick clear of every body. It now suppresses a *bounce* rather than a *death*, which keeps a ship
 that respawns overlapping geometry from being stunned in place.
 
+**Removed (#281).** Post-respawn invulnerability no longer exists. See the ADR-016 amendment.
+
 ### What this costs
 
 Blocks become cheap. A player who cannot weave can now bulldoze down the track at a cost of roughly
@@ -810,7 +812,7 @@ sealed.
 - **Sealed** blocks bounce the ship (ADR-014). They also stop a bolt.
 - **Fractured** blocks break. One bolt breaks one block. There is no block HP.
 - **Smash:** a ship that flies into a standing fractured block breaks it and keeps `smashKeep` (0.45) of
-  its `vz`. There is no stun. An invulnerable ship passes through and does not break the block.
+  its `vz`. There is no stun.
 - A broken block stays broken for the run. `RunState.blockBroken` holds the broken ids. A race reset
   clears it.
 - The client predicts a smash. `reconcile()` restores the confirmed broken set before it replays inputs.
@@ -913,8 +915,16 @@ already reads.
 ### Amendment to ADR-014
 
 ADR-014 says invuln *"keeps a ship that respawns overlapping geometry from being stunned in place"*. A
-respawn no longer overlaps a block, so invuln is not needed for that case. Invuln still stops a bounce in
-the grace window after a respawn.
+respawn no longer overlaps a block, so invuln is not needed for that case.
+
+**Invuln is removed (#281, 2026-09-26, owner decision).** Every respawn point is block-clear, so the first
+tick after a respawn is clear of every body, and that tick spent the whole `invulnTime` (1.5 s). The timer
+never had an effect. `invulnTime` is gone from `FlightTuning`, and `invulnTimer` is gone from `SimShip`,
+`SIM_SHIP_KEYS` and `SIM_FLOAT_KEYS`. `step.ts` now always bounces off a sealed block and always breaks a
+fractured one. `PlayerState.invulnTimer` stays in `schema.ts` as a plain dead field that nothing writes.
+Removing it or marking it `@deprecated()` would shift the field indexes that the client decodes by
+reflection. The gap-death probe in `respawn.test.ts` still asserts that no respawn is stunned on the next
+tick.
 
 ### Measured
 

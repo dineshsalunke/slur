@@ -35,7 +35,6 @@ export interface FlightTuning {
     deathY: number;
     stepTol: number;
     respawnDelay: number;
-    invulnTime: number;
     respawnSetback: number;
     respawnVz: number;
 }
@@ -89,7 +88,6 @@ export const DEFAULT_TUNING: FlightTuning = {
     deathY: -6,
     stepTol: 0.3,
     respawnDelay: 1,
-    invulnTime: 1.5,
     respawnSetback: 12,
     respawnVz: 20,
 };

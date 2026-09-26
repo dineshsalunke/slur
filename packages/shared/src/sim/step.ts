@@ -175,7 +175,6 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.vz = t.respawnVz;
     s.grounded = true;
     s.jumpsUsed = 0;
-    s.invulnTimer = t.invulnTime;
     s.stunTimer = 0;
     s.boostTimer = 0;
 }
@@ -222,18 +221,14 @@ function standing( b: Block, world: SimWorld | undefined ): boolean {
     return world === undefined || ! world.broken.has( b.id );
 }
 
-function smashThrough( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning, world: SimWorld ): boolean {
-    let touched = false;
+function smashThrough( segs: Segment[], s: SimShip, prevY: number, t: FlightTuning, world: SimWorld ): void {
     for ( const seg of segs ) {
         for ( const b of seg.blocks ) {
             if ( b.kind !== 'fractured' || world.broken.has( b.id ) || ! overlapsBlock( b, s, prevY, t ) ) continue;
-            touched = true;
-            if ( s.invulnTimer > 0 ) continue;
             world.broken.add( b.id );
             s.vz *= t.smashKeep;
         }
     }
-    return touched;
 }
 
 function blockPush(
@@ -298,13 +293,9 @@ export function resolveCollisions(
         return;
     }
 
-    const smashed = world !== undefined && smashThrough( segs, s, prevY, t, world );
+    if ( world !== undefined ) smashThrough( segs, s, prevY, t, world );
     const push = blockPush( segs, s, prevX, prevY, prevZ, t, world );
-    if ( push !== null ) {
-        if ( s.invulnTimer <= 0 ) bounceOffBlock( s, push, t );
-    } else if ( ! smashed ) {
-        s.invulnTimer = 0;
-    }
+    if ( push !== null ) bounceOffBlock( s, push, t );
 
     if ( track.segmentAtZ( s.z ).isFinish && s.z >= track.finishZ && ! s.finished ) s.finished = true;
 }
@@ -343,6 +334,4 @@ export function simulate(
     integrate( s, dt );
     if ( track ) resolveCollisions( s, prevX, prevY, prevZ, track, t, world );
     else resolveFlatFloor( s, t );
-
-    if ( s.invulnTimer > 0 ) s.invulnTimer -= dt;
 }

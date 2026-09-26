@@ -146,24 +146,6 @@ test( 'a respawn is not immediately lethal', () => {
     }
 } );
 
-test( 'respawn grants invuln, and clearing the hazard spends it immediately', () => {
-    const track = makeTrack( 28 );
-    const s = spawnShip( 0, 0 );
-    let prevDead = false;
-
-    for ( let i = 0; i < MAX_TICKS; i++ ) {
-        simulate( s, { ...emptyInput(), throttle: 1, seq: i }, FIXED_DT, t, track );
-        if ( ! s.dead && prevDead ) {
-            assert.ok( s.invulnTimer > 0, 'respawn did not grant invulnerability' );
-            simulate( s, { ...emptyInput(), throttle: 1, seq: i + 1 }, FIXED_DT, t, track );
-            assert.equal( s.invulnTimer, 0, 'invuln outlived the first tick clear of every body' );
-            return;
-        }
-        prevDead = s.dead;
-    }
-    assert.fail( 'the probe never produced a respawn' );
-} );
-
 test( 'on a track with blocks, every seed still has gap deaths to probe', () => {
     for ( const seed of SEEDS ) {
         assert.ok(

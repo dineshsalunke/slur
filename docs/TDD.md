@@ -144,7 +144,8 @@ PlayerState (implements SimShip → the server runs the shared simulate() on the
   ├─ grounded, jumpsUsed, jumpHeld, coyoteTimer, bufferTimer  // jump state (MUST sync so client replay re-predicts)
   ├─ lastProcessedInput: uint32                         // client reconciliation seq
   ├─ connected: boolean                                 // false while dropped (reconnection window)
-  ├─ dead, respawnTimer, invulnTimer, lastSafeX, lastSafeZ    // collision / respawn
+  ├─ dead, respawnTimer, lastSafeX, lastSafeZ           // collision / respawn
+  ├─ invulnTimer                                        // dead field, never written (#281, ADR-016)
   ├─ finished, finishTime                               // finish latch + server-stamped race time
   ├─ shipId: string                                     // → class → FlightTuning + armour, resolved BOTH ends
   ├─ name: string, colorId: uint8                       // identity — lobby list, standings, ship tint
