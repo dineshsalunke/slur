@@ -60,6 +60,9 @@ OWNER ANSWERS (evening): #276 item 3 APPROVED → workerfour told to commit + cl
 game/net-debug-hud/ → DELETE (workertwo, in its current batch). Bag 6/4/4/3/3 AGREED → workerthree cleared +
 assigned (combat/constants.ts + count tests; comment on #269/#270). #280 fizzle: owner will test it by hand.
 Still open: #269 brake-cancel + streak length; #270 dome opacity. workerone idle (clear before reuse).
+#276 CLOSED (d7cfca8, 408/408 on HEAD copy). workerfour IDLE, holds nothing. Its Q: move PACING_HULL_L to
+TRACK_CONTRACT.shipHalfL? (/pacing board only). Bag-share claim cleared for workerthree.
+Idle: workerone, workerfour. Unassigned: #275 render P1s (minus mine-shock), #281 invuln, #277 P2 sweep.
 #280 DONE + closed (ccc5e48): fizzle ring + 'mineFizzle' zap; musicForPhase switched; mine-shock toneMapped
 removed (mine-bodies.tsx:37 still has it → #275). workerthree IDLE, holds nothing. Owner Q: derezz zap OK as fizzle?
 Shared suite 406/408 in the tree: phantom pocket + weave digest = workerfour's uncommitted #276 item 3 (awaiting
