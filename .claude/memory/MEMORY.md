@@ -100,4 +100,5 @@ lives in its own file beside this one.
 - [Live HMR sees half-applied edits](live-hmr-sees-half-applied-edits.md) — each save is live on :5173; add providers first, switch consumers leaf-first, drop the old prop last
 - [ls-lint skips unlisted sub-extensions](ls-lint-skips-unlisted-sub-extensions.md) — `x.constants.ts` is unchecked until `.constants.ts` has a rule; Biome GritQL plugins add lint rules with no new dependency
 - [Server rounds floats each tick](fround-makes-float-asserts-fail.md) — since 36b67f2 assert `Math.fround(CONST)` on stun/timers; new synced floats go in SIM_FLOAT_KEYS
+- [R3F disposes only the object](r3f-disposes-only-the-object.md) — geometry/material props and primitives leak on unmount; free them from a ref-callback cleanup
 - [Node bots share one event loop](node-bots-share-one-event-loop.md) — a busy-wait in one SDK client stalls every client in that process; spawn the stalled one separately

@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #275 render P1s (review lane E) · Updated: 2026-09-26 13:45
+Agent: workerone · Lane: #275 render P1s (review lane E) — DONE, issue closed · Updated: 2026-09-26 14:05
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -10,23 +10,21 @@ PickupField listeners.
 ## Done
 
 - fed4ac2: exhaustDrive divides by the ship's own maxCruise (+ exhaust-drive.test.ts). mine-bodies drops
-  toneMapped:false. ShipModel disposes its cloned materials from a React 19 ref-callback cleanup.
-- c2b9ac4: rear-view material is a declarative `<shaderMaterial args>`, so R3F disposes it. Nebula noise
-  volume is built once, on first use (`noiseVolume()`). `forEachAsteroid` visits one scratch placement.
-- 0afbef2: pickupTaken listeners move into attachRoomToWorld and feed game/pickup-state.ts. PickupField
-  takes no props.
+  toneMapped:false. ShipModel disposes its cloned materials from a ref-callback cleanup.
+- c2b9ac4: the rear-view material is a declarative `<shaderMaterial args>`. The nebula noise volume is
+  built once (`noiseVolume()`). `forEachAsteroid` visits one scratch placement.
+- 0afbef2: pickupTaken listeners move into attachRoomToWorld and feed game/pickup-state.ts.
+- 5ded0a4: TrackBlocks disposes its sealed and fractured geometries from ref-callback cleanups.
+- #275 is closed with all SHAs and the measurements.
 
 ## State
 
-- createNoiseVolume: 332–372 ms in node over 3 runs.
-- Asteroid garbage before the fix: ~7.1k objects/s at 124 u/s (192/136/78 placements per rebuild).
-- drei 10.7.8 useFBO keeps one target per mount, so the rear-view surface leaked only on unmount, not
-  per FBO change.
-- R3F 9.7.0 removeChild disposes only the object, never geometry or material props, and never a
-  primitive. InstancedMesh.dispose() does not dispose its geometry.
-- Client vitest 434/434; tsc (NODE_ENV=development typegen), biome and comment ratchet clean at 0afbef2.
-- Headless /test-level tap at DPR 1: the mirror, nebula and asteroids render. Mine-body glow with tone
-  mapping and hosted-room pickups: [unmeasured].
+- createNoiseVolume: 332–372 ms in node over 3 runs. Asteroid garbage before the fix: ~7.1k objects/s at
+  124 u/s.
+- Client vitest 434/434 at 0afbef2. At 5ded0a4, tsc shows no error in track-blocks.tsx. Other tsc/test
+  errors came from workerfour's uncommitted #277 files, now committed in d342d6d.
+- Headless /test-level tap: the mirror, nebula and asteroids render. Mine glow look and hosted-room
+  pickups: [unmeasured].
 
 ## Uncommitted
 
@@ -34,14 +32,11 @@ None.
 
 ## Held files
 
-apps/client/app/game/scene/track-blocks.tsx — queued; workerfour (#277 B) holds it until the supervisor
-frees it.
+None. Released all #275 files.
 
 ## Next
 
-1. When track-blocks.tsx is free: dispose `geometry`, `cells` and `fractured.geometry` from ref-callback
-   cleanups on the two instancedMeshes. Test, commit, push.
-2. `gh issue close 275` with all SHAs.
+1. Wait for the supervisor to assign a new lane.
 
 ## Open questions
 
@@ -49,4 +44,4 @@ frees it.
 
 ## Lessons → memory
 
-none
+.claude/memory/r3f-disposes-only-the-object.md
