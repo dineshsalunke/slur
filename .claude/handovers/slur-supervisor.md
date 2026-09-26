@@ -34,9 +34,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #304 editor UI (S3 + edit-route half of S4); plan 8c709bb | cleared + briefed, working | routes.ts, routes/test-level/{edit,track-editor,edit-button}/* |
-| workertwo | w2P:pF | #304 data + loading (S1, S2, parent route); plan 8c709bb | cleared + briefed, working | shared sim/authored/*, sim/track-provider.ts, src/index.ts, client tracks-plugin*, vite.config.ts, tracks/, routes/test-level/{route.tsx,test-level-room.ts,test-level-canvas/*} |
-| workerthree | w2P:pG | #300 ADR-023 only; derived pitch DONE afcc66c (handover 8bf3f86) | cleared + resumed, working | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
+| workerone | w2P:pD | #304 editor UI 0130a63 (grit regex widened); now: headless full loop, then close #304 | cleared + resumed (handover f819759), working | routes.ts, routes/test-level/{edit,track-editor,edit-button}/* |
+| workertwo | w2P:pF | #304 data side DONE: 5165d46, d382904, 6982014, sim freeze 12a91b7 (handover de3856b) | CLEARED 0%, idle, no lane | none |
+| workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded) | idle; HOLD vs S4 asked of owner (rec: hold until authored tracks exist) | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
