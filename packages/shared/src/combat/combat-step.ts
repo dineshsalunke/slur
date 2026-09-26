@@ -1,3 +1,4 @@
+import { tuningForShip } from '../ship-classes.js';
 import type { Track } from '../sim/space.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { BOLT_SPAWN_AHEAD, HeldPower, POWER_SLOTS } from './constants.js';
@@ -14,6 +15,10 @@ export interface Gunner {
     stunTimer: number;
     dead: boolean;
     spectating: boolean;
+}
+
+export interface Grabber extends Gunner {
+    shipId: string;
 }
 
 export interface BoltStrike {
@@ -113,7 +118,7 @@ export function stepBolts(
 }
 
 export function stepPickups(
-    racers: Iterable< Gunner >,
+    racers: Iterable< Grabber >,
     pickups: readonly Pickup[],
     taken: Map< string, boolean >,
     respawn: Map< string, number >,
@@ -122,7 +127,9 @@ export function stepPickups(
 ): void {
     for ( const r of racers ) {
         if ( r.spectating || r.dead || firstEmptySlot( r ) < 0 ) continue;
-        const pk = pickups.find( ( p ) => ! taken.get( p.id ) && grabPickup( r, p ) );
+        const { halfW, halfL } = tuningForShip( r.shipId );
+        const hull = { x: r.x, z: r.z, halfW, halfL };
+        const pk = pickups.find( ( p ) => ! taken.get( p.id ) && grabPickup( hull, p, cfg ) );
         if ( ! pk ) continue;
         grantPower( r, pickupPower( pk.id, cfg ) );
         taken.set( pk.id, true );

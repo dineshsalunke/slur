@@ -8,11 +8,12 @@ import {
     BOLT_SPAWN_AHEAD,
     type BoltStrike,
     canFire,
+    DEFAULT_SHIP,
     DEFAULT_SIM_CONFIG,
     dropPower,
     emptySlots,
     FIXED_DT,
-    type Gunner,
+    type Grabber,
     HALF_WIDTH,
     HeldPower,
     type ProjectileState,
@@ -50,7 +51,7 @@ function trackWithWall( at: number, kind: Block[ 'kind' ] ): Track {
     return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ), anchors: [] };
 }
 
-function gunner( over: Partial< Gunner > = {} ): Gunner {
+function gunner( over: Partial< Grabber > = {} ): Grabber {
     return {
         x: 0,
         y: 1,
@@ -59,6 +60,7 @@ function gunner( over: Partial< Gunner > = {} ): Gunner {
         stunTimer: 0,
         dead: false,
         spectating: false,
+        shipId: DEFAULT_SHIP,
         ...over,
     };
 }

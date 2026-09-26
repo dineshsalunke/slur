@@ -157,6 +157,10 @@ export function TuningPanel() {
         flyY: numberControl( 'Seeker.flyY' ),
     } );
 
+    useControls( 'Pickup', {
+        grabR: numberControl( 'Pickup.grabR' ),
+    } );
+
     useControls( 'Chase camera', {
         back: numberControl( 'Chase.back' ),
         backStretch: numberControl( 'Chase.backStretch' ),

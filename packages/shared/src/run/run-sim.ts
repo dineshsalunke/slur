@@ -43,6 +43,7 @@ export interface RunSimHooks {
 
 export interface RunSimOptions {
     countdownSeconds?: number;
+    config?: SimConfig;
 }
 
 export class RunSim {
@@ -55,7 +56,7 @@ export class RunSim {
     private readonly pickups: Pickup[];
     private readonly pickupRespawn = new Map< string, number >();
     private readonly portalTaps = new Map< string, PortalTap >();
-    private readonly config: SimConfig = DEFAULT_SIM_CONFIG;
+    private readonly config: SimConfig;
     private nextProjectileId = 0;
     private readonly countdownSeconds: number;
 
@@ -65,6 +66,7 @@ export class RunSim {
         options: RunSimOptions = {},
     ) {
         this.countdownSeconds = options.countdownSeconds ?? COUNTDOWN_SECONDS;
+        this.config = options.config ?? DEFAULT_SIM_CONFIG;
         applyDescriptor( this.state.descriptor, descriptor );
         this.track = resolveTrack( descriptor );
         this.world = {

@@ -25,6 +25,7 @@ export const BOLT_SPAWN_AHEAD = 3;
 
 export const STUN_SECONDS = 1.2;
 export const PICKUP_RESPAWN_S = 3;
+export const PICKUP_GRAB_R = 3.2;
 
 export const HeldPower = {
     none: 0,

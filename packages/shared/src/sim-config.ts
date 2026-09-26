@@ -19,6 +19,7 @@ import {
     MINE_TRIGGER_H,
     MINE_TRIGGER_R,
     MINE_TTL,
+    PICKUP_GRAB_R,
     PICKUP_RESPAWN_S,
     SEEKER_DROP_RATE,
     SEEKER_FLY_Y,
@@ -67,6 +68,7 @@ export interface SimConfig extends PortalConfig {
     boltHalf: number;
     stunSeconds: number;
     pickupRespawnS: number;
+    pickupGrabR: number;
     seekerRatio: number;
     seekerLockRange: number;
     seekerSpeedFactor: number;
@@ -126,6 +128,7 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     boltHalf: BOLT_HALF,
     stunSeconds: STUN_SECONDS,
     pickupRespawnS: PICKUP_RESPAWN_S,
+    pickupGrabR: PICKUP_GRAB_R,
     seekerRatio: SEEKER_RATIO,
     seekerLockRange: SEEKER_LOCK_RANGE,
     seekerSpeedFactor: SEEKER_SPEED_FACTOR,

@@ -12,7 +12,12 @@ export interface Pickup {
     z: number;
 }
 
-export const PICKUP_GRAB_RADIUS = 3;
+export interface GrabHull {
+    x: number;
+    z: number;
+    halfW: number;
+    halfL: number;
+}
 
 export function pickupsOf( track: Track ): Anchor[] {
     return track.anchors.filter( ( a ) => a.kind === 'pickup' );
@@ -22,8 +27,9 @@ export function pickupLayout( descriptor: TrackDescriptor ): Pickup[] {
     return pickupsOf( resolveTrack( descriptor ) );
 }
 
-export function grabPickup( ship: { x: number; z: number }, pickup: Pickup ): boolean {
-    return Math.abs( ship.x - pickup.x ) < PICKUP_GRAB_RADIUS && Math.abs( ship.z - pickup.z ) < PICKUP_GRAB_RADIUS;
+export function grabPickup( ship: GrabHull, pickup: Pickup, cfg: SimConfig = DEFAULT_SIM_CONFIG ): boolean {
+    const r = cfg.pickupGrabR;
+    return Math.abs( ship.x - pickup.x ) < r + ship.halfW && Math.abs( ship.z - pickup.z ) < r + ship.halfL;
 }
 
 export function pickupPower( id: string, cfg: SimConfig = DEFAULT_SIM_CONFIG ): HeldPower {

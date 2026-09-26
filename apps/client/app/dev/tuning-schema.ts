@@ -115,6 +115,8 @@ export const NUMBER_TUNABLES = {
 
     'Seeker.flyY': { value: DEFAULT_SIM_CONFIG.seekerFlyY, min: 0.5, max: 7, step: 0.1, rebuild: false },
 
+    'Pickup.grabR': { value: DEFAULT_SIM_CONFIG.pickupGrabR, min: 0, max: 10, step: 0.1, rebuild: false },
+
     'Shadow.opacity': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
     'Shadow.size': { value: 2.4, min: 0.5, max: 10, step: 0.05, rebuild: false },
     'Shadow.spread': { value: 0.35, min: 0, max: 3, step: 0.01, rebuild: false },

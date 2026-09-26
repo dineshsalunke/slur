@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     armourForShip,
+    DEFAULT_SHIP,
     DEFAULT_SIM_CONFIG,
     emptySlots,
     FIXED_DT,
-    type Gunner,
+    type Grabber,
     HeldPower,
     pickupPower,
     type SimConfig,
@@ -33,8 +34,8 @@ test( 'pickup power is stable and near seekerRatio', () => {
     assert.equal( pickupPower( '17', { ...DEFAULT_SIM_CONFIG, seekerRatio: 1 } ), HeldPower.seeker );
 } );
 
-function empty( z: number ): Gunner {
-    return { x: 0, y: 0, z, slots: emptySlots(), stunTimer: 0, dead: false, spectating: false };
+function empty( z: number ): Grabber {
+    return { x: 0, y: 0, z, slots: emptySlots(), stunTimer: 0, dead: false, spectating: false, shipId: DEFAULT_SHIP };
 }
 
 const ALL_SEEKERS: SimConfig = { ...DEFAULT_SIM_CONFIG, seekerRatio: 1 };
