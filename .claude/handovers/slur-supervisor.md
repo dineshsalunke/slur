@@ -54,6 +54,9 @@ Bag: workertwo proposes the tug share in its S2 claim → relay to owner.
 
 ## Open owner questions
 
+#289 portal loop (on the issue): a chaser in your far end is thrown back, meets the far end again and loops until
+they strafe around or the pair expires. Soften with a per-ship hop cooldown? Owner to decide.
+workerfour committed pure portal module 21bb3fb; holds only sim/portal-hop.test.ts; blocked on tug S1.
 Older: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle; landing backdrop weave→groove.
 
 ## Next
