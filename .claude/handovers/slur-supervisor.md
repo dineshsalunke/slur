@@ -41,7 +41,9 @@ The unsent text in an idle prompt box is Claude Code's suggested reply, not the 
 | workertwo | w2P:pF | #283 file layout | B0 landed 2034287 (92 files warn). B2+B3 cleared. B1 folded into B7 (after #274). B4/B5 HELD for #285 | routes/pacing/**, routes/home/** + home.tsx, routes/beat-deck/**, 1 import line in routes/game/route.tsx |
 | workerthree | w2P:pG | #280 mine fizzle (+ bind-room-audio:154 → musicForPhase, + mine-shock toneMapped from #275) | building | combat/mine.ts, mine-drop.test.ts, room-combat.ts, room-mine-fizzle.test.ts (new), mine-shock-events.ts, mine-shock.tsx, sfx-map.ts, bind-room-audio.ts, local-combat.ts(+test) |
 | workerfour | w2P:pH | #276 item 3 (pow) | READY, uncommitted, WAITING owner OK: weave digest changes on all 5 seeds (groove unchanged); depth ≤0.6u shallower at mid intensity; pockets fixture window 3.2u → 3.5u | block-depth.ts(+test), track-digest.test.ts, constants.ts:218-223, pacing/pockets.test.ts |
-| workerfive | w2P:pK | #274 run-view store | building | use-run-view.ts, run-view-store.test.ts, 10 overlay consumers, overlays.tsx, net-hud.tsx, test-room.ts, overlay tests |
+| workerfive | w2P:pK | #284 style → Tailwind (after #274 done afcd0e7: CountdownOverlay renders 60→3, SpectatorBar 158→0) | resumed, claims pending; net-canvas.tsx last (workerone holds it) | pending |
+
+#283 B1/B7 and landing-scene wait for #284 (told workertwo).
 
 ## Next
 
