@@ -34,7 +34,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #303 procedural portal models (PLAN first) | working (cleared, briefed) | none yet |
+| workerone | w2P:pD | #303 procedural portal models — plan APPROVED (6u aperture kept), building | working | scene/portal-ring.ts+test (new), portal-pickups/*.utils+constants, portal-field/* |
 | workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
 | workerthree | w2P:pG | #300 phrase gen S3 (weave phrase + parallel weave + per-kind open-space) | working | sim/phrase/*, track-digest.test.ts (phrase row), avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
