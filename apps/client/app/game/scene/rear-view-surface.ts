@@ -1,10 +1,5 @@
 import * as THREE from 'three';
 
-const BEZEL_PX = 3;
-const LIP_PX = 1;
-const BEZEL_COLOR = '#1C252C';
-const LIP_COLOR = '#F59A24';
-
 const vertexShader = /* glsl */ `
 varying vec2 vUv;
 
@@ -18,11 +13,8 @@ const fragmentShader = /* glsl */ `
 uniform sampler2D uMap;
 uniform float uExposure;
 uniform float uGain;
-uniform vec2 uSize;
-uniform float uBezelPx;
-uniform float uLipPx;
-uniform vec3 uBezel;
-uniform vec3 uLip;
+uniform float uFeatherX;
+uniform float uFeatherY;
 
 varying vec2 vUv;
 
@@ -47,9 +39,10 @@ vec3 neutralToneMap( vec3 color ) {
     return mix( color, vec3( newPeak ), g );
 }
 
-float edgeDistancePx( vec2 uv ) {
-    vec2 d = min( uv, 1.0 - uv ) * uSize;
-    return min( d.x, d.y );
+float edgeMask( vec2 uv ) {
+    float x = smoothstep( 0.0, uFeatherX, uv.x ) * smoothstep( 1.0, 1.0 - uFeatherX, uv.x );
+    float y = smoothstep( 0.0, uFeatherY, uv.y ) * smoothstep( 1.0, 1.0 - uFeatherY, uv.y );
+    return x * y;
 }
 
 void main() {
@@ -57,27 +50,17 @@ void main() {
     gl_FragColor = vec4( neutralToneMap( max( color, 0.0 ) ), 1.0 );
     #include <colorspace_fragment>
     gl_FragColor.rgb *= uGain;
-
-    float edge = edgeDistancePx( vUv );
-    if ( edge < uBezelPx + uLipPx ) gl_FragColor.rgb = uLip;
-    if ( edge < uBezelPx ) gl_FragColor.rgb = uBezel;
+    gl_FragColor.a = edgeMask( vUv );
 }
 `;
-
-function srgbTriple( hex: string ): THREE.Color {
-    return new THREE.Color( hex ).convertLinearToSRGB();
-}
 
 export interface RearViewUniforms {
     [ uniform: string ]: THREE.IUniform;
     uMap: THREE.IUniform< THREE.Texture >;
     uExposure: THREE.IUniform< number >;
     uGain: THREE.IUniform< number >;
-    uSize: THREE.IUniform< THREE.Vector2 >;
-    uBezelPx: THREE.IUniform< number >;
-    uLipPx: THREE.IUniform< number >;
-    uBezel: THREE.IUniform< THREE.Color >;
-    uLip: THREE.IUniform< THREE.Color >;
+    uFeatherX: THREE.IUniform< number >;
+    uFeatherY: THREE.IUniform< number >;
 }
 
 export interface RearViewSurface extends THREE.ShaderMaterialParameters {
@@ -90,14 +73,13 @@ export function rearViewSurface( map: THREE.Texture ): RearViewSurface {
             uMap: { value: map },
             uExposure: { value: 1 },
             uGain: { value: 1 },
-            uSize: { value: new THREE.Vector2( 1, 1 ) },
-            uBezelPx: { value: BEZEL_PX },
-            uLipPx: { value: LIP_PX },
-            uBezel: { value: srgbTriple( BEZEL_COLOR ) },
-            uLip: { value: srgbTriple( LIP_COLOR ) },
+            uFeatherX: { value: 0.22 },
+            uFeatherY: { value: 0.18 },
         },
         vertexShader,
         fragmentShader,
+        transparent: true,
+        blending: THREE.NormalBlending,
         depthTest: false,
         depthWrite: false,
     };
