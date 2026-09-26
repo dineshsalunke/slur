@@ -151,8 +151,8 @@ bullet *"Each pickup anchor gets a kind from a hash of its id."*
 - **Sideways.** x is hashed across the open lanes within ±40u (`PICKUP_X_MAX`) and within 40u of the
   last pickup. The column must be clear for the widest and longest hull from 20u before the pickup to
   5u after it. If no lane is within 40u, any clear lane is used.
-- **Power.** Each run of 20 pickups is one shuffled bag, 8 bolt / 6 seeker / 6 mine
-  (`SEEKER_RATIO` = `MINE_RATIO` = 0.3). No power comes up 3 times in a row, across bag seams too.
+- **Power.** Each run of 20 pickups is one shuffled bag, 6 bolt / 4 seeker / 4 mine / 3 boost /
+  3 shield (`SEEKER_RATIO` = `MINE_RATIO` = 0.2, `BOOST_RATIO` = `SHIELD_RATIO` = 0.15). No power comes up 3 times in a row, across bag seams too.
   `pickupPower(id, cfg)` rebuilds the bag from the id, so both ends agree with no new synced state.
 - **Wire.** `pickupTaken` keys change with the build. Server and client must run the same shared build.
 
