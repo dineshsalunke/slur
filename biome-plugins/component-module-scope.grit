@@ -52,5 +52,5 @@ or {
         }
     }
 } where {
-    register_diagnostic(span=$v, message="A component file holds only its component. Move constants and scratch objects to <name>.constants.ts, pure helpers to <name>.utils.ts, mutable module state to <name>.state.ts (issue #283).", severity="warn")
+    register_diagnostic(span=$v, message="A component file holds only its component. Move constants and scratch objects to <name>.constants.ts, pure helpers to <name>.utils.ts, mutable module state to <name>.state.ts (issue #283).", severity="error")
 }

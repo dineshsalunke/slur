@@ -1,6 +1,8 @@
+import { DEFAULT_SIM_CONFIG, DEFAULT_TUNING } from '@slur/shared';
 import { createWorld } from 'koota';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
+import { num } from '../../dev/tuning';
 import { Hover, LocalPlayer, Net, Render, Sim } from '../ecs/traits';
 import { updateChaseCamera } from './chase';
 
@@ -69,6 +71,24 @@ describe( 'updateChaseCamera', () => {
 
         expect( cam.position.y ).toBeCloseTo( settledY, 6 );
         expect( group.position.y - cam.position.y ).toBeCloseTo( LIFT - settledY, 6 );
+    } );
+
+    it( 'pulls the camera back by Chase.boostBack at full boost', () => {
+        const settle = ( vz: number ): number => {
+            const world = createWorld();
+            const entity = world.spawn( LocalPlayer, Render, Sim );
+            const group = entity.get( Render ) as THREE.Group;
+            const cam = new THREE.PerspectiveCamera();
+            entity.set( Sim, ( prev ) => ( { ...prev, vz } ) );
+            for ( let i = 0; i < WARMUP_FRAMES; i++ ) {
+                group.position.z += vz * STEADY_DT;
+                updateChaseCamera( cam, world, STEADY_DT );
+            }
+            return group.position.z - cam.position.z;
+        };
+        const cruise = DEFAULT_TUNING.maxCruise;
+        const full = cruise * ( 1 + DEFAULT_SIM_CONFIG.boostGain );
+        expect( settle( full ) - settle( cruise ) ).toBeCloseTo( num( 'Chase.boostBack' ), 3 );
     } );
 
     it( 'holds the ship at a constant depth in frame through frame-time jitter', () => {

@@ -9,7 +9,7 @@ import { FinishGate } from './finish-gate/finish-gate';
 import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark/hit-spark';
 import { NearFill } from './near-fill/near-fill';
-import { SceneEffects } from './scene-effects';
+import { SceneEffects } from './scene-effects/scene-effects';
 import { SceneEnvironment } from './scene-environment';
 import { Ships } from './ships';
 import { TrackView } from './track-view';

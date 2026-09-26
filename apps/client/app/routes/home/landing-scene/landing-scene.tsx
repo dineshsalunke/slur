@@ -7,7 +7,7 @@ import { EngineLight } from '../../../game/scene/engine-light/engine-light';
 import { ExhaustField } from '../../../game/scene/exhaust-field/exhaust-field';
 import { GameEnvironment } from '../../../game/scene/game-environment';
 import { NearFill } from '../../../game/scene/near-fill/near-fill';
-import { SceneEffects } from '../../../game/scene/scene-effects';
+import { SceneEffects } from '../../../game/scene/scene-effects/scene-effects';
 import { SceneEnvironment } from '../../../game/scene/scene-environment';
 import { TrackView } from '../../../game/scene/track-view';
 import { TrackContext } from '../../../game/track-context/track-context.constants';

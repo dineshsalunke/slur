@@ -131,6 +131,10 @@ export const NUMBER_TUNABLES = {
     'Chase.fov': { value: 70, min: 40, max: 120, step: 1, rebuild: false },
     'Chase.fovStretch': { value: 0, min: 0, max: 40, step: 0.5, rebuild: false },
     'Chase.follow': { value: 20, min: 1, max: 60, step: 0.5, rebuild: false },
+    'Chase.boostBack': { value: 3, min: 0, max: 10, step: 0.5, rebuild: false },
+    'Chase.boostFov': { value: 0, min: 0, max: 20, step: 0.5, rebuild: false },
+
+    'Boost.blur': { value: 1, min: 0, max: 2, step: 0.05, rebuild: false },
 
     'RearView.fov': { value: 36, min: 15, max: 100, step: 1, rebuild: false },
     'RearView.lift': { value: 3, min: 0, max: 12, step: 0.1, rebuild: false },

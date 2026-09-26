@@ -166,6 +166,12 @@ export function TuningPanel() {
         fov: numberControl( 'Chase.fov' ),
         fovStretch: numberControl( 'Chase.fovStretch' ),
         follow: numberControl( 'Chase.follow' ),
+        boostBack: numberControl( 'Chase.boostBack' ),
+        boostFov: numberControl( 'Chase.boostFov' ),
+    } );
+
+    useControls( 'Boost', {
+        blur: numberControl( 'Boost.blur' ),
     } );
 
     useControls( 'Engine light', {
