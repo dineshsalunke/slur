@@ -91,3 +91,19 @@ variable-width noise-walls model it produced is superseded by ADR-006's **discre
 
 Also retired: the earlier **IID cube-scatter** that this noise-wall model itself replaced, and the "procedural
 is the PRIMARY path" claim (ADR-004 reopened procgen-vs-authored as an open choice).
+
+---
+
+## PRECEDED: Tractor beam (momentum leech) + Grapple → **now the Tug line** (#290, retired 2026-09-26)
+
+Two separate §5.7 menu entries became one pickup. Retired verbatim (GDD §5.7, before `387302c`):
+
+> | **Tractor beam** *(REDEFINED)* | M/R | **Momentum leech** on the nearest ship(s): *their* speed drains and *yours* rises. A Freighter tractoring 1–2 Fighters slows them and speeds itself up — the heavy ship's signature "mess + self-advance" tool and its answer to being a poor weaver. **NOT** a yank-into-hazard. Knobs: leech rate, max targets, range, duration. (BC8) |
+>
+> | **Grapple** | R | BC4/BC8 | Fire at a point/pickup ahead and pull yourself to it — a skill-shot shortcut. |
+
+The Tug line latches **one** target, not 1–2 ships, and it is a one-shot kick, not a leech over time.
+Forward on a rival, the firer catapults ahead and the rival slows. Back on a rival, the chaser is towed
+forward with weak strafe and no jump. With no rival ahead, the line reels the firer toward the nearest
+block. That is the Grapple without a teleport, so BC4 is not needed. It is not a Freighter tool: every
+class gets it from the pickup bag. Live rules: **GDD §5.3** "Tug line (#290, built)".
