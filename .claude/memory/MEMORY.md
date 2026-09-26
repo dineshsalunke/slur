@@ -26,12 +26,12 @@ lives in its own file beside this one.
 - [Supervisor clears workers via herdr](supervisor-clears-workers-via-herdr.md) — `herdr agent prompt <pane> "/clear"`, then a resume prompt; "stalled" on /clear is success
 - [Rear-view panel looks like geometry](rear-view-panel-looks-like-geometry.md) — the top-centre translucent slab in a /test-level tap is the mirror, not a lintel
 - [Headless game tabs starve the GPU](headless-game-tabs-starve-the-gpu.md) — one extra game tab doubles frame time; DPR 1, mute, kill after use
-- [koota universe reaches the page world](koota-universe-reaches-the-page-world.md) — `universe.worlds` over CDP finds the ship; stage seekers in `localCombat.seekers` while frozen
+- [koota universe reaches the page world](koota-universe-reaches-the-page-world.md) — `universe.worlds` over CDP reads the client ECS; since #288 writes are overwritten, stage on the room
 - [Measure a homing rule on procgen](measure-a-homing-rule-on-procgen.md) — 30 seeds + a block-avoiding bot + per-phase death log; unit tests missed two collision artifacts
 - [Fog hides emissive past 420u](fog-hides-emissive-past-420u.md) — linear fog 40–420u swallows glow; far signals need `fog:false`; camera far 1000u is the cap
 - [Instanced ref fill needs a geometry prop](instanced-ref-callback-needs-geometry-prop.md) — a JSX geometry child attaches after the ref callback; pass a module-level geometry
 - [procgen segmentAt is uncached](procgen-segmentat-is-uncached.md) — every call rebuilds the segment; memoise the track in a brute-force test (26.8 s → 0.26 s)
-- [Place the ship over CDP](place-the-ship-over-cdp.md) — import the live world, write Sim x/z, freeze; first /test-level fractured block is id 3392 at z 1064
+- [Place the ship over CDP](place-the-ship-over-cdp.md) — loaderData room → write `room.sim.state` x/z while unfrozen; client follows next patch
 - [Step the R3F clock for timed taps](step-the-r3f-clock-for-timed-taps.md) — frameloop 'never' + `advance(t)` gives exact VFX ages; import the page's `?t=` module URLs
 - [@deprecated breaks reflection decoding](deprecated-breaks-reflection-decoding.md) — the client decodes by reflection; a deprecated field shifts later indexes. Keep dead fields plain
 - [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + a gap-aware bot; races stop at 180 s; reverse through a pickup for a duplicate
@@ -43,7 +43,7 @@ lives in its own file beside this one.
 - [Narrow headless captures need a CDP viewport](narrow-headless-captures-need-cdp-viewport.md) — `--window-size=390` crops a wider layout; use `setDeviceMetricsOverride` and probe scrollWidth
 - [A sweep that hits its bound fakes a reading](a-sweep-that-hits-its-bound-fakes-a-reading.md) — a window equal to the scan range is clipped; test no-input first; a jump pilot never re-presses from the floor
 - [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer has multisampling 0; a <1 px strip vanishes whole frames; zsh `$a` does not word-split, verify dials applied
-- [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — a new shared export missing from dist/index.js: another session's tsc watch stamped tsbuildinfo; run `tsc -b --force`
+- [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — a new shared export missing from dist/index.js: another session's tsc watch stamped tsbuildinfo; run `tsc -b --force`; grep dist before a live check
 - [Biome class sort glues arbitrary classes](biome-class-sort-glues-arbitrary-property.md) — `--write` dropped the space before a trailing `${ className }`; put the interpolation first
 - [Two-client check needs two Chromes](two-client-check-needs-two-chromes.md) — headless renders only the front tab; one Chrome per client; count calls with a CDP logpoint
 - [Leave guard blocks CDP navigate](leave-guard-blocks-cdp-navigate.md) — navigating away from /game raises beforeunload and CDP evals hang; use a fresh tab per run
@@ -105,7 +105,7 @@ lives in its own file beside this one.
 - [Node bots share one event loop](node-bots-share-one-event-loop.md) — a busy-wait in one SDK client stalls every client in that process; spawn the stalled one separately
 - [Bulk move without git mv](bulk-move-without-git-mv.md) — auto mode denies a scripted `git mv` here; rename via node fs, stage by explicit pathspec
 - [frameloop never screenshots black](frameloop-never-screenshots-black.md) — after setFrameloop('never') a CDP screenshot is black; read the canvas with toDataURL in the advance() task
-- [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — Held slots [3,0,0] + KeyE; hosted pilots wedge; renderer is NoToneMapping so `toneMapped` is a no-op
+- [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — server `slots[0] = 3` on the loopback room + KeyE (all 5 powers); hosted pilots wedge; renderer is NoToneMapping so `toneMapped` is a no-op
 - [Measure a post effect by region change](measure-a-post-effect-by-region-change.md) — one still hid an invisible blur; % px changed per region vs off + noise frames
 - [Playwright from the npx cache](playwright-from-npx-cache-needs-system-chrome.md) — import playwright-core from ~/.npm/_npx and pass executablePath = system Chrome
 - [Owner tests on /test-level](owner-tests-on-test-level.md) — OWNER RULE: brief and verify every change on /test-level, not a hosted room

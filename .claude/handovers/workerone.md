@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26 (slice 4 code committed, live verify pending)
+Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26 (slice 4 verified live; lane done)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -8,40 +8,40 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Done
 
-- dab29d4 slice 1, 268dcb2 slice 2 (shared RunSim), d39de1c slice 3a (RunRoomLike + stateCallbacks), a79bfc3 slice 3b (LoopbackRoom). Pushed: b38e236..759f165.
-- 5336f7e: slice 4 code. NOT pushed. NOT verified live.
-  - RunSim `{ countdownSeconds }` option (3rd ctor arg; default 3 s; 0 = straight to racing). Test in run-sim.test.ts.
-  - `LoopbackRoom(descriptor, { name, countdownSeconds })`; `run(paused?)` skips step while paused() is true.
-  - routes/test-level/test-level-room.ts: `openTestLevelRoom(gen)` (module singleton; stops the previous room's addEffect; resets autoRestart + finishWatch; sends START; `run(() => simFreeze.on)`). The route clientLoader calls it. shouldRevalidate only on a ?gen change.
-  - routes/test-level/test-level-dev/: TestLevelDev (inside the Canvas via the NetCanvas children slot): KeyP freeze, Shift+1-5 → `restartRun(room, shipId)` (sim.resetToLobby + SET_CLASS + START), useFrame `stepAutoRestart` (on finishWatch.cut → restartRun; resetFinishWatch once the decoded phase is racing and localFinished is false).
-  - TestLevelCanvas = RoomProvider + NetCanvas{TestLevelDev, FrameTap} + FpsReadout DOM strip.
-  - NetLoop honours simFreeze; camera choice moved to `updateNetCamera` in net-loop.utils.ts.
-  - Local* files deleted (list in the commit body).
+- dab29d4 slice 1, 268dcb2 slice 2 (shared RunSim), d39de1c slice 3a (RunRoomLike), a79bfc3 slice 3b (LoopbackRoom).
+- 5336f7e slice 4: /test-level on the loopback room, dev layer in test-level-dev/, Local* deleted.
+- Live check on /test-level (headless Playwright, DPR 1, muted, owner's :5173). No code change needed.
+- Memories updated to the loopback hooks (commit with this handover).
 
 ## State
 
-- Measured at 5336f7e: typecheck + lint clean (6 pre-existing warnings); shared 422/422, server 38/38, client 437/437.
-- Owner conditions: loopback room is normal game code (not dev-gated); dev extras in a separate layer (done: test-level-dev/).
-- [unmeasured] Nothing in slice 4 has run in a browser. Risks to check first:
-  1. Auto-restart: the finish-camera frame between the cut and the next patch; a re-triggered curtain while the decoded phase is still `finished`.
-  2. Shift+1-5 mid-race: the predictor snaps to the reset grid; check no streak or stuck `Prev`.
-  3. KeyP freeze: run() pauses the sim and NetLoop pauses the render; the addEffect `last` timestamp keeps moving, so unfreeze does not catch up (intended).
-  4. The HUD hides in PHASE.finished (ON_TRACK_PHASES = countdown, racing). Old /test-level HUD never hid.
-- The CDP memories are STALE after 5336f7e: place-the-ship-over-cdp, koota-universe-reaches-the-page-world, stage-a-mine-on-test-level (they use localCombat.seekers and direct Sim writes). New hooks: the room is the loaderData / `openTestLevelRoom`; server-side state is `room.sim.state` (write x/z/slots there; the client ship reconciles on the next 50 ms patch).
+- Measured at 5336f7e: typecheck + lint clean; shared 422/422, server 38/38, client 437/437.
+- Live, verified 2026-09-26 on /test-level (split-crown unless noted):
+  - Flight: W to vz 88 in 3 s; Space jump y 1.16, grounded false. Client z tracks server z within one patch.
+  - Pickup: ship on pickup 0 (x −4.22, z 130) → taken 1, slot = seeker.
+  - Bolt, seeker, mine, boost, shield: each fires from slot 0 and shows on the decoded client state. Boost vz 47 → 143, timer 1.8 s. Shots show boost blur, shield dome, seeker hit.
+  - Rear-view panel and HUD render. HUD hides in PHASE.finished (3 frames before the restart), as expected.
+  - Audio: AudioContext `running` after the first click. Not heard [unmeasured by ear].
+  - Touch (844×390, pointer coarse): 7 pad buttons; Throttle hold → vz 43 in 1.5 s.
+  - KeyP: z and elapsed hold for 1 s; unfreeze resumes with no catch-up.
+  - Shift+3 mid-race: phase racing at +100 ms, ship `bob`, z 0 → 83.6 at +1.6 s. No streak in the shot.
+  - Auto-restart: finish at z 8401.6, restart 3 frames later, racing from z 0.
+- Found and fixed a stale `packages/shared/dist/run/run-sim.js`: `startRace()` still used `COUNTDOWN_SECONDS`, so every start ran a 3 s countdown. `tsc -b --force` fixed it. dist is gitignored; nothing to commit.
+- `bob` (Comet, halfL 0.59) looks small in frame. Same chase camera for all classes; not a regression.
+- Pre-existing noise: `[track-floor] seg N span not CELL-aligned` console warnings (not this lane).
 
 ## Uncommitted
 
-None.
+None after this commit.
 
-## Held files (claim CLEARED by slur-supervisor)
+## Held files
 
-routes/test-level/**, game/net-canvas.tsx, game/net-loop/net-loop.tsx + net-loop.utils.ts, net/loopback-room/*, packages/shared/src/run/run-sim.ts + test, memories place-the-ship-over-cdp / koota-universe-reaches-the-page-world / stage-a-mine-on-test-level.
+None after the push. Released: routes/test-level/**, game/net-canvas.tsx, game/net-loop/*, net/loopback-room/*, run-sim.ts + test.
 
 ## Next
 
-1. Verify on /test-level (owner rule) against the owner's stack :5173. Use headless Chrome, `--force-device-scale-factor=1 --mute-audio`, on your own free CDP port, and kill it by PID afterwards. Supervisor checklist: flight, pickups, bolts, seekers, mines, boost + blur, shield, rear-view, HUD, audio, touch pad. Plus the auto-restart, Shift+1-5 and KeyP from State risks 1–3. Fix what fails, re-run the gates, commit.
-2. Update the 3 stale CDP memories to the loopback hooks.
-3. Push (fast-forward only; if it is not a ff, tell the supervisor), then `gh issue close 288 -c "<summary + SHAs>"`.
+1. Push (ff-only), `gh issue close 288` with the SHAs.
+2. Report to slur-supervisor; take the next lane.
 
 ## Open questions
 
@@ -49,4 +49,5 @@ routes/test-level/**, game/net-canvas.tsx, game/net-loop/net-loop.tsx + net-loop
 
 ## Lessons → memory
 
-none this seam (the CDP memory updates are Next step 2).
+- Updated: place-the-ship-over-cdp, stage-a-mine-on-test-level, koota-universe-reaches-the-page-world (loopback hooks).
+- Extended: shared-watcher-can-leave-dist-stale (a stale dist fakes a live-check failure; grep dist first).

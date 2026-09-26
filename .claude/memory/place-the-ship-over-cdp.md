@@ -1,40 +1,37 @@
 ---
 name: place-the-ship-over-cdp
-description: "To look at a specific block on /test-level, import the live koota world over CDP and write the ship's Sim x/z — no flying, no aiming"
+description: "To put the ship at a chosen spot on /test-level, write x/z on the loopback room's server state (room.sim.state); the client reconciles on the next 50 ms patch"
 metadata:
   node_type: memory
   type: reference
-  originSessionId: 3d988b1b-080e-4846-ab16-4f25afcbebee
-  modified: 2026-09-23T18:28:58.224Z
+  originSessionId: b0f5f26f-a904-449c-ae79-bfcb620951e7
+  modified: 2026-09-26T14:41:06.602Z
 ---
 
-On a **freshly loaded** `/test-level` tab (no HMR yet), this reaches the page's own ECS and moves the
-ship (verified 2026-09-23, #222):
+Since #288 slice 4 (5336f7e), `/test-level` runs on an in-process `LoopbackRoom`. The route loader
+returns it, so reach it from the page (verified 2026-09-26):
 
 ```
-const w = await import('/app/game/ecs/world.ts');
-const t = await import('/app/game/ecs/traits.ts');
-const e = w.world.queryFirst(t.LocalPlayer, t.Sim);
-const s = e.get(t.Sim); s.x = X; s.z = Z; s.vz = 0;
-const p = e.get(t.Prev); p.x = X; p.z = Z;
+const ld = window.__reactRouterDataRouter.state.loaderData;
+const room = ld[Object.keys(ld).find(k => ld[k]?.room)].room;
+const s = room.sim.state.players.get(room.sessionId);   // server-side ship
+s.x = X; s.lastSafeX = X; s.z = Z; s.lastSafeZ = Z;
 ```
 
-Then wait about 3s for the chase camera to settle, send `KeyP` to freeze, and screenshot the tab over
-CDP.
+The decoded client copy is `room.state.players.get(room.sessionId)`. It matched the written z within one
+patch (a teleport to `finishZ − 60` read the same `cz` 100 ms later). Set `lastSafeX/Z` too, or a
+respawn puts the ship back.
 
-**A second placement needs an unfreeze** (verified 2026-09-23, #227). While KeyP is on, a new Sim x/z
-does not move the camera. Send KeyP, rewrite Sim and Prev every frame for ~90 `advance()` steps
-([[step-the-r3f-clock-for-timed-taps]]), then KeyP again. To reach a patched material's uniforms from
-the page, use `gl.properties.get(material).uniforms`.
+**Write while unfrozen.** KeyP makes `room.run()` skip `step()`, so no patch goes out and a write made
+while frozen does not reach the client until you unfreeze. Place, wait ~3 s for the chase camera, then
+KeyP and screenshot.
 
-**Finding the target:** the track is deterministic. Resolve it in node from
-`packages/shared/dist/index.js` with the descriptor in `routes/test-level/test-level-canvas.tsx`
-(seed 20260921, length 420, blockDensity 0.6, gapChance 1). The first fractured block is id 3392,
-x −29.8…−25.3, z 1064.2…1068. That track has 37 fractured and 256 sealed blocks.
+**Finding the target:** the track is deterministic. `room.sim.pickups` lists pickups with x/z;
+`room.sim.track.finishZ` is the finish (8400 on the default gen). For blocks, resolve the track in
+node from `packages/shared/dist/index.js` with `testLevelDescriptor(gen)` in
+`routes/test-level/test-level-canvas/test-level-canvas.utils.ts`. The 2026-09-23 note "first
+fractured block is id 3392 at z 1064" predates later track changes [unmeasured since].
 
-**To trigger a break on purpose:** `(await import('/app/game/block-state.ts')).blockWorld.broken.add(id)`
-on a block that is in view. That is untested as of #222.
-
-**Why:** flying into a chosen block by input is not repeatable ([[freeze-the-sim-to-ab-a-light]]),
-and aiming a smash is harder still. The HMR caveat in [[cdp-import-of-tuning-hits-an-hmr-orphan]]
-applies here too: reload before you import.
+**Why:** flying into a chosen spot by input is not repeatable ([[freeze-the-sim-to-ab-a-light]]).
+The old hooks (koota `Sim`/`Prev` writes, `localCombat`) are gone: the server state now wins every
+patch. Related: [[stage-a-mine-on-test-level]], [[koota-universe-reaches-the-page-world]].
