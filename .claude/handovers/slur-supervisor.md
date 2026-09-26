@@ -46,25 +46,21 @@ are #270 files, so wait until the shield lands.
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #269 Boost | checks after the flip | none after 3a6ae8e |
-| workerthree | w2P:pG | #270 Shield | AT SEAM 4b30b0b, NOT cleared | on resume: constants.ts, power-bag.test.ts, sim-config.ts, schema.ts, room-combat.ts, local-combat.ts, run-room.ts, sfx-map.ts, index.ts, power-cell.tsx, ecs/traits.ts, net/attach-room-to-world.ts + its shield files |
-| workertwo | w2P:pF | none | idle, >10%: clear before reuse | none |
-| workerfour | w2P:pH | none | idle, 24%: clear before reuse | none |
-| workerfive | w2P:pK | none | idle, 25%: clear before reuse | none |
+| workerthree | w2P:pG | #270 Shield | resumed (cleared) | constants.ts, power-bag.test.ts, sim-config.ts, schema.ts, room-combat.ts, local-combat.ts, run-room.ts, sfx-map.ts, index.ts, power-cell.tsx, ecs/traits.ts, net/attach-room-to-world.ts + its shield files |
+| workertwo | w2P:pF | #272 small P0s + #282 countdown joiners | resumed, claims pending | pending |
+| workerfour | w2P:pH | #278 rule text + #279 dev-route gate | resumed, claims pending | pending |
+| workerfive | w2P:pK | #271 room lifetime | resumed, claims pending | pending |
 
-workerthree's prompt box held the unsent text `0.15 share, reuse the hit sound`. That answers its own
-questions (shield share, pop sound). Owner to confirm before its /clear.
-For workerthree: `local-combat.ts` fire() needs `playSfx('boost')` on the boost branch (from workerone).
+Owner answers for #270: shield share 0.15; pop reuses the ship-hit sound, played faster.
+The unsent text in idle prompt boxes is Claude Code's suggested reply, not the owner's.
 
 ## Next
 
-1. Owner confirms the workerthree prompt text → clear workerthree → resume with the file list above.
-2. Owner picks review lanes to assign. Recommended: #272 → workertwo, #271 → workerfive (it found them),
-   #278 + #279 → workerfour. Clear each worker first.
-3. Owner answers on countdown joiners (below), then file the issue.
+1. Review claims from workertwo, workerfour, workerfive against workerthree's hold.
+2. Unassigned: #273 C, #274 D, #275 E (after #270), #276 F, #277 G, #280 (after #270), #281.
 
 ## Open owner questions
 
-- Countdown joiners: allow them to race? The supervisor's analysis is in the chat; it recommends allowing it.
 - #269: final bag shares (6/4/4/3/3 or 5/6/6/3), should a brake cancel the boost push, and the streak length
   (streaks reach the bottom of the frame at the chase camera).
 - #267 follow-ups: owner ear check in a hosted room; an issue for the 16 unchosen sound events + Q4–Q6?
