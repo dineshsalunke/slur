@@ -3,10 +3,12 @@ import type { GrooveBand } from '../groove/grammar.js';
 import type { GrooveObstacle, ObstacleKind } from '../groove/islands.js';
 import { hash2, mulberry32 } from '../rng.js';
 import { HALF_WIDTH, lerp, MIN_LANE, SEG_LEN } from '../space.js';
+import { leadDistance } from './pitch.js';
 
 export type WeaveDivider = 'hole' | 'wall';
 
 export interface WeaveSpec {
+    act: GrooveBand;
     bands: number[];
     divider: WeaveDivider | null;
     gap: number;
@@ -32,7 +34,6 @@ export const WEAVE_PARALLEL: Readonly< Record< GrooveBand, { chance: number; ban
     high: { chance: 1 / 2, bands: [ 16, 14 ] },
 };
 
-export const WEAVE_PITCH: Readonly< Record< number, number > > = { 20: 52, 16: 36, 14: 24 };
 export const WEAVE_SLALOM_GAP = MIN_LANE;
 export const WEAVE_POST_LEN = CELL;
 export const WEAVE_FUNNEL = 2 * SEG_LEN;
@@ -46,15 +47,19 @@ export function rollWeave( seed: number, act: GrooveBand, slot: number ): WeaveS
     const rand = mulberry32( hash2( ( seed ^ SALT_WEAVE ) | 0, slot ) );
     const salt = hash2( ( seed ^ SALT_WEAVE_LINE ) | 0, slot );
     const parallel = WEAVE_PARALLEL[ act ];
-    if ( rand() >= parallel.chance ) return { bands: [ WEAVE_BAND[ act ] ], divider: null, gap: 0, salt };
+    if ( rand() >= parallel.chance ) return { act, bands: [ WEAVE_BAND[ act ] ], divider: null, gap: 0, salt };
     const bands = rand() < 0.5 ? [ ...parallel.bands ] : [ ...parallel.bands ].reverse();
     const divider = rand() < 0.5 ? 'hole' : 'wall';
     const gap = WEAVE_GAPS[ Math.floor( rand() * WEAVE_GAPS.length ) ];
-    return { bands, divider, gap, salt };
+    return { act, bands, divider, gap, salt };
 }
 
 export function weaveOpenness( z0: number, z1: number, z: number ): number {
     return Math.max( 0, Math.min( 1, ( z - z0 ) / WEAVE_FUNNEL, ( z1 - z ) / WEAVE_FUNNEL ) );
+}
+
+export function weavePitch( spec: WeaveSpec, k: number ): number {
+    return WEAVE_POST_LEN + leadDistance( spec.act, spec.bands[ k ] - WEAVE_SLALOM_GAP );
 }
 
 function rowCentre( z: number ): number {
@@ -76,16 +81,21 @@ export function weaveLanesAt( spec: WeaveSpec, z0: number, z1: number, z: number
     } );
 }
 
+export function weaveExitOffset( spec: WeaveSpec, x: number ): number {
+    const lanes = weaveLanesAt( spec, 0, 4 * WEAVE_FUNNEL, 2 * WEAVE_FUNNEL );
+    return Math.max( ...lanes.map( ( b ) => Math.abs( ( b.lo + b.hi ) / 2 - x ) ) );
+}
+
 function postSide( spec: WeaveSpec, z0: number, z1: number, k: number, z: number ): number | null {
     const start = z0 + WEAVE_FUNNEL;
     const end = z1 - WEAVE_FUNNEL;
     const zc = rowCentre( z );
     if ( zc < start || zc > end ) return null;
-    const pitch = WEAVE_PITCH[ spec.bands[ k ] ];
+    const pitch = weavePitch( spec, k );
     const along = zc - start - pitch;
     if ( along < 0 || along % pitch >= WEAVE_POST_LEN ) return null;
     const i = Math.floor( along / pitch );
-    if ( start + ( i + 2 ) * pitch > end ) return null;
+    if ( start + ( i + 1 ) * pitch + WEAVE_POST_LEN > end ) return null;
     return ( i + hash2( spec.salt, k ) ) & 1;
 }
 

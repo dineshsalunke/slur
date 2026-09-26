@@ -12,12 +12,12 @@ import type { Phrase } from './plan.js';
 import {
     emitWeave,
     WEAVE_BAND,
-    WEAVE_PITCH,
     WEAVE_SLALOM_GAP,
     type WeaveSpec,
     weaveBandsAt,
     weaveLanesAt,
     weaveOpenness,
+    weavePitch,
 } from './weave-emit.js';
 
 const SEEDS = Array.from( { length: 30 }, ( _, k ) => k + 1 );
@@ -52,11 +52,7 @@ export function weaveTarget(
     } );
     let lo = Number.NEGATIVE_INFINITY;
     let hi = Number.POSITIVE_INFINITY;
-    for (
-        let zz = z - halfL;
-        zz <= z + halfL + Math.max( vz * LEAD, WEAVE_PITCH[ w.weave.bands[ k ] ] );
-        zz += CELL / 2
-    ) {
+    for ( let zz = z - halfL; zz <= z + halfL + Math.max( vz * LEAD, weavePitch( w.weave, k ) ); zz += CELL / 2 ) {
         const b = at( zz )[ k ];
         if ( Math.min( hi, b.hi ) - Math.max( lo, b.lo ) < CELL ) break;
         lo = Math.max( lo, b.lo );
@@ -85,13 +81,13 @@ function bandLine( range: WeaveRange, t: FlightTuning ): Steer {
 }
 
 const SHAPES: Omit< WeaveSpec, 'salt' >[] = [
-    { bands: [ WEAVE_BAND.low ], divider: null, gap: 0 },
-    { bands: [ WEAVE_BAND.mid ], divider: null, gap: 0 },
-    { bands: [ WEAVE_BAND.high ], divider: null, gap: 0 },
-    { bands: [ 20, 16 ], divider: 'hole', gap: 4 },
-    { bands: [ 16, 20 ], divider: 'wall', gap: 8 },
-    { bands: [ 16, 14 ], divider: 'hole', gap: 8 },
-    { bands: [ 14, 16 ], divider: 'wall', gap: 4 },
+    { act: 'low', bands: [ WEAVE_BAND.low ], divider: null, gap: 0 },
+    { act: 'mid', bands: [ WEAVE_BAND.mid ], divider: null, gap: 0 },
+    { act: 'high', bands: [ WEAVE_BAND.high ], divider: null, gap: 0 },
+    { act: 'mid', bands: [ 20, 16 ], divider: 'hole', gap: 4 },
+    { act: 'mid', bands: [ 16, 20 ], divider: 'wall', gap: 8 },
+    { act: 'high', bands: [ 16, 14 ], divider: 'hole', gap: 8 },
+    { act: 'high', bands: [ 14, 16 ], divider: 'wall', gap: 4 },
 ];
 
 function assertWeaveRoll( seed: number, p: Phrase & { weave: WeaveSpec } ): boolean {

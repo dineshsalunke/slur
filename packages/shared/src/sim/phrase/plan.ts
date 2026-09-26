@@ -1,9 +1,9 @@
 import { GROOVE_BANDS, GROOVE_BEAT_Z, type GrooveBand } from '../groove/grammar.js';
 import type { MotifNote } from '../score/notes.js';
 import { SEG_LEN, START_SAFE } from '../space.js';
-import { centredStart, motifPhraseLen, snapCell } from './motif-emit.js';
+import { centredStart, MOTIF_LEAD_BEATS, motifLeadIn, motifPhraseLen, snapCell } from './motif-emit.js';
 import { drawVocabulary, type SectionMotif, type TwistKind } from './vocabulary.js';
-import { rollWeave, type WeaveSpec } from './weave-emit.js';
+import { rollWeave, type WeaveSpec, weaveExitOffset } from './weave-emit.js';
 
 export type PhraseRole = 'open' | 'teach' | 'repeat' | 'set' | 'weave' | 'twist' | 'rest' | 'finish';
 
@@ -18,6 +18,7 @@ export interface Phrase {
     z1: number;
     notes: MotifNote[] | null;
     x0: number;
+    leadIn: number;
     motif: string | null;
     twist: TwistKind | null;
     weave: WeaveSpec | null;
@@ -49,6 +50,7 @@ export const PHRASE_FINISH_LEN = 300;
 export const PHRASE_REST_LEN = snapCell( GROOVE_BEAT_Z );
 export const PHRASE_WEAVE_MIN = 240;
 export const PHRASE_WEAVE_MAX = 480;
+export const PHRASE_SECTIONS = 5;
 export const PHRASE_SECTION_FLOOR = 2 * PHRASE_ARENA_LEN + PHRASE_REST_LEN + PHRASE_WEAVE_MIN;
 
 export function phraseStartZ(): number {
@@ -64,22 +66,37 @@ export function actOf( section: number, sections: number ): GrooveBand {
     return GROOVE_BANDS[ Math.min( GROOVE_BANDS.length - 1, k ) ];
 }
 
-function roleLengths( m: SectionMotif ): Record< PhraseRole, number > {
-    const motif = motifPhraseLen( m.teach );
+function phraseNotes( role: PhraseRole, m: SectionMotif ): MotifNote[] | null {
+    if ( role === 'teach' || role === 'repeat' ) return m.teach;
+    if ( role === 'twist' ) return m.twist;
+    return null;
+}
+
+function leadInOf( seed: number, role: PhraseRole, notes: MotifNote[] | null, act: GrooveBand, k: number ): number {
+    if ( notes === null ) return 0;
+    if ( PHRASE_SECTION[ PHRASE_SECTION.indexOf( role ) - 1 ] !== 'weave' ) return MOTIF_LEAD_BEATS;
+    return motifLeadIn( act, weaveExitOffset( rollWeave( seed, act, k ), centredStart( notes ) ) );
+}
+
+function roleLengths( seed: number, k: number, m: SectionMotif, act: GrooveBand ): Record< PhraseRole, number > {
+    const motif = ( role: PhraseRole ): number => {
+        const notes = phraseNotes( role, m );
+        return notes === null ? 0 : motifPhraseLen( notes, act, leadInOf( seed, role, notes, act, k ) );
+    };
     return {
         open: PHRASE_ARENA_LEN,
-        teach: motif,
-        repeat: motif,
+        teach: motif( 'teach' ),
+        repeat: motif( 'repeat' ),
         set: PHRASE_ARENA_LEN,
         weave: PHRASE_WEAVE_MIN,
-        twist: motifPhraseLen( m.twist ),
+        twist: motif( 'twist' ),
         rest: PHRASE_REST_LEN,
         finish: 0,
     };
 }
 
-export function sectionMinLen( m: SectionMotif ): number {
-    const lens = roleLengths( m );
+export function sectionMinLen( seed: number, k: number, m: SectionMotif, act: GrooveBand ): number {
+    const lens = roleLengths( seed, k, m, act );
     return PHRASE_SECTION.reduce( ( sum, r ) => sum + lens[ r ], 0 );
 }
 
@@ -94,15 +111,10 @@ function fitSections( seed: number, usable: number ): SectionMotif[] {
     const most = Math.max( 1, Math.floor( usable / PHRASE_SECTION_FLOOR ) );
     for ( let n = most; n > 1; n-- ) {
         const vocab = vocabularyFor( seed, n );
-        if ( vocab.reduce( ( sum, m ) => sum + sectionMinLen( m ), 0 ) <= usable ) return vocab;
+        if ( vocab.reduce( ( sum, m, k ) => sum + sectionMinLen( seed, k, m, actOf( k, n ) ), 0 ) <= usable )
+            return vocab;
     }
     return vocabularyFor( seed, 1 );
-}
-
-function phraseNotes( role: PhraseRole, m: SectionMotif ): MotifNote[] | null {
-    if ( role === 'teach' || role === 'repeat' ) return m.teach;
-    if ( role === 'twist' ) return m.twist;
-    return null;
 }
 
 function rolePhrase( seed: number, role: PhraseRole, m: SectionMotif, act: GrooveBand, k: number ): Phrase {
@@ -116,6 +128,7 @@ function rolePhrase( seed: number, role: PhraseRole, m: SectionMotif, act: Groov
         z1: 0,
         notes,
         x0: notes === null ? 0 : centredStart( notes ),
+        leadIn: leadInOf( seed, role, notes, act, k ),
         motif: notes === null ? null : m.motif.id,
         twist: role === 'twist' ? m.twistKind : null,
         weave: role === 'weave' ? rollWeave( seed, act, k ) : null,
@@ -130,11 +143,11 @@ function sectionPhrases(
     z0: number,
     z1: number,
 ): Phrase[] {
-    const lens = roleLengths( m );
-    const slack = Math.max( 0, z1 - z0 - sectionMinLen( m ) );
+    const act = actOf( k, sections );
+    const lens = roleLengths( seed, k, m, act );
+    const slack = Math.max( 0, z1 - z0 - sectionMinLen( seed, k, m, act ) );
     lens.weave += Math.min( slack, PHRASE_WEAVE_MAX - PHRASE_WEAVE_MIN );
     lens.open += slack - ( lens.weave - PHRASE_WEAVE_MIN );
-    const act = actOf( k, sections );
     const out: Phrase[] = [];
     let z = z0;
     for ( const role of PHRASE_SECTION ) {
@@ -152,7 +165,7 @@ export function planPhrases( seed: number, length: number ): PhrasePlan {
     const finish = finishPhraseZ( length );
     const vocabulary = fitSections( seed, finish - start );
     const sections = vocabulary.length;
-    const mins = vocabulary.map( sectionMinLen );
+    const mins = vocabulary.map( ( m, k ) => sectionMinLen( seed, k, m, actOf( k, sections ) ) );
     const total = mins.reduce( ( a, b ) => a + b, 0 );
     const phrases: Phrase[] = [];
     let z = start;
@@ -174,9 +187,20 @@ export function planPhrases( seed: number, length: number ): PhrasePlan {
             z1: end,
             notes: null,
             x0: 0,
+            leadIn: 0,
             motif: null,
             twist: null,
             weave: null,
         } );
     return { seed, length, sections, vocabulary, phrases };
+}
+
+export function phraseSegments( seed: number ): number {
+    const vocab = vocabularyFor( seed, PHRASE_SECTIONS );
+    const body = vocab.reduce(
+        ( sum, m, k ) =>
+            sum + sectionMinLen( seed, k, m, actOf( k, PHRASE_SECTIONS ) ) + PHRASE_WEAVE_MAX - PHRASE_WEAVE_MIN,
+        0,
+    );
+    return Math.ceil( ( phraseStartZ() + body + PHRASE_FINISH_LEN ) / SEG_LEN );
 }

@@ -8,16 +8,15 @@ import { type ScoreNote, scoreAdherence } from '../../pacing/score.js';
 import { SHIP_CLASSES } from '../../ship-classes.js';
 import { avoidPilot, cached, fly, type Steer } from '../avoid-pilot.test.js';
 import type { GrooveObstacle } from '../groove/islands.js';
-import { HALF_WIDTH, SEG_LEN, TRACK_GEN_SEGMENTS, type Track } from '../space.js';
+import { HALF_WIDTH, SEG_LEN, type Track } from '../space.js';
 import { procgenDescriptor, resolveTrack } from '../track-provider.js';
 import { phraseOpenFailures, phraseOpenSpace } from './open-space.js';
 import { buildPhrase, phraseTrack } from './phrase-track.js';
-import { PHRASE_SECTION, phraseStartZ, planPhrases } from './plan.js';
+import { PHRASE_SECTION, PHRASE_SECTIONS, phraseSegments, phraseStartZ, planPhrases } from './plan.js';
 import { phraseWeaves, weaveTarget } from './weave.test.js';
 
 const SEEDS = Array.from( { length: 30 }, ( _, k ) => k + 1 );
 const FLIGHT_SEEDS = [ 1, 2, 3, 4, 5, 17 ];
-const LENGTH = TRACK_GEN_SEGMENTS.phrase;
 
 function placedScore( seed: number ): ScoreNote[] {
     return buildPhrase( seed ).notes.map( ( n ) => ( {
@@ -61,9 +60,9 @@ test( 'a phrase seed emits the same geometry every time', () => {
 
 test( 'the phrase descriptor carries its own length and resolves to the phrase track', () => {
     const d = procgenDescriptor( 3, 'phrase' );
-    assert.equal( d.kind === 'procgen' && d.length, LENGTH );
+    assert.equal( d.kind === 'procgen' && d.length, phraseSegments( 3 ) );
     const track = resolveTrack( d );
-    assert.equal( track.finishZ, LENGTH * SEG_LEN );
+    assert.equal( track.finishZ, phraseSegments( 3 ) * SEG_LEN );
     assert.deepEqual( track.segmentAt( 300 ), phraseTrack( 3 ).segmentAt( 300 ) );
     assert.ok( track.anchors.length > 0 );
 } );
@@ -96,9 +95,10 @@ test( 'the section count follows the length, and the phrases tile the track on t
     assert.ok( counts[ counts.length - 1 ] > counts[ 2 ] );
 } );
 
-test( 'the acts rise low → mid → high over 5 sections at 600 segments', () => {
+test( 'the derived phrase length fits 5 sections rising low, low, mid, mid, high', () => {
     for ( const seed of SEEDS ) {
-        const plan = planPhrases( seed, LENGTH );
+        const plan = planPhrases( seed, phraseSegments( seed ) );
+        assert.equal( plan.sections, PHRASE_SECTIONS, `seed ${ seed }` );
         const acts = Array.from(
             { length: plan.sections },
             ( _, s ) => plan.phrases.find( ( p ) => p.section === s )?.act,

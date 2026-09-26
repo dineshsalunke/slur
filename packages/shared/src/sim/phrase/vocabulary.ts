@@ -1,10 +1,13 @@
+import { CELL } from '../../constants.js';
 import { REGISTER_GAP_Z, REST_UNIT_U, SCORE_REGISTER_CRUISE } from '../../pacing/score.js';
 import { FRACTURE_SHADOW_Z } from '../fracture-shadow.js';
 import { GROOVE_BEAT_Z, type GrooveBand } from '../groove/grammar.js';
 import { hash2, mulberry32 } from '../rng.js';
 import { mirrorNote } from '../score/compose.js';
+import { isLateral } from '../score/emit.js';
 import { MOTIFS, type Motif, motifFailures, type ParsedMotif } from '../score/motifs.js';
 import { formatNotes, type MotifNote, type NoteToken, parseNotes } from '../score/notes.js';
+import { leadDistance } from './pitch.js';
 
 export type TwistKind = 'mirror' | 'swap' | 'callback';
 
@@ -63,10 +66,14 @@ export function isFlyable( notes: readonly MotifNote[] ): boolean {
     return ok;
 }
 
-export function noteBeats( n: MotifNote ): number {
+export function noteBeats( n: MotifNote, act: GrooveBand ): number {
     const calm = n.kind === 'smash' ? Math.max( REGISTER_GAP_Z, FRACTURE_SHADOW_Z ) : REGISTER_GAP_Z;
-    const need = n.kind === 'rest' ? REST_UNIT_U : n.move * SCORE_REGISTER_CRUISE + calm;
-    return Math.ceil( ( need / GROOVE_BEAT_Z ) * PHRASE_BEAT_DIVISION - BEAT_EPS ) / PHRASE_BEAT_DIVISION;
+    const move = isLateral( n ) ? leadDistance( act, n.cells * CELL ) : n.move * SCORE_REGISTER_CRUISE;
+    return beatsFor( n.kind === 'rest' ? REST_UNIT_U : move + calm );
+}
+
+export function beatsFor( z: number ): number {
+    return Math.ceil( ( z / GROOVE_BEAT_Z ) * PHRASE_BEAT_DIVISION - BEAT_EPS ) / PHRASE_BEAT_DIVISION;
 }
 
 export function playedNotes( m: ParsedMotif ): number {

@@ -22,11 +22,11 @@ const FROZEN: Partial< Record< TrackGen, Record< number, string > > > = {
         24301: 'c04d9939218a97d6',
     },
     phrase: {
-        1: 'aa9ca47d03405d98',
-        7: '18ed4d55e1f9ea45',
-        42: 'b4197ebc5bc9e7d1',
-        1337: '0d5a560d6c84183e',
-        24301: '0b9fc2d1e7277ab0',
+        1: '17d06bca260e7a21',
+        7: '01ee6f1581b19a28',
+        42: 'b341e43cf4f22eb7',
+        1337: 'a4138aad8d762e3a',
+        24301: 'efe6b8dadb22901e',
     },
 };
 
