@@ -1,3 +1,4 @@
+import { authoredTrackFor } from './authored/authored-level.js';
 import { phraseSegments } from './phrase/plan.js';
 import { DEFAULT_TRACK_GEN, type ProcgenDescriptor, TRACK_GEN_SEGMENTS, type Track, type TrackGen } from './space.js';
 import { makeProcgenTrack } from './track.js';
@@ -9,7 +10,7 @@ export function resolveTrack( d: TrackDescriptor ): Track {
         case 'procgen':
             return makeProcgenTrack( d );
         case 'authored':
-            throw new Error( 'authored provider not built (ADR-002+)' );
+            return authoredTrackFor( d.levelId );
     }
 }
 

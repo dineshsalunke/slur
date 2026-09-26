@@ -29,6 +29,8 @@ export * from './run/racer.js';
 export * from './run/run-sim.js';
 export * from './schema.js';
 export * from './ship-classes.js';
+export * from './sim/authored/authored-level.js';
+export * from './sim/authored/decompile.js';
 export * from './sim/block-depth.js';
 export * from './sim/bounce-contact.js';
 export * from './sim/clearance.js';
