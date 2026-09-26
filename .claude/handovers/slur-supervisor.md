@@ -46,8 +46,8 @@ portal S3 commits. workerfour messages workertwo + me on commit. workertwo is at
 
 ## Open owner questions
 
-- BAG MIX. Test-proven at 0.1 each: bolt 3 · seeker 3 · mine 4 · boost 3 · shield 3 · portal 2 · tug 2. Mine
-  outnumbers bolt, so seamSafe keys on mine. My proposal: bolt 4, mine 3. Owner to pick before tug S3 sets tugRatio.
+- BAG MIX DECIDED (owner, 2026-09-26): bolt 4 · seeker 3 · mine 3 · boost 3 · shield 3 · portal 2 · tug 2.
+  Put it in the tug S3 brief.
 - #289 portal loop: a chaser in your far end is thrown back and loops until they strafe or the pair expires.
   Add a per-ship hop cooldown? Owner to decide.
 

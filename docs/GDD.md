@@ -567,6 +567,11 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 6. **Session length** — target minutes per round / per session?
 7. **Slow vs breakable blocks** — ADR-009 is PROPOSED and gated on a readability test; slow blocks stay live
    in the generator until it is accepted (§5.2).
+8. **Portal loop (#289)** — both ends of a portal pair are entries. A chaser who flies forward into the far
+   end exits past the near end, lined up with the far end again. If the chaser does not strafe clear, the
+   loop repeats until the pair expires (`portalTtl` 9 s, about 1 s per lap). Owner decision (2026-09-26):
+   keep this for now. If playtests show it is too harsh, the candidate fixes are one throw-back per ship per
+   pair, or a per-ship hop cooldown.
 
 *Resolved and folded in:* v1 mode = finite **Race** (endless Survival dropped — ADR-004) · fuel/energy
 **cut** (it only gated boost, which is now a pickup — §5.1/§5.3) · descriptor shape shipped as
