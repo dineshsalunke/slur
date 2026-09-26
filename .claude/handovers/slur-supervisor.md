@@ -56,6 +56,8 @@ half (prediction, attach-room-to-world, net-systems, current-input, net-canvas +
 B6 landed f1ddda5. workertwo #285 phase 1 CLEARED: React context + useTrack() (R3F 9.7 bridges contexts via
 its-fine, verified; no loader holds a track, 4 routes share the scene, so useRouteLoaderData rejected). Owner told
 it departs from their idea; phase 2 (roots + HUD) after #273 and #284. Then #283 B4/B5.
+#273 DONE + closed (c3ab18d): a 400 ms stall now drains in ~1 s (was stuck at 22-25). workerone IDLE, holds
+nothing: next lane candidates #275 render P1s (minus mine-shock), #281 invuln, #277 P2 sweep. Clear it first.
 INCIDENT: workertwo's mid-edit #285 crashed every Canvas route (Monoliths reads undefined track). Told it to
 restore rendering first and ping workerfive (whose #284 "before" screenshots are blocked). Verify it did.
 Deferred #283: net-loop, remote-engine-audio, game-audio, room-context (after #273); test-level-canvas + local-*
