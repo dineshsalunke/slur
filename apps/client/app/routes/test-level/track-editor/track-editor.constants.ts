@@ -12,7 +12,11 @@ export const EDITOR_TOOLS: readonly { id: EditorTool; label: string; key: string
 export const MAP_MARGIN_LEFT = 56;
 export const MAP_MARGIN_RIGHT = 24;
 export const MAP_MAX_SCALE = 12;
-export const MIN_GRID_PX = 5;
+export const MIN_GRID_PX = 4;
+export const ZOOM_MIN = 0.25;
+export const ZOOM_MAX = 8;
+export const ZOOM_STEP = Math.SQRT2;
+export const WHEEL_ZOOM_RATE = 0.002;
 export const LABEL_EVERY_SEGMENTS = 5;
 
 export const MAP_COLORS = {

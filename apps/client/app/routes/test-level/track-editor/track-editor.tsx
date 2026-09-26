@@ -4,6 +4,7 @@ import { EditorPalette } from './editor-palette';
 import { EditorSaved } from './editor-saved';
 import { EditorSnap } from './editor-snap';
 import { EditorWarnings } from './editor-warnings';
+import { EditorZoom } from './editor-zoom';
 
 export function TrackEditor() {
     return (
@@ -12,12 +13,13 @@ export function TrackEditor() {
                 <h1 className="text-[13px] font-bold uppercase tracking-[0.3em] text-marigold">Track editor</h1>
                 <EditorPalette />
                 <EditorSnap />
+                <EditorZoom />
                 <EditorWarnings />
                 <EditorActions />
                 <EditorSaved />
                 <p className="mt-auto text-[11px] leading-relaxed text-dim">
-                    Click places one cell. Drag draws a rectangle. Wheel scrolls. Esc cancels a drag. Start at the
-                    bottom; the grey band is locked.
+                    Click places one cell. Drag draws a rectangle. Wheel scrolls. Ctrl or ⌘ + wheel, or a pinch, zooms
+                    at the pointer. Esc cancels a drag. Start at the bottom; the grey band is locked.
                 </p>
             </aside>
             <main className="min-w-0 flex-1">

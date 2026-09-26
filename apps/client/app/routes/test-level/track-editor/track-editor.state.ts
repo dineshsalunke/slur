@@ -1,7 +1,6 @@
 import {
     type AuthoredLevel,
     authoredLevel,
-    clamp,
     DEFAULT_TRACK_GEN,
     decompileTrack,
     isLevelSlug,
@@ -11,21 +10,22 @@ import {
     resolveTrack,
     serializeAuthoredLevel,
 } from '@slur/shared';
-import type { PointerEvent, WheelEvent } from 'react';
+import type { PointerEvent } from 'react';
 import { typingTarget } from '../../../dev/typing-target';
 import { TEST_LEVEL_SEED } from '../test-level-canvas/test-level-canvas.constants';
 import { testLevelDescriptor } from '../test-level-canvas/test-level-canvas.utils';
-import { EDITOR_TOOLS } from './track-editor.constants';
+import { EDITOR_TOOLS, WHEEL_ZOOM_RATE } from './track-editor.constants';
 import {
     applyTool,
+    clampCamera,
     drawMap,
     hash8,
-    maxScrollZ,
     slugOf,
     snapRect,
     trackLength,
     viewOf,
     worldAt,
+    zoomAround,
 } from './track-editor.utils';
 
 export type EditorTool = 'destructible' | 'solid' | 'gap' | 'eraser';
@@ -37,11 +37,18 @@ export interface EditorPoint {
     z: number;
 }
 
+export interface EditorCamera {
+    zoom: number;
+    scrollX: number;
+    scrollZ: number;
+}
+
 export interface EditorState {
     level: AuthoredLevel;
     tool: EditorTool;
     snap: EditorSnap;
-    scrollZ: number;
+    camera: EditorCamera;
+    viewport: { width: number; height: number };
     anchor: EditorPoint | null;
     hover: EditorPoint | null;
     dirty: boolean;
@@ -65,7 +72,8 @@ const state: EditorState = {
     },
     tool: 'destructible',
     snap: 4,
-    scrollZ: 0,
+    camera: { zoom: 1, scrollX: 0, scrollZ: 0 },
+    viewport: { width: 1, height: 1 },
     anchor: null,
     hover: null,
     dirty: false,
@@ -90,7 +98,7 @@ function changed(): void {
 
 export function openEditor( level: AuthoredLevel ): void {
     state.level = level;
-    state.scrollZ = 0;
+    state.camera = { zoom: 1, scrollX: 0, scrollZ: 0 };
     state.anchor = null;
     state.hover = null;
     state.dirty = false;
@@ -108,7 +116,23 @@ export function setSnap( snap: EditorSnap ): void {
 }
 
 function viewFor( canvas: HTMLCanvasElement ) {
-    return viewOf( canvas.clientWidth, canvas.clientHeight, state.scrollZ );
+    return viewOf( canvas.clientWidth, canvas.clientHeight, state.camera );
+}
+
+function setCamera( camera: EditorCamera ): void {
+    state.camera = clampCamera( state.viewport.width, state.viewport.height, state.level, camera );
+    changed();
+}
+
+export function zoomBy( factor: number ): void {
+    const { width, height } = state.viewport;
+    setCamera(
+        zoomAround( width, height, state.level, state.camera, width / 2, height / 2, state.camera.zoom * factor ),
+    );
+}
+
+export function fitWidth(): void {
+    setCamera( { ...state.camera, zoom: 1, scrollX: 0 } );
 }
 
 function pointOf( e: PointerEvent< HTMLCanvasElement > ): EditorPoint {
@@ -152,10 +176,22 @@ export function leaveMap(): void {
     changed();
 }
 
-export function wheelMap( e: WheelEvent< HTMLCanvasElement > ): void {
-    const v = viewFor( e.currentTarget );
-    state.scrollZ = clamp( state.scrollZ - e.deltaY / v.scale, 0, maxScrollZ( state.level, v ) );
-    changed();
+function wheelMap( canvas: HTMLCanvasElement, e: WheelEvent ): void {
+    e.preventDefault();
+    const v = viewFor( canvas );
+    if ( e.ctrlKey || e.metaKey ) {
+        const r = canvas.getBoundingClientRect();
+        const zoom = state.camera.zoom * Math.exp( -e.deltaY * WHEEL_ZOOM_RATE );
+        setCamera(
+            zoomAround( v.width, v.height, state.level, state.camera, e.clientX - r.left, e.clientY - r.top, zoom ),
+        );
+        return;
+    }
+    setCamera( {
+        ...state.camera,
+        scrollX: state.camera.scrollX + e.deltaX / v.scale,
+        scrollZ: state.camera.scrollZ - e.deltaY / v.scale,
+    } );
 }
 
 function editorKeys( e: KeyboardEvent ): void {
@@ -177,16 +213,21 @@ export function attachMap( canvas: HTMLCanvasElement | null ): ( () => void ) | 
             canvas.height = Math.round( h * dpr );
         }
         ctx.setTransform( dpr, 0, 0, dpr, 0, 0 );
-        drawMap( ctx, viewOf( w, h, state.scrollZ ), state );
+        state.viewport = { width: w, height: h };
+        state.camera = clampCamera( w, h, state.level, state.camera );
+        drawMap( ctx, viewOf( w, h, state.camera ), state );
     };
+    const wheel = ( e: WheelEvent ) => wheelMap( canvas, e );
     const resize = new ResizeObserver( redraw );
     resize.observe( canvas );
     const unsubscribe = subscribeEditor( redraw );
     addEventListener( 'keydown', editorKeys );
+    canvas.addEventListener( 'wheel', wheel, { passive: false } );
     return () => {
         resize.disconnect();
         unsubscribe();
         removeEventListener( 'keydown', editorKeys );
+        canvas.removeEventListener( 'wheel', wheel );
     };
 }
 

@@ -2,14 +2,17 @@ import { type AuthoredLevel, BLOCK_ID_STRIDE, HALF_WIDTH, SEG_LEN, START_SAFE } 
 import { describe, expect, it } from 'vitest';
 import {
     applyTool,
+    clampCamera,
     crowdedSegments,
     hash8,
+    maxScrollX,
     screenX,
     screenY,
     slugOf,
     snapRect,
     viewOf,
     worldAt,
+    zoomAround,
 } from './track-editor.utils';
 
 const LENGTH = 50 * SEG_LEN;
@@ -111,11 +114,44 @@ describe( 'crowdedSegments', () => {
 
 describe( 'view mapping', () => {
     it( 'worldAt inverts screenX/screenY with z growing upward', () => {
-        const v = viewOf( 1000, 700, 340 );
+        const v = viewOf( 1000, 700, { zoom: 1, scrollX: 0, scrollZ: 340 } );
         const p = worldAt( v, screenX( v, 12.5 ), screenY( v, 401 ) );
         expect( p.x ).toBeCloseTo( 12.5 );
         expect( p.z ).toBeCloseTo( 401 );
         expect( screenY( v, 400 ) ).toBeLessThan( screenY( v, 350 ) );
+    } );
+
+    it.each( [ 0.25, 1, 2.5, 8 ] )( 'worldAt inverts the view and snaps the same cell at zoom %f', ( zoom ) => {
+        const v = viewOf( 1000, 700, { zoom, scrollX: 30, scrollZ: 340 } );
+        const p = worldAt( v, screenX( v, 12.5 ), screenY( v, 401 ) );
+        expect( p.x ).toBeCloseTo( 12.5 );
+        expect( p.z ).toBeCloseTo( 401 );
+        const q = worldAt( v, screenX( v, -3.2 ), screenY( v, 410.7 ) );
+        expect( snapRect( p, q, 4, LENGTH ) ).toEqual( { x: -4, z: 400, w: 20, l: 12 } );
+    } );
+
+    it( 'zoomAround keeps the world point under the pointer', () => {
+        const lvl = level();
+        const from = clampCamera( 1000, 700, lvl, { zoom: 1, scrollX: 0, scrollZ: 300 } );
+        const before = worldAt( viewOf( 1000, 700, from ), 700, 250 );
+        for ( const zoom of [ 3, 8, 0.5 ] ) {
+            const to = zoomAround( 1000, 700, lvl, from, 700, 250, zoom );
+            const after = worldAt( viewOf( 1000, 700, to ), 700, 250 );
+            expect( to.zoom ).toBe( zoom );
+            if ( zoom > 1 ) expect( after.x ).toBeCloseTo( before.x );
+            expect( after.z ).toBeCloseTo( before.z );
+        }
+    } );
+
+    it( 'clamps zoom and keeps the deck inside the pan range', () => {
+        const lvl = level();
+        const c = clampCamera( 1000, 700, lvl, { zoom: 99, scrollX: 1e6, scrollZ: -5 } );
+        expect( c.zoom ).toBe( 8 );
+        expect( c.scrollX ).toBeCloseTo( maxScrollX( 1000, 8 ) );
+        expect( c.scrollZ ).toBe( 0 );
+        const v = viewOf( 1000, 700, c );
+        expect( screenX( v, HALF_WIDTH ) ).toBeCloseTo( 1000 - 24 );
+        expect( maxScrollX( 1000, 1 ) ).toBe( 0 );
     } );
 } );
 

@@ -16,8 +16,10 @@ import {
     MAP_MAX_SCALE,
     MIN_GRID_PX,
     TOOL_PREVIEW,
+    ZOOM_MAX,
+    ZOOM_MIN,
 } from './track-editor.constants';
-import type { EditorPoint, EditorState, EditorTool } from './track-editor.state';
+import type { EditorCamera, EditorPoint, EditorState, EditorTool } from './track-editor.state';
 
 export interface EditorView {
     width: number;
@@ -27,11 +29,55 @@ export interface EditorView {
     scrollZ: number;
 }
 
-export function viewOf( width: number, height: number, scrollZ: number ): EditorView {
-    const room = Math.max( 1, width - MAP_MARGIN_LEFT - MAP_MARGIN_RIGHT );
-    const scale = Math.min( MAP_MAX_SCALE, room / ( 2 * HALF_WIDTH ) );
-    const left = MAP_MARGIN_LEFT + ( room - scale * 2 * HALF_WIDTH ) / 2;
-    return { width, height, scale, left, scrollZ };
+function mapRoom( width: number ): number {
+    return Math.max( 1, width - MAP_MARGIN_LEFT - MAP_MARGIN_RIGHT );
+}
+
+function scaleOf( width: number, zoom: number ): number {
+    return Math.min( MAP_MAX_SCALE, mapRoom( width ) / ( 2 * HALF_WIDTH ) ) * zoom;
+}
+
+export function maxScrollX( width: number, zoom: number ): number {
+    return Math.max( 0, 2 * HALF_WIDTH - mapRoom( width ) / scaleOf( width, zoom ) );
+}
+
+export function viewOf( width: number, height: number, camera: EditorCamera ): EditorView {
+    const scale = scaleOf( width, camera.zoom );
+    const spare = mapRoom( width ) - scale * 2 * HALF_WIDTH;
+    const left =
+        spare >= 0
+            ? MAP_MARGIN_LEFT + spare / 2
+            : MAP_MARGIN_LEFT - clamp( camera.scrollX, 0, maxScrollX( width, camera.zoom ) ) * scale;
+    return { width, height, scale, left, scrollZ: camera.scrollZ };
+}
+
+export function clampCamera( width: number, height: number, level: AuthoredLevel, camera: EditorCamera ): EditorCamera {
+    const zoom = clamp( camera.zoom, ZOOM_MIN, ZOOM_MAX );
+    const v = viewOf( width, height, { ...camera, zoom } );
+    return {
+        zoom,
+        scrollX: clamp( camera.scrollX, 0, maxScrollX( width, zoom ) ),
+        scrollZ: clamp( camera.scrollZ, 0, maxScrollZ( level, v ) ),
+    };
+}
+
+export function zoomAround(
+    width: number,
+    height: number,
+    level: AuthoredLevel,
+    camera: EditorCamera,
+    px: number,
+    py: number,
+    zoom: number,
+): EditorCamera {
+    const p = worldAt( viewOf( width, height, camera ), px, py );
+    const next = clamp( zoom, ZOOM_MIN, ZOOM_MAX );
+    const scale = scaleOf( width, next );
+    return clampCamera( width, height, level, {
+        zoom: next,
+        scrollX: ( MAP_MARGIN_LEFT - px ) / scale + p.x + HALF_WIDTH,
+        scrollZ: p.z - ( height - py ) / scale,
+    } );
 }
 
 export function screenX( v: EditorView, x: number ): number {
