@@ -47,6 +47,10 @@ export class PlayerState extends Schema implements SimShip {
     @type( 'float32' ) boostTimer = 0;
     @type( 'boolean' ) shielded = false;
     shieldTimer = 0;
+    @type( 'float32' ) tugTimer = 0;
+    @type( 'float32' ) slowTimer = 0;
+    @type( 'float32' ) towTimer = 0;
+    @type( 'float32' ) tugAnchorZ = 0;
 }
 
 export class Projectile extends Schema implements ProjectileState {

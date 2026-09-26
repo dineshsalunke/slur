@@ -43,6 +43,21 @@ import {
     SHIELD_S,
     STUN_SECONDS,
 } from './combat/constants.js';
+import {
+    SLOW_CAP,
+    TOW_JUMP,
+    TOW_KICK,
+    TOW_S,
+    TOW_STRAFE_SCALE,
+    TUG_EASE_S,
+    TUG_GAIN,
+    TUG_KICK,
+    TUG_RANGE,
+    TUG_RELEASE_S,
+    TUG_S,
+    TUG_SLOW_S,
+    TUG_SPEED_CUT,
+} from './combat/tug-constants.js';
 
 export interface SimConfig {
     boltSpeed: number;
@@ -87,6 +102,19 @@ export interface SimConfig {
     boostRiseS: number;
     shieldRatio: number;
     shieldS: number;
+    tugRange: number;
+    tugKick: number;
+    tugS: number;
+    tugGain: number;
+    tugEaseS: number;
+    tugReleaseS: number;
+    tugSlowS: number;
+    tugSpeedCut: number;
+    slowCap: number;
+    towKick: number;
+    towS: number;
+    towStrafeScale: number;
+    towJump: boolean;
 }
 
 export const DEFAULT_SIM_CONFIG: SimConfig = {
@@ -132,4 +160,17 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     boostRiseS: BOOST_RISE_S,
     shieldRatio: SHIELD_RATIO,
     shieldS: SHIELD_S,
+    tugRange: TUG_RANGE,
+    tugKick: TUG_KICK,
+    tugS: TUG_S,
+    tugGain: TUG_GAIN,
+    tugEaseS: TUG_EASE_S,
+    tugReleaseS: TUG_RELEASE_S,
+    tugSlowS: TUG_SLOW_S,
+    tugSpeedCut: TUG_SPEED_CUT,
+    slowCap: SLOW_CAP,
+    towKick: TOW_KICK,
+    towS: TOW_S,
+    towStrafeScale: TOW_STRAFE_SCALE,
+    towJump: TOW_JUMP,
 };

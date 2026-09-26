@@ -123,6 +123,10 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
         finishTime: 88,
         stunTimer: 0.9,
         boostTimer: 1.1,
+        tugTimer: 0.5,
+        slowTimer: 0.7,
+        towTimer: 0.6,
+        tugAnchorZ: 4100,
     };
     resetPlayerForRace( dirty, 3 );
     assert.equal( dirty.x, 2 * START_STAGGER_U );
@@ -138,8 +142,12 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
             dirty.finishTime,
             dirty.stunTimer,
             dirty.boostTimer,
+            dirty.tugTimer,
+            dirty.slowTimer,
+            dirty.towTimer,
+            dirty.tugAnchorZ,
         ],
-        [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
     );
     assert.equal( dirty.finished, false );
     assert.equal( dirty.dead, false );

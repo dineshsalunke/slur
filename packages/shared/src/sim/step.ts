@@ -3,6 +3,7 @@ import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
 import { type Block, HALF_WIDTH, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
+import { clearStatus, tickStatus, towedInput, tugCap } from './tug-status.js';
 import type { SimShip, SimWorld } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
@@ -157,7 +158,7 @@ function landingFloor( segs: Segment[], s: SimShip, prevY: number, t: FlightTuni
 
 function markDead( s: SimShip, t: FlightTuning ): void {
     s.dead = true;
-    s.boostTimer = 0;
+    clearStatus( s );
     s.respawnTimer = t.respawnDelay;
     s.vx = 0;
     s.vy = 0;
@@ -176,7 +177,7 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.grounded = true;
     s.jumpsUsed = 0;
     s.stunTimer = 0;
-    s.boostTimer = 0;
+    clearStatus( s );
 }
 
 function overlapsBlock( b: Block, s: SimShip, prevY: number, t: FlightTuning ): boolean {
@@ -318,11 +319,10 @@ export function simulate(
         return;
     }
 
-    const control = s.stunTimer > 0 ? NEUTRAL_INPUT : input;
+    const control = towedInput( s, s.stunTimer > 0 ? NEUTRAL_INPUT : input, cfg );
     const push = boostThrust( s, input, t, cfg );
-    const cap = boostCap( s, t, cfg );
-    if ( s.stunTimer > 0 ) s.stunTimer = Math.max( 0, s.stunTimer - dt );
-    if ( s.boostTimer > 0 ) s.boostTimer = Math.max( 0, s.boostTimer - dt );
+    const cap = tugCap( s, t, boostCap( s, t, cfg ), cfg );
+    tickStatus( s, t, dt, cfg );
 
     applyLongitudinal( s, control, t, dt, cap, push );
     applyStrafe( s, control, t, dt );
