@@ -1,4 +1,4 @@
-Agent: workerthree · Lane: #300 phrase generator — derived pitch landed · Updated: 2026-09-27
+Agent: workerthree · Lane: #300 phrase generator — ADR-023 amended · Updated: 2026-09-27
 
 ## Goal
 
@@ -18,6 +18,7 @@ derive obstacle spacing from ship physics (owner decision, supersedes `WEAVE_PIT
   - `phraseSegments(seed)`: 5 sections at minimum length with full 480u weaves. `procgenDescriptor` and
     `/test-level` use it.
   - Phrase digests re-frozen.
+- `97692ad` ADR-023 amendment: S3 lanes, derived pitch numbers, five departures.
 
 ## State
 
@@ -37,15 +38,12 @@ none.
 ## Held files
 
 `packages/shared/src/sim/phrase/*`, `sim/avoid-pilot.test.ts`, `sim/track-digest.test.ts` (phrase row),
-`docs/DECISIONS.md` (ADR-023 only). Released: `sim/track-provider.ts` and `test-level-canvas.utils.ts`
-(they go to workertwo, #304).
+`docs/DECISIONS.md` (ADR-023 only). Released to workertwo (#304): `sim/track-provider.ts`, test-level
+route files, `src/index.ts`.
 
 ## Next
 
-1. ADR-023: S3 + derived pitch numbers and departures (straight lanes + slalom replaces RFC "band on
-   weaveRaw"; derived pitch replaces the width-keyed table; post length added on top of the owner's 4
-   terms; per-seed length replaces RFC "600 segments"; weave no longer splits class speeds, owner
-   accepted).
+1. Wait for the next #300 slice from the supervisor.
 2. Readability (post glow, lower posts) is a separate owner question. Do not build it unasked.
 3. S4 per the RFC.
 
