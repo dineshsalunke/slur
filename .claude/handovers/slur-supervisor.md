@@ -32,9 +32,9 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | none | idle, 14% (clear before assigning) | none |
-| workertwo | w2P:pF | #290 tug S3 QUEUED behind portal S3 | idle, 13% | none |
+| workertwo | w2P:pF | #290 tug S3 CLEARED + resumed (cleared at 0%) | working | tug-constants.ts, constants.ts (MINE_RATIO 0.15), power-bag.test.ts, pickup-field.tsx, seeker-pickups/*, seeker-pickups.test.ts, NEW tug-pickups/* tug-line/* tug-events.ts, net-canvas.tsx, attach-room-to-world.ts, power-cell.constants.ts, power-gem.tsx, bind-room-audio.ts, sfx-map.ts (ask first: ecs traits/net-systems) |
 | workerthree | w2P:pG | none | idle, 11% | none |
-| workerfour | w2P:pH | #289 portal S3, RESUMED (claim pending) | working | awaiting its S3 claim |
+| workerfour | w2P:pH | #289 portal S4 (S3 done 7857886) | working | PART A: NEW portal-field/*. PART B after tug S3 commits: attach-room-to-world, power-cell.constants, power-gem.tsx + .constants, sfx-map, bind-room-audio, net-canvas |
 | workerfive | w2P:pK | none | idle, 11% | none |
 
 ## Serialization
