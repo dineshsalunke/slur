@@ -1,0 +1,34 @@
+{
+  "triangles": 1520,
+  "vertices": 4560,
+  "meshes": 1,
+  "primitives": 4,
+  "materials": 4,
+  "textureResolution": 1024,
+  "embeddedTextures": [
+    "graphite-basecolor.png",
+    "graphite-orm.png",
+    "graphite-normal.png"
+  ],
+  "bytes": 2632592,
+  "bounds": {
+    "min": [
+      -0.9505226720175455,
+      0.01906000000000001,
+      -1.04
+    ],
+    "max": [
+      0.9505226720175455,
+      0.5070710710669456,
+      0.96
+    ]
+  },
+  "dimensions": [
+    1.901045344035091,
+    0.4880110710669456,
+    2
+  ],
+  "forward": "-Z",
+  "up": "+Y",
+  "engineMouths": 2
+}

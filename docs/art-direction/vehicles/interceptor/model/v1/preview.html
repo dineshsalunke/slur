@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cutlass · 3D asset review</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#11161c;color:#d7dce2;font:14px system-ui,sans-serif;overflow:hidden}canvas{display:block}header{position:absolute;top:28px;left:32px;pointer-events:none}h1{font-size:22px;letter-spacing:.18em;font-weight:500;margin:0 0 9px}header p{color:#8f9ba8;font-size:12px;letter-spacing:.12em;margin:0}nav{position:absolute;bottom:27px;left:50%;transform:translateX(-50%);display:flex;gap:7px;white-space:nowrap;background:#121820de;padding:9px;border:1px solid #34404b;border-radius:9px}button,a{font:inherit;color:#d7dce2;border:1px solid #424c56;background:#202832;padding:8px 12px;border-radius:5px;cursor:pointer;text-decoration:none}button:hover,a:hover{border-color:#dca232;color:#ffe2a0}#status{position:absolute;bottom:86px;left:32px;right:32px;color:#9ca8b2;font:11px ui-monospace,monospace;pointer-events:none}#hint{position:absolute;top:30px;right:30px;color:#8f9ba8;font-size:12px}.error{color:#ffaaaa!important}
+</style>
+<header><h1>CUTLASS / INTERCEPTOR</h1><p>FIRST 3D INTERPRETATION · GRAPHITE + MARIGOLD</p></header>
+<div id="hint">Drag to orbit · Scroll to zoom</div><div id="status">Loading the exported GLB…</div>
+<nav><button id="hero">Hero</button><button id="chase">Chase</button><button id="top">Top</button><button id="underside">Underside</button><button id="wire">Wireframe</button><button id="light">Studio / dark</button><button id="spin">Rotate</button><a href="cutlass.glb" download>Download GLB</a></nav>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+const status=document.querySelector('#status');
+try{
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#11161c');
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.01,100);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,.13,0);controls.minDistance=1;controls.maxDistance=12;
+const pmrem=new THREE.PMREMGenerator(renderer),room=new RoomEnvironment();scene.environment=pmrem.fromScene(room,.04).texture;scene.environmentIntensity=.55;room.dispose();
+const key=new THREE.DirectionalLight(0xe4e8ef,4);key.position.set(-2.5,5,3);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-3;key.shadow.camera.right=3;key.shadow.camera.top=3;key.shadow.camera.bottom=-3;key.shadow.normalBias=.015;scene.add(key);
+const rim=new THREE.DirectionalLight(0xa2b5ce,2);rim.position.set(2,2,-3);scene.add(rim);scene.add(new THREE.HemisphereLight(0xa5b7cc,0x1b1712,.65));
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({color:0x151b21,metalness:.25,roughness:.8}));floor.rotation.x=-Math.PI/2;floor.position.y=-.022;floor.receiveShadow=true;scene.add(floor);
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.22,.25,1.6);composer.addPass(bloom);composer.addPass(new OutputPass());
+const gltf=await new GLTFLoader().loadAsync('cutlass.glb');const model=gltf.scene;scene.add(model);let meshCount=0,triangles=0;const mats=new Set();model.traverse(o=>{if(o.isMesh){meshCount++;triangles+=(o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count)/3;o.castShadow=true;o.receiveShadow=true;for(const m of Array.isArray(o.material)?o.material:[o.material])mats.add(m);}});
+const stats=await fetch('asset-info.json').then(r=>r.json());status.textContent=`GLB loaded · ${triangles.toLocaleString()} triangles · ${meshCount} mesh primitives · 3 embedded 1K PBR maps · ${stats.dimensions.map(v=>v.toFixed(3)).join(' × ')} m (W × H × L)`;
+let turn=false,dark=false,wire=false;
+function view(pos,target=[0,.13,0]){camera.position.set(...pos);controls.target.set(...target);controls.update();}
+document.querySelector('#hero').onclick=()=>{floor.visible=true;model.rotation.y=0;view([2.55,2.25,3.3]);};
+document.querySelector('#chase').onclick=()=>{floor.visible=true;model.rotation.y=0;view([0,2.35,6.1],[0,.08,-.8]);};
+document.querySelector('#top').onclick=()=>{floor.visible=true;model.rotation.y=0;view([0,4.6,.001]);};
+document.querySelector('#underside').onclick=()=>{floor.visible=false;model.rotation.y=0;view([2,-2,3]);};
+document.querySelector('#wire').onclick=()=>{wire=!wire;for(const m of mats)m.wireframe=wire;};
+document.querySelector('#light').onclick=()=>{dark=!dark;scene.environmentIntensity=dark?.15:.55;key.intensity=dark?1.2:4;rim.intensity=dark?.6:2;};
+document.querySelector('#spin').onclick=()=>{turn=!turn;};
+view([2.55,2.25,3.3]);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);});
+renderer.setAnimationLoop(()=>{if(turn)model.rotation.y+=.003;controls.update();composer.render();});
+}catch(e){status.classList.add('error');status.textContent='Model load failed: '+e.message;console.error(e);}
+</script></html>
