@@ -53,7 +53,9 @@ UPDATE: workertwo cleared + resumed. B6 CLEARED except test-level-canvas.tsx (#2
 (#273, even import-only; moves whose importers include it wait). power-gem added.
 #273 server+shared half pushed 36b67f2 (server 52/52, shared 408/408); workerone cleared + resumed on the client
 half (prediction, attach-room-to-world, net-systems, current-input, net-canvas + #284 wrapper), then re-measure.
-B6 landed f1ddda5. workertwo now on #285 step 1 (read-only: verify Canvas context bridge, weigh ≥5, send plan).
+B6 landed f1ddda5. workertwo #285 phase 1 CLEARED: React context + useTrack() (R3F 9.7 bridges contexts via
+its-fine, verified; no loader holds a track, 4 routes share the scene, so useRouteLoaderData rejected). Owner told
+it departs from their idea; phase 2 (roots + HUD) after #273 and #284. Then #283 B4/B5.
 Deferred #283: net-loop, remote-engine-audio, game-audio, room-context (after #273); test-level-canvas + local-*
 fields, B1/B7 (after #284); B4/B5 (after #285). Owner Q: also delete dead game/net-debug-hud.tsx?
 workerfive #284: 16 paths CLEARED (app.css player tokens, colors.ts(+test), delete ui/color-dot.tsx, 5 overlays,
