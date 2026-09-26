@@ -1,25 +1,22 @@
-Agent: workerfour · Lane: #287 remove /pacing + DEFAULT_TRACK_GEN · Updated: 2026-09-26, evening
+Agent: workerfour · Lane: #289 portal pickup (BC4) · Updated: 2026-09-26, night
 
 ## Goal
 
-Delete the /pacing board, prune shared pacing code that only it used, and add one `DEFAULT_TRACK_GEN = 'groove'`.
-Done: #287 and #246 are closed.
+Build a portal pickup: two placed ends, tap = near, double tap = far, any racer can use it, 9 s lifetime.
+The teleport runs in the shared `simulate()`, so prediction replays it (BC4).
 
 ## Done
 
-- 2bc0292 — /pacing route deleted (60 files); ngrams.ts + test, REST_MIN_S and test-level route.constants.ts deleted;
-  `DEFAULT_TRACK_GEN` in sim/space.ts, read by procgenDescriptor, run-room and /test-level; 45 test call sites
-  now pass `'weave'` explicitly; obsolete memory `pacing-board-needs-cdp-not-screenshot-flag.md` removed (its
-  MEMORY.md line went out with workerfive's fe85bcc, which committed the whole file).
-- #287 closed with the SHA. #246 was auto-closed by the commit message, and I added a comment with the SHA.
+- Plan sent to slur-supervisor for owner approval. No code yet.
 
 ## State
 
-- At 2bc0292: typecheck clean; tests shared 403/403, server 53/53, client 446/446; lint shows 7 warnings, all
-  pre-existing file-length warnings (measured).
-- Headless check on :5173: `/`, a hosted room and `/test-level` each render a canvas with no console errors;
-  `/pacing` returns 404 (measured).
-- The rest of shared/pacing stays: `sim/score/emit.test.ts` calls `analyzeTrack`, which needs the whole analyzer.
+- Prediction replays `simulate(..., blockWorld)` in apps/client/app/net/prediction.ts. `blockWorld` is a SimWorld
+  mirrored from room state (game/block-state.ts), so `SimWorld.portals` carries the portals into the replay (read
+  this session).
+- The fire message already carries `seq` (`PowerSlotMessage`), so the double tap can be decided from seq on the server.
+- The seeker trail (combat/seeker-trail.ts) records monotonic z, so a hop would drag a seeker across the gap.
+  Proposal: the seeker misses.
 
 ## Uncommitted
 
@@ -27,18 +24,18 @@ None.
 
 ## Held files
 
-None. All #287 claims are released.
+None. Claims go to the supervisor per slice after the owner approves.
 
 ## Next
 
-1. Wait for the supervisor.
+1. Wait for owner approval of the plan (5 slices, 8 questions) through the supervisor.
+2. Claim the slice 1 files: combat/portal.ts, sim/types.ts, sim/step.ts, sim-config.ts, schema.ts (portalHops), index.ts.
+3. Build slice 1 with tests, then slices 2–5 as listed in the plan message.
 
 ## Open questions
 
-- Known leftover: an omitted `gen` still reads as weave (makeProcgenTrack, schema.ts, track-gen.test). The landing
-  BACKDROP omits gen and relies on weave honouring `blockDensity: 0`. Should the landing get an explicit gen, or
-  should omitted gen switch to groove? (owner, via supervisor)
-- Should `PACING_HULL_L` move to `TRACK_CONTRACT.shipHalfL`? (carried over)
+- The 8 owner questions are in the plan message: lone-end expiry, the arm delay, one pair per owner, the pickup mix,
+  seeker lock on a hop, jumping over an end, charge kept on a fizzle, placeholder VFX.
 
 ## Lessons → memory
 
