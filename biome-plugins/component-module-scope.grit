@@ -26,7 +26,7 @@ or {
             not $filename <: or {
                 r".*/root\.tsx",
                 r".*/routes/home\.tsx",
-                r".*/routes/[^/]+/route\.tsx"
+                r".*/routes/.+/route\.tsx"
             },
             not $v <: contains r"handle|meta|links|headers|shouldRevalidate"
         }
@@ -37,7 +37,7 @@ or {
             not $filename <: or {
                 r".*/root\.tsx",
                 r".*/routes/home\.tsx",
-                r".*/routes/[^/]+/route\.tsx"
+                r".*/routes/.+/route\.tsx"
             },
             not $id <: or {
                 "loader",

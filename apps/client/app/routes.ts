@@ -1,7 +1,7 @@
 import { index, type RouteConfig, route } from '@react-router/dev/routes';
 
 const devRoutes = [
-    route( 'test-level', 'routes/test-level/route.tsx' ),
+    route( 'test-level', 'routes/test-level/route.tsx', [ route( 'edit', 'routes/test-level/edit/route.tsx' ) ] ),
     route( 'beat-deck', 'routes/beat-deck/route.tsx' ),
 ];
 
