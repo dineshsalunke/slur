@@ -11,6 +11,7 @@ import {
     HALF_WIDTH,
     type MineEvent,
     type MineState,
+    mineFizzle,
     type PlayerInput,
     SEG_LEN,
     type SeekerShip,
@@ -127,6 +128,22 @@ function dropIntoWall( kind: Block[ 'kind' ], broken: ReadonlySet< number >, dir
 
 test( 'a mine dropped inside a sealed block fizzles, forward or back', () => {
     for ( const dir of [ 1, -1 ] ) assert.equal( dropIntoWall( 'sealed', new Set(), dir ), false, `dir ${ dir }` );
+} );
+
+test( 'a fizzle sits at the drop point the failed aim chose, at the layer height', () => {
+    const layer = { x: 5, y: 3.2, z: 100, vz: 90 };
+    for ( const dir of [ 1, -1 ] ) {
+        const m = blank();
+        assert.ok( aimMine( m, layer, HULL, 'owner', flat(), new Set(), DEFAULT_SIM_CONFIG, dir ) );
+        assert.deepEqual( mineFizzle( layer, HULL.halfL, 'owner', DEFAULT_SIM_CONFIG, dir ), {
+            outcome: 'fizzle',
+            x: 5,
+            y: 3.2,
+            z: m.z,
+            victimId: '',
+            ownerId: 'owner',
+        } );
+    }
 } );
 
 test( 'a mine dropped onto a broken fractured block lands; a standing one fizzles', () => {

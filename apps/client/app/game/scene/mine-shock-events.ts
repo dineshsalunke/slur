@@ -1,15 +1,18 @@
 import type { MineEvent } from '@slur/shared';
 import { pushHit } from './hit-events';
 
+export type ShockKind = 'big' | 'small' | 'fizzle';
+
 export interface MineShock {
     x: number;
     y: number;
     z: number;
-    big: boolean;
+    kind: ShockKind;
 }
 
 const queue: MineShock[] = [];
 const MAX_QUEUED = 16;
+const SPARK_LIFT = 0.5;
 
 export function pushMineShock( e: MineShock ): void {
     queue.push( e );
@@ -21,7 +24,12 @@ export function drainMineShocks( sink: ( e: MineShock ) => void ): void {
     queue.length = 0;
 }
 
+function kindOf( e: MineEvent ): ShockKind {
+    if ( e.outcome === 'trigger' ) return 'big';
+    return e.outcome === 'fizzle' ? 'fizzle' : 'small';
+}
+
 export function burstMine( e: MineEvent ): void {
-    pushMineShock( { x: e.x, y: e.y, z: e.z, big: e.outcome === 'trigger' } );
-    if ( e.outcome === 'cleared' ) pushHit( { x: e.x, y: e.y + 0.5, z: e.z } );
+    pushMineShock( { x: e.x, y: e.y, z: e.z, kind: kindOf( e ) } );
+    if ( e.outcome === 'cleared' || e.outcome === 'fizzle' ) pushHit( { x: e.x, y: e.y + SPARK_LIFT, z: e.z } );
 }

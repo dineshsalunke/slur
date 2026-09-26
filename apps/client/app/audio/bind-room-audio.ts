@@ -12,12 +12,20 @@ import {
     SHIELD_POP_MESSAGE,
 } from '@slur/shared';
 import { playMusic } from './audio-engine';
-import { MUSIC, playBolt, playSfx, startSfxLoop, stopSfxLoop } from './sfx-map';
+import { musicForPhase } from './music-for-phase';
+import { playBolt, playSfx, startSfxLoop, stopSfxLoop } from './sfx-map';
 
 const THREAT_Z = 90;
 const THREAT_X = 8;
 const MINE_FAR_GAIN = 0.6;
+const FAR_GAIN = { mineBurst: 0.85 * MINE_FAR_GAIN, mineFizzle: 0.55 * MINE_FAR_GAIN } as const;
 const BOOST_EDGE_S = 0.05;
+
+export function playMineEvent( e: MineEvent, me: string ): void {
+    const near = e.outcome === 'trigger' || ( e.outcome === 'fizzle' && e.ownerId === me );
+    const sfx = e.outcome === 'fizzle' ? 'mineFizzle' : 'mineBurst';
+    playSfx( sfx, near ? {} : { gain: FAR_GAIN[ sfx ] } );
+}
 
 export function bindRoomAudio( room: Room< RunState > ): () => void {
     const $ = getStateCallbacks( room );
@@ -146,14 +154,12 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
 
     const offSeekerHit = room.onMessage( SEEKER_HIT_MESSAGE, () => playSfx( 'seekerHit' ) );
     const offShieldPop = room.onMessage( SHIELD_POP_MESSAGE, () => playSfx( 'shieldPop' ) );
-    const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) =>
-        playSfx( 'mineBurst', e.outcome === 'trigger' ? {} : { gain: 0.85 * MINE_FAR_GAIN } ),
-    );
+    const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) => playMineEvent( e, me ) );
 
     let prevPhase = room.state.phase;
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
         if ( v === PHASE.racing && prevPhase !== PHASE.racing ) playSfx( 'go' );
-        playMusic( v === PHASE.racing ? MUSIC.run.name : MUSIC.lobby.name );
+        playMusic( musicForPhase( v ) );
         prevPhase = v;
     } );
 

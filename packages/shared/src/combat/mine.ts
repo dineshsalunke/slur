@@ -25,7 +25,7 @@ export interface MineHull {
     stepTol: number;
 }
 
-export type MineOutcome = 'trigger' | 'cleared' | 'evicted' | 'expired';
+export type MineOutcome = 'trigger' | 'cleared' | 'evicted' | 'expired' | 'fizzle';
 
 export interface MineEvent {
     outcome: MineOutcome;
@@ -77,6 +77,17 @@ export function aimMine(
     mine.armed = false;
     mine.ttl = cfg.mineTtl;
     return true;
+}
+
+export function mineFizzle(
+    ship: MineLayer,
+    halfL: number,
+    ownerId: string,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+    dir = 1,
+): MineEvent {
+    const z = mineDropZ( ship, halfL, cfg, dir );
+    return { outcome: 'fizzle', x: ship.x, y: ship.y, z, victimId: '', ownerId };
 }
 
 export function mineEvent( mine: MineState, outcome: MineOutcome, victimId = '' ): MineEvent {

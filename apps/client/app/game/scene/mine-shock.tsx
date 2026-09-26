@@ -3,14 +3,23 @@ import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import { useCallback, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { accent } from './accent';
-import { drainMineShocks, type MineShock as Shock } from './mine-shock-events';
+import { drainMineShocks, type MineShock as Shock, type ShockKind } from './mine-shock-events';
 
 const MAX = 16;
-const LIFE_S = 0.55;
-const BIG_R = DEFAULT_SIM_CONFIG.mineTriggerR * 3;
-const SMALL_R = DEFAULT_SIM_CONFIG.mineTriggerR * 1.6;
-const BRIGHT = 5;
 const LIFT = 0.05;
+
+interface ShockLook {
+    reach: number;
+    life: number;
+    bright: number;
+    collapse: boolean;
+}
+
+const LOOKS: Record< ShockKind, ShockLook > = {
+    big: { reach: DEFAULT_SIM_CONFIG.mineTriggerR * 3, life: 0.55, bright: 5, collapse: false },
+    small: { reach: DEFAULT_SIM_CONFIG.mineTriggerR * 1.6, life: 0.55, bright: 5, collapse: false },
+    fizzle: { reach: DEFAULT_SIM_CONFIG.mineTriggerR * 1.6, life: 0.4, bright: 5, collapse: true },
+};
 
 const _o = new THREE.Object3D();
 const _c = new THREE.Color();
@@ -19,7 +28,7 @@ interface Ring {
     x: number;
     y: number;
     z: number;
-    reach: number;
+    look: ShockLook;
     age: number;
 }
 
@@ -29,7 +38,6 @@ function buildLook() {
         material: new THREE.MeshBasicMaterial( {
             transparent: true,
             depthWrite: false,
-            toneMapped: false,
             side: THREE.DoubleSide,
             blending: THREE.AdditiveBlending,
         } ),
@@ -38,7 +46,12 @@ function buildLook() {
 
 function spawn( rings: Ring[], e: Shock ): void {
     if ( rings.length >= MAX ) rings.shift();
-    rings.push( { x: e.x, y: e.y, z: e.z, reach: e.big ? BIG_R : SMALL_R, age: 0 } );
+    rings.push( { x: e.x, y: e.y, z: e.z, look: LOOKS[ e.kind ], age: 0 } );
+}
+
+function spread( r: Ring, f: number ): number {
+    const ease = 1 - ( 1 - f ) * ( 1 - f );
+    return r.look.reach * ( r.look.collapse ? 1 - ease : ease );
 }
 
 export function MineShock() {
@@ -70,17 +83,16 @@ export function MineShock() {
         let n = 0;
         for ( const r of rings ) {
             r.age += delta;
-            if ( r.age >= LIFE_S ) continue;
-            const f = r.age / LIFE_S;
-            const ease = 1 - ( 1 - f ) * ( 1 - f );
+            if ( r.age >= r.look.life ) continue;
+            const f = r.age / r.look.life;
             _o.position.set( r.x, r.y + LIFT, r.z );
-            _o.scale.setScalar( Math.max( 0.01, r.reach * ease ) );
+            _o.scale.setScalar( Math.max( 0.01, spread( r, f ) ) );
             _o.updateMatrix();
             mesh.setMatrixAt( n, _o.matrix );
-            mesh.setColorAt( n, _c.copy( accent() ).multiplyScalar( BRIGHT * ( 1 - f ) * ( 1 - f ) ) );
+            mesh.setColorAt( n, _c.copy( accent() ).multiplyScalar( r.look.bright * ( 1 - f ) * ( 1 - f ) ) );
             n++;
         }
-        while ( rings.length > 0 && rings[ 0 ].age >= LIFE_S ) rings.shift();
+        while ( rings.length > 0 && rings[ 0 ].age >= rings[ 0 ].look.life ) rings.shift();
         mesh.count = n;
         mesh.instanceMatrix.needsUpdate = true;
         if ( mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;

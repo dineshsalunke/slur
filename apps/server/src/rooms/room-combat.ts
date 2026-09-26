@@ -10,6 +10,7 @@ import {
     MINE_BURST_MESSAGE,
     Mine,
     type MineEvent,
+    mineFizzle,
     type PlayerState,
     Projectile,
     powerIn,
@@ -85,7 +86,11 @@ function fireSeeker( ctx: FireContext, id: string, p: PlayerState, ownerId: stri
 
 function layMine( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {
     const mine = new Mine();
-    if ( ! aimMine( mine, p, tuningForShip( p.shipId ), ownerId, ctx.track, ctx.broken, ctx.config, dir ) ) return;
+    const hull = tuningForShip( p.shipId );
+    if ( ! aimMine( mine, p, hull, ownerId, ctx.track, ctx.broken, ctx.config, dir ) ) {
+        ctx.broadcast( MINE_BURST_MESSAGE, mineFizzle( p, hull.halfL, ownerId, ctx.config, dir ) );
+        return;
+    }
     const onEvict = ( e: MineEvent ) => resolveMineEvent( ctx.state, e, ctx.broadcast, ctx.config );
     evictOldest( ctx.state.mines, ownerId, onEvict, ctx.config );
     ctx.state.mines.set( id, mine );

@@ -14,6 +14,7 @@ import {
     HeldPower,
     lockTarget,
     type MineState,
+    mineFizzle,
     type ProjectileState,
     pickupsOf,
     powerIn,
@@ -121,7 +122,11 @@ function layMine( me: Gunner, vz: number, shipId: string, track: Track, dir: Fir
     const mine: MineState = { x: 0, y: 0, z: 0, ownerId: '', armed: false, ttl: 0 };
     const layer = { x: me.x, y: me.y, z: me.z, vz };
     const tuning = tuningForShip( shipId );
-    if ( ! aimMine( mine, layer, tuning, OWNER, track, blockWorld.broken, DEFAULT_SIM_CONFIG, dir ) ) return;
+    if ( ! aimMine( mine, layer, tuning, OWNER, track, blockWorld.broken, DEFAULT_SIM_CONFIG, dir ) ) {
+        burstMine( mineFizzle( layer, tuning.halfL, OWNER, DEFAULT_SIM_CONFIG, dir ) );
+        playSfx( 'mineFizzle' );
+        return;
+    }
     evictOldest( localCombat.mines, OWNER, burstMine );
     const id = String( localCombat.nextId++ );
     localCombat.mines.set( id, mine );

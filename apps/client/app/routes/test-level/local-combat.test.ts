@@ -4,12 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { playSfx } from '../../audio/sfx-map';
 import { Held, LocalPlayer, Sim } from '../../game/ecs/traits';
 import { resetSlot, selectedSlot } from '../../game/input/power-select';
+import { drainMineShocks, type MineShock } from '../../game/scene/mine-shock-events';
 import { localCombat, localCombatSystem, queueDrop, queueFire, restartLocalCombat } from './local-combat';
 
 vi.mock( '../../audio/sfx-map', () => ( { playSfx: vi.fn() } ) );
 
 const DT = 1 / 60;
-const { none, bolt, seeker } = HeldPower;
+const { none, bolt, seeker, mine } = HeldPower;
 
 function atPickup( power: HeldPower, slots: number[] = [ none, none, none ] ) {
     const track = resolveTrack( procgenDescriptor( 7 ) );
@@ -73,6 +74,22 @@ describe( 'test-level local combat', () => {
         expect( localCombat.seekers.size ).toBe( 1 );
         expect( localCombat.bolts.size ).toBe( 0 );
         expect( rack( ship ) ).toEqual( [ none, none, none ] );
+    } );
+
+    it( 'a mine fired off the deck spends the power, lays nothing and fizzles once', () => {
+        const { world, ship, track } = atPickup( bolt, [ mine, none, none ] );
+        leavePickup( ship );
+        drainMineShocks( () => {} );
+        vi.mocked( playSfx ).mockClear();
+        queueFire( 0 );
+        localCombatSystem( world, DT, track );
+
+        const shocks: MineShock[] = [];
+        drainMineShocks( ( e ) => shocks.push( e ) );
+        expect( rack( ship ) ).toEqual( [ none, bolt, none ] );
+        expect( localCombat.mines.size ).toBe( 0 );
+        expect( shocks.map( ( e ) => e.kind ) ).toEqual( [ 'fizzle' ] );
+        expect( vi.mocked( playSfx ).mock.calls ).toEqual( [ [ 'mineFizzle' ] ] );
     } );
 
     it( 'a grab fills the lowest empty slot', () => {
