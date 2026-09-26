@@ -15,6 +15,7 @@ function starPoints( spikes: number, outer: number, inner: number ): string {
 }
 
 const MINE_STAR = starPoints( 8, 22, 11 );
+const SHIELD_HEX = starPoints( 3, 6, 6 );
 const BOOST_LEAD = '24,3 42,21 42,28 24,10 6,28 6,21';
 const BOOST_TRAIL = '24,19 42,37 42,44 24,26 6,44 6,37';
 
@@ -52,6 +53,12 @@ export function PowerGem() {
                     <polygon points={ BOOST_TRAIL } className="fill-void-2 stroke-marigold" strokeWidth="1.6" />
                     <polygon points="24,5 36,17 36,20 24,8 12,20 12,17" className="fill-gold" />
                     <polygon points="24,21 36,33 36,36 24,24 12,36 12,33" className="fill-marigold" />
+                </Fragment>
+            ) : power === HeldPower.shield ? (
+                <Fragment>
+                    <circle cx="24" cy="24" r="19" className="fill-void-2 stroke-marigold" strokeWidth="1.6" />
+                    <circle cx="24" cy="24" r="13" className="fill-none stroke-marigold" strokeWidth="3" />
+                    <polygon points={ SHIELD_HEX } className="fill-gold" />
                 </Fragment>
             ) : power === HeldPower.mine ? (
                 <Fragment>

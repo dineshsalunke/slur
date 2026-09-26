@@ -23,6 +23,7 @@ export type Sfx =
     | 'seekerLocked'
     | 'seekerHit'
     | 'mineBurst'
+    | 'shieldPop'
     | 'countdown'
     | 'go'
     | 'uiNav'
@@ -58,6 +59,7 @@ const TABLE: Record< Sfx, SfxDef > = {
     seekerLocked: { file: 'seeker_locked.ogg', bus: 'threat', gain: 0.8 },
     seekerHit: { file: 'seeker_hit.ogg', bus: 'combat', gain: 0.9 },
     mineBurst: { file: 'mine_burst.ogg', bus: 'combat', gain: 0.85 },
+    shieldPop: { file: 'hit_ship.ogg', bus: 'combat', gain: 0.9, rate: 1.5 },
     countdown: { file: 'countdown_blip.ogg', bus: 'ui', gain: 0.9 },
     go: { file: 'go.ogg', bus: 'ui', gain: 1 },
     uiNav: { file: 'ui_nav.ogg', bus: 'ui', gain: 0.5 },

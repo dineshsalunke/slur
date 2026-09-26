@@ -30,11 +30,11 @@ import {
     type Track,
     tuningForShip,
 } from '@slur/shared';
-import type { World } from 'koota';
+import type { Entity, World } from 'koota';
 import { playSfx } from '../../audio/sfx-map';
 import { num } from '../../dev/tuning';
 import { blockWorld, clearBlockState } from '../../game/block-state';
-import { Held, LocalPlayer, Net, Sim } from '../../game/ecs/traits';
+import { Held, LocalPlayer, Net, Shield, Sim } from '../../game/ecs/traits';
 import { resetSlot, settleSlot } from '../../game/input/power-select';
 import { pushHit } from '../../game/scene/hit-events';
 import { burstMine } from '../../game/scene/mine-shock-events';
@@ -85,6 +85,7 @@ function resetFor( track: Track ): void {
 export function restartLocalCombat( world: World, track: Track ): void {
     resetFor( track );
     for ( const ship of world.query( LocalPlayer, Held ) ) ship.set( Held, { slots: emptySlots() } );
+    for ( const ship of world.query( LocalPlayer, Shield ) ) ship.set( Shield, { on: false, since: 0, popAt: -1 } );
     resetSlot();
 }
 
@@ -128,14 +129,28 @@ function layMine( me: Gunner, vz: number, shipId: string, track: Track, dir: Fir
     localCombat.throws.set( id, throwFrom( { bornAt: 0, fromX: 0, fromY: 0, fromZ: 0, dir }, mine, from, mineNow() ) );
 }
 
-function fire( me: Gunner, slot: number, s: SimShip, shipId: string, track: Track, dir: FireDir ): void {
-    if ( ! canFire( me, slot ) ) return;
+function fire( me: Gunner, slot: number, s: SimShip, shipId: string, track: Track, dir: FireDir ): number {
+    if ( ! canFire( me, slot ) ) return HeldPower.none;
     const power = powerIn( me, slot );
     spendPower( me, slot );
     if ( power === HeldPower.seeker ) fireSeeker( me, s.vz, track, dir );
     else if ( power === HeldPower.mine ) layMine( me, s.vz, shipId, track, dir );
     else if ( power === HeldPower.bolt ) fireBolt( me, dir );
-    else if ( power === HeldPower.boost ) startBoost( s );
+    else if ( power === HeldPower.boost ) {
+        startBoost( s );
+        playSfx( 'boost' );
+    }
+    return power;
+}
+
+function stepLocalShield( ship: Entity, fired: number ): void {
+    const now = performance.now() / 1000;
+    if ( fired === HeldPower.shield ) {
+        ship.set( Shield, { on: true, since: now, popAt: -1 } );
+        return;
+    }
+    const cur = ship.get( Shield );
+    if ( cur?.on && now - cur.since >= DEFAULT_SIM_CONFIG.shieldS ) ship.set( Shield, { ...cur, on: false } );
 }
 
 function onSeekerEvent( e: SeekerEvent ): void {
@@ -148,6 +163,7 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
     const s = ship?.get( Sim );
     if ( ! ship || ! s ) return;
     if ( ! ship.has( Held ) ) ship.add( Held );
+    if ( ! ship.has( Shield ) ) ship.add( Shield );
 
     const held = ship.get( Held )?.slots ?? emptySlots();
     const me: Gunner = {
@@ -159,10 +175,12 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
         dead: s.dead,
         spectating: false,
     };
+    let fired: number = HeldPower.none;
     if ( localCombat.fireSlot >= 0 ) {
         const shipId = ship.get( Net )?.shipId ?? DEFAULT_SHIP;
-        fire( me, localCombat.fireSlot, s, shipId, track, localCombat.fireDir );
+        fired = fire( me, localCombat.fireSlot, s, shipId, track, localCombat.fireDir );
     }
+    stepLocalShield( ship, fired );
     if ( localCombat.dropSlot >= 0 ) dropPower( me, localCombat.dropSlot );
     localCombat.fireSlot = -1;
     localCombat.dropSlot = -1;

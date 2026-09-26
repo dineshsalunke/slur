@@ -125,7 +125,13 @@ test( 'an empty-handed racer grabs a pickup, which respawns after pickupRespawnS
     const taken = new Map< string, boolean >();
     const respawn = new Map< string, number >();
     const me = gunner( { z: 10, slots: emptySlots() } );
-    stepPickups( [ me ], pickups, taken, respawn, FIXED_DT, { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0 } );
+    stepPickups( [ me ], pickups, taken, respawn, FIXED_DT, {
+        ...DEFAULT_SIM_CONFIG,
+        seekerRatio: 0,
+        mineRatio: 0,
+        boostRatio: 0,
+        shieldRatio: 0,
+    } );
     assert.deepEqual( me.slots, [ HeldPower.bolt, HeldPower.none, HeldPower.none ] );
     assert.equal( taken.get( 'p' ), true );
 

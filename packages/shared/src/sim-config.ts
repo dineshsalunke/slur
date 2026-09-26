@@ -40,6 +40,7 @@ import {
     SEEKER_WINDOW_U,
     type SeekerWindowMode,
     SHIELD_RATIO,
+    SHIELD_S,
     STUN_SECONDS,
 } from './combat/constants.js';
 
@@ -85,6 +86,7 @@ export interface SimConfig {
     boostEaseS: number;
     boostRiseS: number;
     shieldRatio: number;
+    shieldS: number;
 }
 
 export const DEFAULT_SIM_CONFIG: SimConfig = {
@@ -129,4 +131,5 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     boostEaseS: BOOST_EASE_S,
     boostRiseS: BOOST_RISE_S,
     shieldRatio: SHIELD_RATIO,
+    shieldS: SHIELD_S,
 };

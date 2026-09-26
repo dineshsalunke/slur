@@ -9,6 +9,7 @@ import {
     DEFAULT_SIM_CONFIG,
     DROP_POWERUP_MESSAGE,
     dropPower,
+    dropShield,
     FIXED_DT,
     fireDir,
     HeldPower,
@@ -47,12 +48,13 @@ import {
     stepMines,
     stepPickups,
     stepSeekers,
+    stepShield,
     stunDurationForShip,
     type Track,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { type RaceWorld, stepRacer } from './room-bounce.js';
-import { firePower, resolveMineEvent, resolveSeekerEvent } from './room-combat.js';
+import { firePower, resolveMineEvent, resolveSeekerEvent, shieldAbsorbs } from './room-combat.js';
 import { MAX_QUEUED_INPUTS, sanitizeInputs } from './room-input.js';
 
 const RECONNECT_SECONDS = 20;
@@ -197,6 +199,10 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     }
 
     private stepWorld( dt: number ): void {
+        this.state.players.forEach( ( p ) => {
+            if ( p.dead ) dropShield( p );
+            else stepShield( p, dt );
+        } );
         const ships = hitShipsOf( this.state.players.entries() );
         const onMine = ( event: MineEvent ) =>
             resolveMineEvent( this.state, event, ( t, m ) => this.broadcast( t, m ), this.config );
@@ -208,6 +214,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             dt,
             ( strike ) => {
                 const v = this.state.players.get( strike.victimId );
+                if ( v && shieldAbsorbs( v, strike, ( t, m ) => this.broadcast( t, m ) ) ) return;
                 if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config );
                 this.broadcast( 'hit', strike );
             },
@@ -256,6 +263,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.nextProjectileId = 0;
         this.state.players.forEach( ( p ) => {
             for ( let i = 0; i < POWER_SLOTS; i++ ) p.slots[ i ] = HeldPower.none;
+            dropShield( p );
         } );
     }
 

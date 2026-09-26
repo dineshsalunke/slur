@@ -7,12 +7,13 @@ import { bagCounts, longestRun, POWER_BAG_SIZE, POWER_RUN_CAP, powerBag } from '
 
 const SALTS = [ '', 'a', 'x9k2', '1pq0zz', 'groove' ];
 
-test( 'the default bag deals 5 bolts, 6 seekers, 6 mines and 3 boosts', () => {
+test( 'the default bag deals 2 bolts, 6 seekers, 6 mines, 3 boosts and 3 shields', () => {
     assert.deepEqual( bagCounts(), [
-        { power: HeldPower.bolt, count: 5 },
+        { power: HeldPower.bolt, count: 2 },
         { power: HeldPower.seeker, count: 6 },
         { power: HeldPower.mine, count: 6 },
         { power: HeldPower.boost, count: 3 },
+        { power: HeldPower.shield, count: 3 },
     ] );
 } );
 
@@ -27,11 +28,14 @@ test( 'boost and shield ratios take their share from the bolts', () => {
             { power: HeldPower.shield, count: 3 },
         ],
     );
-    assert.deepEqual( bagCounts( { ...DEFAULT_SIM_CONFIG, seekerRatio: 0.6, mineRatio: 0.3, boostRatio: 0.5 } ), [
-        { power: HeldPower.seeker, count: 12 },
-        { power: HeldPower.mine, count: 6 },
-        { power: HeldPower.boost, count: 2 },
-    ] );
+    assert.deepEqual(
+        bagCounts( { ...DEFAULT_SIM_CONFIG, seekerRatio: 0.6, mineRatio: 0.3, boostRatio: 0.5, shieldRatio: 0 } ),
+        [
+            { power: HeldPower.seeker, count: 12 },
+            { power: HeldPower.mine, count: 6 },
+            { power: HeldPower.boost, count: 2 },
+        ],
+    );
 } );
 
 test( 'every bag holds its counts and no power runs past the cap, across bag seams too', () => {
@@ -61,7 +65,7 @@ test( 'pickupPower reads the bag by ordinal and honours ratio overrides', () => 
     for ( let i = 0; i < POWER_BAG_SIZE; i++ ) assert.equal( pickupPower( `${ POWER_BAG_SIZE + i }.a` ), bag[ i ] );
     assert.equal( pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 1 } ), HeldPower.seeker );
     assert.equal(
-        pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0, boostRatio: 0 } ),
+        pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0, boostRatio: 0, shieldRatio: 0 } ),
         HeldPower.bolt,
     );
 } );

@@ -65,4 +65,7 @@ export const BOOST_S = 2;
 export const BOOST_EASE_S = 0.2;
 export const BOOST_RISE_S = 0.25;
 
-export const SHIELD_RATIO = 0;
+export const SHIELD_POP_MESSAGE = 'shieldPop';
+
+export const SHIELD_RATIO = 0.15;
+export const SHIELD_S = 5;

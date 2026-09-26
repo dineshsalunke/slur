@@ -9,6 +9,7 @@ import {
     type RunState,
     SEEKER_HIT_MESSAGE,
     type SeekerState,
+    SHIELD_POP_MESSAGE,
 } from '@slur/shared';
 import { playMusic } from './audio-engine';
 import { MUSIC, playBolt, playSfx, startSfxLoop, stopSfxLoop } from './sfx-map';
@@ -144,6 +145,7 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
     } );
 
     const offSeekerHit = room.onMessage( SEEKER_HIT_MESSAGE, () => playSfx( 'seekerHit' ) );
+    const offShieldPop = room.onMessage( SHIELD_POP_MESSAGE, () => playSfx( 'shieldPop' ) );
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) =>
         playSfx( 'mineBurst', e.outcome === 'trigger' ? {} : { gain: 0.85 * MINE_FAR_GAIN } ),
     );
@@ -170,6 +172,7 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
         offSeekerAdd();
         offSeekerRemove();
         offSeekerHit();
+        offShieldPop();
         offMineBurst();
         offPhase();
         offCd();

@@ -6,6 +6,7 @@ export * from './combat/pickups.js';
 export * from './combat/power-bag.js';
 export * from './combat/projectiles.js';
 export * from './combat/seeker.js';
+export * from './combat/shield.js';
 export * from './constants.js';
 export * from './pacing/analyze.js';
 export * from './pacing/arms.js';

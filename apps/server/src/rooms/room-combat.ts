@@ -1,4 +1,5 @@
 import {
+    absorbHit,
     aimBolt,
     aimMine,
     aimSeeker,
@@ -13,10 +14,12 @@ import {
     Projectile,
     powerIn,
     type RunState,
+    raiseShield,
     SEEKER_HIT_MESSAGE,
     SEEKER_MISS_MESSAGE,
     Seeker,
     type SeekerEvent,
+    SHIELD_POP_MESSAGE,
     type SimConfig,
     seekerShipsOf,
     spendPower,
@@ -50,6 +53,20 @@ export function firePower(
     else if ( power === HeldPower.mine ) layMine( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.bolt ) fireBolt( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.boost ) startBoost( p, ctx.config );
+    else if ( power === HeldPower.shield ) raiseShield( p, ctx.config.shieldS );
+}
+
+export interface HitAt {
+    x: number;
+    y: number;
+    z: number;
+    victimId: string;
+}
+
+export function shieldAbsorbs( v: PlayerState, at: HitAt, broadcast: Broadcast ): boolean {
+    if ( ! absorbHit( v ) ) return false;
+    broadcast( SHIELD_POP_MESSAGE, at );
+    return true;
 }
 
 function fireBolt( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {
@@ -77,7 +94,7 @@ function layMine( ctx: FireContext, id: string, p: PlayerState, ownerId: string,
 export function resolveMineEvent( state: RunState, event: MineEvent, broadcast: Broadcast, config: SimConfig ): void {
     const { x, y, z, victimId } = event;
     const v = event.outcome === 'trigger' ? state.players.get( victimId ) : undefined;
-    if ( v ) {
+    if ( v && ! shieldAbsorbs( v, { x, y, z, victimId }, broadcast ) ) {
         v.stunTimer = stunDurationForShip( v.shipId, config, config.mineStunS );
         v.vz *= config.mineSpeedCut;
         broadcast( 'hit', { x, y, z, victimId } );
@@ -101,6 +118,7 @@ export function resolveSeekerEvent(
         return;
     }
     const v = state.players.get( event.targetId );
+    if ( v && shieldAbsorbs( v, { x, y, z, victimId: event.targetId }, broadcast ) ) return;
     if ( v ) v.stunTimer = stunDurationForShip( v.shipId, config, config.seekerStunS );
     broadcast( 'hit', { x, y, z, victimId: event.targetId } );
     broadcast( SEEKER_HIT_MESSAGE, event );

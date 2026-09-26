@@ -8,6 +8,7 @@ import {
     type ProjectileState,
     type RunState,
     type SeekerState,
+    SHIELD_POP_MESSAGE,
     type Track,
 } from '@slur/shared';
 import type { Entity, World } from 'koota';
@@ -29,6 +30,7 @@ import {
     Remote,
     Render,
     SeekerTrail,
+    Shield,
     Sim,
 } from '../game/ecs/traits';
 import { settleSlot } from '../game/input/power-select';
@@ -95,8 +97,18 @@ function spawnPlayer(
     net: { sessionId: string; shipId: string; colorId: number },
 ): Entity {
     return isLocal
-        ? world.spawn( Render, Hover, Attitude, Net( net ), Sim, Prev, LocalPlayer, Held )
-        : world.spawn( Render, Hover, Attitude, Net( net ), Remote, Interp );
+        ? world.spawn( Render, Hover, Attitude, Net( net ), Sim, Prev, LocalPlayer, Held, Shield )
+        : world.spawn( Render, Hover, Attitude, Net( net ), Remote, Interp, Shield );
+}
+
+function mirrorShield( ent: Entity | undefined, on: boolean ): void {
+    if ( ! ent ) return;
+    const now = performance.now() / 1000;
+    ent.set( Shield, ( prev ) => ( on ? { on, since: now, popAt: -1 } : { ...prev, on } ) );
+}
+
+function popShield( ent: Entity | undefined ): void {
+    ent?.set( Shield, ( prev ) => ( { ...prev, on: false, popAt: performance.now() / 1000 } ) );
 }
 
 export function attachRoomToWorld(
@@ -137,14 +149,19 @@ export function attachRoomToWorld(
             if ( isLocal ) reconcileLocal( ent, p, predictor, trackRef.current );
             else pushRemote( ent, p );
         } );
+        const offShield = $( p ).listen( 'shielded', ( on ) => mirrorShield( byId.get( sid ), on ) );
         if ( ! isLocal ) {
-            perPlayer.set( sid, offChange );
+            perPlayer.set( sid, () => {
+                offChange();
+                offShield();
+            } );
             return;
         }
         mirrorRack( e, p );
         const offSlots = $( p ).slots.onChange( () => mirrorRack( byId.get( sid ), p ) );
         perPlayer.set( sid, () => {
             offChange();
+            offShield();
             offSlots();
         } );
     } );
@@ -228,6 +245,14 @@ export function attachRoomToWorld(
         pushHit( { x: m.x, y: m.y, z: m.z } );
     } );
 
+    const offShieldPop = room.onMessage(
+        SHIELD_POP_MESSAGE,
+        ( m: { x: number; y: number; z: number; victimId: string } ) => {
+            popShield( byId.get( m.victimId ) );
+            pushHit( { x: m.x, y: m.y, z: m.z } );
+        },
+    );
+
     const offBounce = room.onMessage( BOUNCE_MESSAGE, ( m: BounceMessage ) => {
         if ( m.victimId !== room.sessionId ) sparkAt( m );
     } );
@@ -251,6 +276,7 @@ export function attachRoomToWorld(
         offMineRemove();
         offMineBurst();
         offHit();
+        offShieldPop();
         offBounce();
         offBreak();
         offUnbreak();
