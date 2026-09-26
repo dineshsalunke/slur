@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { getBuffer, getBus, getListener, setListener } from './audio-engine';
+import { getBuffer, getBus, getContext, getListener, setListener } from './audio-engine';
 
 export function ensureListener( camera: THREE.Camera ): THREE.AudioListener | null {
+    if ( ! getContext() ) return null;
     let listener = getListener();
     if ( listener ) {
         if ( listener.parent !== camera ) camera.add( listener );
