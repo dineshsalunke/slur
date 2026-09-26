@@ -1,6 +1,5 @@
 import { CELL, FLICK_WIDTH, WALL_NOISE_FZ_LANE, WALL_NOISE_FZ_SEG, WALL_RUN_LANES_MIN } from '../constants.js';
 import { blockZSpan, carveRun } from './block-depth.js';
-import { openCenterX } from './clearance.js';
 import { type Band, bandAt } from './corridor.js';
 import { placeBlock } from './fracture.js';
 import { gapBlocks } from './gap-blocks.js';
@@ -9,6 +8,7 @@ import { grooveTrack } from './groove/groove-track.js';
 import { flickRate, intensityAt, spacingSegments, wallDensity } from './intensity.js';
 import { abutAcrossBoundary, mergeCloseBlocks } from './merge-blocks.js';
 import { valueNoise2D } from './noise.js';
+import { placePickups } from './pickup-place.js';
 import { hash2, mulberry32 } from './rng.js';
 import { scoreTrack } from './score/emit.js';
 import {
@@ -18,11 +18,9 @@ import {
     FULL_DENSITY,
     fullFloor,
     HALF_WIDTH,
-    isHole,
     LANES,
     LEAD_SEGMENTS,
     MIN_LANE,
-    PICKUP_SPACING,
     type ProcgenDescriptor,
     SEG_LEN,
     type Segment,
@@ -153,15 +151,17 @@ function buildSegment( seed: number, i: number, length: number, density: TrackDe
     return { ...base, kind: blocks.length > 0 ? 'block' : 'plain', floors: fullFloor( 0 ), blocks };
 }
 
-function pickupAnchors( length: number, segmentAt: ( i: number ) => Segment ): Anchor[] {
-    const out: Anchor[] = [];
-    for ( let seg = START_SAFE; seg < length; seg += PICKUP_SPACING ) {
-        const s = segmentAt( seg );
-        if ( isHole( s ) ) continue;
-        const z = seg * SEG_LEN + SEG_LEN / 2;
-        out.push( { id: String( seg ), kind: 'pickup', x: openCenterX( s ), y: 0, z } );
-    }
-    return out;
+function pickupAnchors( seed: number, length: number, segmentAt: ( i: number ) => Segment ): Anchor[] {
+    const cache = new Map< number, Segment >();
+    const cached = ( i: number ): Segment => {
+        let s = cache.get( i );
+        if ( s === undefined ) {
+            s = segmentAt( i );
+            cache.set( i, s );
+        }
+        return s;
+    };
+    return placePickups( seed, length, cached );
 }
 
 function mergedSegment( seed: number, i: number, length: number, density: TrackDensity ): Segment {
@@ -188,6 +188,6 @@ export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
         finishZ: length * SEG_LEN,
         segmentAt,
         segmentAtZ: ( z: number ) => segmentAt( segIndexForZ( z ) ),
-        anchors: pickupAnchors( length, segmentAt ),
+        anchors: pickupAnchors( seed, length, segmentAt ),
     };
 }

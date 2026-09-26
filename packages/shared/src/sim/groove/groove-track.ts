@@ -1,5 +1,4 @@
-import { openCenterX } from '../clearance.js';
-import { hash2 } from '../rng.js';
+import { placePickups } from '../pickup-place.js';
 import { segmentsTrack } from '../score/emit.js';
 import {
     type Anchor,
@@ -9,7 +8,6 @@ import {
     type FloorSpan,
     fullFloor,
     HALF_WIDTH,
-    PICKUP_SPACING,
     SEG_LEN,
     type Segment,
     START_SAFE,
@@ -17,15 +15,7 @@ import {
     type Track,
 } from '../space.js';
 import { type GrooveObstacle, placeObstacles } from './islands.js';
-import { composeGroove, type GrooveLine, grooveLineX } from './line.js';
-
-export const PICKUP_CLEAR = 2;
-
-const SALT_PICKUP_ID = 0x51c7e02b | 0;
-
-export function pickupSalt( seed: number ): string {
-    return ( hash2( ( seed ^ SALT_PICKUP_ID ) | 0, 0 ) >>> 0 ).toString( 36 );
-}
+import { composeGroove, type GrooveLine } from './line.js';
 
 export interface GrooveBuild {
     line: GrooveLine;
@@ -106,30 +96,11 @@ function segmentOf( i: number, obstacles: readonly GrooveObstacle[] ): Segment {
     };
 }
 
-function pickupX( seg: Segment, x: number, z: number, obstacles: readonly GrooveObstacle[] ): number {
-    const blocked = obstacles.some(
-        ( o ) =>
-            x > o.x0 - PICKUP_CLEAR && x < o.x1 + PICKUP_CLEAR && z > o.z0 - PICKUP_CLEAR && z < o.z1 + PICKUP_CLEAR,
-    );
-    return blocked ? openCenterX( seg ) : x;
-}
-
 export function buildGroove( seed: number, length: number = TRACK_SEGMENTS ): GrooveBuild {
     const line = composeGroove( seed, length );
     const obstacles = placeObstacles( line );
     const segments = Array.from( { length }, ( _, i ) => segmentOf( i, obstacles ) );
-    const anchors: Anchor[] = [];
-    const salt = pickupSalt( seed );
-    for ( let i = START_SAFE; i < length; i += PICKUP_SPACING ) {
-        const z = i * SEG_LEN + SEG_LEN / 2;
-        anchors.push( {
-            id: `${ i }.${ salt }`,
-            kind: 'pickup',
-            x: pickupX( segments[ i ], grooveLineX( line, z ), z, obstacles ),
-            y: 0,
-            z,
-        } );
-    }
+    const anchors = placePickups( seed, length, ( i ) => segments[ i ] );
     return { line, obstacles, segments, anchors };
 }
 

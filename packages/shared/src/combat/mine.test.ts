@@ -84,20 +84,12 @@ function run( mines: Map< string, MineState >, ships: SeekerShip[], seconds: num
     return events;
 }
 
-test( 'the pickup split keeps every seeker and turns about mineRatio of the rest into mines', () => {
-    const ids = Array.from( { length: 2000 }, ( _, i ) => String( i ) );
+test( 'every 20 pickups deal exactly mineRatio of mines, and mineRatio 0 deals none', () => {
+    const ids = Array.from( { length: 2000 }, ( _, i ) => `${ i }.mine` );
     const noMines: SimConfig = { ...DEFAULT_SIM_CONFIG, mineRatio: 0 };
-    let mines = 0;
-    for ( const id of ids ) {
-        const before = pickupPower( id, noMines );
-        const after = pickupPower( id );
-        if ( before === HeldPower.seeker ) assert.equal( after, HeldPower.seeker, id );
-        if ( after === HeldPower.mine ) {
-            assert.equal( before, HeldPower.bolt, id );
-            mines++;
-        }
-    }
-    assert.ok( Math.abs( mines / ids.length - DEFAULT_SIM_CONFIG.mineRatio ) < 0.04, `ratio ${ mines / ids.length }` );
+    const mines = ids.filter( ( id ) => pickupPower( id ) === HeldPower.mine ).length;
+    assert.equal( mines, Math.round( ids.length * DEFAULT_SIM_CONFIG.mineRatio ) );
+    assert.ok( ids.every( ( id ) => pickupPower( id, noMines ) !== HeldPower.mine ) );
 } );
 
 test( 'a mine dropped over a gap fizzles, forward or back', () => {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HALF_WIDTH, START_SAFE, type Track } from '../sim/space.js';
+import { pickupColumnClear } from '../sim/pickup-place.js';
+import { HALF_WIDTH, START_SAFE, segIndexForZ, type Track } from '../sim/space.js';
 import { procgenDescriptor, resolveTrack } from '../sim/track-provider.js';
 import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
 import { BOLT_HALF, BOLT_SPEED } from './constants.js';
@@ -114,7 +115,7 @@ test( 'pickupLayout: slots sit after the start-safe zone and inside the corridor
     const slots = layout( 777 );
     assert.ok( slots.length > 0, 'no pickups generated' );
     assert.ok(
-        slots.every( ( p ) => Number( p.id ) >= START_SAFE ),
+        slots.every( ( p ) => segIndexForZ( p.z ) >= START_SAFE ),
         'a pickup landed inside the start-safe zone',
     );
     assert.ok(
@@ -127,10 +128,14 @@ test( 'pickupLayout: every slot sits on floor and inside the open corridor — n
     for ( const seed of [ 1, 2, 777, 12345, 999983 ] ) {
         const track = makeTrack( seed );
         for ( const p of layout( seed ) ) {
-            const seg = track.segmentAt( Number( p.id ) );
+            const seg = track.segmentAt( segIndexForZ( p.z ) );
             assert.ok( seg.floors.length > 0, `seed ${ seed }: pickup ${ p.id } placed over a hole (gap)` );
             const buried = seg.blocks.some( ( b ) => p.x >= b.x0 && p.x < b.x1 && p.z >= b.z0 && p.z < b.z1 );
             assert.ok( ! buried, `seed ${ seed }: pickup ${ p.id } buried inside a lethal wall block` );
+            assert.ok(
+                pickupColumnClear( p.x, p.z, ( i ) => track.segmentAt( i ) ),
+                `seed ${ seed }: pickup ${ p.id } has no clear approach column`,
+            );
         }
     }
 } );

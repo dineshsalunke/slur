@@ -9,12 +9,13 @@ import { DEFAULT_SIM_CONFIG } from '../../sim-config.js';
 import { openRunsAtSlice, type Run } from '../clearance.js';
 import { shadowHazard } from '../fracture-shadow.js';
 import type { PlayerInput } from '../input.js';
+import { pickupSalt } from '../pickup-place.js';
 import { HALF_WIDTH, type Segment, segIndexForZ, type Track } from '../space.js';
 import { simulate } from '../step.js';
 import { procgenDescriptor, resolveTrack } from '../track-provider.js';
 import { createSimWorld, spawnShip } from '../types.js';
 import { GROOVE_BANDS, GROOVE_GRAMMAR, jumpChance, switchChance } from './grammar.js';
-import { buildGroove, grooveTrack, pickupSalt } from './groove-track.js';
+import { buildGroove, grooveTrack } from './groove-track.js';
 import type { GrooveEvent } from './line.js';
 import { openSpace, openSpaceFailures } from './open-space.js';
 

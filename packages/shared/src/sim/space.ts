@@ -9,7 +9,6 @@ export const LANES = ( 2 * HALF_WIDTH ) / CELL;
 export const ZCELLS = SEG_LEN / CELL;
 export const MIN_LANE = 2 * CELL;
 export const BLOCK_HEIGHT = 8;
-export const PICKUP_SPACING = 3;
 
 export interface FloorSpan {
     x0: number;

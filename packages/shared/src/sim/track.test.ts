@@ -11,9 +11,13 @@ import {
     LEAD_SEGMENTS,
     MIN_LANE,
     mulberry32,
+    PICKUP_GAP_MIN_SEGS,
+    PICKUP_X_MAX,
     type ProcgenDescriptor,
     passableCorridorWidth,
+    pickupId,
     pickupLayout,
+    pickupSalt,
     procgenDescriptor,
     resolveTrack,
     SEG_LEN,
@@ -366,11 +370,12 @@ test( 'ADR-002: pickupLayout is exactly track.anchors filtered to kind "pickup" 
     }
 } );
 
-test( 'ADR-002: pickup anchor id/position scheme is unchanged (zero wire migration + placement)', () => {
+test( 'ADR-002 (#265): pickup ids are ordinal.salt, rows sit mid-segment and at least the minimum gap apart', () => {
     for ( const seed of SEEDS ) {
-        for ( const p of makeTrack( seed ).anchors.filter( ( a ) => a.kind === 'pickup' ) ) {
-            const seg = Number( p.id );
-            assert.equal( p.id, String( seg ), `seed ${ seed }: id ${ p.id } is not a segment-index string` );
+        const pickups = makeTrack( seed ).anchors.filter( ( a ) => a.kind === 'pickup' );
+        pickups.forEach( ( p, ordinal ) => {
+            assert.equal( p.id, pickupId( ordinal, pickupSalt( seed ) ), `seed ${ seed }: id ${ p.id }` );
+            const seg = Math.floor( p.z / SEG_LEN );
             assert.ok( seg >= START_SAFE, `seed ${ seed }: pickup ${ p.id } inside the start-safe zone` );
             assert.equal(
                 p.z,
@@ -378,8 +383,15 @@ test( 'ADR-002: pickup anchor id/position scheme is unchanged (zero wire migrati
                 `seed ${ seed }: pickup ${ p.id } z off the segment mid-row`,
             );
             assert.equal( p.y, 0, `seed ${ seed }: pickup ${ p.id } not at ground level` );
-            assert.ok( Math.abs( p.x ) <= HALF_WIDTH, `seed ${ seed }: pickup ${ p.id } outside the rails` );
-        }
+            assert.ok( Math.abs( p.x ) <= PICKUP_X_MAX, `seed ${ seed }: pickup ${ p.id } outside the rail margin` );
+            if ( ordinal > 0 ) {
+                const gap = p.z - pickups[ ordinal - 1 ].z;
+                assert.ok(
+                    gap >= PICKUP_GAP_MIN_SEGS * SEG_LEN,
+                    `seed ${ seed }: pickup ${ p.id } only ${ gap }u after the last`,
+                );
+            }
+        } );
     }
 } );
 

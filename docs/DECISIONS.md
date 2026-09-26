@@ -137,6 +137,25 @@ GAP-REACH).
 **Affected docs:** `docs/GDD.md` §5.2/§5.7 · `docs/TDD.md` §5 · `docs/ADD.md` (visual-vs-physics note).
 **Why / narrative:** the phase note.
 
+### Amendment — pickup ids, spacing and the power bag (2026-09-26, #265)
+
+The owner approved this through slur-supervisor. It replaces the As-built wording *"`pickupTaken` keys
+unchanged (anchor id = segment-index string → zero wire migration)"*. It also replaces the ADR-017
+bullet *"Each pickup anchor gets a kind from a hash of its id."*
+
+- **Id.** Every pickup id is `${ordinal}.${salt}` on both generators. `ordinal` is the pickup's index
+  on the track. `salt` is `pickupSalt(seed)`. Weave used `String(seg)` before, so every weave seed dealt
+  the same power order.
+- **Spacing.** Rows are 6–9 segments apart (120–180u), hashed from the seed. A row slides up to 3
+  segments forward to find a clear lane, or it is skipped.
+- **Sideways.** x is hashed across the open lanes within ±40u (`PICKUP_X_MAX`) and within 40u of the
+  last pickup. The column must be clear for the widest and longest hull from 20u before the pickup to
+  5u after it. If no lane is within 40u, any clear lane is used.
+- **Power.** Each run of 20 pickups is one shuffled bag, 8 bolt / 6 seeker / 6 mine
+  (`SEEKER_RATIO` = `MINE_RATIO` = 0.3). No power comes up 3 times in a row, across bag seams too.
+  `pickupPower(id, cfg)` rebuilds the bag from the id, so both ends agree with no new synced state.
+- **Wire.** `pickupTaken` keys change with the build. Server and client must run the same shared build.
+
 ---
 
 ## ADR-003 — Ruleset macro-layer; generate == validate

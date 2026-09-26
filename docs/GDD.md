@@ -228,7 +228,11 @@ back. The gamepad uses **B** for back, and the touch pad has a **Back** button. 
 back seeker locks onto the nearest rival behind, launches at 0 u/s and ramps to top speed toward −z.
 The owner still has to confirm F as the back key.
 
-**Mine (#261, built).** A pickup gives a Mine in about 1 in 5 pickups (`MINE_RATIO` = 0.2).
+**Placement and mix (#265, built).** Pickups are 120–180u apart, spread across the deck up to ±40u,
+and always on a clear lane. Every run of 20 pickups deals 8 Bolts, 6 Seekers and 6 Mines in a shuffled
+order. No power comes up 3 times in a row. Details: `docs/DECISIONS.md` ADR-002 amendment.
+
+**Mine (#261, built).** A pickup gives a Mine in 6 of every 20 pickups (`MINE_RATIO` = 0.3).
 
 - **Lay (#263).** Forward puts the mine **0.8 s** ahead at the layer's own speed (`MINE_LEAD_S`),
   past the trigger radius from the nose: 70u for the Interceptor to 102u for the Freighter at top
