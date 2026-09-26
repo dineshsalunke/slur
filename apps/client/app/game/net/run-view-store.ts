@@ -1,6 +1,7 @@
-import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { computeStandings, PHASE, type RunState, type Standing, type StandingInput } from '@slur/shared';
+import { computeStandings, PHASE, type Standing, type StandingInput } from '@slur/shared';
 import { useSyncExternalStore } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
+import { stateCallbacks } from '../../net/state-callbacks';
 
 export interface PlayerView {
     id: string;
@@ -45,7 +46,7 @@ function keep< T >( prev: readonly T[], next: T[], key: ( v: T ) => string ): re
     return prev.every( ( v, i ) => key( v ) === key( next[ i ] ) ) ? prev : next;
 }
 
-export function readRun( room: Room< RunState >, prev: RunSnapshot ): RunSnapshot {
+export function readRun( room: RunRoomLike, prev: RunSnapshot ): RunSnapshot {
     const s = room.state;
     const players: PlayerView[] = [];
     const racers: StandingInput[] = [];
@@ -85,7 +86,7 @@ export function readRun( room: Room< RunState >, prev: RunSnapshot ): RunSnapsho
     return same ? prev : next;
 }
 
-function createStore( room: Room< RunState > ): RunViewStore {
+function createStore( room: RunRoomLike ): RunViewStore {
     const listeners = new Set< () => void >();
     let current = EMPTY_RUN;
     let detach: ( () => void ) | null = null;
@@ -103,7 +104,7 @@ function createStore( room: Room< RunState > ): RunViewStore {
     };
 
     const attach = () => {
-        const $ = getStateCallbacks( room );
+        const $ = stateCallbacks( room );
         const offs = [
             $( room.state ).listen( 'phase', refresh ),
             $( room.state ).listen( 'countdown', refresh ),
@@ -145,9 +146,9 @@ function createStore( room: Room< RunState > ): RunViewStore {
     };
 }
 
-const stores = new WeakMap< Room< RunState >, RunViewStore >();
+const stores = new WeakMap< RunRoomLike, RunViewStore >();
 
-export function runViewStore( room: Room< RunState > ): RunViewStore {
+export function runViewStore( room: RunRoomLike ): RunViewStore {
     let store = stores.get( room );
     if ( ! store ) {
         store = createStore( room );
@@ -156,28 +157,28 @@ export function runViewStore( room: Room< RunState > ): RunViewStore {
     return store;
 }
 
-function useRunField< K extends keyof RunSnapshot >( room: Room< RunState >, key: K ): RunSnapshot[ K ] {
+function useRunField< K extends keyof RunSnapshot >( room: RunRoomLike, key: K ): RunSnapshot[ K ] {
     const store = runViewStore( room );
     const read = () => store.snapshot()[ key ];
     return useSyncExternalStore( store.subscribe, read, read );
 }
 
-export function useRunPhase( room: Room< RunState > ): number {
+export function useRunPhase( room: RunRoomLike ): number {
     return useRunField( room, 'phase' );
 }
 
-export function useCountdown( room: Room< RunState > ): number {
+export function useCountdown( room: RunRoomLike ): number {
     return useRunField( room, 'countdown' );
 }
 
-export function useHostId( room: Room< RunState > ): string {
+export function useHostId( room: RunRoomLike ): string {
     return useRunField( room, 'hostId' );
 }
 
-export function useRunPlayers( room: Room< RunState > ): readonly PlayerView[] {
+export function useRunPlayers( room: RunRoomLike ): readonly PlayerView[] {
     return useRunField( room, 'players' );
 }
 
-export function useRunStandings( room: Room< RunState > ): readonly Standing[] {
+export function useRunStandings( room: RunRoomLike ): readonly Standing[] {
     return useRunField( room, 'standings' );
 }

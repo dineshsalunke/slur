@@ -71,9 +71,8 @@ export const send = vi.fn();
 
 export const room = { sessionId: 'self', state, send } as never;
 
-export const sdkMock = {
-    Client: class {},
-    getStateCallbacks: () => ( target: unknown ) => {
+export const callbacksMock = {
+    stateCallbacks: () => ( target: unknown ) => {
         if ( target === state ) {
             return {
                 listen: ( prop: string, cb: Listener ) => {

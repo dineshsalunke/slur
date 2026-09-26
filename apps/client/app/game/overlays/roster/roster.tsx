@@ -1,10 +1,10 @@
-import type { Room } from '@colyseus/sdk';
-import { isShipId, type RunState, SHIPS } from '@slur/shared';
+import { isShipId, SHIPS } from '@slur/shared';
+import type { RunRoomLike } from '../../../net/run-room-like';
 import { playerBg } from '../../colors';
 import { useHostId, useRunPlayers } from '../../net/run-view-store';
 import { TAG } from './roster.constants';
 
-export function Roster( { room, className = '' }: { room: Room< RunState >; className?: string } ) {
+export function Roster( { room, className = '' }: { room: RunRoomLike; className?: string } ) {
     const hostId = useHostId( room );
     const players = useRunPlayers( room );
 

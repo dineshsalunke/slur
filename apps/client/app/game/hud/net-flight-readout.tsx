@@ -1,10 +1,9 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
 import { useMemo } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { standingsStore, useSelfFinished, useSelfSpectating } from '../net/standings-store';
 import { FlightReadout } from './flight-readout';
 
-export function NetFlightReadout( { room }: { room: Room< RunState > } ) {
+export function NetFlightReadout( { room }: { room: RunRoomLike } ) {
     const spectating = useSelfSpectating( room );
     const finished = useSelfFinished( room );
     const clock = useMemo( () => () => room.state.elapsed, [ room ] );

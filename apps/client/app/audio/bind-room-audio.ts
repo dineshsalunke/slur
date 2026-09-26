@@ -1,4 +1,3 @@
-import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import {
     HeldPower,
     MINE_BURST_MESSAGE,
@@ -6,11 +5,12 @@ import {
     PHASE,
     type PlayerState,
     type ProjectileState,
-    type RunState,
     SEEKER_HIT_MESSAGE,
     type SeekerState,
     SHIELD_POP_MESSAGE,
 } from '@slur/shared';
+import type { RunRoomLike } from '../net/run-room-like';
+import { stateCallbacks } from '../net/state-callbacks';
 import { playMusic } from './audio-engine';
 import { musicForPhase } from './music-for-phase';
 import { playBolt, playSfx, startSfxLoop, stopSfxLoop } from './sfx-map';
@@ -27,8 +27,8 @@ export function playMineEvent( e: MineEvent, me: string ): void {
     playSfx( sfx, near ? {} : { gain: FAR_GAIN[ sfx ] } );
 }
 
-export function bindRoomAudio( room: Room< RunState > ): () => void {
-    const $ = getStateCallbacks( room );
+export function bindRoomAudio( room: RunRoomLike ): () => void {
+    const $ = stateCallbacks( room );
     const me = room.sessionId;
     const perPlayer = new Map< string, () => void >();
     const perProjectile = new Map< string, () => void >();

@@ -1,11 +1,10 @@
-import type { Room } from '@colyseus/sdk';
 import { addEffect } from '@react-three/fiber';
-import type { RunState } from '@slur/shared';
 import { Fragment, useEffect, useRef } from 'react';
+import type { RunRoomLike } from '../../../net/run-room-like';
 import { THREAT_X, THREAT_Z } from './threat-hud.constants';
 import { threatTick, vignetteOpacity } from './threat-hud.utils';
 
-export function ThreatHud( { room }: { room: Room< RunState > } ) {
+export function ThreatHud( { room }: { room: RunRoomLike } ) {
     const tickRef = useRef< HTMLDivElement >( null );
     const vignetteRef = useRef< HTMLDivElement >( null );
 

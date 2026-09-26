@@ -1,9 +1,8 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { useHostId, useRunStandings } from '../net/run-view-store';
 import { StandingRow } from './standing-row/standing-row';
 
-export function Standings( { room }: { room: Room< RunState > } ) {
+export function Standings( { room }: { room: RunRoomLike } ) {
     const hostId = useHostId( room );
     const standings = useRunStandings( room );
     const leader = standings.find( ( s ) => ! s.dnf );

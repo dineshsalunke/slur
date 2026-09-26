@@ -1,11 +1,10 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
 import { Fragment } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { LABEL } from '../../ui/field-label/field-label.constants';
 import { useRunStandings } from '../net/run-view-store';
 import { gapTo, ordinal, raceTime } from './results-format';
 
-export function YourFinish( { room }: { room: Room< RunState > } ) {
+export function YourFinish( { room }: { room: RunRoomLike } ) {
     const standings = useRunStandings( room );
     const mine = standings.find( ( s ) => s.id === room.sessionId );
     const leader = standings.find( ( s ) => ! s.dnf );

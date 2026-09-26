@@ -1,6 +1,5 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
 import { Fragment } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { Scrim } from '../../ui/scrim';
 import { LeaveButton } from './leave-button';
 import { RaceAgain } from './race-again/race-again';
@@ -8,7 +7,7 @@ import { Standings } from './standings';
 import { WinnerCard } from './winner-card';
 import { YourFinish } from './your-finish';
 
-export function ResultsOverlay( { room }: { room: Room< RunState > } ) {
+export function ResultsOverlay( { room }: { room: RunRoomLike } ) {
     return (
         <Fragment>
             <Scrim />

@@ -1,6 +1,7 @@
-import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { computeStandings, type RunState, type StandingInput } from '@slur/shared';
+import { computeStandings, type StandingInput } from '@slur/shared';
 import { useSyncExternalStore } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
+import { stateCallbacks } from '../../net/state-callbacks';
 import type { RosterEntry } from '../hud/roster-panel';
 
 export const ROSTER_WINDOW = 5;
@@ -52,7 +53,7 @@ export function standingsKey( s: StandingsSnapshot ): string {
     return `${ s.connected }/${ s.field }/${ s.rank }/${ s.selfSpectating }/${ s.selfFinished }/${ rows }`;
 }
 
-function racersOf( room: Room< RunState > ): RacerInput[] {
+function racersOf( room: RunRoomLike ): RacerInput[] {
     const racers: RacerInput[] = [];
     room.state.players.forEach( ( p, id ) => {
         racers.push( {
@@ -70,7 +71,7 @@ function racersOf( room: Room< RunState > ): RacerInput[] {
     return racers;
 }
 
-function createStore( room: Room< RunState > ): StandingsStore {
+function createStore( room: RunRoomLike ): StandingsStore {
     const listeners = new Set< () => void >();
     let current = readStandings( [], room.sessionId );
     let key = standingsKey( current );
@@ -91,7 +92,7 @@ function createStore( room: Room< RunState > ): StandingsStore {
     };
 
     const attach = () => {
-        const $ = getStateCallbacks( room );
+        const $ = stateCallbacks( room );
         const perPlayer = new Map< string, () => void >();
         const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {
             perPlayer.set( sid, $( p ).onChange( refresh ) );
@@ -127,9 +128,9 @@ function createStore( room: Room< RunState > ): StandingsStore {
     };
 }
 
-const stores = new WeakMap< Room< RunState >, StandingsStore >();
+const stores = new WeakMap< RunRoomLike, StandingsStore >();
 
-export function standingsStore( room: Room< RunState > ): StandingsStore {
+export function standingsStore( room: RunRoomLike ): StandingsStore {
     let store = stores.get( room );
     if ( ! store ) {
         store = createStore( room );
@@ -138,18 +139,18 @@ export function standingsStore( room: Room< RunState > ): StandingsStore {
     return store;
 }
 
-export function useStandings( room: Room< RunState > ): StandingsSnapshot {
+export function useStandings( room: RunRoomLike ): StandingsSnapshot {
     const store = standingsStore( room );
     return useSyncExternalStore( store.subscribe, store.snapshot, store.snapshot );
 }
 
-export function useSelfSpectating( room: Room< RunState > ): boolean {
+export function useSelfSpectating( room: RunRoomLike ): boolean {
     const store = standingsStore( room );
     const spectating = () => store.snapshot().selfSpectating;
     return useSyncExternalStore( store.subscribe, spectating, spectating );
 }
 
-export function useSelfFinished( room: Room< RunState > ): boolean {
+export function useSelfFinished( room: RunRoomLike ): boolean {
     const store = standingsStore( room );
     const finished = () => store.snapshot().selfFinished;
     return useSyncExternalStore( store.subscribe, finished, finished );

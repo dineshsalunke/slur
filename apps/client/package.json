@@ -12,6 +12,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@colyseus/schema": "catalog:",
         "@colyseus/sdk": "catalog:",
         "@react-router/node": "^8.3.0",
         "@react-three/drei": "^10.7.8",

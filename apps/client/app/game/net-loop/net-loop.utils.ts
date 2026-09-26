@@ -1,7 +1,7 @@
-import type { Room } from '@colyseus/sdk';
-import { PHASE, type RunState } from '@slur/shared';
+import { PHASE } from '@slur/shared';
 import type { World } from 'koota';
 import type { PerspectiveCamera } from 'three';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { updateLobbyCamera, updateSpectatorCamera } from '../camera/chase';
 import { finishReset, showFinishFade, stepFinishReset } from '../finish/finish-reset';
 import { finishWatch, localFinished, pickWatchTarget, resetFinishWatch } from '../finish/finish-watch';
@@ -20,7 +20,7 @@ export function stepFinishCurtain( world: World, phase: number, delta: number ):
     return cut;
 }
 
-export function updateFinishCamera( cam: PerspectiveCamera, world: World, dt: number, room: Room< RunState > ): void {
+export function updateFinishCamera( cam: PerspectiveCamera, world: World, dt: number, room: RunRoomLike ): void {
     finishWatch.targetId = pickWatchTarget( room.state.players, room.sessionId, finishWatch.targetId );
     if ( finishWatch.targetId ) updateSpectatorCamera( cam, world, dt, finishWatch.targetId );
     else updateLobbyCamera( cam, world, dt );

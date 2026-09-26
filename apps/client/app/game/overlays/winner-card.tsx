@@ -1,10 +1,9 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { playerBg } from '../colors';
 import { useRunStandings } from '../net/run-view-store';
 import { raceTime, shipName } from './results-format';
 
-export function WinnerCard( { room }: { room: Room< RunState > } ) {
+export function WinnerCard( { room }: { room: RunRoomLike } ) {
     const winner = useRunStandings( room ).find( ( s ) => ! s.dnf );
 
     return (

@@ -1,10 +1,10 @@
-import type { Room } from '@colyseus/sdk';
 import { useFrame } from '@react-three/fiber';
-import { createFixedStep, FIXED_DT, PHASE, type RunState } from '@slur/shared';
+import { createFixedStep, FIXED_DT, PHASE } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useMemo } from 'react';
 import type { PerspectiveCamera } from 'three';
 import type { Predictor } from '../../net/prediction';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from '../camera/chase';
 import { hoverSystem } from '../ecs/hover';
 import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from '../ecs/net-systems';
@@ -14,7 +14,7 @@ import { localRole, resetSpectatorTarget, resolveSpectatorTarget, runPhase } fro
 import { useTrack } from '../track-context/use-track';
 import { stepFinishCurtain, updateFinishCamera } from './net-loop.utils';
 
-export function NetLoop( { predictor, room }: { predictor: Predictor; room: Room< RunState > } ) {
+export function NetLoop( { predictor, room }: { predictor: Predictor; room: RunRoomLike } ) {
     const world = useWorld();
     const track = useTrack();
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );

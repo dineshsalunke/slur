@@ -1,6 +1,6 @@
-import type { Room } from '@colyseus/sdk';
-import { PHASE, RESTART_MESSAGE, type RunState } from '@slur/shared';
+import { PHASE, RESTART_MESSAGE } from '@slur/shared';
 import { Fragment, useEffect } from 'react';
+import type { RunRoomLike } from '../../../net/run-room-like';
 import { isBareEnter } from '../../../ship/ship-keys';
 import { Button } from '../../../ui/button';
 import { Chevron } from '../../../ui/chevron';
@@ -8,7 +8,7 @@ import { KeyHint } from '../../../ui/key-hint';
 import { useHostId, useRunPlayers } from '../../net/run-view-store';
 import { HOST_HINTS } from './race-again.constants';
 
-export function RaceAgain( { room }: { room: Room< RunState > } ) {
+export function RaceAgain( { room }: { room: RunRoomLike } ) {
     const hostId = useHostId( room );
     const players = useRunPlayers( room );
     const isHost = room.sessionId === hostId;

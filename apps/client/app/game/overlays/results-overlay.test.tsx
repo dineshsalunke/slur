@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mountOverlays, pressEnter, unmountOverlays } from './mount-overlays';
 import { bus, send } from './test-room';
 
-vi.mock( '@colyseus/sdk', async () => ( await import( './test-room' ) ).sdkMock );
+vi.mock( '../../net/state-callbacks', async () => ( await import( './test-room' ) ).callbacksMock );
 
 const counts = vi.hoisted( () => ( { ResultsOverlay: 0, Standings: 0 } ) );
 

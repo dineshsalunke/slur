@@ -1,6 +1,5 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
 import { Fragment } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { Scrim } from '../../ui/scrim';
 import { ColourSwatches } from './colour-swatches';
 import { CopyLink } from './copy-link';
@@ -11,7 +10,7 @@ import { Roster } from './roster/roster';
 import { SpecTag } from './spec-tag';
 import { StartControl } from './start-control/start-control';
 
-export function LobbyOverlay( { room }: { room: Room< RunState > } ) {
+export function LobbyOverlay( { room }: { room: RunRoomLike } ) {
     return (
         <Fragment>
             <Scrim />

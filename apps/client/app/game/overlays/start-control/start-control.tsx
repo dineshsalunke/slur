@@ -1,13 +1,13 @@
-import type { Room } from '@colyseus/sdk';
-import { type RunState, START_MESSAGE } from '@slur/shared';
+import { START_MESSAGE } from '@slur/shared';
 import { Fragment } from 'react';
+import type { RunRoomLike } from '../../../net/run-room-like';
 import { Button } from '../../../ui/button';
 import { Chevron } from '../../../ui/chevron';
 import { KeyHint } from '../../../ui/key-hint';
 import { useHostId, useRunPlayers } from '../../net/run-view-store';
 import { GUEST_HINTS, HOST_HINTS } from './start-control.constants';
 
-export function StartControl( { room }: { room: Room< RunState > } ) {
+export function StartControl( { room }: { room: RunRoomLike } ) {
     const hostId = useHostId( room );
     const players = useRunPlayers( room );
     const isHost = room.sessionId === hostId;

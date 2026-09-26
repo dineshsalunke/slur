@@ -1,11 +1,10 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
 import { useEffect, useReducer, useRef } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { HudPanel } from '../../ui/hud-panel/hud-panel';
 import { useRunPlayers } from '../net/run-view-store';
 import { cycleSpectatorTarget, resolveSpectatorTarget } from '../spectator';
 
-export function SpectatorBar( { room }: { room: Room< RunState > } ) {
+export function SpectatorBar( { room }: { room: RunRoomLike } ) {
     const [ , retarget ] = useReducer( ( n: number ) => n + 1, 0 );
     const racers = useRunPlayers( room ).filter( ( p ) => ! p.spectating );
     const racerIds = racers.map( ( p ) => p.id );

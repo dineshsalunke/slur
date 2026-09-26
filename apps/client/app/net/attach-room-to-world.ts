@@ -1,4 +1,3 @@
-import { getStateCallbacks, type Room } from '@colyseus/sdk';
 import {
     BOUNCE_MESSAGE,
     type BounceMessage,
@@ -8,7 +7,6 @@ import {
     MINE_BURST_MESSAGE,
     type PlayerState,
     type ProjectileState,
-    type RunState,
     type SeekerState,
     SHIELD_POP_MESSAGE,
     type Track,
@@ -42,6 +40,8 @@ import { burstMine } from '../game/scene/mine-shock-events';
 import { launchMine } from '../game/scene/mine-shots';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
+import type { RunRoomLike } from './run-room-like';
+import { stateCallbacks } from './state-callbacks';
 
 const INPUT_SEND_MS = 1000 / 30;
 
@@ -115,12 +115,12 @@ function popShield( ent: Entity | undefined ): void {
 }
 
 export function attachRoomToWorld(
-    room: Room< RunState >,
+    room: RunRoomLike,
     world: World,
     predictor: Predictor,
     trackRef: RefObject< Track >,
 ): () => void {
-    const $ = getStateCallbacks( room );
+    const $ = stateCallbacks( room );
     const byId = new Map< string, Entity >();
     const projById = new Map< string, Entity >();
     const seekerById = new Map< string, Entity >();

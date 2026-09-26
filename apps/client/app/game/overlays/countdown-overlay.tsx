@@ -1,8 +1,7 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { useCountdown } from '../net/run-view-store';
 
-export function CountdownOverlay( { room }: { room: Room< RunState > } ) {
+export function CountdownOverlay( { room }: { room: RunRoomLike } ) {
     const n = useCountdown( room );
     return (
         <div className="pointer-events-none fixed inset-0 z-[25] grid place-items-center">

@@ -7,7 +7,7 @@ import { currentShip } from '../../ship/ship-choice';
 import { mountOverlays, pressEnter, unmountOverlays } from './mount-overlays';
 import { bus, send } from './test-room';
 
-vi.mock( '@colyseus/sdk', async () => ( await import( './test-room' ) ).sdkMock );
+vi.mock( '../../net/state-callbacks', async () => ( await import( './test-room' ) ).callbacksMock );
 
 const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0, ConnectionNotice: 0 } ) );
 

@@ -1,9 +1,8 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
 import type { ReactNode } from 'react';
+import type { RunRoomLike } from '../../net/run-room-like';
 import { useHostId, useRunPlayers } from '../net/run-view-store';
 
-export function RoomTitle( { room, children }: { room: Room< RunState >; children: ReactNode } ) {
+export function RoomTitle( { room, children }: { room: RunRoomLike; children: ReactNode } ) {
     const hostId = useHostId( room );
     const players = useRunPlayers( room );
     const host = players.find( ( p ) => p.id === hostId );

@@ -1,8 +1,7 @@
-import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
 import type { ReactNode } from 'react';
+import type { RunRoomLike } from '../run-room-like';
 import { RoomContext } from './room-context.constants';
 
-export function RoomProvider( { room, children }: { room: Room< RunState >; children: ReactNode } ) {
+export function RoomProvider( { room, children }: { room: RunRoomLike; children: ReactNode } ) {
     return <RoomContext.Provider value={ room }>{ children }</RoomContext.Provider>;
 }
