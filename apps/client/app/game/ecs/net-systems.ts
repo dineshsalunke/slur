@@ -1,4 +1,4 @@
-import { DEFAULT_SIM_CONFIG, simulate, type Track, tuningForShip } from '@slur/shared';
+import { DEFAULT_SIM_CONFIG, froundSimShip, simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { blockWorld } from '../block-state';
@@ -47,6 +47,7 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
         const stunBefore = s.stunTimer;
         const vzBefore = s.vz;
         simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+        froundSimShip( s );
         sparkIfBounced( s, stunBefore, vzBefore, dt, tuning );
     } );
 }

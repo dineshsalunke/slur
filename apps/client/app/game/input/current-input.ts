@@ -9,6 +9,10 @@ const SOURCES = [ keyboardInput, touchInput, gamepadInput ];
 const input = emptyInput();
 let seq = 0;
 
+export function lastInputSeq(): number {
+    return seq;
+}
+
 export function currentInput() {
     input.seq = ++seq;
     input.throttle = 0;

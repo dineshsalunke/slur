@@ -129,6 +129,7 @@ export function attachRoomToWorld(
 
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
         runPhase.value = v;
+        predictor.reset();
     } );
 
     const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {

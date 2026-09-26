@@ -17,6 +17,7 @@ import { useRoom } from '../net/room-context';
 import { Held, LocalPlayer } from './ecs/traits';
 import { world } from './ecs/world';
 import { FinishFade } from './finish/finish-fade';
+import { lastInputSeq } from './input/current-input';
 import { attachKeyboard } from './input/keyboard';
 import { handlePowerKey } from './input/power-select';
 import { NetHud } from './net-hud';
@@ -45,7 +46,8 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     useEffect( () => {
         const actions = {
             rack: () => world.queryFirst( LocalPlayer, Held )?.get( Held )?.slots ?? [],
-            fire: ( slot: number, dir: FireDir ) => room.send( USE_POWERUP_MESSAGE, { slot, dir } ),
+            fire: ( slot: number, dir: FireDir ) =>
+                room.send( USE_POWERUP_MESSAGE, { slot, dir, seq: lastInputSeq() } ),
             drop: ( slot: number ) => room.send( DROP_POWERUP_MESSAGE, { slot } ),
         };
         const onKey = ( e: KeyboardEvent ) => handlePowerKey( e, actions );
@@ -58,23 +60,21 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
 
     return (
         <WorldProvider world={ world }>
-            <Canvas
-                gl={ CANVAS_GL }
-                style={ { position: 'fixed', inset: 0 } }
-                camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
-            >
-                <WorldScene track={ track }>
-                    <NetLoop predictor={ predictor } track={ track } room={ room } />
-                    <PickupField room={ room } track={ track } />
-                    <ProjectileField />
-                    <SeekerField />
-                    <MineField />
-                    <MineShock />
-                    <RearView />
-                    <GameAudio />
-                    <RemoteEngineAudio />
-                </WorldScene>
-            </Canvas>
+            <div className="fixed inset-0">
+                <Canvas gl={ CANVAS_GL } camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }>
+                    <WorldScene track={ track }>
+                        <NetLoop predictor={ predictor } track={ track } room={ room } />
+                        <PickupField room={ room } track={ track } />
+                        <ProjectileField />
+                        <SeekerField />
+                        <MineField />
+                        <MineShock />
+                        <RearView />
+                        <GameAudio />
+                        <RemoteEngineAudio />
+                    </WorldScene>
+                </Canvas>
+            </div>
             <NetHud track={ track } />
             <FinishFade />
             <TuningPanelMount />

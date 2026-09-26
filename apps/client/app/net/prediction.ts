@@ -2,6 +2,7 @@ import {
     copySimShip,
     DEFAULT_SIM_CONFIG,
     FIXED_DT,
+    froundSimShip,
     type PlayerInput,
     type SimShip,
     simulate,
@@ -22,6 +23,7 @@ export interface Predictor {
     record( input: PlayerInput ): void;
     drainUnsent(): PlayerInput[];
     reconcile( sim: SimShip, snapshot: SimShip & { lastProcessedInput: number; shipId: string }, track: Track ): void;
+    reset(): void;
 }
 
 export function createPredictor(): Predictor {
@@ -46,8 +48,13 @@ export function createPredictor(): Predictor {
             const ack = snapshot.lastProcessedInput;
             while ( pending.length > 0 && pending[ 0 ].seq <= ack ) pending.shift();
             restoreConfirmed();
-            for ( const p of pending )
+            for ( const p of pending ) {
                 simulate( sim, p.input, FIXED_DT, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+                froundSimShip( sim );
+            }
+        },
+        reset() {
+            pending.length = 0;
         },
     };
 }
