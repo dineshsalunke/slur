@@ -20,7 +20,9 @@ import {
     type SeekerEvent,
     type SeekerState,
     type SimConfig,
+    type SimShip,
     spendPower,
+    startBoost,
     stepBolts,
     stepMines,
     stepPickups,
@@ -126,13 +128,14 @@ function layMine( me: Gunner, vz: number, shipId: string, track: Track, dir: Fir
     localCombat.throws.set( id, throwFrom( { bornAt: 0, fromX: 0, fromY: 0, fromZ: 0, dir }, mine, from, mineNow() ) );
 }
 
-function fire( me: Gunner, slot: number, vz: number, shipId: string, track: Track, dir: FireDir ): void {
+function fire( me: Gunner, slot: number, s: SimShip, shipId: string, track: Track, dir: FireDir ): void {
     if ( ! canFire( me, slot ) ) return;
     const power = powerIn( me, slot );
     spendPower( me, slot );
-    if ( power === HeldPower.seeker ) fireSeeker( me, vz, track, dir );
-    else if ( power === HeldPower.mine ) layMine( me, vz, shipId, track, dir );
+    if ( power === HeldPower.seeker ) fireSeeker( me, s.vz, track, dir );
+    else if ( power === HeldPower.mine ) layMine( me, s.vz, shipId, track, dir );
     else if ( power === HeldPower.bolt ) fireBolt( me, dir );
+    else if ( power === HeldPower.boost ) startBoost( s );
 }
 
 function onSeekerEvent( e: SeekerEvent ): void {
@@ -158,7 +161,7 @@ export function localCombatSystem( world: World, dt: number, track: Track ): voi
     };
     if ( localCombat.fireSlot >= 0 ) {
         const shipId = ship.get( Net )?.shipId ?? DEFAULT_SHIP;
-        fire( me, localCombat.fireSlot, s.vz, shipId, track, localCombat.fireDir );
+        fire( me, localCombat.fireSlot, s, shipId, track, localCombat.fireDir );
     }
     if ( localCombat.dropSlot >= 0 ) dropPower( me, localCombat.dropSlot );
     localCombat.fireSlot = -1;

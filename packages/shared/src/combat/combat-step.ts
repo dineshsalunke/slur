@@ -62,6 +62,10 @@ export function grantPower( g: Gunner, power: number ): boolean {
     return true;
 }
 
+export function startBoost( ship: { boostTimer: number }, cfg: SimConfig = DEFAULT_SIM_CONFIG ): void {
+    ship.boostTimer = cfg.boostS;
+}
+
 export function aimBolt(
     bolt: ProjectileState,
     g: Gunner,

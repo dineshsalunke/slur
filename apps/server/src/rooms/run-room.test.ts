@@ -285,6 +285,35 @@ describe( 'RunRoom combat', () => {
         assert.deepEqual( rack( shooter ), [ HeldPower.none, HeldPower.none, HeldPower.none ] );
     } );
 
+    test( 'a boost starts the racer boost timer, fires nothing, and a second use resets it', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const racer = playerOf( room, host.sessionId );
+        arm( racer, HeldPower.boost, HeldPower.boost );
+
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        assert.equal( racer.boostTimer, DEFAULT_SIM_CONFIG.boostS );
+        assert.equal( racer.slots[ 0 ], HeldPower.none, 'the boost is spent' );
+        assert.equal( room.state.projectiles.size, 0, 'a boost is not a bolt' );
+
+        racer.boostTimer = 0.5;
+        host.send( USE_POWERUP_MESSAGE, { slot: 1 } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        assert.equal( racer.boostTimer, DEFAULT_SIM_CONFIG.boostS, 'the second boost resets, it does not add' );
+    } );
+
+    test( 'a stunned racer cannot boost and keeps the charge', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const racer = playerOf( room, host.sessionId );
+        arm( racer, HeldPower.boost );
+        racer.stunTimer = 1;
+
+        host.send( USE_POWERUP_MESSAGE, { slot: 0 } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        assert.equal( racer.boostTimer, 0 );
+        assert.equal( racer.slots[ 0 ], HeldPower.boost, 'the charge is kept' );
+    } );
+
     test( 'a fire message without a valid slot is ignored', async () => {
         const { room, host } = await racingRoom( 1 );
         const shooter = playerOf( room, host.sessionId );

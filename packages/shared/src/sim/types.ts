@@ -19,6 +19,7 @@ export interface SimShip {
     finished: boolean;
 
     stunTimer: number;
+    boostTimer: number;
 }
 
 export function spawnShip( x = 0, z = 0 ): SimShip {
@@ -41,6 +42,7 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         lastSafeZ: z,
         finished: false,
         stunTimer: 0,
+        boostTimer: 0,
     };
 }
 
@@ -77,6 +79,7 @@ export const SIM_SHIP_KEYS = keyTuple< SimShip >()(
     'lastSafeZ',
     'finished',
     'stunTimer',
+    'boostTimer',
 );
 
 function assignKey< K extends keyof SimShip >( dst: SimShip, src: SimShip, k: K ): void {

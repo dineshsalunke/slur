@@ -9,16 +9,40 @@ const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, j
 
 const BOUNCE_CLEARANCE = 1e-3;
 
-export function applyLongitudinal( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
+export function boostCap( s: SimShip, t: FlightTuning, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
+    if ( s.boostTimer <= 0 ) return t.maxCruise;
+    const ease = cfg.boostEaseS > 0 ? Math.min( 1, s.boostTimer / cfg.boostEaseS ) : 1;
+    return t.maxCruise * ( 1 + cfg.boostGain * ease );
+}
+
+export function boostThrust(
+    s: SimShip,
+    input: PlayerInput,
+    t: FlightTuning,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+): number {
+    if ( s.boostTimer <= 0 || s.stunTimer > 0 || input.brake > 0 || cfg.boostRiseS <= 0 ) return 0;
+    return ( cfg.boostGain * t.maxCruise ) / cfg.boostRiseS;
+}
+
+export function applyLongitudinal(
+    s: SimShip,
+    input: PlayerInput,
+    t: FlightTuning,
+    dt: number,
+    cap = t.maxCruise,
+    push = 0,
+): void {
+    if ( push > 0 ) s.vz += push * dt;
     if ( input.throttle > 0 ) s.vz += t.accel * input.throttle * dt;
     if ( input.brake > 0 ) s.vz = Math.max( 0, s.vz - t.brakeDecel * input.brake * dt );
-    if ( input.throttle === 0 && input.brake === 0 ) {
+    if ( push === 0 && input.throttle === 0 && input.brake === 0 ) {
         const d = t.coastDrag * dt;
         if ( s.vz > d ) s.vz -= d;
         else if ( s.vz < -d ) s.vz += d;
         else s.vz = 0;
     }
-    s.vz = Math.min( Math.max( s.vz, -t.bounceBack ), t.maxCruise );
+    s.vz = Math.min( Math.max( s.vz, -t.bounceBack ), cap );
 }
 
 export function applyStrafe( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
@@ -133,6 +157,7 @@ function landingFloor( segs: Segment[], s: SimShip, prevY: number, t: FlightTuni
 
 function markDead( s: SimShip, t: FlightTuning ): void {
     s.dead = true;
+    s.boostTimer = 0;
     s.respawnTimer = t.respawnDelay;
     s.vx = 0;
     s.vy = 0;
@@ -152,6 +177,7 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.jumpsUsed = 0;
     s.invulnTimer = t.invulnTime;
     s.stunTimer = 0;
+    s.boostTimer = 0;
 }
 
 function overlapsBlock( b: Block, s: SimShip, prevY: number, t: FlightTuning ): boolean {
@@ -289,7 +315,7 @@ export function simulate(
     dt: number,
     t: FlightTuning,
     track?: Track,
-    _cfg: SimConfig = DEFAULT_SIM_CONFIG,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
     world?: SimWorld,
 ): void {
     if ( s.dead ) {
@@ -302,9 +328,12 @@ export function simulate(
     }
 
     const control = s.stunTimer > 0 ? NEUTRAL_INPUT : input;
+    const push = boostThrust( s, input, t, cfg );
+    const cap = boostCap( s, t, cfg );
     if ( s.stunTimer > 0 ) s.stunTimer = Math.max( 0, s.stunTimer - dt );
+    if ( s.boostTimer > 0 ) s.boostTimer = Math.max( 0, s.boostTimer - dt );
 
-    applyLongitudinal( s, control, t, dt );
+    applyLongitudinal( s, control, t, dt, cap, push );
     applyStrafe( s, control, t, dt );
     applyJump( s, control, t, dt );
     applyGravity( s, t, dt );

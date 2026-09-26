@@ -113,13 +113,24 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
         finished: true,
         finishTime: 88,
         stunTimer: 0.9,
+        boostTimer: 1.1,
     };
     resetPlayerForRace( dirty, 3 );
     assert.equal( dirty.x, 3 * START_STAGGER );
     assert.equal( dirty.lastSafeX, 3 * START_STAGGER );
     assert.deepEqual(
-        [ dirty.y, dirty.z, dirty.vx, dirty.vy, dirty.vz, dirty.lastSafeZ, dirty.finishTime, dirty.stunTimer ],
-        [ 0, 0, 0, 0, 0, 0, 0, 0 ],
+        [
+            dirty.y,
+            dirty.z,
+            dirty.vx,
+            dirty.vy,
+            dirty.vz,
+            dirty.lastSafeZ,
+            dirty.finishTime,
+            dirty.stunTimer,
+            dirty.boostTimer,
+        ],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
     );
     assert.equal( dirty.finished, false );
     assert.equal( dirty.dead, false );

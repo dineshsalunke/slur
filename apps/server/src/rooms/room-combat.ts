@@ -20,6 +20,7 @@ import {
     type SimConfig,
     seekerShipsOf,
     spendPower,
+    startBoost,
     stunDurationForShip,
     type Track,
     tuningForShip,
@@ -48,6 +49,7 @@ export function firePower(
     if ( power === HeldPower.seeker ) fireSeeker( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.mine ) layMine( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.bolt ) fireBolt( ctx, id, p, ownerId, dir );
+    else if ( power === HeldPower.boost ) startBoost( p, ctx.config );
 }
 
 function fireBolt( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {

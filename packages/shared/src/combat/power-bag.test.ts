@@ -59,5 +59,8 @@ test( 'pickupPower reads the bag by ordinal and honours ratio overrides', () => 
     const bag = powerBag( 'a', 1 );
     for ( let i = 0; i < POWER_BAG_SIZE; i++ ) assert.equal( pickupPower( `${ POWER_BAG_SIZE + i }.a` ), bag[ i ] );
     assert.equal( pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 1 } ), HeldPower.seeker );
-    assert.equal( pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0 } ), HeldPower.bolt );
+    assert.equal(
+        pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0, boostRatio: 0 } ),
+        HeldPower.bolt,
+    );
 } );

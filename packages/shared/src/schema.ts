@@ -44,6 +44,7 @@ export class PlayerState extends Schema implements SimShip {
     @type( 'float32' ) stunTimer = 0;
     @type( 'uint8' ) heldPower = 0;
     @type( [ 'uint8' ] ) slots = new ArraySchema< number >( ...emptySlots() );
+    @type( 'float32' ) boostTimer = 0;
 }
 
 export class Projectile extends Schema implements ProjectileState {

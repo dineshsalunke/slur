@@ -2,7 +2,11 @@ import {
     BOLT_HALF,
     BOLT_SPEED,
     BOLT_TTL,
+    BOOST_EASE_S,
+    BOOST_GAIN,
     BOOST_RATIO,
+    BOOST_RISE_S,
+    BOOST_S,
     MINE_ARM_S,
     MINE_BACK_GAP,
     MINE_HALF,
@@ -76,6 +80,10 @@ export interface SimConfig {
     mineHalf: number;
     mineHeight: number;
     boostRatio: number;
+    boostGain: number;
+    boostS: number;
+    boostEaseS: number;
+    boostRiseS: number;
     shieldRatio: number;
 }
 
@@ -116,5 +124,9 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     mineHalf: MINE_HALF,
     mineHeight: MINE_HEIGHT,
     boostRatio: BOOST_RATIO,
+    boostGain: BOOST_GAIN,
+    boostS: BOOST_S,
+    boostEaseS: BOOST_EASE_S,
+    boostRiseS: BOOST_RISE_S,
     shieldRatio: SHIELD_RATIO,
 };
