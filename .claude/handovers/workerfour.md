@@ -1,4 +1,4 @@
-Agent: workerfour · Lane: #289 portal pickup (BC4) · Updated: 2026-09-26, night (seam at ~155k)
+Agent: workerfour · Lane: #289 portal pickup (BC4) · Updated: 2026-09-26, late night
 
 ## Goal
 
@@ -12,22 +12,24 @@ The teleport runs in the shared `simulate()`, so prediction replays it (BC4). Th
 - 6dd1368 — slice 1: `SimWorld.portals`, `portalHops` on the ship, the hop inside `simulate()`, replay test.
 - 664cc60 — slice 2: schema `Portal` + `RunState.portals`, `HeldPower.portal/portalB`, hop/fizzle messages,
   `run/portal-run.ts`, RunSim wiring. 10 tests.
-- 7857886 — slice 3: `state.portals` mirrors into `blockWorld.portals`; a predicted or reconciled hop snaps
-  `Prev`; remote interp holds across a hop (`Snapshot.hops`); spectator camera snaps on a >12u jump; `portals`
-  pickup bucket + ring body (`scene/portal-pickups/`); `PORTAL_RATIO` 0 → 0.1.
-- ff00915 — slice 4 part A: `scene/portal-field/` (instanced rings from `blockWorld.portals`; lone end dim at 0.7,
-  armed end of a pair pulses up to 3; ring centre at floor y + portalR). 4 tests. NOT MOUNTED yet.
+- 7857886 — slice 3: prediction mirror, hop snaps `Prev`, remote interp holds across a hop, spectator snap,
+  pickup ring body, `PORTAL_RATIO` 0.1.
+- ff00915 — slice 4 part A: `scene/portal-field/` instanced rings.
+- 3124971 — slice 4 part B: `<PortalField />` mounted after `<TugLine />`; hop → `pushHit` at from and to;
+  fizzle → `pushMineShock` kind 'fizzle'; HUD labels 'Portal' / 'Portal B'; gem glyph (ring + ellipses, portalB
+  adds a gold half); sfx `portalHop` (respawn.ogg ×1.6) and `portalFizzle` (death_derezz.ogg ×2.2), far gain
+  0.35 when not mine.
 
 ## State
 
-- At 7857886: typecheck 0, lint 0 errors, shared 479/479, client 437/437, server 40/40 (measured).
-- At ff00915: portal-field tests 4/4, biome clean, client tsc clean (measured). Full suite not rerun.
-- /test-level live at 7857886 (headless Playwright, closed): predicted hop t=409 ms, server hop 459 ms,
-  0 rollbacks, render z 71.1 → 124.1 in one frame; 6 of 55 pickups are portals.
-  Driver: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/ee7bc8d2-a8c1-4b32-ab2e-fcff8f221114/scratchpad/portal-check.mjs`
-  (run with `PW=$(ls -d ~/.npm/_npx/*/node_modules/playwright-core/index.mjs | head -1)`).
-- Owner decision: the loop rule stays as built (GDD §10 open question 8, 7980f45).
-- Tug S3 landed 86060aa (workertwo). Part B files are free and CLEARED by the supervisor.
+- At 3124971: typecheck 0, lint exit 0 (7 warnings, none in my files), shared 479/479, client 441/441,
+  server 40/40 (measured).
+- /test-level live at 3124971 (headless Playwright, closed): HUD shows PORTAL then PORTAL B with glyph; lone end
+  dim in the rear-view mirror; armed pair end bright ahead; predicted hop at 1995 ms; hop spark at the nose.
+- Camera passing the exit ring blooms the whole frame orange for < ~150 ms (mean R 80 → 32 by the next
+  sample). Reads as a hop flash; left as is, flagged to the supervisor.
+- Driver: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/09237488-4137-4c80-a874-628b95d47f69/scratchpad/partb.mjs`
+  (+ `partb2.mjs` for the tint series). Run with `PW=$(ls -d ~/.npm/_npx/*/node_modules/playwright-core/index.mjs | head -1)`.
 
 ## Uncommitted
 
@@ -35,33 +37,17 @@ None of mine.
 
 ## Held files
 
-Part B is cleared (supervisor), not yet edited:
-- apps/client/app/game/net-canvas.tsx
-- apps/client/app/net/attach-room-to-world.ts
-- apps/client/app/game/hud/power-cell/power-cell.constants.ts
-- apps/client/app/game/hud/power-gem/gem-glyph.tsx (NEW since tug; replaces power-gem.tsx in the claim — tell
-  the supervisor) + power-gem.constants.ts
-- apps/client/app/audio/sfx-map.ts, apps/client/app/audio/bind-room-audio.ts
+None. Part B files released. S5 claim pending: docs/GDD.md (§5.3, §5.7 BC4 LIVE), docs/DECISIONS.md (ADR).
 
 ## Next
 
-1. Tell the supervisor the claim swaps `power-gem.tsx` → `hud/power-gem/gem-glyph.tsx` (workertwo moved the
-   glyphs there; add `case HeldPower.portal:` and `case HeldPower.portalB:`).
-2. Part B:
-   - net-canvas.tsx: mount `<PortalField />` after `<TugLine />` (which follows `<MineShock />`).
-   - attach-room-to-world.ts: `PORTAL_HOP_MESSAGE` → `pushHit` at from and to; `PORTAL_FIZZLE_MESSAGE` →
-     `pushMineShock( { x, y, z, kind: 'fizzle' } )`. Add both offs to the cleanup, next to offTug.
-   - power-cell.constants.ts LABEL: portal 'Portal', portalB 'Portal B' (or 'Exit').
-   - gem-glyph.tsx: ring glyph (circle stroke marigold + inner gold ring); portalB with a filled half.
-   - sfx-map.ts: `portalHop`, `portalFizzle` reusing existing .ogg with rate/gain; bind-room-audio.ts: onMessage
-     both, off in cleanup.
-3. Full `pnpm typecheck && pnpm lint && pnpm test`, then /test-level live: rings visible (screenshot), hop spark.
-   Commit by pathspec, message workertwo + supervisor.
-4. Slice 5: GDD §5.3 + §5.7 BC4 LIVE, ADR, then `gh issue close 289 -c "<what + SHA>"`.
+1. On the supervisor's clear: `git pull` (tug 387302c touched GDD §5.3 bag line + §5.7), then GDD §5.3 portal
+   block, §5.7 BC4 → LIVE, ADR in DECISIONS.md. Quote before changing.
+2. `gh issue close 289 -c "<what + SHAs>"`.
 
 ## Open questions
 
-- none.
+- Keep the exit-ring flash, or dim the exit end once hopped? (supervisor/owner)
 
 ## Lessons → memory
 
