@@ -20,7 +20,6 @@ import {
     MAX_SHIP_WIDTH,
     PHASE,
     PICKUP_RESPAWN_S,
-    type PlayerQueue,
     type PlayerState,
     POWER_SLOTS,
     pickupLayout,
@@ -42,13 +41,9 @@ import { RunRoom } from './run-room.js';
 
 const AIM_BACK = 5;
 
-interface FixedStepRoom {
-    fixedStep( dt: number ): void;
-}
-
 function tick( room: RunRoom, seconds: number ): void {
     const steps = Math.round( seconds / FIXED_DT );
-    for ( let i = 0; i < steps; i++ ) ( room as unknown as FixedStepRoom ).fixedStep( FIXED_DT );
+    for ( let i = 0; i < steps; i++ ) room.sim.fixedStep( FIXED_DT );
 }
 
 function playerOf( room: RunRoom, sessionId: string ): PlayerState {
@@ -208,9 +203,7 @@ describe( 'RunRoom combat', () => {
         } );
         host.onMessage( BOUNCE_MESSAGE, () => {} );
 
-        const queue = ( room as unknown as { queues: Map< string, PlayerQueue > } ).queues.get(
-            host.sessionId,
-        )?.inputs;
+        const queue = room.sim.queues.get( host.sessionId )?.inputs;
         assert.ok( queue, 'the racer has an input queue' );
         for ( let i = 0; i < 6; i++ ) queue.push( { ...emptyInput( i ), throttle: 1 } );
         tick( room, 6 * FIXED_DT );
@@ -225,7 +218,7 @@ describe( 'RunRoom combat', () => {
     test( 'a stall backlog is stepped, not dropped, and drains back to the target', async () => {
         const { room, host } = await racingRoom( 1 );
         const racer = playerOf( room, host.sessionId );
-        const queue = ( room as unknown as { queues: Map< string, PlayerQueue > } ).queues.get( host.sessionId );
+        const queue = room.sim.queues.get( host.sessionId );
         assert.ok( queue, 'the racer has an input queue' );
         const base = racer.lastProcessedInput;
         for ( let i = 1; i <= 24; i++ ) queue.inputs.push( { ...emptyInput( base + i ), throttle: 1 } );
@@ -237,7 +230,7 @@ describe( 'RunRoom combat', () => {
     test( 'a fire ahead of the processed input waits for that input, then fires', async () => {
         const { room, host } = await racingRoom( 1 );
         const shooter = playerOf( room, host.sessionId );
-        const queue = ( room as unknown as { queues: Map< string, PlayerQueue > } ).queues.get( host.sessionId );
+        const queue = room.sim.queues.get( host.sessionId );
         assert.ok( queue, 'the racer has an input queue' );
         arm( shooter, HeldPower.bolt );
         const base = shooter.lastProcessedInput;
@@ -489,7 +482,7 @@ describe( 'RunRoom combat', () => {
         tick( room, 0.1 );
         assert.equal( room.state.blockBroken.size, 1, 'precondition: one block is broken' );
 
-        ( room as unknown as { resetToLobby(): void } ).resetToLobby();
+        room.sim.resetToLobby();
 
         assert.equal( room.state.blockBroken.size, 0, 'a broken block survived the reset' );
     } );

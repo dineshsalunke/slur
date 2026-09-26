@@ -22,14 +22,9 @@ import {
 } from '@slur/shared';
 import { RunRoom } from './run-room.js';
 
-interface FixedStepRoom {
-    fixedStep( dt: number ): void;
-    clearCombat(): void;
-}
-
 function tick( room: RunRoom, seconds: number ): void {
     const steps = Math.round( seconds / FIXED_DT );
-    for ( let i = 0; i < steps; i++ ) ( room as unknown as FixedStepRoom ).fixedStep( FIXED_DT );
+    for ( let i = 0; i < steps; i++ ) room.sim.fixedStep( FIXED_DT );
 }
 
 function playerOf( room: RunRoom, sessionId: string ): PlayerState {
@@ -225,7 +220,7 @@ describe( 'RunRoom mines', () => {
 
     test( 'clearing combat removes every mine', async () => {
         const { room, host } = await layingRoom();
-        ( room as unknown as FixedStepRoom ).clearCombat();
+        room.sim.clearCombat();
         await delay( 100 );
         assert.equal( room.state.mines.size, 0 );
         assert.equal( host.state.mines.size, 0 );

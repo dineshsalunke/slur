@@ -93,6 +93,15 @@ export function stepCombat( ctx: CombatContext, dt: number ): void {
     );
     stepMines( state.mines, seekerShips, dt, onMine, config );
     stepPickups( state.players.values(), ctx.pickups, state.pickupTaken, ctx.pickupRespawn, dt, config );
+    mirrorBreaks( state, broken );
+}
+
+function mirrorBreaks( state: RunState, broken: ReadonlySet< number > ): void {
+    if ( broken.size === state.blockBroken.size ) return;
+    for ( const id of broken ) {
+        const key = String( id );
+        if ( ! state.blockBroken.has( key ) ) state.blockBroken.set( key, true );
+    }
 }
 
 function fireBolt( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {

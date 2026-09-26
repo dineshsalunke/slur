@@ -26,14 +26,9 @@ import {
 } from '@slur/shared';
 import { RunRoom } from './run-room.js';
 
-interface CombatRoom {
-    fixedStep( dt: number ): void;
-    clearCombat(): void;
-}
-
 function tick( room: RunRoom, seconds: number ): void {
     const steps = Math.round( seconds / FIXED_DT );
-    for ( let i = 0; i < steps; i++ ) ( room as unknown as CombatRoom ).fixedStep( FIXED_DT );
+    for ( let i = 0; i < steps; i++ ) room.sim.fixedStep( FIXED_DT );
 }
 
 function playerOf( room: RunRoom, sessionId: string ): PlayerState {
@@ -178,7 +173,7 @@ describe( 'RunRoom shield', () => {
 
         victim.dead = false;
         await raise();
-        ( room as unknown as CombatRoom ).clearCombat();
+        room.sim.clearCombat();
         assert.equal( victim.shielded, false );
         assert.equal( victim.shieldTimer, 0 );
     } );
