@@ -18,7 +18,18 @@ test( 'pickup power is stable and near seekerRatio', () => {
     const seekers = ids.filter( ( id ) => pickupPower( id ) === HeldPower.seeker ).length;
     assert.ok( Math.abs( seekers / ids.length - DEFAULT_SIM_CONFIG.seekerRatio ) < 0.07, `ratio ${ seekers / 400 }` );
     assert.equal( pickupPower( '17' ), pickupPower( '17' ) );
-    assert.equal( pickupPower( '17', { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0 } ), HeldPower.bolt );
+    assert.equal(
+        pickupPower( '17', {
+            ...DEFAULT_SIM_CONFIG,
+            seekerRatio: 0,
+            mineRatio: 0,
+            boostRatio: 0,
+            shieldRatio: 0,
+            portalRatio: 0,
+            tugRatio: 0,
+        } ),
+        HeldPower.bolt,
+    );
     assert.equal( pickupPower( '17', { ...DEFAULT_SIM_CONFIG, seekerRatio: 1 } ), HeldPower.seeker );
 } );
 

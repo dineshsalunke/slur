@@ -10,6 +10,7 @@ import {
     type SeekerState,
     SHIELD_POP_MESSAGE,
     type Track,
+    TUG_MESSAGE,
 } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
@@ -38,6 +39,7 @@ import { clearPickupState, markPickup } from '../game/pickup-state';
 import { pushHit } from '../game/scene/hit-events';
 import { burstMine } from '../game/scene/mine-shock-events';
 import { launchMine } from '../game/scene/mine-shots';
+import { pushTug } from '../game/scene/tug-events';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
 import type { RunRoomLike } from './run-room-like';
@@ -245,6 +247,7 @@ export function attachRoomToWorld(
     } );
 
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, burstMine );
+    const offTug = room.onMessage( TUG_MESSAGE, pushTug );
 
     const offPortalAdd = $( room.state ).portals.onAdd( ( p, id ) => blockWorld.portals.set( id, p ) );
     const offPortalRemove = $( room.state ).portals.onRemove( ( _p, id ) => blockWorld.portals.delete( id ) );
@@ -288,6 +291,7 @@ export function attachRoomToWorld(
         offMineAdd();
         offMineRemove();
         offMineBurst();
+        offTug();
         offPortalAdd();
         offPortalRemove();
         offHit();

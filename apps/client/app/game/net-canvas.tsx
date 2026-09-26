@@ -29,6 +29,7 @@ import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
 import { RearView } from './scene/rear-view';
 import { SeekerField } from './scene/seeker-field';
+import { TugLine } from './scene/tug-line/tug-line';
 import { WorldScene } from './scene/world-scene';
 import { TrackContext } from './track-context/track-context.constants';
 
@@ -71,6 +72,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <SeekerField />
                             <MineField />
                             <MineShock />
+                            <TugLine />
                             <RearView />
                             <GameAudio />
                             <RemoteEngineAudio />

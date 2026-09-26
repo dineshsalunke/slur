@@ -8,6 +8,8 @@ import {
     SEEKER_HIT_MESSAGE,
     type SeekerState,
     SHIELD_POP_MESSAGE,
+    TUG_MESSAGE,
+    type TugEvent,
 } from '@slur/shared';
 import type { RunRoomLike } from '../net/run-room-like';
 import { stateCallbacks } from '../net/state-callbacks';
@@ -20,6 +22,16 @@ const THREAT_X = 8;
 const MINE_FAR_GAIN = 0.6;
 const FAR_GAIN = { mineBurst: 0.85 * MINE_FAR_GAIN, mineFizzle: 0.55 * MINE_FAR_GAIN } as const;
 const BOOST_EDGE_S = 0.05;
+const TUG_RATE = 0.7;
+const TUG_FAR_GAIN = 0.4;
+
+export function playTugEvent( e: TugEvent, me: string ): void {
+    if ( e.targetId === me ) {
+        playSfx( 'stun' );
+        return;
+    }
+    playSfx( 'seekerFire', e.ownerId === me ? { rate: TUG_RATE } : { rate: TUG_RATE, gain: TUG_FAR_GAIN } );
+}
 
 export function playMineEvent( e: MineEvent, me: string ): void {
     const near = e.outcome === 'trigger' || ( e.outcome === 'fizzle' && e.ownerId === me );
@@ -155,6 +167,7 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
     const offSeekerHit = room.onMessage( SEEKER_HIT_MESSAGE, () => playSfx( 'seekerHit' ) );
     const offShieldPop = room.onMessage( SHIELD_POP_MESSAGE, () => playSfx( 'shieldPop' ) );
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) => playMineEvent( e, me ) );
+    const offTug = room.onMessage( TUG_MESSAGE, ( e: TugEvent ) => playTugEvent( e, me ) );
 
     let prevPhase = room.state.phase;
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
@@ -180,6 +193,7 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
         offSeekerHit();
         offShieldPop();
         offMineBurst();
+        offTug();
         offPhase();
         offCd();
         for ( const off of perPlayer.values() ) off();

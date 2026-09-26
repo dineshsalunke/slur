@@ -7,37 +7,32 @@ import { bagCounts, longestRun, POWER_BAG_SIZE, POWER_RUN_CAP, powerBag } from '
 
 const SALTS = [ '', 'a', 'x9k2', '1pq0zz', 'groove' ];
 
-test( 'the default bag deals 5 bolts, 3 seekers, 4 mines, 3 boosts, 3 shields and 2 portals, and no tugs yet', () => {
+test( 'the default bag deals 4 bolts, 3 seekers, 3 mines, 3 boosts, 3 shields, 2 portals and 2 tugs', () => {
     assert.deepEqual( bagCounts(), [
-        { power: HeldPower.bolt, count: 5 },
+        { power: HeldPower.bolt, count: 4 },
         { power: HeldPower.seeker, count: 3 },
-        { power: HeldPower.mine, count: 4 },
-        { power: HeldPower.boost, count: 3 },
-        { power: HeldPower.shield, count: 3 },
-        { power: HeldPower.portal, count: 2 },
-    ] );
-} );
-
-test( 'a 0.1 portal ratio deals 2 portals out of the bolts', () => {
-    assert.deepEqual( bagCounts( { ...DEFAULT_SIM_CONFIG, portalRatio: 0.1 } ), [
-        { power: HeldPower.bolt, count: 5 },
-        { power: HeldPower.seeker, count: 3 },
-        { power: HeldPower.mine, count: 4 },
-        { power: HeldPower.boost, count: 3 },
-        { power: HeldPower.shield, count: 3 },
-        { power: HeldPower.portal, count: 2 },
-    ] );
-} );
-
-test( 'a 0.1 tug ratio deals 2 tugs out of the bolts, after the portals', () => {
-    assert.deepEqual( bagCounts( { ...DEFAULT_SIM_CONFIG, portalRatio: 0.1, tugRatio: 0.1 } ), [
-        { power: HeldPower.bolt, count: 3 },
-        { power: HeldPower.seeker, count: 3 },
-        { power: HeldPower.mine, count: 4 },
+        { power: HeldPower.mine, count: 3 },
         { power: HeldPower.boost, count: 3 },
         { power: HeldPower.shield, count: 3 },
         { power: HeldPower.portal, count: 2 },
         { power: HeldPower.tug, count: 2 },
+    ] );
+} );
+
+test( 'bolt stays the largest share of the default bag', () => {
+    const counts = bagCounts();
+    const bolt = counts.find( ( c ) => c.power === HeldPower.bolt )?.count ?? 0;
+    for ( const c of counts ) if ( c.power !== HeldPower.bolt ) assert.ok( c.count < bolt, `power ${ c.power }` );
+} );
+
+test( 'with no tugs, the 2 tugs go back to the bolts', () => {
+    assert.deepEqual( bagCounts( { ...DEFAULT_SIM_CONFIG, tugRatio: 0 } ), [
+        { power: HeldPower.bolt, count: 6 },
+        { power: HeldPower.seeker, count: 3 },
+        { power: HeldPower.mine, count: 3 },
+        { power: HeldPower.boost, count: 3 },
+        { power: HeldPower.shield, count: 3 },
+        { power: HeldPower.portal, count: 2 },
     ] );
 } );
 

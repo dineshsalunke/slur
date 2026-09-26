@@ -9,6 +9,7 @@ import { PortalPickups } from './portal-pickups/portal-pickups';
 import { SeekerPickups } from './seeker-pickups/seeker-pickups';
 import { splitPickupLayout } from './seeker-pickups/seeker-pickups.utils';
 import { ShieldPickups } from './shield-pickups/shield-pickups';
+import { TugPickups } from './tug-pickups/tug-pickups';
 
 export function PickupField() {
     const track = useTrack();
@@ -22,6 +23,7 @@ export function PickupField() {
             <BoostPickups layout={ layout.boosts } isTaken={ isPickupTaken } />
             <ShieldPickups layout={ layout.shields } isTaken={ isPickupTaken } />
             <PortalPickups layout={ layout.portals } isTaken={ isPickupTaken } />
+            <TugPickups layout={ layout.tugs } isTaken={ isPickupTaken } />
         </Fragment>
     );
 }

@@ -1,6 +1,6 @@
 export const TUG_MESSAGE = 'tug';
 
-export const TUG_RATIO = 0;
+export const TUG_RATIO = 0.1;
 export const TUG_RANGE = 150;
 export const TUG_KICK = 40;
 export const TUG_S = 0.6;

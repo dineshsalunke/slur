@@ -66,7 +66,7 @@ export const SEEKER_SPAWN_AHEAD = 3;
 
 export const MINE_BURST_MESSAGE = 'mineBurst';
 
-export const MINE_RATIO = 0.2;
+export const MINE_RATIO = 0.15;
 export const MINE_LEAD_S = 0.8;
 export const MINE_BACK_GAP = 1;
 export const MINE_ARM_S = 0.5;

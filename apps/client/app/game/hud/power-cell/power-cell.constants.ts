@@ -6,4 +6,5 @@ export const LABEL: Record< number, string > = {
     [ HeldPower.mine ]: 'Mine',
     [ HeldPower.boost ]: 'Boost',
     [ HeldPower.shield ]: 'Shield',
+    [ HeldPower.tug ]: 'Tug',
 };
