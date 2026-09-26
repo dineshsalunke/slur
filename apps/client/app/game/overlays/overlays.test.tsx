@@ -9,7 +9,17 @@ import { bus, send } from './test-room';
 
 vi.mock( '@colyseus/sdk', async () => ( await import( './test-room' ) ).sdkMock );
 
-const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0 } ) );
+const counts = vi.hoisted( () => ( { LeaveGuard: 0, SpecTag: 0, Roster: 0, ConnectionNotice: 0 } ) );
+
+vi.mock( './connection-notice', async ( importOriginal ) => {
+    const actual = await importOriginal< typeof import('./connection-notice') >();
+    return {
+        ConnectionNotice: () => {
+            counts.ConnectionNotice += 1;
+            return actual.ConnectionNotice();
+        },
+    };
+} );
 
 vi.mock( './spec-tag', async ( importOriginal ) => {
     const actual = await importOriginal< typeof import('./spec-tag') >();
@@ -34,9 +44,9 @@ vi.mock( './roster/roster', async ( importOriginal ) => {
 vi.mock( './leave-guard', async ( importOriginal ) => {
     const actual = await importOriginal< typeof import('./leave-guard') >();
     return {
-        LeaveGuard: ( props: Parameters< typeof actual.LeaveGuard >[ 0 ] ) => {
+        LeaveGuard: () => {
             counts.LeaveGuard += 1;
-            return actual.LeaveGuard( props );
+            return actual.LeaveGuard();
         },
     };
 } );
@@ -46,6 +56,7 @@ beforeEach( () => {
     counts.LeaveGuard = 0;
     counts.SpecTag = 0;
     counts.Roster = 0;
+    counts.ConnectionNotice = 0;
     send.mockClear();
 } );
 
@@ -87,6 +98,19 @@ describe( 'Overlays subscription boundary (#91)', () => {
 
         expect( container.textContent ).toContain( 'Spectating' );
         expect( counts.LeaveGuard ).toBe( 0 );
+    } );
+
+    it( 'swaps the phase overlays without re-rendering a sibling outside the gates (#277)', async () => {
+        await mountOverlays();
+        counts.ConnectionNotice = 0;
+        counts.LeaveGuard = 0;
+
+        await act( async () => {
+            bus.emitRoot( 'phase', PHASE.finished );
+        } );
+
+        expect( counts.LeaveGuard ).toBeGreaterThan( 0 );
+        expect( counts.ConnectionNotice ).toBe( 0 );
     } );
 } );
 

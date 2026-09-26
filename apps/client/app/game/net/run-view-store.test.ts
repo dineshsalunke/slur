@@ -1,6 +1,6 @@
 import { PHASE } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
-import { EMPTY_RUN, readRun } from './run-view-store';
+import { EMPTY_RUN, readRun, runViewStore } from './run-view-store';
 
 function racer( z: number, name = 'Racer' ) {
     return {
@@ -72,5 +72,15 @@ describe( 'readRun (#274)', () => {
         const next = readRun( roomWith( 3, [ [ 'a', racer( 0, 'Ada' ) ] ] ), first );
         expect( next.players ).not.toBe( first.players );
         expect( next.players[ 0 ].name ).toBe( 'Ada' );
+    } );
+} );
+
+describe( 'runViewStore first snapshot (#277)', () => {
+    it( 'reads the live phase before any subscriber attaches, so a mid-race joiner never sees the lobby', () => {
+        const room = {
+            sessionId: 'a',
+            state: { phase: PHASE.racing, countdown: 0, hostId: 'a', players: new Map() },
+        } as never;
+        expect( runViewStore( room ).snapshot().phase ).toBe( PHASE.racing );
     } );
 } );

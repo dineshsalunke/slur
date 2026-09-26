@@ -2,10 +2,13 @@ import { PHASE } from '@slur/shared';
 import { useEffect } from 'react';
 import { useBlocker } from 'react-router';
 import { useConnectionStatus } from '../../net/connection-status';
+import { useRoom } from '../../net/room-context/use-room';
 import { HudButton } from '../../ui/hud-button/hud-button';
 import { HudPanel } from '../../ui/hud-panel/hud-panel';
+import { useRunPhase } from '../net/run-view-store';
 
-export function LeaveGuard( { phase }: { phase: number } ) {
+export function LeaveGuard() {
+    const phase = useRunPhase( useRoom() );
     const connected = useConnectionStatus() !== 'lost';
     const racing = phase === PHASE.racing && connected;
     const blocker = useBlocker( racing );

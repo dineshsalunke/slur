@@ -1,7 +1,13 @@
-import { PHASE } from '@slur/shared';
 import { Fragment } from 'react';
 import { useRoom } from '../../net/room-context/use-room';
-import { useRunPhase } from '../net/run-view-store';
+import { PhaseGate } from '../phase-gate/phase-gate';
+import {
+    COUNTDOWN_PHASES,
+    FINISHED_PHASES,
+    LOBBY_PHASES,
+    ON_TRACK_PHASES,
+    RACING_PHASES,
+} from '../phase-gate/phase-gate.constants';
 import { AudioToggle } from './audio-toggle';
 import { ConnectionNotice } from './connection-notice';
 import { CountdownOverlay } from './countdown-overlay';
@@ -16,25 +22,32 @@ import { ThreatHud } from './threat-hud/threat-hud';
 
 export function Overlays() {
     const room = useRoom();
-    const phase = useRunPhase( room );
     return (
         <Fragment>
-            <LeaveGuard phase={ phase } />
+            <LeaveGuard />
             <ConnectionNotice />
 
-            { ( phase === PHASE.countdown || phase === PHASE.racing ) && (
+            <PhaseGate phases={ ON_TRACK_PHASES }>
                 <div className="fixed top-[clamp(16px,4.4vh,46px)] right-[clamp(16px,2.7vw,48px)] z-[26] flex items-center gap-2">
                     <FullscreenToggle />
                     <AudioToggle />
                     <LeaveButton tone="ghost" />
                 </div>
-            ) }
-            { ( phase === PHASE.countdown || phase === PHASE.racing ) && <RotateHint /> }
-            { phase === PHASE.lobby && <LobbyOverlay room={ room } /> }
-            { phase === PHASE.countdown && <CountdownOverlay room={ room } /> }
-            { phase === PHASE.racing && <SpectatorGate room={ room } /> }
-            { phase === PHASE.racing && <ThreatHud room={ room } /> }
-            { phase === PHASE.finished && <ResultsOverlay room={ room } /> }
+                <RotateHint />
+            </PhaseGate>
+            <PhaseGate phases={ LOBBY_PHASES }>
+                <LobbyOverlay room={ room } />
+            </PhaseGate>
+            <PhaseGate phases={ COUNTDOWN_PHASES }>
+                <CountdownOverlay room={ room } />
+            </PhaseGate>
+            <PhaseGate phases={ RACING_PHASES }>
+                <SpectatorGate room={ room } />
+                <ThreatHud room={ room } />
+            </PhaseGate>
+            <PhaseGate phases={ FINISHED_PHASES }>
+                <ResultsOverlay room={ room } />
+            </PhaseGate>
         </Fragment>
     );
 }

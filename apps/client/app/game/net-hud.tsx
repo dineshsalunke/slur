@@ -1,23 +1,22 @@
-import { PHASE } from '@slur/shared';
-import { Fragment } from 'react';
 import { useRoom } from '../net/room-context/use-room';
 import { HudLayer } from './hud/hud-layer';
-import { NetPilotReadout } from './hud/net-pilot-readout';
+import { NetFlightReadout } from './hud/net-flight-readout';
+import { NetPowerRack } from './hud/net-power-rack';
 import { NetRoster } from './hud/net-roster';
 import { TouchPad } from './hud/touch-pad';
-import { useRunPhase } from './net/run-view-store';
+import { PhaseGate } from './phase-gate/phase-gate';
+import { ON_TRACK_PHASES } from './phase-gate/phase-gate.constants';
 
 export function NetHud() {
     const room = useRoom();
-    const phase = useRunPhase( room );
-    if ( phase !== PHASE.countdown && phase !== PHASE.racing ) return null;
     return (
-        <Fragment>
+        <PhaseGate phases={ ON_TRACK_PHASES }>
             <HudLayer>
                 <NetRoster room={ room } />
-                <NetPilotReadout room={ room } />
+                <NetFlightReadout room={ room } />
+                <NetPowerRack room={ room } />
             </HudLayer>
             <TouchPad />
-        </Fragment>
+        </PhaseGate>
     );
 }
