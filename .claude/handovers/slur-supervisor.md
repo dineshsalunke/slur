@@ -38,14 +38,14 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 |---|---|---|---|---|
 | workerone | w2P:pD | none | cleared, idle | none |
 | workertwo | w2P:pF | none (#283 moves done; last step handed to workerfive) | idle | none |
-| workerthree | w2P:pG | #169 rail bounce: PLAN first (≥5 options, tunables, lockstep) → owner | resumed | claim pending |
+| workerthree | w2P:pG | none (#169 stopped: owner says #160/#161/#169 already done; closed) | idle | none |
 | workerfour | w2P:pH | #287 remove /pacing + DEFAULT_TRACK_GEN=groove, closes #246 | resumed | claim pending |
 | workerfive | w2P:pK | #269 boost blur + 3u pull-back (OWNER APPROVED) + scene-effects colocation, grit → error, close #283 | building | camera/chase.ts, dev/tuning-schema.ts, dev/tuning-panel/tuning-panel.tsx, game/scene/scene-effects/**, new boost-blur/*, camera/boost-surplus.ts(+test), world-scene.tsx + landing-scene.tsx import lines, biome.json |
 
 ## Open owner questions
 
-1. #169 plan from workerthree → relay to owner before build.
-2. Idle: workerone, workertwo. Candidates #160/#161 (rail visuals), #248 (procgen shadow rule).
+1. #160 #161 #169 were already done (owner); closed with a comment. Stale open issues exist: check before assigning.
+2. Idle: workerone, workertwo, workerthree. Candidate left: #248 (procgen shadow rule).
 3. Older: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle.
 
 ## Next
