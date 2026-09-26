@@ -34,7 +34,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #304 DONE + CLOSED (loop passes; zoom 249d47f; handover 9d24e17) | CLEARED 0%, idle, no lane | none |
+| workerone | w2P:pD | #304 REOPENED: eraser must subtract cells, not delete whole rects (owner bug on phrase gap) | cleared + resumed, working | track-editor.utils.ts, track-editor.utils.test.ts, own handover |
 | workertwo | w2P:pF | #304 data side DONE: 5165d46, d382904, 6982014, sim freeze 12a91b7 (handover de3856b) | CLEARED 0%, idle, no lane | none |
 | workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded) | idle; OWNER: HOLD S4 until authored tracks exist (2026-09-27) | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
@@ -56,6 +56,11 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 - **#304 split (owner: 2 workers, talk only when needed, clean pushed tree before handover — done).**
 - **#304 editor (owner, 2026-09-27):** throwaway top-down editor on /test-level; blocks (destructible/solid)
   + gaps; snap 1/2/4u; Edit → Save → Play loop; saved tracks = repo files for designing the generator.
+- **#304 editor** shipped 5165d46, d382904, 6982014, 0130a63, 12a91b7 (sim freeze), 249d47f (zoom 25–800%).
+  Reopened for the eraser fix; workerone closes it again with the SHA.
+- **Untracked `tracks/groove-20260921-decompiled.json`** (saved 02:19): asked the owner if it is theirs →
+  commit if yes, delete if not. Unanswered.
+- **MEMORY.md is 20.7 KB** (hook read limit 24.4 KB; compact to < 17 KB). Supervisor job, not started.
 - **Readability, still to ask the owner:** marigold glow on post faces; posts below camera eye line; floor
   chevrons at gaps. Owner stopped the multi-select to clarify spacing first.
 
