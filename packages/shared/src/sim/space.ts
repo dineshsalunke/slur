@@ -125,9 +125,16 @@ export interface ProcgenDescriptor {
     gen?: TrackGen;
 }
 
-export const TRACK_GENS = [ 'weave', 'score', 'groove' ] as const;
+export const TRACK_GENS = [ 'weave', 'score', 'groove', 'phrase' ] as const;
 
 export type TrackGen = ( typeof TRACK_GENS )[ number ];
+
+export const TRACK_GEN_SEGMENTS: Readonly< Record< TrackGen, number > > = {
+    weave: TRACK_SEGMENTS,
+    score: TRACK_SEGMENTS,
+    groove: TRACK_SEGMENTS,
+    phrase: 600,
+};
 
 export const DEFAULT_TRACK_GEN: TrackGen = 'groove';
 

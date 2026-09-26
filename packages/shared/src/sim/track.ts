@@ -8,6 +8,7 @@ import { grooveTrack } from './groove/groove-track.js';
 import { flickRate, intensityAt, spacingSegments, wallDensity } from './intensity.js';
 import { abutAcrossBoundary, mergeCloseBlocks } from './merge-blocks.js';
 import { valueNoise2D } from './noise.js';
+import { phraseTrack } from './phrase/phrase-track.js';
 import { placePickups } from './pickup-place.js';
 import { hash2, mulberry32 } from './rng.js';
 import { scoreTrack, segmentsTrack } from './score/emit.js';
@@ -25,7 +26,7 @@ import {
     SEG_LEN,
     type Segment,
     START_SAFE,
-    TRACK_SEGMENTS,
+    TRACK_GEN_SEGMENTS,
     type Track,
     type TrackDensity,
 } from './space.js';
@@ -170,9 +171,10 @@ function mergedSegment( seed: number, i: number, length: number, density: TrackD
 
 export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
     const seed = d.seed;
-    const length = d.length || TRACK_SEGMENTS;
+    const length = d.length || TRACK_GEN_SEGMENTS[ d.gen ?? 'weave' ];
     if ( d.gen === 'score' ) return scoreTrack( seed, length );
     if ( d.gen === 'groove' ) return grooveTrack( seed, length );
+    if ( d.gen === 'phrase' ) return phraseTrack( seed, length );
     const density: TrackDensity = {
         blocks: d.blockDensity ?? FULL_DENSITY.blocks,
         gaps: d.gapChance ?? FULL_DENSITY.gaps,

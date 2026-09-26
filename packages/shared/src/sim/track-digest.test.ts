@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
-import { type Anchor, LEAD_SEGMENTS, type Segment, TRACK_SEGMENTS, type TrackGen } from './space.js';
+import { type Anchor, LEAD_SEGMENTS, type Segment, TRACK_GENS, type TrackGen } from './space.js';
 import { procgenDescriptor, resolveTrack } from './track-provider.js';
 
 const DIGEST_SEEDS = [ 1, 7, 42, 1337, 24301 ];
 
-const FROZEN: Record< 'weave' | 'groove', Record< number, string > > = {
+const FROZEN: Partial< Record< TrackGen, Record< number, string > > > = {
     weave: {
         1: 'c78e794b40a4db08',
         7: '4bf512943bec56be',
@@ -21,6 +21,13 @@ const FROZEN: Record< 'weave' | 'groove', Record< number, string > > = {
         1337: '7c616791fa3b1370',
         24301: 'c04d9939218a97d6',
     },
+    phrase: {
+        1: '71dd208878ebbb8e',
+        7: '9a9add15e484f2c5',
+        42: '46d14fc30f2a4183',
+        1337: '8c95a596639b9b88',
+        24301: 'f72593edf3e6e9d7',
+    },
 };
 
 function segmentLine( s: Segment ): string {
@@ -34,18 +41,21 @@ function anchorLine( a: Anchor ): string {
 }
 
 function trackDigest( gen: TrackGen, seed: number ): string {
-    const track = resolveTrack( procgenDescriptor( seed, gen ) );
+    const descriptor = procgenDescriptor( seed, gen );
+    const length = descriptor.kind === 'procgen' ? descriptor.length : 0;
+    const track = resolveTrack( descriptor );
     const hash = createHash( 'sha256' );
-    for ( let i = -LEAD_SEGMENTS - 2; i < TRACK_SEGMENTS + 2; i++ )
-        hash.update( `${ segmentLine( track.segmentAt( i ) ) }\n` );
+    for ( let i = -LEAD_SEGMENTS - 2; i < length + 2; i++ ) hash.update( `${ segmentLine( track.segmentAt( i ) ) }\n` );
     hash.update( `finish ${ track.finishZ }\n` );
     for ( const a of track.anchors ) hash.update( `${ anchorLine( a ) }\n` );
     return hash.digest( 'hex' ).slice( 0, 16 );
 }
 
-for ( const gen of [ 'weave', 'groove' ] as const ) {
+for ( const gen of TRACK_GENS ) {
+    const frozen = FROZEN[ gen ];
+    if ( frozen === undefined ) continue;
     test( `${ gen } geometry matches its frozen digest on every fixed seed`, () => {
         const actual = Object.fromEntries( DIGEST_SEEDS.map( ( seed ) => [ seed, trackDigest( gen, seed ) ] ) );
-        assert.deepEqual( actual, FROZEN[ gen ] );
+        assert.deepEqual( actual, frozen );
     } );
 }

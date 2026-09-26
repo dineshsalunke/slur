@@ -69,7 +69,7 @@ function clipZ( o: GrooveObstacle, z0: number, z1: number ): GrooveObstacle | nu
     return hi > lo ? { ...o, z0: lo, z1: hi } : null;
 }
 
-function segmentOf( i: number, obstacles: readonly GrooveObstacle[] ): Segment {
+export function segmentOf( i: number, obstacles: readonly GrooveObstacle[] ): Segment {
     const z0 = i * SEG_LEN;
     const z1 = z0 + SEG_LEN;
     const base = { index: i, z0, z1, isFinish: false };
