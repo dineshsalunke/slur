@@ -65,6 +65,8 @@ Portal S1 DONE 6dd1368 (pushed; hop inside simulate()). workerfour cleared + res
 Portal+RunState.portals, combat/constants.ts, run/combat.ts, power-bag.ts, run-sim.ts, run/portal-run.ts; bag
 bolt5 seeker3 mine4 boost3 shield3 portal2). It messages workertwo + me on commit. workertwo is cleared and idle:
 its message may sit unread — resume it via herdr (line above).
+Portal S2: extra claim CLEARED (seeker-pickups.tsx/.utils.ts/.test.ts, pickup-field.tsx). My decision: S2 ships
+portalRatio 0, turned on (2/20) in S3 once the client draws portals — no invisible hops on /test-level.
 workerfour portal S1 CLEARED (schema portalHops, types, step, sim-config, index, director.test, portal-hop.test,
 portal.ts). Then portal S2 first on shared fire/bag files; workerfour tells workertwo directly when S2 commits.
 #289 portal loop (on the issue): a chaser in your far end is thrown back, meets the far end again and loops until
