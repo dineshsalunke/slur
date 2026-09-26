@@ -31,10 +31,8 @@ None.
 
 ## Next
 
-1. Issue #258 close: waiting on the owner. Planned comment: "Landed in 3948541 on dev: scratches, fBm
-   dark/bright blotches (Blotch.dark 0.15), albedo-driven Wear, world-space deck and wall breakup; ship + rail
-   bodies keep the baked tile."
-2. Then idle for a new lane from the supervisor.
+1. #258 closed by the supervisor on the owner's word (comment cites 3948541). Idle until the supervisor
+   assigns a new lane.
 
 ## Open questions
 
