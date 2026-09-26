@@ -36,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | none (#303 DONE 5e9abd0, closed; handover ae5416d) | idle | none |
 | workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
-| workerthree | w2P:pG | #300 S3 DONE 4ca02e7 (straight lanes + slalom; handover a27af92) | CLEARED 0%, NOT resumed: resume after owner look test → ADR-023 → S4 | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
+| workerthree | w2P:pG | #300: physics-derived post spacing (weave + S2 motif pins); S3 base 4ca02e7 | working; NO commit until owner approves numbers | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
@@ -46,8 +46,13 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 ## Open owner questions
 
 - **WEAVE SHAPE — ANSWERED 2026-09-27: B, straight sealed walls + slalom inside.** Owner wants the curved
-  corridor gone first. LANDED 4ca02e7. Pending owner: look test on /test-level?gen=phrase; Comet 72 in a
-  14u lane (curved band gave 102–112) OK as class identity?
+  corridor gone first. LANDED 4ca02e7. Owner: Comet 72 in 14u "ok i think".
+- **SPACING (owner "go", 2026-09-27):** slalom unreadable (posts stack, next gap hidden; Freighter bumps
+  "very irritating"). Pitch = distance at design speed for reaction 0.3 s + kick/accel lateral cross + damp
+  settle + hull, via simulate(); design speed act1 100% / act2 90% / act3 75% maxCruise, max over classes;
+  applies to motif pins too. Briefed workerthree; numbers come back before commit.
+- **Readability, still to ask the owner:** marigold glow on post faces; posts below camera eye line; floor
+  chevrons at gaps. Owner stopped the multi-select to clarify spacing first.
 
 - **Amber** `#FFB52E` (hue 41°) now ≈ new marigold hue; core→amber→marigold ramp differs only in value. Keep,
   or pick a hotter amber? (Open in ADD §3 / ART_MATERIALS §7 item 20.) ChatGPT paste note already given.
