@@ -119,3 +119,4 @@ lives in its own file beside this one.
 - [Zoom the chase camera over CDP](zoom-the-chase-camera-over-cdp.md) — pin the main camera's fov with a defineProperty getter; pick it by aspect, not fov (rear view is 36)
 - [Avoid pilot sidestep needs a dense check](avoid-pilot-sidestep-needs-dense-check.md) — at vz≈0 the per-slice check tests only the endpoint; it crossed a hole divider and wedged on a wall
 - [Obstacle spacing from ship physics](obstacle-spacing-from-ship-physics.md) — OWNER RULE: pitch = reaction + kick/accel cross + settle + hull at act speed 100/90/75%; never a fixed pitch
+- [Phrase length is per seed](phrase-length-is-per-seed.md) — since afcc66c use phraseSegments(seed); a script passing 600 silently measures a 4-section track
