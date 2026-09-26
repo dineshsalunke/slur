@@ -1,33 +1,32 @@
-Agent: workerone · Lane: #273 netcode (review lane C) — DONE, issue closed · Updated: 2026-09-26 13:40
+Agent: workerone · Lane: #275 render P1s (review lane E) · Updated: 2026-09-26 13:45
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Fix the four #273 netcode faults: input-queue ratchet, float32 reconcile drift, fire without an input
-seq, stale pending inputs across a phase change.
+Fix the six #275 render P1s: toneMapped, exhaust cap, GPU dispose, nebula stall, asteroid allocs,
+PickupField listeners.
 
 ## Done
 
-- 36b67f2: server + shared half. Adds the input drain, `froundSimShip` each tick, and the fire queue keyed
-  by input seq.
-- c3ab18d: client half. `Predictor.reset()` runs on a phase change. `froundSimShip` runs after each
-  replayed step and each local step. Fire sends `seq: lastInputSeq()`. New `prediction.test.ts`. Also the
-  #284 Canvas wrapper `<div className="fixed inset-0">` for workerfive, who has the SHA.
-- #273 is closed with both SHAs and the numbers below, plus a correction comment.
+- fed4ac2: exhaustDrive divides by the ship's own maxCruise (+ exhaust-drive.test.ts). mine-bodies drops
+  toneMapped:false. ShipModel disposes its cloned materials from a React 19 ref-callback cleanup.
+- c2b9ac4: rear-view material is a declarative `<shaderMaterial args>`, so R3F disposes it. Nebula noise
+  volume is built once, on first use (`noiseVolume()`). `forEachAsteroid` visits one scratch placement.
+- 0afbef2: pickupTaken listeners move into attachRoomToWorld and feed game/pickup-state.ts. PickupField
+  takes no props.
 
 ## State
 
-- Client vitest: 423/423 at c3ab18d. The fround replay test fails when the replay rounding is removed
-  (negative control).
-- Biome, comment ratchet, canvas-isolation and ls-lint are clean on the six files.
-- `pnpm typecheck` fails, but only in workertwo's in-flight #285 scene files (rock-field, ship-view,
-  track-view, beat-deck-canvas: missing `track` prop). None of my files report an error.
-- Re-measurement ran with two node SDK clients in one process on :2567, with a 400 ms stall at 15 s. The
-  gap (sent − ack) peaked at 18 in second 15, returned to 1–4 in second 16, and held 0–4 until 36 s.
-  Before the fix it was 22–25 from 16 s to 60 s. Script: scratchpad of session b5612842 (`q-node.mjs`,
-  `run-after.log`).
-- No Canvas tab was used; the supervisor warned that the #285 edit crashes Canvas routes.
+- createNoiseVolume: 332–372 ms in node over 3 runs.
+- Asteroid garbage before the fix: ~7.1k objects/s at 124 u/s (192/136/78 placements per rebuild).
+- drei 10.7.8 useFBO keeps one target per mount, so the rear-view surface leaked only on unmount, not
+  per FBO change.
+- R3F 9.7.0 removeChild disposes only the object, never geometry or material props, and never a
+  primitive. InstancedMesh.dispose() does not dispose its geometry.
+- Client vitest 434/434; tsc (NODE_ENV=development typegen), biome and comment ratchet clean at 0afbef2.
+- Headless /test-level tap at DPR 1: the mirror, nebula and asteroids render. Mine-body glow with tone
+  mapping and hosted-room pickups: [unmeasured].
 
 ## Uncommitted
 
@@ -35,12 +34,14 @@ None.
 
 ## Held files
 
-None. The lane is finished, so release prediction.ts (+test), attach-room-to-world.ts, net-systems.ts,
-current-input.ts and net-canvas.tsx.
+apps/client/app/game/scene/track-blocks.tsx — queued; workerfour (#277 B) holds it until the supervisor
+frees it.
 
 ## Next
 
-1. Wait for the supervisor to assign a new lane.
+1. When track-blocks.tsx is free: dispose `geometry`, `cells` and `fractured.geometry` from ref-callback
+   cleanups on the two instancedMeshes. Test, commit, push.
+2. `gh issue close 275` with all SHAs.
 
 ## Open questions
 
@@ -48,4 +49,4 @@ current-input.ts and net-canvas.tsx.
 
 ## Lessons → memory
 
-.claude/memory/node-bots-share-one-event-loop.md
+none
