@@ -10,7 +10,7 @@ import { abutAcrossBoundary, mergeCloseBlocks } from './merge-blocks.js';
 import { valueNoise2D } from './noise.js';
 import { placePickups } from './pickup-place.js';
 import { hash2, mulberry32 } from './rng.js';
-import { scoreTrack } from './score/emit.js';
+import { scoreTrack, segmentsTrack } from './score/emit.js';
 import {
     type Anchor,
     BLOCK_HEIGHT,
@@ -25,7 +25,6 @@ import {
     SEG_LEN,
     type Segment,
     START_SAFE,
-    segIndexForZ,
     TRACK_SEGMENTS,
     type Track,
     type TrackDensity,
@@ -178,16 +177,13 @@ export function makeProcgenTrack( d: ProcgenDescriptor ): Track {
         blocks: d.blockDensity ?? FULL_DENSITY.blocks,
         gaps: d.gapChance ?? FULL_DENSITY.gaps,
     };
-    const merged = ( i: number ): Segment => mergedSegment( seed, i, length, density );
-    const segmentAt = ( i: number ): Segment => {
-        const s = merged( i );
+    const merged = Array.from( { length: length + 2 }, ( _, k ) => mergedSegment( seed, k - 1, length, density ) );
+    const mergedAt = ( i: number ): Segment => merged[ i + 1 ];
+    const segments = Array.from( { length }, ( _, i ) => {
+        const s = mergedAt( i );
         if ( s.blocks.length === 0 ) return s;
-        return { ...s, blocks: abutAcrossBoundary( s, merged( i - 1 ).blocks, merged( i + 1 ).blocks ) };
-    };
-    return {
-        finishZ: length * SEG_LEN,
-        segmentAt,
-        segmentAtZ: ( z: number ) => segmentAt( segIndexForZ( z ) ),
-        anchors: pickupAnchors( seed, length, segmentAt ),
-    };
+        return { ...s, blocks: abutAcrossBoundary( s, mergedAt( i - 1 ).blocks, mergedAt( i + 1 ).blocks ) };
+    } );
+    const track = segmentsTrack( segments, length );
+    return { ...track, anchors: pickupAnchors( seed, length, track.segmentAt ) };
 }
