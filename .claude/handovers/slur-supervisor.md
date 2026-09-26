@@ -54,6 +54,10 @@ Bag: workertwo proposes the tug share in its S2 claim → relay to owner.
 
 ## Open owner questions
 
+#290 tug S1 DONE 403f8de (pushed; also touched race/director.test.ts, now free). workerfour told. workertwo's S2 claim
+(combat/constants.ts, power-bag.ts, sim-config.ts + tug-constants.ts, run/combat.ts, tests) is QUEUED behind portal's
+S2 on the same files — clear it only after portal S2 commits. BAG DECISION for owner: tug 2/20 from bolt 5→4, mine
+4→3 → bolt 4 · seeker 3 · mine 3 · boost 3 · shield 3 · portal 2 · tug 2 (bolt stays most common; seamSafe needs it).
 #289 portal loop (on the issue): a chaser in your far end is thrown back, meets the far end again and loops until
 they strafe around or the pair expires. Soften with a per-ship hop cooldown? Owner to decide.
 workerfour committed pure portal module 21bb3fb; holds only sim/portal-hop.test.ts; blocked on tug S1.
