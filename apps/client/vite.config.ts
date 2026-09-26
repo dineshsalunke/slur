@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 import { beatDeckPlugin } from './beat-deck/beat-deck-plugin.ts';
 import { frameTapPlugin } from './frame-tap-plugin.ts';
+import { tracksPlugin } from './tracks-plugin.ts';
 
 export default defineConfig( ( { mode } ) => {
     const env = loadEnv( mode, process.cwd(), '' );
@@ -14,6 +15,7 @@ export default defineConfig( ( { mode } ) => {
             reactRouter(),
             frameTapPlugin( { dir: resolve( process.cwd(), '../../.claude/frame-tap-refs' ) } ),
             beatDeckPlugin( { dir: resolve( process.cwd(), '.songs/takes' ) } ),
+            tracksPlugin( { dir: resolve( process.cwd(), '../../tracks' ) } ),
         ],
         server: {
             host: true,
