@@ -3,13 +3,14 @@ import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
 import { useCallback, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
-import { col, num } from '../../dev/tuning';
+import { num } from '../../dev/tuning';
 import { rebuildToken } from '../../dev/tuning-rebuild';
-import { Interp, Sim } from '../ecs/traits';
 import { accent } from './accent';
 import { exhaustDrive } from './exhaust-drive';
 import { guardLfsPointer } from './gltf-lfs-guard';
+import { applyHullLook } from './hull-look';
 import { METAL_METALNESS, METAL_ROUGHNESS } from './metal';
+import { isDead } from './ship-dead';
 import { type EngineGlow, engineIntensity, engineMaterial } from './ship-materials';
 import { SHIP_VISUALS, shipVisual } from './ship-visuals';
 import { cleanToMapRoughness } from './track-materials';
@@ -168,19 +169,13 @@ function driveEngines( engines: THREE.MeshStandardMaterial[], entity: Entity ): 
     for ( const mat of engines ) mat.emissiveIntensity = intensity;
 }
 
-function isDead( entity: Entity ): boolean {
-    const sim = entity.get( Sim );
-    if ( sim ) return sim.dead;
-    const buf = entity.get( Interp )?.buffer;
-    return buf !== undefined && buf.length > 0 && buf[ buf.length - 1 ].dead;
-}
-
 export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string } ) {
     const v = shipVisual( shipId );
     const { scene } = useGLTF( v.url, undefined, undefined, guardLfsPointer );
     const cloneRef = useRef< THREE.Group >( null );
     const patched = useRef( false );
     const dressed = useRef( -1 );
+    const tinted = useRef( '' );
     const surfaces = useRef< ShipSurfaces >( { hulls: [], engines: [], all: [] } );
     const attachClone = useCallback( ( grp: THREE.Group | null ) => {
         cloneRef.current = grp;
@@ -206,19 +201,13 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
         if ( ! patched.current ) {
             surfaces.current = collectSurfaces( grp, uniforms );
             patched.current = true;
+            tinted.current = '';
         }
         if ( dressed.current !== rebuildToken() ) {
             dressed.current = rebuildToken();
             dressHulls( surfaces.current.hulls );
         }
-        const base = col( 'Metal.baseColor' );
-        const envMapIntensity = num( 'Ship.envMapIntensity' );
-        const normalScale = num( 'Deck.normalScale' );
-        for ( const hull of surfaces.current.hulls ) {
-            hull.color.set( base );
-            hull.envMapIntensity = envMapIntensity;
-            hull.normalScale.set( normalScale, normalScale );
-        }
+        applyHullLook( surfaces.current.hulls, tinted );
         driveEngines( surfaces.current.engines, entity );
         const target = isDead( entity ) ? 1 : 0;
         const u = uniforms.uDissolve;

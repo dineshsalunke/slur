@@ -4,8 +4,9 @@ import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
-import { Interp, Render, Sim } from '../ecs/traits';
+import { Render } from '../ecs/traits';
 import { useTrack } from '../track-context/use-track';
+import { isDead } from './ship-dead';
 
 const VERTEX = `
 varying vec2 vShadowUv;
@@ -39,16 +40,10 @@ function floorBelow( track: Track, x: number, y: number, z: number ): number | n
     return best;
 }
 
-function isDead( entity: Entity ): boolean {
-    const sim = entity.get( Sim );
-    if ( sim ) return sim.dead;
-    const buf = entity.get( Interp )?.buffer;
-    return buf !== undefined && buf.length > 0 && buf[ buf.length - 1 ].dead;
-}
-
 export function ShipShadow( { entity, shipId }: { entity: Entity; shipId: string } ) {
     const track = useTrack();
     const meshRef = useRef< THREE.Mesh >( null );
+    const tinted = useRef( '' );
     const uniforms = useMemo(
         () => ( {
             uColor: { value: new THREE.Color( col( 'Shadow.color' ) ) },
@@ -85,7 +80,11 @@ export function ShipShadow( { entity, shipId }: { entity: Entity; shipId: string
         mesh.position.set( x, floor + num( 'Shadow.lift' ), z );
         mesh.scale.set( radius, radius, 1 );
 
-        uniforms.uColor.value.set( col( 'Shadow.color' ) );
+        const tint = col( 'Shadow.color' );
+        if ( tint !== tinted.current ) {
+            uniforms.uColor.value.set( tint );
+            tinted.current = tint;
+        }
         uniforms.uOpacity.value = num( 'Shadow.opacity' ) * falloff * falloff;
         uniforms.uSoftness.value = Math.max( 0.3, num( 'Shadow.softness' ) / ( 1 + height * num( 'Shadow.blur' ) ) );
     } );

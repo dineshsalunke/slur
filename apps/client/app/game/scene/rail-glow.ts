@@ -9,6 +9,8 @@ const RAIL_X = HALF_WIDTH + RAIL_W / 2;
 const MASK_WIDTH = 1024;
 const MASK_RAMP = 2;
 
+const applied = new WeakMap< RailGlowUniforms, { color: string; intensity: number } >();
+
 export interface RailGlowUniforms {
     uRailX: { value: number };
     uRailLift: { value: number };
@@ -65,7 +67,15 @@ export function updateRailGlow( u: RailGlowUniforms, mask: THREE.DataTexture | n
     u.uRailMask.value = mask;
     u.uRailMaskCount.value = count;
     u.uRailLift.value = num( 'RailLight.lift' );
-    u.uRailColor.value.set( col( 'RailLight.color' ) ).multiplyScalar( num( 'RailLight.intensity' ) );
+    const color = col( 'RailLight.color' );
+    const intensity = num( 'RailLight.intensity' );
+    const last = applied.get( u );
+    if ( last && last.color === color && last.intensity === intensity ) return;
+    u.uRailColor.value.set( color ).multiplyScalar( intensity );
+    if ( last ) {
+        last.color = color;
+        last.intensity = intensity;
+    } else applied.set( u, { color, intensity } );
 }
 
 const FRAG_HEAD = `
