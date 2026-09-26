@@ -14,7 +14,8 @@ import {
     type GrooveSection,
 } from '../groove/line.js';
 import { hash2, mulberry32 } from '../rng.js';
-import { type Phrase, type PhrasePlan, phraseStartZ, snapCell } from './plan.js';
+import { snapCell } from './motif-emit.js';
+import { type Phrase, type PhrasePlan, phraseStartZ } from './plan.js';
 
 export const PHRASE_LEAD_BEATS = 1;
 export const PHRASE_TAIL_BEATS = 1;
@@ -34,15 +35,19 @@ function beatOf( z: number ): number {
     return ( z - phraseStartZ() ) / GROOVE_BEAT_Z;
 }
 
+export function isFreeMotif( p: Phrase ): boolean {
+    return p.kind === 'motif' && p.notes === null;
+}
+
 export function composePhraseLine( seed: number, plan: PhrasePlan, g: GrooveGrammar = GROOVE_GRAMMAR ): GrooveLine {
     const events: GrooveEvent[] = [];
     const arenas: GrooveArena[] = [];
     const sections: GrooveSection[] = [];
-    let x = 0;
     let dir = mulberry32( hash2( ( seed ^ SALT_PHRASE_DIR ) | 0, plan.length ) )() < 0.5 ? -1 : 1;
-    const motif = ( p: Phrase, rand: () => number ): void => {
+    const free = ( p: Phrase, rand: () => number ): void => {
         const bg = g.bands[ p.act ];
         const last = p.z1 - PHRASE_TAIL_BEATS * GROOVE_BEAT_Z;
+        let x = 0;
         sections.push( { band: p.act, beat0: beatOf( p.z0 ), beat1: beatOf( p.z1 ) } );
         for ( let z = snapCell( p.z0 + PHRASE_LEAD_BEATS * GROOVE_BEAT_Z ); z <= last; ) {
             const gap = 1 + pickWeighted( bg.gapBeats, rand() );
@@ -63,8 +68,8 @@ export function composePhraseLine( seed: number, plan: PhrasePlan, g: GrooveGram
         }
     };
     plan.phrases.forEach( ( p, k ) => {
-        if ( p.kind === 'motif' ) motif( p, mulberry32( hash2( ( seed ^ SALT_PHRASE ) | 0, k ) ) );
-        else arenas.push( { z0: p.z0, z1: p.z1 } );
+        if ( isFreeMotif( p ) ) free( p, mulberry32( hash2( ( seed ^ SALT_PHRASE ) | 0, k ) ) );
+        else if ( p.kind !== 'motif' ) arenas.push( { z0: p.z0, z1: p.z1 } );
     } );
     return { seed, length: plan.length, events, sections, arenas };
 }

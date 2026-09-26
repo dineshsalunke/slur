@@ -1,6 +1,8 @@
-import { CELL } from '../../constants.js';
 import { GROOVE_BANDS, GROOVE_BEAT_Z, type GrooveBand } from '../groove/grammar.js';
+import type { MotifNote } from '../score/notes.js';
 import { SEG_LEN, START_SAFE } from '../space.js';
+import { centredStart, motifPhraseLen, snapCell } from './motif-emit.js';
+import { drawVocabulary, type SectionMotif, type TwistKind } from './vocabulary.js';
 
 export type PhraseRole = 'open' | 'teach' | 'repeat' | 'set' | 'weave' | 'twist' | 'rest' | 'finish';
 
@@ -13,11 +15,17 @@ export interface Phrase {
     section: number;
     z0: number;
     z1: number;
+    notes: MotifNote[] | null;
+    x0: number;
+    motif: string | null;
+    twist: TwistKind | null;
 }
 
 export interface PhrasePlan {
+    seed: number;
     length: number;
     sections: number;
+    vocabulary: SectionMotif[];
     phrases: Phrase[];
 }
 
@@ -34,20 +42,12 @@ export const PHRASE_ROLE_KIND: Readonly< Record< PhraseRole, PhraseKind > > = {
     finish: 'arena',
 };
 
-export const PHRASE_SECTION_LEN = 1952;
 export const PHRASE_ARENA_LEN = 280;
 export const PHRASE_FINISH_LEN = 300;
 export const PHRASE_REST_LEN = snapCell( GROOVE_BEAT_Z );
-
-export const PHRASE_FIXED_LEN: Readonly< Partial< Record< PhraseRole, number > > > = {
-    open: PHRASE_ARENA_LEN,
-    set: PHRASE_ARENA_LEN,
-    rest: PHRASE_REST_LEN,
-};
-
-export function snapCell( z: number ): number {
-    return Math.round( z / CELL ) * CELL;
-}
+export const PHRASE_WEAVE_MIN = 240;
+export const PHRASE_WEAVE_MAX = 480;
+export const PHRASE_SECTION_FLOOR = 2 * PHRASE_ARENA_LEN + PHRASE_REST_LEN + PHRASE_WEAVE_MIN;
 
 export function phraseStartZ(): number {
     return START_SAFE * SEG_LEN;
@@ -57,27 +57,76 @@ export function finishPhraseZ( length: number ): number {
     return Math.max( phraseStartZ(), snapCell( length * SEG_LEN - PHRASE_FINISH_LEN ) );
 }
 
-export function sectionCount( length: number ): number {
-    return Math.max( 1, Math.round( ( finishPhraseZ( length ) - phraseStartZ() ) / PHRASE_SECTION_LEN ) );
-}
-
 export function actOf( section: number, sections: number ): GrooveBand {
     const k = Math.floor( ( section * GROOVE_BANDS.length ) / sections );
     return GROOVE_BANDS[ Math.min( GROOVE_BANDS.length - 1, k ) ];
 }
 
-function sectionPhrases( section: number, sections: number, z0: number, z1: number ): Phrase[] {
-    const fixed = PHRASE_SECTION.reduce( ( sum, r ) => sum + ( PHRASE_FIXED_LEN[ r ] ?? 0 ), 0 );
-    const flexCount = PHRASE_SECTION.filter( ( r ) => PHRASE_FIXED_LEN[ r ] === undefined ).length;
-    const flex = Math.max( 0, ( z1 - z0 - fixed ) / flexCount );
-    const act = actOf( section, sections );
+function roleLengths( m: SectionMotif ): Record< PhraseRole, number > {
+    const motif = motifPhraseLen( m.teach );
+    return {
+        open: PHRASE_ARENA_LEN,
+        teach: motif,
+        repeat: motif,
+        set: PHRASE_ARENA_LEN,
+        weave: PHRASE_WEAVE_MIN,
+        twist: motifPhraseLen( m.twist ),
+        rest: PHRASE_REST_LEN,
+        finish: 0,
+    };
+}
+
+export function sectionMinLen( m: SectionMotif ): number {
+    const lens = roleLengths( m );
+    return PHRASE_SECTION.reduce( ( sum, r ) => sum + lens[ r ], 0 );
+}
+
+function vocabularyFor( seed: number, sections: number ): SectionMotif[] {
+    return drawVocabulary(
+        seed,
+        Array.from( { length: sections }, ( _, k ) => actOf( k, sections ) ),
+    );
+}
+
+function fitSections( seed: number, usable: number ): SectionMotif[] {
+    const most = Math.max( 1, Math.floor( usable / PHRASE_SECTION_FLOOR ) );
+    for ( let n = most; n > 1; n-- ) {
+        const vocab = vocabularyFor( seed, n );
+        if ( vocab.reduce( ( sum, m ) => sum + sectionMinLen( m ), 0 ) <= usable ) return vocab;
+    }
+    return vocabularyFor( seed, 1 );
+}
+
+function phraseNotes( role: PhraseRole, m: SectionMotif ): MotifNote[] | null {
+    if ( role === 'teach' || role === 'repeat' ) return m.teach;
+    if ( role === 'twist' ) return m.twist;
+    return null;
+}
+
+function sectionPhrases( k: number, sections: number, m: SectionMotif, z0: number, z1: number ): Phrase[] {
+    const lens = roleLengths( m );
+    const slack = Math.max( 0, z1 - z0 - sectionMinLen( m ) );
+    lens.weave += Math.min( slack, PHRASE_WEAVE_MAX - PHRASE_WEAVE_MIN );
+    lens.open += slack - ( lens.weave - PHRASE_WEAVE_MIN );
+    const act = actOf( k, sections );
     const out: Phrase[] = [];
-    let acc = z0;
     let z = z0;
     for ( const role of PHRASE_SECTION ) {
-        acc += PHRASE_FIXED_LEN[ role ] ?? flex;
-        const end = Math.min( z1, snapCell( acc ) );
-        if ( end > z ) out.push( { role, kind: PHRASE_ROLE_KIND[ role ], act, section, z0: z, z1: end } );
+        const end = Math.min( z1, snapCell( z + lens[ role ] ) );
+        const notes = phraseNotes( role, m );
+        if ( end > z )
+            out.push( {
+                role,
+                kind: PHRASE_ROLE_KIND[ role ],
+                act,
+                section: k,
+                z0: z,
+                z1: end,
+                notes,
+                x0: notes === null ? 0 : centredStart( notes ),
+                motif: notes === null ? null : m.motif.id,
+                twist: role === 'twist' ? m.twistKind : null,
+            } );
         z = Math.max( z, end );
     }
     const last = out[ out.length - 1 ];
@@ -85,14 +134,22 @@ function sectionPhrases( section: number, sections: number, z0: number, z1: numb
     return out;
 }
 
-export function planPhrases( length: number ): PhrasePlan {
+export function planPhrases( seed: number, length: number ): PhrasePlan {
     const start = phraseStartZ();
     const finish = finishPhraseZ( length );
-    const sections = sectionCount( length );
-    const bound = ( k: number ): number =>
-        k === sections ? finish : snapCell( start + ( k * ( finish - start ) ) / sections );
+    const vocabulary = fitSections( seed, finish - start );
+    const sections = vocabulary.length;
+    const mins = vocabulary.map( sectionMinLen );
+    const total = mins.reduce( ( a, b ) => a + b, 0 );
     const phrases: Phrase[] = [];
-    for ( let k = 0; k < sections; k++ ) phrases.push( ...sectionPhrases( k, sections, bound( k ), bound( k + 1 ) ) );
+    let z = start;
+    let before = 0;
+    for ( let k = 0; k < sections; k++ ) {
+        before += mins[ k ];
+        const end = k === sections - 1 ? finish : snapCell( start + ( before * ( finish - start ) ) / total );
+        phrases.push( ...sectionPhrases( k, sections, vocabulary[ k ], z, Math.max( z, end ) ) );
+        z = Math.max( z, end );
+    }
     const end = length * SEG_LEN;
     if ( end > finish )
         phrases.push( {
@@ -102,6 +159,10 @@ export function planPhrases( length: number ): PhrasePlan {
             section: sections - 1,
             z0: finish,
             z1: end,
+            notes: null,
+            x0: 0,
+            motif: null,
+            twist: null,
         } );
-    return { length, sections, phrases };
+    return { seed, length, sections, vocabulary, phrases };
 }

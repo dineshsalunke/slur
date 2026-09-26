@@ -9,7 +9,7 @@ import { SEG_LEN, TRACK_GEN_SEGMENTS } from '../space.js';
 import { procgenDescriptor, resolveTrack } from '../track-provider.js';
 import { phraseOpenFailures, phraseOpenSpace } from './open-space.js';
 import { buildPhrase, phraseTrack } from './phrase-track.js';
-import { PHRASE_SECTION, phraseStartZ, planPhrases, sectionCount } from './plan.js';
+import { PHRASE_SECTION, phraseStartZ, planPhrases } from './plan.js';
 
 const SEEDS = Array.from( { length: 30 }, ( _, k ) => k + 1 );
 const FLIGHT_SEEDS = [ 1, 2, 3, 4, 5, 17 ];
@@ -30,9 +30,11 @@ test( 'the phrase descriptor carries its own length and resolves to the phrase t
 } );
 
 test( 'the section count follows the length, and the phrases tile the track on the cell grid', () => {
+    const counts: number[] = [];
     for ( const length of [ 100, 200, 400, 600, 800, 1200 ] ) {
-        const plan = planPhrases( length );
-        assert.equal( plan.sections, sectionCount( length ) );
+        const plan = planPhrases( 1, length );
+        counts.push( plan.sections );
+        assert.equal( plan.vocabulary.length, plan.sections );
         let z = phraseStartZ();
         for ( const p of plan.phrases ) {
             assert.equal( p.z0, z, `length ${ length }: gap before ${ p.role } at ${ z }` );
@@ -48,31 +50,57 @@ test( 'the section count follows the length, and the phrases tile the track on t
             assert.deepEqual( roles, PHRASE_SECTION, `length ${ length } section ${ s }` );
         }
     }
-    assert.equal( sectionCount( 400 ), 4 );
-    assert.equal( sectionCount( 600 ), 6 );
-    assert.equal( sectionCount( 1200 ), 12 );
+    assert.deepEqual(
+        counts,
+        [ ...counts ].sort( ( a, b ) => a - b ),
+    );
+    assert.ok( counts[ counts.length - 1 ] > counts[ 2 ] );
 } );
 
-test( 'the acts rise low → mid → high, two sections each at 600 segments', () => {
-    const plan = planPhrases( LENGTH );
-    const acts = Array.from(
-        { length: plan.sections },
-        ( _, s ) => plan.phrases.find( ( p ) => p.section === s )?.act,
-    );
-    assert.deepEqual( acts, [ 'low', 'low', 'mid', 'mid', 'high', 'high' ] );
+test( 'the acts rise low → mid → high over 5 sections at 600 segments', () => {
+    for ( const seed of SEEDS ) {
+        const plan = planPhrases( seed, LENGTH );
+        const acts = Array.from(
+            { length: plan.sections },
+            ( _, s ) => plan.phrases.find( ( p ) => p.section === s )?.act,
+        );
+        assert.deepEqual( acts, [ 'low', 'low', 'mid', 'mid', 'high' ], `seed ${ seed }` );
+    }
+} );
+
+test( 'a run teaches one motif per section, repeats it exactly, and twists it once', () => {
+    for ( const seed of SEEDS ) {
+        const { plan, notes } = buildPhrase( seed );
+        const ids = plan.vocabulary.map( ( m ) => m.motif.id );
+        assert.equal( new Set( ids ).size, ids.length, `seed ${ seed }: repeated motif` );
+        for ( let s = 0; s < plan.sections; s++ ) {
+            const at = ( role: string ) => plan.phrases.findIndex( ( p ) => p.section === s && p.role === role );
+            const shape = ( k: number ) =>
+                notes
+                    .filter( ( n ) => n.phrase === k )
+                    .map( ( n ) => [ n.token, n.from, n.to, n.z - plan.phrases[ k ].z0 ] );
+            assert.deepEqual( shape( at( 'repeat' ) ), shape( at( 'teach' ) ), `seed ${ seed } section ${ s }` );
+            assert.notDeepEqual( shape( at( 'twist' ) ), shape( at( 'teach' ) ), `seed ${ seed } section ${ s }` );
+        }
+        assert.equal( plan.vocabulary[ plan.sections - 1 ].twistKind, 'callback' );
+    }
 } );
 
 test( 'obstacles sit only inside motif phrases, and every motif phrase has moves', () => {
     for ( const seed of SEEDS.slice( 0, 10 ) ) {
-        const { plan, line, obstacles } = buildPhrase( seed );
+        const { plan, line, notes, obstacles } = buildPhrase( seed );
         const open = plan.phrases.filter( ( p ) => p.kind !== 'motif' );
         for ( const o of obstacles )
             assert.ok( ! open.some( ( p ) => o.z0 < p.z1 && p.z0 < o.z1 ), `seed ${ seed }: obstacle at ${ o.z0 }` );
-        for ( const p of plan.phrases.filter( ( q ) => q.kind === 'motif' ) )
-            assert.ok(
-                line.events.some( ( e ) => e.z >= p.z0 && e.z < p.z1 ),
-                `seed ${ seed }: empty ${ p.role }`,
-            );
+        plan.phrases.forEach( ( p, k ) => {
+            if ( p.kind !== 'motif' ) return;
+            const moves =
+                p.notes === null
+                    ? line.events.some( ( e ) => e.z >= p.z0 && e.z < p.z1 )
+                    : notes.filter( ( n ) => n.phrase === k ).length ===
+                      p.notes.filter( ( n ) => n.kind !== 'rest' ).length;
+            assert.ok( moves, `seed ${ seed }: ${ p.role } at ${ p.z0 }` );
+        } );
     }
 } );
 
