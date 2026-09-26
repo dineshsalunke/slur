@@ -36,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | #303 procedural portal models — plan APPROVED (6u aperture kept), building | working | scene/portal-ring.ts+test (new), portal-pickups/*.utils+constants, portal-field/* |
 | workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
-| workerthree | w2P:pG | #300 phrase gen S3 (weave phrase + parallel weave + per-kind open-space) | working | sim/phrase/*, track-digest.test.ts (phrase row), avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
+| workerthree | w2P:pG | #300 S3 written, UNCOMMITTED (handover 2810208) — HOLD on weave shape | CLEARED 0%, NOT resumed: resume with the owner's shape answer | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
@@ -44,6 +44,11 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 `/test-level?gen=phrase`.
 
 ## Open owner questions
+
+- **WEAVE SHAPE (blocking #300 S3):** owner saw the curved corridor live ("WTF… how did it happen") — it is
+  the RFC §2.1 sealed band on `weaveRaw`, live via the shared watcher while uncommitted. Asked: A keep curved /
+  B straight walls + slalom inside / C other. Also relayed: parallel bands are toothless (every class threads
+  either half at full speed; cause not found). Freighter band speeds: 20u 100–102, 16u 70–82, 14u 64–68.
 
 - **Amber** `#FFB52E` (hue 41°) now ≈ new marigold hue; core→amber→marigold ramp differs only in value. Keep,
   or pick a hotter amber? (Open in ADD §3 / ART_MATERIALS §7 item 20.) ChatGPT paste note already given.
