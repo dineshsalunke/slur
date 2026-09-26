@@ -1,4 +1,4 @@
-Agent: workertwo · Lane: component file layout (#283) · Updated: 2026-09-26 13:20
+Agent: workertwo · Lane: component file layout (#283) · Updated: 2026-09-26
 
 Older versions hold #272, #282, #266 and earlier (`git log -p -- .claude/handovers/workertwo.md`).
 
@@ -13,28 +13,23 @@ files in a `<name>/` folder. The convention is written down and a lint warns on 
   `.claude/rules/react-house-style.md`, new `.claude/rules/component-files.md`, `.ls-lint.yml`
   (`.constants/.utils/.state.ts`), `biome.json` override, `biome-plugins/component-module-scope.grit` (warn).
 - `fa42f18` B2+B3: routes/pacing (13 components + route.constants/utils), routes/home (5),
-  routes/beat-deck (3). `home.tsx` and `game/route.tsx` import `NAME_KEY` from `call-sign-field.constants`.
-  Pacing-strip `LEGEND` became the `PacingStripLegend` component.
+  routes/beat-deck (3).
+- `f1ddda5` B6 (narrowed): game/hud power-cell, power-gem, power-rack, touch-button; game/net-debug-hud;
+  dev/tuning-panel; routes/test-level `DEFAULT_GEN` → `route.constants.ts`.
 
 ## State
 
 - The supervisor accepted these decisions for the owner (the owner may override): `.state.ts` for mutable
   module state; scratch THREE objects and shared geometries in `.constants.ts`; types stay in the `.tsx`;
   `lazy()` bindings allowed; `mount-overlays.tsx` excluded; `room-context` splits into `use-room.ts` plus a
-  context file. No `index.ts`.
-- At `fa42f18`: 0 plugin warnings in routes/pacing, routes/home and routes/beat-deck. vitest 421/421.
-  Typecheck clean. ls-lint, canvas and comment checks green.
-- Full `pnpm lint` exits 1 on 3 errors in other workers' uncommitted server files (run-room.ts,
-  room-input.test.ts, run-room.test.ts). None of them is mine.
-- ls-lint does not check a sub-extension name that has no rule of its own (`Bad.constants.ts` passed)
-  until `.ls-lint.yml` lists it. `.test.ts` names have the same gap.
-- `ui/tag.tsx` has zero importers (dead code). It is left in place; relayed to the owner.
-- NOT PUSHED. B0 and B2+B3 are local commits on dev.
+  context file. No `index.ts`. No re-exports at old paths (supervisor, 2026-09-26).
+- At `f1ddda5`: 0 plugin warnings in game/hud, game/net-debug-hud, dev. vitest 421/421 (57 files).
+  Client typecheck clean. ls-lint and comment ratchet green.
+- `game/net-debug-hud` has zero importers (dead code), as does `ui/tag.tsx`. Both left in place; relayed.
 
 ## Uncommitted
 
-None of mine. `.claude/handovers/workertwo-move.mjs` and `workertwo-283-audit.txt` are committed with this
-handover.
+None of mine.
 
 ## Held files
 
@@ -42,34 +37,30 @@ None held now. Every future batch needs a fresh claim.
 
 ## Next
 
-1. Push dev (`git push origin dev`) once the supervisor agrees.
-2. B6: claim routes/test-level (7 files: local-*-field, local-loop, test-level-canvas, route.tsx),
-   game/hud (power-cell, power-rack, touch-button; power-gem was held), game/net-loop, game/net-debug-hud,
-   audio (remote-engine-audio, game-audio), dev/tuning-panel, net/room-context.
-   The claim must list the importers too:
-   `rg -l "from '[^']*/<base>'" apps/client/app`.
-3. B1/B7: ui/, ship/ship-stepper, game/overlays, lobby/room-list. These wait until #284 lands (workerfive).
-4. B4/B5: game/scene (48 files). These wait for the supervisor to sequence them against #285. Fold in the
-   `.claude/rules/r3f-rendering.md` line "Hoist scratch objects to module scope", which should point at
-   `<name>.constants.ts`.
-5. After the last batch: raise the grit severity to error, push, and close #283 with the SHAs.
+1. Deferred from B6 until #273 lands (workerone holds `game/net-canvas.tsx`, which imports these):
+   `game/net-loop.tsx`, `audio/remote-engine-audio.tsx`, `audio/game-audio.tsx`, `net/room-context.tsx`
+   (→ `room-context/room-context.tsx` + `.constants.ts` + `use-room.ts`; importers include net-hud,
+   net-debug-hud, overlays.tsx, mount-overlays.tsx, routes/game/route.tsx, net-canvas).
+2. Deferred from B6 until #284 lands (workerfive holds `routes/test-level/test-level-canvas.tsx`, the only
+   importer): test-level-canvas, local-bolt/mine/pickup/seeker-field, local-loop. Skip local-combat.ts
+   (workerthree, #280).
+3. B1/B7: ui/, ship/ship-stepper, game/overlays, lobby/room-list. Wait for #284.
+4. B4/B5: game/scene (48 files). Wait for the supervisor to sequence against #285. Fold in the
+   `.claude/rules/r3f-rendering.md` line "Hoist scratch objects to module scope" → `<name>.constants.ts`.
+5. After the last batch: raise the grit severity to error, push, close #283 with the SHAs.
 
 Recipe for each batch:
-- Run `node .claude/handovers/workertwo-move.mjs --dry <app-relative .tsx paths>`, then run it without
-  `--dry`. It `git mv`s each file into `<name>/<name>.tsx` and rewrites import specifiers with ast-grep.
-- Print each file's prelude, Write the new files, and Edit the prelude out of the `.tsx`.
-- Run `biome lint --write --unsafe --only=correctness/noUnusedImports <dirs>`, then `biome check --write`.
-  The first leaves trailing commas that the second removes.
-- Repoint anything that imported a constant from the old `.tsx`.
-- Run typecheck and vitest, then commit by pathspec.
-- Audit per file: `.claude/handovers/workertwo-283-audit.txt`, or
-  `biome lint apps/client/app 2>&1 | grep " plugin "`.
+- `node .claude/handovers/workertwo-move.mjs --dry <app-relative .tsx paths>`, then without `--dry`.
+- Write the colocated files, Edit the prelude out of the `.tsx`.
+- `biome lint --write --unsafe --only=correctness/noUnusedImports <dirs>`, then `biome check --write`.
+- Typecheck, vitest, commit by pathspec (include the old deleted paths).
+- Audit: `biome lint apps/client/app 2>&1 | grep " plugin "`.
 
 ## Open questions
 
-- Owner: should dead `ui/tag.tsx` be deleted?
-- Owner: confirm the six layout decisions above.
+- Owner: delete dead `ui/tag.tsx` and `game/net-debug-hud/`?
+- Owner: confirm the layout decisions above.
 
 ## Lessons → memory
 
-`.claude/memory/ls-lint-skips-unlisted-sub-extensions.md`
+none
