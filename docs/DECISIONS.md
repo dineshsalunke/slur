@@ -1231,3 +1231,24 @@ merge removes most pockets it scanned).
 - Both ends are entries, so a chaser can loop until the pair expires (9 s). The owner keeps this for now (GDD §10 question 8). The candidate fixes are one throw-back per ship per pair, or a per-ship hop cooldown.
 - A hop drops any seeker lock on the ship.
 - The camera passes through the bright exit ring and the whole frame blooms orange for less than ~150 ms. The owner keeps this as the hop flash (2026-09-26). Do not dim the exit end or cap its pulse.
+
+## ADR-023 — One phrase generator: weave, motifs, arenas and set pieces in three acts
+
+**Date:** 2026-09-26 · **Status:** Proposed (owner approved the RFC with amendments, via slur-supervisor; S1 built in `8a4f1dd`, S2–S7 not built) · **Issue:** #300 (absorbs #292) · **RFC:** `.claude/phases/2026-09-26-unified-generator-rfc.md`
+
+### Decision
+
+1. A new `TrackGen` `'phrase'` builds the track as a chain of phrases: weave `W`, motif `M` (teach → repeat → twist), arena `A`, set piece `S`, rest. Code: `packages/shared/src/sim/phrase/`.
+2. **Length is data.** `TRACK_GEN_SEGMENTS` sets the descriptor length per gen: `phrase` 600 (12,000u), the others 400. No code assumes a length: `sectionCount()` derives the number of sections from `descriptor.length` (≈ 1,952u each; 6 at 600).
+3. A section is `A · M-teach · M-repeat · S · W · M-twist · rest`. The sections split into three acts (low, mid, high). The last 300u is an arena (the finish sprint).
+4. Motif phrases reuse groove's placement (`placeObstacles`, `segmentOf`) without changing its output. Arenas and rests hold no obstacles.
+5. The weave phrase band width is the difficulty dial, 20/16/14u by act (RFC §1.3). A `W` slot can hold two weaves side by side (the parallel weave, RFC §2.3).
+6. Set pieces (RFC §4) must be flyable without their power. Each has one forced pickup outside the 20-pickup bag, and its id carries the power (RFC §6.3).
+7. `weave` and `score` stay behind `?gen=` until `'phrase'` is the default and the owner has played it (S7).
+
+### Consequences
+
+- The `weave` and `groove` digests stay frozen. `phrase` has its own frozen row.
+- S1 (built): the `S` slot is an arena and the `W` slot is a motif phrase. Measured on seeds 1–30 at 600 segments: every groove open-space target holds, every arena is fully open, and 5 classes finish with 0 deaths (mean 99–144 s).
+- A longer track needs the race-end change (#301, grace 45 s, no 180 s cap) before `'phrase'` becomes the default.
+- Open: per-kind open-space exemptions for `W` and chokes (RFC §5.3) arrive with S3/S4. Draw calls and build time at 600 segments are not measured yet.
