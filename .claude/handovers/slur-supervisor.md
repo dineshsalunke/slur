@@ -36,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | none (#303 DONE 5e9abd0, closed; handover ae5416d) | idle | none |
 | workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
-| workerthree | w2P:pG | #300 S3 written, UNCOMMITTED (handover 2810208) — HOLD on weave shape | CLEARED 0%, NOT resumed: resume with the owner's shape answer | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
+| workerthree | w2P:pG | #300 S3: rewriting weave to straight walls + slalom (handover 2810208) | resumed 2026-09-27, working | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
@@ -45,10 +45,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Open owner questions
 
-- **WEAVE SHAPE (blocking #300 S3):** owner saw the curved corridor live ("WTF… how did it happen") — it is
-  the RFC §2.1 sealed band on `weaveRaw`, live via the shared watcher while uncommitted. Asked: A keep curved /
-  B straight walls + slalom inside / C other. Also relayed: parallel bands are toothless (every class threads
-  either half at full speed; cause not found). Freighter band speeds: 20u 100–102, 16u 70–82, 14u 64–68.
+- **WEAVE SHAPE — ANSWERED 2026-09-27: B, straight sealed walls + slalom inside.** Owner wants the curved
+  corridor gone first. workerthree resumed with it (top priority); parallel = two straight lanes, each with
+  its own slalom.
 
 - **Amber** `#FFB52E` (hue 41°) now ≈ new marigold hue; core→amber→marigold ramp differs only in value. Keep,
   or pick a hotter amber? (Open in ADD §3 / ART_MATERIALS §7 item 20.) ChatGPT paste note already given.
