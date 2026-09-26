@@ -56,6 +56,10 @@ half (prediction, attach-room-to-world, net-systems, current-input, net-canvas +
 B6 landed f1ddda5. workertwo #285 phase 1 CLEARED: React context + useTrack() (R3F 9.7 bridges contexts via
 its-fine, verified; no loader holds a track, 4 routes share the scene, so useRouteLoaderData rejected). Owner told
 it departs from their idea; phase 2 (roots + HUD) after #273 and #284. Then #283 B4/B5.
+OWNER ANSWERS (evening): #276 item 3 APPROVED → workerfour told to commit + close. Dead code ui/tag.tsx +
+game/net-debug-hud/ → DELETE (workertwo, in its current batch). Bag 6/4/4/3/3 AGREED → workerthree cleared +
+assigned (combat/constants.ts + count tests; comment on #269/#270). #280 fizzle: owner will test it by hand.
+Still open: #269 brake-cancel + streak length; #270 dome opacity. workerone idle (clear before reuse).
 #280 DONE + closed (ccc5e48): fizzle ring + 'mineFizzle' zap; musicForPhase switched; mine-shock toneMapped
 removed (mine-bodies.tsx:37 still has it → #275). workerthree IDLE, holds nothing. Owner Q: derezz zap OK as fizzle?
 Shared suite 406/408 in the tree: phantom pocket + weave digest = workerfour's uncommitted #276 item 3 (awaiting
