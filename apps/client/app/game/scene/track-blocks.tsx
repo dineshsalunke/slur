@@ -17,7 +17,6 @@ import { fracturedBlockGeometry, fractureOrient, shareCells } from './fractured-
 import { fracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
 import {
     type BlockDims,
-    SEALED_BLOCK_BEVEL,
     SEALED_BLOCK_UNIT_BEVEL,
     SEALED_BLOCK_UNIT_DIMS,
     sealedBlockGeometry,
@@ -25,7 +24,6 @@ import {
 import { patchSealedBlock, sealedBlockUniforms } from './sealed-block-shader';
 import {
     SEALED_BLOCK_MAX_SEAMS,
-    SEALED_BLOCK_SEAM_WIDTH,
     sealedBlockSeamCount,
     sealedBlockSeams,
     sealedBlockSeed,
@@ -180,8 +178,6 @@ export function TrackBlocks() {
         if ( ! sim || ! blocks || ! cracked ) return;
 
         updateBlotchWear( breakup );
-        uniforms.uSealedBevel.value = SEALED_BLOCK_BEVEL;
-        uniforms.uSealedSeamWidth.value = SEALED_BLOCK_SEAM_WIDTH;
         uniforms.uSealedSeamIntensity.value = num( 'Block.seamEmissive' );
         uniforms.uSealedWearMax.value = num( 'Block.wear' );
         const span = deckTextureSpan( surface.map );
