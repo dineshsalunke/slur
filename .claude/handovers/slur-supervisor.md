@@ -35,7 +35,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | none (closing #248 earlier) | idle, 14%: clear before a lane | none |
-| workertwo | w2P:pF | #302 marigold → apply B `#F5B024` | working; claim not yet received | pending claim (app.css, accent.ts, ADD.md, ART_MATERIALS.md + derived copies) |
+| workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
 | workerthree | w2P:pG | #300 phrase gen S3 (weave phrase + parallel weave + per-kind open-space) | working | sim/phrase/*, track-digest.test.ts (phrase row), avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
@@ -44,6 +44,12 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 `/test-level?gen=phrase`.
 
 ## Open owner questions
+
+- **Amber** `#FFB52E` (hue 41°) now ≈ new marigold hue; core→amber→marigold ramp differs only in value. Keep,
+  or pick a hotter amber? (Open in ADD §3 / ART_MATERIALS §7 item 20.) ChatGPT paste note already given.
+- **Portal models** (owner hero shots: linked-ring pickup, A/B gate): told owner procedural is feasible
+  (instanced bevelled wedges + dashed emissive band + graphite material, ~2–3 draws/ring). Offered to file
+  an issue for workerone (clear first) after #302 — awaiting owner yes.
 
 - **Stalled race exit** (no cap now): recommended a host "End race" button; alternatives: no-progress N s,
   grace after first drop-out, leave it. workertwo's finding: no host control mid-race (run-sim.ts:134/138),
