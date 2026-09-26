@@ -40,7 +40,7 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 | workertwo | w2P:pF | none (#283 moves done; last step handed to workerfive) | idle | none |
 | workerthree | w2P:pG | none (#169 stopped: owner says #160/#161/#169 already done; closed) | idle | none |
 | workerfour | w2P:pH | #287 remove /pacing + DEFAULT_TRACK_GEN=groove, closes #246 | resumed | claim pending |
-| workerfive | w2P:pK | #269 boost blur + 3u pull-back (OWNER APPROVED) + scene-effects colocation, grit → error, close #283 | building | camera/chase.ts, dev/tuning-schema.ts, dev/tuning-panel/tuning-panel.tsx, game/scene/scene-effects/**, new boost-blur/*, camera/boost-surplus.ts(+test), world-scene.tsx + landing-scene.tsx import lines, biome.json |
+| workerfive | w2P:pK | none. #269 blur + pull-back SHIPPED f0056b3 (open for owner feel test); #283 CLOSED, grit rule at error | idle | none |
 
 ## Open owner questions
 
