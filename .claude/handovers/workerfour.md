@@ -1,23 +1,21 @@
-Agent: workerfour · Lane: pickup spread (#265) · Updated: 2026-09-25
+Agent: workerfour · Lane: solid rear-view mirror (#268); pickup spread (#265) parked · Updated: 2026-09-26
 
 ## Goal
 
-Space pickups further apart and stop long same-power runs (mostly bolts). Deterministic on both ends.
+#268: make the rear-view mirror opaque. #265: space pickups apart and stop long same-power runs (plan with owner).
 
 ## Done
 
-- Filed #265 with the measurements below.
-- Plan sent to slur-supervisor. Nothing built.
+- `1199218` (pushed): #268 opaque mirror, normal blending, no feather. 3 px graphite `#1C252C` bezel + 1 px marigold `#F59A24` lip in the same shader. +0 draw calls (same mesh and material).
+- #265 filed and the plan sent to slur-supervisor. Nothing built.
 
 ## State
 
-- Measured in node on dist, seeds 1–30, length 400. Script: scratchpad `measure-pickups.mjs` (session-local).
-- groove: 132 pickups/track, every gap 60u, same-as-previous 0.403 (i.i.d. 0.403), bolt runs ≥3: 285, longest run 12.
-- weave: 129.5 pickups/track, 98% of gaps 60u, bolt runs ≥3: 295, longest 7. Same power order on every seed.
-- Cause 1: `PICKUP_SPACING = 3` segments (`sim/space.ts:12`) × `SEG_LEN` 20u.
-- Cause 2: independent hash draws at 55% bolt. The hash is not correlated.
-- Cause 3: weave ids are `String(seg)`, no salt (`sim/track.ts:162`).
-- `SimConfig` ratios are never tuned live. Only tests override them.
+- Taps on :5173 `/test-level`, headless DPR 1, muted: `.claude/frame-tap-refs/265mirror-before.png` (see-through), `mirror-after.png` (opaque with frame), `mirror-gain0.png` (image black, frame kept), `mirror-gain2.png` (brighter). The files are gitignored.
+- Bloom cannot wash out the panel. The composer renders at useFrame priority 1 (verified in @react-three/postprocessing dist) and the mirror Hud at 2.
+- Gates: client tsc clean, vitest 391/391, biome clean on both files, comment ratchet OK.
+- #265 numbers: groove 132 pickups/track, all gaps 60u, bolt runs ≥3: 285, longest 12. Weave: same power order on every seed (ids have no salt).
+- Headless Chrome killed by PID. No stray processes.
 
 ## Uncommitted
 
@@ -25,16 +23,16 @@ Space pickups further apart and stop long same-power runs (mostly bolts). Determ
 
 ## Held files
 
-- none yet. Planned: `sim/space.ts`, `sim/track.ts`, `sim/groove/groove-track.ts`, `combat/pickups.ts`, new `combat/power-bag.ts` + test, pickup tests, `docs/GDD.md` pickup text.
+- none. rear-view-surface.ts and rear-view-pass.tsx released.
 
 ## Next
 
-1. Wait for owner approval via the supervisor.
-2. Claim files, build, measure after-numbers with the same script.
+1. #268 follow-up: remove `RearView.featherX/Y` (dev/tuning-schema.ts:139-140, now dead) once workerone commits that file.
+2. #265: wait for owner approval, then claim files and build.
 
 ## Open questions
 
-- Owner: target gap (plan proposes 120–180u, about 52 pickups per track).
+- #265 owner: gap range (proposed 120–180u), and whether pickups should also spread sideways.
 
 ## Lessons → memory
 
