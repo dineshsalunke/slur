@@ -56,7 +56,7 @@ function fixturePockets( id: ShipClassId ): PacingPocket[] {
     );
 }
 
-test( 'seed 20260921 z 2446-2460 traps the freighter by its 2.2u slot', () => {
+test( 'seed 20260921 z 2446-2460 traps the freighter by its 2.6u slot', () => {
     const [ pocket, ...rest ] = fixturePockets( 'freighter' );
     assert.deepEqual( rest, [] );
     assert.ok(
@@ -65,7 +65,7 @@ test( 'seed 20260921 z 2446-2460 traps the freighter by its 2.2u slot', () => {
     );
 } );
 
-test( 'seed 20260921 z 2446-2460 traps the phantom: a 3.2u window is shorter than its own length', () => {
+test( 'seed 20260921 z 2446-2460 traps the phantom: a 3.6u window is shorter than its own length', () => {
     const [ pocket, ...rest ] = fixturePockets( 'phantom' );
     assert.deepEqual( rest, [] );
     assert.ok(
@@ -80,9 +80,9 @@ test( 'seed 20260921 z 2446-2460 frees every other class', () => {
     }
 } );
 
-test( 'the phantom leaves the fixture pocket left, through a 3.2u stop window', () => {
+test( 'the phantom leaves the fixture pocket left, through a 3.5u stop window', () => {
     const t = SHIP_CLASSES.phantom.tuning;
     const squeeze = ( stopZ: number ): boolean => squeezesThrough( FIXTURE.track, t, { fromX: 10, stopZ, toX: 3 } );
-    assert.ok( squeeze( 2459.8 ) && squeeze( 2463.0 ) );
-    assert.ok( ! squeeze( 2459.7 ) && ! squeeze( 2463.1 ) );
+    assert.ok( squeeze( 2459.7 ) && squeeze( 2463.2 ) );
+    assert.ok( ! squeeze( 2459.6 ) && ! squeeze( 2463.3 ) );
 } );

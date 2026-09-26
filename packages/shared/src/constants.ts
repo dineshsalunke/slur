@@ -215,12 +215,12 @@ export const WALL_RUN_LANES_MIN = 2;
 export const BLOCK_MAX_LANES = 3;
 export const BLOCK_DEPTH_MIN = 3;
 export const BLOCK_DEPTH_MAX = 18;
-export const BLOCK_DEPTH_BIAS_REST = 2.2;
-export const BLOCK_DEPTH_BIAS_PEAK = 0.6;
+export const BLOCK_DEPTH_CURVE_K_REST = 3.5948;
+export const BLOCK_DEPTH_CURVE_K_PEAK = 0.5157;
 export const BLOCK_WIDTH_MIN = 4;
 export const BLOCK_WIDTH_MAX = 20;
-export const BLOCK_WIDTH_BIAS_REST = 1.1;
-export const BLOCK_WIDTH_BIAS_PEAK = 0.6;
+export const BLOCK_WIDTH_CURVE_K_REST = 1.1435;
+export const BLOCK_WIDTH_CURVE_K_PEAK = 0.5157;
 export const BLOCK_SPLIT_GAP_MIN = 2;
 export const BLOCK_SPLIT_GAP_MAX = 9;
 

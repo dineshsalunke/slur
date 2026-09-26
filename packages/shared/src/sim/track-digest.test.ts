@@ -8,11 +8,11 @@ const DIGEST_SEEDS = [ 1, 7, 42, 1337, 24301 ];
 
 const FROZEN: Record< 'weave' | 'groove', Record< number, string > > = {
     weave: {
-        1: '904adcbd62066d5d',
-        7: '3aef48913dc97150',
-        42: '3ca287da0be94804',
-        1337: '654fa7c05c9a1539',
-        24301: 'c427d592796d02f4',
+        1: 'c78e794b40a4db08',
+        7: '4bf512943bec56be',
+        42: 'e50cf66a6f0bda87',
+        1337: 'c980d5acb52c8ac9',
+        24301: '9fd8eac3611abecf',
     },
     groove: {
         1: '3d86632aac77f5d7',
