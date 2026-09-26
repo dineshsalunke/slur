@@ -89,3 +89,26 @@ function assignKey< K extends keyof SimShip >( dst: SimShip, src: SimShip, k: K 
 export function copySimShip( dst: SimShip, src: SimShip ): void {
     for ( const k of SIM_SHIP_KEYS ) assignKey( dst, src, k );
 }
+
+type NumberKey = { [ K in keyof SimShip ]: SimShip[ K ] extends number ? K : never }[ keyof SimShip ];
+
+export const SIM_FLOAT_KEYS = [
+    'x',
+    'y',
+    'z',
+    'vx',
+    'vy',
+    'vz',
+    'coyoteTimer',
+    'bufferTimer',
+    'respawnTimer',
+    'invulnTimer',
+    'lastSafeX',
+    'lastSafeZ',
+    'stunTimer',
+    'boostTimer',
+] as const satisfies readonly NumberKey[];
+
+export function froundSimShip( ship: SimShip ): void {
+    for ( const k of SIM_FLOAT_KEYS ) ship[ k ] = Math.fround( ship[ k ] );
+}

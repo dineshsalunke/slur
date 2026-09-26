@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { MAX_QUEUED_INPUTS, sanitizeInputs } from './room-input.js';
+import {
+    clearQueue,
+    emptyQueue,
+    enqueueFire,
+    enqueueInputs,
+    inputsThisTick,
+    MAX_CATCHUP_INPUTS,
+    MAX_QUEUED_FIRES,
+    MAX_QUEUED_INPUTS,
+    sanitizeInputs,
+    TARGET_QUEUED_INPUTS,
+    takeFire,
+} from './room-input.js';
 
 const valid = { seq: 7, throttle: 0.5, brake: 0, strafe: -0.25, jump: true };
 
@@ -55,5 +67,68 @@ describe( 'sanitizeInputs', () => {
         assert.equal( out.length, MAX_QUEUED_INPUTS );
         assert.equal( out[ 0 ]?.seq, 30 );
         assert.equal( out.at( -1 )?.seq, MAX_QUEUED_INPUTS + 29 );
+    } );
+} );
+
+describe( 'inputsThisTick', () => {
+    test( 'takes one input a tick while the queue is at or under the target', () => {
+        assert.equal( inputsThisTick( 0 ), 0 );
+        for ( let queued = 1; queued <= TARGET_QUEUED_INPUTS + 1; queued++ )
+            assert.equal( inputsThisTick( queued ), 1 );
+    } );
+
+    test( 'catches up by at most MAX_CATCHUP_INPUTS extra and never undershoots the target', () => {
+        for ( let queued = TARGET_QUEUED_INPUTS + 2; queued <= MAX_QUEUED_INPUTS; queued++ ) {
+            const n = inputsThisTick( queued );
+            assert.ok( n >= 2 && n <= 1 + MAX_CATCHUP_INPUTS, `queued ${ queued } takes ${ n }` );
+            assert.ok( queued - n >= TARGET_QUEUED_INPUTS, `queued ${ queued } keeps the target` );
+        }
+    } );
+
+    test( 'a 24-input backlog from a 400 ms stall is back at the target within 10 ticks', () => {
+        let queued = 24;
+        let ticks = 0;
+        while ( queued > TARGET_QUEUED_INPUTS + 1 ) {
+            queued = queued - inputsThisTick( queued ) + 1;
+            ticks++;
+        }
+        assert.ok( ticks <= 10, `drained in ${ ticks } ticks` );
+    } );
+} );
+
+describe( 'fire queue', () => {
+    test( 'keeps a valid slot, forces dir to ±1, and treats a missing seq as 0', () => {
+        const q = emptyQueue();
+        enqueueFire( q, { slot: 1, dir: -1, seq: 9 } );
+        enqueueFire( q, { slot: 0, dir: 7 } );
+        enqueueFire( q, { slot: 9 } );
+        enqueueFire( q, null );
+        assert.deepEqual( q.fires, [
+            { slot: 1, dir: -1, seq: 9 },
+            { slot: 0, dir: 1, seq: 0 },
+        ] );
+    } );
+
+    test( 'holds a fire until its input seq is processed', () => {
+        const q = emptyQueue();
+        enqueueFire( q, { slot: 0, seq: 5 } );
+        assert.equal( takeFire( q, 4 ), undefined );
+        assert.deepEqual( takeFire( q, 5 ), { slot: 0, dir: 1, seq: 5 } );
+        assert.equal( q.fires.length, 0 );
+    } );
+
+    test( 'caps the queue at MAX_QUEUED_FIRES, dropping the oldest', () => {
+        const q = emptyQueue();
+        for ( let seq = 1; seq <= MAX_QUEUED_FIRES + 2; seq++ ) enqueueFire( q, { slot: 0, seq } );
+        assert.equal( q.fires.length, MAX_QUEUED_FIRES );
+        assert.equal( q.fires[ 0 ]?.seq, 3 );
+    } );
+
+    test( 'clearQueue empties inputs and fires', () => {
+        const q = emptyQueue();
+        enqueueInputs( q, [ valid ] );
+        enqueueFire( q, { slot: 0 } );
+        clearQueue( q );
+        assert.deepEqual( q, emptyQueue() );
     } );
 } );

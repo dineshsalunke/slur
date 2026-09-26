@@ -140,7 +140,7 @@ describe( 'RunRoom shield', () => {
 
         await shoot( HeldPower.bolt );
         tick( room, 0.25 );
-        assert.equal( victim.stunTimer, STUN_SECONDS, 'the second bolt stuns' );
+        assert.equal( victim.stunTimer, Math.fround( STUN_SECONDS ), 'the second bolt stuns' );
 
         await delay( 100 );
         assert.deepEqual(

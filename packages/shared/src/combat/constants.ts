@@ -4,6 +4,7 @@ export const DROP_POWERUP_MESSAGE = 'dropPowerUp';
 export interface PowerSlotMessage {
     slot: number;
     dir?: number;
+    seq?: number;
 }
 
 export const POWER_SLOTS = 3;

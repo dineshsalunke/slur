@@ -11,7 +11,7 @@ import {
     dropPower,
     dropShield,
     FIXED_DT,
-    fireDir,
+    froundSimShip,
     HeldPower,
     hitShipsOf,
     INPUT_MESSAGE,
@@ -23,7 +23,6 @@ import {
     type MineEvent,
     PHASE,
     type Pickup,
-    type PlayerInput,
     PlayerState,
     POWER_SLOTS,
     type PowerSlotMessage,
@@ -55,7 +54,16 @@ import {
 } from '@slur/shared';
 import { type RaceWorld, stepRacer } from './room-bounce.js';
 import { firePower, resolveMineEvent, resolveSeekerEvent, shieldAbsorbs } from './room-combat.js';
-import { MAX_QUEUED_INPUTS, sanitizeInputs } from './room-input.js';
+import {
+    clearQueue,
+    emptyQueue,
+    enqueueFire,
+    enqueueInputs,
+    type FireIntent,
+    inputsThisTick,
+    type PlayerQueue,
+    takeFire,
+} from './room-input.js';
 
 const RECONNECT_SECONDS = 20;
 const MAX_NAME = 16;
@@ -63,7 +71,7 @@ const MAX_NAME = 16;
 export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > {
     maxClients = 12;
 
-    private queues = new Map< string, PlayerInput[] >();
+    private queues = new Map< string, PlayerQueue >();
 
     private advance = createFixedStep( FIXED_DT );
 
@@ -92,9 +100,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
         this.onMessage< InputMessage >( INPUT_MESSAGE, ( client, msg ) => {
             const q = this.queues.get( client.sessionId );
-            if ( ! q ) return;
-            for ( const input of sanitizeInputs( msg?.inputs ) ) q.push( input );
-            if ( q.length > MAX_QUEUED_INPUTS ) q.splice( 0, q.length - MAX_QUEUED_INPUTS );
+            if ( q ) enqueueInputs( q, msg?.inputs );
         } );
 
         this.onMessage( SET_CLASS_MESSAGE, ( client, shipId ) => {
@@ -117,17 +123,11 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
         this.onMessage< PowerSlotMessage >( USE_POWERUP_MESSAGE, ( client, msg ) => {
             if ( this.state.phase !== PHASE.racing ) return;
+            const q = this.queues.get( client.sessionId );
             const p = this.state.players.get( client.sessionId );
-            const slot = msg?.slot;
-            if ( ! p || ! isSlot( slot ) || ! canFire( p, slot ) ) return;
-            const ctx = {
-                state: this.state,
-                track: this.track,
-                broken: this.blocks.broken,
-                config: this.config,
-                broadcast: ( t: string, m: unknown ) => this.broadcast( t, m ),
-            };
-            firePower( ctx, String( this.nextProjectileId++ ), p, client.sessionId, slot, fireDir( msg?.dir ) );
+            if ( ! q || ! p ) return;
+            enqueueFire( q, msg );
+            this.fireReady( p, client.sessionId, q );
         } );
         this.onMessage< PowerSlotMessage >( DROP_POWERUP_MESSAGE, ( client, msg ) => {
             if ( this.state.phase !== PHASE.racing ) return;
@@ -147,9 +147,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
                 if ( this.state.countdown <= 0 ) {
                     this.state.countdown = 0;
                     this.state.phase = PHASE.racing;
-                    this.queues.forEach( ( q ) => {
-                        q.length = 0;
-                    } );
+                    this.queues.forEach( clearQueue );
                     this.refreshMetadata();
                 }
                 break;
@@ -157,6 +155,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             case PHASE.racing:
                 this.stepRace( dt );
                 this.stepWorld( dt );
+                for ( const p of this.state.players.values() ) froundSimShip( p );
                 break;
         }
     }
@@ -165,17 +164,42 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         return { track: this.track, config: this.config, blocks: this.blocks };
     }
 
+    private stepPlayer( player: PlayerState, sessionId: string, dt: number ): void {
+        const q = this.queues.get( sessionId );
+        if ( ! q ) return;
+        this.fireReady( player, sessionId, q );
+        for ( let n = inputsThisTick( q.inputs.length ); n > 0; n-- ) {
+            const input = q.inputs.shift();
+            if ( ! input ) break;
+            stepRacer( this.raceWorld(), player, sessionId, input, dt, ( t, m ) => this.broadcast( t, m ) );
+            this.fireReady( player, sessionId, q );
+        }
+    }
+
+    private fireReady( player: PlayerState, sessionId: string, q: PlayerQueue ): void {
+        for ( let f = takeFire( q, player.lastProcessedInput ); f; f = takeFire( q, player.lastProcessedInput ) )
+            this.fire( player, sessionId, f );
+    }
+
+    private fire( player: PlayerState, sessionId: string, intent: FireIntent ): void {
+        if ( ! canFire( player, intent.slot ) ) return;
+        const ctx = {
+            state: this.state,
+            track: this.track,
+            broken: this.blocks.broken,
+            config: this.config,
+            broadcast: ( t: string, m: unknown ) => this.broadcast( t, m ),
+        };
+        firePower( ctx, String( this.nextProjectileId++ ), player, sessionId, intent.slot, intent.dir );
+    }
+
     private stepRace( dt: number ): void {
         let racerCount = 0;
         let finishedCount = 0;
         this.state.players.forEach( ( player, sessionId ) => {
             if ( player.spectating ) return;
             racerCount++;
-            if ( player.connected ) {
-                const input = this.queues.get( sessionId )?.shift();
-                if ( input )
-                    stepRacer( this.raceWorld(), player, sessionId, input, dt, ( t, m ) => this.broadcast( t, m ) );
-            }
+            if ( player.connected ) this.stepPlayer( player, sessionId, dt );
             if ( player.finished ) {
                 if ( player.finishTime === 0 ) player.finishTime = this.state.elapsed;
                 finishedCount++;
@@ -273,9 +297,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             p.spectating = false;
             resetPlayerForRace( p, index++ );
         } );
-        this.queues.forEach( ( q ) => {
-            q.length = 0;
-        } );
+        this.queues.forEach( clearQueue );
         this.clearCombat();
         this.state.elapsed = 0;
         this.state.finishDeadline = 0;
@@ -308,7 +330,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             p.lastSafeX = p.x;
         }
         this.state.players.set( client.sessionId, p );
-        this.queues.set( client.sessionId, [] );
+        this.queues.set( client.sessionId, emptyQueue() );
         if ( this.state.hostId === '' ) this.state.hostId = client.sessionId;
         this.refreshMetadata();
     }

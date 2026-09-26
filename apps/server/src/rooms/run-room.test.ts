@@ -19,7 +19,6 @@ import {
     MAX_SHIP_WIDTH,
     PHASE,
     PICKUP_RESPAWN_S,
-    type PlayerInput,
     type PlayerState,
     POWER_SLOTS,
     pickupLayout,
@@ -37,6 +36,7 @@ import {
     toDescriptor,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
+import type { PlayerQueue } from './room-input.js';
 import { RunRoom } from './run-room.js';
 
 const AIM_BACK = 5;
@@ -165,7 +165,7 @@ describe( 'RunRoom combat', () => {
 
         tick( room, 0.25 );
 
-        assert.equal( victim.stunTimer, STUN_SECONDS, 'a zero-armour ship takes the full stun' );
+        assert.equal( victim.stunTimer, Math.fround( STUN_SECONDS ), 'a zero-armour ship takes the full stun' );
         assert.equal( shooter.stunTimer, 0, 'the owner is immune to its own bolt' );
         assert.equal( room.state.projectiles.size, 0, 'a spent bolt is pruned' );
 
@@ -189,7 +189,9 @@ describe( 'RunRoom combat', () => {
         } );
         host.onMessage( BOUNCE_MESSAGE, () => {} );
 
-        const queue = ( room as unknown as { queues: Map< string, PlayerInput[] > } ).queues.get( host.sessionId );
+        const queue = ( room as unknown as { queues: Map< string, PlayerQueue > } ).queues.get(
+            host.sessionId,
+        )?.inputs;
         assert.ok( queue, 'the racer has an input queue' );
         for ( let i = 0; i < 6; i++ ) queue.push( { ...emptyInput( i ), throttle: 1 } );
         tick( room, 6 * FIXED_DT );
@@ -199,6 +201,38 @@ describe( 'RunRoom combat', () => {
         assert.equal( seen.length, 1, 'one contact broadcasts one bounce' );
         assert.equal( seen[ 0 ]?.victimId, host.sessionId );
         assert.ok( Math.abs( ( seen[ 0 ]?.z ?? 0 ) - b.z0 ) < 1, 'the contact sits on the block face' );
+    } );
+
+    test( 'a stall backlog is stepped, not dropped, and drains back to the target', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const racer = playerOf( room, host.sessionId );
+        const queue = ( room as unknown as { queues: Map< string, PlayerQueue > } ).queues.get( host.sessionId );
+        assert.ok( queue, 'the racer has an input queue' );
+        const base = racer.lastProcessedInput;
+        for ( let i = 1; i <= 24; i++ ) queue.inputs.push( { ...emptyInput( base + i ), throttle: 1 } );
+        tick( room, 8 * FIXED_DT );
+        assert.ok( queue.inputs.length <= 3, `backlog left ${ queue.inputs.length }` );
+        assert.equal( racer.lastProcessedInput, base + 24 - queue.inputs.length, 'every taken input was stepped' );
+    } );
+
+    test( 'a fire ahead of the processed input waits for that input, then fires', async () => {
+        const { room, host } = await racingRoom( 1 );
+        const shooter = playerOf( room, host.sessionId );
+        const queue = ( room as unknown as { queues: Map< string, PlayerQueue > } ).queues.get( host.sessionId );
+        assert.ok( queue, 'the racer has an input queue' );
+        arm( shooter, HeldPower.bolt );
+        const base = shooter.lastProcessedInput;
+        for ( let i = 1; i <= 3; i++ ) queue.inputs.push( { ...emptyInput( base + i ), throttle: 1 } );
+
+        host.send( USE_POWERUP_MESSAGE, { slot: 0, seq: base + 3 } );
+        await room.waitForMessage( USE_POWERUP_MESSAGE );
+        assert.equal( room.state.projectiles.size, 0, 'the fire waits for its input' );
+
+        tick( room, 2 * FIXED_DT );
+        assert.equal( room.state.projectiles.size, 0, 'still waiting after two inputs' );
+        tick( room, FIXED_DT );
+        assert.equal( room.state.projectiles.size, 1, 'fires on the tick that processes its input' );
+        assert.equal( shooter.lastProcessedInput, base + 3 );
     } );
 
     test( 'every bolt the client is told to add, it is later told to remove', async () => {
