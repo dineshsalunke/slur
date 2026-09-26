@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26
+Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26 (slice 1 done)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -9,6 +9,7 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 ## Done
 
 - 57ec8d0: plan sent. The OWNER APPROVED option A, the in-process loopback room.
+- dab29d4: slice 1. room-combat/room-bounce/room-input moved to packages/shared/src/run/{combat,racer,input-queue}.ts. `stepCombat(ctx: CombatContext, dt)` (CombatContext = FireContext + mutable broken + pickups + pickupRespawn). mirrorBreaks stays in RunRoom, after stepCombat.
 
 ## State
 
@@ -31,19 +32,21 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 - Slice 4: /test-level mounts NetCanvas (plus a children slot for FrameTap) on the loopback room. The dev layer is a separate module in dev/ or routes/test-level/ (auto-start with no countdown, auto-restart, Shift+1-5 restart, KeyP freeze). NetLoop honours simFreeze. Delete: local-combat(.test).ts, local-ship.tsx, local-loop/, local-*-field/, test-level-hud.tsx, hud-fixture.ts, run-clock.ts. Update the CDP memories (place-the-ship, koota-universe, stage-a-mine). Verify on /test-level.
 - The PR body or commit weighs ≥5 tick-clock options: addEffect (chosen) · setInterval · useFrame ticker · own rAF · the NetLoop callback.
 
+- Slice 1 gates: typecheck + lint clean; shared 418/418, server 38/38 (measured).
+- Server tests reach RunRoom privates by cast: `fixedStep` (run-room.test, room-shield.test) and `clearCombat` (room-shield.test). Slice 2 must keep them or update the tests.
+
 ## Uncommitted
 
 None.
 
 ## Held files
 
-None. Claim slice 1 files with slur-supervisor before the first write.
+None. Slice 2 claim sent to slur-supervisor.
 
 ## Next
 
-1. Claim with the supervisor: packages/shared/src/run/*, packages/shared/src/index.ts, apps/server/src/rooms/{run-room.ts, room-combat.ts, room-bounce.ts, room-input.ts, room-input.test.ts}.
-2. Build slice 1, run `pnpm test` + `pnpm typecheck` + `pnpm lint`, commit by pathspec, report the SHA.
-3. Slices 2–4 in order, each with a claim and a SHA report. Close #288 with the final SHA.
+1. On "clear": build slice 2 (shared `RunSim` in packages/shared/src/run/run-sim.ts; RunRoom becomes a thin adapter). Server tests stay green.
+2. Slices 3–4 in order, each with a claim and a SHA report. Close #288 with the final SHA.
 
 ## Open questions
 
