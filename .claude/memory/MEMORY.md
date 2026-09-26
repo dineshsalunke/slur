@@ -91,3 +91,4 @@ lives in its own file beside this one.
 - [Fake performance.now for timed taps](fake-performance-now-for-timed-taps.md) — advance(t) skips performance.now VFX (bolts, mine throw); override it in-page and step both clocks
 - [Hook onBeforeRender to grab the scene](webglrenderer-render-is-an-instance-method.md) — WebGLRenderer.render is per-instance; wrap Object3D.prototype.onBeforeRender to add a headless-only light
 - [Worker closes its issue](worker-closes-its-issue.md) — OWNER RULE: the fixer runs `gh issue close` with the SHA; no triage pass
+- [Decode audio in headless Chrome](decode-audio-in-headless-chrome.md) — decodeAudioData over CDP gives true length + peak; cuts peaked 1.55 and 0.046 unnoticed
