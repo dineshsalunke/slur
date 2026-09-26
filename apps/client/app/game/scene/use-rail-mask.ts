@@ -1,17 +1,12 @@
 import { LEAD_SEGMENTS, type Track } from '@slur/shared';
-import { useMemo, useRef } from 'react';
-import type * as THREE from 'three';
-import { type RailMask, type RailMaskData, railMaskData } from './rail-glow';
+import { useMemo } from 'react';
+import type { RailMask } from './rail-glow';
 import { segmentCount } from './track-floor';
-import { buildRailRuns } from './track-rails';
+import { trackRails } from './track-rails.state';
 
-export function useRailMask( track: Track ): { data: RailMaskData; railMask: RailMask } {
-    const data = useMemo( () => {
-        const segments = segmentCount( track );
-        return railMaskData( buildRailRuns( track, segments ), segments );
+export function useRailMask( track: Track ): RailMask {
+    return useMemo( () => {
+        const rails = trackRails( track, segmentCount( track ) );
+        return { texture: { current: rails.mask }, count: rails.segments + LEAD_SEGMENTS };
     }, [ track ] );
-    const count = segmentCount( track ) + LEAD_SEGMENTS;
-    const texture = useRef< THREE.DataTexture | null >( null );
-    const railMask = useMemo< RailMask >( () => ( { texture, count } ), [ count ] );
-    return { data, railMask };
 }

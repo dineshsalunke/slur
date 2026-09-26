@@ -6,7 +6,7 @@ import { useRebuildToken } from '../../dev/use-rebuild-token';
 import { useTrack } from '../track-context/use-track';
 import { deckBreakupUniforms, patchDeckBreakup, updateDeckBreakup } from './deck-breakup';
 import { applyDeckFinish } from './deck-finish';
-import { buildRailMask, patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
+import { patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
 import {
     BACKWARD,
     DOWN,
@@ -22,7 +22,7 @@ import {
 import { AHEAD } from './track-instancing';
 import { floorSurface, graphiteSurface } from './track-materials';
 import { spanEdges } from './track-openings';
-import { buildRailRuns } from './track-rails';
+import { trackRails } from './track-rails.state';
 import { patchWallBreakup } from './wall-breakup';
 
 export const FLOOR_TOP_GROUP = 0;
@@ -112,7 +112,7 @@ export function TrackFloor() {
     const track = useTrack();
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
     const segments = segmentCount( track );
-    const mask = useMemo( () => buildRailMask( buildRailRuns( track, segments ), segments ), [ track, segments ] );
+    const { mask } = trackRails( track, segments );
     const deckRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const sideRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const rebuild = useRebuildToken();
@@ -133,14 +133,8 @@ export function TrackFloor() {
         patchWallBreakup( mat, breakup );
     };
 
-    // GPU buffers outlive React's tree: a geometry and rail mask replaced by a width change must be released by hand.
-    useEffect(
-        () => () => {
-            geo.dispose();
-            mask.dispose();
-        },
-        [ geo, mask ],
-    );
+    // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
+    useEffect( () => () => geo.dispose(), [ geo ] );
 
     useFrame( () => {
         updateRailGlow( glow, mask, segments + LEAD_SEGMENTS );

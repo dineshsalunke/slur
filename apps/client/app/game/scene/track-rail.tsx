@@ -20,7 +20,8 @@ import {
     type V3,
 } from './track-geometry';
 import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from './track-materials';
-import { buildRailRuns, type RailRun } from './track-rails';
+import type { RailRun } from './track-rails';
+import { trackRails } from './track-rails.state';
 
 export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
     const metalPos: number[] = [];
@@ -64,8 +65,7 @@ export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
 
 export function TrackRail() {
     const track = useTrack();
-    const runs = useMemo( () => buildRailRuns( track, segmentCount( track ) ), [ track ] );
-    const geo = useMemo( () => buildRailGeometry( runs ), [ runs ] );
+    const geo = useMemo( () => buildRailGeometry( trackRails( track, segmentCount( track ) ).runs ), [ track ] );
     const rebuild = useRebuildToken();
     const materials = useMemo( () => {
         return [
