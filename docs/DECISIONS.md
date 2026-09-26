@@ -1234,17 +1234,18 @@ merge removes most pockets it scanned).
 
 ## ADR-023 — One phrase generator: weave, motifs, arenas and set pieces in three acts
 
-**Date:** 2026-09-26 · **Status:** Proposed (owner approved the RFC with amendments, via slur-supervisor; S1 built in `8a4f1dd`, S2 built in `0ae9967` and the S2 close commit, S3–S7 not built) · **Issue:** #300 (absorbs #292) · **RFC:** `.claude/phases/2026-09-26-unified-generator-rfc.md`
+**Date:** 2026-09-26 · **Status:** Proposed (owner approved the RFC with amendments, via slur-supervisor; S1 built in `8a4f1dd`, S2 built in `0ae9967` and `b90f436`, S3 built in `4ca02e7`, derived pitch built in `afcc66c`, S4–S7 not built) · **Issue:** #300 (absorbs #292) · **RFC:** `.claude/phases/2026-09-26-unified-generator-rfc.md`
 
 ### Decision
 
 1. A new `TrackGen` `'phrase'` builds the track as a chain of phrases: weave `W`, motif `M` (teach → repeat → twist), arena `A`, set piece `S`, rest. Code: `packages/shared/src/sim/phrase/`.
-2. **Length is data.** `TRACK_GEN_SEGMENTS` sets the descriptor length per gen: `phrase` 600 (12,000u), the others 400. No code assumes a length: `sectionCount()` derives the number of sections from `descriptor.length` (≈ 1,952u each; 6 at 600).
+2. **Length is data.** `TRACK_GEN_SEGMENTS` sets the fallback descriptor length per gen: `phrase` 600 (12,000u), the others 400. No code assumes a length: `sectionCount()` derives the number of sections from `descriptor.length`. Since `afcc66c`, `phraseSegments(seed)` sets the `phrase` length per seed (see *Derived pitch* below).
 3. A section is `A · M-teach · M-repeat · S · W · M-twist · rest`. The sections split into three acts (low, mid, high). The last 300u is an arena (the finish sprint).
 4. Motif phrases reuse groove's placement (`placeObstacles`, `segmentOf`) without changing its output. Arenas and rests hold no obstacles.
-5. The weave phrase band width is the difficulty dial, 20/16/14u by act (RFC §1.3). A `W` slot can hold two weaves side by side (the parallel weave, RFC §2.3).
+5. The weave phrase lane width is the difficulty dial, 20/16/14u by act (RFC §1.3). A lane is straight, with sealed walls and a post slalom inside it (S3). A `W` slot can hold two lanes side by side (the parallel weave, RFC §2.3).
 6. Set pieces (RFC §4) must be flyable without their power. Each has one forced pickup outside the 20-pickup bag, and its id carries the power (RFC §6.3).
 7. `weave` and `score` stay behind `?gen=` until `'phrase'` is the default and the owner has played it (S7).
+8. **Obstacle spacing comes from ship physics** (owner rule, 2026-09-26). Slalom posts and motif gates are spaced by a measured lead distance, never a fixed pitch (see *Derived pitch* below).
 
 ### Consequences
 
@@ -1261,3 +1262,43 @@ merge removes most pockets it scanned).
   Result: adherence 1.000 (1,350/1,350 notes) on seeds 1–30. A line pilot (motif line on motif phrases, avoid pilot elsewhere) is no slower than the avoid pilot on 5 classes × seeds 1–5 and 17. It was faster in all 30 runs of the measurement, with 0 deaths; `phrase.test.ts` asserts ≤. The avoid pilot finishes all 30 runs with 0 deaths, but the Freighter takes 19–23 pin bumps per run (about 25% slower). The owner will decide this after a playtest. A pure groove-line pilot is still up to 66 ticks slower in the `weave` slot, which is S3 scope.
 - **Departures from the RFC (S2).** (1) RFC §3.2 says *"`J` — A hole under the line, width 16–32u"*. Motif holes now span the full deck width, because the route goes round a 16u hole. (2) RFC §3.3 says *"posts on **both** sides of the line (a gate)"*. The near side is now a wall to the deck edge, plus a one-sided pin before the onset. A 1-cell step cannot be forced otherwise: the pacing hull is 4u wide, so two 8u doors 4u apart share a lane. (3) The phrase open-space measure counts a slice with no floor across the whole deck as open deck. A full-width hole is a jump, not a narrow lane. This is an early part of the S3 per-kind exemptions.
 - Open: per-kind open-space exemptions for `W` and chokes (RFC §5.3) arrive with S3/S4.
+
+### Amendment — S3 weave lanes and derived pitch (owner rulings via slur-supervisor, 2026-09-27)
+
+**S3 weave (`4ca02e7`).** The owner dropped the curved `weaveRaw` corridor. A weave lane is straight, with sealed walls on both sides, 20/16/14u wide by act. A post slalom inside the lane forces the weave: posts are 4u long and leave an 8u gap (`MIN_LANE`). A parallel weave is two straight lanes, each with its own slalom, split by a hole strip or a wall divider. The avoid pilot now checks its lateral path densely against open runs, so a sidestep at low `vz` does not cross a hole or a divider.
+
+**Derived pitch (`afcc66c`).** The first S3 build used a fixed pitch keyed by lane width (`WEAVE_PITCH` 20u: 52u, 16u: 36u, 14u: 24u). The posts stacked into one dark mass and the next gap could not be read. The owner ruled that spacing must come from ship physics. Code: `packages/shared/src/sim/phrase/pitch.ts`.
+
+- Lead distance for one class: `ACT_SPEED × maxCruise × (REACTION_S + crossSeconds) + 2 × halfL`. `REACTION_S` = 0.3 s. `ACT_SPEED` = 1.0 / 0.9 / 0.75 for acts low / mid / high.
+- `crossSeconds` flies the real `simulate()` with the kick-aware `strafeToward` until `isSettled` holds. It is measured, not a formula.
+- `leadDistance(act, dx)` takes the maximum over the 5 classes and rounds up to `CELL`.
+- Weave pitch = post 4u + `leadDistance(act, lane − 8u)`. The end margin before the funnel is one post (it was one pitch).
+- Motif gate start = pin + `leadDistance(|to − from|)`. `noteBeats` spaces step and held notes by the lead. A motif after a weave gets a lead-in of `leadDistance(act, max |lane centre − x0|)`.
+- `phraseSegments(seed)` sets the length: 5 sections at minimum length, each with a full 480u weave.
+
+Measured 2026-09-27. Lead (u) by lateral offset:
+
+| | 4u | 6u | 8u | 12u |
+|---|---|---|---|---|
+| Lead, act 1 (low) | 120 | 128 | 132 | 148 |
+| Lead, act 2 (mid) | 108 | 116 | 120 | 136 |
+| Lead, act 3 (high) | 92 | 96 | 100 | 112 |
+
+| Weave pitch | 20u lane | 16u lane | 14u lane |
+|---|---|---|---|
+| Act 1 | 152 | 136 | 132 |
+| Act 2 | 140 | 124 | 120 |
+| Act 3 | 116 | 104 | 100 |
+
+- Posts per lane: 2 (20u), 3 (16u), 3 (14u). With the fixed pitch: 2.4, 4.2 and 7.2.
+- Length: 744–768 segments (14,880–15,360u). Always 5 sections: acts low, low, mid, mid, high.
+- Flight, 5 classes × seeds 1–30: the avoid pilot and the line pilot both have 0 bumps, 0 deaths and 30/30 finishes. With the fixed pitch, the Freighter took 792 bumps (avoid) and 211 (line).
+- Mean speed (avoid pilot, u/s): Interceptor 83.7, Fighter 95.5, Phantom 89.5, Comet 111.3, Freighter 121.7. Every class holds 97–99% of its cap.
+
+**Departures from the RFC and from ADR-023 as first written:**
+
+1. RFC §2.1 says the weave is *"Sealed walls both sides of a band on `weaveRaw`"*, and RFC §2.3 says *"Each band follows its own `weaveRaw` line"*. The lanes are now straight, and a post slalom replaces the curve.
+2. The S3 build keyed the slalom pitch by lane width (`WEAVE_PITCH`). The derived pitch replaces that table.
+3. The owner rule names four terms: speed while reacting, the cross, the settle and the hull. The build adds the post length (4u) on top of the lead in the weave pitch.
+4. Decision 2 and RFC Q1 say *"12,000u (600 segments) to start"*. The `phrase` length is now per seed, 744–768 segments on seeds 1–30. 600 stays only as the fallback in `TRACK_GEN_SEGMENTS`. Scripts must call `phraseSegments(seed)`.
+5. The S3 build measured a class split on narrow lanes (14u: Interceptor 84, Fighter 80, Comet 72, Phantom 72, Freighter 60). The derived pitch removes it: the weave no longer splits class speeds. The owner accepted this. Whether class identity needs another lever is an open owner question.
