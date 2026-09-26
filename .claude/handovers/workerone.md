@@ -1,30 +1,29 @@
-Agent: workerone · Lane: #269 Boost pickup · Updated: 2026-09-26 12:30
+Agent: workerone · Lane: #269 Boost pickup · Updated: 2026-09-26 13:00
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Ship the Boost power: +40% of class top speed for 2 s with a 0.2 s ease-out. A second use resets the timer,
-and a stunned racer is refused and keeps the charge. Owner decisions: `gh issue view 269 --comments`.
+Ship the Boost power: +40% of class top speed for 2 s with a 0.2 s ease-out. Owner decisions:
+`gh issue view 269 --comments`.
 
 ## Done
 
-- ce01c2d — plumbing: HeldPower.boost/shield, boostRatio+shieldRatio (0), generic bagCounts.
-- 3b466ea — sim: SimShip.boostTimer, step.ts boost cap + push, startBoost(), server + test-level wiring.
+- ce01c2d — plumbing: HeldPower.boost/shield, boostRatio+shieldRatio, generic bagCounts.
+- 3b466ea — sim: SimShip.boostTimer, step.ts boost cap + push, startBoost().
 - 28048e6 — boost-look.ts geometry.
-- f448401 — visuals: boost-streaks.tsx + boost-streak-material.ts (mounted in world-scene), boost-pickups.tsx,
-  splitPickupLayout boosts + shields buckets, BoostPickups + ShieldPickups mounted in pickup-field and
-  local-pickup-field, Snapshot.boost + pushRemote, power-gem double chevron, bind-room-audio boost edge.
+- f448401 — visuals: streaks, pickups, gem, sfx edge, Snapshot.boost, boosts+shields pickup buckets.
+- 3a6ae8e — BOOST_RATIO 0.15; default bag 5 bolts / 6 seekers / 6 mines / 3 boosts.
+- #269 commented with SHAs (issuecomment-5844110048); left open for owner sign-off.
 
 ## State (measured)
 
-- Gates at f448401: typecheck ✓ · lint ✓ · client 404/404 (new boost-look.test.ts: 3).
-- Headless /test-level with Sim.boostTimer forced: twin marigold streaks trail back from the freighter,
-  full at 1.5 s, shrinking at 0.1 s, gone at 0. Speed read 174 u/s = 1.4 × 124. Rear-view shows them too.
-- Streak tune: LENGTH 10, WIDTH 0.55, INTENSITY 3.5, falloff 2.2. At the chase cam they still reach the
-  frame bottom. Owner look call.
-- Boost pickup in the scene: not seen (BOOST_RATIO 0, no anchors). Geometry centred (test).
-- Remote streaks and the room audio edge: [unmeasured] — needs a hosted room with the ratio on.
+- Gates at 3a6ae8e: typecheck ✓ · lint ✓ · shared 400/400 · server 35/35 · client 404/404.
+- Hosted room on :5173/:2567, headless Chrome A plus node bot B (scratchpad bot-b.mjs + room-check.mjs):
+  own boost 174 u/s, streaks drawn, BOOSTSFX logpoint fired once on A's boost. Remote: Interp boost max
+  1.95, streak mesh count 2 while A was not boosting. B was out of frame, so there is no still of a remote streak.
+- /test-level: boost pickup renders (graphite slab, two marigold chevrons, light pool).
+- Chrome killed; bot exited.
 
 ## Uncommitted
 
@@ -32,21 +31,19 @@ None.
 
 ## Held files
 
-Visuals pushed. traits.ts and attach-room-to-world.ts go back to workerthree now. Holding nothing else
-until the supervisor sequences the BOOST_RATIO flip.
+None. constants.ts and power-bag.test.ts went back to workerthree after 3a6ae8e.
 
 ## Next
 
-1. Wait for the supervisor to sequence BOOST_RATIO 0 → 0.15 with workerthree (plus power-bag.test.ts counts).
-2. After the flip: look at a boost pickup in /test-level headless; drive a hosted room to hear the sfx edge.
-3. `gh issue close 269 -c "<SHAs>"` once the flip lands (or comment and leave open if owner sign-off is due).
+1. Tell the supervisor 3a6ae8e and the check results. The SendMessage for 3a6ae8e was blocked by the
+   auto-mode classifier this seam; the owner was told.
+2. Owner answers on #269 → apply (shares, brake cancel, streak length) → close #269.
 
 ## Open questions
 
-- Owner: final bag shares (6/4/4/3/3 vs 5/6/6/3).
-- Owner: should a brake cancel the boost push? It does now.
-- workerthree: test-level local-combat.ts fire() has no playSfx('boost') on the boost branch (their file).
+- Owner: bag shares; brake cancels boost push (yes now); streak length 10u.
+- workerthree: test-level local-combat.ts fire() has no playSfx('boost').
 
 ## Lessons → memory
 
-none
+.claude/memory/node-bot-as-second-racer.md
