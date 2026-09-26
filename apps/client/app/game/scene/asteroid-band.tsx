@@ -2,7 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { Fragment, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { type AsteroidBand as Band, bandAhead } from './asteroid-config';
-import { type AsteroidPlacement, asteroidField } from './asteroid-field';
+import { type AsteroidPlacement, forEachAsteroid } from './asteroid-field';
 import { asteroidGeometry } from './asteroid-geometry';
 import { AHEAD, BACK } from './track-instancing';
 
@@ -43,6 +43,23 @@ export function AsteroidBand( { band, material }: { band: Band; material: THREE.
         [ band ],
     );
 
+    const place = useMemo(
+        () => ( p: AsteroidPlacement ) => {
+            const mesh = meshes.current[ p.variant ];
+            const i = counts[ p.variant ];
+            if ( ! mesh || i >= band.limit ) return;
+            const half = p.size / 2;
+            _o.position.set( p.x, p.y, p.z );
+            _o.rotation.set( p.rotation[ 0 ], p.rotation[ 1 ], p.rotation[ 2 ] );
+            _o.scale.set( half * p.stretch[ 0 ], half * p.stretch[ 1 ], half * p.stretch[ 2 ] );
+            _o.updateMatrix();
+            mesh.setMatrixAt( i, _o.matrix );
+            writeSpin( variants[ p.variant ].spin.array as Float32Array, i, p );
+            counts[ p.variant ] = i + 1;
+        },
+        [ band, counts, variants ],
+    );
+
     // JUSTIFIED EFFECT — brackets the lifetime of GPU geometry we built ourselves, which R3F does not own.
     useEffect(
         () => () => {
@@ -60,19 +77,7 @@ export function AsteroidBand( { band, material }: { band: Band; material: THREE.
         span.current.i1 = i1;
 
         counts.fill( 0 );
-        for ( const p of asteroidField( band, i0 * band.spacing, i1 * band.spacing ) ) {
-            const mesh = meshes.current[ p.variant ];
-            const i = counts[ p.variant ];
-            if ( ! mesh || i >= band.limit ) continue;
-            const half = p.size / 2;
-            _o.position.set( p.x, p.y, p.z );
-            _o.rotation.set( p.rotation[ 0 ], p.rotation[ 1 ], p.rotation[ 2 ] );
-            _o.scale.set( half * p.stretch[ 0 ], half * p.stretch[ 1 ], half * p.stretch[ 2 ] );
-            _o.updateMatrix();
-            mesh.setMatrixAt( i, _o.matrix );
-            writeSpin( variants[ p.variant ].spin.array as Float32Array, i, p );
-            counts[ p.variant ] = i + 1;
-        }
+        forEachAsteroid( band, i0 * band.spacing, i1 * band.spacing, place );
 
         for ( let v = 0; v < variants.length; v++ ) {
             const mesh = meshes.current[ v ];

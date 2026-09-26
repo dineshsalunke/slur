@@ -46,7 +46,14 @@ function fbm( x: number, y: number, z: number, seed: number ): number {
     return sum;
 }
 
-export function createNoiseVolume(): THREE.Data3DTexture {
+let shared: THREE.Data3DTexture | null = null;
+
+export function noiseVolume(): THREE.Data3DTexture {
+    shared ??= createNoiseVolume();
+    return shared;
+}
+
+function createNoiseVolume(): THREE.Data3DTexture {
     const data = new Uint8Array( SIZE * SIZE * SIZE * CHANNELS );
     let i = 0;
     for ( let z = 0; z < SIZE; z++ ) {

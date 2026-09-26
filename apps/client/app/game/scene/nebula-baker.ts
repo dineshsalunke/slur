@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { NebulaEnvShell } from './nebula-env-shell';
-import { createNoiseVolume } from './nebula-noise-volume';
+import { noiseVolume } from './nebula-noise-volume';
 import { applyPlanets, planetUniforms } from './nebula-planets';
 import { SKY_BAKE_KEYS, SKY_LOOK_KEYS, type SkyKey } from './nebula-presets';
 import { measureProbe, PROBE_H, PROBE_W, type ProbeResult } from './nebula-probe';
@@ -72,7 +72,7 @@ export class NebulaBaker {
     readonly background: THREE.Mesh;
 
     private readonly still = prefersReducedMotion();
-    private readonly noise = createNoiseVolume();
+    private readonly noise = noiseVolume();
     private readonly fields = new THREE.WebGLCubeRenderTarget( FIELD_FACE, {
         type: THREE.UnsignedByteType,
         generateMipmaps: false,

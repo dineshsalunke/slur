@@ -1,10 +1,10 @@
 import { useThree } from '@react-three/fiber';
-import type { Material } from 'three';
+import type { RearViewSurface } from './rear-view-surface';
 
 const TOP_MARGIN = 18;
 
 interface RearViewPanelProps {
-    surface: Material;
+    surface: RearViewSurface;
     width: number;
     height: number;
 }
@@ -16,7 +16,7 @@ export function RearViewPanel( { surface, width, height }: RearViewPanelProps ) 
     return (
         <mesh position={ [ 0, y, 0 ] }>
             <planeGeometry args={ [ width, height ] } />
-            <primitive object={ surface } attach="material" />
+            <shaderMaterial args={ [ surface ] } />
         </mesh>
     );
 }

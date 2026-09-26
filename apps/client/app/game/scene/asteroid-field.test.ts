@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ASTEROID_BANDS, BELT_BAND, CORRIDOR_CLEARANCE, FLANK_BAND, MID_BAND } from './asteroid-config';
-import { asteroidClearance, asteroidField } from './asteroid-field';
+import { asteroidClearance, asteroidField, forEachAsteroid } from './asteroid-field';
 
 const WINDOW: [ number, number ] = [ -80, 900 ];
 
@@ -40,6 +40,18 @@ describe( 'asteroidField', () => {
         const a = asteroidField( MID_BAND, ...WINDOW );
         const b = asteroidField( MID_BAND, ...WINDOW );
         expect( a ).toEqual( b );
+    } );
+
+    it( 'visits the same placements through one reused object', () => {
+        const seen: unknown[] = [];
+        const visited: string[] = [];
+        forEachAsteroid( MID_BAND, ...WINDOW, ( p ) => {
+            if ( ! seen.includes( p ) ) seen.push( p );
+            visited.push( JSON.stringify( p ) );
+        } );
+        const listed = asteroidField( MID_BAND, ...WINDOW ).map( ( p ) => JSON.stringify( p ) );
+        expect( seen ).toHaveLength( 1 );
+        expect( visited.sort() ).toEqual( listed.sort() );
     } );
 
     it( 'agrees with itself across overlapping windows', () => {

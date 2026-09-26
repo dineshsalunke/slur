@@ -68,8 +68,24 @@ function srgbTriple( hex: string ): THREE.Color {
     return new THREE.Color( hex ).convertLinearToSRGB();
 }
 
-export function rearViewSurface( map: THREE.Texture ): THREE.ShaderMaterial {
-    return new THREE.ShaderMaterial( {
+export interface RearViewUniforms {
+    [ uniform: string ]: THREE.IUniform;
+    uMap: THREE.IUniform< THREE.Texture >;
+    uExposure: THREE.IUniform< number >;
+    uGain: THREE.IUniform< number >;
+    uSize: THREE.IUniform< THREE.Vector2 >;
+    uBezelPx: THREE.IUniform< number >;
+    uLipPx: THREE.IUniform< number >;
+    uBezel: THREE.IUniform< THREE.Color >;
+    uLip: THREE.IUniform< THREE.Color >;
+}
+
+export interface RearViewSurface extends THREE.ShaderMaterialParameters {
+    uniforms: RearViewUniforms;
+}
+
+export function rearViewSurface( map: THREE.Texture ): RearViewSurface {
+    return {
         uniforms: {
             uMap: { value: map },
             uExposure: { value: 1 },
@@ -84,5 +100,5 @@ export function rearViewSurface( map: THREE.Texture ): THREE.ShaderMaterial {
         fragmentShader,
         depthTest: false,
         depthWrite: false,
-    } );
+    };
 }
