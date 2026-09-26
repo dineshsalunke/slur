@@ -114,3 +114,4 @@ lives in its own file beside this one.
 - [Short bolts skip the patch](short-bolts-skip-the-patch.md) — 900 u/s bolt hitting within ~45 u lives under one 50 ms patch; the client sees only the HIT
 - [Avoid pilot dithers at a centred post](avoid-pilot-dithers-at-a-centred-post.md) — 0 deaths + no finish = two equal escapes flipping; trace the target, don't reshape the track
 - [Band width is the weave speed dial](band-width-is-the-weave-speed-dial.md) — groove costs a clean pilot 0 s; ≤16u walled band makes long ships lift; 29 s class spread set grace to 45 s (#301)
+- [Doors cannot force a 1-cell step](doors-cannot-force-a-one-cell-step.md) — 8u doors 4u apart share a lane for the 4u hull; use one-sided pins and full-width holes, measure adherence
