@@ -37,7 +37,7 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
 | workerone | w2P:pD | closing #248 (owner said close) | 14%, clear before a lane | none |
 | workertwo | w2P:pF | none (#298 DONE 01f290b, closed) | idle, 9% | none |
 | workerthree | w2P:pG | #292 forks: PLAN first (cleared 0%) | working | none yet |
-| workerfour | w2P:pH | #295 blink: PLAN first; + ADR-022 bloom item closed (keep flash) | working | DECISIONS.md once claimed |
+| workerfour | w2P:pH | #295 blink: PLAN first; + ADR-022 bloom item closed (keep flash) | working | docs/DECISIONS.md (CLEARED, one commit) |
 | workerfive | w2P:pK | #14 reconnection (+#15): PLAN first; verify on hosted room (no reconnection on /test-level) | working | none yet |
 
 ## Open owner questions
