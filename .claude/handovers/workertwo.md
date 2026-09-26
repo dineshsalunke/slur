@@ -19,8 +19,7 @@ Older versions hold #283 and earlier (`git log -p -- .claude/handovers/workertwo
 - Owner-final bag: bolt 4 · seeker 3 · mine 3 · boost 3 · shield 3 · portal 2 · tug 2 [measured, test].
 - After 86060aa: typecheck 0, lint 0, shared 479/479, server 40/40, client 441/441 [measured].
 - GDD numbers read from `packages/shared/src/combat/tug-constants.ts` and `sim/tug-status.ts` this seam.
-- `docs/archive/superseded-design.md` has no PRECEDED entry for the Tractor "momentum leech" [not done;
-  file not claimed].
+- Archive PRECEDED entry for Tractor beam + Grapple → tug line `eefe99f` (supervisor-cleared).
 
 ## Uncommitted
 
@@ -37,7 +36,7 @@ None.
 
 ## Open questions
 
-- Supervisor: add a PRECEDED entry for the Tractor beam to `docs/archive/superseded-design.md`?
+- None. Owner is deciding idle work.
 
 ## Lessons → memory
 
