@@ -1,21 +1,20 @@
-Agent: workerfour · Lane: solid rear-view mirror (#268); pickup spread (#265) parked · Updated: 2026-09-26
+Agent: workerfour · Lane: pickup spread (#265, closed) · Updated: 2026-09-26
 
 ## Goal
 
-#268: make the rear-view mirror opaque. #265: space pickups apart and stop long same-power runs (plan with owner).
+Space pickups apart, spread them across the deck and stop long same-power runs. Deterministic on both ends.
 
 ## Done
 
-- `1199218` (pushed): #268 opaque mirror, normal blending, no feather. 3 px graphite `#1C252C` bezel + 1 px marigold `#F59A24` lip in the same shader. +0 draw calls (same mesh and material).
-- #265 filed and the plan sent to slur-supervisor. Nothing built.
+- `2ce75a4` (pushed): #265. New `sim/pickup-place.ts` (rows 120–180u, slide ≤3 rows, lane pick ±40u within 40u swing, clear-column test) and `combat/power-bag.ts` (20-bag 8/6/6, run cap 2 incl. seams). Ids `${ordinal}.${salt}` on groove and weave. SEEKER_RATIO = MINE_RATIO = 0.3. ADR-002 amendment + GDD §5.3. #265 closed with the table.
+- `1199218` (pushed): #268 solid rear-view mirror.
 
 ## State
 
-- Taps on :5173 `/test-level`, headless DPR 1, muted: `.claude/frame-tap-refs/265mirror-before.png` (see-through), `mirror-after.png` (opaque with frame), `mirror-gain0.png` (image black, frame kept), `mirror-gain2.png` (brighter). The files are gitignored.
-- Bloom cannot wash out the panel. The composer renders at useFrame priority 1 (verified in @react-three/postprocessing dist) and the mirror Hud at 2.
-- Gates: client tsc clean, vitest 391/391, biome clean on both files, comment ratchet OK.
-- #265 numbers: groove 132 pickups/track, all gaps 60u, bolt runs ≥3: 285, longest 12. Weave: same power order on every seed (ids have no salt).
-- Headless Chrome killed by PID. No stray processes.
+- 30 seeds: groove 52.8 pickups/track, gaps 120/140/180u, runs ≥3: 0, longest 2, blocked columns 0. Weave 51.6, gaps 120/160/240u, runs ≥3: 0, blocked 0, 29/1549 swings over 40u.
+- Gates at 2ce75a4: shared 386/386, server 25/25, client 391/391, typecheck clean, biome clean on my files (track.test.ts line-count warning existed before), comment ratchet OK.
+- Strafe reach: every class crosses 80u in ≤0.83 s. That comes from a model of the step.ts strafe rules [not a full simulate() run].
+- The owner must restart `pnpm dev`: shared changed and the pickup ids on the wire changed.
 
 ## Uncommitted
 
@@ -23,16 +22,16 @@ Agent: workerfour · Lane: solid rear-view mirror (#268); pickup spread (#265) p
 
 ## Held files
 
-- none. rear-view-surface.ts and rear-view-pass.tsx released.
+- none.
 
 ## Next
 
-1. #268 follow-up: remove `RearView.featherX/Y` (dev/tuning-schema.ts:139-140, now dead) once workerone commits that file.
-2. #265: wait for owner approval, then claim files and build.
+1. #268 follow-up: remove the dead `RearView.featherX/Y` (dev/tuning-schema.ts:139-140) after workerone commits that file.
+2. Wait for the supervisor.
 
 ## Open questions
 
-- #265 owner: gap range (proposed 120–180u), and whether pickups should also spread sideways.
+- none.
 
 ## Lessons → memory
 
