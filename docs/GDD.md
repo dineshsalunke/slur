@@ -233,6 +233,12 @@ The owner still has to confirm F as the back key.
 and always on a clear lane. Every run of 20 pickups deals 4 Bolts, 3 Seekers, 3 Mines, 3 Boosts, 3
 Shields, 2 Portals and 2 Tug lines in a shuffled order (#290). No power comes up 3 times in a row. Details: `docs/DECISIONS.md` ADR-002 amendment.
 
+**Grab (#298, built).** A ship takes a pickup when its hull overlaps the pickup's grab box:
+`|dx| < grabR + halfW` and `|dz| < grabR + halfL`. `grabR` is **3.2u** (`PICKUP_GRAB_R`), the edge of
+the lit floor pool, so the grab starts 4.2–4.5u to the side, by class. The box is bigger than every
+pickup body. The server decides the grab; client prediction does not. `Pickup.grabR` tunes it live on
+`/test-level` only.
+
 **Mine (#261, built).** A pickup gives a Mine in 3 of every 20 pickups (`MINE_RATIO` = 0.15).
 
 - **Lay (#263).** Forward puts the mine **0.8 s** ahead at the layer's own speed (`MINE_LEAD_S`),
