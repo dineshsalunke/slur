@@ -34,9 +34,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none (#303 DONE 5e9abd0, closed; handover ae5416d) | idle | none |
-| workertwo | w2P:pF | #304 track editor: PLAN ONLY (cleared + briefed 2026-09-27) | working | none yet |
-| workerthree | w2P:pG | #300: physics-derived post spacing (weave + S2 motif pins); S3 base 4ca02e7 | working; NO commit until owner approves numbers | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
+| workerone | w2P:pD | #304 editor UI (S3 + edit-route half of S4); plan 8c709bb | cleared + briefed, working | routes.ts, routes/test-level/{edit,track-editor,edit-button}/* |
+| workertwo | w2P:pF | #304 data + loading (S1, S2, parent route); plan 8c709bb | cleared + briefed, working | shared sim/authored/*, sim/track-provider.ts, src/index.ts, client tracks-plugin*, vite.config.ts, tracks/, routes/test-level/{route.tsx,test-level-room.ts,test-level-canvas/*} |
+| workerthree | w2P:pG | #300 ADR-023 only; derived pitch DONE afcc66c (handover 8bf3f86) | cleared + resumed, working | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
@@ -51,10 +51,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
   "very irritating"). Pitch = distance at design speed for reaction 0.3 s + kick/accel lateral cross + damp
   settle + hull, via simulate(); design speed act1 100% / act2 90% / act3 75% maxCruise, max over classes;
   applies to motif pins too. Briefed workerthree; numbers come back before commit.
-- **Derived pitch results relayed (workerthree, UNCOMMITTED):** Freighter avoid bumps 792→0, all classes
-  97–99% of cap. 4 owner calls pending (my recs): derive motif lead-in after a parallel weave (yes);
-  lengthen track to keep 5 sections (yes); shrink weave end margin (yes); accept no class speed split (yes,
-  playtest). Owner moved to #304 without answering.
+- **Derived pitch DONE afcc66c** (owner go on all 4 recs): 0 bumps/0 deaths all classes; phrase length per
+  seed 744–768 segments; posts per lane 2/3/3. Art-direction folder committed as-is 65d441a (owner OK).
+- **#304 split (owner: 2 workers, talk only when needed, clean pushed tree before handover — done).**
 - **#304 editor (owner, 2026-09-27):** throwaway top-down editor on /test-level; blocks (destructible/solid)
   + gaps; snap 1/2/4u; Edit → Save → Play loop; saved tracks = repo files for designing the generator.
 - **Readability, still to ask the owner:** marigold glow on post faces; posts below camera eye line; floor
