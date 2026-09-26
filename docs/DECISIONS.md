@@ -1251,4 +1251,5 @@ merge removes most pockets it scanned).
 - The `weave` and `groove` digests stay frozen. `phrase` has its own frozen row.
 - S1 (built): the `S` slot is an arena and the `W` slot is a motif phrase. Measured on seeds 1–30 at 600 segments: every groove open-space target holds, every arena is fully open, and 5 classes finish with 0 deaths (mean 99–144 s).
 - A longer track needs the race-end change (#301, grace 45 s, no 180 s cap) before `'phrase'` becomes the default.
-- Open: per-kind open-space exemptions for `W` and chokes (RFC §5.3) arrive with S3/S4. Draw calls and build time at 600 segments are not measured yet.
+- S1 cost at 600 segments (measured 2026-09-27, headless Chrome at DPR 1, `/test-level` seed 20260921, two loads each). Draw calls: 127 for `phrase` and 127 for `groove` at 420 segments. JS per frame: 1.3–1.4 ms for both. First scene frame: 1.5 s for `phrase` and 1.6–2.0 s for `groove`. Long tasks: the same for both. In Node, `resolveTrack` plus a walk of every segment takes 2.3 ms for `phrase` and 2.2 ms for `groove`. The longer track adds no draw calls and no measurable build time.
+- Open: per-kind open-space exemptions for `W` and chokes (RFC §5.3) arrive with S3/S4.
