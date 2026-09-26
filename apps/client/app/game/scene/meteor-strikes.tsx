@@ -9,7 +9,7 @@ import { LocalPlayer, Sim } from '../ecs/traits';
 import { useTrack } from '../track-context/use-track';
 import { accent } from './accent';
 import { asteroidGeometry } from './asteroid-geometry';
-import { queueBurst } from './block-burst';
+import { queueBurst } from './block-burst/block-burst.utils';
 import { trackGround } from './debris-ground';
 import type { DebrisGround } from './debris-physics';
 import { FRACTURE_CORE_HEX } from './fractured-block-shader';

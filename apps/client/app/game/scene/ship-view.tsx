@@ -3,7 +3,7 @@ import type { Entity } from 'koota';
 import { useTrait } from 'koota/react';
 import { Fragment, Suspense } from 'react';
 import { Net, Render } from '../ecs/traits';
-import { ShieldDome } from './shield-dome';
+import { ShieldDome } from './shield-dome/shield-dome';
 import { ShipModel } from './ship-model';
 import { ShipShadow } from './ship-shadow';
 

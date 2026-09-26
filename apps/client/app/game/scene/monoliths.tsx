@@ -3,8 +3,8 @@ import { useTrack } from '../track-context/use-track';
 import { monolithLayout } from './arch-field';
 import { PILLAR, PILLAR_FIELD, type PillarFieldConfig } from './monolith-config';
 import { ARCH_FRAME } from './monolith-frame';
-import { MonolithFrames } from './monolith-frames';
-import { MonolithGroup } from './monolith-group';
+import { MonolithFrames } from './monolith-frames/monolith-frames';
+import { MonolithGroup } from './monolith-group/monolith-group';
 import { bodyTransform, seamTransform } from './monolith-transforms';
 import { useRailMask } from './use-rail-mask';
 

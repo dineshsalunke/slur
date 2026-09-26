@@ -26,7 +26,7 @@ import { CANVAS_GL } from './scene/canvas-gl';
 import { MineField } from './scene/mine-field';
 import { MineShock } from './scene/mine-shock';
 import { PickupField } from './scene/pickup-field';
-import { ProjectileField } from './scene/projectile-field';
+import { ProjectileField } from './scene/projectile-field/projectile-field';
 import { RearView } from './scene/rear-view';
 import { SeekerField } from './scene/seeker-field';
 import { WorldScene } from './scene/world-scene';

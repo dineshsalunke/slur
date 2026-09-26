@@ -2,11 +2,11 @@ import { pickupsOf } from '@slur/shared';
 import { Fragment, useMemo } from 'react';
 import { isPickupTaken } from '../pickup-state';
 import { useTrack } from '../track-context/use-track';
-import { BoltPickups } from './bolt-pickups';
-import { BoostPickups } from './boost-pickups';
-import { MinePickups } from './mine-pickups';
+import { BoltPickups } from './bolt-pickups/bolt-pickups';
+import { BoostPickups } from './boost-pickups/boost-pickups';
+import { MinePickups } from './mine-pickups/mine-pickups';
 import { SeekerPickups, splitPickupLayout } from './seeker-pickups';
-import { ShieldPickups } from './shield-pickups';
+import { ShieldPickups } from './shield-pickups/shield-pickups';
 
 export function PickupField() {
     const track = useTrack();

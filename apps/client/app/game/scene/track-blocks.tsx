@@ -9,7 +9,7 @@ import { blockWorld } from '../block-state';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import { useTrack } from '../track-context/use-track';
 import { boltCloseness, endFrame, noteBroken, noteStanding, type ShipProbe } from './block-breaks';
-import { BlockBurst } from './block-burst';
+import { BlockBurst } from './block-burst/block-burst';
 import { BlockDebris } from './block-debris';
 import { blotchWearUniforms, updateBlotchWear } from './deck-breakup';
 import { applyDeckFinish, deckTextureSpan } from './deck-finish';

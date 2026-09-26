@@ -1,14 +1,14 @@
 import { Fragment, type ReactNode } from 'react';
 import { RenderScale } from '../../dev/render-scale';
-import { BackFill } from './back-fill';
+import { BackFill } from './back-fill/back-fill';
 import { BoostStreaks } from './boost-streaks';
-import { EngineLight } from './engine-light';
+import { EngineLight } from './engine-light/engine-light';
 import { ExhaustField } from './exhaust-field';
 import { ExplosionField } from './explosion-field';
 import { FinishGate } from './finish-gate';
 import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark';
-import { NearFill } from './near-fill';
+import { NearFill } from './near-fill/near-fill';
 import { SceneEffects } from './scene-effects';
 import { SceneEnvironment } from './scene-environment';
 import { Ships } from './ships';

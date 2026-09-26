@@ -1,5 +1,5 @@
 import { BOLT_SPAWN_AHEAD, BOLT_SPEED, BOLT_TTL } from '@slur/shared';
-import type { BoltSink } from '../../../game/scene/bolt-streaks';
+import type { BoltSink } from '../../../game/scene/bolt-streaks/bolt-streaks';
 import { emitMineShot, mineNow } from '../../../game/scene/mine-shots';
 import { localCombat } from '../local-combat';
 

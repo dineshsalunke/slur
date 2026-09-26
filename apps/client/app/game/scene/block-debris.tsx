@@ -8,7 +8,7 @@ import { shake, shakeFrom } from '../camera/shake';
 import { useTrack } from '../track-context/use-track';
 import { hash01 } from './asteroid-field';
 import { BREAK_SMASH, type BreakEvent, drainBreaks, drainMends, settled } from './block-breaks';
-import { queueBurst } from './block-burst';
+import { queueBurst } from './block-burst/block-burst.utils';
 import { trackGround } from './debris-ground';
 import { addHullPoint, type DebrisBody, type DebrisGround, makeBody, resetBody, setBoxInertia } from './debris-physics';
 import { beginTick, type DebrisTick, makeTick, moveBody, sparkOnLanding } from './debris-tick';

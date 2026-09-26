@@ -1,10 +1,10 @@
 import { pickupsOf } from '@slur/shared';
 import { Fragment, useMemo } from 'react';
-import { BoltPickups } from '../../../game/scene/bolt-pickups';
-import { BoostPickups } from '../../../game/scene/boost-pickups';
-import { MinePickups } from '../../../game/scene/mine-pickups';
+import { BoltPickups } from '../../../game/scene/bolt-pickups/bolt-pickups';
+import { BoostPickups } from '../../../game/scene/boost-pickups/boost-pickups';
+import { MinePickups } from '../../../game/scene/mine-pickups/mine-pickups';
 import { SeekerPickups, splitPickupLayout } from '../../../game/scene/seeker-pickups';
-import { ShieldPickups } from '../../../game/scene/shield-pickups';
+import { ShieldPickups } from '../../../game/scene/shield-pickups/shield-pickups';
 import { useTrack } from '../../../game/track-context/use-track';
 import { isTaken } from './local-pickup-field.utils';
 
