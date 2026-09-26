@@ -1,40 +1,42 @@
-Agent: workertwo · Lane: none (idle) · Updated: 2026-09-26 14:20
+Agent: workertwo · Lane: #290 tug line (planning) · Updated: 2026-09-26
 
-Older versions hold #283 B4/B5, #277 look check, #285, #272, #282, #266 and earlier
-(`git log -p -- .claude/handovers/workertwo.md`).
+Older versions hold #283 and earlier (`git log -p -- .claude/handovers/workertwo.md`).
 
 ## Goal
 
-- None. Idle, waiting for a lane from the supervisor.
+- #290 tug line: an elastic line that latches onto a rival (or a block ahead, which folds in the grapple).
+  It catapults the firer and slows the target. It replaces the GDD §5.7 Tractor beam.
 
 ## Done
 
-- #283 B4/B5: `87c758f` batch 1 (20 scene components), `c92a27e` batch 2 (10), `e234fcd` batch 3 (9).
-- Earlier #283: `492e8d2` B1/B7, `6ad8055`, `2034287` B0, `fa42f18` B2+B3, `f1ddda5` B6.
-- Handed off (supervisor, option b): workerfive colocates `scene-effects.tsx` in its boost lane, raises
-  the grit rule to error and closes #283 with the SHAs above.
+- Plan and addendum sent to slur-supervisor (2026-09-26). Nothing built yet.
 
 ## State
 
-- After e234fcd: client typecheck clean; vitest 64 files / 446 tests pass; `pnpm lint` passes [measured].
-- Only plugin hits left in the client: `game/scene/scene-effects.tsx` (3) [measured].
+- Plan: new SimShip fields `tugTimer`, `slowTimer` and `tugAnchorZ` (predicted through `copySimShip`),
+  a `tug` message with the outcomes latch/anchor/none, 4 slices (S1 sim · S2 shared dispatch/mix ·
+  S3 client VFX · S4 docs + live check).
+- The client prediction copies every key in `SIM_SHIP_KEYS` (apps/client/app/net/prediction.ts:20)
+  [measured].
 
 ## Uncommitted
 
-None of mine.
+None.
 
 ## Held files
 
-None.
+None. Files are claimed per slice after the owner approves.
 
 ## Next
 
-1. Wait for a new lane from slur-supervisor.
+1. Wait for the owner's approval and answers to Q1–Q5 through the supervisor.
+2. Claim the S1 files, then build S1.
 
 ## Open questions
 
-- None. The owner question about scene-effects.tsx is withdrawn.
+- Q1 back effect on a rival (a slow / b lateral yank / c pull forward) · Q2 audio assets ·
+  Q3 start values · Q4 back fire with no rival = no fire? · Q5 block reel along z only?
 
 ## Lessons → memory
 
-- `.claude/memory/bulk-move-without-git-mv.md` (written last seam, 5cf5620).
+- none
