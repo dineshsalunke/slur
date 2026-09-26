@@ -1,23 +1,9 @@
 import { HeldPower } from '@slur/shared';
 import { useQueryFirst, useTrait } from 'koota/react';
 import { Fragment } from 'react';
-import { Held, LocalPlayer } from '../ecs/traits';
-import { useSelectedSlot } from '../input/power-select';
-
-function starPoints( spikes: number, outer: number, inner: number ): string {
-    const pts: string[] = [];
-    for ( let i = 0; i < spikes * 2; i++ ) {
-        const r = i % 2 === 0 ? outer : inner;
-        const a = ( i / ( spikes * 2 ) ) * Math.PI * 2 - Math.PI / 2;
-        pts.push( `${ ( 24 + r * Math.cos( a ) ).toFixed( 2 ) },${ ( 24 + r * Math.sin( a ) ).toFixed( 2 ) }` );
-    }
-    return pts.join( ' ' );
-}
-
-const MINE_STAR = starPoints( 8, 22, 11 );
-const SHIELD_HEX = starPoints( 3, 6, 6 );
-const BOOST_LEAD = '24,3 42,21 42,28 24,10 6,28 6,21';
-const BOOST_TRAIL = '24,19 42,37 42,44 24,26 6,44 6,37';
+import { Held, LocalPlayer } from '../../ecs/traits';
+import { useSelectedSlot } from '../../input/power-select';
+import { BOOST_LEAD, BOOST_TRAIL, MINE_STAR, SHIELD_HEX } from './power-gem.constants';
 
 export function PowerGem() {
     const ship = useQueryFirst( LocalPlayer );

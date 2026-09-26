@@ -1,4 +1,4 @@
-import { TouchButton } from './touch-button';
+import { TouchButton } from './touch-button/touch-button';
 
 export function TouchPad() {
     return (

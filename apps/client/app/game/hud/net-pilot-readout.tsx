@@ -3,7 +3,7 @@ import type { RunState, Track } from '@slur/shared';
 import { Fragment, useMemo } from 'react';
 import { standingsStore, useSelfFinished, useSelfSpectating } from '../net/standings-store';
 import { FlightReadout } from './flight-readout';
-import { PowerRack } from './power-rack';
+import { PowerRack } from './power-rack/power-rack';
 
 export function NetPilotReadout( { room, track }: { room: Room< RunState >; track: Track } ) {
     const spectating = useSelfSpectating( room );

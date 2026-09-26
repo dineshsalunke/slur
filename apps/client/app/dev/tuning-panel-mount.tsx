@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { usePanelShown } from './panel-visibility';
 
-const TuningPanel = import.meta.env.DEV ? lazy( () => import( './tuning-panel' ) ) : null;
+const TuningPanel = import.meta.env.DEV ? lazy( () => import( './tuning-panel/tuning-panel' ) ) : null;
 
 export function TuningPanelMount() {
     const shown = usePanelShown();

@@ -1,8 +1,6 @@
-import { POWER_SLOTS } from '@slur/shared';
-import { PowerCell } from './power-cell';
-import { PowerGem } from './power-gem';
-
-const SLOTS = Array.from( { length: POWER_SLOTS }, ( _, i ) => i );
+import { PowerCell } from '../power-cell/power-cell';
+import { PowerGem } from '../power-gem/power-gem';
+import { SLOTS } from './power-rack.constants';
 
 export function PowerRack() {
     return (

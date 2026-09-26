@@ -1,15 +1,8 @@
 import { HeldPower } from '@slur/shared';
 import { useQueryFirst, useTrait } from 'koota/react';
-import { Held, LocalPlayer } from '../ecs/traits';
-import { useSelectedSlot } from '../input/power-select';
-
-const LABEL: Record< number, string > = {
-    [ HeldPower.bolt ]: 'Bolt',
-    [ HeldPower.seeker ]: 'Seeker',
-    [ HeldPower.mine ]: 'Mine',
-    [ HeldPower.boost ]: 'Boost',
-    [ HeldPower.shield ]: 'Shield',
-};
+import { Held, LocalPlayer } from '../../ecs/traits';
+import { useSelectedSlot } from '../../input/power-select';
+import { LABEL } from './power-cell.constants';
 
 export function PowerCell( { slot }: { slot: number } ) {
     const ship = useQueryFirst( LocalPlayer );

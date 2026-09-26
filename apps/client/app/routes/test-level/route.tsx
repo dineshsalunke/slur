@@ -1,9 +1,8 @@
-import { isTrackGen, type TrackGen } from '@slur/shared';
+import { isTrackGen } from '@slur/shared';
 import { loadSfx } from '../../audio/sfx-map';
 import type { Route } from './+types/route';
+import { DEFAULT_GEN } from './route.constants';
 import { TestLevelCanvas } from './test-level-canvas';
-
-const DEFAULT_GEN: TrackGen = 'groove';
 
 export function meta() {
     return [
