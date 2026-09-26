@@ -6,6 +6,8 @@ const CACHE_LIMIT = 64;
 const WALL_REACH = 0.55;
 const WALL_SLIDE = 0.85;
 
+const grounds = new WeakMap< Track, WeakMap< ReadonlySet< number >, DebrisGround > >();
+
 function inside( b: Block, x: number, z: number ): boolean {
     return x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1;
 }
@@ -65,12 +67,25 @@ function shove( body: DebrisBody, b: Block, bounce: number ): void {
 }
 
 export function trackGround( track: Track, broken: ReadonlySet< number > ): DebrisGround {
+    let byBroken = grounds.get( track );
+    if ( ! byBroken ) {
+        byBroken = new WeakMap();
+        grounds.set( track, byBroken );
+    }
+    const hit = byBroken.get( broken );
+    if ( hit ) return hit;
+    const made = buildGround( track, broken );
+    byBroken.set( broken, made );
+    return made;
+}
+
+function buildGround( track: Track, broken: ReadonlySet< number > ): DebrisGround {
     const cache = new Map< number, Segment >();
 
     const segment = ( i: number ): Segment => {
         const hit = cache.get( i );
         if ( hit ) return hit;
-        if ( cache.size >= CACHE_LIMIT ) cache.clear();
+        if ( cache.size >= CACHE_LIMIT ) cache.delete( cache.keys().next().value as number );
         const made = track.segmentAt( i );
         cache.set( i, made );
         return made;
