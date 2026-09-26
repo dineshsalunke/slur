@@ -1,35 +1,37 @@
-Agent: workerthree · Lane: Shield pickup #270 — DONE · Updated: 2026-09-26
+Agent: workerthree · Lane: Mine fizzle #280 — DONE · Updated: 2026-09-26
 
 ## Goal
 
-Shield power: a 5 s window that absorbs one bolt, mine or seeker hit, with a hex dome and a pop. The
-server is authoritative.
+A mine fired where it cannot land still spends the power, and shows a fizzle (VFX and sound) so the
+player sees why nothing happened.
 
 ## Done
 
-- c9e78a3: shield.ts helpers, Shield trait, shield-look, ShieldDome, ShieldPickups.
-- 26badb9: wired end to end. The pieces:
-  - Constants: SHIELD_S 5, SHIELD_POP_MESSAGE, SHIELD_RATIO 0.15, and `shieldS` in SimConfig.
-  - Schema: `@type('boolean') shielded` is appended after boostTimer. `shieldTimer` is a plain field.
-  - Server: room-combat `shieldAbsorbs` (mine trigger, seeker hit), the bolt strike in run-room,
-    `stepShield` per player (dead → drop), and clearCombat drops every shield.
-  - Client: Shield on both spawns, `listen('shielded')`, and shieldPop → popAt + sparks + sound.
-  - Also: ShieldDome in ShipView, the HUD ring gem, and the /test-level local shield. The test-level
-    boost now plays its sound.
-  - Tests: room-shield.test.ts; the bag and combat-step tests were updated.
-- Issue #270 closed with the SHA.
+- ccc5e48: #280 end to end. Issue closed with the SHA.
+  - Shared: `MineOutcome` gains `'fizzle'`. `mineFizzle(ship, halfL, ownerId, cfg, dir)` builds the
+    event at ship x/y and `mineDropZ`.
+  - Server: `layMine` in room-combat broadcasts the fizzle on `MINE_BURST_MESSAGE` when `aimMine` fails.
+    No new message constant, so combat/constants.ts and attach-room-to-world.ts stay untouched.
+  - Client: `MineShock` has `kind: 'big' | 'small' | 'fizzle'`. A fizzle is a ring that collapses
+    inward (1.6R, 0.4 s), plus a spark. The cue is `mineFizzle` = death_derezz.ogg at rate 1.8 and
+    gain 0.55. The layer hears it at full gain, others at 0.6×.
+  - /test-level: local-combat fizzles the same way.
+  - Supervisor add-ons: bind-room-audio uses `musicForPhase`. mine-shock drops `toneMapped: false`
+    (commented on #275 item 1; mine-bodies.tsx:37 still has it).
 
 ## State
 
-- Gates at 26badb9: typecheck clean. Tests: shared 403/0, server 41/0, client 415/415. The comment
-  ratchet, canvas isolation and ls-lint pass.
-- `biome check .` fails only on packages/shared/src/sim/track-digest.test.ts. That file is from 888a682
-  (workerfour, #276), not mine.
-- Default bag: 2 bolts, 6 seekers, 6 mines, 3 boosts, 3 shields (measured).
-- /test-level headless: E raises the dome, and it lapses after 5 s (measured, screenshots in the
-  scratchpad). The dome reads fairly opaque and hides most of the ship.
-- The HUD shield gem has not been looked at [unmeasured]. Neither has a pop in a two-client room
-  [unmeasured].
+- Tests at ccc5e48: server 52/52 and client 423/423 (measured).
+- Shared: 406/408. The 2 failures are the phantom fixture pocket and the weave digest. They are not
+  mine-related. The cause is probably other workers' uncommitted sim/types.ts and constants.ts
+  [inferred, not re-run at HEAD].
+- Client tsc errors in track-view.tsx and beat-deck-canvas.tsx come from another lane's uncommitted
+  edits. None are in my files (measured).
+- Biome: 8 #283 warnings on mine-shock.tsx (constants and helpers in a component file). The old file
+  had the same shape. Left for the #283 lane.
+- Headless /test-level at 28u: the big, small and fizzle rings all read. The fizzle reads as a ring
+  that closes inward with a spark (measured).
+- The fizzle sound was not heard. Audio was muted headless [unmeasured].
 
 ## Uncommitted
 
@@ -37,7 +39,7 @@ server is authoritative.
 
 ## Held files
 
-- none. All released to the supervisor at 26badb9.
+- none. All released at ccc5e48.
 
 ## Next
 
@@ -45,9 +47,9 @@ server is authoritative.
 
 ## Open questions
 
-- Owner: is the dome too opaque? The alpha is 1 in `shieldAlpha` in `scene/shield-look.ts`.
-- Owner: with shield at 0.15, bolts are down to 2 per bag of 20. Is that intended?
+- Owner: is a pitched-up derezz zap the right fizzle sound? A dedicated sample is an option.
+- Carried over: is the shield dome too opaque? Are 2 bolts per bag of 20 intended?
 
 ## Lessons → memory
 
-- .claude/memory/ast-grep-drops-semicolons.md (appended: a block rewrite flattens formatting)
+- none
