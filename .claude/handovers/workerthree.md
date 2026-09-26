@@ -43,9 +43,10 @@ route files, `src/index.ts`.
 
 ## Next
 
-1. Wait for the next #300 slice from the supervisor.
+1. IDLE. Owner decision 2026-09-27: #300 S4 is on HOLD. The owner hand-authors tracks with the #304 editor
+   first; generator design resumes from those. Take no work until slur-supervisor assigns it.
 2. Readability (post glow, lower posts) is a separate owner question. Do not build it unasked.
-3. S4 per the RFC.
+3. S4 per the RFC — only after the hold lifts.
 
 ## Open questions
 
