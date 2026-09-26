@@ -112,3 +112,4 @@ lives in its own file beside this one.
 - [ast-grep type patterns need context](ast-grep-type-patterns-need-context.md) — `-p 'let a: T<U>' --selector generic_type`; a no-match exits non-zero and kills a `set -e` loop
 - [Shared tests need an in-package outDir](shared-tests-need-in-package-outdir.md) — a scratch outDir cannot resolve @colyseus/schema; 36 fake failures; use `pnpm test`
 - [Short bolts skip the patch](short-bolts-skip-the-patch.md) — 900 u/s bolt hitting within ~45 u lives under one 50 ms patch; the client sees only the HIT
+- [Band width is the weave speed dial](band-width-is-the-weave-speed-dial.md) — groove costs a clean pilot 0 s; ≤16u walled band makes long ships lift; 20 s grace < 29 s class spread

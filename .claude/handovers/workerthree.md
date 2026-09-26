@@ -1,19 +1,23 @@
-Agent: workerthree · Lane: #292 track forks · Updated: 2026-09-26
+Agent: workerthree · Lane: #300 unified generator — RFC only (#292 folded in) · Updated: 2026-09-26
 
 ## Goal
 
-Add forks to the groove generator. A wall or a gap divider splits the deck into two parallel lanes, and the lanes rejoin further on. Each lane must hold threadable clearance on its own.
+Write the RFC for one track generator: weave feel + motifs + arenas + power-up set pieces, ~3 min run. Build
+nothing until the owner approves.
 
 ## Done
 
-- Read the issue, GDD §0, ADR-006/007/019/020 and the groove generator (`sim/groove/*`).
-- Sent the plan, 7 owner questions and the S1 claim to slur-supervisor.
+- RFC written: `.claude/phases/2026-09-26-unified-generator-rfc.md` (SHA in the seam message).
+- Memory: `.claude/memory/band-width-is-the-weave-speed-dial.md`.
 
 ## State
 
-- The default gen is `'groove'` (`sim/space.ts:132`).
-- `OPEN_TARGETS.longestWall` = 60u fails any wall divider longer than 60u (owner question 5).
-- #268 is still open for the owner's look test (09cb486).
+- Groove run time = empty-deck time for all 5 classes; clean pilot 97–99% of top (seeds 1–10, delay 200–500 ms).
+- Weave band 16u: Freighter ~80, Phantom ~89; 14u: Fighter 86, Phantom ~76, Freighter ~73; 12u: long ships cannot pass.
+- Race ends 20 s after the first finisher; clean class spread 29 s at 8,000u, 32–45 s at 12,000u.
+- 600-segment groove: 24/25 finish; the miss is a pilot fault at a lone post [inferred].
+- weave/score rows are pilot-limited (1/50 and partial finishes); not diagnosed.
+- No human finish-time data exists; the mistake budget in RFC §1.4 is [guessed].
 
 ## Uncommitted
 
@@ -21,18 +25,18 @@ None.
 
 ## Held files
 
-None. The S1 claim is pending the supervisor's answer.
+None after the seam commit.
 
 ## Next
 
-1. Wait for the owner's approval and answers, relayed by the supervisor.
-2. S1: `groove/fork.ts`, and reserve fork slots in `line.ts`, the same way arenas are reserved.
-3. S2: live check on /test-level. Close #292 with the SHAs.
+1. Wait for the owner's answers to RFC §8 (relayed by slur-supervisor).
+2. On approval: fold answers into the RFC, draft ADR-023, then S1 (§7).
+3. Q2 (race end) needs its own issue before S7.
 
 ## Open questions
 
-The 7 questions in the plan message: generators, divider mix and gap width, frequency, lane content, longestWall exemption, digest re-pin, forks vs arenas.
+RFC §8, questions 1–9. Q2 (race-end grace vs class spread) blocks a longer track.
 
 ## Lessons → memory
 
-none
+`.claude/memory/band-width-is-the-weave-speed-dial.md`
