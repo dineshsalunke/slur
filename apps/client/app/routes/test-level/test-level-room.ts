@@ -9,6 +9,7 @@ import {
 import { simFreeze } from '../../dev/sim-freeze';
 import { finishWatch, resetFinishWatch } from '../../game/finish/finish-watch';
 import { LoopbackRoom } from '../../net/loopback-room/loopback-room';
+import { editorOpen } from './test-level-canvas/pause-while-editing/pause-while-editing.state';
 import { testLevelDescriptor } from './test-level-canvas/test-level-canvas.utils';
 import { autoRestart } from './test-level-dev/test-level-dev.state';
 import { tunedSimConfig } from './tuned-sim-config';
@@ -36,6 +37,6 @@ export function openTestLevelRoom( descriptor: TrackDescriptor ): LoopbackRoom {
         config: tunedSimConfig(),
     } );
     room.send( START_MESSAGE );
-    stopCurrent = room.run( () => simFreeze.on );
+    stopCurrent = room.run( () => simFreeze.on || editorOpen.on );
     return room;
 }
