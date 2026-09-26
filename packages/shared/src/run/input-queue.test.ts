@@ -12,7 +12,7 @@ import {
     sanitizeInputs,
     TARGET_QUEUED_INPUTS,
     takeFire,
-} from './room-input.js';
+} from './input-queue.js';
 
 const valid = { seq: 7, throttle: 0.5, brake: 0, strafe: -0.25, jump: true };
 

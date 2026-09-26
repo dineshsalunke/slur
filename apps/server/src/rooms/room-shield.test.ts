@@ -16,6 +16,7 @@ import {
     POWER_SLOTS,
     ROOM_NAME,
     RunState,
+    resolveMineEvent,
     SEEKER_HIT_MESSAGE,
     SEEKER_MISS_MESSAGE,
     SHIELD_POP_MESSAGE,
@@ -23,7 +24,6 @@ import {
     STUN_SECONDS,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
-import { resolveMineEvent } from './room-combat.js';
 import { RunRoom } from './run-room.js';
 
 interface CombatRoom {

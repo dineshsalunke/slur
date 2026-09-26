@@ -4,6 +4,7 @@ import {
     COLOR_COUNT,
     COUNTDOWN_SECONDS,
     canFire,
+    clearQueue,
     createFixedStep,
     createSimWorld,
     DEFAULT_SIM_CONFIG,
@@ -11,26 +12,31 @@ import {
     DROP_POWERUP_MESSAGE,
     dropPower,
     dropShield,
+    emptyQueue,
+    enqueueFire,
+    enqueueInputs,
     FIXED_DT,
+    type FireIntent,
+    firePower,
     froundSimShip,
     HeldPower,
-    HIT_MESSAGE,
-    hitShipsOf,
     INPUT_MESSAGE,
     type InputMessage,
+    inputsThisTick,
     isColorId,
     isShipId,
     isSlot,
     isTrackGen,
-    type MineEvent,
     PHASE,
     type Pickup,
+    type PlayerQueue,
     PlayerState,
     POWER_SLOTS,
     type PowerSlotMessage,
     pickupsOf,
     procgenDescriptor,
     RACE_GRACE_SECONDS,
+    type RaceWorld,
     RESTART_MESSAGE,
     type RunMetadata,
     RunState,
@@ -42,30 +48,14 @@ import {
     type SimConfig,
     type SimWorld,
     START_MESSAGE,
-    seekerShipsOf,
     shouldSpectateOnJoin,
     startGridX,
-    stepBolts,
-    stepMines,
-    stepPickups,
-    stepSeekers,
-    stepShield,
-    stunDurationForShip,
+    stepCombat,
+    stepRacer,
     type Track,
+    takeFire,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
-import { type RaceWorld, stepRacer } from './room-bounce.js';
-import { firePower, resolveMineEvent, resolveSeekerEvent, shieldAbsorbs } from './room-combat.js';
-import {
-    clearQueue,
-    emptyQueue,
-    enqueueFire,
-    enqueueInputs,
-    type FireIntent,
-    inputsThisTick,
-    type PlayerQueue,
-    takeFire,
-} from './room-input.js';
 
 const RECONNECT_SECONDS = 20;
 const MAX_NAME = 16;
@@ -225,49 +215,19 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     }
 
     private stepWorld( dt: number ): void {
-        this.state.players.forEach( ( p ) => {
-            if ( p.dead ) dropShield( p );
-            else stepShield( p, dt );
-        } );
-        const ships = hitShipsOf( this.state.players.entries() );
-        const onMine = ( event: MineEvent ) =>
-            resolveMineEvent( this.state, event, ( t, m ) => this.broadcast( t, m ), this.config );
-        stepBolts(
-            this.state.projectiles,
-            ships,
-            this.track,
-            this.blocks.broken,
-            dt,
-            ( strike ) => {
-                const v = this.state.players.get( strike.victimId );
-                if ( v && shieldAbsorbs( v, strike, ( t, m ) => this.broadcast( t, m ) ) ) return;
-                if ( v ) v.stunTimer = stunDurationForShip( v.shipId, this.config );
-                this.broadcast( HIT_MESSAGE, strike );
+        stepCombat(
+            {
+                state: this.state,
+                track: this.track,
+                broken: this.blocks.broken,
+                config: this.config,
+                broadcast: ( t, m ) => this.broadcast( t, m ),
+                pickups: this.pickups,
+                pickupRespawn: this.pickupRespawn,
             },
-            this.config,
-            this.state.mines,
-            onMine,
-        );
-        const seekerShips = seekerShipsOf( this.state.players.entries() );
-        stepSeekers(
-            this.state.seekers,
-            seekerShips,
-            this.track,
-            this.blocks.broken,
             dt,
-            ( event ) => resolveSeekerEvent( this.state, event, ( t, m ) => this.broadcast( t, m ), this.config ),
-            this.config,
         );
-        stepMines( this.state.mines, seekerShips, dt, onMine, this.config );
         this.mirrorBreaks();
-        stepPickups(
-            this.state.players.values(),
-            this.pickups,
-            this.state.pickupTaken,
-            this.pickupRespawn,
-            dt,
-            this.config,
-        );
     }
 
     private mirrorBreaks(): void {

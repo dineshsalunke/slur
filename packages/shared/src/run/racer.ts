@@ -1,16 +1,12 @@
-import {
-    BOUNCE_MESSAGE,
-    type BounceMessage,
-    bounceContact,
-    type PlayerInput,
-    type PlayerState,
-    type SimConfig,
-    type SimWorld,
-    simulate,
-    type Track,
-    tuningForShip,
-} from '@slur/shared';
-import type { Broadcast } from './room-combat.js';
+import type { PlayerState } from '../schema.js';
+import { tuningForShip } from '../ship-classes.js';
+import { BOUNCE_MESSAGE, type BounceMessage, bounceContact } from '../sim/bounce-contact.js';
+import type { PlayerInput } from '../sim/input.js';
+import type { Track } from '../sim/space.js';
+import { simulate } from '../sim/step.js';
+import type { SimWorld } from '../sim/types.js';
+import type { SimConfig } from '../sim-config.js';
+import type { Broadcast } from './combat.js';
 
 export interface RaceWorld {
     track: Track;

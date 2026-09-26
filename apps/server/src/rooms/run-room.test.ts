@@ -20,6 +20,7 @@ import {
     MAX_SHIP_WIDTH,
     PHASE,
     PICKUP_RESPAWN_S,
+    type PlayerQueue,
     type PlayerState,
     POWER_SLOTS,
     pickupLayout,
@@ -37,7 +38,6 @@ import {
     toDescriptor,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
-import type { PlayerQueue } from './room-input.js';
 import { RunRoom } from './run-room.js';
 
 const AIM_BACK = 5;

@@ -1,36 +1,23 @@
+import { aimBolt, powerIn, spendPower, startBoost, stepBolts, stepPickups } from '../combat/combat-step.js';
 import {
-    absorbHit,
-    aimBolt,
-    aimMine,
-    aimSeeker,
-    evictOldest,
-    type FireDir,
     HeldPower,
     HIT_MESSAGE,
     type HitMessage,
-    lockTarget,
     MINE_BURST_MESSAGE,
-    Mine,
-    type MineEvent,
-    mineFizzle,
-    type PlayerState,
-    Projectile,
-    powerIn,
-    type RunState,
-    raiseShield,
     SEEKER_HIT_MESSAGE,
     SEEKER_MISS_MESSAGE,
-    Seeker,
-    type SeekerEvent,
     SHIELD_POP_MESSAGE,
-    type SimConfig,
-    seekerShipsOf,
-    spendPower,
-    startBoost,
-    stunDurationForShip,
-    type Track,
-    tuningForShip,
-} from '@slur/shared';
+} from '../combat/constants.js';
+import type { FireDir } from '../combat/fire-dir.js';
+import { aimMine, evictOldest, type MineEvent, mineFizzle, stepMines } from '../combat/mine.js';
+import type { Pickup } from '../combat/pickups.js';
+import { hitShipsOf } from '../combat/projectiles.js';
+import { aimSeeker, lockTarget, type SeekerEvent, seekerShipsOf, stepSeekers } from '../combat/seeker.js';
+import { absorbHit, dropShield, raiseShield, stepShield } from '../combat/shield.js';
+import { Mine, type PlayerState, Projectile, type RunState, Seeker } from '../schema.js';
+import { stunDurationForShip, tuningForShip } from '../ship-classes.js';
+import type { Track } from '../sim/space.js';
+import type { SimConfig } from '../sim-config.js';
 
 export type Broadcast = ( type: string, message: unknown ) => void;
 
@@ -40,6 +27,12 @@ export interface FireContext {
     broken: ReadonlySet< number >;
     config: SimConfig;
     broadcast: Broadcast;
+}
+
+export interface CombatContext extends FireContext {
+    broken: Set< number >;
+    pickups: readonly Pickup[];
+    pickupRespawn: Map< string, number >;
 }
 
 export function firePower(
@@ -63,6 +56,43 @@ export function shieldAbsorbs( v: PlayerState, at: HitMessage, broadcast: Broadc
     if ( ! absorbHit( v ) ) return false;
     broadcast( SHIELD_POP_MESSAGE, at );
     return true;
+}
+
+export function stepCombat( ctx: CombatContext, dt: number ): void {
+    const { state, track, broken, config, broadcast } = ctx;
+    state.players.forEach( ( p ) => {
+        if ( p.dead ) dropShield( p );
+        else stepShield( p, dt );
+    } );
+    const onMine = ( event: MineEvent ) => resolveMineEvent( state, event, broadcast, config );
+    stepBolts(
+        state.projectiles,
+        hitShipsOf( state.players.entries() ),
+        track,
+        broken,
+        dt,
+        ( strike ) => {
+            const v = state.players.get( strike.victimId );
+            if ( v && shieldAbsorbs( v, strike, broadcast ) ) return;
+            if ( v ) v.stunTimer = stunDurationForShip( v.shipId, config );
+            broadcast( HIT_MESSAGE, strike );
+        },
+        config,
+        state.mines,
+        onMine,
+    );
+    const seekerShips = seekerShipsOf( state.players.entries() );
+    stepSeekers(
+        state.seekers,
+        seekerShips,
+        track,
+        broken,
+        dt,
+        ( event ) => resolveSeekerEvent( state, event, broadcast, config ),
+        config,
+    );
+    stepMines( state.mines, seekerShips, dt, onMine, config );
+    stepPickups( state.players.values(), ctx.pickups, state.pickupTaken, ctx.pickupRespawn, dt, config );
 }
 
 function fireBolt( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {

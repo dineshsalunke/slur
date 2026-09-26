@@ -1,4 +1,7 @@
-import { clamp, type FireDir, fireDir, isSlot, type PlayerInput } from '@slur/shared';
+import { isSlot } from '../combat/combat-step.js';
+import { type FireDir, fireDir } from '../combat/fire-dir.js';
+import type { PlayerInput } from '../sim/input.js';
+import { clamp } from '../sim/space.js';
 
 export const MAX_QUEUED_INPUTS = 120;
 export const TARGET_QUEUED_INPUTS = 3;

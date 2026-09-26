@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     DEFAULT_SIM_CONFIG,
+    type FireContext,
+    firePower,
     HALF_WIDTH,
     HeldPower,
     MINE_BURST_MESSAGE,
@@ -12,7 +14,6 @@ import {
     type Segment,
     type Track,
 } from '@slur/shared';
-import { type FireContext, firePower } from './room-combat.js';
 
 function track( deck: boolean ): Track {
     const seg = ( i: number ): Segment => ( {
