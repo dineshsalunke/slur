@@ -21,6 +21,8 @@ export const Net = trait( { sessionId: '', shipId: DEFAULT_SHIP as string, color
 
 export const Remote = trait();
 
+export const Shield = trait( () => ( { on: false, since: 0, popAt: -1 } ) );
+
 export interface Snapshot {
     t: number;
     x: number;
