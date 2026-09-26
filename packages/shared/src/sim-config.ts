@@ -54,6 +54,7 @@ import {
     TUG_GAIN,
     TUG_KICK,
     TUG_RANGE,
+    TUG_RATIO,
     TUG_RELEASE_S,
     TUG_S,
     TUG_SLOW_S,
@@ -103,6 +104,7 @@ export interface SimConfig extends PortalConfig {
     boostRiseS: number;
     shieldRatio: number;
     shieldS: number;
+    tugRatio: number;
     tugRange: number;
     tugKick: number;
     tugS: number;
@@ -161,6 +163,7 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     boostRiseS: BOOST_RISE_S,
     shieldRatio: SHIELD_RATIO,
     shieldS: SHIELD_S,
+    tugRatio: TUG_RATIO,
     tugRange: TUG_RANGE,
     tugKick: TUG_KICK,
     tugS: TUG_S,

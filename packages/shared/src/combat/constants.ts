@@ -26,7 +26,17 @@ export const BOLT_SPAWN_AHEAD = 3;
 export const STUN_SECONDS = 1.2;
 export const PICKUP_RESPAWN_S = 3;
 
-export const HeldPower = { none: 0, bolt: 1, seeker: 2, mine: 3, boost: 4, shield: 5, portal: 6, portalB: 7 } as const;
+export const HeldPower = {
+    none: 0,
+    bolt: 1,
+    seeker: 2,
+    mine: 3,
+    boost: 4,
+    shield: 5,
+    portal: 6,
+    portalB: 7,
+    tug: 8,
+} as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
 
 export type SeekerWindowMode = 'time' | 'distance';
