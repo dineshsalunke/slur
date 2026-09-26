@@ -35,8 +35,8 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | closing #248 (owner said close) | 14%, clear before a lane | none |
-| workertwo | w2P:pF | none (#298 DONE 01f290b, closed) | idle, 9% | none |
-| workerthree | w2P:pG | #300 unified generator: RFC ONLY (cleared, briefed) | working | none yet |
+| workertwo | w2P:pF | #301 race end: grace 45 s, remove 180 s cap (briefed, no plan round) | working | claim pending |
+| workerthree | w2P:pG | #300 phrase gen: RFC 1a8921c APPROVED w/ amendments → S1 build | working | claim pending |
 | workerfour | w2P:pH | #295 blink: PLAN first; + ADR-022 bloom item closed (keep flash) | working | docs/DECISIONS.md (CLEARED, one commit) |
 | workerfive | w2P:pK | #14 reconnection (+#15): PLAN first; verify on hosted room (no reconnection on /test-level) | working | none yet |
 
@@ -65,7 +65,7 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
 
 ## Next
 
-0. #300 (filed): owner wants one generator = weave feel + predictable motifs + combat arenas + power-up set pieces, ~3 min run. Length draft 13–14k u (21k too long: Interceptor 84 u/s, 180 s cap). workerthree writes RFC at .claude/phases/2026-09-26-unified-generator-rfc.md; relay it.
+0. #300 RFC APPROVED (owner 2026-09-26): 12,000u to start (may grow), grace 45 s + NO 180 s cap (#301, workertwo), Q3–Q9 as recommended, gen 'phrase', retire weave/score at S7. Owner addition: parallel weaves side by side (L/R halves, or two weaves split by a 4–8u hole strip). Watch: with no cap a race with no finisher never ends; #301 reports the exit. Was: owner wants one generator = weave feel + predictable motifs + combat arenas + power-up set pieces, ~3 min run. Length draft 13–14k u (21k too long: Interceptor 84 u/s, 180 s cap). workerthree writes RFC at .claude/phases/2026-09-26-unified-generator-rfc.md; relay it.
 
 1. Relay plans. Serialize #295 against #14 on run-sim.ts and attach-room-to-world.ts.
 2. Later candidates: #291 boomerang, #297 membrane, #293 hazards (needs art cues), #294 parry, #299 Seeker.flyY.
