@@ -1,32 +1,36 @@
-Agent: workerone · Lane: #227 remainder — sky review cleanup · Updated: 2026-09-26 12:20
+Agent: workerone · Lane: #269 Boost pickup · Updated: 2026-09-26 (context seam at ~191k)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Close out the review items left on #227 (findings: `.claude/phases/2026-09-23-review-pr-221-224.md`). Owner
-said GO. The worker closes the issue when it is done.
+Ship the Boost power: +40% of class top speed for 2 s with a 0.2 s ease-out. A second use resets the timer,
+and a stunned racer is refused and keeps the charge. Owner decisions: `gh issue view 269 --comments`. The
+effect runs in the shared simulate(). Pickup form: marigold double chevron. Active form: twin broad thrust
+streaks. Bind boost_thrust.ogg.
 
 ## Done
 
-- 3948541 #258 shipped earlier (closed by the supervisor).
-- (a) ADD planet/moon counts, (b) ADD missing-rock-map claim, (c) nbGlobe fwidth order: all already in c99c40d
-  (git blame on docs/ADD.md:214, :283-284 and nebula-shaders.ts:170-171). No edit needed. The `sinR <= 0`
-  return at :165 reads a uniform, so it is uniform control flow.
-- (d) Bake time measured (below). Script: scratchpad `bake-time.mjs url port`.
+- ce01c2d — plumbing: HeldPower.boost=4 / shield=5, boostRatio+shieldRatio in SimConfig (both 0), generic
+  bagCounts (bolt takes the rest, zero-count kinds dropped), explicit bolt branch in server firePower and
+  test-level fire(). Unblocked workerthree (#270).
+- 3b466ea — sim: SimShip.boostTimer (+ SIM_SHIP_KEYS, spawnShip; PlayerState field APPENDED last, plain).
+  step.ts boostCap/boostThrust; applyLongitudinal(cap, push). Push = gain·maxCruise/riseS (0.4·top/0.25 s)
+  unless stunned or braking. Coast drag is off while pushing. The timer keeps ticking through a stun.
+  markDead/respawn clear it. combat-step startBoost(). Server + test-level call it. Constants BOOST_GAIN 0.4,
+  BOOST_S 2, BOOST_EASE_S 0.2, BOOST_RISE_S 0.25, BOOST_RATIO **0** (held at 0 until the visuals land).
+- (this seam) apps/client/app/game/scene/boost-look.ts — chevron shell/glyph/core geometry + streak
+  plane + streak constants. Nothing mounts it yet.
 
-## State (measured unless marked)
+## State (measured)
 
-- Headless DPR 1, ANGLE Metal, Apple M1 Pro, :5173/test-level, 1280x633. NebulaBaker.update wrapped with
-  gl.finish() before and a sync readPixels after:
-  bake + relight median 112.2 ms (109.4–115.5, n=8) · relight only median 13.6 ms (13.0–18.3, n=8) ·
-  field bake ≈ 98 ms [inferred, difference] · idle update 1.1 ms · first-load frame 387 ms (includes every
-  shader compile, not bake-only).
-- (e) dev still: scratchpad `shots/dark-q-dev-59529e8.png` (spawn pose, KeyP freeze). Mean luma by band:
-  sky 22.5 · mid 29.3 · deck 21.4. Script: scratchpad `still.mjs url port out.png`.
-- (e) 036645c still: NOT taken. It needs an old build served on a second port, which the owner's one-stack
-  rule forbids. I asked the supervisor for an exception (or an old still).
-- Scratchpad = `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/ac1ed156-baed-404d-aed3-9cecbbad8dbc/scratchpad/`.
+- Gates at 3b466ea: typecheck ✓ · lint ✓ (warnings only) · shared 400/400 · server 35/35 · client 401/401.
+- Tests: packages/shared/src/sim/boost.test.ts (8 tests: every class reaches 1.4× top, no-throttle push,
+  duration + ease, reset-not-add, stunned refusal, stun stops push, death clears, mid-boost copy replays
+  identically). run-room.test.ts: boost timer set + no projectile + reset, stunned refused and charge kept.
+- Prediction: activation stays on the usePowerUp message. boostTimer reaches the predicted ship by
+  reconcile (copySimShip). The local feel lags one RTT [unmeasured]. The supervisor approved no optimistic set.
+- Nothing seen in a browser yet.
 
 ## Uncommitted
 
@@ -34,16 +38,43 @@ None.
 
 ## Held files
 
-None.
+Released by the supervisor for commit 2, and still mine until the visuals commit is pushed:
+- new: game/scene/boost-look.ts, boost-pickups.tsx, boost-streaks.tsx, boost-streak-material.ts
+- game/scene/seeker-pickups.tsx, pickup-field.tsx, routes/test-level/local-pickup-field.tsx,
+  game/scene/world-scene.tsx, audio/bind-room-audio.ts, game/hud/power-gem.tsx
+- BORROWED from workerthree (hand back after push): game/ecs/traits.ts, net/attach-room-to-world.ts
+- packages/shared/src/combat/constants.ts: one line only, BOOST_RATIO 0 → 0.15 (plus power-bag.test.ts
+  default counts → 5/6/6/3). Confirm with the supervisor first, since the shared files went back to
+  workerthree at 3b466ea.
 
 ## Next
 
-1. #227 CLOSED 2026-09-26 with the full comment. (e) old still skipped by owner decision (option 3): graphite, deck, blocks and lighting changed since 036645c, so a pair cannot isolate the sky. Idle until the supervisor assigns a lane.
+1. Tell the supervisor 3b466ea landed (done at this seam) and wait for the resume.
+2. boost-streak-material.ts: additive ShaderMaterial. Plane uv.y = along (0 at the ship). Fade
+   pow(1-along, falloff), soft across-width edge, hot→accent tint, uIntensity (BOOST_STREAK_INTENSITY 5).
+   Include tonemapping_fragment. Never toneMapped false.
+3. boost-streaks.tsx: one InstancedMesh, 2 per ship (MAX 24), useFrame at priority 0.25 like ExhaustField.
+   Level = min(1, boostTimer/BOOST_EASE_S). Local reads Sim.boostTimer. Remote reads the last Interp snapshot `.boost`.
+   Compose group.position/quaternion, then offset x = ±BOOST_STREAK_SPREAD·halfW, y = LIFT, z = -halfL. Scale
+   (WIDTH, 1, LENGTH·level). Mount in world-scene.tsx.
+4. traits.ts Snapshot.boost:number; attach-room-to-world.ts pushRemote `boost: p.boostTimer`.
+5. seeker-pickups.tsx splitPickupLayout: add `boosts` and `shields` buckets. boost-pickups.tsx copies
+   mine-pickups.tsx using boost-look geometry. Mount <BoostPickups layout={layout.boosts}> in pickup-field.tsx
+   and local-pickup-field.tsx.
+6. Audio: bind-room-audio.ts, local player: playSfx('boost') when boostTimer rises (> prev + 0.05). In
+   test-level local-combat.ts fire(), playSfx('boost') on the boost branch.
+7. power-gem.tsx: double chevron polygons for HeldPower.boost.
+8. Flip BOOST_RATIO to 0.15 (after the supervisor confirms). Gates. Look in /test-level with a headless
+   capture (DPR 1, mute, kill after). Commit, push, hand traits/attach back to workerthree.
+9. `gh issue close 269 -c "<shipped + SHAs; proposed bag shares 6/4/4/3/3 or current 5/6/6/3 — owner picks>"`.
+   Report the SHA and gates to slur-supervisor.
 
 ## Open questions
 
-none
+- Owner: final bag shares. Proposals: bolt .30/seeker .20/mine .20/boost .15/shield .15 (6/4/4/3/3), or keep
+  seeker/mine at .30 and take boost from bolts (5/6/6/3).
+- Owner: should a brake cancel the boost push? It does now (push = 0 while braking). The cap stays raised.
 
 ## Lessons → memory
 
-none
+none (nothing durable beyond the repo record this seam)
