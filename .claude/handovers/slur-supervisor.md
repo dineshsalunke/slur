@@ -37,16 +37,17 @@ The unsent text in an idle prompt box is Claude Code's suggested reply, not the 
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #273 netcode | items 2+4 building; items 1+3 cleared | room-bounce.ts, net/prediction.ts, run-room.ts, net-canvas.tsx (+ claims it sends) |
-| workertwo | w2P:pF | #283 file layout | convention + audit; sends plan before moves | convention docs; batches cleared one by one |
-| workerthree | w2P:pG | #270 done | AT CONTEXT WARNING, seam coming: clear it | none |
-| workerfour | w2P:pH | #276 track contract | item 1 building | top-level shared constants.ts, sim/track.ts, block-depth.ts(+test), fracture-shadow.ts(+test), merge-blocks.ts, pickup-place.ts, track-digest.test.ts, track-contract.test.ts |
+| workerone | w2P:pD | #273 netcode, all 4 items | building | sim/types.ts, sim/fround.test.ts, combat/constants.ts, run-room.ts, room-input.ts(+test), run-room.test.ts, net/prediction.ts(+test), attach-room-to-world.ts, ecs/net-systems.ts, input/current-input.ts, net-canvas.tsx |
+| workertwo | w2P:pF | #283 file layout | B0 GO (docs/config/lint at warn); B1-B3 may follow; B4/B5 HELD for #285; B7 after #274 | CLAUDE.md, conventions/r3f.md, rules/react-house-style.md, rules/component-files.md, .ls-lint.yml, biome.json, biome-plugins/component-module-scope.grit |
+| workerthree | w2P:pG | #280 mine fizzle | resumed (cleared) | claims pending (room-combat.ts, local-combat.ts expected) |
+| workerfour | w2P:pH | #276 item 3 (pow) | resumed (cleared); must report weave digest diff and wait for owner OK | block-depth.ts(+test), track-digest.test.ts |
 | workerfive | w2P:pK | #274 run-view store | building | use-run-view.ts, run-view-store.test.ts, 10 overlay consumers, overlays.tsx, net-hud.tsx, test-room.ts, overlay tests |
 
 ## Next
 
-1. workerthree's seam message → clear it → give it #280 (mine fizzle: room-combat.ts, local-combat.ts; check
-   workerone does not hold room-combat.ts) or #281 (remove invuln: step.ts, schema.ts, combat constants).
+1. #285 (owner: stop prop-drilling Track, ~31 .tsx; verify router context crosses the R3F Canvas) — assign
+   and sequence against #283 B4/B5 (same scene files). Suggest: #285 first, then B4/B5.
+   #276 item 1 landed f32a72c (digests unchanged). workerthree #270 handover a7450cd.
 2. #284 (style) → next free worker, after #274 releases roster/winner-card/colour-swatches.
 3. Follow-up: switch `bind-room-audio.ts:154` to `musicForPhase` (`audio/music-for-phase.ts`, from #272).
 4. workerfour: report the weave digest diff before item 3 (`**` removal) lands; owner must OK it.
