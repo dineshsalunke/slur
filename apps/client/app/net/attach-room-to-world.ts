@@ -62,6 +62,7 @@ function pushRemote( ent: Entity, p: PlayerState ): void {
         vx: p.vx,
         dead: p.dead,
         stunned: p.stunTimer > 0,
+        boost: p.boostTimer,
     } );
     if ( interp.buffer.length > 120 ) interp.buffer.shift();
 }

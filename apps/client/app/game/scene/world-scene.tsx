@@ -2,6 +2,7 @@ import type { Track } from '@slur/shared';
 import { Fragment, type ReactNode } from 'react';
 import { RenderScale } from '../../dev/render-scale';
 import { BackFill } from './back-fill';
+import { BoostStreaks } from './boost-streaks';
 import { EngineLight } from './engine-light';
 import { ExhaustField } from './exhaust-field';
 import { ExplosionField } from './explosions';
@@ -25,6 +26,7 @@ export function WorldScene( { track, children }: { track: Track; children?: Reac
             <EngineLight />
             <ExplosionField />
             <ExhaustField />
+            <BoostStreaks />
             <HitSpark />
             <TrackView track={ track } />
             <FinishGate track={ track } />

@@ -31,6 +31,7 @@ export interface Snapshot {
     vx: number;
     dead: boolean;
     stunned: boolean;
+    boost: number;
 }
 export const Interp = trait( () => ( { buffer: [] as Snapshot[] } ) );
 

@@ -17,14 +17,28 @@ export interface PickupLayouts {
     bolts: Anchor[];
     seekers: Anchor[];
     mines: Anchor[];
+    boosts: Anchor[];
+    shields: Anchor[];
+}
+
+function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] {
+    switch ( power ) {
+        case HeldPower.seeker:
+            return out.seekers;
+        case HeldPower.mine:
+            return out.mines;
+        case HeldPower.boost:
+            return out.boosts;
+        case HeldPower.shield:
+            return out.shields;
+        default:
+            return out.bolts;
+    }
 }
 
 export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
-    const out: PickupLayouts = { bolts: [], seekers: [], mines: [] };
-    for ( const a of layout ) {
-        const power = pickupPower( a.id );
-        ( power === HeldPower.seeker ? out.seekers : power === HeldPower.mine ? out.mines : out.bolts ).push( a );
-    }
+    const out: PickupLayouts = { bolts: [], seekers: [], mines: [], boosts: [], shields: [] };
+    for ( const a of layout ) bucketOf( out, pickupPower( a.id ) ).push( a );
     return out;
 }
 

@@ -16,6 +16,7 @@ import { MUSIC, playBolt, playSfx, startSfxLoop, stopSfxLoop } from './sfx-map';
 const THREAT_Z = 90;
 const THREAT_X = 8;
 const MINE_FAR_GAIN = 0.6;
+const BOOST_EDGE_S = 0.05;
 
 export function bindRoomAudio( room: Room< RunState > ): () => void {
     const $ = getStateCallbacks( room );
@@ -27,6 +28,7 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
     const prevStun = new Map< string, number >();
     const prevSlots: number[] = [];
     const prevDead = new Map< string, boolean >();
+    let prevBoost = 0;
     const threatened = new Set< string >();
     const locked = new Set< string >();
 
@@ -42,6 +44,8 @@ export function bindRoomAudio( room: Room< RunState > ): () => void {
         if ( ! pd && p.dead ) playSfx( 'death' );
         else if ( pd && ! p.dead ) playSfx( 'respawn' );
         prevDead.set( me, p.dead );
+        if ( p.boostTimer > prevBoost + BOOST_EDGE_S ) playSfx( 'boost' );
+        prevBoost = p.boostTimer;
     };
 
     const onPlayerChange = ( sid: string, p: PlayerState ): void => {

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export const BOOST_STREAK_LENGTH = 16;
-export const BOOST_STREAK_WIDTH = 0.9;
-export const BOOST_STREAK_INTENSITY = 5;
+export const BOOST_STREAK_LENGTH = 10;
+export const BOOST_STREAK_WIDTH = 0.55;
+export const BOOST_STREAK_INTENSITY = 3.5;
 export const BOOST_STREAK_LIFT = 0.35;
 export const BOOST_STREAK_SPREAD = 0.5;
 
