@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26 (slice 3 done)
+Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26 (slice 4 code committed, live verify pending)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -8,44 +8,45 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Done
 
-- 57ec8d0: plan sent. The OWNER APPROVED option A, the in-process loopback room.
-- dab29d4: slice 1. room-combat/room-bounce/room-input moved to packages/shared/src/run/{combat,racer,input-queue}.ts.
-- 268dcb2: slice 2. Shared `RunSim` (packages/shared/src/run/run-sim.ts). RunRoom is a 76-line adapter with a public `sim`.
-- d39de1c: slice 3a. `RunRoomLike` (apps/client/app/net/run-room-like.ts) replaces `Room< RunState >` in 28 client files. `stateCallbacks(room)` (net/state-callbacks.ts) replaces the SDK `getStateCallbacks`. Overlay tests mock the helper (test-room.ts `callbacksMock`). Client gains `"@colyseus/schema": "catalog:"`.
-- a79bfc3: slice 3b. `LoopbackRoom` (net/loopback-room/loopback-room.ts): `new LoopbackRoom(descriptor, name?)`, public `sim`, `step(seconds)`, `run()` → addEffect unsubscribe. sessionId `'local'`, roomId `'loopback'`. Test in loopback-room.test.ts. The commit body holds the 5-option tick-clock weighing.
+- dab29d4 slice 1, 268dcb2 slice 2 (shared RunSim), d39de1c slice 3a (RunRoomLike + stateCallbacks), a79bfc3 slice 3b (LoopbackRoom). Pushed: b38e236..759f165.
+- 5336f7e: slice 4 code. NOT pushed. NOT verified live.
+  - RunSim `{ countdownSeconds }` option (3rd ctor arg; default 3 s; 0 = straight to racing). Test in run-sim.test.ts.
+  - `LoopbackRoom(descriptor, { name, countdownSeconds })`; `run(paused?)` skips step while paused() is true.
+  - routes/test-level/test-level-room.ts: `openTestLevelRoom(gen)` (module singleton; stops the previous room's addEffect; resets autoRestart + finishWatch; sends START; `run(() => simFreeze.on)`). The route clientLoader calls it. shouldRevalidate only on a ?gen change.
+  - routes/test-level/test-level-dev/: TestLevelDev (inside the Canvas via the NetCanvas children slot): KeyP freeze, Shift+1-5 → `restartRun(room, shipId)` (sim.resetToLobby + SET_CLASS + START), useFrame `stepAutoRestart` (on finishWatch.cut → restartRun; resetFinishWatch once the decoded phase is racing and localFinished is false).
+  - TestLevelCanvas = RoomProvider + NetCanvas{TestLevelDev, FrameTap} + FpsReadout DOM strip.
+  - NetLoop honours simFreeze; camera choice moved to `updateNetCamera` in net-loop.utils.ts.
+  - Local* files deleted (list in the commit body).
 
 ## State
 
-- Owner answers: /test-level goes straight to GO (no countdown). The HUD shows the real 1-racer roster (the fixture goes). Shift+1-5 restarts the run with the new class.
-- OWNER CONDITION 1: the loopback room is normal game code, NOT dev-gated.
-- OWNER CONDITION 2: the dev extras (auto-start, auto-restart after the finish curtain, Shift+1-5, KeyP freeze) sit in a SEPARATE dev layer on top of the loopback room.
-- Measured: a real `Room<RunState>` satisfies `RunRoomLike` structurally (typecheck clean with route.tsx passing `loaderData.room`).
-- Measured: lockfile diff is 3 lines (the catalog link only); `pnpm why` shows one @colyseus/schema 4.0.30.
-- Measured: slice 3 gates — typecheck + lint clean (6 pre-existing warnings, none mine); client 448/448.
-- Kept on the real `Room`: net/matchmaking(.test).ts, net/session.ts, lobby/lobby-store.ts (they use leave/onDrop/onReconnect/onStateChange).
-- LoopbackRoom has no countdown skip. `sim.start()` goes through COUNTDOWN_SECONDS. Slice 4 "straight to GO" needs a way in: either a RunSim option or the dev layer stepping the countdown out. [undecided]
-- LoopbackRoom `onMeta` is a no-op.
-- Commits are local on dev, not pushed (origin/dev is 10 behind, including other workers' commits). [push left to the supervisor, as for slices 1–2]
+- Measured at 5336f7e: typecheck + lint clean (6 pre-existing warnings); shared 422/422, server 38/38, client 437/437.
+- Owner conditions: loopback room is normal game code (not dev-gated); dev extras in a separate layer (done: test-level-dev/).
+- [unmeasured] Nothing in slice 4 has run in a browser. Risks to check first:
+  1. Auto-restart: the finish-camera frame between the cut and the next patch; a re-triggered curtain while the decoded phase is still `finished`.
+  2. Shift+1-5 mid-race: the predictor snaps to the reset grid; check no streak or stuck `Prev`.
+  3. KeyP freeze: run() pauses the sim and NetLoop pauses the render; the addEffect `last` timestamp keeps moving, so unfreeze does not catch up (intended).
+  4. The HUD hides in PHASE.finished (ON_TRACK_PHASES = countdown, racing). Old /test-level HUD never hid.
+- The CDP memories are STALE after 5336f7e: place-the-ship-over-cdp, koota-universe-reaches-the-page-world, stage-a-mine-on-test-level (they use localCombat.seekers and direct Sim writes). New hooks: the room is the loaderData / `openTestLevelRoom`; server-side state is `room.sim.state` (write x/z/slots there; the client ship reconciles on the next 50 ms patch).
 
 ## Uncommitted
 
-None (after this handover commit).
+None.
 
-## Held files
+## Held files (claim CLEARED by slur-supervisor)
 
-Slice 3 claim is finished. I release every slice 3 file. Nothing held.
+routes/test-level/**, game/net-canvas.tsx, game/net-loop/net-loop.tsx + net-loop.utils.ts, net/loopback-room/*, packages/shared/src/run/run-sim.ts + test, memories place-the-ship-over-cdp / koota-universe-reaches-the-page-world / stage-a-mine-on-test-level.
 
 ## Next
 
-1. Claim slice 4 with the supervisor. Expected files: routes/test-level/* (route, test-level-canvas, local-combat(.test).ts, local-ship.tsx, local-loop/, local-*-field/, test-level-hud.tsx, hud-fixture.ts, run-clock.ts), game/net-canvas.tsx (children slot), game/net-loop/net-loop.tsx (simFreeze), a new dev layer module, packages/shared/src/run/run-sim.ts if the countdown skip goes there, and the CDP memories (place-the-ship, koota-universe, stage-a-mine).
-2. Build slice 4: /test-level mounts NetCanvas on a LoopbackRoom (room.run() from a module singleton, not a useEffect cleanup). Dev layer: auto-start with no countdown, auto-restart after the finish curtain, Shift+1-5 restart with the class, KeyP freeze. Delete the Local* files. Verify on /test-level (owner rule) with headless Chrome at DPR 1, then kill it.
-3. Close #288 with the final SHA.
+1. Verify on /test-level (owner rule) against the owner's stack :5173. Use headless Chrome, `--force-device-scale-factor=1 --mute-audio`, on your own free CDP port, and kill it by PID afterwards. Supervisor checklist: flight, pickups, bolts, seekers, mines, boost + blur, shield, rear-view, HUD, audio, touch pad. Plus the auto-restart, Shift+1-5 and KeyP from State risks 1–3. Fix what fails, re-run the gates, commit.
+2. Update the 3 stale CDP memories to the loopback hooks.
+3. Push (fast-forward only; if it is not a ff, tell the supervisor), then `gh issue close 288 -c "<summary + SHAs>"`.
 
 ## Open questions
 
-- Countdown skip for /test-level: a `RunSim` option (shared, e.g. `start(id, { countdown: 0 })`) or the dev layer stepping the sim through the countdown. I lean to a RunSim option; it is one line and testable. For the supervisor to confirm in the slice 4 claim.
+- None.
 
 ## Lessons → memory
 
-- .claude/memory/ast-grep-type-patterns-need-context.md
-- .claude/memory/short-bolts-skip-the-patch.md
+none this seam (the CDP memory updates are Next step 2).
