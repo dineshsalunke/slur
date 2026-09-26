@@ -65,6 +65,10 @@ Portal S1 DONE 6dd1368 (pushed; hop inside simulate()). workerfour cleared + res
 Portal+RunState.portals, combat/constants.ts, run/combat.ts, power-bag.ts, run-sim.ts, run/portal-run.ts; bag
 bolt5 seeker3 mine4 boost3 shield3 portal2). It messages workertwo + me on commit. workertwo is cleared and idle:
 its message may sit unread — resume it via herdr (line above).
+NEWEST: tug S2 DONE 72eafc0 (tugRatio 0 until tug S3; HeldPower.tug=8). workertwo idle, S3 QUEUED behind portal
+S3 (same client files). Test-proven full mix at 0.1 each: bolt 3 · seeker 3 · mine 4 · boost 3 · shield 3 · portal 2
+· tug 2 — mine outnumbers bolt, so seamSafe keys on mine; owner still to pick the final mix (my proposal: bolt 4, mine 3).
+FIRST ACTION on resume: resume workerfour on portal S3 (w2P:pH, already cleared).
 LATEST (supersedes the lines below): portal S2 DONE 664cc60 (portalRatio 0 → default bag bolt7 seeker3 mine4
 boost3 shield3; the 4 client files were NOT touched, claim released). workerfour at seam (handover e50ec62), CLEARED
 to 0%, NOT resumed. workertwo RESUMED on tug S2 (cleared claim: combat/constants.ts, power-bag.ts, sim-config.ts,
