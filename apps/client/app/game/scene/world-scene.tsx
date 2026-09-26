@@ -1,7 +1,5 @@
-import type { Track } from '@slur/shared';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { RenderScale } from '../../dev/render-scale';
-import { TrackContext } from '../track-context/track-context.constants';
 import { BackFill } from './back-fill';
 import { BoostStreaks } from './boost-streaks';
 import { EngineLight } from './engine-light';
@@ -16,9 +14,9 @@ import { SceneEnvironment } from './scene-environment';
 import { Ships } from './ship';
 import { TrackView } from './track-view';
 
-export function WorldScene( { track, children }: { track: Track; children?: ReactNode } ) {
+export function WorldScene( { children }: { children?: ReactNode } ) {
     return (
-        <TrackContext value={ track }>
+        <Fragment>
             <GameEnvironment />
             <SceneEnvironment />
             <BackFill />
@@ -34,6 +32,6 @@ export function WorldScene( { track, children }: { track: Track; children?: Reac
             <Ships />
             { children }
             <SceneEffects />
-        </TrackContext>
+        </Fragment>
     );
 }

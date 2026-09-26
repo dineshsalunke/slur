@@ -30,6 +30,7 @@ import { ProjectileField } from './scene/projectile-field';
 import { RearView } from './scene/rear-view';
 import { SeekerField } from './scene/seeker-field';
 import { WorldScene } from './scene/world-scene';
+import { TrackContext } from './track-context/track-context.constants';
 
 export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     const room = useRoom();
@@ -60,24 +61,26 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
 
     return (
         <WorldProvider world={ world }>
-            <div className="fixed inset-0">
-                <Canvas gl={ CANVAS_GL } camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }>
-                    <WorldScene track={ track }>
-                        <NetLoop predictor={ predictor } track={ track } room={ room } />
-                        <PickupField room={ room } track={ track } />
-                        <ProjectileField />
-                        <SeekerField />
-                        <MineField />
-                        <MineShock />
-                        <RearView />
-                        <GameAudio />
-                        <RemoteEngineAudio />
-                    </WorldScene>
-                </Canvas>
-            </div>
-            <NetHud track={ track } />
-            <FinishFade />
-            <TuningPanelMount />
+            <TrackContext value={ track }>
+                <div className="fixed inset-0">
+                    <Canvas gl={ CANVAS_GL } camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }>
+                        <WorldScene>
+                            <NetLoop predictor={ predictor } room={ room } />
+                            <PickupField room={ room } />
+                            <ProjectileField />
+                            <SeekerField />
+                            <MineField />
+                            <MineShock />
+                            <RearView />
+                            <GameAudio />
+                            <RemoteEngineAudio />
+                        </WorldScene>
+                    </Canvas>
+                </div>
+                <NetHud />
+                <FinishFade />
+                <TuningPanelMount />
+            </TrackContext>
         </WorldProvider>
     );
 }

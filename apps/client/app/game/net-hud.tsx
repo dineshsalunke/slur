@@ -1,4 +1,4 @@
-import { PHASE, type Track } from '@slur/shared';
+import { PHASE } from '@slur/shared';
 import { Fragment } from 'react';
 import { useRoom } from '../net/room-context/use-room';
 import { HudLayer } from './hud/hud-layer';
@@ -7,7 +7,7 @@ import { NetRoster } from './hud/net-roster';
 import { TouchPad } from './hud/touch-pad';
 import { useRunPhase } from './net/run-view-store';
 
-export function NetHud( { track }: { track: Track } ) {
+export function NetHud() {
     const room = useRoom();
     const phase = useRunPhase( room );
     if ( phase !== PHASE.countdown && phase !== PHASE.racing ) return null;
@@ -15,7 +15,7 @@ export function NetHud( { track }: { track: Track } ) {
         <Fragment>
             <HudLayer>
                 <NetRoster room={ room } />
-                <NetPilotReadout room={ room } track={ track } />
+                <NetPilotReadout room={ room } />
             </HudLayer>
             <TouchPad />
         </Fragment>

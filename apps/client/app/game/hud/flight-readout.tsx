@@ -1,8 +1,8 @@
 import { addEffect } from '@react-three/fiber';
-import type { Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useRef } from 'react';
 import { LocalPlayer, Sim } from '../ecs/traits';
+import { useTrack } from '../track-context/use-track';
 import { clockText, progressText, rankText, speedText } from './readout-format';
 
 export interface Standing {
@@ -10,16 +10,9 @@ export interface Standing {
     field: number;
 }
 
-export function FlightReadout( {
-    track,
-    standing,
-    clock,
-}: {
-    track: Track;
-    standing: () => Standing;
-    clock: () => number;
-} ) {
+export function FlightReadout( { standing, clock }: { standing: () => Standing; clock: () => number } ) {
     const world = useWorld();
+    const track = useTrack();
     const speedRef = useRef< HTMLSpanElement >( null );
     const rankRef = useRef< HTMLSpanElement >( null );
     const progressRef = useRef< HTMLSpanElement >( null );

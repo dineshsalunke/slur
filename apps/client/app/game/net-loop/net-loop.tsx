@@ -1,6 +1,6 @@
 import type { Room } from '@colyseus/sdk';
 import { useFrame } from '@react-three/fiber';
-import { createFixedStep, FIXED_DT, PHASE, type RunState, type Track as TrackHandle } from '@slur/shared';
+import { createFixedStep, FIXED_DT, PHASE, type RunState } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useMemo } from 'react';
 import type { PerspectiveCamera } from 'three';
@@ -11,18 +11,12 @@ import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSyst
 import { syncRenderSystem } from '../ecs/systems';
 import { CUT_DT, finishWatch } from '../finish/finish-watch';
 import { localRole, resetSpectatorTarget, resolveSpectatorTarget, runPhase } from '../spectator';
+import { useTrack } from '../track-context/use-track';
 import { stepFinishCurtain, updateFinishCamera } from './net-loop.utils';
 
-export function NetLoop( {
-    predictor,
-    track,
-    room,
-}: {
-    predictor: Predictor;
-    track: TrackHandle;
-    room: Room< RunState >;
-} ) {
+export function NetLoop( { predictor, room }: { predictor: Predictor; room: Room< RunState > } ) {
     const world = useWorld();
+    const track = useTrack();
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
     useFrame( ( state, delta ) => {
         const phase = runPhase.value;

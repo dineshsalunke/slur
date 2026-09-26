@@ -11,6 +11,7 @@ import { localDeathVfxSystem } from '../../game/ecs/net-systems';
 import { localFlightSystem, syncRenderSystem } from '../../game/ecs/systems';
 import { LocalPlayer, Prev, Sim } from '../../game/ecs/traits';
 import { finishReset, showFinishFade, stepFinishReset } from '../../game/finish/finish-reset';
+import { useTrack } from '../../game/track-context/use-track';
 import { localCombatSystem, restartLocalCombat } from './local-combat';
 import { restartRunClock } from './run-clock';
 
@@ -29,8 +30,9 @@ function restartTestRun( world: World, track: Track ): void {
     restartRunClock();
 }
 
-export function LocalLoop( { track }: { track: Track } ) {
+export function LocalLoop() {
     const world = useWorld();
+    const track = useTrack();
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
 
     // JUSTIFIED EFFECT — syncs with an external system: the DOM keyboard (window keydown) that owns the freeze toggle.

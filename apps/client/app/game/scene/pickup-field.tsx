@@ -1,13 +1,15 @@
 import { getStateCallbacks, type Room } from '@colyseus/sdk';
-import { pickupsOf, type RunState, type Track } from '@slur/shared';
+import { pickupsOf, type RunState } from '@slur/shared';
 import { Fragment, useEffect, useMemo } from 'react';
+import { useTrack } from '../track-context/use-track';
 import { BoltPickups } from './bolt-pickups';
 import { BoostPickups } from './boost-pickups';
 import { MinePickups } from './mine-pickups';
 import { SeekerPickups, splitPickupLayout } from './seeker-pickups';
 import { ShieldPickups } from './shield-pickups';
 
-export function PickupField( { room, track }: { room: Room< RunState >; track: Track } ) {
+export function PickupField( { room }: { room: Room< RunState > } ) {
+    const track = useTrack();
     const layout = useMemo( () => splitPickupLayout( pickupsOf( track ) ), [ track ] );
     const taken = useMemo( () => new Set< string >(), [] );
     const isTaken = useMemo( () => ( id: string ) => taken.has( id ), [ taken ] );

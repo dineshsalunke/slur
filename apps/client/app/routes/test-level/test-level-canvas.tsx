@@ -10,6 +10,7 @@ import { CANVAS_GL } from '../../game/scene/canvas-gl';
 import { MineShock } from '../../game/scene/mine-shock';
 import { RearView } from '../../game/scene/rear-view';
 import { WorldScene } from '../../game/scene/world-scene';
+import { TrackContext } from '../../game/track-context/track-context.constants';
 import { LocalBoltField } from './local-bolt-field';
 import { LocalLoop } from './local-loop';
 import { LocalMineField } from './local-mine-field';
@@ -41,23 +42,25 @@ export function TestLevelCanvas( { gen }: { gen: TrackGen } ) {
     return (
         <Fragment>
             <WorldProvider world={ world }>
-                <div className="fixed inset-0">
-                    <Canvas gl={ CANVAS_GL } camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }>
-                        <WorldScene track={ track }>
-                            <LocalShip />
-                            <LocalLoop track={ track } />
-                            <LocalPickupField track={ track } />
-                            <LocalBoltField />
-                            <LocalSeekerField />
-                            <LocalMineField />
-                            <MineShock />
-                            <RearView />
-                            <FrameTap />
-                        </WorldScene>
-                    </Canvas>
-                </div>
-                <TestLevelHud track={ track } />
-                <FinishFade />
+                <TrackContext value={ track }>
+                    <div className="fixed inset-0">
+                        <Canvas gl={ CANVAS_GL } camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }>
+                            <WorldScene>
+                                <LocalShip />
+                                <LocalLoop />
+                                <LocalPickupField />
+                                <LocalBoltField />
+                                <LocalSeekerField />
+                                <LocalMineField />
+                                <MineShock />
+                                <RearView />
+                                <FrameTap />
+                            </WorldScene>
+                        </Canvas>
+                    </div>
+                    <TestLevelHud />
+                    <FinishFade />
+                </TrackContext>
             </WorldProvider>
             <TuningPanelMount />
         </Fragment>
