@@ -1,30 +1,20 @@
-Agent: workerone · Lane: #275 render P1s (review lane E) — DONE, issue closed · Updated: 2026-09-26 14:05
+Agent: workerone · Lane: #288 one run path (plan-first) · Updated: 2026-09-26
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Fix the six #275 render P1s: toneMapped, exhaust cap, GPU dispose, nebula stall, asteroid allocs,
-PickupField listeners.
+/test-level and hosted rooms differ only in netcode. Shared `stepCombat()`, and no `Local*` duplicates.
 
 ## Done
 
-- fed4ac2: exhaustDrive divides by the ship's own maxCruise (+ exhaust-drive.test.ts). mine-bodies drops
-  toneMapped:false. ShipModel disposes its cloned materials from a ref-callback cleanup.
-- c2b9ac4: the rear-view material is a declarative `<shaderMaterial args>`. The nebula noise volume is
-  built once (`noiseVolume()`). `forEachAsteroid` visits one scratch placement.
-- 0afbef2: pickupTaken listeners move into attachRoomToWorld and feed game/pickup-state.ts.
-- 5ded0a4: TrackBlocks disposes its sealed and fractured geometries from ref-callback cleanups.
-- #275 is closed with all SHAs and the measurements.
+- The plan went to slur-supervisor (SendMessage, 2026-09-26). Nothing built.
 
 ## State
 
-- createNoiseVolume: 332–372 ms in node over 3 runs. Asteroid garbage before the fix: ~7.1k objects/s at
-  124 u/s.
-- Client vitest 434/434 at 0afbef2. At 5ded0a4, tsc shows no error in track-blocks.tsx. Other tsc/test
-  errors came from workerfour's uncommitted #277 files, now committed in d342d6d.
-- Headless /test-level tap: the mirror, nebula and asteroids render. Mine glow look and hosted-room
-  pickups: [unmeasured].
+- Plan: seam at the Room. Shared `stepCombat` + `RunSim` in `packages/shared/src/run/`. RunRoom becomes an adapter. /test-level mounts NetCanvas on an in-process loopback room (Encoder→Decoder).
+- Checked: sdk `getStateCallbacks` reads only `room.serializer.decoder`. `MapSchema implements Map`.
+- Slices: 1 stepCombat · 2 RunSim · 3 loopback room · 4 /test-level swap + Local* deletions.
 
 ## Uncommitted
 
@@ -32,16 +22,17 @@ None.
 
 ## Held files
 
-None. Released all #275 files.
+None. Claim per slice after approval.
 
 ## Next
 
-1. Wait for the supervisor to assign a new lane.
+1. Wait for owner approval via the supervisor, with answers to the open questions.
+2. Claim slice 1 files and build slice 1.
 
 ## Open questions
 
-- None.
+- Room seam (loopback) vs koota seam? Countdown on /test-level? Real 1-racer roster? Shift+1-5 restarts the run?
 
 ## Lessons → memory
 
-.claude/memory/r3f-disposes-only-the-object.md
+none
