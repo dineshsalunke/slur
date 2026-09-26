@@ -62,11 +62,35 @@ export function arbitrate( uploads: TapUpload[] ): TapVerdict {
     return { ok: true, uploads };
 }
 
+function readUpload( req: import('node:http').IncomingMessage, chunks: Buffer[] ): TapUpload {
+    const header = ( k: string ): string => String( req.headers[ k ] ?? '' );
+    return {
+        href: header( 'x-frame-tap-href' ) || '(unknown)',
+        kind: header( 'x-frame-tap-kind' ) === 'bloom-off' ? 'bloom-off' : 'composed',
+        firstDelta: Number( header( 'x-frame-tap-first-delta' ) ) || 0,
+        capturedDelta: Number( header( 'x-frame-tap-captured-delta' ) ) || 0,
+        pumped: Number( header( 'x-frame-tap-pumped' ) ) || 0,
+        png: Buffer.concat( chunks ),
+    };
+}
+
+function writeFrames( dir: string, name: string, uploads: TapUpload[] ): Record< string, string > {
+    mkdirSync( dir, { recursive: true } );
+    const written: Record< string, string > = {};
+    for ( const u of uploads ) {
+        const file = join( dir, u.kind === 'bloom-off' ? `${ name }.bloom-off.png` : `${ name }.png` );
+        writeFileSync( file, u.png );
+        written[ u.kind ] = file;
+    }
+    return written;
+}
+
 export function frameTapPlugin( { dir, route = '/__frame-tap' }: { dir: string; route?: string } ): Plugin {
     type Pending = {
         uploads: TapUpload[];
         settle: ReturnType< typeof setTimeout > | null;
         deadline: ReturnType< typeof setTimeout >;
+        settled: boolean;
         done: ( verdict: TapVerdict ) => void;
     };
     const pending = new Map< string, Pending >();
@@ -103,6 +127,7 @@ export function frameTapPlugin( { dir, route = '/__frame-tap' }: { dir: string; 
             } );
 
             function json( res: import('node:http').ServerResponse, status: number, body: unknown ): void {
+                if ( res.headersSent ) return;
                 res.statusCode = status;
                 res.setHeader( 'Content-Type', 'application/json' );
                 res.end( `${ JSON.stringify( body, null, 4 ) }\n` );
@@ -133,15 +158,13 @@ export function frameTapPlugin( { dir, route = '/__frame-tap' }: { dir: string; 
                     chunks.push( c );
                 } );
                 req.on( 'end', () => {
-                    const header = ( k: string ): string => String( req.headers[ k ] ?? '' );
-                    entry.uploads.push( {
-                        href: header( 'x-frame-tap-href' ) || '(unknown)',
-                        kind: header( 'x-frame-tap-kind' ) === 'bloom-off' ? 'bloom-off' : 'composed',
-                        firstDelta: Number( header( 'x-frame-tap-first-delta' ) ) || 0,
-                        capturedDelta: Number( header( 'x-frame-tap-captured-delta' ) ) || 0,
-                        pumped: Number( header( 'x-frame-tap-pumped' ) ) || 0,
-                        png: Buffer.concat( chunks ),
-                    } );
+                    if ( pending.get( id ) !== entry ) {
+                        json( res, 410, {
+                            error: `frame-tap: tap ${ JSON.stringify( id ) } settled before this upload finished`,
+                        } );
+                        return;
+                    }
+                    entry.uploads.push( readUpload( req, chunks ) );
 
                     if ( ! entry.settle ) {
                         clearTimeout( entry.deadline );
@@ -179,32 +202,28 @@ export function frameTapPlugin( { dir, route = '/__frame-tap' }: { dir: string; 
                         pending.delete( id );
                         entry.done( arbitrate( [] ) );
                     }, timeoutMs ),
+                    settled: false,
                     done: ( verdict ) => {
+                        if ( entry.settled ) return;
+                        entry.settled = true;
                         if ( ! verdict.ok ) {
                             json( res, verdict.status, { error: verdict.error, responders: verdict.responders } );
                             return;
                         }
 
-                        mkdirSync( dir, { recursive: true } );
-                        const written: Record< string, string > = {};
-                        for ( const u of verdict.uploads ) {
-                            const file = join(
-                                dir,
-                                u.kind === 'bloom-off' ? `${ named.name }.bloom-off.png` : `${ named.name }.png`,
-                            );
-                            writeFileSync( file, u.png );
-                            written[ u.kind ] = file;
+                        try {
+                            const lead = verdict.uploads[ 0 ];
+                            json( res, 200, {
+                                ok: true,
+                                files: writeFrames( dir, named.name, verdict.uploads ),
+                                href: lead.href,
+                                pumped: lead.pumped,
+                                firstDeltaSeconds: lead.firstDelta,
+                                capturedDeltaSeconds: lead.capturedDelta,
+                            } );
+                        } catch ( error ) {
+                            json( res, 500, { error: `frame-tap: could not write the frame: ${ String( error ) }` } );
                         }
-
-                        const lead = verdict.uploads[ 0 ];
-                        json( res, 200, {
-                            ok: true,
-                            files: written,
-                            href: lead.href,
-                            pumped: lead.pumped,
-                            firstDeltaSeconds: lead.firstDelta,
-                            capturedDeltaSeconds: lead.capturedDelta,
-                        } );
                     },
                 };
                 pending.set( id, entry );
