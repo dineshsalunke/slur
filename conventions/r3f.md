@@ -19,12 +19,30 @@ Applies to **every** `.tsx` in the client, not just R3F components.
 1. **No fragment shorthand.** Write `<Fragment>…</Fragment>` (imported from `react`), never `<>…</>`.
    Named fragments read explicitly and diff cleanly. *(Not lint-enforceable — Biome has no "prefer long-form
    fragment" rule — so it's an author/review gate.)*
-2. **One component per file.** A file exports exactly one React component; its name matches the file
-   (`ship-model.tsx` → `ShipModel`). Module-scope **helpers, hooks, constants, and scratch objects are NOT
-   components** and may share the file. Split colocated sub-components into their own files and import them.
-   - **Exception — React Router route modules** (`root.tsx`, `routes/*`): the framework mandates multiple
-     exports in one module (default component + `Layout` / `ErrorBoundary` / `loader` / `action`). Those stay
-     together — they're route slots, not free-standing components.
+2. **One component per file, and nothing else at module level (issue #283).** A `.tsx` exports exactly one
+   React component; its name matches the file (`ship-model.tsx` → `ShipModel`). Split colocated
+   sub-components into their own files and import them. Everything else that sits at module level moves to
+   a colocated file named after the component:
+
+   | What | File |
+   |------|------|
+   | Constants, scratch THREE objects (`_o`, `_v`), shared geometries and materials | `<name>.constants.ts` |
+   | Pure helper functions | `<name>.utils.ts` |
+   | Mutable module state (pools, queues, caches) and the functions that drive it | `<name>.state.ts` |
+   | A hook | `use-*.ts`, one per file |
+
+   A component with any sibling file lives in a folder named after it —
+   `game/scene/ship-model/{ship-model.tsx, ship-model.constants.ts, …}`. No `index.ts`: imports name the
+   file (`./ship-model/ship-model`). Types and interfaces may stay in the `.tsx`. A `lazy()` component
+   binding may stay. A shared-by-reference geometry (`instanced-ref-callback-needs-geometry-prop`) is a
+   constant and moves too; a module is still a singleton, so moving it changes no behaviour.
+   - **Exception — React Router route modules** (`root.tsx`, `routes/home.tsx`, `routes/*/route.tsx`): the
+     framework mandates multiple exports in one module (default component + `Layout` / `ErrorBoundary` /
+     `loader` / `action` / `meta` / `links` / `handle`). Those stay; other constants and helpers move.
+   - **Enforced** at warn by `biome-plugins/component-module-scope.grit` (a `biome.json` override on
+     `apps/client/app/**/*.tsx`, tests and `mount-overlays.tsx` excluded). ls-lint checks the sub-extension
+     names only because `.ls-lint.yml` lists `.constants.ts` / `.utils.ts` / `.state.ts` explicitly — an
+     unlisted sub-extension is not checked at all.
 3. **Componentize by subscription boundary — push every subscription DOWN to its leaf.** Split a component
    wherever a distinct data subscription lives — a koota `useQuery`, a Colyseus `.listen`, a React Router
    loader value, any store hook — so that when that data changes React re-renders **only that leaf, never its
@@ -50,9 +68,13 @@ Applies to **every** `.tsx` in the client, not just R3F components.
 
 ## Idiomatic Patterns (concise TSX snippets)
 
-**Slim, allocation-free `useFrame`** (scratch objects hoisted out of the loop):
+**Slim, allocation-free `useFrame`** (scratch objects hoisted out of the loop, into `ship.constants.ts`):
 ```tsx
-const _v = new THREE.Vector3() // module scope — reused every frame
+// ship.constants.ts
+export const _v = new THREE.Vector3() // reused every frame
+
+// ship.tsx
+import { _v } from './ship.constants'
 
 function Ship({ entity }: { entity: Entity }) {
   const ref = useRef<THREE.Group>(null!)

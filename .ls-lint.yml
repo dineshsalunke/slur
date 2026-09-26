@@ -3,6 +3,9 @@ ls:
     .dir: kebab-case
     .ts: kebab-case
     .tsx: kebab-case
+    .constants.ts: kebab-case
+    .utils.ts: kebab-case
+    .state.ts: kebab-case
   apps/server/src:
     .dir: kebab-case
     .ts: kebab-case

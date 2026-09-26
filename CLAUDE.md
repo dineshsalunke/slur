@@ -127,9 +127,12 @@ anything about track, state or sync.
    Meta-rule: "most code does X" (including model training priors) is **not** evidence X is right; it is
    usually the mediocre default.
 9. **React house style:** **no fragment shorthand** — write `<Fragment>…</Fragment>`, never `<>…</>`; **one
-   component per file** (file name matches the component; helpers/hooks/constants may share). Exception:
-   React Router route modules (`root.tsx`, `routes/*`) keep their framework-mandated multi-export. Rationale
-   in `conventions/r3f.md` ("House React style").
+   component per file** (file name matches the component), and **the `.tsx` holds nothing else at module
+   level** — no constants, helpers, scratch objects or module state. They go in colocated
+   `<name>.constants.ts` / `<name>.utils.ts` (pure) / `<name>.state.ts` (mutable) / `use-*.ts`, grouped
+   in a `<name>/` folder, no `index.ts`. Types may stay. Exception: React Router route modules
+   (`root.tsx`, `routes/home.tsx`, `routes/*/route.tsx`) keep their framework exports. `pnpm lint` warns
+   (Biome plugin, issue #283). Rationale in `conventions/r3f.md` ("House React style").
 10. **Componentize by subscription boundary — push every subscription DOWN to its leaf.** Split components
     wherever a distinct data subscription lives (koota `useQuery`, a Colyseus `.listen`, a loader value, any
     store hook) so a change re-renders **only that leaf, never its siblings**. A parent that wraps siblings

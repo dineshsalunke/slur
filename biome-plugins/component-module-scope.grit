@@ -1,0 +1,56 @@
+language js
+
+or {
+    JsVariableStatement() as $v where {
+        $v <: not within or {
+            JsFunctionBody(),
+            JsBlockStatement()
+        } ,
+        $v <: not contains `lazy($_)`
+    },
+    JsFunctionDeclaration() as $v where {
+        $v <: not within or {
+            JsFunctionBody(),
+            JsBlockStatement()
+        } ,
+        $v <: not within JsExport()
+    },
+    JsClassDeclaration() as $v where {
+        $v <: not within or {
+            JsFunctionBody(),
+            JsBlockStatement()
+        }
+    },
+    JsExport(export_clause=JsVariableDeclarationClause()) as $v where {
+        or {
+            not $filename <: or {
+                r".*/root\.tsx",
+                r".*/routes/home\.tsx",
+                r".*/routes/[^/]+/route\.tsx"
+            },
+            not $v <: contains r"handle|meta|links|headers|shouldRevalidate"
+        }
+    },
+    JsExport(export_clause=JsFunctionDeclaration(id=$id)) as $v where {
+        $id <: not r"[A-Z].*",
+        or {
+            not $filename <: or {
+                r".*/root\.tsx",
+                r".*/routes/home\.tsx",
+                r".*/routes/[^/]+/route\.tsx"
+            },
+            not $id <: or {
+                "loader",
+                "clientLoader",
+                "action",
+                "clientAction",
+                "meta",
+                "links",
+                "headers",
+                "shouldRevalidate"
+            }
+        }
+    }
+} where {
+    register_diagnostic(span=$v, message="A component file holds only its component. Move constants and scratch objects to <name>.constants.ts, pure helpers to <name>.utils.ts, mutable module state to <name>.state.ts (issue #283).", severity="warn")
+}

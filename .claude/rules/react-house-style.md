@@ -8,9 +8,10 @@ paths:
 Full rule + incidents: `conventions/r3f.md` § "House React style".
 
 - **No fragment shorthand.** `<Fragment>…</Fragment>` imported from `react`, never `<>…</>`.
-- **One component per file**, name matching the file. Module-scope helpers, hooks, constants and
-  scratch objects are not components and may share it. Exception: React Router route modules
-  (`root.tsx`, `routes/*`) keep their framework-mandated multi-export.
+- **One component per file**, name matching the file, and **nothing else at module level**.
+  Constants, helpers, scratch objects and module state move to colocated files — see
+  `.claude/rules/component-files.md`. Exception: React Router route modules (`root.tsx`,
+  `routes/home.tsx`, `routes/*/route.tsx`) keep their framework exports.
 - **Componentize by subscription boundary.** Split wherever a distinct subscription lives — koota
   `useQuery`, a Colyseus `.listen`, a loader value, any store hook — so a change re-renders only
   that leaf, never its siblings. A parent wrapping siblings holds **zero** reactive subscriptions
