@@ -58,6 +58,9 @@ Bag: workertwo proposes the tug share in its S2 claim → relay to owner.
 (combat/constants.ts, power-bag.ts, sim-config.ts + tug-constants.ts, run/combat.ts, tests) is QUEUED behind portal's
 S2 on the same files — clear it only after portal S2 commits. BAG DECISION for owner: tug 2/20 from bolt 5→4, mine
 4→3 → bolt 4 · seeker 3 · mine 3 · boost 3 · shield 3 · portal 2 · tug 2 (bolt stays most common; seamSafe needs it).
+workertwo CLEARED at seam (0%), NOT resumed (nothing to do). When portal S2 commits: herdr agent prompt w2P:pF
+"You are workertwo. Resume from .claude/handovers/workertwo.md. Read CLAUDE.local.md first. Your #290 S2 claim is CLEAR."
+(only after the owner answers the bag share, or tell it to use 4/3/3/3/3/2/2 if approved).
 workerfour portal S1 CLEARED (schema portalHops, types, step, sim-config, index, director.test, portal-hop.test,
 portal.ts). Then portal S2 first on shared fire/bag files; workerfour tells workertwo directly when S2 commits.
 #289 portal loop (on the issue): a chaser in your far end is thrown back, meets the far end again and loops until
