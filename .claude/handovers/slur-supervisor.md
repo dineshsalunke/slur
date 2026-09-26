@@ -44,6 +44,11 @@ The unsent text in an idle prompt box is Claude Code's suggested reply, not the 
 | workerfive | w2P:pK | #284 style → Tailwind (after #274 done afcd0e7: CountdownOverlay renders 60→3, SpectatorBar 158→0) | resumed, claims pending; net-canvas.tsx last (workerone holds it) | pending |
 
 #283 B1/B7 and landing-scene wait for #284 (told workertwo).
+#283 B2+B3 committed fa42f18 (58 files; push pending by workertwo). workertwo AT SEAM ~185k: when idle and
+pushed, clear it and resume from its handover; next batch B6 (test-level, hud, net-*, audio, dev,
+room-context), then B4/B5 after #285, B1/B7 after #284. It will also fix rules/r3f-rendering.md "Hoist
+scratch objects to module scope" → `<name>.constants.ts` in the scene batch.
+Told workerone: 3 lint errors in its uncommitted #273 files. Told workerfive: landing-scene's new path.
 
 ## Next
 
