@@ -219,6 +219,7 @@ racer skips the pickup, and the pickup stays. A dropped power is gone (ADR-017 a
 | Defensive | **Shield** | Absorb one hit for a few seconds |
 | Utility | **Boost** | Burst of speed |
 | Utility | **Tug line** | Latch a rival or a block ahead; pull yourself forward, slow or tow the rival |
+| Utility | **Portal** | Place two linked rings; any racer who flies into one comes out of the other |
 | Utility | **Warp/Blink** | Short teleport/dodge (also SkyRoads-y gap crosser) |
 | Chaos | **Scramble** | Invert/blur a nearby rival's controls or view briefly |
 
@@ -281,6 +282,36 @@ replaces the Tractor beam and the Grapple of §5.7.
 - **Sync.** The effect is sim state on the ships (`tugTimer`, `slowTimer`, `towTimer`,
   `tugAnchorZ`). The server sends a `tug` message on every latch or anchor, and the client draws the
   beam from it.
+
+**Portal (#289, built).** A pickup gives a Portal in 2 of every 20 pickups (`PORTAL_RATIO` = 0.1). A
+Portal places two linked rings on the deck. Any racer who flies through one ring comes out of the other,
+the owner too. It is the first BC4 mechanic (§5.7): the hop runs in the shared `simulate()`, so client
+prediction replays it.
+
+- **Place.** The first fire puts end A ahead of the nose, lead **0.4 s** at the current speed
+  (`portalNearLeadS`), and the slot changes to **Portal B**. The second fire puts end B the same way. Back
+  puts the end **1u** behind the tail (`portalBackGap`).
+- **Throw far.** A second tap of the same slot and direction within **15 input ticks**
+  (`portalDoubleTapTicks`, 0.25 s at 60 Hz) moves the end just placed to **1 s** of top cruise ahead
+  (`portalFarS`), or behind for a back fire.
+- **Clear spot.** An end goes only on a floor spot with room for the widest ship plus 3u
+  (`portalClearW`), 6u each side in z (`portalClearHalfL`), and no unbroken block. The search steps back
+  toward the ship 1u at a time (`portalZStep`). No end goes within **20u** of the finish
+  (`portalFinishGap`). With no clear spot the portal fizzles and the power is lost.
+- **Arm.** An end arms **0.3 s** after it is placed (`portalArmS`). Only a pair with both ends armed
+  moves a ship.
+- **Hop.** A ship hops when its z crosses the plane of an armed end and its hull is within **3u** of the
+  ring in x (`portalR`) and less than **5u** above it (`portalH`). It keeps its speed and its height above
+  the floor. It comes out past the other end in its direction of travel, clear of the ring by **0.5u**
+  (`portalExitGap`). A seeker locked on the ship loses the lock.
+- **Limits.** A pair lasts **9 s** (`portalTtl`). The timer restarts when end B goes down. An owner has
+  one pair. A new end A replaces the old pair. If only end A is down at expiry, the Portal B charge is
+  removed from the slot.
+- **Loop.** Both ends are entries. See §10 open question 8.
+- **Sync.** Portals are server state (`RunState.portals`) and mirror into the prediction world. The ship
+  counts its hops (`portalHops`). A changed count snaps the render and the camera. The server sends a
+  `portalHop` message on every hop and a `portalFizzle` message on every fizzle. The client shows a spark
+  at both ends of a hop, and a fizzle shock at the ship.
 
 > The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the **Tug line** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 
@@ -441,7 +472,7 @@ render only). Implement one at a time; the BC changes are called out so they're 
 | **BC1** | Dynamic entities — server-sim projectiles/mines/drops/decoys (MapSchema + client interp) | **LIVE (S5)** | keystone shipped — bolts server-simmed + client-interpolated; mines/drops/decoys ride the same pipe |
 | **BC2** | Status effects — networked per-ship modifiers the sim + client read | **partial (S5: stun)** | the disruption "verbs" — `stunTimer` shipped (predicted); spin/slow/reverse/blind still open |
 | **BC3-trig** | Player-triggered world events (a switch arms/toggles a hazard or gate) | candidate | NOT autonomous motion |
-| **BC4** | Position discontinuity — sim handles teleport/blink/grapple + prediction replays it | candidate | |
+| **BC4** | Position discontinuity — sim handles teleport/blink/grapple + prediction replays it | **LIVE (#289)** | the Portal hop runs in the shared `simulate()`; a hop count snaps render, remote interp and camera (§5.3, ADR-022) |
 | **BC5** | Floor/zone metadata — a floor/zone carries a type that modifies the sim | candidate | cheap, high value |
 | **BC6-imp** | Vertical **impulse only** — launch pads add `vy`; land on the flat ribbon | candidate | NO terrain/ceiling/gravity |
 | **BC7-lite** | Track shape — width change + parallel branches + lap-repeat; **never turns** | candidate | straight-ribbon-preserving |
@@ -451,7 +482,7 @@ render only). Implement one at a time; the BC changes are called out so they're 
 
 | Mechanic | Play | BC | What it does |
 |---|:--:|:--:|---|
-| **Teleports** | B | BC4 | Paired portals (level data); enter A → exit B (deterministic set of x/z, prediction replays it). Forward pair = shortcut; backward pair = a grief trap. |
+| **Teleports** | B | BC4 | **Built as the Portal pickup (#289), placed by a racer, not level data.** Enter A → exit B (deterministic x/z, prediction replays it). Forward pair = shortcut; backward pair = a grief trap. Full rules: §5.3. |
 | **Boost pads** | R | BC5 | Floor strip that adds forward speed on contact — rewards the optimal line. |
 | **Slow fields** | B | BC5 | Zone/floor that caps + bleeds speed and softens handling (tar/ice) — route around or power through. |
 | **Launch pads** | B | BC6-imp | Impart upward `vy` (pop over a wall / reach an air pickup); you land on the flat floor. |

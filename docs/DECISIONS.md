@@ -1211,3 +1211,23 @@ merge removes most pockets it scanned).
 
 - The retired files are `laser_fire`, `hit_impact`, `boost`, `engine_loop` (Kenney) and `neon_laser_horizon.mp3`. The other Kenney cues stay until their events are chosen (16 events are open on #267).
 - Cuts come from the Freesound 128 kbps previews (#267 Q4 open). Cut points and gains are in the #267 thread and `CREDITS.md`.
+
+## ADR-022 — The Portal pickup: BC4 teleport inside the shared simulate()
+
+**Date:** 2026-09-26 · **Status:** Accepted (owner approved the 8 proposals on #289; the loop rule kept, GDD §10 question 8) · **Issue:** #289 · **Rules:** `docs/GDD.md` §5.3 "Portal"
+
+### Decision
+
+1. **Pickup, not level data.** GDD §5.7 listed Teleports as *"Paired portals (level data)"*. The Portal is a pickup instead: a racer places both ends. It is 2 of every 20 pickups (`PORTAL_RATIO` = 0.1).
+2. **The hop is sim, not an event.** `hopThroughPortal()` (`packages/shared/src/combat/portal.ts`) runs inside `simulate()` over `SimWorld.portals`. The server runs it for authority. The client runs it in prediction and replays it on reconcile. A hop moves x, y and z in one tick. This is BC4, and it is now LIVE.
+3. **Portals are server state.** `RunState.portals` holds one pair per owner. The client mirrors it into `blockWorld.portals`, the same world prediction reads. Placement, the clear-spot search, arming and expiry are server-only (`run/portal-run.ts`).
+4. **A hop counter carries the discontinuity.** The ship has `portalHops` (8-bit, wraps). A changed count tells each consumer to snap, not to lerp: the local render sets `Prev`, remote interpolation holds across the hop (`Snapshot.hops`), and the spectator camera snaps on a jump over 12u.
+5. **Tap near, double tap far.** A second tap of the same slot and direction within 15 input ticks throws the end just placed 1 s of top cruise away. The server decides the double tap from input sequence numbers, not from wall time.
+6. **Messages are cosmetic.** `portalHop` and `portalFizzle` drive sparks, the fizzle shock and audio only. A client that misses one still has the right position.
+
+### Consequences
+
+- Any later teleport, blink or grapple reuses the same path: a pure step in `simulate()` plus a counter that tells render and interpolation to snap.
+- Both ends are entries, so a chaser can loop until the pair expires (9 s). The owner keeps this for now (GDD §10 question 8). The candidate fixes are one throw-back per ship per pair, or a per-ship hop cooldown.
+- A hop drops any seeker lock on the ship.
+- Open: the camera passing through the bright exit ring blooms the whole frame orange for under ~150 ms. The supervisor has taken it to the owner.
