@@ -34,24 +34,22 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none | idle, 14% (clear before assigning) | none |
-| workertwo | w2P:pF | #298 pickup grab box (GDD line 4830bee done) | working | combat/pickups.ts, combat/constants.ts, sim-config.ts, combat/combat-step.ts, run/run-sim.ts, combat/combat.test.ts, client dev/tuning-schema.ts, dev/tuning-panel/tuning-panel.tsx, net/loopback-room/loopback-room.ts (+ .utils.ts) |
-| workerthree | w2P:pG | none | idle, 11% | none |
-| workerfour | w2P:pH | none (#289 done) | idle | none |
-| workerfive | w2P:pK | none | idle, 11% | none |
+| workerone | w2P:pD | closing #248 (owner said close) | 14%, clear before a lane | none |
+| workertwo | w2P:pF | none (#298 DONE 01f290b, closed) | idle, 9% | none |
+| workerthree | w2P:pG | #292 forks: PLAN first (cleared 0%) | working | none yet |
+| workerfour | w2P:pH | #295 blink: PLAN first; + ADR-022 bloom item closed (keep flash) | working | DECISIONS.md once claimed |
+| workerfive | w2P:pK | #14 reconnection (+#15): PLAN first; verify on hosted room (no reconnection on /test-level) | working | none yet |
 
 ## Open owner questions
 
-- Exit-ring bloom (#289, ADR-022 open item): passing the exit ring blooms the frame orange < ~150 ms. Keep as a
-  hop flash, or dim the exit end after a hop?
-- Next lanes for idle workers (asked; no answer yet).
+- Plans for #292, #295 and #14 are coming. Relay each to the owner and build nothing until approval.
+- Owner said "go ahead" to 4 items (2026-09-26): #14 lane, close #248, KEEP the exit-ring flash, start #292 + #295.
+  "Keep" is my reading of "go ahead" on a keep-or-dim question; I told the owner so.
 
 ## Next
 
-1. Answer workertwo on #298 when it commits; it closes #298.
-2. Idle workers: candidates #292 forks (generator only, safe now), #295 blink (after #289, now unblocked; BC4
-   like portal), #291 boomerang (combat/bag: after #298), #297 membrane (step.ts), #293 hazards (needs art
-   cues), #294 parry. Clear past 10% first.
+1. Relay plans. Serialize #295 against #14 on run-sim.ts and attach-room-to-world.ts.
+2. Later candidates: #291 boomerang, #297 membrane, #293 hazards (needs art cues), #294 parry, #299 Seeker.flyY.
 
 ## Uncommitted
 
