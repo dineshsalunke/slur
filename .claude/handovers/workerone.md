@@ -35,11 +35,12 @@ None.
 
 ## Held files
 
-None. Slice 3 claim sent to slur-supervisor.
+Slice 3 claim CLEARED by slur-supervisor (not started, nothing written): apps/client/app/net/loopback-room/*, net/run-room-like.ts, net/state-callbacks.ts, apps/client/package.json, pnpm-lock.yaml, and every client file that annotates `Room< RunState >` or calls getStateCallbacks (list: `rg -l "Room<\s*RunState\s*>|getStateCallbacks" apps/client/app`, about 32 files, including net/matchmaking(.test).ts and game/overlays/test-room.ts).
+Supervisor conditions: (1) the lockfile diff adds ONLY the catalog @colyseus/schema link, with no other version moves; confirm one 4.0.30 copy with `pnpm why @colyseus/schema`. (2) Re-claim any released file before editing it, even when you expect "clear". (3) ast-grep drops semicolons on whole-statement rewrites; grep after -U. Seam early in this wide slice.
 
 ## Next
 
-1. On "clear": build slice 3. Start with RunRoomLike + the state-callbacks helper (typecheck-only change), then loopback-room + its vitest.
+1. Build slice 3 (claim already cleared). Start with RunRoomLike + the state-callbacks helper (typecheck-only change), then loopback-room + its vitest.
 2. Slice 4 with a claim and a SHA report. Close #288 with the final SHA.
 
 ## Open questions
