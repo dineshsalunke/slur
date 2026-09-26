@@ -1,40 +1,32 @@
-Agent: workerfive · Lane: sci-fi SFX + score #267 · Updated: 2026-09-26
+Agent: workerfive · Lane: room lifetime #271 · Updated: 2026-09-26
 
 ## Goal
-
-Replace the cartoonish SFX with grounded sci-fi sounds and add a background score. DONE. #267 is closed.
+Leave the room on back/Leave, handle onDrop/onLeave on the client, dedupe joinLobby. Keep the room on the
+module singleton + loader (owner decision).
 
 ## Done
-
-- ab12a98 feat(audio): 13 picks built and pushed to origin/dev. #267 closed with a summary comment.
-- Owner answers applied: Opus in .ogg · jump B · bolts 9/57/61 s (75 s dropped) · engine class values as planned · boost unbound.
+- 573fa90 — fix(net): leave the room on back and Leave, handle drop and lost (#271). Issue #271 closed.
 
 ## State
-
-- Gates at ab12a98: `pnpm lint` passed (7 warnings, none in audio), client typecheck clean, client vitest 401/401 in 54 files (measured).
-- All 27 audio files decode in headless Chrome at their exact lengths (measured). Safari 27.0 is installed; Ogg Opus is supported from 18.4 (WebKit notes). Safari itself was not driven [unmeasured].
-- Bolt pick: 75 s is nearest to both 9 s and 61 s on spectral centroid/flatness/rolloff (measured).
-- Cut peaks after gain: 0.496–0.947. The "locked" tone was 0.046 in the source and was raised ×10.87.
-- Not ear-checked in a live room. Pass-by, the remote engine rate/filter and the lock loop are [unmeasured] in play.
-- Departures from the plan: movement cues (jump, land, brake, pass-by) are on the `engine` bus, so they duck only the music. Non-trigger mine bursts play at 0.6× gain. The lock-loop helper is a new `loop-voice.ts`, not part of `audio-engine.ts`.
+- Client typecheck, biome, 410/410 vitest pass (with other workers' uncommitted files in the tree).
+- Live, headless Chrome on :5173/:2567, 8/8 PASS: host 1 seat; racing Leave→Stay keeps room; Leave→Leave
+  0 seats; back button 0 seats; close 4010 → Reconnecting… → same room; reconnection off → lost panel →
+  Back to menu → host again.
+- Lost panel while phase is racing (guard bypass) [unmeasured] — checked by reading only.
+- Chrome PID 84577 killed.
 
 ## Uncommitted
-
-- none
+none
 
 ## Held files
-
-- none. Release: `apps/client/app/audio/**`, `apps/client/public/audio/**`, `docs/AUDIO.md`, `docs/DECISIONS.md`, `CREDITS.md`.
+none (all nine #271 files released)
 
 ## Next
-
-1. Wait for a new lane from the supervisor.
-2. If asked to follow up #267: file an issue for the 16 unchosen events and Q4–Q6, and do a live-room ear check.
+- Await a new lane from slur-supervisor.
 
 ## Open questions
-
-- The 16 unchosen events (the list is in #267). Q4 Freesound account vs previews. Q5 seeker miss/derez. Q6 Sonniss.
+- None blocking. Input loop keeps calling `room.send` on a lost room; browser drops it silently (same as
+  before the fix). A future lane could stop the net loop when status is `lost`.
 
 ## Lessons → memory
-
-- `.claude/memory/decode-audio-in-headless-chrome.md`
+- `.claude/memory/simulate-a-room-drop-over-cdp.md`
