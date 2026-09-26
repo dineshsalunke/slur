@@ -1230,4 +1230,4 @@ merge removes most pockets it scanned).
 - Any later teleport, blink or grapple reuses the same path: a pure step in `simulate()` plus a counter that tells render and interpolation to snap.
 - Both ends are entries, so a chaser can loop until the pair expires (9 s). The owner keeps this for now (GDD §10 question 8). The candidate fixes are one throw-back per ship per pair, or a per-ship hop cooldown.
 - A hop drops any seeker lock on the ship.
-- Open: the camera passing through the bright exit ring blooms the whole frame orange for under ~150 ms. The supervisor has taken it to the owner.
+- The camera passes through the bright exit ring and the whole frame blooms orange for less than ~150 ms. The owner keeps this as the hop flash (2026-09-26). Do not dim the exit end or cap its pulse.
