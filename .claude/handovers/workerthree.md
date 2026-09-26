@@ -1,46 +1,50 @@
-Agent: workerthree · Lane: #300 unified generator — RFC only (#292 folded in) · Updated: 2026-09-26
+Agent: workerthree · Lane: #300 phrase generator — S1 built, S2 next · Updated: 2026-09-26
 
 ## Goal
 
-Write the RFC for one track generator: weave feel + motifs + arenas + power-up set pieces, ~3 min run. Build
-nothing until the owner approves.
+Build the approved #300 RFC (`.claude/phases/2026-09-26-unified-generator-rfc.md`) slice by slice. S1 is done
+except the draw-call/build-ms measurement.
 
 ## Done
 
-- RFC written: `.claude/phases/2026-09-26-unified-generator-rfc.md` (SHA in the seam message).
-- Memory: `.claude/memory/band-width-is-the-weave-speed-dial.md`.
+- `8a4f1dd` S1: `'phrase'` gen (`packages/shared/src/sim/phrase/` plan · line · phrase-track · open-space · test),
+  `TRACK_GEN_SEGMENTS` (phrase 600), dispatch, digest row, `/test-level` uses 600 for `?gen=phrase`.
+  groove `segmentOf` exported; the avoid pilot moved to `sim/avoid-pilot.test.ts` with a commit bias.
+- `bbb44b4` ADR-023 (Proposed) in `docs/DECISIONS.md`. Both pushed to origin/dev.
+- Memory: `.claude/memory/avoid-pilot-dithers-at-a-centred-post.md`.
 
 ## State
 
-- Groove run time = empty-deck time for all 5 classes; clean pilot 97–99% of top (seeds 1–10, delay 200–500 ms).
-- Weave band 16u: Freighter ~80, Phantom ~89; 14u: Fighter 86, Phantom ~76, Freighter ~73; 12u: long ships cannot pass.
-- Race ends 20 s after the first finisher; clean class spread 29 s at 8,000u, 32–45 s at 12,000u.
-- 600-segment groove: 24/25 finish; the miss is a pilot fault at a lone post [inferred].
-- weave/score rows are pilot-limited (1/50 and partial finishes); not diagnosed.
-- No human finish-time data exists; the mistake budget in RFC §1.4 is [guessed].
+- 493/493 shared tests pass; lint and typecheck clean (all workspaces). weave/groove digests unchanged.
+- 5 classes × 30 seeds at 600 segments: 150/150 finish, 0 deaths. Mean s: Interceptor 143.6, Fighter 125.9,
+  Comet 108.1, Phantom 134.3, Freighter 99.1 (same as an empty deck: S1 has no weave yet).
+- The committed flight test flies seeds 1–5 + 17 (~14 s); the 30-seed sweep took 72 s (run by hand).
+- Seeds 1–30 meet every groove open-space target; every arena fully open.
+- Draw calls and build ms at 600 on /test-level: [unmeasured].
+- S1 slots: `set` = arena 280u, `weave` = motif phrase. Section ≈ 1,952u; sections = round(usable / 1952).
 
 ## Uncommitted
 
-None.
+None (after the handover commit).
 
 ## Held files
 
-None after the seam commit.
+None. Re-claim before S2.
 
 ## Next
 
-The owner APPROVED the RFC with amendments (2026-09-26). The rulings are folded into the RFC header; the parallel weave is §2.3.
-1. S1 (RFC §7): claim files with slur-supervisor BEFORE the first write. Expected set: new `packages/shared/src/sim/phrase/*`
-   (+ tests), `sim/space.ts` (TRACK_GENS + 'phrase'), `sim/track.ts` (dispatch), `sim/track-provider.ts` (per-gen length 600),
-   `sim/track-digest.test.ts` (phrase row; weave/groove rows unchanged), `sim/groove/open-space.ts` (per-phrase targets).
-2. No hard-coded length anywhere: the sequencer derives the section count from `descriptor.length`.
-3. Do NOT touch run-sim/director/race-end constants (#301, workertwo).
-4. Draft ADR-023 alongside S1 (docs/DECISIONS.md: claim it first).
+1. Measure draw calls + build ms: headless Chrome (DPR 1, mute, own CDP port, kill by PID) on
+   `http://localhost:5173/test-level?gen=phrase` vs `?gen=groove`; recipe in memory
+   `count-draw-calls-without-repo-edits`. Record in ADR-023 consequences (claim DECISIONS.md).
+2. Ask the owner (via supervisor) to fly `/test-level?gen=phrase` and log real finish times (RFC §1.4).
+3. S2 (RFC §3): per-run motif vocabulary 4–6 from `MOTIF_LIBRARY`, teach/repeat/twist, gate posts. Accept:
+   adherence ≥ 75%, line pilot not slower than avoid pilot. Claim `sim/phrase/*` again first.
+4. Then S3 (weave band + parallel weave + per-kind open-space exemptions), S4–S7.
 
 ## Open questions
 
-None open. #300 stays open until the build lands.
+None. #300 stays open until S7.
 
 ## Lessons → memory
 
-`.claude/memory/band-width-is-the-weave-speed-dial.md`
+`.claude/memory/avoid-pilot-dithers-at-a-centred-post.md`
