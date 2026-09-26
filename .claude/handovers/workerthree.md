@@ -1,32 +1,38 @@
-Agent: workerthree · Lane: Power bag 6/4/4/3/3 (#269, #270) — DONE · Updated: 2026-09-26 13:30
+Agent: workerthree · Lane: Remove post-respawn invuln (#281) — DONE · Updated: 2026-09-26
 
 ## Goal
 
-Owner decision: the default power bag is 6 bolt / 4 seeker / 4 mine / 3 boost / 3 shield out of 20.
+Remove the dead post-respawn invulnerability (owner decision: remove).
 
 ## Done
 
-- 842fd8c: `SEEKER_RATIO` and `MINE_RATIO` 0.3 → 0.2 in `packages/shared/src/combat/constants.ts`.
-  Boost and shield stay 0.15. `power-bag.test.ts` pins the new default; the override case now uses the
-  old 0.3/0.3 split (2/6/6/3/3). SHA commented on #269 and #270 (left open for the owner).
-
-- 074ceee: docs to match. `docs/DECISIONS.md` ADR-002 amendment (Power bullet) and `docs/GDD.md`
-  "Placement and mix" + "Mine" lines now say 6/4/4/3/3, seeker/mine 0.2, boost/shield 0.15.
+- e13f35d: #281. Issue closed with the SHA.
+  - `invulnTime` removed from `FlightTuning` / `DEFAULT_TUNING` (`packages/shared/src/constants.ts`).
+  - `invulnTimer` removed from `SimShip`, `spawnShip`, `SIM_SHIP_KEYS`, `SIM_FLOAT_KEYS` (`sim/types.ts`).
+  - `sim/step.ts`: respawn no longer grants it. `smashThrough` returns void and always breaks. A block
+    push always bounces. The decay line is gone.
+  - `PlayerState.invulnTimer` stays in `schema.ts` as a plain dead field. It is not removed and not
+    `@deprecated()`.
+  - Three invuln-only tests removed (step, respawn, fracture). The `director.test` literal was trimmed.
+  - Docs: the ADR-016 amendment holds the removal. The ADR-014 section points to it. The ADR-015 smash
+    line was trimmed. The TDD schema list marks the field as dead.
+- Earlier lane: power bag 6/4/4/3/3 (842fd8c, docs 074ceee).
 
 ## State
 
-- `bagCounts()` = bolt 6, seeker 4, mine 4, boost 3, shield 3 (measured from dist after `tsc -b --force`).
-- Dealt bags for salts '', a, groove × bags 0, 7: each 20 long, each 6/4/4/3/3 (measured).
-- Tests: shared 408/408, server 52/52, client seeker-pickups + local-combat 16/16 (measured, shared tree
-  with other workers' uncommitted files present).
+- Shared tests 405/405, server 52/52, client 430/430. `pnpm typecheck` is clean (measured).
+- `respawn.test.ts` gap-death probe asserts `nextTick.stunTimer === 0` on every respawn. It passes
+  without invuln (measured).
+- `rg invuln` outside docs and conventions finds only `schema.ts:32` (measured).
 
 ## Uncommitted
 
-None.
+None of mine. `packages/shared/src/combat/constants.ts` has an uncommitted 9-line diff from another
+worker. I did not touch it.
 
 ## Held files
 
-None (claim released on commit).
+None.
 
 ## Next
 
@@ -34,7 +40,7 @@ None (claim released on commit).
 
 ## Open questions
 
-- Owner: close #269 and #270, or do they cover more than the bag mix?
+- None.
 
 ## Lessons → memory
 
