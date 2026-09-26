@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { type Block, SEG_LEN, type Segment } from '@slur/shared';
 import { useWorld } from 'koota/react';
-import { Fragment, useMemo, useRef } from 'react';
+import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
@@ -170,6 +170,27 @@ export function TrackBlocks() {
     }, [ attrs ] );
     const cells = useMemo( fracturedBlockGeometry, [] );
     const fractured = useMemo( () => fracturedAttributes( cells ), [ cells ] );
+    const attachBlocks = useCallback(
+        ( mesh: THREE.InstancedMesh | null ) => {
+            blockRef.current = mesh;
+            return () => {
+                blockRef.current = null;
+                geometry.dispose();
+            };
+        },
+        [ geometry ],
+    );
+    const attachFractured = useCallback(
+        ( mesh: THREE.InstancedMesh | null ) => {
+            fracturedRef.current = mesh;
+            return () => {
+                fracturedRef.current = null;
+                fractured.geometry.dispose();
+                cells.dispose();
+            };
+        },
+        [ fractured, cells ],
+    );
 
     useFrame( () => {
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
@@ -227,7 +248,7 @@ export function TrackBlocks() {
     return (
         <Fragment>
             <instancedMesh
-                ref={ blockRef }
+                ref={ attachBlocks }
                 geometry={ geometry }
                 count={ 0 }
                 frustumCulled={ false }
@@ -243,7 +264,7 @@ export function TrackBlocks() {
                 />
             </instancedMesh>
             <instancedMesh
-                ref={ fracturedRef }
+                ref={ attachFractured }
                 geometry={ fractured.geometry }
                 count={ 0 }
                 frustumCulled={ false }
