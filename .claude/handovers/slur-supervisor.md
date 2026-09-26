@@ -61,6 +61,10 @@ S2 on the same files — clear it only after portal S2 commits. BAG DECISION for
 workertwo CLEARED at seam (0%), NOT resumed (nothing to do). When portal S2 commits: herdr agent prompt w2P:pF
 "You are workertwo. Resume from .claude/handovers/workertwo.md. Read CLAUDE.local.md first. Your #290 S2 claim is CLEAR."
 (only after the owner answers the bag share, or tell it to use 4/3/3/3/3/2/2 if approved).
+Portal S1 DONE 6dd1368 (pushed; hop inside simulate()). workerfour cleared + resumed on S2 (PRE-CLEARED: schema
+Portal+RunState.portals, combat/constants.ts, run/combat.ts, power-bag.ts, run-sim.ts, run/portal-run.ts; bag
+bolt5 seeker3 mine4 boost3 shield3 portal2). It messages workertwo + me on commit. workertwo is cleared and idle:
+its message may sit unread — resume it via herdr (line above).
 workerfour portal S1 CLEARED (schema portalHops, types, step, sim-config, index, director.test, portal-hop.test,
 portal.ts). Then portal S2 first on shared fire/bag files; workerfour tells workertwo directly when S2 commits.
 #289 portal loop (on the issue): a chaser in your far end is thrown back, meets the far end again and loops until
