@@ -1,9 +1,9 @@
 import { BOLT_SPAWN_AHEAD, BOLT_SPEED, BOLT_TTL } from '@slur/shared';
-import { type BoltSink, BoltStreaks } from '../../game/scene/bolt-streaks';
-import { emitMineShot, mineNow } from '../../game/scene/mine-shots';
-import { localCombat } from './local-combat';
+import type { BoltSink } from '../../../game/scene/bolt-streaks';
+import { emitMineShot, mineNow } from '../../../game/scene/mine-shots';
+import { localCombat } from '../local-combat';
 
-function collect( sink: BoltSink ): void {
+export function collect( sink: BoltSink ): void {
     for ( const bolt of localCombat.bolts.values() ) {
         sink( bolt.x, bolt.y, bolt.z, ( BOLT_TTL - bolt.ttl ) * BOLT_SPEED + BOLT_SPAWN_AHEAD, bolt.dir );
     }
@@ -12,8 +12,4 @@ function collect( sink: BoltSink ): void {
         const mine = localCombat.mines.get( id );
         if ( mine ) emitMineShot( sink, t, mine, now );
     }
-}
-
-export function LocalBoltField() {
-    return <BoltStreaks collect={ collect } />;
 }

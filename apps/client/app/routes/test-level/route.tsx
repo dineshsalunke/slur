@@ -2,7 +2,7 @@ import { isTrackGen } from '@slur/shared';
 import { loadSfx } from '../../audio/sfx-map';
 import type { Route } from './+types/route';
 import { DEFAULT_GEN } from './route.constants';
-import { TestLevelCanvas } from './test-level-canvas';
+import { TestLevelCanvas } from './test-level-canvas/test-level-canvas';
 
 export function meta() {
     return [

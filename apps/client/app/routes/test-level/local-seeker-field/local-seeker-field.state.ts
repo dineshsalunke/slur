@@ -1,10 +1,10 @@
-import { SeekerBodies, type SeekerSink } from '../../game/scene/seeker-bodies';
-import { makeSeekerTrail, type SeekerTrailRing } from '../../game/scene/seeker-trail';
-import { localCombat } from './local-combat';
+import type { SeekerSink } from '../../../game/scene/seeker-bodies';
+import { makeSeekerTrail, type SeekerTrailRing } from '../../../game/scene/seeker-trail';
+import { localCombat } from '../local-combat';
 
 const trails = new Map< string, SeekerTrailRing >();
 
-function collect( sink: SeekerSink ): void {
+export function collect( sink: SeekerSink ): void {
     for ( const id of trails.keys() ) if ( ! localCombat.seekers.has( id ) ) trails.delete( id );
     for ( const [ id, s ] of localCombat.seekers ) {
         let trail = trails.get( id );
@@ -14,8 +14,4 @@ function collect( sink: SeekerSink ): void {
         }
         sink( s.x, s.y, s.z, trail );
     }
-}
-
-export function LocalSeekerField() {
-    return <SeekerBodies collect={ collect } />;
 }
