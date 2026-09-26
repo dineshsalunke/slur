@@ -12,8 +12,10 @@ Full research: `conventions/react-router.md`.
 - **Import from `react-router`.** `react-router-dom` was removed in v8 and will not resolve.
 - **The `<Canvas>` lives in a layout route and never unmounts** across in-game navigation. Putting
   it in a routed page destroys the WebGL context on every nav.
-- **Never open the Colyseus room in a `loader`.** Loaders re-run on revalidation → duplicate
-  connections. The room is a module singleton.
+- **The Colyseus room lives on a module singleton.** A `clientLoader` may open it or return it:
+  the singleton reuses a live room for the same id, and the route sets `shouldRevalidate` to
+  `false`, so a revalidation never opens a second connection. A component unmount never closes
+  the room.
 - **The router owns location, not game state.** URL = which screen. Never encode tick, score or
   positions in the URL or route state.
 - **Guard the back button mid-match with `useBlocker`.**

@@ -12,7 +12,8 @@ Full research: `conventions/colyseus.md`.
 - **State is the protocol; messages are the commands.** Only synced game state in `Schema`; player
   input goes over `room.send(...)`. Never a Schema instance as a message payload.
 - **Append `@type` fields, never reorder or insert.** Encoder and decoder index by declaration
-  order — a mismatch silently corrupts decoding. Dead fields get `@deprecated()`.
+  order — a mismatch silently corrupts decoding. **Keep dead fields plain; never `@deprecated()`.**
+  The client decodes by reflection, and a deprecated field shifts the index of every later field.
 - **Client SDK is `@colyseus/sdk`**, never `colyseus.js` (frozen at 0.16). Callbacks via
   `getStateCallbacks(room)` → `$`, not `Callbacks.get(room)`.
 - **Sim rate and patch rate are independent knobs.** `setSimulationInterval` for physics;

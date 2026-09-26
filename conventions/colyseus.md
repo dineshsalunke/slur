@@ -154,7 +154,7 @@ client.view.add(this.state.players.get(client.sessionId));
 - **Mutating state outside the patch/sim cycle** (e.g. inside `onAuth`, async callbacks racing the loop) — WHY: leads to torn/interleaved deltas and hard-to-reproduce desync; funnel all mutation through the sim loop.
 - **Coupling `patchRate` to sim rate** (e.g. patchRate=16 to match 60 Hz) — WHY: triples bandwidth for no visual gain; clients interpolate between 20 Hz snapshots fine.
 - **Broadcasting full snapshots manually** (`broadcast("state", entireState)`) — WHY: reinvents (badly) the delta encoder that already runs on `patchRate`.
-- **Reordering / inserting `@type` fields in the middle** — WHY: encoder and decoder index fields by declaration order; a mismatch silently corrupts decoding. Append only; mark dead fields `@deprecated()`.
+- **Reordering / inserting `@type` fields in the middle** — WHY: encoder and decoder index fields by declaration order; a mismatch silently corrupts decoding. Append only. **Keep a dead field as a plain `@type` field; never mark it `@deprecated()`.** Our client decodes by reflection (no generated client schema), and a deprecated field shifts the index of every later field, so the decode corrupts.
 - **One giant flat state / unbounded arrays** (trails, projectiles, event logs kept forever) — WHY: state bloat balloons every patch; cap/prune collections and expire transient entities.
 - **`@view()` on large hot datasets** — WHY: StateView filtering is per-client work and docs note it's "not optimized" for very large sets; use it sparingly (secrets, ownership), not as a general LOD system at scale.
 
