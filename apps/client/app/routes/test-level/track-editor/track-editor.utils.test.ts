@@ -1,5 +1,6 @@
-import { type AuthoredLevel, BLOCK_ID_STRIDE, HALF_WIDTH, SEG_LEN, START_SAFE } from '@slur/shared';
+import { type AuthoredLevel, type AuthoredRect, BLOCK_ID_STRIDE, HALF_WIDTH, SEG_LEN, START_SAFE } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
+import type { EditorPoint } from './track-editor.state';
 import {
     applyTool,
     clampCamera,
@@ -74,20 +75,80 @@ describe( 'applyTool', () => {
         expect( c.gaps ).toEqual( [ { ...r, z: 400 } ] );
     } );
 
-    it( 'the eraser removes every rect it touches and keeps the rest', () => {
-        const start = level( {
-            blocks: [
-                { x: -44.59, z: 200, w: 6.3, l: 20, destructible: false },
-                { x: 10, z: 200, w: 4, l: 4, destructible: true },
-            ],
-            gaps: [
-                { x: -48, z: 210, w: 96, l: 8 },
-                { x: -48, z: 400, w: 96, l: 8 },
-            ],
+    function area( rects: readonly AuthoredRect[] ): number {
+        return rects.reduce( ( s, q ) => s + q.w * q.l, 0 );
+    }
+
+    function covers( rects: readonly AuthoredRect[], x: number, z: number ): boolean {
+        return rects.some( ( q ) => x > q.x && x < q.x + q.w && z > q.z && z < q.z + q.l );
+    }
+
+    describe.each( [ 1, 4 ] )( 'the eraser subtracts at snap %i', ( snap ) => {
+        const gap = { x: -8 * snap, z: 200, w: 16 * snap, l: 8 * snap };
+        const erase = ( lvl: AuthoredLevel, a: EditorPoint, b: EditorPoint ): AuthoredLevel => {
+            const cell = snapRect( a, b, snap, LENGTH );
+            if ( ! cell ) throw new Error( 'no cell' );
+            return applyTool( lvl, 'eraser', cell );
+        };
+
+        it( 'a click in the middle leaves four pieces around one cell', () => {
+            const out = erase(
+                level( { gaps: [ gap ] } ),
+                { x: 0.5, z: 200 + 3.5 * snap },
+                { x: 0.5, z: 200 + 3.5 * snap },
+            );
+            expect( out.gaps ).toHaveLength( 4 );
+            expect( area( out.gaps ) ).toBe( area( [ gap ] ) - snap * snap );
+            expect( covers( out.gaps, snap / 2, 200 + 3.5 * snap ) ).toBe( false );
+            expect( covers( out.gaps, -snap / 2, 200 + 3.5 * snap ) ).toBe( true );
+            expect( covers( out.gaps, snap / 2, 200 + 2.5 * snap ) ).toBe( true );
         } );
-        const out = applyTool( start, 'eraser', { x: -40, z: 212, w: 1, l: 1 } );
-        expect( out.blocks ).toEqual( [ start.blocks[ 1 ] ] );
-        expect( out.gaps ).toEqual( [ start.gaps[ 1 ] ] );
+
+        it( 'a cell on an edge leaves three pieces', () => {
+            const out = erase( level( { gaps: [ gap ] } ), { x: 0.5, z: 200.5 }, { x: 0.5, z: 200.5 } );
+            expect( out.gaps ).toHaveLength( 3 );
+            expect( area( out.gaps ) ).toBe( area( [ gap ] ) - snap * snap );
+        } );
+
+        it( 'a corner cell leaves two pieces and keeps the destructible flag', () => {
+            const block = { ...gap, destructible: true };
+            const out = erase(
+                level( { blocks: [ block ] } ),
+                { x: gap.x + 0.5, z: 200.5 },
+                { x: gap.x + 0.5, z: 200.5 },
+            );
+            expect( out.blocks ).toHaveLength( 2 );
+            expect( area( out.blocks ) ).toBe( area( [ block ] ) - snap * snap );
+            expect( out.blocks.every( ( b ) => b.destructible ) ).toBe( true );
+            expect( covers( out.blocks, gap.x + snap / 2, 200 + snap / 2 ) ).toBe( false );
+        } );
+
+        it( 'a drag that covers the rect removes it', () => {
+            const out = erase(
+                level( { gaps: [ gap ] } ),
+                { x: gap.x - snap, z: 199 },
+                { x: gap.x + gap.w + 0.5, z: 200 + gap.l + 0.5 },
+            );
+            expect( out.gaps ).toEqual( [] );
+        } );
+
+        it( 'a drag across several rects cuts each and leaves the untouched one whole', () => {
+            const solid = { x: -8 * snap, z: 200 + 10 * snap, w: 4 * snap, l: 4 * snap, destructible: false };
+            const far = { x: 0, z: 200 + 40 * snap, w: snap, l: snap };
+            const start = level( { blocks: [ solid ], gaps: [ gap, far ] } );
+            const out = erase(
+                start,
+                { x: -6 * snap + 0.5, z: 200 + 4.5 * snap },
+                { x: -5 * snap + 0.5, z: 200 + 11.5 * snap },
+            );
+            const cut = 2 * snap * ( 4 * snap ) + 2 * snap * ( 2 * snap );
+            expect( area( [ ...out.blocks, ...out.gaps ] ) ).toBe( area( [ solid, gap, far ] ) - cut );
+            expect( out.blocks.every( ( b ) => ! b.destructible ) ).toBe( true );
+            expect( out.gaps ).toContainEqual( far );
+            expect( covers( out.gaps, -5.5 * snap, 200 + 5 * snap ) ).toBe( false );
+            expect( covers( out.blocks, -5.5 * snap, 200 + 11 * snap ) ).toBe( false );
+            expect( covers( out.blocks, -7.5 * snap, 200 + 11 * snap ) ).toBe( true );
+        } );
     } );
 
     it( 'does not touch the input level', () => {

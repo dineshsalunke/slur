@@ -124,13 +124,29 @@ export function overlaps( a: AuthoredRect, b: AuthoredRect ): boolean {
     return a.x < b.x + b.w && b.x < a.x + a.w && a.z < b.z + b.l && b.z < a.z + a.l;
 }
 
+export function subtractRect< T extends AuthoredRect >( a: T, r: AuthoredRect ): T[] {
+    if ( ! overlaps( a, r ) ) return [ a ];
+    const aTop = a.z + a.l;
+    const aRight = a.x + a.w;
+    const z0 = Math.max( a.z, r.z );
+    const z1 = Math.min( aTop, r.z + r.l );
+    const x1 = Math.min( aRight, r.x + r.w );
+    const pieces: T[] = [
+        { ...a, l: z0 - a.z },
+        { ...a, z: z1, l: aTop - z1 },
+        { ...a, w: Math.max( a.x, r.x ) - a.x, z: z0, l: z1 - z0 },
+        { ...a, x: x1, w: aRight - x1, z: z0, l: z1 - z0 },
+    ];
+    return pieces.filter( ( p ) => p.w > 0 && p.l > 0 );
+}
+
 export function applyTool( level: AuthoredLevel, tool: EditorTool, r: AuthoredRect ): AuthoredLevel {
     switch ( tool ) {
         case 'eraser':
             return {
                 ...level,
-                blocks: level.blocks.filter( ( b ) => ! overlaps( b, r ) ),
-                gaps: level.gaps.filter( ( g ) => ! overlaps( g, r ) ),
+                blocks: level.blocks.flatMap( ( b ) => subtractRect( b, r ) ),
+                gaps: level.gaps.flatMap( ( g ) => subtractRect( g, r ) ),
             };
         case 'gap':
             return { ...level, gaps: [ ...level.gaps, r ] };
