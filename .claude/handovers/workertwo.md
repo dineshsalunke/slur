@@ -1,29 +1,26 @@
-Agent: workertwo · Lane: #290 tug line · Updated: 2026-09-26
+Agent: workertwo · Lane: #290 tug line (done) · Updated: 2026-09-26
 
 Older versions hold #283 and earlier (`git log -p -- .claude/handovers/workertwo.md`).
 
 ## Goal
 
-- #290 tug line. The line latches onto a rival, or onto the nearest block ahead (the grapple is folded
-  in). Forward on a rival: catapult the firer and slow the target. Back on a rival: tow the chaser
-  forward and degrade its strafe and jump. It replaces the GDD §5.7 Tractor beam.
+- #290 tug line. It replaces the GDD §5.7 Tractor beam and folds in the Grapple. Lane finished.
 
 ## Done
 
 - S1 sim core `403f8de`.
 - S2 bag + fire path `72eafc0`.
-- S3 client `86060aa` (pushed): tug-events queue + TugLine beam (game/scene/tug-line/), tug pickup
-  bucket + placeholder hook body (tug-pickups/), HUD 'Tug' label + hook gem (glyphs moved into
-  hud/power-gem/gem-glyph.tsx, a switch, for the complexity cap), audio playTugEvent (seekerFire
-  rate 0.7 / stun on victim), TUG_RATIO 0.1, MINE_RATIO 0.15.
+- S3 client `86060aa`: beam VFX, pickup, HUD gem, audio, TUG_RATIO 0.1, MINE_RATIO 0.15.
+- S4 GDD `387302c`: §5.3 table row + "Tug line (#290, built)" rules block; bag counts 4/3/3/3/3/2/2;
+  Mine 3 of 20 (0.15); §5.7 Tractor row → Tug line; Grapple row → folded into the tug line.
 
 ## State
 
 - Owner-final bag: bolt 4 · seeker 3 · mine 3 · boost 3 · shield 3 · portal 2 · tug 2 [measured, test].
 - After 86060aa: typecheck 0, lint 0, shared 479/479, server 40/40, client 441/441 [measured].
-- /test-level headless check [measured]: forward rival latch → firer vz 27, rival slowTimer 0.6; back
-  latch → chaser vz +40, towTimer 0.48; no rival → block anchor z 404. Beam visible in all three.
-- No `slowed` interp flag was added (would need ecs/traits + net-systems). Not required for S3.
+- GDD numbers read from `packages/shared/src/combat/tug-constants.ts` and `sim/tug-status.ts` this seam.
+- `docs/archive/superseded-design.md` has no PRECEDED entry for the Tractor "momentum leech" [not done;
+  file not claimed].
 
 ## Uncommitted
 
@@ -31,17 +28,16 @@ None.
 
 ## Held files
 
-None. S3 files released to workerfour (portal S4).
+None.
 
 ## Next
 
-1. Wait for the supervisor to clear docs/GDD.md.
-2. S4: GDD §5.3 / §5.7 (Tractor and Grapple → tug line).
-3. `gh issue close 290 -c "<what shipped + SHAs>"`.
+1. Close #290 with 403f8de, 72eafc0, 86060aa, 387302c.
+2. Wait for the next lane from the supervisor.
 
 ## Open questions
 
-- None.
+- Supervisor: add a PRECEDED entry for the Tractor beam to `docs/archive/superseded-design.md`?
 
 ## Lessons → memory
 
