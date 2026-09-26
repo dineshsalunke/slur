@@ -1,63 +1,86 @@
 import { useFrame } from '@react-three/fiber';
-import { DEFAULT_PORTAL_CONFIG } from '@slur/shared';
 import { useCallback, useMemo } from 'react';
 import type * as THREE from 'three';
 import { blockWorld } from '../../block-state';
-import { accent } from '../accent';
 import { commitInstances } from '../instanced-commit';
-import { _c, _o, MAX_PORTAL_ENDS } from './portal-field.constants';
-import { buildPortalLook, collectPortalEnds, type PortalEndSink, portalGlow } from './portal-field.utils';
-
-interface Frame {
-    ring: THREE.InstancedMesh | null;
-    count: number;
-    t: number;
-}
+import { MAX_PORTAL_ENDS, MAX_PORTAL_MARKS } from './portal-field.constants';
+import {
+    buildPortalLook,
+    collectPortalEnds,
+    disposePortalLook,
+    type PortalEndSink,
+    type PortalFrame,
+    writePortalEnd,
+} from './portal-field.utils';
 
 export function PortalField() {
     const look = useMemo( buildPortalLook, [] );
-    const frame = useMemo< Frame >( () => ( { ring: null, count: 0, t: 0 } ), [] );
-
+    const frame = useMemo< PortalFrame >(
+        () => ( { shell: null, sleeve: null, mark: null, ends: 0, marks: 0, t: 0 } ),
+        [],
+    );
     const sink = useMemo< PortalEndSink >(
-        () => ( x, y, z, live ) => {
-            const { ring } = frame;
-            if ( ! ring || frame.count >= MAX_PORTAL_ENDS ) return;
-            const i = frame.count++;
-            _o.position.set( x, y + DEFAULT_PORTAL_CONFIG.portalR, z );
-            _o.updateMatrix();
-            ring.setMatrixAt( i, _o.matrix );
-            ring.setColorAt( i, _c.copy( accent() ).multiplyScalar( portalGlow( live, frame.t ) ) );
-        },
+        () => ( x, y, z, live, marks ) => writePortalEnd( frame, x, y, z, live, marks ),
         [ frame ],
     );
 
-    const setRing = useCallback(
+    const setShell = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
-            frame.ring = mesh;
+            frame.shell = mesh;
             if ( mesh ) mesh.count = 0;
-            return () => {
-                frame.ring = null;
-                look.geometry.dispose();
-                look.material.dispose();
-            };
         },
-        [ frame, look ],
+        [ frame ],
+    );
+    const setSleeve = useCallback(
+        ( mesh: THREE.InstancedMesh | null ) => {
+            frame.sleeve = mesh;
+            if ( mesh ) mesh.count = 0;
+        },
+        [ frame ],
+    );
+    const setMark = useCallback(
+        ( mesh: THREE.InstancedMesh | null ) => {
+            frame.mark = mesh;
+            if ( mesh ) mesh.count = 0;
+        },
+        [ frame ],
+    );
+    const release = useCallback(
+        ( group: THREE.Group | null ) => () => {
+            if ( group ) disposePortalLook( look );
+        },
+        [ look ],
     );
 
     useFrame( ( state ) => {
-        const { ring } = frame;
-        if ( ! ring ) return;
-        frame.count = 0;
+        const { shell, sleeve, mark } = frame;
+        if ( ! shell || ! sleeve || ! mark ) return;
+        frame.ends = 0;
+        frame.marks = 0;
         frame.t = state.clock.elapsedTime;
         collectPortalEnds( blockWorld.portals.values(), sink );
-        commitInstances( ring, frame.count );
+        commitInstances( shell, frame.ends );
+        commitInstances( sleeve, frame.ends );
+        commitInstances( mark, frame.marks );
     } );
 
     return (
-        <instancedMesh
-            ref={ setRing }
-            frustumCulled={ false }
-            args={ [ look.geometry, look.material, MAX_PORTAL_ENDS ] }
-        />
+        <group ref={ release }>
+            <instancedMesh
+                ref={ setShell }
+                frustumCulled={ false }
+                args={ [ look.shell, look.metal, MAX_PORTAL_ENDS ] }
+            />
+            <instancedMesh
+                ref={ setSleeve }
+                frustumCulled={ false }
+                args={ [ look.sleeve, look.glow, MAX_PORTAL_ENDS ] }
+            />
+            <instancedMesh
+                ref={ setMark }
+                frustumCulled={ false }
+                args={ [ look.mark, look.glow, MAX_PORTAL_MARKS ] }
+            />
+        </group>
     );
 }
