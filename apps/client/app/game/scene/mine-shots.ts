@@ -2,7 +2,7 @@ import { tuningForShip } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import { Net, NetMine, Render } from '../ecs/traits';
 import type { BoltSink } from './bolt-streaks/bolt-streaks';
-import type { MineSink } from './mine-bodies';
+import type { MineSink } from './mine-bodies/mine-bodies';
 import {
     type BodyPose,
     bodyAt,

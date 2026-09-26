@@ -2,7 +2,7 @@ import { DEFAULT_SIM_CONFIG, HeldPower, pickupPower, pickupsOf, procgenDescripto
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { SEEKER_FLIGHT, SEEKER_PICKUP, seekerCoreGeometry, seekerShellGeometry, seekerTail } from './seeker-look';
-import { splitPickupLayout } from './seeker-pickups';
+import { splitPickupLayout } from './seeker-pickups/seeker-pickups.utils';
 
 function bounds( g: THREE.BufferGeometry ): THREE.Box3 {
     g.computeBoundingBox();

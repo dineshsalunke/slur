@@ -1,27 +1,14 @@
 import { useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo } from 'react';
-import * as THREE from 'three';
-import { accent } from './accent';
-import { BOLT_HOT } from './combat-look';
-import { commitInstances } from './instanced-commit';
-import { mineBodyMaterial } from './mine-body-material';
-import {
-    MAX_MINES,
-    MINE_CORE_INTENSITY,
-    MINE_DECAL_INTENSITY,
-    mineBodyGeometry,
-    mineCoreGeometry,
-    mineDecalGeometry,
-    mineGlow,
-} from './mine-look';
-import type { BodyPose } from './mine-throw';
+import type * as THREE from 'three';
+import { accent } from '../accent';
+import { commitInstances } from '../instanced-commit';
+import { MAX_MINES, MINE_CORE_INTENSITY, MINE_DECAL_INTENSITY, mineGlow } from '../mine-look';
+import type { BodyPose } from '../mine-throw';
+import { _c, _o, HOT } from './mine-bodies.constants';
+import { buildLook, phaseOf, place } from './mine-bodies.utils';
 
 export type MineSink = ( x: number, y: number, z: number, armed: boolean, pose: BodyPose ) => void;
-
-const _o = new THREE.Object3D();
-const _c = new THREE.Color();
-const HOT = new THREE.Color( BOLT_HOT );
-const MIN_SCALE = 0.01;
 
 interface Frame {
     body: THREE.InstancedMesh | null;
@@ -29,40 +16,6 @@ interface Frame {
     decal: THREE.InstancedMesh | null;
     count: number;
     t: number;
-}
-
-function glowMaterial(): THREE.MeshBasicMaterial {
-    return new THREE.MeshBasicMaterial( {
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-    } );
-}
-
-function buildLook() {
-    const bodyGeo = mineBodyGeometry();
-    const open = new THREE.InstancedBufferAttribute( new Float32Array( MAX_MINES ).fill( 1 ), 1 );
-    open.setUsage( THREE.DynamicDrawUsage );
-    bodyGeo.setAttribute( 'aOpen', open );
-    return {
-        bodyGeo,
-        coreGeo: mineCoreGeometry(),
-        decalGeo: mineDecalGeometry(),
-        body: mineBodyMaterial(),
-        core: glowMaterial(),
-        decal: glowMaterial(),
-    };
-}
-
-function phaseOf( x: number, z: number ): number {
-    const h = Math.sin( x * 12.9898 + z * 78.233 ) * 43758.5453;
-    return h - Math.floor( h );
-}
-
-function place( mesh: THREE.InstancedMesh, i: number, sx: number, sy: number, sz: number ): void {
-    _o.scale.set( Math.max( MIN_SCALE, sx ), Math.max( MIN_SCALE, sy ), Math.max( MIN_SCALE, sz ) );
-    _o.updateMatrix();
-    mesh.setMatrixAt( i, _o.matrix );
 }
 
 export function MineBodies( { collect }: { collect: ( sink: MineSink ) => void } ) {

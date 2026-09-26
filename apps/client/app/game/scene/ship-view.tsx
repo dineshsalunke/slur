@@ -5,7 +5,7 @@ import { Fragment, Suspense } from 'react';
 import { Net, Render } from '../ecs/traits';
 import { ShieldDome } from './shield-dome/shield-dome';
 import { ShipModel } from './ship-model';
-import { ShipShadow } from './ship-shadow';
+import { ShipShadow } from './ship-shadow/ship-shadow';
 
 export function ShipView( { entity }: { entity: Entity } ) {
     const group = entity.get( Render );

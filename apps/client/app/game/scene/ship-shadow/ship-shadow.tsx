@@ -1,44 +1,14 @@
 import { useFrame } from '@react-three/fiber';
-import { spanHasZ, type Track, tuningForShip } from '@slur/shared';
+import { tuningForShip } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { col, num } from '../../dev/tuning';
-import { Render } from '../ecs/traits';
-import { useTrack } from '../track-context/use-track';
-import { isDead } from './ship-dead';
-
-const VERTEX = `
-varying vec2 vShadowUv;
-void main() {
-    vShadowUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-}
-`;
-
-const FRAGMENT = `
-uniform vec3 uColor;
-uniform float uOpacity;
-uniform float uSoftness;
-varying vec2 vShadowUv;
-void main() {
-    float d = length( vShadowUv * 2.0 - 1.0 );
-    float a = pow( max( 0.0, 1.0 - d ), uSoftness );
-    gl_FragColor = vec4( uColor, a * uOpacity );
-}
-`;
-
-function floorBelow( track: Track, x: number, y: number, z: number ): number | null {
-    const seg = track.segmentAtZ( z );
-    let best: number | null = null;
-    for ( const f of seg.floors ) {
-        if ( ! spanHasZ( seg, f, z ) ) continue;
-        if ( x < f.x0 || x > f.x1 ) continue;
-        if ( f.y > y + 1e-3 ) continue;
-        if ( best === null || f.y > best ) best = f.y;
-    }
-    return best;
-}
+import { col, num } from '../../../dev/tuning';
+import { Render } from '../../ecs/traits';
+import { useTrack } from '../../track-context/use-track';
+import { isDead } from '../ship-dead';
+import { FRAGMENT, VERTEX } from './ship-shadow.constants';
+import { floorBelow } from './ship-shadow.utils';
 
 export function ShipShadow( { entity, shipId }: { entity: Entity; shipId: string } ) {
     const track = useTrack();

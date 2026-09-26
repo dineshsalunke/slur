@@ -1,4 +1,4 @@
-import type { SeekerSink } from '../../../game/scene/seeker-bodies';
+import type { SeekerSink } from '../../../game/scene/seeker-bodies/seeker-bodies';
 import { makeSeekerTrail, type SeekerTrailRing } from '../../../game/scene/seeker-trail';
 import { localCombat } from '../local-combat';
 

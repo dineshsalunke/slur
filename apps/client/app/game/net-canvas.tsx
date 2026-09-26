@@ -24,7 +24,7 @@ import { NetHud } from './net-hud';
 import { NetLoop } from './net-loop/net-loop';
 import { CANVAS_GL } from './scene/canvas-gl';
 import { MineField } from './scene/mine-field';
-import { MineShock } from './scene/mine-shock';
+import { MineShock } from './scene/mine-shock/mine-shock';
 import { PickupField } from './scene/pickup-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
 import { RearView } from './scene/rear-view';

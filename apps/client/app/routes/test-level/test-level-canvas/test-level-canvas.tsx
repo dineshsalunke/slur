@@ -7,7 +7,7 @@ import { TuningPanelMount } from '../../../dev/tuning-panel-mount';
 import { world } from '../../../game/ecs/world';
 import { FinishFade } from '../../../game/finish/finish-fade';
 import { CANVAS_GL } from '../../../game/scene/canvas-gl';
-import { MineShock } from '../../../game/scene/mine-shock';
+import { MineShock } from '../../../game/scene/mine-shock/mine-shock';
 import { RearView } from '../../../game/scene/rear-view';
 import { WorldScene } from '../../../game/scene/world-scene';
 import { TrackContext } from '../../../game/track-context/track-context.constants';

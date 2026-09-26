@@ -1,4 +1,4 @@
-import { MineBodies } from '../../../game/scene/mine-bodies';
+import { MineBodies } from '../../../game/scene/mine-bodies/mine-bodies';
 import { collect } from './local-mine-field.utils';
 
 export function LocalMineField() {

@@ -1,4 +1,4 @@
-import { SeekerBodies } from '../../../game/scene/seeker-bodies';
+import { SeekerBodies } from '../../../game/scene/seeker-bodies/seeker-bodies';
 import { collect } from './local-seeker-field.state';
 
 export function LocalSeekerField() {

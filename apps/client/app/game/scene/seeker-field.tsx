@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { RENDER_DELAY_MS } from '../ecs/net-systems';
 import { NetSeeker, ProjInterp, type ProjSnapshot, SeekerTrail } from '../ecs/traits';
 import { sampleAt } from './projectile-field/projectile-field.utils';
-import { SeekerBodies, type SeekerSink } from './seeker-bodies';
+import { SeekerBodies, type SeekerSink } from './seeker-bodies/seeker-bodies';
 import type { SeekerTrailRing } from './seeker-trail';
 
 export function SeekerField() {

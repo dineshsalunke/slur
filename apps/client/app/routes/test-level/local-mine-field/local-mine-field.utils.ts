@@ -1,4 +1,4 @@
-import type { MineSink } from '../../../game/scene/mine-bodies';
+import type { MineSink } from '../../../game/scene/mine-bodies/mine-bodies';
 import { emitMineBody, mineNow } from '../../../game/scene/mine-shots';
 import { localCombat } from '../local-combat';
 import { SETTLED } from './local-mine-field.constants';

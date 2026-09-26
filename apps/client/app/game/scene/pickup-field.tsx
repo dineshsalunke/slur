@@ -5,7 +5,8 @@ import { useTrack } from '../track-context/use-track';
 import { BoltPickups } from './bolt-pickups/bolt-pickups';
 import { BoostPickups } from './boost-pickups/boost-pickups';
 import { MinePickups } from './mine-pickups/mine-pickups';
-import { SeekerPickups, splitPickupLayout } from './seeker-pickups';
+import { SeekerPickups } from './seeker-pickups/seeker-pickups';
+import { splitPickupLayout } from './seeker-pickups/seeker-pickups.utils';
 import { ShieldPickups } from './shield-pickups/shield-pickups';
 
 export function PickupField() {

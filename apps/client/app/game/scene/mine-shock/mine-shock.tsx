@@ -1,57 +1,24 @@
 import { useFrame } from '@react-three/fiber';
-import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import { useCallback, useEffect, useMemo } from 'react';
-import * as THREE from 'three';
-import { accent } from './accent';
-import { drainMineShocks, type MineShock as Shock, type ShockKind } from './mine-shock-events';
+import type * as THREE from 'three';
+import { accent } from '../accent';
+import { drainMineShocks, type MineShock as Shock } from '../mine-shock-events';
+import { _c, _o, LIFT, MAX } from './mine-shock.constants';
+import { buildLook, spawn, spread } from './mine-shock.utils';
 
-const MAX = 16;
-const LIFT = 0.05;
-
-interface ShockLook {
+export interface ShockLook {
     reach: number;
     life: number;
     bright: number;
     collapse: boolean;
 }
 
-const LOOKS: Record< ShockKind, ShockLook > = {
-    big: { reach: DEFAULT_SIM_CONFIG.mineTriggerR * 3, life: 0.55, bright: 5, collapse: false },
-    small: { reach: DEFAULT_SIM_CONFIG.mineTriggerR * 1.6, life: 0.55, bright: 5, collapse: false },
-    fizzle: { reach: DEFAULT_SIM_CONFIG.mineTriggerR * 1.6, life: 0.4, bright: 5, collapse: true },
-};
-
-const _o = new THREE.Object3D();
-const _c = new THREE.Color();
-
-interface Ring {
+export interface Ring {
     x: number;
     y: number;
     z: number;
     look: ShockLook;
     age: number;
-}
-
-function buildLook() {
-    return {
-        geometry: new THREE.RingGeometry( 0.86, 1, 64, 1 ).rotateX( -Math.PI / 2 ),
-        material: new THREE.MeshBasicMaterial( {
-            transparent: true,
-            depthWrite: false,
-            side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending,
-        } ),
-    };
-}
-
-function spawn( rings: Ring[], e: Shock ): void {
-    if ( rings.length >= MAX ) rings.shift();
-    rings.push( { x: e.x, y: e.y, z: e.z, look: LOOKS[ e.kind ], age: 0 } );
-}
-
-function spread( r: Ring, f: number ): number {
-    const ease = 1 - ( 1 - f ) * ( 1 - f );
-    return r.look.reach * ( r.look.collapse ? 1 - ease : ease );
 }
 
 export function MineShock() {

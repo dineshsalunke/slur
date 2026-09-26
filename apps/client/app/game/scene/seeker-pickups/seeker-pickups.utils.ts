@@ -1,6 +1,6 @@
 import { type Anchor, HeldPower, pickupPower } from '@slur/shared';
-import { pickupBody } from './pickup-body';
-import { PickupInstances, type PickupPart } from './pickup-instances';
+import { pickupBody } from '../pickup-body';
+import type { PickupPart } from '../pickup-instances/pickup-instances';
 import {
     SEEKER_FLIGHT,
     SEEKER_PICKUP,
@@ -8,17 +8,10 @@ import {
     seekerCoreGeometry,
     seekerGlyphGeometry,
     seekerShellGeometry,
-} from './seeker-look';
+} from '../seeker-look';
+import type { PickupLayouts } from './seeker-pickups';
 
-export interface PickupLayouts {
-    bolts: Anchor[];
-    seekers: Anchor[];
-    mines: Anchor[];
-    boosts: Anchor[];
-    shields: Anchor[];
-}
-
-function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] {
+export function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] {
     switch ( power ) {
         case HeldPower.seeker:
             return out.seekers;
@@ -39,7 +32,7 @@ export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
     return out;
 }
 
-function seekerParts( form: SeekerForm ): PickupPart[] {
+export function seekerParts( form: SeekerForm ): PickupPart[] {
     return pickupBody( seekerShellGeometry( form ), seekerGlyphGeometry( form ), seekerCoreGeometry( form ) );
 }
 
@@ -47,10 +40,6 @@ export function buildSeekerBody(): PickupPart[] {
     return seekerParts( SEEKER_FLIGHT );
 }
 
-function buildSeekerPickup(): PickupPart[] {
+export function buildSeekerPickup(): PickupPart[] {
     return seekerParts( SEEKER_PICKUP );
-}
-
-export function SeekerPickups( { layout, isTaken }: { layout: Anchor[]; isTaken: ( id: string ) => boolean } ) {
-    return <PickupInstances layout={ layout } isTaken={ isTaken } buildBody={ buildSeekerPickup } />;
 }

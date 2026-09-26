@@ -4,7 +4,7 @@ import { world } from '../../../game/ecs/world';
 import { BackFill } from '../../../game/scene/back-fill/back-fill';
 import { CANVAS_GL } from '../../../game/scene/canvas-gl';
 import { EngineLight } from '../../../game/scene/engine-light/engine-light';
-import { ExhaustField } from '../../../game/scene/exhaust-field';
+import { ExhaustField } from '../../../game/scene/exhaust-field/exhaust-field';
 import { GameEnvironment } from '../../../game/scene/game-environment';
 import { NearFill } from '../../../game/scene/near-fill/near-fill';
 import { SceneEffects } from '../../../game/scene/scene-effects';
