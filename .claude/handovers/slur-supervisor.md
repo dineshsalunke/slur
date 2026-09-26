@@ -51,6 +51,9 @@ scratch objects to module scope" → `<name>.constants.ts` in the scene batch.
 Told workerone: 3 lint errors in its uncommitted #273 files. Told workerfive: landing-scene's new path.
 UPDATE: workertwo cleared + resumed. B6 CLEARED except test-level-canvas.tsx (#284) and net-canvas.tsx
 (#273, even import-only; moves whose importers include it wait). power-gem added.
+B6 landed f1ddda5. workertwo now on #285 step 1 (read-only: verify Canvas context bridge, weigh ≥5, send plan).
+Deferred #283: net-loop, remote-engine-audio, game-audio, room-context (after #273); test-level-canvas + local-*
+fields, B1/B7 (after #284); B4/B5 (after #285). Owner Q: also delete dead game/net-debug-hud.tsx?
 workerfive #284: 16 paths CLEARED (app.css player tokens, colors.ts(+test), delete ui/color-dot.tsx, 5 overlays,
 3 Canvas files, biome.json + style grit plugin, tailwind docs). workerone applies the net-canvas.tsx Canvas line
 inside #273; workerfive's grit plugin commits after that.
