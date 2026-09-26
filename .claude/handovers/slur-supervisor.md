@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, late night (seam at ~165k)
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, late night (resumed after /clear)
 
 ## Goal
 
@@ -17,80 +17,46 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 - Single-player mode will come later, without a server room. #288's LoopbackRoom is its base (not dev-gated).
 - WIDTH 96u. MATERIAL: dark graphite pitted metal. Hosted rooms default to GROOVE.
 - Every power fires forward (E) or back (F). Audio sci-fi; reuse existing sfx for new pickups for now.
-- Bag today 6/4/4/3/3 (bolt/seeker/mine/boost/shield). Portal approved at 2/20 (bolt 6→5, seeker 4→3). Tug share TBD.
+- Portal approved at 2/20. Tug share still TBD (see open questions).
 
 ## Shipped / filed this session
 
 - #269 blur 16bc5ef — OPEN for owner feel test. #268 rear-view 09cb486 — OPEN for owner look test.
-- #288 one run path DONE + CLOSED (workerone), pushed to 851ed25. RunSim shared; /test-level on LoopbackRoom.
-- Filed: #289 portal, #290 tug line (= Tractor beam; grapple folded in), #291 boomerang, #292 forks (wall OR gap),
-  #293 triggered hazards (dedicated key in range; instant trigger, per-hazard lead time e.g. gate 0.75 s),
-  #294 parry (shield timing), #295 blink (after #289), #296 RFC polarity lanes (`rfc` label), #297 membrane.
+- #288 one run path DONE + CLOSED (workerone). RunSim shared; /test-level on LoopbackRoom.
+- #289 portal: S1 6dd1368, S2 664cc60 (portalRatio 0 until S3). #290 tug: S1 403f8de, S2 72eafc0 (tugRatio 0 until S3).
+- Filed: #291 boomerang, #292 forks, #293 triggered hazards, #294 parry, #295 blink (after #289), #296 RFC polarity
+  lanes, #297 membrane.
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none | idle, ~14% | none |
-| workertwo | w2P:pF | #290 tug line, APPROVED, building S1 first; will ping workerfour directly on commit | working | S1 CLEARED: shared schema.ts, sim/types.ts, sim/step.ts, sim-config.ts, index.ts, sim/tug-status(.test).ts, combat/tug(.test).ts, combat/tug-constants.ts |
-| workerthree | w2P:pG | none | idle, ~11% | none |
-| workerfour | w2P:pH | #289 portal, APPROVED; new files only until tug S1 commits — PING IT when tug S1 lands | working | shared combat/portal.ts, combat/portal.test.ts, sim/portal-hop.test.ts |
-| workerfive | w2P:pK | none | idle, ~11% | none |
+| workerone | w2P:pD | none | idle, 14% (clear before assigning) | none |
+| workertwo | w2P:pF | #290 tug S3 QUEUED behind portal S3 | idle, 13% | none |
+| workerthree | w2P:pG | none | idle, 11% | none |
+| workerfour | w2P:pH | #289 portal S3, RESUMED (claim pending) | working | awaiting its S3 claim |
+| workerfive | w2P:pK | none | idle, 11% | none |
 
-## Owner answers already sent
+## Serialization
 
-#290: back fire pulls the chaser FORWARD toward you and disables/degrades their strafe + jump (dial); reuse sfx;
-start values OK; back with no rival = no fire; block reel z-only, releases 0.35 s before impact.
-#289: all 8 of workerfour's proposals approved (on the issue).
-
-## Serialization (#289 vs #290)
-
-Core sim files: packages/shared/src/schema.ts, sim/types.ts, sim/step.ts, sim-config.ts, shared index.ts.
-ORDER: workertwo tug S1 first; workerfour may build new files (combat/portal.ts + tests) meanwhile, then appends
-after tug S1 commits. PlayerState append order = commit order (tug: tugTimer, slowTimer, tugAnchorZ; portal:
-portalHops). Shared S2 files one at a time: combat/constants.ts, combat/power-bag.ts, run/combat.ts, run/run-sim.ts,
-HUD power-cell/power-gem, sfx-map + bind-room-audio, pickup-field, net-canvas/world-scene, attach-room-to-world.
-Bag: workertwo proposes the tug share in its S2 claim → relay to owner.
+Portal S3 (client mirror, seeker-pickups/*, pickup-field.tsx, attach-room-to-world, prediction, ecs snap,
+portalRatio → 2/20) runs first. Tug S3 wants pickup-field.tsx + attach-room-to-world.ts: start it only after
+portal S3 commits. workerfour messages workertwo + me on commit. workertwo is at 13%: clear it, then resume with
+"You are workertwo. Resume from .claude/handovers/workertwo.md. Read CLAUDE.local.md first. Your #290 S3 claim is next."
 
 ## Open owner questions
 
-#290 tug S1 DONE 403f8de (pushed; also touched race/director.test.ts, now free). workerfour told. workertwo's S2 claim
-(combat/constants.ts, power-bag.ts, sim-config.ts + tug-constants.ts, run/combat.ts, tests) is QUEUED behind portal's
-S2 on the same files — clear it only after portal S2 commits. BAG DECISION for owner: tug 2/20 from bolt 5→4, mine
-4→3 → bolt 4 · seeker 3 · mine 3 · boost 3 · shield 3 · portal 2 · tug 2 (bolt stays most common; seamSafe needs it).
-workertwo CLEARED at seam (0%), NOT resumed (nothing to do). When portal S2 commits: herdr agent prompt w2P:pF
-"You are workertwo. Resume from .claude/handovers/workertwo.md. Read CLAUDE.local.md first. Your #290 S2 claim is CLEAR."
-(only after the owner answers the bag share, or tell it to use 4/3/3/3/3/2/2 if approved).
-Portal S1 DONE 6dd1368 (pushed; hop inside simulate()). workerfour cleared + resumed on S2 (PRE-CLEARED: schema
-Portal+RunState.portals, combat/constants.ts, run/combat.ts, power-bag.ts, run-sim.ts, run/portal-run.ts; bag
-bolt5 seeker3 mine4 boost3 shield3 portal2). It messages workertwo + me on commit. workertwo is cleared and idle:
-its message may sit unread — resume it via herdr (line above).
-NEWEST: tug S2 DONE 72eafc0 (tugRatio 0 until tug S3; HeldPower.tug=8). workertwo idle, S3 QUEUED behind portal
-S3 (same client files). Test-proven full mix at 0.1 each: bolt 3 · seeker 3 · mine 4 · boost 3 · shield 3 · portal 2
-· tug 2 — mine outnumbers bolt, so seamSafe keys on mine; owner still to pick the final mix (my proposal: bolt 4, mine 3).
-FIRST ACTION on resume: resume workerfour on portal S3 (w2P:pH, already cleared).
-LATEST (supersedes the lines below): portal S2 DONE 664cc60 (portalRatio 0 → default bag bolt7 seeker3 mine4
-boost3 shield3; the 4 client files were NOT touched, claim released). workerfour at seam (handover e50ec62), CLEARED
-to 0%, NOT resumed. workertwo RESUMED on tug S2 (cleared claim: combat/constants.ts, power-bag.ts, sim-config.ts,
-tug-constants.ts, run/combat.ts, run-sim.ts, tests; tug 2/20 as one dial; owner has not confirmed final mix).
-NEXT: resume workerfour on portal S3 (client mirror, portal bucket in seeker-pickups/*, pickup-field.tsx,
-attach-room-to-world, prediction, ecs snap, ratio → 2/20). It may run beside tug S2 ONLY if it keeps off
-sim-config.ts/power-bag.ts until tug S2 commits (ratio default lives in combat/portal.ts). Tug S3 also wants
-pickup-field.tsx + attach-room-to-world.ts: serialize portal S3 before tug S3.
-Portal S2: extra claim CLEARED (seeker-pickups.tsx/.utils.ts/.test.ts, pickup-field.tsx). My decision: S2 ships
-portalRatio 0, turned on (2/20) in S3 once the client draws portals — no invisible hops on /test-level.
-workerfour portal S1 CLEARED (schema portalHops, types, step, sim-config, index, director.test, portal-hop.test,
-portal.ts). Then portal S2 first on shared fire/bag files; workerfour tells workertwo directly when S2 commits.
-#289 portal loop (on the issue): a chaser in your far end is thrown back, meets the far end again and loops until
-they strafe around or the pair expires. Soften with a per-ship hop cooldown? Owner to decide.
-workerfour committed pure portal module 21bb3fb; holds only sim/portal-hop.test.ts; blocked on tug S1.
-Older: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle; landing backdrop weave→groove.
+- BAG MIX. Test-proven at 0.1 each: bolt 3 · seeker 3 · mine 4 · boost 3 · shield 3 · portal 2 · tug 2. Mine
+  outnumbers bolt, so seamSafe keys on mine. My proposal: bolt 4, mine 3. Owner to pick before tug S3 sets tugRatio.
+- #289 portal loop: a chaser in your far end is thrown back and loops until they strafe or the pair expires.
+  Add a per-ship hop cooldown? Owner to decide.
 
 ## Next
 
-1. Answer claims from workertwo/workerfour per the order above.
-2. Idle workerone/three/five: candidates #291 boomerang (touches combat/bag: serialize), #292 forks (generator only,
-   safe now), #297 membrane (step.ts: after tug+portal S1), #293 hazards (needs art cues). Clear past 10% first.
+1. Answer workerfour's portal S3 claim.
+2. On portal S3 commit: clear + resume workertwo on tug S3.
+3. Idle workerone/three/five: candidates #291 boomerang (touches combat/bag: serialize), #292 forks (generator
+   only, safe now), #297 membrane (step.ts), #293 hazards (needs art cues). Clear past 10% first.
 
 ## Uncommitted
 
@@ -98,4 +64,4 @@ None of mine.
 
 ## Lessons → memory
 
-owner-tests-on-test-level.md (2208026).
+none
