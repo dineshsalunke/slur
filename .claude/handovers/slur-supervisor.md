@@ -44,18 +44,13 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 
 ## Open owner questions
 
-1. **Boost plan (workerfive):** one signal, boostSurplus = clamp01((vz − maxCruise)/(boostGain·maxCruise)).
-   It drives (a) a radial zoom blur Effect merged into the EffectPass in scene-effects.tsx, 12 samples, inner
-   mask keeps the ship sharp; cost is not resolvable at DPR 1 (measured), ≤1–2 ms at DPR 2 [inferred], and
-   (b) a camera pull-back of 3u (Chase.back 14u, chase.ts:28), tunable 0–10. FOV kick is a tunable, default 0.
-   The exhaust already saturates, so it gets no change. Caveat: no effect until vz passes cruise. Approve?
-2. **/pacing weave→groove:** DEFAULT_TRACK_GEN='groove' flips only routes/pacing/analyze-worker.ts:18.
-   Flip it, or pin weave there?
-3. workerone and workerfour are idle. Candidates: #160/#161 rail bloom and flicker, #169 rail bounce,
-   #246/#248 pacing and procgen.
-4. Older and still open: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle;
-   PACING_HULL_L → TRACK_CONTRACT.shipHalfL.
-
+1. BOOST PLAN APPROVED (owner). workerfive builds it, and also colocates scene-effects.tsx, raises the grit
+   rule to error and closes #283 (workertwo's auto mode refused the scene-effects edit; it stood down).
+2. OWNER: "/pacing will be removed." DEFAULT_TRACK_GEN no longer needs a /pacing decision. Ask: file a
+   removal issue now? Does #246 (pacing-only) close with it?
+3. Owner asked what #160/#161/#169/#246/#248 are (answered). Waiting for a pick for the idle workers
+   (workerone, workerthree, workerfour).
+4. Older and still open: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle.
 ## Next
 
 1. On boost approval: tell workerfive to build. Its files are free; keep workertwo's B4/B5 out of them.
