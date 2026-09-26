@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, late night
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-26, late night (2)
 
 ## Goal
 
@@ -36,7 +36,7 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
 |---|---|---|---|---|
 | workerone | w2P:pD | closing #248 (owner said close) | 14%, clear before a lane | none |
 | workertwo | w2P:pF | none (#298 DONE 01f290b, closed) | idle, 9% | none |
-| workerthree | w2P:pG | #292 forks: PLAN first (cleared 0%) | working | none yet |
+| workerthree | w2P:pG | #300 unified generator: RFC ONLY (cleared, briefed) | working | none yet |
 | workerfour | w2P:pH | #295 blink: PLAN first; + ADR-022 bloom item closed (keep flash) | working | docs/DECISIONS.md (CLEARED, one commit) |
 | workerfive | w2P:pK | #14 reconnection (+#15): PLAN first; verify on hosted room (no reconnection on /test-level) | working | none yet |
 
@@ -53,7 +53,7 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
   index.ts), S2 server fire branch (run-sim.ts only if needed: serialize with #14), S3 client, S4 docs.
   Owner Qs: distance fixed 24u or speed-scaled; lateral from held strafe ±12u or nearest lane; back hop keeps vz?;
   server-only (snap ~1 RTT late) for now; share 0.1 from bolt → bolt drops 4 → 2 (I flagged this).
-- #292 FORKS PLAN RELAYED (workerthree). Groove only. The line reserves fork slots like arenas: clear mouth →
+- #292 ON HOLD: folded into #300 as a set piece (owner, comment posted). Old plan kept for reference: (workerthree). Groove only. The line reserves fork slots like arenas: clear mouth →
   centre divider (WALL = sealed 8u blocks, or GAP = 8u hole strip) → clear rejoin. Lane A holes + pickup, lane B
   tight weave. S1 shared generator only (NEW groove/fork.ts + test; EDIT groove/line.ts, islands.ts,
   groove-track.ts, open-space.ts, groove.test.ts, track-digest.test.ts; maybe pickup-place.ts: no clash with #295).
@@ -64,6 +64,8 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
   "Keep" is my reading of "go ahead" on a keep-or-dim question; I told the owner so.
 
 ## Next
+
+0. #300 (filed): owner wants one generator = weave feel + predictable motifs + combat arenas + power-up set pieces, ~3 min run. Length draft 13–14k u (21k too long: Interceptor 84 u/s, 180 s cap). workerthree writes RFC at .claude/phases/2026-09-26-unified-generator-rfc.md; relay it.
 
 1. Relay plans. Serialize #295 against #14 on run-sim.ts and attach-room-to-world.ts.
 2. Later candidates: #291 boomerang, #297 membrane, #293 hazards (needs art cues), #294 parry, #299 Seeker.flyY.
