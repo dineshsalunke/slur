@@ -1,35 +1,46 @@
-Agent: workerfour · Lane: server input validation (#252, closed) · Updated: 2026-09-26
+Agent: workerfour · Lane: review rule text + dev-route gate (#278, #279 — both closed) · Updated: 2026-09-26
 
 ## Goal
 
-Clamp and validate client inputs on the server before they reach the queue.
+Align the Colyseus and React Router rule text with owner decisions 1–2, and gate the dev routes out of
+the production build (owner decision 3).
 
 ## Done
 
-- `84a2ff7` (pushed): #252. New `apps/server/src/rooms/room-input.ts` `sanitizeInputs()` + `MAX_QUEUED_INPUTS` (moved from run-room.ts). `run-room.ts` INPUT_MESSAGE handler queues only sanitized inputs. 8 tests in `room-input.test.ts`. #252 closed.
-- `107413c` (pushed): dropped dead `RearView.featherX/Y` tunables.
+- 5abad09 — #278. `.claude/rules/colyseus-state.md` + `conventions/colyseus.md`: keep dead fields
+  plain, never `@deprecated()`, with the reflection-decode reason. `.claude/rules/react-router.md` +
+  `conventions/react-router.md` (TL;DR 3, the loader anti-pattern, the line-219 cross-ref): the room
+  lives on a module singleton, a `clientLoader` may open or return it, and an unmount never closes it.
+- 888049a — #279. `apps/client/app/routes.ts`: `test-level`, `pacing`, `beat-deck` behind one
+  `NODE_ENV === 'production'` gate. `apps/client/package.json` typecheck:
+  `NODE_ENV=development react-router typegen && tsc`.
+- #278 and #279 closed with SHAs.
 
 ## State
 
-- Gates at 84a2ff7: server 33/33, `pnpm typecheck` clean, `pnpm lint` clean (7 biome warnings, all line-count warnings from before; run-room.ts is 342 lines at HEAD and after).
-- jump is `jump === true`, so the string "true" becomes false. The client sends a real boolean [unmeasured on the wire; read from `PlayerInput`].
+- Client prod build manifest lists only `""` and `game/:roomId`; no built JS references
+  `routes/pacing` or `routes/test-level` (measured).
+- `pnpm --filter @slur/client typecheck` passes (measured).
+- `pnpm lint`: 2 errors, both outside this lane — `apps/server/src/rooms/room-combat.ts`
+  (organizeImports) and `packages/shared/src/combat/power-bag.test.ts` (format) (measured).
+- Dev-server `/test-level` and `/pacing` still load [unmeasured — typegen in dev mode emits their types].
 
 ## Uncommitted
 
-- none.
+None.
 
 ## Held files
 
-- none.
+None. Released all claims.
 
 ## Next
 
-1. Wait for the supervisor.
+Idle. Wait for the supervisor's next lane.
 
 ## Open questions
 
-- none.
+- The two lint errors above belong to another lane; the supervisor may want to route them.
 
 ## Lessons → memory
 
-none
+`.claude/memory/typegen-runs-in-production-mode.md`
