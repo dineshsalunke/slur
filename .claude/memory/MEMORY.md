@@ -98,3 +98,4 @@ lives in its own file beside this one.
 - [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook; count fibers with a new actualStartTime AND flags&1, or bailouts inflate counts
 - [ls-lint skips unlisted sub-extensions](ls-lint-skips-unlisted-sub-extensions.md) — `x.constants.ts` is unchecked until `.constants.ts` has a rule; Biome GritQL plugins add lint rules with no new dependency
 - [Server rounds floats each tick](fround-makes-float-asserts-fail.md) — since 36b67f2 assert `Math.fround(CONST)` on stun/timers; new synced floats go in SIM_FLOAT_KEYS
+- [Node bots share one event loop](node-bots-share-one-event-loop.md) — a busy-wait in one SDK client stalls every client in that process; spawn the stalled one separately

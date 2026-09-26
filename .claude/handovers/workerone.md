@@ -1,72 +1,51 @@
-Agent: workerone · Lane: #273 netcode (review lane C) · Updated: 2026-09-26
+Agent: workerone · Lane: #273 netcode (review lane C) — DONE, issue closed · Updated: 2026-09-26 13:40
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
 Fix the four #273 netcode faults: input-queue ratchet, float32 reconcile drift, fire without an input
-seq, stale pending inputs across a phase change. Plan approved by the supervisor.
+seq, stale pending inputs across a phase change.
 
 ## Done
 
-- 36b67f2 — server + shared half: `inputsThisTick` drain (1 + up to 2 extra while > 3 wait; stepped,
-  never dropped), `froundSimShip` + `SIM_FLOAT_KEYS` in `shared/sim/types.ts` run at the end of each
-  racing tick, fire intents queued per player in `room-input.ts` (`enqueueFire`/`takeFire`, cap 4) and
-  fired after the input with that seq. `PowerSlotMessage.seq?` added. Commit body has the ≥5-option
-  weighing.
-- #269 is still open for the owner's sign-off (see the #269 comments). Not this lane.
+- 36b67f2: server + shared half. Adds the input drain, `froundSimShip` each tick, and the fire queue keyed
+  by input seq.
+- c3ab18d: client half. `Predictor.reset()` runs on a phase change. `froundSimShip` runs after each
+  replayed step and each local step. Fire sends `seq: lastInputSeq()`. New `prediction.test.ts`. Also the
+  #284 Canvas wrapper `<div className="fixed inset-0">` for workerfive, who has the SHA.
+- #273 is closed with both SHAs and the numbers below, plus a correction comment.
 
 ## State
 
-- Measured before the fix (hosted room on :5173/:2567, headless host + node bot): a 400 ms bot stall
-  left 22–25 inputs queued from t 16 s to t 60 s. A steady client held 0–4. The host had one natural
-  359 ms stall, and its floor went from 0–2 to 3–4. Logs: scratchpad of session c57c22c3
-  (`run1.log`, `run2.log`, `q-host.mjs`, `q-bot.mjs`).
-- At 36b67f2: server 52/52, shared 408/408, biome clean on the touched files, comment ratchet OK.
-  Client suite and `pnpm typecheck` for the client were not run.
-- A negative control without server rounding drifts dz −1.9e-6 after 120 replayed ticks.
-- Re-measurement after the fix: [unmeasured].
-- The tests ran with another worker's uncommitted `room-combat.ts` (#280) in the tree
-  [not re-run against HEAD].
+- Client vitest: 423/423 at c3ab18d. The fround replay test fails when the replay rounding is removed
+  (negative control).
+- Biome, comment ratchet, canvas-isolation and ls-lint are clean on the six files.
+- `pnpm typecheck` fails, but only in workertwo's in-flight #285 scene files (rock-field, ship-view,
+  track-view, beat-deck-canvas: missing `track` prop). None of my files report an error.
+- Re-measurement ran with two node SDK clients in one process on :2567, with a 400 ms stall at 15 s. The
+  gap (sent − ack) peaked at 18 in second 15, returned to 1–4 in second 16, and held 0–4 until 36 s.
+  Before the fix it was 22–25 from 16 s to 60 s. Script: scratchpad of session b5612842 (`q-node.mjs`,
+  `run-after.log`).
+- No Canvas tab was used; the supervisor warned that the #285 edit crashes Canvas routes.
 
 ## Uncommitted
 
-None of mine.
+None.
 
 ## Held files
 
-Client half, cleared by the supervisor:
-- apps/client/app/net/prediction.ts + prediction.test.ts (new)
-- apps/client/app/net/attach-room-to-world.ts
-- apps/client/app/game/ecs/net-systems.ts
-- apps/client/app/game/input/current-input.ts
-- apps/client/app/game/net-canvas.tsx
-The server and shared #273 files are released.
+None. The lane is finished, so release prediction.ts (+test), attach-room-to-world.ts, net-systems.ts,
+current-input.ts and net-canvas.tsx.
 
 ## Next
 
-1. `prediction.ts`: add `reset()` to `Predictor` (pending.length = 0). Call `froundSimShip(sim)` after
-   each replayed `simulate()` in `reconcile`.
-2. `attach-room-to-world.ts`: the phase listener calls `predictor.reset()`, next to
-   `runPhase.value = v`.
-3. `net-systems.ts` `netFlightSystem`: `froundSimShip(s)` after `simulate()`, before `sparkIfBounced`.
-4. `current-input.ts`: `export function lastInputSeq() { return seq; }`.
-5. `net-canvas.tsx`: the fire action sends `{ slot, dir, seq: lastInputSeq() }`. **Also fold in #284
-   for workerfive** (supervisor-approved): remove `style={ { position: 'fixed', inset: 0 } }` from
-   `<Canvas>`. Wrap only `<Canvas>…</Canvas>` in `<div className="fixed inset-0">…</div>`. NetHud,
-   FinishFade and TuningPanelMount stay outside that div, inside WorldProvider. Send workerfive the SHA.
-6. `prediction.test.ts` (vitest): reset clears pending; a reconcile replay with fround matches a server
-   that rounds each tick.
-7. Gates: `pnpm typecheck`, `pnpm lint`, client vitest, server, shared.
-8. Re-measure with a scratchpad copy of `q-host.mjs` + `q-bot.mjs` (stall 400 ms at 15 s). Expect the bot's
-   floor to return to ≤ 4 within ~10 ticks. Kill Chrome by PID.
-9. Close #273 with both SHAs and the before/after numbers (`gh issue close 273 -c …`).
+1. Wait for the supervisor to assign a new lane.
 
 ## Open questions
 
-- None open. The supervisor was told that room-shield.test.ts took a one-line `Math.fround(STUN_SECONDS)`
-  fix in 36b67f2.
+- None.
 
 ## Lessons → memory
 
-.claude/memory/fround-makes-float-asserts-fail.md
+.claude/memory/node-bots-share-one-event-loop.md
