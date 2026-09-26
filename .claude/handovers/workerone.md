@@ -1,25 +1,32 @@
-Agent: workerone · Lane: #258 — scratched cast iron + deck breakup + Wear + wall breakup · Updated: 2026-09-26 11:15
+Agent: workerone · Lane: #227 remainder — sky review cleanup · Updated: 2026-09-26 12:00
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Owner: scratched cast-iron graphite; no visible repeat on the deck or on the gates and monoliths; roughness +
-metalness driven from the albedo value (Wear). Owner approved all of #258 on 2026-09-26.
+Close out the review items left on #227 (findings: `.claude/phases/2026-09-23-review-pr-221-224.md`). Owner
+said GO. The worker closes the issue when it is done.
 
 ## Done
 
-- 3b62bc4 arch leg v + groove bevel sign + #4a4d52 (round 1).
-- **3948541 feat(scene): #258 in full, pushed to origin/dev.** Scratches, fBm blotches (Blotch.dark 0.15,
-  Blotch.bright 0.15), Wear, deck breakup (deck-breakup.ts), wall breakup (wall-breakup.ts) on monoliths, floor
-  sides, blocks and debris. The commit body holds the NN-13 weighing.
+- 3948541 #258 shipped earlier (closed by the supervisor).
+- (a) ADD planet/moon counts, (b) ADD missing-rock-map claim, (c) nbGlobe fwidth order: all already in c99c40d
+  (git blame on docs/ADD.md:214, :283-284 and nebula-shaders.ts:170-171). No edit needed. The `sinR <= 0`
+  return at :165 reads a uniform, so it is uniform control flow.
+- (d) Bake time measured (below). Script: scratchpad `bake-time.mjs url port`.
 
 ## State (measured unless marked)
 
-- Gates before the commit: typecheck pass · client vitest 53 files / 391 tests · lint 0 errors, comment ratchet
-  clean. The tree also held workerfour's uncommitted shared changes at that time.
-- `gh issue close 258` was DENIED by the auto-mode classifier (external system write, asked by a peer). The
-  issue is still open. The owner must close it or allow it.
+- Headless DPR 1, ANGLE Metal, Apple M1 Pro, :5173/test-level, 1280x633. NebulaBaker.update wrapped with
+  gl.finish() before and a sync readPixels after:
+  bake + relight median 112.2 ms (109.4–115.5, n=8) · relight only median 13.6 ms (13.0–18.3, n=8) ·
+  field bake ≈ 98 ms [inferred, difference] · idle update 1.1 ms · first-load frame 387 ms (includes every
+  shader compile, not bake-only).
+- (e) dev still: scratchpad `shots/dark-q-dev-59529e8.png` (spawn pose, KeyP freeze). Mean luma by band:
+  sky 22.5 · mid 29.3 · deck 21.4. Script: scratchpad `still.mjs url port out.png`.
+- (e) 036645c still: NOT taken. It needs an old build served on a second port, which the owner's one-stack
+  rule forbids. I asked the supervisor for an exception (or an old still).
+- Scratchpad = `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/ac1ed156-baed-404d-aed3-9cecbbad8dbc/scratchpad/`.
 
 ## Uncommitted
 
@@ -31,13 +38,17 @@ None.
 
 ## Next
 
-1. #258 closed by the supervisor on the owner's word (comment cites 3948541). Idle until the supervisor
-   assigns a new lane.
+1. Supervisor's answer on the 036645c still. If allowed: `git archive 036645c` into scratch, install, build
+   the client, serve it statically on a spare port, run `still.mjs` against /test-level, kill the server and
+   Chrome. Compare the luma bands.
+2. Report the bake times and still paths to slur-supervisor.
+3. `gh issue close 227 -c "..."` citing c99c40d, the bake times and the stills; .gitignore `.tmp/` "skipped,
+   not requested". The permission classifier blocked the last peer-requested close (#258). If it blocks
+   again, report it and do not route around it.
 
 ## Open questions
 
-- Owner: rail bodies still bake blotches (16u repeat). Follow-up issue?
-- Owner: scratches read only in the highlight. Raise `Scratch.lift` / `Scratch.tilt`?
+- Supervisor/owner: exception for one short-lived old build to still 036645c?
 
 ## Lessons → memory
 
