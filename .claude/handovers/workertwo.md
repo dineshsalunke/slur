@@ -1,46 +1,37 @@
-Agent: workertwo · Lane: #302 marigold reads as orange (closed) · Updated: 2026-09-27
-
-Older versions hold #301, #298, #290 and earlier (`git log -p -- .claude/handovers/workertwo.md`).
+Agent: workertwo · Lane: #304 track editor — data + loading (S1, S2, parent route of S4) · Updated: 2026-09-27
 
 ## Goal
-
-- #302: make the primary colour read as marigold, not orange. Done and closed.
+Authored level format, dev save/load endpoint, and `/test-level?level=<slug>` so the editor's Save → Play loop works.
 
 ## Done
-
-- `fff0555`: marigold `#F59A24` → `#F5B024` (owner picked B) in app.css (the hex + 4 rgba glows), accent.ts,
-  apps/client/DESIGN.md, conventions/r3f.md. ADD §3 and ART_MATERIALS §7 item 20 have the decisions +
-  departures note. Pushed to origin/dev. #302 closed with the SHA.
-- Memory: preview-a-constant-by-route-rewrite (committed with this handover).
+- 5165d46 — shared: `AuthoredLevel` v1, `parseAuthoredLevel`, `serializeAuthoredLevel` (Biome-stable), `decompileTrack`, registry, `resolveTrack` 'authored'.
+- d382904 — `apps/client/tracks-plugin.ts` (+ test), vite.config, `tracks/groove-20260921.json`.
+- 6982014 — `/test-level` loader `?level=` + `v`, `<EditButton/>` + `<Outlet/>`, `PauseWhileEditing`.
 
 ## State
-
-- Before: HUD 245,154,36 (hue 34°). Bright 3D emissive 251,173,103 (hue 27°, sat 0.62). Deck halo hue 22° [measured].
-- After, live /test-level: HUD 245,176,36. Bright 3D emissive 251,192,106 (hue ~36°). Deck halo hue 26° [measured].
-- Cause: the hex (hue 34°). Neutral tone mapping at emissive 2 adds ~6° warmer and desaturates. It runs once,
-  with no double tone map [measured + modelled].
-- Lint 0 errors (7 warnings from before) and client typecheck 0, at fff0555 [measured].
-- Variant PNGs in scratchpad c62984f8: marigold-{0-baseline-F59A24,A-F5AA24,B-F5B024,C-F5B624,B-F5B024-lowglow}.png.
-- Headless Chrome: none left running (Playwright pipe, ps checked).
+- Round trip decompile → serialize → parse → build reproduces groove 20260921 / 7 and phrase 42 exactly (from START_SAFE).
+- groove 20260921 decompiles to 48 blocks (16 destructible) + 7 gaps.
+- Cold `/test-level?level=groove-20260921`: one fetch, finishZ 8000, ship flies (z 0→130 in 3 s W).
+- Draws/s 4320 playing, 0 on `/test-level/edit`, same room after Back.
+- `&v=` change rebuilds the room without refetch.
+- Loopback sim keeps stepping while the editor is open (only the frameloop pauses).
+- Editor UI Save → Play run end to end [unmeasured by me — workerone's files].
 
 ## Uncommitted
-
-None of mine.
+none
 
 ## Held files
-
-None. The #302 files are released.
+packages/shared/src/sim/authored/*, packages/shared/src/sim/track-provider.ts, packages/shared/src/index.ts,
+apps/client/{tracks-plugin.ts, tracks-plugin.test.ts, vite.config.ts}, tracks/,
+apps/client/app/routes/test-level/{route.tsx, test-level-room.ts, test-level-canvas/*}
 
 ## Next
-
-1. Wait for the next lane from slur-supervisor.
+1. Wait for supervisor: owner check of the full loop on /test-level.
+2. If the owner wants the sim frozen while editing, add it in PauseWhileEditing's sibling (test-level-canvas).
+3. Close #304 once the owner signs off (whoever lands the last piece closes it).
 
 ## Open questions
-
-- Owner: Amber `#FFB52E` (hue 41°) now has almost the same hue as the new marigold. The M7 core-to-edge gradient
-  now changes only in brightness. Keep it, or pick a hotter amber?
-- Owner: paste the ChatGPT note (sent to the supervisor) into the art-direction project.
+- Freeze the loopback sim too while editing? (currently render only)
 
 ## Lessons → memory
-
-- `.claude/memory/preview-a-constant-by-route-rewrite.md`
+none
