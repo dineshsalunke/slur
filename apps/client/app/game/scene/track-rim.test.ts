@@ -1,6 +1,8 @@
 import { CELL, HALF_WIDTH, makeProcgenTrack, type Track } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
-import { buildCords, CORD_RADIUS, type Cord, floorAt } from './track-rim';
+import type { Cord } from './track-rim/track-rim';
+import { CORD_RADIUS } from './track-rim/track-rim.constants';
+import { buildCords, floorAt } from './track-rim/track-rim.utils';
 
 const SEED = 20260921;
 const LENGTH = 60;

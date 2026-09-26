@@ -1,79 +1,55 @@
-import { useFrame } from '@react-three/fiber';
-import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { num } from '../../dev/tuning';
-import { useRebuildToken } from '../../dev/use-rebuild-token';
-import { blockWorld } from '../block-state';
-import { shake, shakeFrom } from '../camera/shake';
-import { useTrack } from '../track-context/use-track';
-import { hash01 } from './asteroid-field';
-import { BREAK_SMASH, type BreakEvent, drainBreaks, drainMends, settled } from './block-breaks';
-import { queueBurst } from './block-burst/block-burst.utils';
-import { trackGround } from './debris-ground';
-import { addHullPoint, type DebrisBody, type DebrisGround, makeBody, resetBody, setBoxInertia } from './debris-physics';
-import { beginTick, type DebrisTick, makeTick, moveBody, sparkOnLanding } from './debris-tick';
-import { blotchWearUniforms, updateBlotchWear } from './deck-breakup';
-import { applyDeckFinish } from './deck-finish';
+import { num } from '../../../dev/tuning';
+import { shake, shakeFrom } from '../../camera/shake';
+import { hash01 } from '../asteroid-field';
+import { BREAK_SMASH, type BreakEvent, settled } from '../block-breaks';
+import { queueBurst } from '../block-burst/block-burst.utils';
+import {
+    addHullPoint,
+    type DebrisBody,
+    type DebrisGround,
+    makeBody,
+    resetBody,
+    setBoxInertia,
+} from '../debris-physics';
+import { beginTick, type DebrisTick, moveBody, sparkOnLanding } from '../debris-tick';
 import {
     cellGeometry,
     cellHull,
     cellVolume,
-    type FractureCell,
     fractureCells,
     fractureOrient,
     fractureTurn,
-} from './fractured-block-geometry';
-import { type FracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
-import { pushHit } from './hit-events';
-import { graphiteSurface } from './track-materials';
-import { patchWallBreakup } from './wall-breakup';
+} from '../fractured-block-geometry';
+import { pushHit } from '../hit-events';
+import type { Debris, Slot } from './block-debris';
+import {
+    _away,
+    _centre,
+    _half,
+    _m,
+    _offset,
+    _one,
+    _point,
+    _shrink,
+    _size,
+    _tick,
+    _zero,
+    BOLT_SHAKE,
+    BOLT_SHAKE_REACH,
+    LIFE,
+    LIFT,
+    LIGHT_MAX,
+    LIGHT_MIN,
+    SLOTS,
+    SMASH_SHAKE,
+    SPARK_SLAM,
+    THUD_REACH,
+    THUD_SHAKE,
+    THUD_SLAM,
+} from './block-debris.constants';
 
-const SLOTS = 12;
-const LIFE = 14;
-const LIGHT_MIN = 0.6;
-const LIGHT_MAX = 1.9;
-const LIFT = 0.35;
-const SPARK_SLAM = 9;
-const SMASH_SHAKE = 0.32;
-const BOLT_SHAKE = 0.22;
-const BOLT_SHAKE_REACH = 45;
-const THUD_SLAM = 16;
-const THUD_SHAKE = 0.05;
-const THUD_REACH = 30;
-
-interface Slot {
-    id: number;
-    born: number;
-    parked: boolean;
-    bodies: DebrisBody[];
-}
-
-interface Debris {
-    cells: FractureCell[];
-    hulls: THREE.Vector3[][];
-    volumes: number[];
-    geometries: THREE.BufferGeometry[];
-    block: THREE.InstancedBufferAttribute;
-    glow: THREE.InstancedBufferAttribute;
-    slots: Slot[];
-    cursor: number;
-    dirty: boolean;
-    now: number;
-}
-
-const _m = new THREE.Matrix4();
-const _zero = new THREE.Matrix4().makeScale( 0, 0, 0 );
-const _one = new THREE.Vector3( 1, 1, 1 );
-const _size = new THREE.Vector3();
-const _centre = new THREE.Vector3();
-const _offset = new THREE.Vector3();
-const _half = new THREE.Vector3();
-const _shrink = new THREE.Vector3();
-const _point = new THREE.Vector3();
-const _away = new THREE.Vector3();
-const _tick = makeTick();
-
-function buildDebris(): Debris {
+export function buildDebris(): Debris {
     const cells = fractureCells();
     const block = new THREE.InstancedBufferAttribute( new Float32Array( SLOTS * 4 ), 4 );
     const glow = new THREE.InstancedBufferAttribute( new Float32Array( SLOTS ), 1 );
@@ -102,17 +78,17 @@ function buildDebris(): Debris {
     };
 }
 
-function free( slot: Slot ): void {
+export function free( slot: Slot ): void {
     if ( slot.id >= 0 ) settled( slot.id );
     slot.id = -1;
     for ( const b of slot.bodies ) b.live = false;
 }
 
-function rnd( id: number, cell: number, salt: number ): number {
+export function rnd( id: number, cell: number, salt: number ): number {
     return hash01( Math.imul( id, 0x2c1b_3c6d ) ^ Math.imul( cell + 1, 0x297a_2d39 ), salt );
 }
 
-function launch( d: Debris, body: DebrisBody, c: number, e: BreakEvent, orient: number, reach: number ): void {
+export function launch( d: Debris, body: DebrisBody, c: number, e: BreakEvent, orient: number, reach: number ): void {
     const cell = d.cells[ c ];
     const id = e.block.id;
     const gap = num( 'Fracture.gap' );
@@ -155,7 +131,7 @@ function launch( d: Debris, body: DebrisBody, c: number, e: BreakEvent, orient: 
         .multiplyScalar( num( 'Break.spin' ) * light * ( 0.3 + near ) );
 }
 
-function spawn( d: Debris, e: BreakEvent, now: number ): void {
+export function spawn( d: Debris, e: BreakEvent, now: number ): void {
     const i = d.cursor;
     d.cursor = ( i + 1 ) % SLOTS;
     const slot = d.slots[ i ];
@@ -177,11 +153,11 @@ function spawn( d: Debris, e: BreakEvent, now: number ): void {
     else shakeFrom( _centre.x, _centre.y, _centre.z, BOLT_SHAKE, BOLT_SHAKE_REACH );
 }
 
-function mend( d: Debris, id: number ): void {
+export function mend( d: Debris, id: number ): void {
     for ( const slot of d.slots ) if ( slot.id === id ) free( slot );
 }
 
-function advanceSlot( slot: Slot, i: number, meshes: ( THREE.InstancedMesh | null )[], t: DebrisTick ): boolean {
+export function advanceSlot( slot: Slot, i: number, meshes: ( THREE.InstancedMesh | null )[], t: DebrisTick ): boolean {
     let alive = false;
     for ( let c = 0; c < slot.bodies.length; c++ ) {
         const body = slot.bodies[ c ];
@@ -195,7 +171,7 @@ function advanceSlot( slot: Slot, i: number, meshes: ( THREE.InstancedMesh | nul
     return alive;
 }
 
-function advance(
+export function advance(
     d: Debris,
     meshes: ( THREE.InstancedMesh | null )[],
     ground: DebrisGround,
@@ -227,63 +203,4 @@ function advance(
         d.dirty = true;
     }
     return any;
-}
-
-export function BlockDebris( { uniforms }: { uniforms: FracturedBlockUniforms } ) {
-    const track = useTrack();
-    const rebuild = useRebuildToken();
-    const debris = useMemo( buildDebris, [] );
-    const ground = useMemo( () => trackGround( track, blockWorld.broken ), [ track ] );
-    const meshes = useRef< ( THREE.InstancedMesh | null )[] >( [] );
-    const breakup = useMemo( blotchWearUniforms, [] );
-    const onMend = useMemo( () => ( id: number ) => mend( debris, id ), [ debris ] );
-    const onBreak = useMemo( () => ( e: BreakEvent ) => spawn( debris, e, debris.now ), [ debris ] );
-    const material = useMemo( () => {
-        const m = new THREE.MeshStandardMaterial( graphiteSurface() );
-        patchFracturedBlock( m, uniforms, true );
-        patchWallBreakup( m, breakup );
-        return m;
-    }, [ rebuild, uniforms, breakup ] );
-
-    const release = useCallback(
-        ( group: THREE.Group | null ) => () => {
-            if ( ! group ) return;
-            for ( const g of debris.geometries ) g.dispose();
-            material.dispose();
-        },
-        [ debris, material ],
-    );
-
-    useFrame( ( state, delta ) => {
-        const now = state.clock.elapsedTime;
-        applyDeckFinish( material );
-        updateBlotchWear( breakup );
-        debris.now = now;
-        drainMends( onMend );
-        drainBreaks( onBreak );
-        const live = advance( debris, meshes.current, ground, now, delta, state.camera.position.z );
-        if ( ! debris.dirty ) return;
-        debris.dirty = false;
-        for ( const mesh of meshes.current ) {
-            if ( ! mesh ) continue;
-            mesh.count = live ? SLOTS : 0;
-            mesh.instanceMatrix.needsUpdate = true;
-        }
-    } );
-
-    return (
-        <group ref={ release }>
-            { debris.geometries.map( ( geometry, c ) => (
-                <instancedMesh
-                    key={ geometry.uuid }
-                    ref={ ( m ) => {
-                        meshes.current[ c ] = m;
-                    } }
-                    args={ [ geometry, material, SLOTS ] }
-                    count={ 0 }
-                    frustumCulled={ false }
-                />
-            ) ) }
-        </group>
-    );
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { boostPickupShellGeometry, boostStreakGeometry } from './boost-look';
-import { boostLevel } from './boost-streaks';
+import { boostLevel } from './boost-streaks/boost-streaks.utils';
 
 describe( 'boost streak plane', () => {
     it( 'runs from the ship at z 0 back to z -1, with uv.y 0 at the ship', () => {

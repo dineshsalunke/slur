@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useTrack } from '../track-context/use-track';
 import { buildSeamGeometry, buildSeamInserts } from './seam-inserts';
-import { segmentCount } from './track-floor';
+import { segmentCount } from './track-floor/track-floor.utils';
 import { SEAM_SURFACE } from './track-materials';
 
 export function TrackSeams() {

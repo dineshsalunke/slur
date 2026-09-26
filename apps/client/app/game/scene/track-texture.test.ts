@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildSpanGeometry, FLOOR_SIDE_GROUP, FLOOR_TOP_GROUP } from './track-floor';
+import { FLOOR_SIDE_GROUP, FLOOR_TOP_GROUP } from './track-floor/track-floor.constants';
+import { buildSpanGeometry } from './track-floor/track-floor.utils';
 import { uvFor } from './track-geometry';
 import {
     applyWear,

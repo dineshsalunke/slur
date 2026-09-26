@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 import { RenderScale } from '../../dev/render-scale';
 import { BackFill } from './back-fill/back-fill';
-import { BoostStreaks } from './boost-streaks';
+import { BoostStreaks } from './boost-streaks/boost-streaks';
 import { EngineLight } from './engine-light/engine-light';
 import { ExhaustField } from './exhaust-field/exhaust-field';
 import { ExplosionField } from './explosion-field/explosion-field';

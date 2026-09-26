@@ -3,7 +3,7 @@ import { useQueryFirst } from 'koota/react';
 import { Suspense, useMemo } from 'react';
 import { LocalPlayer, Render, Sim } from '../../../game/ecs/traits';
 import { prefersReducedMotion } from '../../../game/scene/reduced-motion';
-import { ShipModel } from '../../../game/scene/ship-model';
+import { ShipModel } from '../../../game/scene/ship-model/ship-model';
 import { useShipChoice } from '../../../ship/ship-choice';
 import {
     AHEAD,

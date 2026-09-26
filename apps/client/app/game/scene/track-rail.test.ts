@@ -1,7 +1,7 @@
 import { HALF_WIDTH, SEG_LEN } from '@slur/shared';
 import type * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { buildSpanGeometry } from './track-floor';
+import { buildSpanGeometry } from './track-floor/track-floor.utils';
 import { RAIL_EMISSIVE_SHARE, RAIL_LIP_H, RAIL_MARGIN, RAIL_W, SLAB_THICKNESS } from './track-geometry';
 import { buildRailGeometry } from './track-rail/track-rail.utils';
 import type { RailRun } from './track-rails';

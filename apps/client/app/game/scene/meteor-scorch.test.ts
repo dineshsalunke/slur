@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { EMBER_END, emberColor } from './meteor-scorch';
+import { EMBER_END } from './meteor-scorch/meteor-scorch.constants';
+import { emberColor } from './meteor-scorch/meteor-scorch.utils';
 
 const GAIN = 1.4;
 const COOL = 3.5;

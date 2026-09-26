@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { useTrack } from '../../track-context/use-track';
-import { segmentCount } from '../track-floor';
+import { segmentCount } from '../track-floor/track-floor.utils';
 import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from '../track-materials';
 import { trackRails } from '../track-rails.state';
 import { buildRailGeometry } from './track-rail.utils';

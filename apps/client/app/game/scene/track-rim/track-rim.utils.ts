@@ -1,39 +1,29 @@
-import { useFrame } from '@react-three/fiber';
 import { CELL, type FloorSpan, LEAD_SEGMENTS, type Segment, spanHasZ, type Track } from '@slur/shared';
-import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { num } from '../../dev/tuning';
-import { useTrack } from '../track-context/use-track';
-import { accent } from './accent';
-import { segmentCount } from './track-floor';
-import { isOuterEdge } from './track-geometry';
-import { MARIGOLD_REFERENCE_INTENSITY } from './track-materials';
-import { type SpanEdges, spanEdges } from './track-openings';
-
-export const CORD_RADIUS = 0.08;
-export const CORD_SEGMENTS = 8;
-export const CORD_INTENSITY = MARIGOLD_REFERENCE_INTENSITY;
-export const CORD_DEPTH_BIAS = -2;
-
-export interface Cord {
-    x: number;
-    y: number;
-    z: number;
-    length: number;
-    alongZ: boolean;
-}
-
-interface Run {
-    from: number;
-    to: number;
-}
+import { accent } from '../accent';
+import { segmentCount } from '../track-floor/track-floor.utils';
+import { isOuterEdge } from '../track-geometry';
+import { type SpanEdges, spanEdges } from '../track-openings';
+import type { Cord, Run } from './track-rim';
+import {
+    _m,
+    _pos,
+    _q,
+    _scale,
+    ALONG_X,
+    ALONG_Z,
+    CORD_DEPTH_BIAS,
+    CORD_INTENSITY,
+    CORD_RADIUS,
+    CORD_SEGMENTS,
+} from './track-rim.constants';
 
 export function floorAt( track: Track, x: number, z: number, y: number ): boolean {
     const seg = track.segmentAtZ( z );
     return seg.floors.some( ( f ) => spanHasZ( seg, f, z ) && x >= f.x0 && x <= f.x1 && Math.abs( f.y - y ) < 1e-4 );
 }
 
-function openRuns( from: number, to: number, isOpen: ( mid: number ) => boolean ): Run[] {
+export function openRuns( from: number, to: number, isOpen: ( mid: number ) => boolean ): Run[] {
     const cells = Math.max( 1, Math.round( ( to - from ) / CELL ) );
     const step = ( to - from ) / cells;
     const runs: Run[] = [];
@@ -53,7 +43,7 @@ function openRuns( from: number, to: number, isOpen: ( mid: number ) => boolean 
     return runs;
 }
 
-function sideCords( out: Cord[], track: Track, f: FloorSpan, e: SpanEdges, right: boolean ): void {
+export function sideCords( out: Cord[], track: Track, f: FloorSpan, e: SpanEdges, right: boolean ): void {
     const x = right ? f.x1 : f.x0;
     if ( e.outer && isOuterEdge( x ) ) return;
     const probe = right ? x + CELL / 2 : x - CELL / 2;
@@ -68,7 +58,7 @@ function sideCords( out: Cord[], track: Track, f: FloorSpan, e: SpanEdges, right
     }
 }
 
-function capCords( out: Cord[], track: Track, f: FloorSpan, e: SpanEdges, back: boolean ): void {
+export function capCords( out: Cord[], track: Track, f: FloorSpan, e: SpanEdges, back: boolean ): void {
     const z = back ? e.z1 : e.z0;
     const probe = back ? z + CELL / 2 : z - CELL / 2;
     for ( const run of openRuns( f.x0, f.x1, ( x ) => ! floorAt( track, x, probe, f.y ) ) ) {
@@ -102,14 +92,7 @@ export function buildCords( track: Track ): Cord[] {
     return out;
 }
 
-const _m = new THREE.Matrix4();
-const _q = new THREE.Quaternion();
-const _pos = new THREE.Vector3();
-const _scale = new THREE.Vector3();
-const ALONG_Z = new THREE.Euler( Math.PI / 2, 0, 0 );
-const ALONG_X = new THREE.Euler( 0, 0, Math.PI / 2 );
-
-function buildCordMesh( track: Track ): THREE.InstancedMesh {
+export function buildCordMesh( track: Track ): THREE.InstancedMesh {
     const cords = buildCords( track );
     const geo = new THREE.CylinderGeometry( CORD_RADIUS, CORD_RADIUS, 1, CORD_SEGMENTS );
     const mat = new THREE.MeshStandardMaterial( {
@@ -134,25 +117,4 @@ function buildCordMesh( track: Track ): THREE.InstancedMesh {
     mesh.instanceMatrix.needsUpdate = true;
 
     return mesh;
-}
-
-export function TrackRim() {
-    const track = useTrack();
-    const mesh = useMemo( () => buildCordMesh( track ), [ track ] );
-
-    useFrame( () => {
-        ( mesh.material as THREE.MeshStandardMaterial ).emissiveIntensity = num( 'Rail.rimEmissive' );
-    } );
-
-    // GPU buffers outlive React's tree: a mesh replaced by a track change must be released by hand.
-    useEffect(
-        () => () => {
-            mesh.geometry.dispose();
-            ( mesh.material as THREE.Material ).dispose();
-            mesh.dispose();
-        },
-        [ mesh ],
-    );
-
-    return <primitive object={ mesh } />;
 }

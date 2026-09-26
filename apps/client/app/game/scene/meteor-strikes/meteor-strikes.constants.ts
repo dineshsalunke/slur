@@ -1,0 +1,34 @@
+import * as THREE from 'three';
+import { FRACTURE_CORE_HEX } from '../fractured-block-shader';
+
+export const FLIGHTS = 6;
+export const HEAD_SEED = 0x3e7e_0a11;
+export const HEAD_DETAIL = 5;
+export const TRAIL_SECONDS = 0.36;
+export const TRAIL_WIDTH = 0.55;
+export const TRAIL_GAIN = 2.2;
+export const GLOW_SIZE = 0.78;
+export const GLOW_GAIN = 0.9;
+export const COLLAPSE = 0.16;
+export const MIN_LEAD = 0.55;
+export const MIN_SPEED = 30;
+export const PIT_DEPTH = -160;
+export const SCAN = 6;
+export const SHAKE_REACH = 80;
+export const SHAKE_SIZE = 3.5;
+export const LIGHT_DISTANCE = 110;
+export const LIGHT_GAIN = 700;
+export const LIGHT_DECAY = 0.3;
+export const LIGHT_END = 1.8;
+export const BURST_SIZE = 3.2;
+export const SPARK_BURSTS = 3;
+
+export const UP = new THREE.Vector3( 0, 1, 0 );
+export const CORE = new THREE.Color( FRACTURE_CORE_HEX );
+export const _p = new THREE.Vector3();
+export const _dir = new THREE.Vector3();
+export const _q = new THREE.Quaternion();
+export const _s = new THREE.Vector3();
+export const _m = new THREE.Matrix4();
+export const _c = new THREE.Color();
+export const _zero = new THREE.Matrix4().makeScale( 0, 0, 0 );
