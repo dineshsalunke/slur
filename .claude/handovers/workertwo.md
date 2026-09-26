@@ -6,16 +6,16 @@ Authored level format, dev save/load endpoint, and `/test-level?level=<slug>` so
 ## Done
 - 5165d46 — shared: `AuthoredLevel` v1, `parseAuthoredLevel`, `serializeAuthoredLevel` (Biome-stable), `decompileTrack`, registry, `resolveTrack` 'authored'.
 - d382904 — `apps/client/tracks-plugin.ts` (+ test), vite.config, `tracks/groove-20260921.json`.
-- 6982014 — `/test-level` loader `?level=` + `v`, `<EditButton/>` + `<Outlet/>`, `PauseWhileEditing`.
+- 6982014 — `/test-level` loader `?level=` + `v`, `<EditButton/>` + `<Outlet/>`, `PauseWhileEditing` (frameloop).
+- 12a91b7 — loopback sim frozen while `/test-level/edit` is open (`editorOpen` flag, separate from KeyP).
 
 ## State
 - Round trip decompile → serialize → parse → build reproduces groove 20260921 / 7 and phrase 42 exactly (from START_SAFE).
 - groove 20260921 decompiles to 48 blocks (16 destructible) + 7 gaps.
-- Cold `/test-level?level=groove-20260921`: one fetch, finishZ 8000, ship flies (z 0→130 in 3 s W).
-- Draws/s 4320 playing, 0 on `/test-level/edit`, same room after Back.
+- Cold `/test-level?level=groove-20260921`: one fetch, finishZ 8000, ship flies.
+- Draws/s 4320 playing, 0 on `/test-level/edit`; ship z 37.01 held 2.5 s in the editor, resumes after Back; same room.
 - `&v=` change rebuilds the room without refetch.
-- Loopback sim keeps stepping while the editor is open (only the frameloop pauses).
-- Editor UI Save → Play run end to end [unmeasured by me — workerone's files].
+- Editor UI Save → Play end to end [unmeasured by me — workerone's files].
 
 ## Uncommitted
 none
@@ -26,12 +26,11 @@ apps/client/{tracks-plugin.ts, tracks-plugin.test.ts, vite.config.ts}, tracks/,
 apps/client/app/routes/test-level/{route.tsx, test-level-room.ts, test-level-canvas/*}
 
 ## Next
-1. Wait for supervisor: owner check of the full loop on /test-level.
-2. If the owner wants the sim frozen while editing, add it in PauseWhileEditing's sibling (test-level-canvas).
-3. Close #304 once the owner signs off (whoever lands the last piece closes it).
+1. Lane code-complete. Wait for the supervisor (owner check of the full loop on /test-level).
+2. Do NOT close #304 — workerone closes it after the full loop passes (supervisor, 2026-09-27).
 
 ## Open questions
-- Freeze the loopback sim too while editing? (currently render only)
+none
 
 ## Lessons → memory
 none
