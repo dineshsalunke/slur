@@ -34,7 +34,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #303 procedural portal models — plan APPROVED (6u aperture kept), building | working | scene/portal-ring.ts+test (new), portal-pickups/*.utils+constants, portal-field/* |
+| workerone | w2P:pD | none (#303 DONE 5e9abd0, closed; handover ae5416d) | idle | none |
 | workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
 | workerthree | w2P:pG | #300 S3 written, UNCOMMITTED (handover 2810208) — HOLD on weave shape | CLEARED 0%, NOT resumed: resume with the owner's shape answer | sim/phrase/*, index.ts, track-digest.test.ts, avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
@@ -54,7 +54,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
   or pick a hotter amber? (Open in ADD §3 / ART_MATERIALS §7 item 20.) ChatGPT paste note already given.
 - **Portal models** (owner hero shots: linked-ring pickup, A/B gate): told owner procedural is feasible
   (instanced bevelled wedges + dashed emissive band + graphite material, ~2–3 draws/ring). Offered to file
-  an issue — owner said yes: filed #303, workerone briefed (plan first). Relay its plan.
+  an issue — #303 DONE 5e9abd0 (draws: pair +6 incl. rear view, pickup 3). Open: gate rim reads dark, inner
+  glow wall dominates at an angle; levers GATE_SLEEVE reach, PORTAL_ARMED_INTENSITY, lighter rim finish.
 
 - **Stalled race exit** (no cap now): recommended a host "End race" button; alternatives: no-progress N s,
   grace after first drop-out, leave it. workertwo's finding: no host control mid-race (run-sim.ts:134/138),
