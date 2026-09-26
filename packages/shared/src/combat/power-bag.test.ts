@@ -7,19 +7,37 @@ import { bagCounts, longestRun, POWER_BAG_SIZE, POWER_RUN_CAP, powerBag } from '
 
 const SALTS = [ '', 'a', 'x9k2', '1pq0zz', 'groove' ];
 
-test( 'the default bag deals 6 bolts, 4 seekers, 4 mines, 3 boosts and 3 shields', () => {
+test( 'the default bag deals 7 bolts, 3 seekers, 4 mines, 3 boosts and 3 shields, and no portals yet', () => {
     assert.deepEqual( bagCounts(), [
-        { power: HeldPower.bolt, count: 6 },
-        { power: HeldPower.seeker, count: 4 },
+        { power: HeldPower.bolt, count: 7 },
+        { power: HeldPower.seeker, count: 3 },
         { power: HeldPower.mine, count: 4 },
         { power: HeldPower.boost, count: 3 },
         { power: HeldPower.shield, count: 3 },
     ] );
 } );
 
+test( 'a 0.1 portal ratio deals 2 portals out of the bolts', () => {
+    assert.deepEqual( bagCounts( { ...DEFAULT_SIM_CONFIG, portalRatio: 0.1 } ), [
+        { power: HeldPower.bolt, count: 5 },
+        { power: HeldPower.seeker, count: 3 },
+        { power: HeldPower.mine, count: 4 },
+        { power: HeldPower.boost, count: 3 },
+        { power: HeldPower.shield, count: 3 },
+        { power: HeldPower.portal, count: 2 },
+    ] );
+} );
+
 test( 'boost and shield ratios take their share from the bolts', () => {
     assert.deepEqual(
-        bagCounts( { ...DEFAULT_SIM_CONFIG, boostRatio: 0.15, shieldRatio: 0.15, seekerRatio: 0.3, mineRatio: 0.3 } ),
+        bagCounts( {
+            ...DEFAULT_SIM_CONFIG,
+            boostRatio: 0.15,
+            shieldRatio: 0.15,
+            seekerRatio: 0.3,
+            mineRatio: 0.3,
+            portalRatio: 0,
+        } ),
         [
             { power: HeldPower.bolt, count: 2 },
             { power: HeldPower.seeker, count: 6 },
@@ -29,7 +47,14 @@ test( 'boost and shield ratios take their share from the bolts', () => {
         ],
     );
     assert.deepEqual(
-        bagCounts( { ...DEFAULT_SIM_CONFIG, seekerRatio: 0.6, mineRatio: 0.3, boostRatio: 0.5, shieldRatio: 0 } ),
+        bagCounts( {
+            ...DEFAULT_SIM_CONFIG,
+            seekerRatio: 0.6,
+            mineRatio: 0.3,
+            boostRatio: 0.5,
+            shieldRatio: 0,
+            portalRatio: 0,
+        } ),
         [
             { power: HeldPower.seeker, count: 12 },
             { power: HeldPower.mine, count: 6 },
@@ -63,9 +88,16 @@ test( 'a bag is a pure function of salt and index; salts deal different orders',
 test( 'pickupPower reads the bag by ordinal and honours ratio overrides', () => {
     const bag = powerBag( 'a', 1 );
     for ( let i = 0; i < POWER_BAG_SIZE; i++ ) assert.equal( pickupPower( `${ POWER_BAG_SIZE + i }.a` ), bag[ i ] );
-    assert.equal( pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 1 } ), HeldPower.seeker );
+    assert.equal( pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 1, portalRatio: 0 } ), HeldPower.seeker );
     assert.equal(
-        pickupPower( '17.a', { ...DEFAULT_SIM_CONFIG, seekerRatio: 0, mineRatio: 0, boostRatio: 0, shieldRatio: 0 } ),
+        pickupPower( '17.a', {
+            ...DEFAULT_SIM_CONFIG,
+            seekerRatio: 0,
+            mineRatio: 0,
+            boostRatio: 0,
+            shieldRatio: 0,
+            portalRatio: 0,
+        } ),
         HeldPower.bolt,
     );
 } );

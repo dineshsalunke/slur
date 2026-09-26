@@ -26,7 +26,7 @@ export const BOLT_SPAWN_AHEAD = 3;
 export const STUN_SECONDS = 1.2;
 export const PICKUP_RESPAWN_S = 3;
 
-export const HeldPower = { none: 0, bolt: 1, seeker: 2, mine: 3, boost: 4, shield: 5 } as const;
+export const HeldPower = { none: 0, bolt: 1, seeker: 2, mine: 3, boost: 4, shield: 5, portal: 6, portalB: 7 } as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
 
 export type SeekerWindowMode = 'time' | 'distance';
@@ -34,7 +34,7 @@ export type SeekerWindowMode = 'time' | 'distance';
 export const SEEKER_HIT_MESSAGE = 'seekerHit';
 export const SEEKER_MISS_MESSAGE = 'seekerMiss';
 
-export const SEEKER_RATIO = 0.2;
+export const SEEKER_RATIO = 0.15;
 export const SEEKER_LOCK_RANGE = 600;
 export const SEEKER_SPEED_FACTOR = 1.5;
 export const SEEKER_RAMP_S = 0.3;
@@ -79,3 +79,25 @@ export const SHIELD_POP_MESSAGE = 'shieldPop';
 
 export const SHIELD_RATIO = 0.15;
 export const SHIELD_S = 5;
+
+export const PORTAL_HOP_MESSAGE = 'portalHop';
+export const PORTAL_FIZZLE_MESSAGE = 'portalFizzle';
+
+export interface PortalHopMessage {
+    fromX: number;
+    fromY: number;
+    fromZ: number;
+    x: number;
+    y: number;
+    z: number;
+    victimId: string;
+}
+
+export interface PortalFizzleMessage {
+    x: number;
+    y: number;
+    z: number;
+    ownerId: string;
+}
+
+export const PORTAL_RATIO = 0;

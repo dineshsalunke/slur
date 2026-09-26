@@ -1,6 +1,7 @@
 import { MAX_SHIP_WIDTH } from '../constants.js';
 import { intersectRuns, type Run } from '../sim/clearance.js';
 import { HALF_WIDTH, type Segment, spanZ0, spanZ1, type Track } from '../sim/space.js';
+import { PORTAL_RATIO } from './constants.js';
 import type { FireDir } from './fire-dir.js';
 
 export interface PortalConfig {
@@ -17,6 +18,7 @@ export interface PortalConfig {
     portalExitGap: number;
     portalFinishGap: number;
     portalZStep: number;
+    portalRatio: number;
 }
 
 export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
@@ -33,6 +35,7 @@ export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
     portalExitGap: 0.5,
     portalFinishGap: 20,
     portalZStep: 1,
+    portalRatio: PORTAL_RATIO,
 };
 
 export interface PortalSpot {

@@ -18,6 +18,7 @@ import { Mine, type PlayerState, Projectile, type RunState, Seeker } from '../sc
 import { stunDurationForShip, tuningForShip } from '../ship-classes.js';
 import type { Track } from '../sim/space.js';
 import type { SimConfig } from '../sim-config.js';
+import { isPortalPower, type PortalEnd, placePortal, stepPortals } from './portal-run.js';
 
 export type Broadcast = ( type: string, message: unknown ) => void;
 
@@ -42,14 +43,16 @@ export function firePower(
     ownerId: string,
     slot: number,
     dir: FireDir = 1,
-): void {
+): PortalEnd | null {
     const power = powerIn( p, slot );
+    if ( isPortalPower( power ) ) return placePortal( ctx, p, ownerId, slot, dir );
     spendPower( p, slot );
     if ( power === HeldPower.seeker ) fireSeeker( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.mine ) layMine( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.bolt ) fireBolt( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.boost ) startBoost( p, ctx.config );
     else if ( power === HeldPower.shield ) raiseShield( p, ctx.config.shieldS );
+    return null;
 }
 
 export function shieldAbsorbs( v: PlayerState, at: HitMessage, broadcast: Broadcast ): boolean {
@@ -92,6 +95,7 @@ export function stepCombat( ctx: CombatContext, dt: number ): void {
         config,
     );
     stepMines( state.mines, seekerShips, dt, onMine, config );
+    stepPortals( state, dt );
     stepPickups( state.players.values(), ctx.pickups, state.pickupTaken, ctx.pickupRespawn, dt, config );
     mirrorBreaks( state, broken );
 }

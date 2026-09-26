@@ -1,6 +1,7 @@
 import { ArraySchema, MapSchema, Schema, type } from '@colyseus/schema';
 import { emptySlots } from './combat/combat-step.js';
 import type { MineState } from './combat/mine.js';
+import type { PortalState } from './combat/portal.js';
 import type { ProjectileState } from './combat/projectiles.js';
 import type { SeekerState } from './combat/seeker.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
@@ -84,6 +85,22 @@ export class Mine extends Schema implements MineState {
     ttl = 0;
 }
 
+export class Portal extends Schema implements PortalState {
+    @type( 'float32' ) ax = 0;
+    @type( 'float32' ) ay = 0;
+    @type( 'float32' ) az = 0;
+    @type( 'float32' ) bx = 0;
+    @type( 'float32' ) by = 0;
+    @type( 'float32' ) bz = 0;
+    @type( 'uint8' ) ends = 0;
+    @type( 'boolean' ) armA = false;
+    @type( 'boolean' ) armB = false;
+    @type( 'string' ) ownerId = '';
+    armTimerA = 0;
+    armTimerB = 0;
+    ttl = 0;
+}
+
 export class TrackDescriptorState extends Schema {
     @type( 'string' ) kind = 'procgen';
     @type( 'uint32' ) seed = 0;
@@ -143,4 +160,5 @@ export class RunState extends Schema {
     @type( { map: 'boolean' } ) blockBroken = new MapSchema< boolean >();
     @type( { map: Seeker } ) seekers = new MapSchema< Seeker >();
     @type( { map: Mine } ) mines = new MapSchema< Mine >();
+    @type( { map: Portal } ) portals = new MapSchema< Portal >();
 }
