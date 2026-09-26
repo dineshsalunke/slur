@@ -15,3 +15,7 @@ rewrite without its `;`. Biome would flag it, and it is easy to miss.
 
 **How to apply:** put the `;` in both the pattern and the rewrite, or match only the value (`-p '6'` scoped
 with `--selector`). Grep the changed lines after `-U`. See [[ast-grep-trailing-comma-matches-nothing]].
+
+**Also (2026-09-26, #270):** a `function f($$$A): T { $$$B }` → `…: U { $$$B }` rewrite re-emitted the
+body unindented and glued its first statement onto the signature line. It still typechecked. Run
+`biome check --write <file>` after any ast-grep rewrite that spans a block.
