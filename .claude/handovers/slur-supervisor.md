@@ -36,21 +36,18 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none | cleared, idle, NOT resumed | none |
-| workertwo | w2P:pF | #283 B4/B5 landed 87c758f c92a27e e234fcd. Last: colocate scene-effects.tsx (released to it, option c), grit rule → error, close #283 | working | scene-effects.tsx, biome.json. Tell workerfive the new scene-effects path. |
-| workerthree | w2P:pG | none. #275 verify ALL PASS (5fcd446). #286 audio-context crash FIXED + closed 8facf36 (test fails before, passes after; live repro not rerun) | cleared, idle, NOT resumed | none |
-| workerfour | w2P:pH | none | idle | none |
-| workerfive | w2P:pK | #269 boost blur + camera plan | waiting owner approval | would claim chase.ts, scene-effects.tsx, dev/tuning-schema.ts, new boost-blur/*, camera/boost-surplus.ts(+test) |
+| workerone | w2P:pD | none | cleared, idle | none |
+| workertwo | w2P:pF | none (#283 moves done; last step handed to workerfive) | idle | none |
+| workerthree | w2P:pG | #169 rail bounce: PLAN first (≥5 options, tunables, lockstep) → owner | resumed | claim pending |
+| workerfour | w2P:pH | #287 remove /pacing + DEFAULT_TRACK_GEN=groove, closes #246 | resumed | claim pending |
+| workerfive | w2P:pK | #269 boost blur + 3u pull-back (OWNER APPROVED) + scene-effects colocation, grit → error, close #283 | building | camera/chase.ts, dev/tuning-schema.ts, dev/tuning-panel/tuning-panel.tsx, game/scene/scene-effects/**, new boost-blur/*, camera/boost-surplus.ts(+test), world-scene.tsx + landing-scene.tsx import lines, biome.json |
 
 ## Open owner questions
 
-1. BOOST PLAN APPROVED (owner). workerfive builds it, and also colocates scene-effects.tsx, raises the grit
-   rule to error and closes #283 (workertwo's auto mode refused the scene-effects edit; it stood down).
-2. OWNER: "/pacing will be removed." DEFAULT_TRACK_GEN no longer needs a /pacing decision. Ask: file a
-   removal issue now? Does #246 (pacing-only) close with it?
-3. Owner asked what #160/#161/#169/#246/#248 are (answered). Waiting for a pick for the idle workers
-   (workerone, workerthree, workerfour).
-4. Older and still open: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle.
+1. #169 plan from workerthree → relay to owner before build.
+2. Idle: workerone, workertwo. Candidates #160/#161 (rail visuals), #248 (procgen shadow rule).
+3. Older: #269 brake-cancel + streak length; #270 dome opacity; #280 derezz zap as fizzle.
+
 ## Next
 
 1. On boost approval: tell workerfive to build. Its files are free; keep workertwo's B4/B5 out of them.
