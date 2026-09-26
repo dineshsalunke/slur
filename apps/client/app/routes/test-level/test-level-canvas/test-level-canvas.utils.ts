@@ -1,4 +1,4 @@
-import { phraseSegments, type TrackDescriptor, type TrackGen } from '@slur/shared';
+import { DEFAULT_TRACK_GEN, isTrackGen, phraseSegments, type TrackDescriptor } from '@slur/shared';
 import {
     TEST_LEVEL_BLOCK_DENSITY,
     TEST_LEVEL_GAP_CHANCE,
@@ -6,7 +6,8 @@ import {
     TEST_LEVEL_SEGMENTS,
 } from './test-level-canvas.constants';
 
-export function testLevelDescriptor( gen: TrackGen ): TrackDescriptor {
+export function testLevelDescriptor( param: string | null ): TrackDescriptor {
+    const gen = isTrackGen( param ) ? param : DEFAULT_TRACK_GEN;
     return {
         kind: 'procgen',
         seed: TEST_LEVEL_SEED,

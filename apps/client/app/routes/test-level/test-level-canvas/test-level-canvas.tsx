@@ -5,6 +5,7 @@ import { NetCanvas } from '../../../game/net-canvas';
 import type { LoopbackRoom } from '../../../net/loopback-room/loopback-room';
 import { RoomProvider } from '../../../net/room-context/room-context';
 import { TestLevelDev } from '../test-level-dev/test-level-dev';
+import { PauseWhileEditing } from './pause-while-editing/pause-while-editing';
 
 export function TestLevelCanvas( { room, descriptor }: { room: LoopbackRoom; descriptor: TrackDescriptor } ) {
     return (
@@ -12,6 +13,7 @@ export function TestLevelCanvas( { room, descriptor }: { room: LoopbackRoom; des
             <NetCanvas descriptor={ descriptor }>
                 <TestLevelDev room={ room } />
                 <FrameTap />
+                <PauseWhileEditing />
             </NetCanvas>
             <div className="pointer-events-none fixed inset-x-0 bottom-[clamp(16px,4.4vh,46px)] z-20 flex justify-center font-readout text-readout uppercase select-none">
                 <FpsReadout />
