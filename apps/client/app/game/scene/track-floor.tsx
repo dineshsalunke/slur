@@ -3,6 +3,7 @@ import { CELL, LEAD_SEGMENTS, SEG_LEN, type Track } from '@slur/shared';
 import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
+import { useTrack } from '../track-context/use-track';
 import { deckBreakupUniforms, patchDeckBreakup, updateDeckBreakup } from './deck-breakup';
 import { applyDeckFinish } from './deck-finish';
 import { buildRailMask, patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
@@ -107,7 +108,8 @@ function buildFloorGeometry( track: Track ): THREE.BufferGeometry {
     return packFloor( top, sides );
 }
 
-export function TrackFloor( { track }: { track: Track } ) {
+export function TrackFloor() {
+    const track = useTrack();
     const geo = useMemo( () => buildFloorGeometry( track ), [ track ] );
     const segments = segmentCount( track );
     const mask = useMemo( () => buildRailMask( buildRailRuns( track, segments ), segments ), [ track, segments ] );

@@ -1,6 +1,6 @@
-import type { Track } from '@slur/shared';
 import { Fragment, useMemo } from 'react';
 import * as THREE from 'three';
+import { useTrack } from '../track-context/use-track';
 import { monolithLayout } from './arch-field';
 import { PILLAR, PILLAR_FIELD, type PillarFieldConfig } from './monolith-config';
 import { ARCH_FRAME } from './monolith-frame';
@@ -10,7 +10,8 @@ import { bodyTransform, seamTransform } from './monolith-transforms';
 import { unattached } from './unattached';
 import { useRailMask } from './use-rail-mask';
 
-export function Monoliths( { track, config = PILLAR_FIELD }: { track: Track; config?: PillarFieldConfig } ) {
+export function Monoliths( { config = PILLAR_FIELD }: { config?: PillarFieldConfig } ) {
+    const track = useTrack();
     const layout = useMemo( () => monolithLayout( track.finishZ, config ), [ track.finishZ, config ] );
     const bodies = useMemo( () => layout.pillars.map( ( p ) => bodyTransform( PILLAR, p ) ), [ layout ] );
     const seams = useMemo( () => layout.pillars.map( ( p ) => seamTransform( PILLAR, p ) ), [ layout ] );

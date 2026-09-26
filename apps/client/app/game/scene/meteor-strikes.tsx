@@ -1,5 +1,4 @@
 import { useFrame } from '@react-three/fiber';
-import type { Track } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { Fragment, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -7,6 +6,7 @@ import { num } from '../../dev/tuning';
 import { blockWorld } from '../block-state';
 import { shakeFrom } from '../camera/shake';
 import { LocalPlayer, Sim } from '../ecs/traits';
+import { useTrack } from '../track-context/use-track';
 import { accent } from './accent';
 import { asteroidGeometry } from './asteroid-geometry';
 import { queueBurst } from './block-burst';
@@ -232,7 +232,8 @@ function flash( light: THREE.PointLight, d: Director, now: number ): void {
     light.color.copy( CORE ).lerp( accent(), 0.5 );
 }
 
-export function MeteorStrikes( { track, material }: { track: Track; material: THREE.Material } ) {
+export function MeteorStrikes( { material }: { material: THREE.Material } ) {
+    const track = useTrack();
     const world = useWorld();
     const director = useMemo( () => makeDirector( trackGround( track, blockWorld.broken ) ), [ track ] );
     const head = useMemo( () => {

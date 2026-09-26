@@ -243,6 +243,15 @@ React mounts/unmounts a mesh only when an entity is spawned/despawned (drive tha
 
 **miniplex note:** same shape — miniplex archetypes ≈ koota queries; iterate the archetype in a `useFrame` system and mutate three objects held on the entity. Both avoid per-frame React state by design.
 
+**Context crosses the Canvas (#285).** `<Canvas>` in `@react-three/fiber` 9.7 renders its root inside
+`useBridge()`, which is its-fine `useContextBridge()`. Every React context above the Canvas reaches the
+scene. Verified in `dist/react-three-fiber.esm.js` (`const Bridge = useBridge()`).
+
+**The Track comes from `useTrack()`, never a prop.** `game/track-context/use-track.ts` reads
+`TrackContext`. The component that builds the track provides it once with `<TrackContext value={ track }>`.
+The value is a memoised or constant track, so consumers re-render only when the course changes. Add the
+provider before you remove a prop. A consumer outside every provider throws.
+
 ## Experimental: brometal
 
 **What it actually is (verified from the repo, 2026-08-06):** despite older descriptions of it as "a minimal WebGL/3D library," the current `ericdrowell/brometal` is a **compile-time TypeScript→WGSL shader compiler for WebGPU** — not a scene-graph/3D engine like three.js. You write vertex/fragment shaders as typed TS via a `shader({ attributes, uniforms, varyings, vertex(){}, fragment(){} })` DSL; `npx brometal dev|prod` compiles `*.shader.ts` → `*.shader.gen.ts` containing finished WGSL + typed metadata. Runtime is ~19 KB min / ~7 KB gz, WebGPU-only (Chrome/Edge 113+, Firefox 141+, Safari 26+). Philosophy: "decide everything it can at compile time, so the runtime executes a precomputed plan" — attribute locations, buffer layouts, uniform upload, dead-code elimination all happen at build; shader errors surface as `file:line:col` diagnostics instead of black screens.

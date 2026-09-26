@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { type Block, SEG_LEN, type Segment, type Track } from '@slur/shared';
+import { type Block, SEG_LEN, type Segment } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { Fragment, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -7,6 +7,7 @@ import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
 import { blockWorld } from '../block-state';
 import { LocalPlayer, Sim } from '../ecs/traits';
+import { useTrack } from '../track-context/use-track';
 import { boltCloseness, endFrame, noteBroken, noteStanding, type ShipProbe } from './block-breaks';
 import { BlockBurst } from './block-burst';
 import { BlockDebris } from './block-debris';
@@ -141,7 +142,8 @@ function fracturedAttributes( cells: THREE.BufferGeometry ): {
     return { geometry, cracked: { block, glow } };
 }
 
-export function TrackBlocks( { track }: { track: Track } ) {
+export function TrackBlocks() {
+    const track = useTrack();
     const world = useWorld();
     const blockRef = useRef< THREE.InstancedMesh | null >( null );
     const fracturedRef = useRef< THREE.InstancedMesh | null >( null );
@@ -260,7 +262,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
                     } }
                 />
             </instancedMesh>
-            <BlockDebris track={ track } uniforms={ fractureUniforms } />
+            <BlockDebris uniforms={ fractureUniforms } />
             <BlockBurst />
         </Fragment>
     );

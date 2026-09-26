@@ -3,6 +3,7 @@ import { CELL, type FloorSpan, LEAD_SEGMENTS, type Segment, spanHasZ, type Track
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
+import { useTrack } from '../track-context/use-track';
 import { accent } from './accent';
 import { segmentCount } from './track-floor';
 import { isOuterEdge } from './track-geometry';
@@ -135,7 +136,8 @@ function buildCordMesh( track: Track ): THREE.InstancedMesh {
     return mesh;
 }
 
-export function TrackRim( { track }: { track: Track } ) {
+export function TrackRim() {
+    const track = useTrack();
     const mesh = useMemo( () => buildCordMesh( track ), [ track ] );
 
     useFrame( () => {

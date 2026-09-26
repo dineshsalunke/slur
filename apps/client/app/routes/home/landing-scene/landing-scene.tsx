@@ -10,6 +10,7 @@ import { NearFill } from '../../../game/scene/near-fill';
 import { SceneEffects } from '../../../game/scene/scene-effects';
 import { SceneEnvironment } from '../../../game/scene/scene-environment';
 import { TrackView } from '../../../game/scene/track-view';
+import { TrackContext } from '../../../game/track-context/track-context.constants';
 import { LandingRig } from '../landing-rig/landing-rig';
 import { LandingShip } from '../landing-ship/landing-ship';
 import { LOOP_MARGIN, track } from './landing-scene.constants';
@@ -23,16 +24,18 @@ export function LandingScene() {
                 style={ { position: 'fixed', inset: 0, zIndex: 0 } }
                 camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
             >
-                <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
-                <GameEnvironment track={ track } />
-                <SceneEnvironment />
-                <BackFill />
-                <NearFill />
-                <EngineLight />
-                <ExhaustField />
-                <TrackView track={ track } />
-                <LandingShip />
-                <SceneEffects />
+                <TrackContext value={ track }>
+                    <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
+                    <GameEnvironment />
+                    <SceneEnvironment />
+                    <BackFill />
+                    <NearFill />
+                    <EngineLight />
+                    <ExhaustField />
+                    <TrackView />
+                    <LandingShip />
+                    <SceneEffects />
+                </TrackContext>
             </Canvas>
         </WorldProvider>
     );

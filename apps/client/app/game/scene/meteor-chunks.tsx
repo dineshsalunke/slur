@@ -1,9 +1,10 @@
 import { useFrame } from '@react-three/fiber';
-import { mulberry32, type Track } from '@slur/shared';
+import { mulberry32 } from '@slur/shared';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { blockWorld } from '../block-state';
+import { useTrack } from '../track-context/use-track';
 import { asteroidGeometry } from './asteroid-geometry';
 import { trackGround } from './debris-ground';
 import { addHullPoint, type DebrisBody, makeBody, resetBody, setBoxInertia } from './debris-physics';
@@ -95,7 +96,8 @@ function spawnPending( chunks: Chunk[], hull: readonly THREE.Vector3[], s: Spawn
     pending.length = 0;
 }
 
-export function MeteorChunks( { track, material }: { track: Track; material: THREE.Material } ) {
+export function MeteorChunks( { material }: { material: THREE.Material } ) {
+    const track = useTrack();
     const geometry = useMemo( () => {
         const g = asteroidGeometry( CHUNK_SEED, CHUNK_DETAIL );
         const heat = new THREE.InstancedBufferAttribute( new Float32Array( LIMIT ), 1 );

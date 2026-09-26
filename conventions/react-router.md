@@ -261,6 +261,10 @@ import { redirect } from "react-router";
 3. **`useBlocker(matchIsLive)` on the game layout** + a `beforeunload` handler for hard closes.
 4. **Split at the `/game` boundary**: lobby bundle must not import R3F/Three; enforce via the per-route `lazy` import so the bundler splits it.
 5. **Middleware `requireRoom` on `/game/:roomId`** redirects to `/` if there's no live room (e.g. someone deep-links `/game/xyz` without joining).
+6. **Shared scene components do not read loader data** (#285). The same scene renders under `/`, `/game/:roomId`,
+   `/test-level` and `/beat-deck`. `useRouteLoaderData(routeId)` would tie it to one route id. Those routes
+   also do not hold a track in loader data. The route passes its data to a React context provider, and the
+   scene reads the context (`useTrack()`, `useRoom()`).
 
 ---
 

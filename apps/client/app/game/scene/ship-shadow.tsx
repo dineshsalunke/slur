@@ -5,6 +5,7 @@ import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
 import { Interp, Render, Sim } from '../ecs/traits';
+import { useTrack } from '../track-context/use-track';
 
 const VERTEX = `
 varying vec2 vShadowUv;
@@ -45,7 +46,8 @@ function isDead( entity: Entity ): boolean {
     return buf !== undefined && buf.length > 0 && buf[ buf.length - 1 ].dead;
 }
 
-export function ShipShadow( { entity, shipId, track }: { entity: Entity; shipId: string; track: Track } ) {
+export function ShipShadow( { entity, shipId }: { entity: Entity; shipId: string } ) {
+    const track = useTrack();
     const meshRef = useRef< THREE.Mesh >( null );
     const uniforms = useMemo(
         () => ( {

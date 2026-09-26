@@ -1,4 +1,4 @@
-import { DEFAULT_SHIP, DEFAULT_SIM_CONFIG, type Track } from '@slur/shared';
+import { DEFAULT_SHIP, DEFAULT_SIM_CONFIG } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useTrait } from 'koota/react';
 import { Fragment, Suspense } from 'react';
@@ -7,7 +7,7 @@ import { ShieldDome } from './shield-dome';
 import { ShipModel } from './ship-model';
 import { ShipShadow } from './ship-shadow';
 
-export function ShipView( { entity, track }: { entity: Entity; track: Track } ) {
+export function ShipView( { entity }: { entity: Entity } ) {
     const group = entity.get( Render );
     const net = useTrait( entity, Net );
     if ( ! group ) return null;
@@ -20,7 +20,7 @@ export function ShipView( { entity, track }: { entity: Entity; track: Track } ) 
                 </Suspense>
                 <ShieldDome entity={ entity } shipId={ shipId } windowS={ DEFAULT_SIM_CONFIG.shieldS } />
             </primitive>
-            <ShipShadow entity={ entity } shipId={ shipId } track={ track } />
+            <ShipShadow entity={ entity } shipId={ shipId } />
         </Fragment>
     );
 }

@@ -1,16 +1,18 @@
 import { useFrame } from '@react-three/fiber';
-import { createFixedStep, FIXED_DT, type Track } from '@slur/shared';
+import { createFixedStep, FIXED_DT } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useMemo } from 'react';
 import type { PerspectiveCamera } from 'three';
 import { updateChaseCamera } from '../../../game/camera/chase';
 import { hoverSystem } from '../../../game/ecs/hover';
 import { syncRenderSystem } from '../../../game/ecs/systems';
+import { useTrack } from '../../../game/track-context/use-track';
 import { deckFlightSystem } from '../deck-flight';
 import { deckCommand, recording, stopTake } from '../take-recorder';
 import { applyShipChoice, deckFinished, restartDeckRun } from './deck-loop.utils';
 
-export function DeckLoop( { track }: { track: Track } ) {
+export function DeckLoop() {
+    const track = useTrack();
     const world = useWorld();
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
 

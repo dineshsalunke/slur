@@ -1,6 +1,7 @@
-import { CELL, HALF_WIDTH, type Track } from '@slur/shared';
+import { CELL, HALF_WIDTH } from '@slur/shared';
 import { Fragment, useMemo } from 'react';
 import * as THREE from 'three';
+import { useTrack } from '../track-context/use-track';
 import { ACCENT_ANCHOR } from './accent';
 import { BOLT_HOT } from './combat-look';
 import { FinishOutline } from './finish-outline';
@@ -40,7 +41,8 @@ export function finishTiles( finishZ: number ): MonolithTransform[] {
     return tiles;
 }
 
-export function FinishGate( { track }: { track: Track } ) {
+export function FinishGate() {
+    const track = useTrack();
     const gate = useMemo( () => [ { z: track.finishZ, height: GATE_FRAME.height } ], [ track.finishZ ] );
     const band = useMemo( () => outlineStrips( GATE_FRAME, gate[ 0 ], BAND_WIDTH, BAND_PROUD ), [ gate ] );
     const core = useMemo( () => outlineStrips( GATE_FRAME, gate[ 0 ], CORE_WIDTH, CORE_PROUD ), [ gate ] );

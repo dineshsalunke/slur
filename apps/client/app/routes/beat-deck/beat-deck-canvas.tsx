@@ -22,7 +22,7 @@ export function BeatDeckCanvas() {
                 >
                     <WorldScene track={ track }>
                         <DeckShip />
-                        <DeckLoop track={ track } />
+                        <DeckLoop />
                     </WorldScene>
                 </Canvas>
             </WorldProvider>

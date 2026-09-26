@@ -1,6 +1,5 @@
 import { useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import type { Track } from '@slur/shared';
 import { Fragment, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
@@ -23,7 +22,7 @@ function rockMaterial(): THREE.MeshStandardMaterial {
     return new THREE.MeshStandardMaterial( { metalness: 0, roughness: 1, fog: false } );
 }
 
-export function RockField( { track }: { track: Track } ) {
+export function RockField() {
     const [ diffuse, arm, normal ] = useTexture( ROCK_TEXTURES );
     const surface = useMemo(
         () => packRockSurface( diffuse.image as HTMLImageElement, arm.image as HTMLImageElement ),
@@ -80,8 +79,8 @@ export function RockField( { track }: { track: Track } ) {
             { ASTEROID_BANDS.map( ( band ) => (
                 <AsteroidBand key={ band.key } band={ band } material={ field } />
             ) ) }
-            <MeteorStrikes track={ track } material={ loose } />
-            <MeteorChunks track={ track } material={ loose } />
+            <MeteorStrikes material={ loose } />
+            <MeteorChunks material={ loose } />
         </Fragment>
     );
 }

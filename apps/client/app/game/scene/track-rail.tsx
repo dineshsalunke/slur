@@ -1,9 +1,10 @@
 import { useFrame } from '@react-three/fiber';
-import { HALF_WIDTH, type Track } from '@slur/shared';
+import { HALF_WIDTH } from '@slur/shared';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
+import { useTrack } from '../track-context/use-track';
 import { segmentCount } from './track-floor';
 import {
     BACKWARD,
@@ -61,7 +62,8 @@ export function buildRailGeometry( runs: RailRun[] ): THREE.BufferGeometry {
     return geo;
 }
 
-export function TrackRail( { track }: { track: Track } ) {
+export function TrackRail() {
+    const track = useTrack();
     const runs = useMemo( () => buildRailRuns( track, segmentCount( track ) ), [ track ] );
     const geo = useMemo( () => buildRailGeometry( runs ), [ runs ] );
     const rebuild = useRebuildToken();

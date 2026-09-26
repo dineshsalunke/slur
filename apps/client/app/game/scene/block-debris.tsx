@@ -1,11 +1,11 @@
 import { useFrame } from '@react-three/fiber';
-import type { Track } from '@slur/shared';
 import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
 import { blockWorld } from '../block-state';
 import { shake, shakeFrom } from '../camera/shake';
+import { useTrack } from '../track-context/use-track';
 import { hash01 } from './asteroid-field';
 import { BREAK_SMASH, type BreakEvent, drainBreaks, drainMends, settled } from './block-breaks';
 import { queueBurst } from './block-burst';
@@ -214,7 +214,8 @@ function advance(
     return any;
 }
 
-export function BlockDebris( { track, uniforms }: { track: Track; uniforms: FracturedBlockUniforms } ) {
+export function BlockDebris( { uniforms }: { uniforms: FracturedBlockUniforms } ) {
+    const track = useTrack();
     const rebuild = useRebuildToken();
     const debris = useMemo( buildDebris, [] );
     const ground = useMemo( () => trackGround( track, blockWorld.broken ), [ track ] );

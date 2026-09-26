@@ -1,13 +1,15 @@
 import { useFrame } from '@react-three/fiber';
-import { HALF_WIDTH, type Track } from '@slur/shared';
+import { HALF_WIDTH } from '@slur/shared';
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
+import { useTrack } from '../track-context/use-track';
 import { buildSeamGeometry, buildSeamInserts } from './seam-inserts';
 import { segmentCount } from './track-floor';
 import { SEAM_SURFACE } from './track-materials';
 
-export function TrackSeams( { track }: { track: Track } ) {
+export function TrackSeams() {
+    const track = useTrack();
     const geo = useMemo(
         () => buildSeamGeometry( buildSeamInserts( track, segmentCount( track ), HALF_WIDTH ) ),
         [ track ],
