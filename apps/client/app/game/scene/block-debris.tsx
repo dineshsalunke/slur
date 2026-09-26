@@ -44,6 +44,7 @@ const THUD_REACH = 30;
 interface Slot {
     id: number;
     born: number;
+    parked: boolean;
     bodies: DebrisBody[];
 }
 
@@ -56,6 +57,8 @@ interface Debris {
     glow: THREE.InstancedBufferAttribute;
     slots: Slot[];
     cursor: number;
+    dirty: boolean;
+    now: number;
 }
 
 const _m = new THREE.Matrix4();
@@ -90,9 +93,12 @@ function buildDebris(): Debris {
         slots: Array.from( { length: SLOTS }, () => ( {
             id: -1,
             born: 0,
+            parked: false,
             bodies: cells.map( makeBody ),
         } ) ),
         cursor: 0,
+        dirty: false,
+        now: 0,
     };
 }
 
@@ -161,6 +167,7 @@ function spawn( d: Debris, e: BreakEvent, now: number ): void {
     const reach = Math.max( _size.x, _size.y, _size.z );
     slot.id = b.id;
     slot.born = now;
+    slot.parked = false;
     d.block.setXYZW( i, _size.x, _size.y, _size.z, orient );
     d.block.needsUpdate = true;
     for ( let c = 0; c < d.cells.length; c++ ) launch( d, slot.bodies[ c ], c, e, orient, reach );
@@ -200,17 +207,25 @@ function advance(
     const flare = num( 'Break.flare' );
     const cool = Math.max( 0.05, num( 'Break.cool' ) );
     let any = false;
+    let active = false;
     for ( let i = 0; i < SLOTS; i++ ) {
         const slot = d.slots[ i ];
         if ( slot.id < 0 ) {
+            if ( slot.parked ) continue;
             for ( const mesh of meshes ) mesh?.setMatrixAt( i, _zero );
+            slot.parked = true;
+            d.dirty = true;
             continue;
         }
+        active = true;
         d.glow.setX( i, flare * Math.exp( -( now - slot.born ) / cool ) );
         if ( advanceSlot( slot, i, meshes, t ) ) any = true;
         else free( slot );
     }
-    d.glow.needsUpdate = true;
+    if ( active ) {
+        d.glow.needsUpdate = true;
+        d.dirty = true;
+    }
     return any;
 }
 
@@ -221,6 +236,8 @@ export function BlockDebris( { uniforms }: { uniforms: FracturedBlockUniforms } 
     const ground = useMemo( () => trackGround( track, blockWorld.broken ), [ track ] );
     const meshes = useRef< ( THREE.InstancedMesh | null )[] >( [] );
     const breakup = useMemo( blotchWearUniforms, [] );
+    const onMend = useMemo( () => ( id: number ) => mend( debris, id ), [ debris ] );
+    const onBreak = useMemo( () => ( e: BreakEvent ) => spawn( debris, e, debris.now ), [ debris ] );
     const material = useMemo( () => {
         const m = new THREE.MeshStandardMaterial( graphiteSurface() );
         patchFracturedBlock( m, uniforms, true );
@@ -241,9 +258,12 @@ export function BlockDebris( { uniforms }: { uniforms: FracturedBlockUniforms } 
         const now = state.clock.elapsedTime;
         applyDeckFinish( material );
         updateBlotchWear( breakup );
-        drainMends( ( id ) => mend( debris, id ) );
-        drainBreaks( ( e ) => spawn( debris, e, now ) );
+        debris.now = now;
+        drainMends( onMend );
+        drainBreaks( onBreak );
         const live = advance( debris, meshes.current, ground, now, delta, state.camera.position.z );
+        if ( ! debris.dirty ) return;
+        debris.dirty = false;
         for ( const mesh of meshes.current ) {
             if ( ! mesh ) continue;
             mesh.count = live ? SLOTS : 0;

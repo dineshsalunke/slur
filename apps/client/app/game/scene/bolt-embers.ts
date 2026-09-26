@@ -25,6 +25,7 @@ export interface EmberPool {
     vz: Float32Array;
     life: Float32Array;
     maxLife: Float32Array;
+    parked: Uint8Array;
     cursor: number;
 }
 
@@ -38,6 +39,7 @@ export function makeEmberPool(): EmberPool {
         vz: new Float32Array( MAX_EMBERS ),
         life: new Float32Array( MAX_EMBERS ),
         maxLife: new Float32Array( MAX_EMBERS ).fill( 1 ),
+        parked: new Uint8Array( MAX_EMBERS ),
         cursor: 0,
     };
 }
@@ -53,19 +55,26 @@ export function shedEmbers( pool: EmberPool, x: number, y: number, z: number, sp
         pool.vy[ i ] = Math.random() * LIFT;
         pool.vz[ i ] = ( Math.random() - 0.5 ) * SPREAD;
         pool.maxLife[ i ] = pool.life[ i ] = LIFE_MIN + Math.random() * ( LIFE_MAX - LIFE_MIN );
+        pool.parked[ i ] = 0;
     }
 }
 
 export function advanceEmbers( mesh: THREE.InstancedMesh, pool: EmberPool, dt: number ): void {
     const damp = Math.max( 0, 1 - DRAG * dt );
     const cool = accent();
+    let wrote = false;
+    let live = 0;
     for ( let i = 0; i < MAX_EMBERS; i++ ) {
         if ( pool.life[ i ] <= 0 ) {
+            if ( pool.parked[ i ] ) continue;
             _o.scale.setScalar( 0 );
             _o.updateMatrix();
             mesh.setMatrixAt( i, _o.matrix );
+            pool.parked[ i ] = 1;
+            wrote = true;
             continue;
         }
+        live++;
         pool.life[ i ] -= dt;
         pool.vx[ i ] *= damp;
         pool.vy[ i ] *= damp;
@@ -84,6 +93,8 @@ export function advanceEmbers( mesh: THREE.InstancedMesh, pool: EmberPool, dt: n
             .multiplyScalar( b );
         mesh.setColorAt( i, _c );
     }
+    mesh.count = live > 0 ? MAX_EMBERS : 0;
+    if ( ! wrote && live === 0 ) return;
     mesh.instanceMatrix.needsUpdate = true;
-    if ( mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;
+    if ( live > 0 && mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;
 }
