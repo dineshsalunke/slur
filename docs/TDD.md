@@ -166,7 +166,7 @@ The fixed loop switches on `phase`:
 - **countdown:** bleed the countdown timer; NO ship motion; → racing at 0 (queues cleared).
 - **racing:** ingest queued inputs (seq #) → integrate ONLY racers (spectators skipped) → resolve track
   collisions / deaths / respawns → stamp `finishTime` on finish → `raceShouldEnd?` (all-done / leader-grace
-  / safety-cap) → finished.
+  `RACE_GRACE_SECONDS` 45 s / no racers left; no time cap, #301) → finished.
 - **lobby / finished:** idle — ships hold pose.
 - Host `start`/`restart` + ship/colour picks (lobby-only) are **messages**, validated server-side (host +
   phase).

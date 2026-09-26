@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { COLOR_COUNT, MAX_RACE_SECONDS, RACE_GRACE_SECONDS, START_STAGGER_U } from '../constants.js';
+import { COLOR_COUNT, RACE_GRACE_SECONDS, START_STAGGER_U } from '../constants.js';
 import {
     computeStandings,
     isColorId,
@@ -81,12 +81,13 @@ test( 'raceShouldEnd: leader grace window governs the tail', () => {
     );
 } );
 
-test( 'raceShouldEnd: no deadline set and mid-race → keep going; safety cap ends a finisher-less race', () => {
+test( 'raceShouldEnd: a finisher-less race has no time cap', () => {
     assert.equal( raceShouldEnd( { elapsed: 60, finishDeadline: 0, racerCount: 2, finishedCount: 0 } ), false );
-    assert.equal(
-        raceShouldEnd( { elapsed: MAX_RACE_SECONDS, finishDeadline: 0, racerCount: 2, finishedCount: 0 } ),
-        true,
-    );
+    assert.equal( raceShouldEnd( { elapsed: 3600, finishDeadline: 0, racerCount: 2, finishedCount: 0 } ), false );
+} );
+
+test( 'raceShouldEnd: grace is 45 s after the first finisher', () => {
+    assert.equal( RACE_GRACE_SECONDS, 45 );
 } );
 
 test( 'raceShouldEnd: empty field ends (everyone left)', () => {

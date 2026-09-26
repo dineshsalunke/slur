@@ -1,4 +1,4 @@
-import { COLOR_COUNT, MAX_RACE_SECONDS, START_STAGGER_U } from '../constants.js';
+import { COLOR_COUNT, START_STAGGER_U } from '../constants.js';
 import { copySimShip, type SimShip, spawnShip } from '../sim/types.js';
 
 export const PHASE = { lobby: 0, countdown: 1, racing: 2, finished: 3 } as const;
@@ -69,7 +69,5 @@ export interface RaceEndInput {
 export function raceShouldEnd( i: RaceEndInput ): boolean {
     if ( i.racerCount === 0 ) return true;
     if ( i.finishedCount >= i.racerCount ) return true;
-    if ( i.finishDeadline > 0 && i.elapsed >= i.finishDeadline ) return true;
-    if ( i.elapsed >= MAX_RACE_SECONDS ) return true;
-    return false;
+    return i.finishDeadline > 0 && i.elapsed >= i.finishDeadline;
 }

@@ -104,8 +104,7 @@ export function jumpReach( t: FlightTuning ): number {
 }
 
 export const COUNTDOWN_SECONDS = 3;
-export const RACE_GRACE_SECONDS = 20;
-export const MAX_RACE_SECONDS = 180;
+export const RACE_GRACE_SECONDS = 45;
 export const COLOR_COUNT = 12;
 export const START_STAGGER_U = 4;
 
