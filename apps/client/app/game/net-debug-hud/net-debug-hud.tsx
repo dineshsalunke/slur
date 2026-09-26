@@ -2,7 +2,7 @@ import { addEffect } from '@react-three/fiber';
 import type { Track as TrackHandle } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useRef } from 'react';
-import { useRoom } from '../../net/room-context';
+import { useRoom } from '../../net/room-context/use-room';
 import { SAMPLE_MS } from './net-debug-hud.constants';
 import { localShipLines, playerLines } from './net-debug-hud.utils';
 

@@ -1,7 +1,7 @@
 import { redirect } from 'react-router';
 import { GameShell } from '../../game/game-shell';
 import { joinByLink, waitForDescriptor } from '../../net/matchmaking';
-import { RoomProvider } from '../../net/room-context';
+import { RoomProvider } from '../../net/room-context/room-context';
 import { NAME_KEY } from '../home/call-sign-field/call-sign-field.constants';
 import type { Route } from './+types/route';
 

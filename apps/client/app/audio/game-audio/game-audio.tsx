@@ -2,20 +2,19 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { classOfShip } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useRef } from 'react';
-import { LocalPlayer, Net, Sim } from '../game/ecs/traits';
-import { gamepadInput } from '../game/input/gamepad';
-import { keyboardInput } from '../game/input/keyboard';
-import { touchInput } from '../game/input/touch-state';
-import { useRoom } from '../net/room-context';
-import { isMuted, playMusic, setMuted, stopMusic } from './audio-engine';
-import { bindRoomAudio } from './bind-room-audio';
-import { setEngineSpeed, startEngineLoop, stopEngineLoop } from './engine-loop';
-import { createMoveEdges, type MoveTuning, stepMoveEdges } from './movement-edges';
-import { musicForPhase } from './music-for-phase';
-import { ensureListener } from './positional';
-import { playSfx, preloadAudio } from './sfx-map';
-
-const tuning: MoveTuning = { maxCruise: 0, jumpImpulse: 0, heavy: false };
+import { LocalPlayer, Net, Sim } from '../../game/ecs/traits';
+import { gamepadInput } from '../../game/input/gamepad';
+import { keyboardInput } from '../../game/input/keyboard';
+import { touchInput } from '../../game/input/touch-state';
+import { useRoom } from '../../net/room-context/use-room';
+import { isMuted, playMusic, setMuted, stopMusic } from '../audio-engine';
+import { bindRoomAudio } from '../bind-room-audio';
+import { setEngineSpeed, startEngineLoop, stopEngineLoop } from '../engine-loop';
+import { createMoveEdges, stepMoveEdges } from '../movement-edges';
+import { musicForPhase } from '../music-for-phase';
+import { ensureListener } from '../positional';
+import { playSfx, preloadAudio } from '../sfx-map';
+import { tuning } from './game-audio.state';
 
 export function GameAudio() {
     const room = useRoom();

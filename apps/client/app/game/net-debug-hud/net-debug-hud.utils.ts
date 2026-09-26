@@ -1,6 +1,6 @@
 import { SEG_LEN, type Track as TrackHandle } from '@slur/shared';
 import type { World } from 'koota';
-import type { useRoom } from '../../net/room-context';
+import type { useRoom } from '../../net/room-context/use-room';
 import { LocalPlayer, Net, Sim } from '../ecs/traits';
 import { KIND } from './net-debug-hud.constants';
 

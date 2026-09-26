@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { RoomProvider } from '../../net/room-context';
+import { RoomProvider } from '../../net/room-context/room-context';
 import { Overlays } from './overlays';
 import { room } from './test-room';
 

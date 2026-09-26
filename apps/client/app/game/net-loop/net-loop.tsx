@@ -1,37 +1,17 @@
 import type { Room } from '@colyseus/sdk';
 import { useFrame } from '@react-three/fiber';
 import { createFixedStep, FIXED_DT, PHASE, type RunState, type Track as TrackHandle } from '@slur/shared';
-import type { World } from 'koota';
 import { useWorld } from 'koota/react';
 import { useMemo } from 'react';
 import type { PerspectiveCamera } from 'three';
-import type { Predictor } from '../net/prediction';
-import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from './camera/chase';
-import { hoverSystem } from './ecs/hover';
-import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from './ecs/net-systems';
-import { syncRenderSystem } from './ecs/systems';
-import { finishReset, showFinishFade, stepFinishReset } from './finish/finish-reset';
-import { CUT_DT, finishWatch, localFinished, pickWatchTarget, resetFinishWatch } from './finish/finish-watch';
-import { localRole, resetSpectatorTarget, resolveSpectatorTarget, runPhase } from './spectator';
-
-function stepFinishCurtain( world: World, phase: number, delta: number ): boolean {
-    if ( phase === PHASE.lobby || phase === PHASE.countdown ) resetFinishWatch( finishWatch );
-    const ending =
-        ! finishWatch.spent && ! localRole.spectating && ( phase === PHASE.finished || localFinished( world ) );
-    const cut = stepFinishReset( finishReset, ending, delta ) === 'reset';
-    if ( cut ) {
-        finishWatch.spent = true;
-        finishWatch.cut = true;
-    }
-    showFinishFade( finishReset );
-    return cut;
-}
-
-function updateFinishCamera( cam: PerspectiveCamera, world: World, dt: number, room: Room< RunState > ): void {
-    finishWatch.targetId = pickWatchTarget( room.state.players, room.sessionId, finishWatch.targetId );
-    if ( finishWatch.targetId ) updateSpectatorCamera( cam, world, dt, finishWatch.targetId );
-    else updateLobbyCamera( cam, world, dt );
-}
+import type { Predictor } from '../../net/prediction';
+import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from '../camera/chase';
+import { hoverSystem } from '../ecs/hover';
+import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from '../ecs/net-systems';
+import { syncRenderSystem } from '../ecs/systems';
+import { CUT_DT, finishWatch } from '../finish/finish-watch';
+import { localRole, resetSpectatorTarget, resolveSpectatorTarget, runPhase } from '../spectator';
+import { stepFinishCurtain, updateFinishCamera } from './net-loop.utils';
 
 export function NetLoop( {
     predictor,

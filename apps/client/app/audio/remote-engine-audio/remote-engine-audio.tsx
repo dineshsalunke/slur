@@ -1,53 +1,16 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { tuningForShip } from '@slur/shared';
-import type { Entity } from 'koota';
 import { useQuery, useWorld } from 'koota/react';
 import { useEffect, useRef, useState } from 'react';
-import type * as THREE from 'three';
-import { Interp, LocalPlayer, Net, Remote, Render, Sim } from '../game/ecs/traits';
-import { getContext, loadSample } from './audio-engine';
-import { createEngineParams, engineParams, engineVoice } from './engine-voice';
-import { type PassFrame, passByEdge } from './movement-edges';
-import { attachPositionalLoop, detachPositional, ensureListener } from './positional';
-import { ENGINE_LOOP, playSfx } from './sfx-map';
-
-const SMOOTH_S = 0.08;
-const VZ_TAU_S = 0.15;
-const params = createEngineParams();
-const mine: PassFrame = { x: 0, z: 0, vz: 0 };
-const theirs: PassFrame = { x: 0, z: 0, vz: 0 };
-
-interface Emitter {
-    audio: THREE.PositionalAudio;
-    filter: BiquadFilterNode;
-    z: number;
-    vz: number;
-    armed: boolean;
-}
-
-function syncEmitters( remotes: readonly Entity[], map: Map< number, Emitter > ): void {
-    const present = new Set( remotes.map( ( e ) => e.id() ) );
-    for ( const [ id, em ] of map ) {
-        if ( ! present.has( id ) ) {
-            detachPositional( em.audio );
-            map.delete( id );
-        }
-    }
-    const ctx = getContext();
-    if ( ! ctx ) return;
-    for ( const e of remotes ) {
-        if ( map.has( e.id() ) ) continue;
-        const grp = e.get( Render );
-        if ( ! grp ) continue;
-        const audio = attachPositionalLoop( grp, ENGINE_LOOP.name, { volume: 0.32, refDistance: 12 } );
-        if ( ! audio ) continue;
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.Q.value = 0.7;
-        audio.setFilter( filter );
-        map.set( e.id(), { audio, filter, z: grp.position.z, vz: 0, armed: true } );
-    }
-}
+import { Interp, LocalPlayer, Net, Remote, Render, Sim } from '../../game/ecs/traits';
+import { getContext, loadSample } from '../audio-engine';
+import { engineParams, engineVoice } from '../engine-voice';
+import { passByEdge } from '../movement-edges';
+import { detachPositional, ensureListener } from '../positional';
+import { ENGINE_LOOP, playSfx } from '../sfx-map';
+import { SMOOTH_S, VZ_TAU_S } from './remote-engine-audio.constants';
+import { mine, params, theirs } from './remote-engine-audio.state';
+import { type Emitter, syncEmitters } from './remote-engine-audio.utils';
 
 export function RemoteEngineAudio() {
     const world = useWorld();
