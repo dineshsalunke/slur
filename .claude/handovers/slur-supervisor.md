@@ -28,8 +28,8 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 #172 4a8e1a8 (workerfive) · #273 c3ab18d · #275 fed4ac2 c2b9ac4 0afbef2 5ded0a4 (workerone) · #281 e13f35d
 (workerthree) · #284 9d9779c · #285 7325f12 (workertwo).
 #277: every slice is in. workerfour b7df188 62f663f 1b111b6 d342d6d 8ad39b0 e7ce4e7 b706baa bb433b0 47cce3e
-5505ed8 6b0fc62 acdffa9 50c6e17; workertwo fc008d0 b06bd73. Still OPEN: waiting for workertwo's look check,
-then close. The DEFAULT_TRACK_GEN item waits for the owner (below).
+5505ed8 6b0fc62 acdffa9 50c6e17; workertwo fc008d0 b06bd73. CLOSED by workerfour after the look check PASSED
+(workertwo 446aa95, HEAD taps only). DEFAULT_TRACK_GEN is split out and waits for the owner (below).
 #283: B1/B7 492e8d2, test-level 6ad8055. B4/B5 (game/scene moves) released to workertwo after the look check.
 
 ## Workers
@@ -37,7 +37,7 @@ then close. The DEFAULT_TRACK_GEN item waits for the owner (below).
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | none | cleared, idle, NOT resumed | none |
-| workertwo | w2P:pF | #277 look check (HEAD taps only, no old-commit A/B), then #283 B4/B5 | working | B4/B5 claim pending; must leave out scene-effects.tsx + camera/chase.ts |
+| workertwo | w2P:pF | #283 B4/B5 (35 scene moves + 29 importers), then grit rule → error, close #283 | CLEARED, working | game/scene/** except scene-effects.tsx, camera/chase.ts, dev/tuning-schema.ts |
 | workerthree | w2P:pG | #275 verify: remount ×3 + mine-glow tap (checks 1–2 PASSED) | working, read-only | none |
 | workerfour | w2P:pH | none | idle | none |
 | workerfive | w2P:pK | #269 boost blur + camera plan | waiting owner approval | would claim chase.ts, scene-effects.tsx, dev/tuning-schema.ts, new boost-blur/*, camera/boost-surplus.ts(+test) |
