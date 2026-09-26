@@ -60,7 +60,6 @@ lives in its own file beside this one.
 - [React dev tracks walk typed-array props](react-dev-tracks-walk-typed-array-props.md) — a big report prop on ~12 components made a dev seed change 5.8 s; pass it through context
 - [SVG polylines raster per tile](svg-polyline-raster-per-tile.md) — one long polyline replays whole for every tile; chunk it; count `missing tiles` in a cc trace
 - [Rate clamp is not flyability](rate-clamp-is-not-flyability.md) — pacing paths obey the per-row rate clamp but ignore strafeAccel; fly the path with a sim pilot to prove it (#246)
-- [/pacing needs CDP, not --screenshot](pacing-board-needs-cdp-not-screenshot-flag.md) — the report comes from a worker; `--virtual-time-budget` captures black; poll the panel over CDP
 - [Touch test over CDP](touch-test-over-cdp.md) — touch emulation makes `pointer: coarse` match; dispatchTouchEvent reaches the pad; sample the server ship ≥300 ms after a tap
 - [Easiest route moves early](easiest-route-moves-early.md) — referencePath takes least travel, as early as allowed; pin the path at each note, a one-sided tube wall forces only 1u
 - [Fractured blocks rarely have a clear lane](fractured-blocks-rarely-have-a-clear-lane.md) — a post-hoc fracture-shadow demotion costs ~76% at today's density; reserve the rest at placement (#248, R4)
@@ -107,3 +106,4 @@ lives in its own file beside this one.
 - [Bulk move without git mv](bulk-move-without-git-mv.md) — auto mode denies a scripted `git mv` here; rename via node fs, stage by explicit pathspec
 - [frameloop never screenshots black](frameloop-never-screenshots-black.md) — after setFrameloop('never') a CDP screenshot is black; read the canvas with toDataURL in the advance() task
 - [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — Held slots [3,0,0] + KeyE; hosted pilots wedge; renderer is NoToneMapping so `toneMapped` is a no-op
+- [Playwright from the npx cache](playwright-from-npx-cache-needs-system-chrome.md) — import playwright-core from ~/.npm/_npx and pass executablePath = system Chrome
