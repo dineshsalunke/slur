@@ -25,7 +25,7 @@ export type SeekerWindowMode = 'time' | 'distance';
 export const SEEKER_HIT_MESSAGE = 'seekerHit';
 export const SEEKER_MISS_MESSAGE = 'seekerMiss';
 
-export const SEEKER_RATIO = 0.3;
+export const SEEKER_RATIO = 0.2;
 export const SEEKER_LOCK_RANGE = 600;
 export const SEEKER_SPEED_FACTOR = 1.5;
 export const SEEKER_RAMP_S = 0.3;
@@ -47,7 +47,7 @@ export const SEEKER_SPAWN_AHEAD = 3;
 
 export const MINE_BURST_MESSAGE = 'mineBurst';
 
-export const MINE_RATIO = 0.3;
+export const MINE_RATIO = 0.2;
 export const MINE_LEAD_S = 0.8;
 export const MINE_BACK_GAP = 1;
 export const MINE_ARM_S = 0.5;

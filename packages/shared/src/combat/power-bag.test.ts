@@ -7,11 +7,11 @@ import { bagCounts, longestRun, POWER_BAG_SIZE, POWER_RUN_CAP, powerBag } from '
 
 const SALTS = [ '', 'a', 'x9k2', '1pq0zz', 'groove' ];
 
-test( 'the default bag deals 2 bolts, 6 seekers, 6 mines, 3 boosts and 3 shields', () => {
+test( 'the default bag deals 6 bolts, 4 seekers, 4 mines, 3 boosts and 3 shields', () => {
     assert.deepEqual( bagCounts(), [
-        { power: HeldPower.bolt, count: 2 },
-        { power: HeldPower.seeker, count: 6 },
-        { power: HeldPower.mine, count: 6 },
+        { power: HeldPower.bolt, count: 6 },
+        { power: HeldPower.seeker, count: 4 },
+        { power: HeldPower.mine, count: 4 },
         { power: HeldPower.boost, count: 3 },
         { power: HeldPower.shield, count: 3 },
     ] );
@@ -19,11 +19,11 @@ test( 'the default bag deals 2 bolts, 6 seekers, 6 mines, 3 boosts and 3 shields
 
 test( 'boost and shield ratios take their share from the bolts', () => {
     assert.deepEqual(
-        bagCounts( { ...DEFAULT_SIM_CONFIG, boostRatio: 0.15, shieldRatio: 0.15, seekerRatio: 0.2, mineRatio: 0.2 } ),
+        bagCounts( { ...DEFAULT_SIM_CONFIG, boostRatio: 0.15, shieldRatio: 0.15, seekerRatio: 0.3, mineRatio: 0.3 } ),
         [
-            { power: HeldPower.bolt, count: 6 },
-            { power: HeldPower.seeker, count: 4 },
-            { power: HeldPower.mine, count: 4 },
+            { power: HeldPower.bolt, count: 2 },
+            { power: HeldPower.seeker, count: 6 },
+            { power: HeldPower.mine, count: 6 },
             { power: HeldPower.boost, count: 3 },
             { power: HeldPower.shield, count: 3 },
         ],
