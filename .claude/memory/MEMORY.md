@@ -95,3 +95,4 @@ lives in its own file beside this one.
 - [Decode audio in headless Chrome](decode-audio-in-headless-chrome.md) — decodeAudioData over CDP gives true length + peak; cuts peaked 1.55 and 0.046 unnoticed
 - [Typegen runs in production mode](typegen-runs-in-production-mode.md) — dev-gated routes lose `+types`; the client typecheck sets NODE_ENV=development
 - [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s; reconnection off for lost; seats via a node lobby client
+- [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook; count fibers with a new actualStartTime AND flags&1, or bailouts inflate counts
