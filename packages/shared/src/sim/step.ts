@@ -1,3 +1,4 @@
+import { hopThroughPortal } from '../combat/portal.js';
 import type { FlightTuning } from '../constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
@@ -334,4 +335,5 @@ export function simulate(
     integrate( s, dt );
     if ( track ) resolveCollisions( s, prevX, prevY, prevZ, track, t, world );
     else resolveFlatFloor( s, t );
+    if ( world && world.portals.size > 0 ) hopThroughPortal( s, prevZ, t, world.portals.values(), cfg );
 }

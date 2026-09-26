@@ -127,6 +127,7 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
         slowTimer: 0.7,
         towTimer: 0.6,
         tugAnchorZ: 4100,
+        portalHops: 7,
     };
     resetPlayerForRace( dirty, 3 );
     assert.equal( dirty.x, 2 * START_STAGGER_U );

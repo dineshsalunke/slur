@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { tuningForShip } from '../ship-classes.js';
+import { SHIP_CLASSES } from '../ship-classes.js';
 import { BLOCK_HEIGHT, type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from '../sim/space.js';
 import {
     DEFAULT_PORTAL_CONFIG as CFG,
@@ -13,7 +13,7 @@ import {
     portalTargetZ,
 } from './portal.js';
 
-const HULL = tuningForShip( 'fighter' );
+const HULL = SHIP_CLASSES.fighter.tuning;
 const HALF_CLEAR = CFG.portalClearW / 2;
 
 interface Fixture {

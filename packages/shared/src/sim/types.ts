@@ -1,3 +1,5 @@
+import type { PortalState } from '../combat/portal.js';
+
 export interface SimShip {
     x: number;
     y: number;
@@ -23,6 +25,7 @@ export interface SimShip {
     slowTimer: number;
     towTimer: number;
     tugAnchorZ: number;
+    portalHops: number;
 }
 
 export function spawnShip( x = 0, z = 0 ): SimShip {
@@ -49,15 +52,17 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         slowTimer: 0,
         towTimer: 0,
         tugAnchorZ: 0,
+        portalHops: 0,
     };
 }
 
 export interface SimWorld {
     broken: Set< number >;
+    portals: Map< string, PortalState >;
 }
 
 export function createSimWorld(): SimWorld {
-    return { broken: new Set() };
+    return { broken: new Set(), portals: new Map() };
 }
 
 function keyTuple< T >() {
@@ -89,6 +94,7 @@ export const SIM_SHIP_KEYS = keyTuple< SimShip >()(
     'slowTimer',
     'towTimer',
     'tugAnchorZ',
+    'portalHops',
 );
 
 function assignKey< K extends keyof SimShip >( dst: SimShip, src: SimShip, k: K ): void {

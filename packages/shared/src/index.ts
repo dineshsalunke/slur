@@ -3,6 +3,7 @@ export * from './combat/constants.js';
 export * from './combat/fire-dir.js';
 export * from './combat/mine.js';
 export * from './combat/pickups.js';
+export * from './combat/portal.js';
 export * from './combat/power-bag.js';
 export * from './combat/projectiles.js';
 export * from './combat/seeker.js';

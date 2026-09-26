@@ -43,6 +43,7 @@ import {
     SHIELD_S,
     STUN_SECONDS,
 } from './combat/constants.js';
+import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
 import {
     SLOW_CAP,
     TOW_JUMP,
@@ -59,7 +60,7 @@ import {
     TUG_SPEED_CUT,
 } from './combat/tug-constants.js';
 
-export interface SimConfig {
+export interface SimConfig extends PortalConfig {
     boltSpeed: number;
     boltTtl: number;
     boltHalf: number;
@@ -173,4 +174,5 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     towS: TOW_S,
     towStrafeScale: TOW_STRAFE_SCALE,
     towJump: TOW_JUMP,
+    ...DEFAULT_PORTAL_CONFIG,
 };
