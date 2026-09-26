@@ -106,5 +106,6 @@ lives in its own file beside this one.
 - [Bulk move without git mv](bulk-move-without-git-mv.md) — auto mode denies a scripted `git mv` here; rename via node fs, stage by explicit pathspec
 - [frameloop never screenshots black](frameloop-never-screenshots-black.md) — after setFrameloop('never') a CDP screenshot is black; read the canvas with toDataURL in the advance() task
 - [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — Held slots [3,0,0] + KeyE; hosted pilots wedge; renderer is NoToneMapping so `toneMapped` is a no-op
+- [Measure a post effect by region change](measure-a-post-effect-by-region-change.md) — one still hid an invisible blur; % px changed per region vs off + noise frames
 - [Playwright from the npx cache](playwright-from-npx-cache-needs-system-chrome.md) — import playwright-core from ~/.npm/_npx and pass executablePath = system Chrome
 - [Owner tests on /test-level](owner-tests-on-test-level.md) — OWNER RULE: brief and verify every change on /test-level, not a hosted room
