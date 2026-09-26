@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #288 one run path (plan-first) · Updated: 2026-09-26
+Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -8,13 +8,28 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Done
 
-- The plan went to slur-supervisor (SendMessage, 2026-09-26). Nothing built.
+- 57ec8d0: plan sent. The OWNER APPROVED option A, the in-process loopback room.
 
 ## State
 
-- Plan: seam at the Room. Shared `stepCombat` + `RunSim` in `packages/shared/src/run/`. RunRoom becomes an adapter. /test-level mounts NetCanvas on an in-process loopback room (Encoder→Decoder).
-- Checked: sdk `getStateCallbacks` reads only `room.serializer.decoder`. `MapSchema implements Map`.
-- Slices: 1 stepCombat · 2 RunSim · 3 loopback room · 4 /test-level swap + Local* deletions.
+- Owner answers: /test-level goes straight to GO (no countdown). The HUD shows the real 1-racer roster (the fixture goes). Shift+1-5 restarts the run with the new class.
+- OWNER CONDITION 1: the loopback room is normal game code, NOT dev-gated. A future single-player mode will run on it without a server.
+- OWNER CONDITION 2: the dev extras (auto-start, auto-restart after the finish curtain, Shift+1-5, KeyP freeze) sit in a SEPARATE dev layer on top of the loopback room.
+- Verified: sdk `getStateCallbacks(room)` reads only `room.serializer.decoder` (sdk src/serializer/SchemaSerializer.ts:15-19). `MapSchema implements Map<K,V>` (schema 4.0.30).
+- Room surface used under NetCanvas + HUD: state, sessionId, onMessage, send, and serializer.decoder through getStateCallbacks. onDrop/onLeave/onReconnect/onStateChange are used only in net/matchmaking.ts.
+- [unmeasured] Encoder/Decoder API names in schema 4 (`new Encoder(state)`, `encode()`, `discardChanges()`, `new Decoder(state)`, `decode(bytes)`). Verify in the installed `.d.ts` before slice 3.
+
+## Plan (approved)
+
+- Shared `stepCombat(state: CombatState, ctx: CombatContext, dt)` in packages/shared/src/run/combat.ts.
+  - CombatState: players/projectiles/seekers/mines/pickupTaken Maps.
+  - CombatContext: track, broken, pickups, pickupRespawn, config, broadcast.
+  - Order: shields → stepBolts → stepSeekers → stepMines → stepPickups, exactly as `RunRoom.stepWorld` does it. Also `firePower`.
+- Slice 1: move server room-combat.ts, room-bounce.ts and room-input.ts (+ their tests) to packages/shared/src/run/{combat,racer,input-queue}.ts. Export them from shared index.ts. run-room.ts calls stepCombat. No behaviour change.
+- Slice 2: shared `RunSim` class (phase machine, queues, fire, stepRace, stepCombat, mirrorBreaks, start/reset, join/leave/host). Its constructor takes (descriptor, broadcast, onMeta). RunRoom becomes a thin Colyseus adapter. The server tests stay green.
+- Slice 3: client net/loopback-room/ (NOT dev-gated). It holds a RunSim, an Encoder and a Decoder, and patches every 50 ms. It ticks from R3F `addEffect` and exposes {state, sessionId, onMessage, send, serializer:{decoder}}. Narrow Room<RunState> to a structural `RunRoomLike` in room-context, the stores, bind-room-audio, attach-room-to-world and net-loop. Add a vitest test: join → start → fire a bolt → a decoded projectile and a HIT message.
+- Slice 4: /test-level mounts NetCanvas (plus a children slot for FrameTap) on the loopback room. The dev layer is a separate module in dev/ or routes/test-level/ (auto-start with no countdown, auto-restart, Shift+1-5 restart, KeyP freeze). NetLoop honours simFreeze. Delete: local-combat(.test).ts, local-ship.tsx, local-loop/, local-*-field/, test-level-hud.tsx, hud-fixture.ts, run-clock.ts. Update the CDP memories (place-the-ship, koota-universe, stage-a-mine). Verify on /test-level.
+- The PR body or commit weighs ≥5 tick-clock options: addEffect (chosen) · setInterval · useFrame ticker · own rAF · the NetLoop callback.
 
 ## Uncommitted
 
@@ -22,16 +37,17 @@ None.
 
 ## Held files
 
-None. Claim per slice after approval.
+None. Claim slice 1 files with slur-supervisor before the first write.
 
 ## Next
 
-1. Wait for owner approval via the supervisor, with answers to the open questions.
-2. Claim slice 1 files and build slice 1.
+1. Claim with the supervisor: packages/shared/src/run/*, packages/shared/src/index.ts, apps/server/src/rooms/{run-room.ts, room-combat.ts, room-bounce.ts, room-input.ts, room-input.test.ts}.
+2. Build slice 1, run `pnpm test` + `pnpm typecheck` + `pnpm lint`, commit by pathspec, report the SHA.
+3. Slices 2–4 in order, each with a claim and a SHA report. Close #288 with the final SHA.
 
 ## Open questions
 
-- Room seam (loopback) vs koota seam? Countdown on /test-level? Real 1-racer roster? Shift+1-5 restarts the run?
+- None.
 
 ## Lessons → memory
 
