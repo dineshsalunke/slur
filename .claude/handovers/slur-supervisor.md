@@ -59,7 +59,8 @@ it departs from their idea; phase 2 (roots + HUD) after #273 and #284. Then #283
 #273 DONE + closed (c3ab18d): a 400 ms stall now drains in ~1 s (was stuck at 22-25). workerone IDLE, holds
 nothing: next lane candidates #275 render P1s (minus mine-shock), #281 invuln, #277 P2 sweep. Clear it first.
 INCIDENT: workertwo's mid-edit #285 crashed every Canvas route (Monoliths reads undefined track). Told it to
-restore rendering first and ping workerfive (whose #284 "before" screenshots are blocked). Verify it did.
+restore rendering first and ping workerfive (whose #284 "before" screenshots are blocked). RESOLVED: renders
+again (measured on 4 routes); workerfive pinged. workertwo commits phase 1 next.
 Deferred #283: net-loop, remote-engine-audio, game-audio, room-context (after #273); test-level-canvas + local-*
 fields, B1/B7 (after #284); B4/B5 (after #285). Owner Q: also delete dead game/net-debug-hud.tsx?
 workerfive #284: 16 paths CLEARED (app.css player tokens, colors.ts(+test), delete ui/color-dot.tsx, 5 overlays,
