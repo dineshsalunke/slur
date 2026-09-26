@@ -10,10 +10,10 @@ import { queueDrop, queueFire } from './local-combat';
 export function LocalShip() {
     const world = useWorld();
 
-    // JUSTIFIED EFFECT — syncs with an external system: the browser DOM keyboard (window keydown/keyup).
+    // Syncs with the browser keyboard: window keydown and keyup drive the local input.
     useEffect( attachKeyboard, [] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: the koota ECS world (module singleton), which needs
+    // Syncs with the koota world, a module singleton: spawns the local ship entity and destroys it at unmount.
     useEffect( () => {
         localRole.spectating = false;
         const ship = world.spawn(
@@ -28,7 +28,7 @@ export function LocalShip() {
         return () => ship.destroy();
     }, [ world ] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard → power slots and the Shift+1-5 ECS ship class.
+    // Syncs with the browser keyboard: the power-slot keys, and Shift+1-5 set the ECS ship class.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
             handlePowerKey( e, {

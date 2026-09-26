@@ -18,7 +18,7 @@ export function FlightReadout( { standing, clock }: { standing: () => Standing; 
     const progressRef = useRef< HTMLSpanElement >( null );
     const clockRef = useRef< HTMLSpanElement >( null );
 
-    // JUSTIFIED EFFECT — brackets a frame subscription to R3F's render loop, an outside-React system, to this mount.
+    // Brackets an R3F render-loop subscription to this mount: each frame writes the rank, progress and clock.
     useEffect( () => {
         return addEffect( () => {
             const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );

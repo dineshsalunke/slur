@@ -10,7 +10,7 @@ export function LeaveGuard( { phase }: { phase: number } ) {
     const racing = phase === PHASE.racing && connected;
     const blocker = useBlocker( racing );
 
-    // JUSTIFIED EFFECT — syncs with an external system: the browser's beforeunload (hard tab close/reload),
+    // Syncs with the browser's beforeunload: a tab close or reload during a race asks to confirm.
     useEffect( () => {
         if ( ! racing ) return;
         const onBeforeUnload = ( e: BeforeUnloadEvent ) => {

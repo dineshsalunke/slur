@@ -8,7 +8,7 @@ export function FrameTap() {
 
     useFrame( ( _state, delta ) => recordDelta( log.current, delta ), 0 );
 
-    // JUSTIFIED EFFECT — external sync, which is the one job Effects are for: `import.meta.hot` is Vite's HMR
+    // Syncs with Vite's HMR channel: answers frame-tap capture requests from the dev server.
     useEffect( () => {
         const hot = import.meta.hot;
         if ( ! hot ) return;

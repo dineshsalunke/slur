@@ -8,10 +8,10 @@ import { deckState } from './take-recorder';
 export function DeckShip() {
     const world = useWorld();
 
-    // JUSTIFIED EFFECT — syncs with an external system: the browser DOM keyboard (window keydown/keyup).
+    // Syncs with the browser keyboard: window keydown and keyup drive the local input.
     useEffect( attachKeyboard, [] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: the koota ECS world (module singleton) that owns the ship entity.
+    // Syncs with the koota world, a module singleton: spawns the deck ship entity and destroys it at unmount.
     useEffect( () => {
         localRole.spectating = false;
         const ship = world.spawn(

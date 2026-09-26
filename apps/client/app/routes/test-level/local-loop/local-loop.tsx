@@ -18,7 +18,7 @@ export function LocalLoop() {
     const track = useTrack();
     const advance = useMemo( () => createFixedStep( FIXED_DT ), [] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: the DOM keyboard (window keydown) that owns the freeze toggle.
+    // Syncs with the browser keyboard: window keydown owns the sim freeze toggle.
     useEffect( attachFreezeToggle, [] );
 
     useFrame( ( state, delta ) => {

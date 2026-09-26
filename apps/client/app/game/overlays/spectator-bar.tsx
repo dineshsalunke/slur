@@ -20,7 +20,7 @@ export function SpectatorBar( { room }: { room: Room< RunState > } ) {
         retarget();
     };
 
-    // JUSTIFIED EFFECT — syncs with an external system: the DOM keyboard (Tab / ← / →) → the spectator-target
+    // Syncs with the browser keyboard: Tab and the arrow keys cycle the spectator target.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
             if ( e.code !== 'Tab' && e.code !== 'ArrowRight' && e.code !== 'ArrowLeft' ) return;

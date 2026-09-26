@@ -22,7 +22,7 @@ export function GameAudio() {
     const camera = useThree( ( s ) => s.camera );
     const edges = useRef( createMoveEdges() );
 
-    // JUSTIFIED EFFECT — syncs with external systems: the Web Audio engine (preload/engine loop) + the Colyseus room
+    // Syncs with the Web Audio engine and the Colyseus room: preload, the engine loop, music and room sound cues.
     useEffect( () => {
         ensureListener( camera );
         startEngineLoop();
@@ -35,7 +35,7 @@ export function GameAudio() {
         };
     }, [ room, camera ] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (M) → the engine's mute (office needs a
+    // Syncs with the browser keyboard: M toggles the audio engine's mute.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
             if ( e.code === 'KeyM' && ! e.repeat ) setMuted( ! isMuted() );

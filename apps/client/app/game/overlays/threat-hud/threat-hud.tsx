@@ -9,7 +9,7 @@ export function ThreatHud( { room }: { room: Room< RunState > } ) {
     const tickRef = useRef< HTMLDivElement >( null );
     const vignetteRef = useRef< HTMLDivElement >( null );
 
-    // JUSTIFIED EFFECT — it does nothing but BRACKET the frame subscription to this component's mount, which is
+    // Brackets an R3F render-loop subscription to this mount: each frame writes the threat tick and vignette.
     useEffect( () => {
         return addEffect( () => {
             const tickEl = tickRef.current;

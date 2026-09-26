@@ -19,7 +19,7 @@ export function RemoteEngineAudio() {
     const [ ready, setReady ] = useState( false );
     const active = useRef( new Map< number, Emitter >() );
 
-    // JUSTIFIED EFFECT — syncs with TWO external systems: the three.js object graph (parenting the shared
+    // Syncs with Web Audio and the three.js camera: attaches the listener and loads the engine loop sample.
     useEffect( () => {
         let live = true;
         ensureListener( camera );
@@ -31,12 +31,12 @@ export function RemoteEngineAudio() {
         };
     }, [ camera ] );
 
-    // JUSTIFIED EFFECT — syncs the ECS remote set INTO the three.js scene graph: attach a positional loop to
+    // Syncs the ECS remote ships into the three.js scene graph: one positional engine loop per remote ship.
     useEffect( () => {
         if ( ready ) syncEmitters( remotes, active.current );
     }, [ remotes, ready ] );
 
-    // JUSTIFIED EFFECT — releases external resources at unmount: stop + detach + disconnect every
+    // Releases Web Audio at unmount: detaches and disconnects every positional engine loop.
     useEffect( () => {
         const map = active.current;
         return () => {

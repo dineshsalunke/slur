@@ -40,10 +40,10 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
     const trackRef = useRef( track );
     trackRef.current = track;
 
-    // JUSTIFIED EFFECT — syncs with an external system: the browser DOM keyboard (window keydown/keyup).
+    // Syncs with the browser keyboard: window keydown and keyup drive the local input.
     useEffect( attachKeyboard, [] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: DOM keyboard (1-3/Q/E/X) → Colyseus fire/drop messages.
+    // Syncs with the browser keyboard: 1-3, Q, E and X send fire and drop messages to the Colyseus room.
     useEffect( () => {
         const actions = {
             rack: () => world.queryFirst( LocalPlayer, Held )?.get( Held )?.slots ?? [],
@@ -56,7 +56,7 @@ export function NetCanvas( { descriptor }: { descriptor: TrackDescriptor } ) {
         return () => removeEventListener( 'keydown', onKey );
     }, [ room ] );
 
-    // JUSTIFIED EFFECT — syncs with an external system: the Colyseus room (schema callbacks) → ECS, plus
+    // Syncs the Colyseus room into the koota world: schema callbacks feed the entities and the predictor.
     useEffect( () => attachRoomToWorld( room, world, predictor, trackRef ), [ room, predictor ] );
 
     return (
