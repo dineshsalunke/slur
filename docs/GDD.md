@@ -218,6 +218,7 @@ racer skips the pickup, and the pickup stays. A dropped power is gone (ADR-017 a
 | Offensive | **Mine** | Lay on the deck; the next rival that drives over it is stunned and slowed |
 | Defensive | **Shield** | Absorb one hit for a few seconds |
 | Utility | **Boost** | Burst of speed |
+| Utility | **Tug line** | Latch a rival or a block ahead; pull yourself forward, slow or tow the rival |
 | Utility | **Warp/Blink** | Short teleport/dodge (also SkyRoads-y gap crosser) |
 | Chaos | **Scramble** | Invert/blur a nearby rival's controls or view briefly |
 
@@ -229,10 +230,10 @@ back seeker locks onto the nearest rival behind, launches at 0 u/s and ramps to 
 The owner still has to confirm F as the back key.
 
 **Placement and mix (#265, built).** Pickups are 120–180u apart, spread across the deck up to ±40u,
-and always on a clear lane. Every run of 20 pickups deals 6 Bolts, 4 Seekers, 4 Mines, 3 Boosts and 3
-Shields in a shuffled order. No power comes up 3 times in a row. Details: `docs/DECISIONS.md` ADR-002 amendment.
+and always on a clear lane. Every run of 20 pickups deals 4 Bolts, 3 Seekers, 3 Mines, 3 Boosts, 3
+Shields, 2 Portals and 2 Tug lines in a shuffled order (#290). No power comes up 3 times in a row. Details: `docs/DECISIONS.md` ADR-002 amendment.
 
-**Mine (#261, built).** A pickup gives a Mine in 4 of every 20 pickups (`MINE_RATIO` = 0.2).
+**Mine (#261, built).** A pickup gives a Mine in 3 of every 20 pickups (`MINE_RATIO` = 0.15).
 
 - **Lay (#263).** Forward puts the mine **0.8 s** ahead at the layer's own speed (`MINE_LEAD_S`),
   past the trigger radius from the nose: 70u for the Interceptor to 102u for the Freighter at top
@@ -252,7 +253,30 @@ Shields in a shuffled order. No power comes up 3 times in a row. Details: `docs/
 - **Sync.** Mines are server state (`RunState.mines`). The server sends a `mineBurst` message on every
   trigger, clear, eviction and expiry, and the client shows the burst from it.
 
-> The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the redefined **Tractor** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
+**Tug line (#290, built).** A pickup gives a Tug line in 2 of every 20 pickups (`TUG_RATIO` = 0.1). It
+replaces the Tractor beam and the Grapple of §5.7.
+
+- **Target.** The line latches onto the nearest rival within **150u** (`TUG_RANGE`) in the fire
+  direction. It uses the Seeker lock rule: the rival must be in line of sight past unbroken blocks.
+  Forward with no rival, it latches onto the front face of the nearest unbroken block ahead within
+  150u. Back with no rival, or forward with no rival and no block, nothing fires and the power stays
+  in its slot.
+- **Forward on a rival.** The firer gets **+40 u/s** (`TUG_KICK`). For **0.6 s** (`TUG_S`) its speed
+  cap rises to **1.5×** cruise (`TUG_GAIN` = 0.5), eased in over **0.2 s** (`TUG_EASE_S`). The rival
+  keeps **70%** of its forward speed (`TUG_SPEED_CUT`). For **1 s** (`TUG_SLOW_S`, scaled by class
+  like every stun) its cap drops to **0.6×** cruise (`SLOW_CAP`).
+- **Back on a rival.** The line tows the chaser forward. The chaser gets **+40 u/s** (`TOW_KICK`) and
+  the same lifted cap for **0.8 s** (`TOW_S`, scaled by class). During the tow its strafe is scaled to
+  **30%** (`TOW_STRAFE_SCALE`) and it cannot jump (`TOW_JUMP` = false). The firer gets nothing.
+- **On a block.** The firer gets the forward kick and the lifted cap, and reels toward the face. The
+  line lets go when the nose is **0.35 s** from the face at the current speed (`TUG_RELEASE_S`). The
+  firer must strafe or jump clear.
+- **Shield.** A shield absorbs the slow or the tow. The firer still gets its own kick.
+- **Sync.** The effect is sim state on the ships (`tugTimer`, `slowTimer`, `towTimer`,
+  `tugAnchorZ`). The server sends a `tug` message on every latch or anchor, and the client draws the
+  beam from it.
+
+> The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the **Tug line** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 
 ### 5.4 Combat & interactions
 - **Server-authoritative hit detection** (never trust client for hits — see TDD / `conventions/netcode.md`).
@@ -446,7 +470,7 @@ render only). Implement one at a time; the BC changes are called out so they're 
 | **Wall drop** | M | Spawn a temporary solid cube behind you to block/crash chasers (expiring block entity). |
 | **Oil slick / caltrops** | M | Drop a floor hazard behind; whoever crosses spins out / slows. |
 | **Proximity EMP / shockwave** | M | Radial burst disrupting all ships in a radius (BC8) — strong in a pack. |
-| **Tractor beam** *(REDEFINED)* | M/R | **Momentum leech** on the nearest ship(s): *their* speed drains and *yours* rises. A Freighter tractoring 1–2 Fighters slows them and speeds itself up — the heavy ship's signature "mess + self-advance" tool and its answer to being a poor weaver. **NOT** a yank-into-hazard. Knobs: leech rate, max targets, range, duration. (BC8) |
+| **Tug line** *(built, #290)* | M/R | Replaces the Tractor beam. Forward on a rival: the firer catapults ahead and the rival slows. Back on a rival: the chaser is towed forward with weak strafe and no jump. No rival ahead: it reels the firer toward the nearest block (the Grapple, folded in). One target only. Full rules: §5.3. |
 | **Boomerang** | M | Thrown forward, returns to you; can hit on both passes. |
 | **Lightning chain** | M | Hits the nearest ship, arcs to further nearby ones (BC8). |
 | **Ink / blind bomb** | M | Black out / smear a target's screen briefly (networked `blinded` status → victim's client renders the overlay). |
@@ -470,7 +494,7 @@ render only). Implement one at a time; the BC changes are called out so they're 
 | **Boost** | R | sim (S5) | Burst of forward speed — the planned starter. |
 | **Blink / dash** | R | BC4 | Short instant reposition forward or lateral (dodge / gap-cross / cut a weave). |
 | **Air-brake / hard-stop** | R | sim | Instant strong decel to nail a tight weave entry (a tuning, not necessarily a pickup). |
-| **Grapple** | R | BC4/BC8 | Fire at a point/pickup ahead and pull yourself to it — a skill-shot shortcut. |
+| **Grapple** | R | sim | Folded into the **Tug line** (#290): with no rival ahead, the line reels the firer toward the nearest block. No teleport. |
 
 #### E) Status verbs (the composable payloads for A/B/C) — **BC2**
 
