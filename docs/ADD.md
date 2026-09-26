@@ -54,7 +54,7 @@ veins, the finish line, and destructible-block internals.
 
 | Role | Colour | Hex |
 |---|---|---|
-| **Primary energy** | Marigold | `#F59A24` |
+| **Primary energy** | Marigold | `#F5B024` |
 | Energy — hot | Amber | `#FFB52E` |
 | Energy — glow | Energy Glow | `#FFE0A0` |
 | Energy — core | Hot White | `#FFFBE7` |
@@ -79,6 +79,21 @@ support accent at `#3BD6FF`; the locked marigold also shifts `#ff9f1c` → `#F59
 carries meaning — never use a player hue for a hazard"* is **retired**: under a single-energy-colour system
 colour no longer discriminates between object classes, so **discrimination moves to silhouette, material
 state, and motion** (see §4).
+
+**Decisions + departures — marigold hex, 2026-09-27 (#302).** The owner said the primary colour *"looks
+orange, not marigold"*. This section said *"Primary energy | Marigold | `#F59A24`"*. The owner chose
+**`#F5B024`** from three candidates. The value and saturation stay the same. The hue moves from 34° to 41°.
+
+- **Cause, measured on /test-level.** The HUD showed exactly `#F59A24`, so the hex was the main cause. The
+  3D path adds more orange. Emissive intensity 2 goes through Neutral tone mapping, which moves bright
+  emissive toward white. That lowers the hue to about 27° and the saturation from 0.85 to 0.62. The bloom
+  halo on the deck read at about 22°. There is no render-path defect: tone mapping runs once.
+- **Kept:** emissive intensity (the owner did not choose to lower it), Amber `#FFB52E`, and the pickup gold
+  `#FFD24A` (hue 46°).
+- **Departure:** the brand marigold is now `#F5B024` in code (`app.css`, `accent.ts`) and in this table.
+  `docs/art-direction/` does not state the hex, so no package file changes.
+- **Open:** the hue of Amber `#FFB52E` (41°) is now almost the same as the new marigold. The two now differ
+  only in brightness.
 
 ### Player colour — deliberately deferred
 

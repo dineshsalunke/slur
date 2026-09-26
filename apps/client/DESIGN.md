@@ -2,7 +2,7 @@
 name: SLUR
 description: Cold Space. Warm Energy. A race-broadcast lower third laid over the live game world.
 colors:
-  marigold: "#f59a24"
+  marigold: "#f5b024"
   core: "#ffe0a0"
   void: "#05060a"
   deep: "#0a1117"
@@ -180,7 +180,7 @@ Depth comes from the 3D world, not from the UI. The DOM is flat and tonal: Deep 
 
 ### Shadow Vocabulary
 - **Strip lift** (`--shadow-strip`: `0 -14px 36px rgba(10, 17, 23, 0.55)`): cast upward from the strip onto the backdrop, so the lower third reads as a physical bar over the shot.
-- **Primary hover** (`--shadow-cta`: `0 6px 18px rgba(245, 154, 36, 0.3)`): a warm marigold glow under the primary button on hover only.
+- **Primary hover** (`--shadow-cta`: `0 6px 18px rgba(245, 176, 36, 0.3)`): a warm marigold glow under the primary button on hover only.
 - **Readout drop** (`--text-shadow-readout`): a legibility shadow on type over the backdrop. It is not elevation.
 - **Scrim** (`scrim` utility): a Deep Space gradient from 94% at the bottom edge to transparent at 60% height, plus a faint radial in the top-left corner behind the wordmark.
 

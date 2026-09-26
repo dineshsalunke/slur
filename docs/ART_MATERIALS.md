@@ -354,7 +354,7 @@ The energy material. One family, three anchors, two intensity tiers (§3).
 
 | Role | Colour | Availability |
 |---|---|---|
-| Primary gainda / marigold | `#F59A24` | both tiers |
+| Primary gainda / marigold | `#F5B024` | both tiers |
 | Hot amber | `#FFB52E` | both tiers |
 | Bright warm core | `#FFE0A0` | **gameplay tier only** |
 
@@ -1080,6 +1080,19 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     graphite pitted metal"*. The later owner direction replaces the pits with scratches and
     blotches (the first bullet). The first pass said pitting *"does not change the colour"*. The
     blotches and scratches now change the colour map, because the cavity channel reaches no shader.
+20. **The marigold anchor is `#F5B024` — 2026-09-27 (#302).** The owner said the primary *"looks orange,
+    not marigold"* and chose `#F5B024` from three candidates. M7 said *"Primary gainda / marigold |
+    `#F59A24`"*. The hue moves from 34° to 41°. The value and saturation stay the same.
+    - **Measured on /test-level.** The HUD showed exactly `#F59A24`. At intensity 2, Neutral tone mapping
+      showed the emissive as rgb(251,173,103) (hue 27°, saturation 0.62). There was no double tone map.
+    - **The tiers do not change.** `MARIGOLD_REFERENCE_INTENSITY` stays 2.0. The new anchor's linear
+      luminance is ~0.51 (it was ~0.42), so intensity 2 gives ~1.01 against `Bloom.threshold` 0.6. The
+      glow blooms slightly more than before.
+    - **Open:** Hot amber `#FFB52E` (41°) now has almost the same hue as the anchor. The core-to-edge
+      gradient in M7 now changes only in brightness, not in hue.
+
+    **Departures from package wording.** None in `docs/art-direction/`, which does not state the hex. The
+    change is to M7 and to `docs/ADD.md` §3.
 
 ## 8. Review log
 

@@ -15,7 +15,7 @@
     --color-void: #05060a; /* near-black backdrop */
     --color-void-2: #080b13;
     --color-cyan: #3bd6ff; /* support accent — sparing, demoted from co-primary */
-    --color-marigold: #f59a24; /* brand primary — the only energy colour */
+    --color-marigold: #f5b024; /* brand primary — the only energy colour */
     --color-gold: #ffd24a; /* held-power / pickup gold — brighter than marigold, its own accent */
     --color-deep: #0a1117;
     --color-space: #162028;
@@ -63,14 +63,14 @@
     --shadow-go: 0 0 14px rgba( 59, 214, 255, 0.5 ); /* primary GO button */
     --shadow-dot: 0 0 8px currentColor; /* the colour dot / live dot glow — inherits the element's colour */
     --shadow-strip: 0 -14px 36px rgba( 10, 17, 23, 0.55 );
-    --shadow-cta: 0 6px 18px rgba( 245, 154, 36, 0.3 );
+    --shadow-cta: 0 6px 18px rgba( 245, 176, 36, 0.3 );
     --shadow-ship-on: 0 0 10px rgba( 59, 214, 255, 0.4 ); /* selected ship card */
-    --shadow-stat: 0 0 6px rgba( 245, 154, 36, 0.75 ); /* ship-card stat-bar fill */
+    --shadow-stat: 0 0 6px rgba( 245, 176, 36, 0.75 ); /* ship-card stat-bar fill */
     --shadow-swatch: 0 0 10px var( --color-white ); /* selected colour swatch ring */
 
     /* The HUD power-slot gem. A drop-shadow FILTER, not a box-shadow: the glow has to follow the SVG polygons,
        not the element's rectangle. */
-    --drop-shadow-power-gem: 0 0 9px rgba( 245, 154, 36, 0.65 );
+    --drop-shadow-power-gem: 0 0 9px rgba( 245, 176, 36, 0.65 );
 
     --text-shadow-timer: 0 0 10px rgba( 59, 214, 255, 0.7 ); /* race timer readout */
     --text-shadow-count: 0 0 40px rgba( 59, 214, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
@@ -81,7 +81,7 @@
        near-black to blown-out marigold, so the contrast has to come from the type itself. Set once on the HUD
        layer and inherited; the marigold variant carries the same dark drop so self/active rows stay readable. */
     --text-shadow-readout: 0 2px 5px rgba( 0, 0, 0, 0.9 ), 0 0 2px rgba( 0, 0, 0, 0.8 );
-    --text-shadow-readout-marigold: 0 0 10px rgba( 245, 154, 36, 0.55 ), 0 2px 5px rgba( 0, 0, 0, 0.9 );
+    --text-shadow-readout-marigold: 0 0 10px rgba( 245, 176, 36, 0.55 ), 0 2px 5px rgba( 0, 0, 0, 0.9 );
 }
 
 /* The HUD face — Chakra Petch (SIL OFL 1.1, licence beside the files). Self-hosted latin-only subsets, ~30 KB

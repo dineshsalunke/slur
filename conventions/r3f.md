@@ -115,8 +115,9 @@ can no longer happen — the old advice traded a consistent image for an easier 
 
 The cost is that the tone curve compresses toward 1.0, so **emissive intensity is now the only lever
 that reaches `bloom.threshold`**. Multiply the surface colour's linear luminance by
-`emissiveIntensity` and compare against the threshold before assuming a surface will bloom: marigold
-`#F59A24` is ~0.42 linear, so `emissiveIntensity` 2 lands at ~0.85 and never crosses a 0.9 threshold.
+`emissiveIntensity` and compare against the threshold before assuming a surface will bloom: the old
+marigold `#F59A24` was ~0.42 linear, so `emissiveIntensity` 2 landed at ~0.85 and never crossed a 0.9
+threshold. Today's marigold `#F5B024` (#302) is ~0.51 linear, so intensity 2 lands at ~1.01.
 That is exactly how the gap rim cords shipped un-bloomed.
 
 **Every gameplay `Canvas` sets its tone curve on `gl`.** R3F applies **in-shader ACES** unless told

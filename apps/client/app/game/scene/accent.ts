@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const ACCENT_ANCHOR = '#F59A24';
+export const ACCENT_ANCHOR = '#F5B024';
 
 const anchor = new THREE.Color( ACCENT_ANCHOR );
 
