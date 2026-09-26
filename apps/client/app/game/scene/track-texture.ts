@@ -4,8 +4,8 @@ import { rebuildToken, subscribeRebuild } from '../../dev/tuning-rebuild';
 
 export const AUTHOR_PLATE_U = 4;
 
-const COLS = 4;
-const ROWS = 1;
+export const COLS = 4;
+export const ROWS = 1;
 
 export const TEX_SPAN_X = AUTHOR_PLATE_U * COLS;
 export const TEX_SPAN_Z = AUTHOR_PLATE_U * ROWS;
@@ -18,10 +18,6 @@ export const NORMAL_SIGN_Y = 1;
 export const ROUGHNESS_MAP_BASE = 0.8;
 
 const PLATE_VALUE_JITTER = 0.16;
-const MOTTLE_BLOBS = 34;
-const MOTTLE_RADIUS_U: readonly [ number, number ] = [ 1.2, 3.2 ];
-const MOTTLE_STRETCH = 3.5;
-const MOTTLE_AMOUNT = 0.26;
 const MOTTLE_TILT_RAD = 0.1;
 const FINISH_PATCHES = 11;
 const FINISH_ROUGHER_MIN = 0.08;
@@ -49,12 +45,46 @@ const BRUSH_TILT_RAD = 0.06;
 const BRUSH_NORMAL_TILT = 0.1;
 const BRUSH_NORMAL_ALPHA = 0.45;
 const METAL_PLATE = 1;
-const METAL_PATCH_MIN = 0.5;
-const METAL_PATCH_MAX = 1;
 const CAVITY_BEVEL_LIFT = 0.37;
-const PIT_RADIUS_U: readonly [ number, number ] = [ 0.05, 0.16 ];
-const PIT_DEPTH_MIN = 0.4;
-const PIT_SLOPE_PEAK = 1.54;
+const SCRATCH_LENGTH_U: readonly [ number, number ] = [ 0.15, 2.5 ];
+const SCRATCH_WIDTH_U: readonly [ number, number ] = [ 0.012, 0.03 ];
+const SCRATCH_STRENGTH_MIN = 0.35;
+const SCRATCH_NORMAL_ALPHA = 0.6;
+export const BLOTCH_CELLS_U = 0.3;
+export const BLOTCH_OCTAVES = 5;
+const BLOTCH_SEED = 0x5c0ffa;
+export const BLOTCH_DARK_BAND: readonly [ number, number ] = [ 0.56, 0.68 ];
+export const BLOTCH_BRIGHT_BAND: readonly [ number, number ] = [ 0.7, 0.8 ];
+
+interface Grain {
+    brushRot: number;
+    brushScale: number;
+    mottleBlobs: number;
+    mottleRadiusU: readonly [ number, number ];
+    mottleStretch: number;
+    mottleAmount: number;
+    finishScale: number;
+}
+
+const DECK_GRAIN: Grain = {
+    brushRot: 0,
+    brushScale: 1,
+    mottleBlobs: 34,
+    mottleRadiusU: [ 1.2, 3.2 ],
+    mottleStretch: 3.5,
+    mottleAmount: 0.26,
+    finishScale: 1,
+};
+
+const GRAPHITE_GRAIN: Grain = {
+    brushRot: Math.PI / 2,
+    brushScale: 0,
+    mottleBlobs: 90,
+    mottleRadiusU: [ 0.6, 1.6 ],
+    mottleStretch: 1,
+    mottleAmount: 0.08,
+    finishScale: 0.5,
+};
 
 export interface SurfaceParams {
     plate: number;
@@ -67,10 +97,25 @@ export interface SurfaceParams {
     jointRough: number;
     jointContrast: number;
     cavity: number;
-    pitDensity: number;
-    pitTilt: number;
-    pitRough: number;
-    pitCavity: number;
+    scratchDensity: number;
+    scratchLift: number;
+    scratchTilt: number;
+    blotchDark: number;
+    blotchBright: number;
+    bakedBlotches: boolean;
+    wearValueSpan: number;
+    wearRoughSpan: number;
+    wearMetalMin: number;
+    wearMetalMax: number;
+}
+
+export interface Scratch {
+    x: number;
+    y: number;
+    angle: number;
+    length: number;
+    width: number;
+    strength: number;
 }
 
 interface Ctx extends SurfaceParams {
@@ -80,31 +125,57 @@ interface Ctx extends SurfaceParams {
     plateL: number;
     jointPx: number;
     rgb: readonly [ number, number, number ];
-}
-
-export interface Pit {
-    x: number;
-    y: number;
-    rx: number;
-    ry: number;
-    depth: number;
+    grain: Grain;
+    scratches: Scratch[];
+    blotches: Float32Array;
 }
 
 export function texelDensity( p: SurfaceParams ): { pxPerU: number; pxPerV: number } {
     return { pxPerU: RES / ( p.plate * COLS ), pxPerV: RES / ( p.plate * ( p.joints ? ROWS : COLS ) ) };
 }
 
+export function tileSpanU( p: SurfaceParams ): { x: number; y: number } {
+    const { pxPerU, pxPerV } = texelDensity( p );
+    return { x: RES / pxPerU, y: RES / pxPerV };
+}
+
+export function scratchPlan( p: SurfaceParams ): Scratch[] {
+    const span = tileSpanU( p );
+    const count = Math.round( span.x * span.y * Math.max( 0, p.scratchDensity ) );
+    const r = seeded( 0x5c0ff9 );
+    const logSpan = Math.log( SCRATCH_LENGTH_U[ 1 ] / SCRATCH_LENGTH_U[ 0 ] );
+    const scratches: Scratch[] = [];
+    for ( let i = 0; i < count; i++ ) {
+        scratches.push( {
+            x: r() * span.x,
+            y: r() * span.y,
+            angle: r() * Math.PI,
+            length: SCRATCH_LENGTH_U[ 0 ] * Math.exp( r() * logSpan ),
+            width: between( r, SCRATCH_WIDTH_U[ 0 ], SCRATCH_WIDTH_U[ 1 ] ),
+            strength: between( r, SCRATCH_STRENGTH_MIN, 1 ),
+        } );
+    }
+    return scratches;
+}
+
+function baseRgb( base: string ): readonly [ number, number, number ] {
+    const hex = new THREE.Color( base ).getHex( THREE.SRGBColorSpace );
+    return [ ( hex >> 16 ) & 0xff, ( hex >> 8 ) & 0xff, hex & 0xff ];
+}
+
 function context( p: SurfaceParams ): Ctx {
     const { pxPerU, pxPerV } = texelDensity( p );
-    const hex = new THREE.Color( p.base ).getHex( THREE.SRGBColorSpace );
     return {
         ...p,
         pxPerU,
         pxPerV,
+        grain: p.joints ? DECK_GRAIN : GRAPHITE_GRAIN,
+        scratches: scratchPlan( p ),
+        blotches: p.bakedBlotches ? blotchField( p ) : new Float32Array( 0 ),
         plateW: RES / COLS,
         plateL: RES / ROWS,
         jointPx: Math.max( 1, p.jointWidth * pxPerU ),
-        rgb: [ ( hex >> 16 ) & 0xff, ( hex >> 8 ) & 0xff, hex & 0xff ],
+        rgb: baseRgb( p.base ),
     };
 }
 
@@ -172,6 +243,15 @@ function eachJoint(
     for ( let i = 0; i < ROWS; i++ ) transverse( i * c.plateL );
 }
 
+function fillJoints( c: Ctx, ctx: CanvasRenderingContext2D, style: string ): void {
+    ctx.fillStyle = style;
+    eachJoint(
+        c,
+        ( cx ) => wrapRect( ctx, cx - c.jointPx / 2, 0, c.jointPx, RES ),
+        ( cy ) => wrapRect( ctx, 0, cy - c.jointPx / 2, RES, c.jointPx ),
+    );
+}
+
 function valueLobe(
     c: Ctx,
     ctx: CanvasRenderingContext2D,
@@ -200,14 +280,123 @@ function valueLobe(
 }
 
 function paintMottle( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    const g = c.grain;
     const r = seeded( 0x5c0ff4 );
-    for ( let i = 0; i < MOTTLE_BLOBS; i++ ) {
+    for ( let i = 0; i < g.mottleBlobs; i++ ) {
         const x = r() * RES;
         const y = r() * RES;
-        const rx = between( r, MOTTLE_RADIUS_U[ 0 ], MOTTLE_RADIUS_U[ 1 ] ) * c.pxPerU;
-        const f = 1 + ( r() - 0.5 ) * 2 * MOTTLE_AMOUNT;
-        valueLobe( c, ctx, x, y, rx, rx * MOTTLE_STRETCH, ( r() - 0.5 ) * 2 * MOTTLE_TILT_RAD, f );
+        const rx = between( r, g.mottleRadiusU[ 0 ], g.mottleRadiusU[ 1 ] ) * c.pxPerU;
+        const f = 1 + ( r() - 0.5 ) * 2 * g.mottleAmount;
+        valueLobe( c, ctx, x, y, rx, rx * g.mottleStretch, ( r() - 0.5 ) * 2 * MOTTLE_TILT_RAD, f );
     }
+}
+
+function lattice( ix: number, iy: number, seed: number ): number {
+    let h = ( Math.imul( ix, 73856093 ) ^ Math.imul( iy, 19349663 ) ^ Math.imul( seed, 83492791 ) ) >>> 0;
+    h = Math.imul( h ^ ( h >>> 15 ), 0x2c1b3c6d ) >>> 0;
+    h = Math.imul( h ^ ( h >>> 12 ), 0x297a2d39 ) >>> 0;
+    return ( h >>> 8 ) / 0xffffff;
+}
+
+function smooth( t: number ): number {
+    return t * t * ( 3 - 2 * t );
+}
+
+function band( lo: number, hi: number, v: number ): number {
+    return smooth( Math.max( 0, Math.min( 1, ( v - lo ) / ( hi - lo ) ) ) );
+}
+
+function tileNoise( fx: number, fy: number, cx: number, cy: number, seed: number ): number {
+    const x = fx * cx;
+    const y = fy * cy;
+    const x0 = Math.floor( x );
+    const y0 = Math.floor( y );
+    const tx = smooth( x - x0 );
+    const ty = smooth( y - y0 );
+    const ax = x0 % cx;
+    const ay = y0 % cy;
+    const bx = ( x0 + 1 ) % cx;
+    const by = ( y0 + 1 ) % cy;
+    const top = lattice( ax, ay, seed ) + ( lattice( bx, ay, seed ) - lattice( ax, ay, seed ) ) * tx;
+    const bottom = lattice( ax, by, seed ) + ( lattice( bx, by, seed ) - lattice( ax, by, seed ) ) * tx;
+    return top + ( bottom - top ) * ty;
+}
+
+export function blotchField( p: SurfaceParams ): Float32Array {
+    const span = tileSpanU( p );
+    const field = new Float32Array( RES * RES );
+    const cx = Math.max( 1, Math.round( span.x * BLOTCH_CELLS_U ) );
+    const cy = Math.max( 1, Math.round( span.y * BLOTCH_CELLS_U ) );
+    for ( let py = 0; py < RES; py++ ) {
+        const fy = ( py + 0.5 ) / RES;
+        for ( let px = 0; px < RES; px++ ) {
+            const fx = ( px + 0.5 ) / RES;
+            let n = 0;
+            let amp = 0.5;
+            let norm = 0;
+            for ( let o = 0; o < BLOTCH_OCTAVES; o++ ) {
+                const k = 1 << o;
+                n += amp * tileNoise( fx, fy, cx * k, cy * k, BLOTCH_SEED + o );
+                norm += amp;
+                amp *= 0.5;
+            }
+            n /= norm;
+            field[ py * RES + px ] =
+                band( BLOTCH_DARK_BAND[ 0 ], BLOTCH_DARK_BAND[ 1 ], n ) -
+                band( BLOTCH_BRIGHT_BAND[ 0 ], BLOTCH_BRIGHT_BAND[ 1 ], 1 - n );
+        }
+    }
+    return field;
+}
+
+function paintBlotches( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    if ( c.blotchDark <= 0 && c.blotchBright <= 0 ) return;
+    const img = ctx.getImageData( 0, 0, RES, RES );
+    const d = img.data;
+    for ( let t = 0; t < c.blotches.length; t++ ) {
+        const b = c.blotches[ t ];
+        if ( b === 0 ) continue;
+        const f = b > 0 ? 1 - c.blotchDark * b : 1 - c.blotchBright * b;
+        const i = t * 4;
+        d[ i ] = Math.round( d[ i ] * f );
+        d[ i + 1 ] = Math.round( d[ i + 1 ] * f );
+        d[ i + 2 ] = Math.round( d[ i + 2 ] * f );
+    }
+    ctx.putImageData( img, 0, 0 );
+}
+
+function strokeScratches(
+    c: Ctx,
+    ctx: CanvasRenderingContext2D,
+    op: GlobalCompositeOperation,
+    style: ( s: Scratch ) => string,
+    offset = 0,
+    widthShare = 1,
+): void {
+    ctx.save();
+    ctx.globalCompositeOperation = op;
+    ctx.lineCap = 'round';
+    for ( const s of c.scratches ) {
+        const ux = Math.cos( s.angle ) * s.length * 0.5;
+        const uy = Math.sin( s.angle ) * s.length * 0.5;
+        const ox = -Math.sin( s.angle ) * s.width * offset;
+        const oy = Math.cos( s.angle ) * s.width * offset;
+        ctx.strokeStyle = style( s );
+        wrapDraw( ( dx, dy ) => {
+            ctx.setTransform( c.pxPerU, 0, 0, c.pxPerV, dx, dy );
+            ctx.lineWidth = s.width * widthShare;
+            ctx.beginPath();
+            ctx.moveTo( s.x + ox - ux, s.y + oy - uy );
+            ctx.lineTo( s.x + ox + ux, s.y + oy + uy );
+            ctx.stroke();
+        } );
+    }
+    ctx.restore();
+}
+
+function paintScratchLift( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    if ( c.scratchLift <= 0 ) return;
+    strokeScratches( c, ctx, 'lighter', ( s ) => shadeAlpha( c, c.scratchLift, s.strength ) );
 }
 
 function paintAlbedo( c: Ctx, ctx: CanvasRenderingContext2D ): void {
@@ -218,12 +407,9 @@ function paintAlbedo( c: Ctx, ctx: CanvasRenderingContext2D ): void {
         }
     }
     paintMottle( c, ctx );
-    ctx.fillStyle = shade( c, 1 - c.jointContrast );
-    eachJoint(
-        c,
-        ( cx ) => wrapRect( ctx, cx - c.jointPx / 2, 0, c.jointPx, RES ),
-        ( cy ) => wrapRect( ctx, 0, cy - c.jointPx / 2, RES, c.jointPx ),
-    );
+    paintBlotches( c, ctx );
+    paintScratchLift( c, ctx );
+    fillJoints( c, ctx, shade( c, 1 - c.jointContrast ) );
 }
 
 function normalLobe(
@@ -234,6 +420,7 @@ function normalLobe(
     ry: number,
     rot: number,
     nx: number,
+    ny: number,
 ): void {
     wrapDraw( ( dx, dy ) => {
         ctx.save();
@@ -241,8 +428,8 @@ function normalLobe(
         ctx.rotate( rot );
         ctx.scale( rx, ry );
         const g = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1 );
-        g.addColorStop( 0, normalAlpha( nx, 0, BRUSH_NORMAL_ALPHA ) );
-        g.addColorStop( 1, normalAlpha( nx, 0, 0 ) );
+        g.addColorStop( 0, normalAlpha( nx, ny, BRUSH_NORMAL_ALPHA ) );
+        g.addColorStop( 1, normalAlpha( nx, ny, 0 ) );
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc( 0, 0, 1, 0, Math.PI * 2 );
@@ -252,89 +439,47 @@ function normalLobe(
 }
 
 function paintNormalBrush( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    const g = c.grain;
+    if ( g.brushScale <= 0 ) return;
+    const across: readonly [ number, number ] = [ Math.cos( g.brushRot ), Math.sin( g.brushRot ) ];
     const r = seeded( 0x5c0ff6 );
     for ( let i = 0; i < BRUSH_STROKES; i++ ) {
         const x = r() * RES;
         const y = r() * RES;
         const rx = between( r, BRUSH_WIDTH_U[ 0 ], BRUSH_WIDTH_U[ 1 ] ) * c.pxPerU;
         const ry = between( r, BRUSH_LENGTH_U[ 0 ], BRUSH_LENGTH_U[ 1 ] ) * c.pxPerU;
-        const nx = ( r() < 0.5 ? -1 : 1 ) * between( r, BRUSH_NORMAL_TILT * 0.3, BRUSH_NORMAL_TILT );
-        normalLobe( ctx, x, y, rx, ry, ( r() - 0.5 ) * 2 * BRUSH_TILT_RAD, nx );
+        const tilt = ( r() < 0.5 ? -1 : 1 ) * between( r, BRUSH_NORMAL_TILT * 0.3, BRUSH_NORMAL_TILT ) * g.brushScale;
+        const rot = g.brushRot + ( r() - 0.5 ) * 2 * BRUSH_TILT_RAD;
+        normalLobe( ctx, x, y, rx, ry, rot, tilt * across[ 0 ], tilt * across[ 1 ] );
     }
 }
 
-export function pitPlan( p: SurfaceParams ): Pit[] {
-    const { pxPerU, pxPerV } = texelDensity( p );
-    const count = Math.round( ( RES / pxPerU ) * ( RES / pxPerV ) * p.pitDensity );
-    const r = seeded( 0x5c0ff8 );
-    const pits: Pit[] = [];
-    for ( let i = 0; i < count; i++ ) {
-        const radius = between( r, PIT_RADIUS_U[ 0 ], PIT_RADIUS_U[ 1 ] );
-        pits.push( {
-            x: r() * RES,
-            y: r() * RES,
-            rx: radius * pxPerU,
-            ry: radius * pxPerV,
-            depth: between( r, PIT_DEPTH_MIN, 1 ),
-        } );
+function paintScratchNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    if ( c.scratchTilt <= 0 ) return;
+    const t = c.scratchTilt;
+    for ( const side of [ 1, -1 ] ) {
+        strokeScratches(
+            c,
+            ctx,
+            'source-over',
+            ( s ) =>
+                normalAlpha(
+                    side * Math.sin( s.angle ) * t,
+                    side * Math.cos( s.angle ) * t,
+                    SCRATCH_NORMAL_ALPHA * s.strength,
+                ),
+            side * 0.25,
+            0.5,
+        );
     }
-    return pits;
-}
-
-function eachPitTexel(
-    c: Ctx,
-    visit: ( i: number, ux: number, uy: number, bowl: number, depth: number ) => void,
-): void {
-    const wrap = ( v: number ) => ( ( v % RES ) + RES ) % RES;
-    for ( const pit of pitPlan( c ) ) {
-        const y0 = Math.floor( pit.y - pit.ry );
-        const y1 = Math.ceil( pit.y + pit.ry );
-        const x0 = Math.floor( pit.x - pit.rx );
-        const x1 = Math.ceil( pit.x + pit.rx );
-        for ( let py = y0; py <= y1; py++ ) {
-            const uy = ( py + 0.5 - pit.y ) / pit.ry;
-            for ( let px = x0; px <= x1; px++ ) {
-                const ux = ( px + 0.5 - pit.x ) / pit.rx;
-                const rho2 = ux * ux + uy * uy;
-                if ( rho2 >= 1 ) continue;
-                visit( ( wrap( py ) * RES + wrap( px ) ) * 4, ux, uy, 1 - rho2, pit.depth );
-            }
-        }
-    }
-}
-
-function stampPitNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
-    if ( c.pitDensity <= 0 || c.pitTilt <= 0 ) return;
-    const img = ctx.getImageData( 0, 0, RES, RES );
-    const d = img.data;
-    const k = ( 4 * c.pitTilt ) / PIT_SLOPE_PEAK;
-    eachPitTexel( c, ( i, ux, uy, bowl, depth ) => {
-        const nx = ( d[ i ] / 255 ) * 2 - 1 - k * depth * bowl * ux;
-        const ny = ( d[ i + 1 ] / 255 ) * 2 - 1 - k * depth * bowl * uy;
-        const len = Math.hypot( nx, ny );
-        const s = len > 0.95 ? 0.95 / len : 1;
-        const nz = Math.sqrt( Math.max( 0, 1 - ( nx * s ) ** 2 - ( ny * s ) ** 2 ) );
-        d[ i ] = Math.round( ( nx * s * 0.5 + 0.5 ) * 255 );
-        d[ i + 1 ] = Math.round( ( ny * s * 0.5 + 0.5 ) * 255 );
-        d[ i + 2 ] = Math.round( ( nz * 0.5 + 0.5 ) * 255 );
-    } );
-    ctx.putImageData( img, 0, 0 );
-}
-
-function stampPitSurface( c: Ctx, d: Uint8ClampedArray ): void {
-    if ( c.pitDensity <= 0 ) return;
-    eachPitTexel( c, ( i, _ux, _uy, bowl, depth ) => {
-        d[ i ] = Math.round( d[ i ] * ( 1 - c.pitCavity * depth * bowl ) );
-        d[ i + 1 ] = Math.min( 255, Math.round( d[ i + 1 ] + c.pitRough * depth * bowl * 255 ) );
-    } );
 }
 
 function paintNormal( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     ctx.fillStyle = normal( 0, 0 );
     ctx.fillRect( 0, 0, RES, RES );
     paintNormalBrush( c, ctx );
+    paintScratchNormals( c, ctx );
     paintJointNormals( c, ctx );
-    stampPitNormals( c, ctx );
 }
 
 function paintJointNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
@@ -420,9 +565,10 @@ function finishPatchPlan( c: Ctx ): FinishPatch[] {
         const cx = r() * RES;
         const cy = r() * RES;
         const rougher = r() < FINISH_ROUGHER_SHARE;
-        const delta = rougher
-            ? between( r, FINISH_ROUGHER_MIN, FINISH_ROUGHER_MAX )
-            : -between( r, FINISH_SMOOTHER_MIN, FINISH_SMOOTHER_MAX );
+        const delta =
+            ( rougher
+                ? between( r, FINISH_ROUGHER_MIN, FINISH_ROUGHER_MAX )
+                : -between( r, FINISH_SMOOTHER_MIN, FINISH_SMOOTHER_MAX ) ) * c.grain.finishScale;
         const count = 3 + Math.floor( r() * 3 );
         const lobes: FinishLobe[] = [];
         for ( let l = 0; l < count; l++ ) {
@@ -445,47 +591,16 @@ function paintFinishPatches( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     }
 }
 
-function metalLobe(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    rx: number,
-    ry: number,
-    rot: number,
-    v: number,
-): void {
-    wrapDraw( ( dx, dy ) => {
-        ctx.save();
-        ctx.translate( x + dx, y + dy );
-        ctx.rotate( rot );
-        ctx.scale( rx, ry );
-        const g = ctx.createRadialGradient( 0, 0, 0, 0, 0, 1 );
-        g.addColorStop( 0, grey( v, 1 ) );
-        g.addColorStop( 0.5, grey( v, 0.6 ) );
-        g.addColorStop( 1, grey( v, 0 ) );
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc( 0, 0, 1, 0, Math.PI * 2 );
-        ctx.fill();
-        ctx.restore();
-    } );
-}
-
 function paintMetalness( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     ctx.fillStyle = grey( METAL_PLATE, 1 );
     ctx.fillRect( 0, 0, RES, RES );
-    const r = seeded( 0x5c0ff7 );
-    for ( const p of finishPatchPlan( c ) ) {
-        if ( ! p.rougher ) continue;
-        const v = between( r, METAL_PATCH_MIN, METAL_PATCH_MAX );
-        for ( const l of p.lobes ) metalLobe( ctx, l.x, l.y, l.rx, l.ry, l.rot, v );
-    }
-    ctx.fillStyle = grey( c.jointMetal, 1 );
-    eachJoint(
-        c,
-        ( cx ) => wrapRect( ctx, cx - c.jointPx / 2, 0, c.jointPx, RES ),
-        ( cy ) => wrapRect( ctx, 0, cy - c.jointPx / 2, RES, c.jointPx ),
-    );
+    fillJoints( c, ctx, grey( c.jointMetal, 1 ) );
+}
+
+function paintJointMask( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    ctx.fillStyle = grey( 0, 1 );
+    ctx.fillRect( 0, 0, RES, RES );
+    fillJoints( c, ctx, grey( 1, 1 ) );
 }
 
 function paintScuffClusters( c: Ctx, ctx: CanvasRenderingContext2D ): void {
@@ -501,7 +616,7 @@ function paintScuffClusters( c: Ctx, ctx: CanvasRenderingContext2D ): void {
                 cy + ( r() - 0.5 ) * SCUFF_SPREAD_U * 2 * c.pxPerU,
                 between( r, 0.08, 0.2 ) * c.pxPerU,
                 between( r, 0.8, 2.2 ) * c.pxPerU,
-                ( r() - 0.5 ) * 2 * SCUFF_TILT_RAD,
+                c.grain.brushRot + ( r() - 0.5 ) * 2 * SCUFF_TILT_RAD,
                 between( r, SCUFF_ROUGHER_MIN, SCUFF_ROUGHER_MAX ),
             );
         }
@@ -547,14 +662,15 @@ function paintEdgeRub( c: Ctx, ctx: CanvasRenderingContext2D ): void {
 }
 
 function paintBrush( c: Ctx, ctx: CanvasRenderingContext2D ): void {
+    if ( c.grain.brushScale <= 0 ) return;
     const r = seeded( 0x5c0ff5 );
     for ( let i = 0; i < BRUSH_STROKES; i++ ) {
         const x = r() * RES;
         const y = r() * RES;
         const rx = between( r, BRUSH_WIDTH_U[ 0 ], BRUSH_WIDTH_U[ 1 ] ) * c.pxPerU;
         const ry = between( r, BRUSH_LENGTH_U[ 0 ], BRUSH_LENGTH_U[ 1 ] ) * c.pxPerU;
-        const delta = ( r() < 0.5 ? -1 : 1 ) * between( r, BRUSH_ROUGHER_MIN, BRUSH_ROUGHER_MAX );
-        softLobe( ctx, x, y, rx, ry, ( r() - 0.5 ) * 2 * BRUSH_TILT_RAD, delta );
+        const delta = ( r() < 0.5 ? -1 : 1 ) * between( r, BRUSH_ROUGHER_MIN, BRUSH_ROUGHER_MAX ) * c.grain.brushScale;
+        softLobe( ctx, x, y, rx, ry, c.grain.brushRot + ( r() - 0.5 ) * 2 * BRUSH_TILT_RAD, delta );
     }
 }
 
@@ -565,12 +681,7 @@ function paintRoughness( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     paintFinishPatches( c, ctx );
     paintScuffClusters( c, ctx );
     paintEdgeRub( c, ctx );
-    ctx.fillStyle = grey( c.jointRough, 1 );
-    eachJoint(
-        c,
-        ( cx ) => wrapRect( ctx, cx - c.jointPx / 2, 0, c.jointPx, RES ),
-        ( cy ) => wrapRect( ctx, 0, cy - c.jointPx / 2, RES, c.jointPx ),
-    );
+    fillJoints( c, ctx, grey( c.jointRough, 1 ) );
 }
 
 function paintCavity( c: Ctx, ctx: CanvasRenderingContext2D ): void {
@@ -607,21 +718,41 @@ function canvasFor( c: Ctx, paint: ( c: Ctx, ctx: CanvasRenderingContext2D ) => 
     return canvas;
 }
 
-function packedSurfaceCanvas( c: Ctx ): HTMLCanvasElement {
-    const rough = canvasFor( c, paintRoughness );
-    const metal = canvasFor( c, paintMetalness );
-    const cavity = canvasFor( c, paintCavity );
+export function applyWear(
+    p: SurfaceParams,
+    albedo: Uint8ClampedArray,
+    joints: Uint8ClampedArray,
+    packed: Uint8ClampedArray,
+): void {
+    const rgb = baseRgb( p.base );
+    const base = Math.max( 1, rgb[ 0 ] + rgb[ 1 ] + rgb[ 2 ] );
+    const span = Math.max( 1e-3, p.wearValueSpan );
+    for ( let i = 0; i < packed.length; i += 4 ) {
+        const open = 1 - joints[ i ] / 255;
+        if ( open <= 0 ) continue;
+        const v = ( albedo[ i ] + albedo[ i + 1 ] + albedo[ i + 2 ] ) / base;
+        const w = Math.max( -1, Math.min( 1, ( v - 1 ) / span ) );
+        const metal = ( p.wearMetalMin + ( ( p.wearMetalMax - p.wearMetalMin ) * ( w + 1 ) ) / 2 ) * 255;
+        packed[ i + 1 ] = Math.round( packed[ i + 1 ] - w * p.wearRoughSpan * 255 * open );
+        packed[ i + 2 ] = Math.round( packed[ i + 2 ] + ( metal - packed[ i + 2 ] ) * open );
+    }
+}
+
+function pixels( canvas: HTMLCanvasElement ): Uint8ClampedArray {
+    const ctx = canvas.getContext( '2d' );
+    if ( ! ctx ) throw new Error( 'track-texture: 2D context unavailable' );
+    return ctx.getImageData( 0, 0, RES, RES ).data;
+}
+
+function packedSurfaceCanvas( c: Ctx, albedo: HTMLCanvasElement ): HTMLCanvasElement {
+    const rd = pixels( canvasFor( c, paintRoughness ) );
+    const md = pixels( canvasFor( c, paintMetalness ) );
+    const cd = pixels( canvasFor( c, paintCavity ) );
     const canvas = document.createElement( 'canvas' );
     canvas.width = RES;
     canvas.height = RES;
     const ctx = canvas.getContext( '2d' );
-    const rctx = rough.getContext( '2d' );
-    const mctx = metal.getContext( '2d' );
-    const cctx = cavity.getContext( '2d' );
-    if ( ! ctx || ! rctx || ! mctx || ! cctx ) throw new Error( 'track-texture: 2D context unavailable' );
-    const rd = rctx.getImageData( 0, 0, RES, RES ).data;
-    const md = mctx.getImageData( 0, 0, RES, RES ).data;
-    const cd = cctx.getImageData( 0, 0, RES, RES ).data;
+    if ( ! ctx ) throw new Error( 'track-texture: 2D context unavailable' );
     const out = ctx.createImageData( RES, RES );
     for ( let i = 0; i < out.data.length; i += 4 ) {
         out.data[ i ] = cd[ i ];
@@ -629,7 +760,7 @@ function packedSurfaceCanvas( c: Ctx ): HTMLCanvasElement {
         out.data[ i + 2 ] = md[ i + 2 ];
         out.data[ i + 3 ] = 255;
     }
-    stampPitSurface( c, out.data );
+    applyWear( c, pixels( albedo ), pixels( canvasFor( c, paintJointMask ) ), out.data );
     ctx.putImageData( out, 0, 0 );
     return canvas;
 }
@@ -639,10 +770,6 @@ export interface TrackSurfaceMaps {
     normalMap: THREE.CanvasTexture;
     roughnessMap: THREE.CanvasTexture;
     metalnessMap: THREE.CanvasTexture;
-}
-
-function textureFor( c: Ctx, paint: ( c: Ctx, ctx: CanvasRenderingContext2D ) => void ): THREE.CanvasTexture {
-    return new THREE.CanvasTexture( canvasFor( c, paint ) );
 }
 
 function configure( tex: THREE.CanvasTexture, repeat: number, srgb: boolean ): THREE.CanvasTexture {
@@ -657,10 +784,11 @@ function configure( tex: THREE.CanvasTexture, repeat: number, srgb: boolean ): T
 function build( p: SurfaceParams ): TrackSurfaceMaps {
     const c = context( p );
     const repeat = TEX_SPAN_X / ( p.plate * COLS );
-    const surface = configure( new THREE.CanvasTexture( packedSurfaceCanvas( c ) ), repeat, false );
+    const albedo = canvasFor( c, paintAlbedo );
+    const surface = configure( new THREE.CanvasTexture( packedSurfaceCanvas( c, albedo ) ), repeat, false );
     return {
-        map: configure( textureFor( c, paintAlbedo ), repeat, true ),
-        normalMap: configure( textureFor( c, paintNormal ), repeat, false ),
+        map: configure( new THREE.CanvasTexture( albedo ), repeat, true ),
+        normalMap: configure( new THREE.CanvasTexture( canvasFor( c, paintNormal ) ), repeat, false ),
         roughnessMap: surface,
         metalnessMap: surface,
     };
@@ -702,13 +830,23 @@ export function deckSurfaceParams(): SurfaceParams {
         jointRough: num( 'Groove.roughness' ),
         jointContrast: num( 'Groove.darkening' ),
         cavity: num( 'Groove.cavity' ),
-        pitDensity: num( 'Pit.density' ),
-        pitTilt: num( 'Pit.tilt' ),
-        pitRough: num( 'Pit.roughness' ),
-        pitCavity: num( 'Pit.cavity' ),
+        scratchDensity: num( 'Scratch.density' ),
+        scratchLift: num( 'Scratch.lift' ),
+        scratchTilt: num( 'Scratch.tilt' ),
+        blotchDark: num( 'Blotch.dark' ),
+        blotchBright: num( 'Blotch.bright' ),
+        bakedBlotches: false,
+        wearValueSpan: num( 'Wear.valueSpan' ),
+        wearRoughSpan: num( 'Wear.roughSpan' ),
+        wearMetalMin: num( 'Wear.metalMin' ),
+        wearMetalMax: num( 'Wear.metalMax' ),
     };
 }
 
 export function graphiteSurfaceParams(): SurfaceParams {
+    return { ...deckSurfaceParams(), joints: false, bakedBlotches: true };
+}
+
+export function wallSurfaceParams(): SurfaceParams {
     return { ...deckSurfaceParams(), joints: false };
 }

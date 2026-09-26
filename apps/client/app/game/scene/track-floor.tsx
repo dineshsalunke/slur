@@ -3,6 +3,7 @@ import { CELL, LEAD_SEGMENTS, SEG_LEN, type Track } from '@slur/shared';
 import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
+import { deckBreakupUniforms, patchDeckBreakup, updateDeckBreakup } from './deck-breakup';
 import { applyDeckFinish } from './deck-finish';
 import { buildRailMask, patchRailGlow, railGlowUniforms, updateRailGlow } from './rail-glow';
 import {
@@ -21,6 +22,7 @@ import { AHEAD } from './track-instancing';
 import { floorSurface, graphiteSurface } from './track-materials';
 import { spanEdges } from './track-openings';
 import { buildRailRuns } from './track-rails';
+import { patchWallBreakup } from './wall-breakup';
 
 export const FLOOR_TOP_GROUP = 0;
 export const FLOOR_SIDE_GROUP = 1;
@@ -115,13 +117,18 @@ export function TrackFloor( { track }: { track: Track } ) {
     const deck = useMemo( floorSurface, [ rebuild ] );
     const side = useMemo( graphiteSurface, [ rebuild ] );
     const glow = useMemo( railGlowUniforms, [] );
+    const breakup = useMemo( deckBreakupUniforms, [] );
     const attachDeck = ( mat: THREE.MeshStandardMaterial | null ) => {
         deckRef.current = mat;
-        if ( mat ) patchRailGlow( mat, glow );
+        if ( ! mat ) return;
+        patchRailGlow( mat, glow );
+        patchDeckBreakup( mat, breakup );
     };
     const attachSide = ( mat: THREE.MeshStandardMaterial | null ) => {
         sideRef.current = mat;
-        if ( mat ) patchRailGlow( mat, glow );
+        if ( ! mat ) return;
+        patchRailGlow( mat, glow );
+        patchWallBreakup( mat, breakup );
     };
 
     // GPU buffers outlive React's tree: a geometry and rail mask replaced by a width change must be released by hand.
@@ -135,6 +142,7 @@ export function TrackFloor( { track }: { track: Track } ) {
 
     useFrame( () => {
         updateRailGlow( glow, mask, segments + LEAD_SEGMENTS );
+        updateDeckBreakup( breakup, deck.map );
         if ( deckRef.current ) applyDeckFinish( deckRef.current );
         if ( sideRef.current ) applyDeckFinish( sideRef.current );
     } );

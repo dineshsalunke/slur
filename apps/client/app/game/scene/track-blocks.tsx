@@ -10,6 +10,7 @@ import { LocalPlayer, Sim } from '../ecs/traits';
 import { boltCloseness, endFrame, noteBroken, noteStanding, type ShipProbe } from './block-breaks';
 import { BlockBurst } from './block-burst';
 import { BlockDebris } from './block-debris';
+import { blotchWearUniforms, updateBlotchWear } from './deck-breakup';
 import { applyDeckFinish, deckTextureSpan } from './deck-finish';
 import { fracturedBlockGeometry, fractureOrient, shareCells } from './fractured-block-geometry';
 import { fracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
@@ -31,6 +32,7 @@ import {
 } from './sealed-block-variation';
 import { AHEAD, BACK, put } from './track-instancing';
 import { graphiteSurface } from './track-materials';
+import { patchWallBreakup } from './wall-breakup';
 
 const BLOCK_LIMIT = 320;
 const FRACTURED_LIMIT = 160;
@@ -149,6 +151,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
 
     const uniforms = useMemo( () => sealedBlockUniforms(), [] );
     const fractureUniforms = useMemo( () => fracturedBlockUniforms(), [] );
+    const breakup = useMemo( blotchWearUniforms, [] );
     const attrs = useMemo< SealedAttributes >(
         () => ( {
             seams: new THREE.InstancedBufferAttribute(
@@ -174,6 +177,7 @@ export function TrackBlocks( { track }: { track: Track } ) {
         const cracked = fracturedRef.current;
         if ( ! sim || ! blocks || ! cracked ) return;
 
+        updateBlotchWear( breakup );
         uniforms.uSealedBevel.value = SEALED_BLOCK_BEVEL;
         uniforms.uSealedSeamWidth.value = SEALED_BLOCK_SEAM_WIDTH;
         uniforms.uSealedSeamIntensity.value = num( 'Block.seamEmissive' );
@@ -231,7 +235,14 @@ export function TrackBlocks( { track }: { track: Track } ) {
                 frustumCulled={ false }
                 args={ [ undefined, undefined, BLOCK_LIMIT ] }
             >
-                <meshStandardMaterial { ...surface } ref={ ( m ) => m && patchSealedBlock( m, uniforms ) } />
+                <meshStandardMaterial
+                    { ...surface }
+                    ref={ ( m ) => {
+                        if ( ! m ) return;
+                        patchSealedBlock( m, uniforms );
+                        patchWallBreakup( m, breakup );
+                    } }
+                />
             </instancedMesh>
             <instancedMesh
                 ref={ fracturedRef }
@@ -242,7 +253,11 @@ export function TrackBlocks( { track }: { track: Track } ) {
             >
                 <meshStandardMaterial
                     { ...surface }
-                    ref={ ( m ) => m && patchFracturedBlock( m, fractureUniforms, false ) }
+                    ref={ ( m ) => {
+                        if ( ! m ) return;
+                        patchFracturedBlock( m, fractureUniforms, false );
+                        patchWallBreakup( m, breakup );
+                    } }
                 />
             </instancedMesh>
             <BlockDebris track={ track } uniforms={ fractureUniforms } />

@@ -465,7 +465,7 @@ Every element in the package, and what it is made of. No row reads "shared with 
 | Seeker in flight | **M1** graphite + **M7** rear core (item 19) | gameplay — sized for rear-view resolution |
 | Bolt tracer, boost thrust, shield envelope | **M7** only — no shell | gameplay |
 | Engines / thrust | **M7** | gameplay |
-| Ship hulls | **M1** graphite, pit maps box-projected (item 19) | gameplay — engines |
+| Ship hulls | **M1** graphite, scratch and blotch maps box-projected (item 19) | gameplay — engines |
 | HUD / UI | 2D; graphite and marigold — *deferred*, §6 | n/a |
 
 ## 3. The two marigold tiers
@@ -998,12 +998,65 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     - **`Metal.baseColor` is `#4a4d52`.** This is a neutral dark graphite with a small cool bias.
       The first value was `#3b3e42`. The owner compared the two and chose `#4a4d52`. The value stays
       one value for every surface (item 12).
-    - **Pitting is surface detail only.** A seeded layer of small dents, 0.05–0.16u radius, goes
-      into the normal map, the cavity channel and the roughness channel. It does not change the
-      colour. The `Pit.*` tunables control density, tilt, roughness and cavity.
-    - **Transverse groove bevels face the right way.** Three's tangent frame takes B along +v. A
-      canvas texture is flipped (`flipY`), so canvas-down is −v. The transverse bevels had their v
-      sign inverted, so they read as ridges under a key light from above. The sign is flipped.
+    - **The finish is scratched cast iron, not pits.** Owner's words: *"the texture on the metal
+      still looks more raindrops on windsheild. i want a scratched cast iron sort of feeling."* The
+      reference is a scratched metal sphere. It has many thin, straight scratches at all angles and
+      soft, darker blotches at a larger scale. It has almost no round pits. Round pits read as
+      raindrops at every size that was tried: stamped discs, then a 6-cell field, then a 12-cell
+      field at 4 % coverage. So the pits are removed, and the `Pit.*` tunables are removed with
+      them.
+    - **Scratches are straight lines at every angle.** The angle is uniform over 0–π, so there is
+      no brush direction. The length is log-uniform over 0.15–2.5u, so short scratches outnumber
+      long ones. The width is 0.012–0.03u. The count is `Scratch.density` per square unit (default
+      3). The strokes are drawn in world units on both tiles, so a scratch has the same width and
+      angle on the 16 × 4u deck tile and on the 16 × 16u graphite tile. Each scratch is drawn again
+      at ±1 tile, so the texture tiles.
+    - **A scratch is bright, smooth metal.** `Scratch.lift` (0.35) adds a small part of the base
+      colour to the colour map. The Wear mapping (below) then makes the scratch smoother and more
+      metallic, because it is brighter. `Scratch.roughness` is removed. `Scratch.tilt` (0.15) gives
+      the normal map two small walls, one on each side of the line, as in a shallow V groove.
+    - **Wear: the colour value drives roughness and metalness.** The painter reads the finished
+      colour map per pixel. v = (r + g + b) ÷ (the base colour's r + g + b). w = clamp((v − 1) ÷
+      `Wear.valueSpan`, −1, 1), with `Wear.valueSpan` 0.3. Roughness G decreases by w ×
+      `Wear.roughSpan` (0.25). Metalness B = lerp(`Wear.metalMin` 0.7, `Wear.metalMax` 1, (w + 1) ÷ 2).
+      So bright plates, bright blotches and scratches are smoother and more metallic, and dark
+      plates, mottle and blotches are rougher and less metallic. Joint pixels keep their `Groove.*`
+      values. A joint mask excludes them. This replaces the fixed blotch roughness and the metalness
+      lobes in the rough finish patches.
+    - **Blotches are a noise mask, not round lobes.** The first blotch pass used clusters of round
+      lobes. On a monolith face they read as round spots. The mask is a tileable fBm value noise:
+      0.3 cells per world unit and five octaves. It has irregular, cloud-like edges. The high end of
+      the noise gives dark blotches (about 20 % of the tile), which `Blotch.dark` (0.15) darkens.
+      The low end gives a smaller share of bright blotches, which `Blotch.bright` (0.15) lightens,
+      as polished or worn patches. Wear makes the dark blotches rougher and the bright ones smoother.
+    - **Normal y is flipped against canvas-down.** Three's tangent frame takes B along +v. A canvas
+      texture is flipped (`flipY`), so canvas-down is −v. The transverse groove bevels were
+      corrected for this, and the scratch walls use the same sign.
+    - **Darkening goes into the colour map.** The packed R (cavity) channel reaches no shader: no
+      material sets an `aoMap`. So the blotches darken the albedo map. The groove cavity in R is
+      still dead.
+    - **Jointless graphite has its own grain.** It has no brush strokes, because the reference has
+      no brush direction. Scuffs run along u (horizontal on a wall). Mottle is round, smaller
+      (0.6–1.6u) and weaker (0.08). Finish patches are half strength. The deck keeps its brush grain along z, and it also gets the scratches and the
+      blotches.
+    - **The deck does not repeat every 4u.** The deck tile is 16 × 4u. A baked blotch mask gets
+      one noise cell in z, so the smudges repeated on each plate row. Now the deck bakes no blotches.
+      The deck shader (`deck-breakup.ts`) calculates the same blotch bands from a world-space value
+      noise that has no period. Each 4 × 4u plate also uses a hash to select one of the four tile
+      columns and one of four mirrors (16 variants). The plate uses `textureGrad` on the unshuffled
+      uv, so plate edges get no mip seam. A mirror negates the tangent normal on the mirrored axis.
+      The groove is symmetric, so the bevel lighting does not change. The shader applies Wear to
+      the blotch value: w = clamp(−k × blotch ÷ `Wear.valueSpan`, −1, 1), where k is `Blotch.dark` or
+      `Blotch.bright`. Roughness decreases by w × `Wear.roughSpan`. Metalness increases by
+      w × (`Wear.metalMax` − `Wear.metalMin`) ÷ 2. This adds no draw call.
+    - **Graphite walls do not repeat every 16u.** A baked blotch mask on the 16 × 16u graphite tile
+      gave about three dark glyphs per tile. On the 176u arch lintel, the eye saw them as a grid of
+      about 40 marks. Now monoliths, arches, slab walls and undersides, sealed and fractured blocks
+      and fragments bake no blotches. The wall shader (`wall-breakup.ts`) uses the same world-space
+      blotch noise and the same Wear as the deck. It projects the noise on the face plane (zy, xz
+      or xy) that the face normal selects. The walls do not shuffle the tile, because a wall has no
+      groove to hide a shuffle edge. Rail bodies and the ship keep the baked blotches. Fragments
+      read the world position, so their blotches slide while they fly. This adds no draw call.
     - **Arch legs are no longer stretched.** All the legs share one geometry, built at the base
       frame height, but each is scaled to its own arch height. The vertex shader now scales wall v
       by the instance's y scale ÷ the geometry span. This adds no draw call.
@@ -1012,8 +1065,8 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       joints. They sample it at world ÷ 16u on both axes. This removes the tall-face stretch, because
       no wall now samples the plate texture. The floor mesh has two material groups, deck top and
       sides. This adds one draw call.
-    - **Ship hulls use the graphite colour, finish and pit maps.** The pit maps are box-projected in
-      object space, so the ship model UVs have no effect. Engine and emissive slots do not change.
+    - **Ship hulls use the graphite colour, finish, scratch and blotch maps.** The maps are
+      box-projected in object space, so the ship model UVs have no effect. Engine and emissive slots do not change.
     - **Pickup shells change from the M6 coated `#161b21` (metalness 0, roughness 0.3) to graphite
       metal.** This includes the seeker in flight. Glyphs, cores and the ground pool do not change.
     - **The #230 lights stay (item 17).** At spawn, the mean deck luma was 13.9/255 with them and
@@ -1023,7 +1076,10 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     **Departures from package wording.** M6 says pickup shells are a *coated* metal. They are now
     bare graphite. M8 describes the gap slab edge as a cut face of the deck. It is now jointless
     graphite with no plates. Item 17's dielectric finish for blocks and monoliths is withdrawn. All
-    built surfaces use the one metal finish again, as in item 12.
+    built surfaces use the one metal finish again, as in item 12. The owner's brief says *"dark
+    graphite pitted metal"*. The later owner direction replaces the pits with scratches and
+    blotches (the first bullet). The first pass said pitting *"does not change the colour"*. The
+    blotches and scratches now change the colour map, because the cavity channel reaches no shader.
 
 ## 8. Review log
 

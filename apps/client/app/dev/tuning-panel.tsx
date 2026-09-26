@@ -147,11 +147,22 @@ export function TuningPanel() {
         cavity: numberControl( 'Groove.cavity' ),
     } );
 
-    useControls( 'Pit', {
-        density: numberControl( 'Pit.density' ),
-        tilt: numberControl( 'Pit.tilt' ),
-        roughness: numberControl( 'Pit.roughness' ),
-        cavity: numberControl( 'Pit.cavity' ),
+    useControls( 'Scratch', {
+        density: numberControl( 'Scratch.density' ),
+        lift: numberControl( 'Scratch.lift' ),
+        tilt: numberControl( 'Scratch.tilt' ),
+    } );
+
+    useControls( 'Blotch', {
+        dark: numberControl( 'Blotch.dark' ),
+        bright: numberControl( 'Blotch.bright' ),
+    } );
+
+    useControls( 'Wear', {
+        valueSpan: numberControl( 'Wear.valueSpan' ),
+        roughSpan: numberControl( 'Wear.roughSpan' ),
+        metalMin: numberControl( 'Wear.metalMin' ),
+        metalMax: numberControl( 'Wear.metalMax' ),
     } );
 
     useControls( 'Exhaust', {

@@ -10,6 +10,7 @@ import {
     ROUGHNESS_MAP_BASE,
     type SurfaceParams,
     surfaceMaps,
+    wallSurfaceParams,
 } from './track-texture';
 
 export function cleanToMapRoughness( clean: number ): number {
@@ -37,7 +38,7 @@ export function floorSurface() {
 
 export function graphiteSurface() {
     return plateSurface(
-        graphiteSurfaceParams(),
+        wallSurfaceParams(),
         num( 'Deck.roughness' ),
         num( 'Deck.metalness' ),
         num( 'Deck.normalScale' ),

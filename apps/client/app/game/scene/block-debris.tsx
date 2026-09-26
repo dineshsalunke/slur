@@ -12,6 +12,7 @@ import { queueBurst } from './block-burst';
 import { trackGround } from './debris-ground';
 import { addHullPoint, type DebrisBody, type DebrisGround, makeBody, resetBody, setBoxInertia } from './debris-physics';
 import { beginTick, type DebrisTick, makeTick, moveBody, sparkOnLanding } from './debris-tick';
+import { blotchWearUniforms, updateBlotchWear } from './deck-breakup';
 import { applyDeckFinish } from './deck-finish';
 import {
     cellGeometry,
@@ -25,6 +26,7 @@ import {
 import { type FracturedBlockUniforms, patchFracturedBlock } from './fractured-block-shader';
 import { pushHit } from './hit-events';
 import { graphiteSurface } from './track-materials';
+import { patchWallBreakup } from './wall-breakup';
 
 const SLOTS = 12;
 const LIFE = 14;
@@ -217,11 +219,13 @@ export function BlockDebris( { track, uniforms }: { track: Track; uniforms: Frac
     const debris = useMemo( buildDebris, [] );
     const ground = useMemo( () => trackGround( track, blockWorld.broken ), [ track ] );
     const meshes = useRef< ( THREE.InstancedMesh | null )[] >( [] );
+    const breakup = useMemo( blotchWearUniforms, [] );
     const material = useMemo( () => {
         const m = new THREE.MeshStandardMaterial( graphiteSurface() );
         patchFracturedBlock( m, uniforms, true );
+        patchWallBreakup( m, breakup );
         return m;
-    }, [ rebuild, uniforms ] );
+    }, [ rebuild, uniforms, breakup ] );
 
     const release = useCallback(
         ( group: THREE.Group | null ) => () => {
@@ -235,6 +239,7 @@ export function BlockDebris( { track, uniforms }: { track: Track; uniforms: Frac
     useFrame( ( state, delta ) => {
         const now = state.clock.elapsedTime;
         applyDeckFinish( material );
+        updateBlotchWear( breakup );
         drainMends( ( id ) => mend( debris, id ) );
         drainBreaks( ( e ) => spawn( debris, e, now ) );
         const live = advance( debris, meshes.current, ground, now, delta, state.camera.position.z );

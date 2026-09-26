@@ -95,10 +95,17 @@ export const NUMBER_TUNABLES = {
     'Groove.darkening': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
     'Groove.cavity': { value: 0.3, min: 0, max: 1, step: 0.01, rebuild: true },
 
-    'Pit.density': { value: 2.5, min: 0, max: 12, step: 0.1, rebuild: true },
-    'Pit.tilt': { value: 0.35, min: 0, max: 0.9, step: 0.01, rebuild: true },
-    'Pit.roughness': { value: 0.12, min: 0, max: 0.5, step: 0.01, rebuild: true },
-    'Pit.cavity': { value: 0.5, min: 0, max: 1, step: 0.01, rebuild: true },
+    'Scratch.density': { value: 3, min: 0, max: 12, step: 0.1, rebuild: true },
+    'Scratch.lift': { value: 0.35, min: 0, max: 1, step: 0.01, rebuild: true },
+    'Scratch.tilt': { value: 0.15, min: 0, max: 0.6, step: 0.01, rebuild: true },
+
+    'Blotch.dark': { value: 0.15, min: 0, max: 0.8, step: 0.01, rebuild: true },
+    'Blotch.bright': { value: 0.15, min: 0, max: 0.6, step: 0.01, rebuild: true },
+
+    'Wear.valueSpan': { value: 0.3, min: 0.05, max: 1, step: 0.01, rebuild: true },
+    'Wear.roughSpan': { value: 0.25, min: 0, max: 0.6, step: 0.01, rebuild: true },
+    'Wear.metalMin': { value: 0.7, min: 0, max: 1, step: 0.01, rebuild: true },
+    'Wear.metalMax': { value: 1, min: 0, max: 1, step: 0.01, rebuild: true },
 
     'Hover.base': { value: 0.35, min: 0, max: 4, step: 0.01, rebuild: false },
     'Hover.speedLift': { value: 0.9, min: 0, max: 6, step: 0.01, rebuild: false },

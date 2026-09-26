@@ -3,12 +3,14 @@ import { Fragment, useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useRebuildToken } from '../../dev/use-rebuild-token';
+import { blotchWearUniforms, updateBlotchWear } from './deck-breakup';
 import { applyDeckFinish } from './deck-finish';
 import type { MonolithShapeConfig } from './monolith-config';
 import { type MonolithSize, monolithGeometry, patchWallSpan } from './monolith-geometry';
 import { bodySpan, type MonolithTransform, shapeProfile } from './monolith-transforms';
 import { patchRailGlow, type RailMask, railGlowUniforms, updateRailGlow } from './rail-glow';
 import { graphiteSurface } from './track-materials';
+import { patchWallBreakup } from './wall-breakup';
 
 const scratch = new THREE.Object3D();
 const SEAM_GEOMETRY = monolithGeometry( { taper: 1, chamferX: 0, chamferZ: 0 } );
@@ -41,6 +43,7 @@ export function MonolithGroup( {
     const surface = useMemo( graphiteSurface, [ rebuild ] );
     const glow = useMemo( railGlowUniforms, [] );
     const span = useMemo( () => ( { value: 1 } ), [] );
+    const breakup = useMemo( blotchWearUniforms, [] );
 
     const bodyRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const seamRef = useRef< THREE.MeshStandardMaterial | null >( null );
@@ -51,6 +54,7 @@ export function MonolithGroup( {
         if ( ! mat ) return;
         patchRailGlow( mat, glow );
         patchWallSpan( mat, span );
+        patchWallBreakup( mat, breakup );
     };
 
     const fillBodies = useCallback(
@@ -71,6 +75,7 @@ export function MonolithGroup( {
         const body = bodyRef.current;
         if ( body ) {
             span.value = size[ 1 ];
+            updateBlotchWear( breakup );
             applyDeckFinish( body );
             if ( railMask ) updateRailGlow( glow, railMask.texture.current, railMask.count );
         }
