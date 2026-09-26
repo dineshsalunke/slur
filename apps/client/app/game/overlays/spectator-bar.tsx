@@ -1,30 +1,32 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
-import { useEffect, useRef } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { HudPanel } from '../../ui/hud-panel';
-import { useRunView } from '../net/use-run-view';
+import { useRunPlayers } from '../net/run-view-store';
 import { cycleSpectatorTarget, resolveSpectatorTarget } from '../spectator';
 
 export function SpectatorBar( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const racers = view.players.filter( ( p ) => ! p.spectating );
+    const [ , retarget ] = useReducer( ( n: number ) => n + 1, 0 );
+    const racers = useRunPlayers( room ).filter( ( p ) => ! p.spectating );
     const racerIds = racers.map( ( p ) => p.id );
-    const targetId = resolveSpectatorTarget( racers.map( ( p ) => [ p.id, p ] as const ) );
+    const targetId = resolveSpectatorTarget( room.state.players );
     const target = racers.find( ( p ) => p.id === targetId );
 
     const racerIdsRef = useRef( racerIds );
     racerIdsRef.current = racerIds;
 
+    const cycle = ( dir: 1 | -1 ) => {
+        cycleSpectatorTarget( racerIdsRef.current, dir );
+        retarget();
+    };
+
     // JUSTIFIED EFFECT — syncs with an external system: the DOM keyboard (Tab / ← / →) → the spectator-target
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
-            if ( e.code === 'Tab' || e.code === 'ArrowRight' ) {
-                e.preventDefault();
-                cycleSpectatorTarget( racerIdsRef.current, 1 );
-            } else if ( e.code === 'ArrowLeft' ) {
-                e.preventDefault();
-                cycleSpectatorTarget( racerIdsRef.current, -1 );
-            }
+            if ( e.code !== 'Tab' && e.code !== 'ArrowRight' && e.code !== 'ArrowLeft' ) return;
+            e.preventDefault();
+            cycleSpectatorTarget( racerIdsRef.current, e.code === 'ArrowLeft' ? -1 : 1 );
+            retarget();
         };
         addEventListener( 'keydown', onKey );
         return () => removeEventListener( 'keydown', onKey );
@@ -41,7 +43,7 @@ export function SpectatorBar( { room }: { room: Room< RunState > } ) {
             <button
                 type="button"
                 className="cursor-pointer rounded-[4px] border border-magenta bg-magenta/12 px-2.5 py-0.5 text-[16px] text-hud"
-                onClick={ () => cycleSpectatorTarget( racerIds, -1 ) }
+                onClick={ () => cycle( -1 ) }
             >
                 ◀
             </button>
@@ -49,7 +51,7 @@ export function SpectatorBar( { room }: { room: Room< RunState > } ) {
             <button
                 type="button"
                 className="cursor-pointer rounded-[4px] border border-magenta bg-magenta/12 px-2.5 py-0.5 text-[16px] text-hud"
-                onClick={ () => cycleSpectatorTarget( racerIds, 1 ) }
+                onClick={ () => cycle( 1 ) }
             >
                 ▶
             </button>

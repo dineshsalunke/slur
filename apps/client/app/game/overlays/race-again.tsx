@@ -5,14 +5,15 @@ import { isBareEnter } from '../../ship/ship-keys';
 import { Button } from '../../ui/button';
 import { Chevron } from '../../ui/chevron';
 import { KeyHint } from '../../ui/key-hint';
-import { useRunView } from '../net/use-run-view';
+import { useHostId, useRunPlayers } from '../net/run-view-store';
 
 const HOST_HINTS = [ { keys: [ 'Enter' ], does: 'Race again' } ] as const;
 
 export function RaceAgain( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const isHost = view.selfId === view.hostId;
-    const host = view.players.find( ( p ) => p.id === view.hostId );
+    const hostId = useHostId( room );
+    const players = useRunPlayers( room );
+    const isHost = room.sessionId === hostId;
+    const host = players.find( ( p ) => p.id === hostId );
 
     // Syncs with the browser keyboard: a bare Enter restarts the run for the host.
     useEffect( () => {

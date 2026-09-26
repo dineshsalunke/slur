@@ -2,11 +2,10 @@ import type { Room } from '@colyseus/sdk';
 import { type RunState, SET_COLOR_MESSAGE } from '@slur/shared';
 import { LABEL } from '../../ui/field-label';
 import { COLORS } from '../colors';
-import { useRunView } from '../net/use-run-view';
+import { useRunPlayers } from '../net/run-view-store';
 
 export function ColourSwatches( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const colorId = view.players.find( ( p ) => p.id === view.selfId )?.colorId;
+    const colorId = useRunPlayers( room ).find( ( p ) => p.id === room.sessionId )?.colorId;
 
     return (
         <fieldset className="m-0 min-w-0 border-0 p-0">

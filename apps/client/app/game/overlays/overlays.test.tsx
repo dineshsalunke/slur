@@ -98,11 +98,27 @@ describe( 'Lobby overlay subscription boundary', () => {
         counts.Roster = 0;
 
         await act( async () => {
+            const self = bus.state.players.get( 'self' );
+            if ( self ) self.name = 'Renamed';
             bus.emitPlayerChange();
         } );
 
         expect( counts.Roster ).toBeGreaterThan( 0 );
         expect( counts.SpecTag ).toBe( 0 );
+    } );
+
+    it( 'does not re-render Roster on a z-only ship patch (#274)', async () => {
+        bus.state.phase = PHASE.lobby;
+        await mountOverlays();
+        counts.Roster = 0;
+
+        await act( async () => {
+            const self = bus.state.players.get( 'self' );
+            if ( self ) self.z = 42;
+            bus.emitPlayerChange();
+        } );
+
+        expect( counts.Roster ).toBe( 0 );
     } );
 
     it( 'cycles the ship on D, re-rendering SpecTag but not Roster, and sends the new ship', async () => {

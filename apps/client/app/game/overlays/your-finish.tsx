@@ -1,14 +1,13 @@
 import type { Room } from '@colyseus/sdk';
-import { computeStandings, type RunState } from '@slur/shared';
+import type { RunState } from '@slur/shared';
 import { Fragment } from 'react';
 import { LABEL } from '../../ui/field-label';
-import { useRunView } from '../net/use-run-view';
+import { useRunStandings } from '../net/run-view-store';
 import { gapTo, ordinal, raceTime } from './results-format';
 
 export function YourFinish( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const standings = computeStandings( view.players );
-    const mine = standings.find( ( s ) => s.id === view.selfId );
+    const standings = useRunStandings( room );
+    const mine = standings.find( ( s ) => s.id === room.sessionId );
     const leader = standings.find( ( s ) => ! s.dnf );
 
     return (

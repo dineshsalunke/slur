@@ -1,13 +1,14 @@
 import type { Room } from '@colyseus/sdk';
 import type { RunState } from '@slur/shared';
 import type { ReactNode } from 'react';
-import { useRunView } from '../net/use-run-view';
+import { useHostId, useRunPlayers } from '../net/run-view-store';
 
 export function RoomTitle( { room, children }: { room: Room< RunState >; children: ReactNode } ) {
-    const view = useRunView( room );
-    const host = view.players.find( ( p ) => p.id === view.hostId );
-    const title = view.selfId === view.hostId ? 'Your run' : `${ host?.name || 'Host' }'s run`;
-    const count = view.players.length;
+    const hostId = useHostId( room );
+    const players = useRunPlayers( room );
+    const host = players.find( ( p ) => p.id === hostId );
+    const title = room.sessionId === hostId ? 'Your run' : `${ host?.name || 'Host' }'s run`;
+    const count = players.length;
 
     return (
         <section aria-labelledby="run-title" className="flex flex-col gap-3">

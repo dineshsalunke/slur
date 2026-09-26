@@ -4,16 +4,17 @@ import { Fragment } from 'react';
 import { Button } from '../../ui/button';
 import { Chevron } from '../../ui/chevron';
 import { KeyHint } from '../../ui/key-hint';
-import { useRunView } from '../net/use-run-view';
+import { useHostId, useRunPlayers } from '../net/run-view-store';
 
 const SHIP_HINT = { keys: [ 'A', 'D' ], does: 'Ship' } as const;
 const HOST_HINTS = [ SHIP_HINT, { keys: [ 'Enter' ], does: 'Go' } ] as const;
 const GUEST_HINTS = [ SHIP_HINT ] as const;
 
 export function StartControl( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const isHost = view.selfId === view.hostId;
-    const host = view.players.find( ( p ) => p.id === view.hostId );
+    const hostId = useHostId( room );
+    const players = useRunPlayers( room );
+    const isHost = room.sessionId === hostId;
+    const host = players.find( ( p ) => p.id === hostId );
 
     return (
         <Fragment>

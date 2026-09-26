@@ -75,6 +75,8 @@ describe( 'Results overlay', () => {
         counts.Standings = 0;
 
         await act( async () => {
+            const self = bus.state.players.get( 'self' );
+            if ( self ) self.name = 'Renamed';
             bus.emitPlayerChange();
         } );
 

@@ -1,11 +1,11 @@
 import type { Room } from '@colyseus/sdk';
-import { computeStandings, type RunState } from '@slur/shared';
-import { useRunView } from '../net/use-run-view';
+import type { RunState } from '@slur/shared';
+import { useHostId, useRunStandings } from '../net/run-view-store';
 import { StandingRow } from './standing-row';
 
 export function Standings( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const standings = computeStandings( view.players );
+    const hostId = useHostId( room );
+    const standings = useRunStandings( room );
     const leader = standings.find( ( s ) => ! s.dnf );
 
     return (
@@ -16,8 +16,8 @@ export function Standings( { room }: { room: Room< RunState > } ) {
                     standing={ s }
                     order={ i }
                     leaderTime={ leader && leader.id !== s.id ? leader.finishTime : undefined }
-                    self={ s.id === view.selfId }
-                    host={ s.id === view.hostId }
+                    self={ s.id === room.sessionId }
+                    host={ s.id === hostId }
                 />
             ) ) }
         </ol>

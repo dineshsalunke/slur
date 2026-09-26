@@ -1,12 +1,11 @@
 import type { Room } from '@colyseus/sdk';
-import { computeStandings, type RunState } from '@slur/shared';
+import type { RunState } from '@slur/shared';
 import { colorHex } from '../colors';
-import { useRunView } from '../net/use-run-view';
+import { useRunStandings } from '../net/run-view-store';
 import { raceTime, shipName } from './results-format';
 
 export function WinnerCard( { room }: { room: Room< RunState > } ) {
-    const view = useRunView( room );
-    const winner = computeStandings( view.players ).find( ( s ) => ! s.dnf );
+    const winner = useRunStandings( room ).find( ( s ) => ! s.dnf );
 
     return (
         <div className="min-w-0">

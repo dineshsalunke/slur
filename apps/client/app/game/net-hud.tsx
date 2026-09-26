@@ -5,7 +5,7 @@ import { HudLayer } from './hud/hud-layer';
 import { NetPilotReadout } from './hud/net-pilot-readout';
 import { NetRoster } from './hud/net-roster';
 import { TouchPad } from './hud/touch-pad';
-import { useRunPhase } from './net/use-run-view';
+import { useRunPhase } from './net/run-view-store';
 
 export function NetHud( { track }: { track: Track } ) {
     const room = useRoom();
