@@ -110,4 +110,4 @@ export interface PortalFizzleMessage {
     ownerId: string;
 }
 
-export const PORTAL_RATIO = 0;
+export const PORTAL_RATIO = 0.1;

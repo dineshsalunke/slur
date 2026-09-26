@@ -32,6 +32,7 @@ export interface Snapshot {
     dead: boolean;
     stunned: boolean;
     boost: number;
+    hops: number;
 }
 export const Interp = trait( () => ( { buffer: [] as Snapshot[] } ) );
 

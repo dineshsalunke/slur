@@ -74,6 +74,8 @@ export function updateLobbyCamera( cam: PerspectiveCamera, world: World, dt: num
 
 const SPECTATE_FOV = 78;
 const SPECTATE_BACK = 12;
+const SPECTATE_SNAP_Z = 12;
+const spectated = { id: null as string | null, z: 0 };
 
 export function updateSpectatorCamera(
     cam: PerspectiveCamera,
@@ -93,7 +95,11 @@ export function updateSpectatorCamera(
     const p = grp.position;
     const baseY = groundedY( e, p.y );
 
-    const k = 1 - Math.exp( -12 * dt );
+    const jumped = spectated.id === targetSessionId && Math.abs( p.z - spectated.z ) > SPECTATE_SNAP_Z;
+    spectated.id = targetSessionId;
+    spectated.z = p.z;
+
+    const k = jumped ? 1 : 1 - Math.exp( -12 * dt );
     cam.position.x += ( p.x - cam.position.x ) * k;
     cam.position.y += ( baseY + 5 - cam.position.y ) * k;
     cam.position.z += ( p.z - SPECTATE_BACK - cam.position.z ) * k;

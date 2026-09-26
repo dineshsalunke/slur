@@ -7,13 +7,14 @@ import { bagCounts, longestRun, POWER_BAG_SIZE, POWER_RUN_CAP, powerBag } from '
 
 const SALTS = [ '', 'a', 'x9k2', '1pq0zz', 'groove' ];
 
-test( 'the default bag deals 7 bolts, 3 seekers, 4 mines, 3 boosts and 3 shields, and no portals or tugs yet', () => {
+test( 'the default bag deals 5 bolts, 3 seekers, 4 mines, 3 boosts, 3 shields and 2 portals, and no tugs yet', () => {
     assert.deepEqual( bagCounts(), [
-        { power: HeldPower.bolt, count: 7 },
+        { power: HeldPower.bolt, count: 5 },
         { power: HeldPower.seeker, count: 3 },
         { power: HeldPower.mine, count: 4 },
         { power: HeldPower.boost, count: 3 },
         { power: HeldPower.shield, count: 3 },
+        { power: HeldPower.portal, count: 2 },
     ] );
 } );
 

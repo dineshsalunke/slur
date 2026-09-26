@@ -6,6 +6,7 @@ export const confirmedBroken = new Set< number >();
 
 export function clearBlockState(): void {
     blockWorld.broken.clear();
+    blockWorld.portals.clear();
     confirmedBroken.clear();
 }
 

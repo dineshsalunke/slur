@@ -21,13 +21,15 @@ export function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] {
             return out.boosts;
         case HeldPower.shield:
             return out.shields;
+        case HeldPower.portal:
+            return out.portals;
         default:
             return out.bolts;
     }
 }
 
 export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
-    const out: PickupLayouts = { bolts: [], seekers: [], mines: [], boosts: [], shields: [] };
+    const out: PickupLayouts = { bolts: [], seekers: [], mines: [], boosts: [], shields: [], portals: [] };
     for ( const a of layout ) bucketOf( out, pickupPower( a.id ) ).push( a );
     return out;
 }

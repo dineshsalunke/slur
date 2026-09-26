@@ -7,7 +7,7 @@ import { exhaustDrive } from './exhaust-drive';
 const FREIGHTER_CRUISE = SHIP_CLASSES.freighter.tuning.maxCruise;
 
 function snapshot( t: number, z: number ): Snapshot {
-    return { t, x: 0, y: 0, z, vx: 0, dead: false, stunned: false, boost: 0 };
+    return { t, x: 0, y: 0, z, vx: 0, dead: false, stunned: false, boost: 0, hops: 0 };
 }
 
 describe( 'exhaustDrive', () => {

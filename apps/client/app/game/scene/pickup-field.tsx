@@ -5,6 +5,7 @@ import { useTrack } from '../track-context/use-track';
 import { BoltPickups } from './bolt-pickups/bolt-pickups';
 import { BoostPickups } from './boost-pickups/boost-pickups';
 import { MinePickups } from './mine-pickups/mine-pickups';
+import { PortalPickups } from './portal-pickups/portal-pickups';
 import { SeekerPickups } from './seeker-pickups/seeker-pickups';
 import { splitPickupLayout } from './seeker-pickups/seeker-pickups.utils';
 import { ShieldPickups } from './shield-pickups/shield-pickups';
@@ -20,6 +21,7 @@ export function PickupField() {
             <MinePickups layout={ layout.mines } isTaken={ isPickupTaken } />
             <BoostPickups layout={ layout.boosts } isTaken={ isPickupTaken } />
             <ShieldPickups layout={ layout.shields } isTaken={ isPickupTaken } />
+            <PortalPickups layout={ layout.portals } isTaken={ isPickupTaken } />
         </Fragment>
     );
 }

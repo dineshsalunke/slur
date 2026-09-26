@@ -6,7 +6,7 @@ import { currentInput } from '../input/current-input';
 import { localRole } from '../spectator';
 import { bankTuning, driveAttitude } from './attitude';
 import { sparkIfBounced } from './bounce-spark';
-import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim } from './traits';
+import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim, type Snapshot } from './traits';
 
 export function freezeLocalPrev( world: World ): void {
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
@@ -46,13 +46,26 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
         const tuning = tuningForShip( net.shipId );
         const stunBefore = s.stunTimer;
         const vzBefore = s.vz;
+        const hopsBefore = s.portalHops;
         simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
         froundSimShip( s );
+        if ( s.portalHops !== hopsBefore ) {
+            prev.x = s.x;
+            prev.y = s.y;
+            prev.z = s.z;
+        }
         sparkIfBounced( s, stunBefore, vzBefore, dt, tuning );
     } );
 }
 
 const lerp = ( a: number, b: number, t: number ) => a + ( b - a ) * t;
+
+function spanAt( buf: readonly Snapshot[], renderTime: number ): number {
+    for ( let i = 0; i < buf.length - 1; i++ ) {
+        if ( buf[ i ].t <= renderTime && buf[ i + 1 ].t >= renderTime ) return i;
+    }
+    return -1;
+}
 
 export function remoteInterpSystem( world: World, dt: number ): void {
     const renderTime = performance.now() - RENDER_DELAY_MS;
@@ -61,21 +74,15 @@ export function remoteInterpSystem( world: World, dt: number ): void {
     world.query( Interp, Render, Net, Attitude, Remote ).readEach( ( [ interp, grp, net, att ] ) => {
         const buf = interp.buffer;
         if ( buf.length === 0 ) return;
-        let a: ( typeof buf )[ number ] | null = null;
-        let b: ( typeof buf )[ number ] | null = null;
-        for ( let i = 0; i < buf.length - 1; i++ ) {
-            if ( buf[ i ].t <= renderTime && buf[ i + 1 ].t >= renderTime ) {
-                a = buf[ i ];
-                b = buf[ i + 1 ];
-                break;
-            }
-        }
+        const i = spanAt( buf, renderTime );
+        const a = i < 0 ? null : buf[ i ];
+        const b = i < 0 ? null : buf[ i + 1 ];
         let x: number;
         let y: number;
         let z: number;
         let vx: number;
         let vy: number;
-        if ( a && b ) {
+        if ( a && b && a.hops === b.hops ) {
             const span = b.t - a.t || 1;
             const t = ( renderTime - a.t ) / span;
             x = lerp( a.x, b.x, t );
@@ -84,11 +91,11 @@ export function remoteInterpSystem( world: World, dt: number ): void {
             vx = lerp( a.vx, b.vx, t );
             vy = ( ( b.y - a.y ) / span ) * 1000;
         } else {
-            const last = buf[ buf.length - 1 ];
-            x = last.x;
-            y = last.y;
-            z = last.z;
-            vx = last.vx;
+            const held = a ?? buf[ buf.length - 1 ];
+            x = held.x;
+            y = held.y;
+            z = held.z;
+            vx = held.vx;
             vy = 0;
         }
         grp.position.set( x, y, z );

@@ -13,7 +13,7 @@ import {
 } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
-import { clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
+import { blockWorld, clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import { sparkAt } from '../game/ecs/bounce-spark';
 import {
     Attitude,
@@ -53,7 +53,10 @@ function mirrorNet( ent: Entity, sessionId: string, shipId: string, colorId: num
 function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, track: Track ): void {
     localRole.spectating = p.spectating;
     const s = ent.get( Sim );
-    if ( s ) predictor.reconcile( s, p, track );
+    if ( ! s ) return;
+    const hops = s.portalHops;
+    predictor.reconcile( s, p, track );
+    if ( s.portalHops !== hops ) ent.set( Prev, { x: s.x, y: s.y, z: s.z } );
 }
 
 function pushRemote( ent: Entity, p: PlayerState ): void {
@@ -68,6 +71,7 @@ function pushRemote( ent: Entity, p: PlayerState ): void {
         dead: p.dead,
         stunned: p.stunTimer > 0,
         boost: p.boostTimer,
+        hops: p.portalHops,
     } );
     if ( interp.buffer.length > 120 ) interp.buffer.shift();
 }
@@ -242,6 +246,9 @@ export function attachRoomToWorld(
 
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, burstMine );
 
+    const offPortalAdd = $( room.state ).portals.onAdd( ( p, id ) => blockWorld.portals.set( id, p ) );
+    const offPortalRemove = $( room.state ).portals.onRemove( ( _p, id ) => blockWorld.portals.delete( id ) );
+
     const onTaken = ( v: boolean, id: string ) => markPickup( id, v === true );
     const offTaken = $( room.state ).pickupTaken.onAdd( onTaken );
     const offTakenChange = $( room.state ).pickupTaken.onChange( onTaken );
@@ -281,6 +288,8 @@ export function attachRoomToWorld(
         offMineAdd();
         offMineRemove();
         offMineBurst();
+        offPortalAdd();
+        offPortalRemove();
         offHit();
         offShieldPop();
         offBounce();
