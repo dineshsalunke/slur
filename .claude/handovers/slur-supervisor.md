@@ -36,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | #304 editor UI 0130a63 (grit regex widened); now: headless full loop, then close #304 | cleared + resumed (handover f819759), working | routes.ts, routes/test-level/{edit,track-editor,edit-button}/* |
 | workertwo | w2P:pF | #304 data side DONE: 5165d46, d382904, 6982014, sim freeze 12a91b7 (handover de3856b) | CLEARED 0%, idle, no lane | none |
-| workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded) | idle; HOLD vs S4 asked of owner (rec: hold until authored tracks exist) | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
+| workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded) | idle; OWNER: HOLD S4 until authored tracks exist (2026-09-27) | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
