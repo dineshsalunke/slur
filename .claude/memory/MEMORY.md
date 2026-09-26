@@ -95,6 +95,7 @@ lives in its own file beside this one.
 - [Decode audio in headless Chrome](decode-audio-in-headless-chrome.md) — decodeAudioData over CDP gives true length + peak; cuts peaked 1.55 and 0.046 unnoticed
 - [Typegen runs in production mode](typegen-runs-in-production-mode.md) — dev-gated routes lose `+types`; the client typecheck sets NODE_ENV=development
 - [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s; reconnection off for lost; seats via a node lobby client
+- [Biome stdin skips Grit plugins](biome-stdin-skips-grit-plugins.md) — `--stdin-file-path` shows no plugin errors; probe with a temp file under the override includes
 - [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook; count fibers with a new actualStartTime AND flags&1, or bailouts inflate counts
 - [Live HMR sees half-applied edits](live-hmr-sees-half-applied-edits.md) — each save is live on :5173; add providers first, switch consumers leaf-first, drop the old prop last
 - [ls-lint skips unlisted sub-extensions](ls-lint-skips-unlisted-sub-extensions.md) — `x.constants.ts` is unchecked until `.constants.ts` has a rule; Biome GritQL plugins add lint rules with no new dependency
