@@ -53,7 +53,13 @@ A `/clear` sent while a worker is mid-turn queues behind that turn; wait for 0% 
   index.ts), S2 server fire branch (run-sim.ts only if needed: serialize with #14), S3 client, S4 docs.
   Owner Qs: distance fixed 24u or speed-scaled; lateral from held strafe ±12u or nearest lane; back hop keeps vz?;
   server-only (snap ~1 RTT late) for now; share 0.1 from bolt → bolt drops 4 → 2 (I flagged this).
-- #292 forks plan still coming (workerthree). Relay each to the owner and build nothing until approval.
+- #292 FORKS PLAN RELAYED (workerthree). Groove only. The line reserves fork slots like arenas: clear mouth →
+  centre divider (WALL = sealed 8u blocks, or GAP = 8u hole strip) → clear rejoin. Lane A holes + pickup, lane B
+  tight weave. S1 shared generator only (NEW groove/fork.ts + test; EDIT groove/line.ts, islands.ts,
+  groove-track.ts, open-space.ts, groove.test.ts, track-digest.test.ts; maybe pickup-place.ts: no clash with #295).
+  S2 live /test-level check. Owner Qs: (1) groove only (2) 50/50 wall/gap, gap jumpable on purpose (3) 2–3 forks,
+  mid/high only, 8–12 beats (4) fixed lane pairing (5) exempt divider from longestWall 60u (6) re-pin track digest
+  (7) forks alongside arenas. Relay each to the owner and build nothing until approval.
 - Owner said "go ahead" to 4 items (2026-09-26): #14 lane, close #248, KEEP the exit-ring flash, start #292 + #295.
   "Keep" is my reading of "go ahead" on a keep-or-dim question; I told the owner so.
 
