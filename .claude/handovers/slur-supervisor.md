@@ -49,7 +49,8 @@ pushed, clear it and resume from its handover; next batch B6 (test-level, hud, n
 room-context), then B4/B5 after #285, B1/B7 after #284. It will also fix rules/r3f-rendering.md "Hoist
 scratch objects to module scope" → `<name>.constants.ts` in the scene batch.
 Told workerone: 3 lint errors in its uncommitted #273 files. Told workerfive: landing-scene's new path.
-UPDATE: workertwo cleared + resumed (all its commits on origin); it sends the B6 claim next.
+UPDATE: workertwo cleared + resumed. B6 CLEARED except test-level-canvas.tsx (#284) and net-canvas.tsx
+(#273, even import-only; moves whose importers include it wait). power-gem added.
 workerfive #284: 16 paths CLEARED (app.css player tokens, colors.ts(+test), delete ui/color-dot.tsx, 5 overlays,
 3 Canvas files, biome.json + style grit plugin, tailwind docs). workerone applies the net-canvas.tsx Canvas line
 inside #273; workerfive's grit plugin commits after that.
