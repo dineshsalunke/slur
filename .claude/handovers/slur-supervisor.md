@@ -34,7 +34,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | none (closing #248 earlier) | idle, 14%: clear before a lane | none |
+| workerone | w2P:pD | #303 procedural portal models (PLAN first) | working (cleared, briefed) | none yet |
 | workertwo | w2P:pF | none (#302 DONE fff0555, closed; handover 2b4b1cb) | idle | none |
 | workerthree | w2P:pG | #300 phrase gen S3 (weave phrase + parallel weave + per-kind open-space) | working | sim/phrase/*, track-digest.test.ts (phrase row), avoid-pilot.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
@@ -49,7 +49,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
   or pick a hotter amber? (Open in ADD §3 / ART_MATERIALS §7 item 20.) ChatGPT paste note already given.
 - **Portal models** (owner hero shots: linked-ring pickup, A/B gate): told owner procedural is feasible
   (instanced bevelled wedges + dashed emissive band + graphite material, ~2–3 draws/ring). Offered to file
-  an issue for workerone (clear first) after #302 — awaiting owner yes.
+  an issue — owner said yes: filed #303, workerone briefed (plan first). Relay its plan.
 
 - **Stalled race exit** (no cap now): recommended a host "End race" button; alternatives: no-progress N s,
   grace after first drop-out, leave it. workertwo's finding: no host control mid-race (run-sim.ts:134/138),
