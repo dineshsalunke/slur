@@ -59,7 +59,7 @@ export const MINE_MAX_PER_OWNER = 3;
 export const MINE_HALF = 1.1;
 export const MINE_HEIGHT = 0.9;
 
-export const BOOST_RATIO = 0;
+export const BOOST_RATIO = 0.15;
 export const BOOST_GAIN = 0.4;
 export const BOOST_S = 2;
 export const BOOST_EASE_S = 0.2;
