@@ -116,3 +116,4 @@ lives in its own file beside this one.
 - [Preview a constant by route rewrite](preview-a-constant-by-route-rewrite.md) — Playwright page.route rewrites accent.ts/app.css in headless; variants with no repo edit
 - [Band width is the weave speed dial](band-width-is-the-weave-speed-dial.md) — groove costs a clean pilot 0 s; ≤16u walled band makes long ships lift; 29 s class spread set grace to 45 s (#301)
 - [Doors cannot force a 1-cell step](doors-cannot-force-a-one-cell-step.md) — 8u doors 4u apart share a lane for the 4u hull; use one-sided pins and full-width holes, measure adherence
+- [Zoom the chase camera over CDP](zoom-the-chase-camera-over-cdp.md) — pin the main camera's fov with a defineProperty getter; pick it by aspect, not fov (rear view is 36)

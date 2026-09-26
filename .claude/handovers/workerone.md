@@ -1,34 +1,27 @@
-Agent: workerone · Lane: #288 one run path · Updated: 2026-09-26 (slice 4 verified live; lane done)
+Agent: workerone · Lane: #303 procedural portal models · Updated: 2026-09-27 00:55
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-/test-level and hosted rooms differ only in netcode. Shared `stepCombat()`, and no `Local*` duplicates.
+Replace the #289 torus portal visuals with a procedural linked-ring pickup and an A/B gate, matching the owner's hero shots. Client only.
 
 ## Done
 
-- dab29d4 slice 1, 268dcb2 slice 2 (shared RunSim), d39de1c slice 3a (RunRoomLike), a79bfc3 slice 3b (LoopbackRoom).
-- 5336f7e slice 4: /test-level on the loopback room, dev layer in test-level-dev/, Local* deleted.
-- Live check on /test-level (headless Playwright, DPR 1, muted, owner's :5173). No code change needed.
-- Memories updated to the loopback hooks (commit with this handover).
+- 5e9abd0 `scene/portal-ring.ts` (one bevelled wedge → segmented ring, sleeves), pickup (linked pair, dashed face lines), gate (24 wedges, inner sleeve, feet, lug with 1/2 marks). Pushed; #303 closed with the SHA.
 
 ## State
 
-- Measured at 5336f7e: typecheck + lint clean; shared 422/422, server 38/38, client 437/437.
-- Live, verified 2026-09-26 on /test-level (split-crown unless noted):
-  - Flight: W to vz 88 in 3 s; Space jump y 1.16, grounded false. Client z tracks server z within one patch.
-  - Pickup: ship on pickup 0 (x −4.22, z 130) → taken 1, slot = seeker.
-  - Bolt, seeker, mine, boost, shield: each fires from slot 0 and shows on the decoded client state. Boost vz 47 → 143, timer 1.8 s. Shots show boost blur, shield dome, seeker hit.
-  - Rear-view panel and HUD render. HUD hides in PHASE.finished (3 frames before the restart), as expected.
-  - Audio: AudioContext `running` after the first click. Not heard [unmeasured by ear].
-  - Touch (844×390, pointer coarse): 7 pad buttons; Throttle hold → vz 43 in 1.5 s.
-  - KeyP: z and elapsed hold for 1 s; unfreeze resumes with no catch-up.
-  - Shift+3 mid-race: phase racing at +100 ms, ship `bob`, z 0 → 83.6 at +1.6 s. No streak in the shot.
-  - Auto-restart: finish at z 8401.6, restart 3 frames later, racing from z 0.
-- Found and fixed a stale `packages/shared/dist/run/run-sim.js`: `startRace()` still used `COUNTDOWN_SECONDS`, so every start ran a 3 s countdown. `tsc -b --force` fixed it. dist is gitignored; nothing to commit.
-- `bob` (Comet, halfL 0.59) looks small in frame. Same chase camera for all classes; not a regression.
-- Pre-existing noise: `[track-floor] seg N span not CELL-aligned` console warnings (not this lane).
+- Measured at 5e9abd0: client typecheck clean; client vitest 447/447; biome, ls-lint and the comment ratchet clean on the lane files.
+- Draw calls, /test-level headless (DPR 1, 1280×720), median of 30 frames:
+  - Before: open deck 128, pickup in view 129, one deployed pair 130.
+  - After: open deck 126, pickup in view 127, one deployed pair 132.
+  - The −2 on the open deck is not this lane [inferred: other workers' changes between runs].
+  - The pair adds 6 = 3 meshes × main + rear-view pass.
+- Stills (scratchpad, session d9013cc9): `before-{pickup,gate}.png`, `v3-{pickup,pickup-close,gate,gate-close}.png`.
+- Gate aperture = 6u (2·portalR), not the board's 4u. Owner-approved departure; sim untouched.
+- The gate's graphite rim reads dark against the sky. It is the deck material under scene light, not a bug. The glowing inner wall dominates at an angle, as in hero shot 12.
+- The bottom of the gate ring sits under the deck (centre at y + portalR). Over a void it would show [unmeasured: portals are placed on the deck].
 
 ## Uncommitted
 
@@ -36,18 +29,16 @@ None after this commit.
 
 ## Held files
 
-None after the push. Released: routes/test-level/**, game/net-canvas.tsx, game/net-loop/*, net/loopback-room/*, run-sim.ts + test.
+None. Released: portal-ring.ts(+test), portal-pickups/*, portal-field/*.
 
 ## Next
 
-1. Push (ff-only), `gh issue close 288` with the SHAs.
-2. Report to slur-supervisor; take the next lane.
+1. Report to slur-supervisor; take the next lane.
 
 ## Open questions
 
-- None.
+- Owner: is the gate rim dark enough to lose the segmented look? Levers: sleeve reach (`GATE_SLEEVE`), `PORTAL_ARMED_INTENSITY`, or a lighter rim finish.
 
 ## Lessons → memory
 
-- Updated: place-the-ship-over-cdp, stage-a-mine-on-test-level, koota-universe-reaches-the-page-world (loopback hooks).
-- Extended: shared-watcher-can-leave-dist-stale (a stale dist fakes a live-check failure; grep dist first).
+- New: `.claude/memory/zoom-the-chase-camera-over-cdp.md`.
