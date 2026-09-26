@@ -38,7 +38,7 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 |---|---|---|---|---|
 | workerone | w2P:pD | none | cleared, idle, NOT resumed | none |
 | workertwo | w2P:pF | #283 B4/B5 (35 scene moves + 29 importers), then grit rule → error, close #283 | CLEARED, working | game/scene/** except scene-effects.tsx, camera/chase.ts, dev/tuning-schema.ts |
-| workerthree | w2P:pG | #275 verify: remount ×3 + mine-glow tap (checks 1–2 PASSED) | working, read-only | none |
+| workerthree | w2P:pG | #275 verify ALL PASS (5fcd446). Now: file + own the /game lobby crash "AudioNode belonging to a different audio context" (seen once; inferred ensureListener order in audio/positional.ts) | filing issue, claim pending | none |
 | workerfour | w2P:pH | none | idle | none |
 | workerfive | w2P:pK | #269 boost blur + camera plan | waiting owner approval | would claim chase.ts, scene-effects.tsx, dev/tuning-schema.ts, new boost-blur/*, camera/boost-surplus.ts(+test) |
 
