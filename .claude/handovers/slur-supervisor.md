@@ -37,7 +37,7 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | none | cleared, idle, NOT resumed | none |
-| workertwo | w2P:pF | #283 B4/B5 (35 scene moves + 29 importers), then grit rule → error, close #283 | CLEARED, working | game/scene/** except scene-effects.tsx, camera/chase.ts, dev/tuning-schema.ts |
+| workertwo | w2P:pF | #283 B4/B5 landed 87c758f c92a27e e234fcd. Last: colocate scene-effects.tsx (released to it, option c), grit rule → error, close #283 | working | scene-effects.tsx, biome.json. Tell workerfive the new scene-effects path. |
 | workerthree | w2P:pG | none. #275 verify ALL PASS (5fcd446). #286 audio-context crash FIXED + closed 8facf36 (test fails before, passes after; live repro not rerun) | cleared, idle, NOT resumed | none |
 | workerfour | w2P:pH | none | idle | none |
 | workerfive | w2P:pK | #269 boost blur + camera plan | waiting owner approval | would claim chase.ts, scene-effects.tsx, dev/tuning-schema.ts, new boost-blur/*, camera/boost-surplus.ts(+test) |
