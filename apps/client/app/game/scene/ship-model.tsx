@@ -1,7 +1,7 @@
 import { Clone, useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
 import { rebuildToken } from '../../dev/tuning-rebuild';
@@ -137,15 +137,17 @@ function dressHulls( hulls: THREE.MeshStandardMaterial[] ): void {
 interface ShipSurfaces {
     hulls: THREE.MeshStandardMaterial[];
     engines: THREE.MeshStandardMaterial[];
+    all: THREE.Material[];
 }
 
 function collectSurfaces( grp: THREE.Group, uniforms: DissolveUniforms ): ShipSurfaces {
-    const found: ShipSurfaces = { hulls: [], engines: [] };
+    const found: ShipSurfaces = { hulls: [], engines: [], all: [] };
     grp.traverse( ( o ) => {
         const mesh = o as THREE.Mesh;
         if ( ! mesh.isMesh ) return;
         const mats = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
         for ( const mat of mats ) {
+            found.all.push( mat );
             const hull = hullMaterial( mat );
             if ( hull ) found.hulls.push( hull );
             const engine = engineMaterial( mat );
@@ -179,7 +181,14 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
     const cloneRef = useRef< THREE.Group >( null );
     const patched = useRef( false );
     const dressed = useRef( -1 );
-    const surfaces = useRef< ShipSurfaces >( { hulls: [], engines: [] } );
+    const surfaces = useRef< ShipSurfaces >( { hulls: [], engines: [], all: [] } );
+    const attachClone = useCallback( ( grp: THREE.Group | null ) => {
+        cloneRef.current = grp;
+        return () => {
+            cloneRef.current = null;
+            for ( const mat of surfaces.current.all ) mat.dispose();
+        };
+    }, [] );
     const uniforms = useMemo< DissolveUniforms >(
         () => ( {
             uDissolve: { value: 0 },
@@ -220,7 +229,7 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
 
     return (
         <Clone
-            ref={ cloneRef }
+            ref={ attachClone }
             object={ scene }
             deep="materialsOnly"
             position={ [ 0, v.lift, 0 ] }

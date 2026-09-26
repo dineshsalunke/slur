@@ -34,7 +34,6 @@ function glowMaterial(): THREE.MeshBasicMaterial {
     return new THREE.MeshBasicMaterial( {
         transparent: true,
         depthWrite: false,
-        toneMapped: false,
         blending: THREE.AdditiveBlending,
     } );
 }
