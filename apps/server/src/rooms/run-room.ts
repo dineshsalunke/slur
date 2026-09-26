@@ -53,9 +53,9 @@ import {
 } from '@slur/shared';
 import { type RaceWorld, stepRacer } from './room-bounce.js';
 import { firePower, resolveMineEvent, resolveSeekerEvent } from './room-combat.js';
+import { MAX_QUEUED_INPUTS, sanitizeInputs } from './room-input.js';
 
 const RECONNECT_SECONDS = 20;
-const MAX_QUEUED_INPUTS = 120;
 const MAX_NAME = 16;
 
 export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > {
@@ -90,8 +90,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
         this.onMessage< InputMessage >( INPUT_MESSAGE, ( client, msg ) => {
             const q = this.queues.get( client.sessionId );
-            if ( ! q || ! msg?.inputs?.length ) return;
-            for ( const input of msg.inputs ) q.push( input );
+            if ( ! q ) return;
+            for ( const input of sanitizeInputs( msg?.inputs ) ) q.push( input );
             if ( q.length > MAX_QUEUED_INPUTS ) q.splice( 0, q.length - MAX_QUEUED_INPUTS );
         } );
 
