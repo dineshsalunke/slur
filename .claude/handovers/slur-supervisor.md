@@ -65,6 +65,14 @@ Portal S1 DONE 6dd1368 (pushed; hop inside simulate()). workerfour cleared + res
 Portal+RunState.portals, combat/constants.ts, run/combat.ts, power-bag.ts, run-sim.ts, run/portal-run.ts; bag
 bolt5 seeker3 mine4 boost3 shield3 portal2). It messages workertwo + me on commit. workertwo is cleared and idle:
 its message may sit unread — resume it via herdr (line above).
+LATEST (supersedes the lines below): portal S2 DONE 664cc60 (portalRatio 0 → default bag bolt7 seeker3 mine4
+boost3 shield3; the 4 client files were NOT touched, claim released). workerfour at seam (handover e50ec62), CLEARED
+to 0%, NOT resumed. workertwo RESUMED on tug S2 (cleared claim: combat/constants.ts, power-bag.ts, sim-config.ts,
+tug-constants.ts, run/combat.ts, run-sim.ts, tests; tug 2/20 as one dial; owner has not confirmed final mix).
+NEXT: resume workerfour on portal S3 (client mirror, portal bucket in seeker-pickups/*, pickup-field.tsx,
+attach-room-to-world, prediction, ecs snap, ratio → 2/20). It may run beside tug S2 ONLY if it keeps off
+sim-config.ts/power-bag.ts until tug S2 commits (ratio default lives in combat/portal.ts). Tug S3 also wants
+pickup-field.tsx + attach-room-to-world.ts: serialize portal S3 before tug S3.
 Portal S2: extra claim CLEARED (seeker-pickups.tsx/.utils.ts/.test.ts, pickup-field.tsx). My decision: S2 ships
 portalRatio 0, turned on (2/20) in S3 once the client draws portals — no invisible hops on /test-level.
 workerfour portal S1 CLEARED (schema portalHops, types, step, sim-config, index, director.test, portal-hop.test,
