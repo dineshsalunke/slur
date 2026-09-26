@@ -34,7 +34,7 @@ Never brief a worker to build or serve an old commit: that is a scratch stack (o
 | workerone | w2P:pD | none | idle, ~14% | none |
 | workertwo | w2P:pF | #290 tug line, APPROVED, building S1 first | working | claims pending |
 | workerthree | w2P:pG | none | idle, ~11% | none |
-| workerfour | w2P:pH | #289 portal, APPROVED; new files only until tug S1 commits | working | claims pending |
+| workerfour | w2P:pH | #289 portal, APPROVED; new files only until tug S1 commits — PING IT when tug S1 lands | working | shared combat/portal.ts, combat/portal.test.ts, sim/portal-hop.test.ts |
 | workerfive | w2P:pK | none | idle, ~11% | none |
 
 ## Owner answers already sent
