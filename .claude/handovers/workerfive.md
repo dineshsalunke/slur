@@ -55,6 +55,10 @@ Replace the cartoonish SFX with grounded sci-fi sounds, and add a background sco
    - `bind-room-audio`: seeker fire, lock, hit, and mine burst
    - `CREDITS.md`, ADR-021, `AUDIO.md`
 
+3. The supervisor cleared the claims (2026-09-26): nothing else is held under `apps/client/app/audio`, `public/audio` or `docs/AUDIO.md`.
+4. `docs/DECISIONS.md`: wait until workerfour has committed its ADR-002 amendment (#265). Then re-read the file and add ADR-021.
+5. To re-render the cuts: ffmpeg `-ss/-t` + `afade`, output `-ac 1 -c:a libopus -b:a 64k`. For the engine seam: `asplit`, then `acrossfade=d=0.3` of the 6.0–6.3 s tail into the head. Previews: `cdn.freesound.org/previews/<id/1000>/<id>_<uid>-hq.mp3` (the ids are in #267).
+
 ## Open questions
 
 - The 16 events that are still unchosen (#267 comment).
