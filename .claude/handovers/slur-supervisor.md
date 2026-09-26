@@ -36,22 +36,21 @@ shield/boost not built.
 | workertwo | w2P:pF | none | idle, 21%: clear before reuse | none |
 | workerthree | w2P:pG | none | idle, ~120k: clear before reuse | none |
 | workerfour | w2P:pH | featherX/Y done | idle, fresh after clear | none |
-| workerfive | w2P:pK | #267 sci-fi audio: plan sent, WAITING on owner's 5 answers. Handover 1214ee8 | idle, fresh after clear | claims (not yet written): apps/client/app/audio/**, public/audio/**, docs/AUDIO.md, docs/DECISIONS.md (ADR-021) |
+| workerfive | w2P:pK | #267 sci-fi audio: BUILDING (owner GO: Opus .ogg no brew, Safari check by version, mp3 fallback; jump B; 3 most-distinct bolts; engine values as planned; boost unbound). Full plan text re-sent by message after its /clear | working | apps/client/app/audio/**, public/audio/**, docs/AUDIO.md, docs/DECISIONS.md (ADR-021) |
 
 Audition page backup: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/469ab117-3ee3-402b-8588-c8760d2324fd/scratchpad/cuts/index.html`.
 
 ## Next
 
-1. Owner answers #267: (1) Opus after Safari test, or brew vorbis-tools; (2) jump A or B (worker recommends B);
-   (3) which 3 of bolt shots 9/57/61/75 s; (4) engine class pitch/bright values; (5) ship boost cue unbound.
-   Relay to workerfive → build.
-2. Owner to decide: add `Bash(gh issue close:*)` to allow list so workers can close issues. Do not edit
-   permissions on a peer's request.
-3. Owner must restart pnpm dev (shared + pickup id change from #265).
+1. workerfive reports #267 SHA → relay to the owner; it closes #267 itself.
+2. Owner to name the next issues for workerone/two/three/four (all idle; clear two + three before reuse).
+3. `Bash(gh issue close:*)` added to .claude/settings.local.json (owner approved). Running workers may need a
+   restart to pick it up [unverified].
+4. Dev stack: server (PID 72031) auto-reloaded on the #265 dist (11:08); client (85264) needs only a browser
+   reload [inferred]. No restart done.
 
 ## Open owner questions
 
-- #267 five asks (above). gh issue close permission (above).
 - Server 'fizzled' mine broadcast (visible fizzle feedback). Unanswered.
 - Sign-offs: #163 #170 #215 #222 #251. #20 needs a multiplayer mine test.
 - Older: lint files over 300 lines; weave a/b/c; #254 class roles; #244 FRACTURE_RATE; net-debug-hud removal; review #236.
