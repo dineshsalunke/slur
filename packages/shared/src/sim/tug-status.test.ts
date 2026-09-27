@@ -18,6 +18,10 @@ function steps( seconds: number ): number {
     return Math.round( seconds / FIXED_DT );
 }
 
+function smoothstep( e: number ): number {
+    return e * e * ( 3 - 2 * e );
+}
+
 function cruising() {
     const s = { ...spawnShip(), shipId: SHIP };
     s.vz = t.maxCruise;
@@ -157,12 +161,12 @@ test( 'the ease is a smoothstep from the lifted cap back to top speed', () => {
     const s = cruising();
     catapult( s, cfg );
     fly( s, cfg.tugS - cfg.tugEaseS / 2 );
-    const half = t.maxCruise * ( 1 + cfg.tugGain * 0.5 );
+    const half = t.maxCruise * ( 1 + cfg.tugGain * smoothstep( 0.5 + FIXED_DT / cfg.tugEaseS ) );
     assert.ok( Math.abs( s.vz - half ) < t.maxCruise * 0.02, `vz ${ s.vz } half ${ half }` );
     const quarter = cruising();
     catapult( quarter, cfg );
     fly( quarter, cfg.tugS - cfg.tugEaseS / 4 );
-    const smooth = t.maxCruise * ( 1 + cfg.tugGain * 0.15625 );
+    const smooth = t.maxCruise * ( 1 + cfg.tugGain * smoothstep( 0.25 + FIXED_DT / cfg.tugEaseS ) );
     assert.ok( Math.abs( quarter.vz - smooth ) < t.maxCruise * 0.02, `vz ${ quarter.vz } smooth ${ smooth }` );
     fly( s, cfg.tugEaseS / 2 + 0.05 );
     assert.ok( Math.abs( s.vz - t.maxCruise ) < 1e-6, `vz ${ s.vz }` );

@@ -1,6 +1,6 @@
 export const MAX = 8;
 export const LATE_S = 0.25;
-export const DETACH_S = 0.5;
+export const DETACH_S = 0.25;
 export const ANCHOR_LET_GO_U = 60;
 export const UNLATCHED_S = 0.5;
 export const STALE_S = 6;
