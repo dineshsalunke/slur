@@ -12,22 +12,24 @@ export const ACT_SPEED: Readonly< Record< GrooveBand, number > > = { low: 1, mid
 
 const leadMemo = new Map< string, number >();
 
-export function crossSeconds( t: FlightTuning, dx: number ): number {
-    const s = spawnShip( 0, 0 );
+export function crossSeconds( t: FlightTuning, dx: number, from = 0 ): number {
+    const s = spawnShip( from, 0 );
     s.vz = t.maxCruise;
+    const to = from + dx;
     const input: PlayerInput = { seq: 0, throttle: 1, brake: 0, strafe: 0, jump: false };
     let at = -1;
     for ( let n = 0; n < SETTLE_HORIZON_TICKS; n++ ) {
-        input.strafe = strafeToward( t, dx - s.x, s.vx );
+        input.strafe = strafeToward( t, to - s.x, s.vx );
         simulate( s, input, FIXED_DT, t );
-        if ( ! isSettled( s, dx ) ) at = -1;
+        if ( ! isSettled( s, to ) ) at = -1;
         else if ( at < 0 ) at = n + 1;
     }
     return at < 0 ? Number.POSITIVE_INFINITY : at * FIXED_DT;
 }
 
-export function classLead( t: FlightTuning, act: GrooveBand, dx: number ): number {
-    return ACT_SPEED[ act ] * t.maxCruise * ( REACTION_S + crossSeconds( t, Math.abs( dx ) ) ) + 2 * t.halfL;
+export function classLead( t: FlightTuning, act: GrooveBand, dx: number, from = 0 ): number {
+    const cross = from === 0 ? crossSeconds( t, Math.abs( dx ) ) : crossSeconds( t, dx, from );
+    return ACT_SPEED[ act ] * t.maxCruise * ( REACTION_S + cross ) + 2 * t.halfL;
 }
 
 export function leadDistance( act: GrooveBand, dx: number ): number {

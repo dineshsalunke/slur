@@ -1274,7 +1274,7 @@ merge removes most pockets it scanned).
 - Lead distance for one class: `ACT_SPEED × maxCruise × (REACTION_S + crossSeconds) + 2 × halfL`. `REACTION_S` = 0.3 s. `ACT_SPEED` = 1.0 / 0.9 / 0.75 for acts low / mid / high.
 - `crossSeconds` flies the real `simulate()` with the kick-aware `strafeToward` until `isSettled` holds. It is measured, not a formula.
 - `leadDistance(act, dx)` takes the maximum over the 5 classes and rounds up to `CELL`.
-- Weave pitch = post 4u + `leadDistance(act, lane − 8u)`. The end margin before the funnel is one post (it was one pitch).
+- Weave pitch = post 4u + `leadDistance(act, lane − 8u)`. The end margin before the weave end is one post (it was one pitch).
 - Motif gate start = pin + `leadDistance(|to − from|)`. `noteBeats` spaces step and held notes by the lead. A motif after a weave gets a lead-in of `leadDistance(act, max |lane centre − x0|)`.
 - `phraseSegments(seed)` sets the length: 5 sections at minimum length, each with a full 480u weave.
 
@@ -1326,6 +1326,23 @@ The value in brackets is the value at `afcc66c`.
 - Length: 744–766 segments (at `afcc66c`: 744–768). Always 5 sections.
 - Flight, 5 classes × seeds 1–30: no change. The avoid pilot and the line pilot both have 0 bumps, 0 deaths and 30/30 finishes. Mean speed (avoid pilot, u/s): Interceptor 83.7, Fighter 95.5, Phantom 89.5, Comet 111.3, Freighter 121.7 (line pilot 121.9). This is 98.2–99.6% of each class's cap.
 - `pnpm test` (shared) at `b6e3372`: 521/521 pass.
+
+### Amendment — no weave funnel; the run-up comes from physics (#327, owner ruling 2026-09-27)
+
+The weave entry and exit narrowed over a 40u funnel (`WEAVE_FUNNEL`). The sim has only boxes, so each 4u row got its own box and the funnel drew as a 1u staircase. The owner chose **B: no funnel**. Each lane wall now starts as one straight face across the track at the weave start, and ends the same way.
+
+- **Run-up.** `weaveRunUp(spec)` is the open deck that a weave needs before its face. For each class, a ship starts settled at either deck edge (`±(HALF_WIDTH − halfW)`) and moves to the centre of the nearest lane. The time comes from the real `simulate()` (`crossSeconds` with a start position). Run-up = `ACT_SPEED × maxCruise × (REACTION_S + cross) + 2 × halfL`, the maximum over the 5 classes, rounded up to `CELL`.
+- **Plan.** The `set` arena before each weave is `max(PHRASE_ARENA_LEN, weaveRunUp)`. Every run-up is shorter than 280u, so no phrase length changes.
+
+| Run-up (u) | single lane | parallel lanes |
+|---|---|---|
+| Act 1 (low), 20u | 220 | — |
+| Act 2 (mid), 16u / 20+16u | 200 | 180 |
+| Act 3 (high), 14u / 16+14u | 168 | 156–160 |
+
+- The posts now run the full weave, so a lane has about one more post. Posts per lane, seeds 1–30: act 1 3, act 2 3, act 3 14u lane 5 and 16u lane 4.
+- Weave obstacles on the 5 digest seeds: 1263 → 164. All obstacles: 1730 → 631.
+- Flight. A pilot that starts at either deck edge or the centre, and lines up only within the run-up, has 0 bumps and 0 deaths in every lane shape, for 5 classes at act speed (`weave.test.ts`). At 25% of the run-up, 28 of 30 flights bump or die. On phrase seeds 1–30, a band pilot (lane line from the run-up start, avoid pilot elsewhere) has 0 bumps and 0 deaths in weaves for all classes. It has 1 Freighter bump in a twist motif (seed 4, z 8241), and that bump is also present at HEAD `d48a5e4`.
 
 ## ADR-024 — 4u fixed-distance strafe step
 

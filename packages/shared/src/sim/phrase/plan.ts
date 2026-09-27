@@ -3,7 +3,7 @@ import type { MotifNote } from '../score/notes.js';
 import { SEG_LEN, START_SAFE } from '../space.js';
 import { centredStart, MOTIF_LEAD_BEATS, motifLeadIn, motifPhraseLen, snapCell } from './motif-emit.js';
 import { drawVocabulary, type SectionMotif, type TwistKind } from './vocabulary.js';
-import { rollWeave, type WeaveSpec, weaveExitOffset } from './weave-emit.js';
+import { rollWeave, type WeaveSpec, weaveExitOffset, weaveRunUp } from './weave-emit.js';
 
 export type PhraseRole = 'open' | 'teach' | 'repeat' | 'set' | 'weave' | 'twist' | 'rest' | 'finish';
 
@@ -87,7 +87,7 @@ function roleLengths( seed: number, k: number, m: SectionMotif, act: GrooveBand 
         open: PHRASE_ARENA_LEN,
         teach: motif( 'teach' ),
         repeat: motif( 'repeat' ),
-        set: PHRASE_ARENA_LEN,
+        set: Math.max( PHRASE_ARENA_LEN, weaveRunUp( rollWeave( seed, act, k ) ) ),
         weave: PHRASE_WEAVE_MIN,
         twist: motif( 'twist' ),
         rest: PHRASE_REST_LEN,

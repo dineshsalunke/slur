@@ -1,9 +1,10 @@
-import { CELL } from '../../constants.js';
+import { CELL, type FlightTuning } from '../../constants.js';
+import { ALL_CLASS_TUNINGS } from '../../ship-classes.js';
 import type { GrooveBand } from '../groove/grammar.js';
 import type { GrooveObstacle, ObstacleKind } from '../groove/islands.js';
 import { hash2, mulberry32 } from '../rng.js';
-import { HALF_WIDTH, lerp, MIN_LANE, SEG_LEN } from '../space.js';
-import { leadDistance } from './pitch.js';
+import { HALF_WIDTH, MIN_LANE } from '../space.js';
+import { classLead, leadDistance } from './pitch.js';
 
 export type WeaveDivider = 'hole' | 'wall';
 
@@ -36,12 +37,13 @@ export const WEAVE_PARALLEL: Readonly< Record< GrooveBand, { chance: number; ban
 
 export const WEAVE_SLALOM_GAP = MIN_LANE;
 export const WEAVE_POST_LEN = CELL;
-export const WEAVE_FUNNEL = 2 * SEG_LEN;
 export const WEAVE_GAPS: readonly number[] = [ 4, 6, 8 ];
 export const WEAVE_WALL_MIN = 1;
 
 const SALT_WEAVE = 0x6e3b1f27 | 0;
 const SALT_WEAVE_LINE = 0x1f8d4ab3 | 0;
+
+const runUpMemo = new Map< string, number >();
 
 export function rollWeave( seed: number, act: GrooveBand, slot: number ): WeaveSpec {
     const rand = mulberry32( hash2( ( seed ^ SALT_WEAVE ) | 0, slot ) );
@@ -54,10 +56,6 @@ export function rollWeave( seed: number, act: GrooveBand, slot: number ): WeaveS
     return { act, bands, divider, gap, salt };
 }
 
-export function weaveOpenness( z0: number, z1: number, z: number ): number {
-    return Math.max( 0, Math.min( 1, ( z - z0 ) / WEAVE_FUNNEL, ( z1 - z ) / WEAVE_FUNNEL ) );
-}
-
 export function weavePitch( spec: WeaveSpec, k: number ): number {
     return WEAVE_POST_LEN + leadDistance( spec.act, spec.bands[ k ] - WEAVE_SLALOM_GAP );
 }
@@ -66,41 +64,58 @@ function rowCentre( z: number ): number {
     return Math.floor( z / CELL ) * CELL + CELL / 2;
 }
 
-export function weaveLanesAt( spec: WeaveSpec, z0: number, z1: number, z: number ): WeaveBand[] {
-    const t = weaveOpenness( z0, z1, rowCentre( z ) );
-    const half = ( spec.gap * t ) / 2;
-    const single = spec.bands.length === 1;
-    return spec.bands.map( ( w, k ) => {
-        const lo = single || k === 0 ? -HALF_WIDTH : half;
-        const hi = single || k === 1 ? HALF_WIDTH : -half;
-        const at = single ? -w / 2 : k === 0 ? hi - w : lo;
-        return {
-            lo: Math.max( lo, Math.floor( lerp( lo, at, t ) ) ),
-            hi: Math.min( hi, Math.ceil( lerp( hi, at + w, t ) ) ),
-        };
-    } );
+export function weaveLanes( spec: WeaveSpec ): WeaveBand[] {
+    const half = spec.gap / 2;
+    if ( spec.bands.length === 1 ) return [ { lo: -spec.bands[ 0 ] / 2, hi: spec.bands[ 0 ] / 2 } ];
+    return [
+        { lo: -half - spec.bands[ 0 ], hi: -half },
+        { lo: half, hi: half + spec.bands[ 1 ] },
+    ];
+}
+
+function laneCentre( b: WeaveBand ): number {
+    return ( b.lo + b.hi ) / 2;
+}
+
+function edgeLead( t: FlightTuning, act: GrooveBand, centres: readonly number[] ): number {
+    const edge = HALF_WIDTH - t.halfW;
+    return Math.max(
+        ...[ -edge, edge ].map( ( x ) => {
+            const c = centres.reduce( ( best, v ) => ( Math.abs( v - x ) < Math.abs( best - x ) ? v : best ) );
+            return classLead( t, act, c - x, x );
+        } ),
+    );
+}
+
+export function weaveRunUp( spec: WeaveSpec ): number {
+    const centres = weaveLanes( spec ).map( laneCentre );
+    const key = `${ spec.act }:${ centres.join( ',' ) }`;
+    let d = runUpMemo.get( key );
+    if ( d === undefined ) {
+        d =
+            Math.ceil( Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => edgeLead( t, spec.act, centres ) ) ) / CELL ) *
+            CELL;
+        runUpMemo.set( key, d );
+    }
+    return d;
 }
 
 export function weaveExitOffset( spec: WeaveSpec, x: number ): number {
-    const lanes = weaveLanesAt( spec, 0, 4 * WEAVE_FUNNEL, 2 * WEAVE_FUNNEL );
-    return Math.max( ...lanes.map( ( b ) => Math.abs( ( b.lo + b.hi ) / 2 - x ) ) );
+    return Math.max( ...weaveLanes( spec ).map( ( b ) => Math.abs( laneCentre( b ) - x ) ) );
 }
 
 function postSide( spec: WeaveSpec, z0: number, z1: number, k: number, z: number ): number | null {
-    const start = z0 + WEAVE_FUNNEL;
-    const end = z1 - WEAVE_FUNNEL;
     const zc = rowCentre( z );
-    if ( zc < start || zc > end ) return null;
     const pitch = weavePitch( spec, k );
-    const along = zc - start - pitch;
+    const along = zc - z0 - pitch;
     if ( along < 0 || along % pitch >= WEAVE_POST_LEN ) return null;
     const i = Math.floor( along / pitch );
-    if ( start + ( i + 1 ) * pitch + WEAVE_POST_LEN > end ) return null;
+    if ( z0 + ( i + 1 ) * pitch + WEAVE_POST_LEN > z1 ) return null;
     return ( i + hash2( spec.salt, k ) ) & 1;
 }
 
 export function weaveBandsAt( spec: WeaveSpec, z0: number, z1: number, z: number ): WeaveBand[] {
-    return weaveLanesAt( spec, z0, z1, z ).map( ( lane, k ) => {
+    return weaveLanes( spec ).map( ( lane, k ) => {
         const side = postSide( spec, z0, z1, k, z );
         if ( side === null ) return lane;
         return side === 0
@@ -110,9 +125,8 @@ export function weaveBandsAt( spec: WeaveSpec, z0: number, z1: number, z: number
 }
 
 function rowPieces( spec: WeaveSpec, z0: number, z1: number, z: number ): Piece[] {
-    const lanes = weaveLanesAt( spec, z0, z1, z );
+    const lanes = weaveLanes( spec );
     const open = weaveBandsAt( spec, z0, z1, z );
-    const holed = spec.divider === 'hole' && weaveOpenness( z0, z1, rowCentre( z ) ) === 1;
     const out: Piece[] = [];
     const block = ( x0: number, x1: number ): void => {
         if ( x1 - x0 >= WEAVE_WALL_MIN ) out.push( { kind: 'island', x0, x1 } );
@@ -123,7 +137,7 @@ function rowPieces( spec: WeaveSpec, z0: number, z1: number, z: number ): Piece[
         block( lane.lo, open[ k ].lo );
         block( open[ k ].hi, lane.hi );
         cursor = lane.hi;
-        if ( k === 0 && holed ) {
+        if ( k === 0 && spec.divider === 'hole' ) {
             block( cursor, -spec.gap / 2 );
             out.push( { kind: 'hole', x0: -spec.gap / 2, x1: spec.gap / 2 } );
             cursor = spec.gap / 2;
