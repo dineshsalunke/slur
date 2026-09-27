@@ -49,15 +49,16 @@ function plate( d: string ): Shape {
 }
 
 const SQUARE = roundRectPath( 8, 8, 32, 32, 2 );
+const DIAMOND = polyPath( '24,2 38,24 24,46 10,24' );
 const PORTAL_RING = { d: ellipsePath( 24, 24, 9, 14 ), stroke: MARIGOLD, width: 3 };
 
 const GLYPHS: Record< number, Shape[] > = {
     [ HeldPower.none ]: [ { d: SQUARE, stroke: MARIGOLD, width: 2.5 } ],
     [ HeldPower.bolt ]: [
-        plate( SQUARE ),
-        { d: polyPath( '24,9 39,9 39,39 24,39' ), fill: SHEEN },
-        { d: roundRectPath( 16, 16, 16, 16, 1.5 ), fill: MARIGOLD },
-        { d: polyPath( '24,19 29,19 29,29 24,29' ), fill: GOLD },
+        plate( DIAMOND ),
+        { d: polyPath( '24,2 31,24 24,46' ), fill: SHEEN },
+        { d: polyPath( '24,12 31,24 24,36 17,24' ), fill: MARIGOLD },
+        { d: polyPath( '24,16 28,24 24,32' ), fill: GOLD },
     ],
     [ HeldPower.seeker ]: [
         plate( roundRectPath( 9, 9, 30, 30, 5 ) ),
