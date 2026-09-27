@@ -130,6 +130,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    Decision commented on #327. → workerone (cleared, resumed), build direct; holds sim/phrase/* + tests.
    #325 DONE 1fc6aef (closed): ring centre 3, inner R3, rim 0.9; catch portalY 3 + portalRideY 0.8 (sim ship y=0
    on deck); widths 2.8@0.35 … 6@3; draws +6. Hosted rooms need :2567 restart if tsx watch missed shared dist.
+   #326 DONE d48a5e4 (closed): rope 0.08u, ≥1.5 px, 900 u/s throw 0.08–0.2 s, coil R 1.6 (mostly under hull;
+   COIL_R dial), draws +2 active. workertwo's "portalH typecheck errors" = transient stale dist (no source refs,
+   dist has portalRideY; checked). workertwo idle, no files.
    My read of ring-front.png: glowing marigold circle dominates; graphite rim barely reads [eyeballed].
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
