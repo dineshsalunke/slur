@@ -34,8 +34,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #306 /test-level reset key + editor right-click Start here (R is rear view) | cleared + briefed 2026-09-27, plan due before build | claim pending |
-| workertwo | w2P:pF | #305 strafe kick 4u/tap: owner picked B (fixed-distance step), keep cheap swap to A (retune) | briefed 2026-09-27, plan due before build | claim pending |
+| workerone | w2P:pD | #306 reset (Backspace; Shift+Backspace clears start) + right-click Start here, start in URL ?start=x,z (owner GO); then #307 delete saved track (plan first) | building #306 | run-sim.ts + test, test-level-dev/*, test-level-room.ts, start-point/*, editor-map.tsx, track-editor.state.ts, track-editor.utils.ts (+test), editor-start-menu.tsx |
+| workertwo | w2P:pF | #305 strafe kick B: kickDistance 4 (0 = A), window = 4/strafeKick, stop dead on release (owner GO) | building | step.ts, constants.ts, ship-classes.ts, sim/types.ts, schema.ts, pacing/pockets.ts, strafe-kick.test.ts |
 | workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded) | idle; OWNER: HOLD S4 until authored tracks exist (2026-09-27) | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
