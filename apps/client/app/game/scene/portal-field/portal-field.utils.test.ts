@@ -1,7 +1,14 @@
 import { DEFAULT_PORTAL_CONFIG, type PortalState, portalHalfChord } from '@slur/shared';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { GATE_RING, PORTAL_ARMED_INTENSITY, PORTAL_IDLE_INTENSITY } from './portal-field.constants';
+import { buildMembraneMaterial, membraneGeometry } from './membrane-material';
+import {
+    GATE_RING,
+    MEMBRANE,
+    MEMBRANE_SEGMENTS,
+    PORTAL_ARMED_INTENSITY,
+    PORTAL_IDLE_INTENSITY,
+} from './portal-field.constants';
 import { collectPortalEnds, gateShellGeometry, gateSleeveGeometry, portalGlow } from './portal-field.utils';
 
 function portal( over: Partial< PortalState > ): PortalState {
@@ -61,6 +68,26 @@ describe( 'gate aperture', () => {
         const g = gateShellGeometry();
         g.computeBoundingBox();
         expect( g.boundingBox?.min.y ).toBeCloseTo( portalY - GATE_RING.outer, 1 );
+    } );
+} );
+
+describe( 'membrane', () => {
+    it( 'fills the aperture above the deck and stops at the deck line', () => {
+        const { portalR, portalY } = DEFAULT_PORTAL_CONFIG;
+        const g = membraneGeometry( MEMBRANE, MEMBRANE_SEGMENTS );
+        g.computeBoundingBox();
+        expect( g.boundingBox?.min.y ).toBeCloseTo( 0, 3 );
+        expect( g.boundingBox?.max.y ).toBeCloseTo( portalY + portalR, 2 );
+        expect( g.boundingBox?.max.x ).toBeLessThanOrEqual( portalR + 1e-6 );
+        g.dispose();
+    } );
+
+    it( 'glows without writing depth, so the ship and track stay visible through it', () => {
+        const m = buildMembraneMaterial( MEMBRANE );
+        expect( m.depthWrite ).toBe( false );
+        expect( m.transparent ).toBe( true );
+        expect( m.blending ).toBe( THREE.AdditiveBlending );
+        m.dispose();
     } );
 } );
 

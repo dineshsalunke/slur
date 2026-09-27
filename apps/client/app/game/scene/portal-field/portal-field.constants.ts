@@ -1,6 +1,7 @@
 import { DEFAULT_PORTAL_CONFIG } from '@slur/shared';
 import * as THREE from 'three';
 import type { RingSpec, SleeveSpec } from '../portal-ring';
+import type { MembraneShape } from './membrane-material';
 
 export const MAX_PORTAL_ENDS = 32;
 export const PORTAL_ARMED_INTENSITY = 3;
@@ -18,6 +19,8 @@ export const GATE_RING: RingSpec = {
 };
 export const GATE_SLEEVE: SleeveSpec = { inset: 0.03, reach: 0.11, proud: 0.015 };
 export const GATE_Y = DEFAULT_PORTAL_CONFIG.portalY;
+export const MEMBRANE: MembraneShape = { radius: DEFAULT_PORTAL_CONFIG.portalR, centreY: GATE_Y };
+export const MEMBRANE_SEGMENTS = 48;
 
 export const LUG_WIDTH = 1.0;
 export const LUG_HEIGHT = 0.55;

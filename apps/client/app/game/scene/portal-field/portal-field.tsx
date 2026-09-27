@@ -10,13 +10,14 @@ import {
     disposePortalLook,
     type PortalEndSink,
     type PortalFrame,
+    tuneMembrane,
     writePortalEnd,
 } from './portal-field.utils';
 
 export function PortalField() {
     const look = useMemo( buildPortalLook, [] );
     const frame = useMemo< PortalFrame >(
-        () => ( { shell: null, sleeve: null, mark: null, ends: 0, marks: 0, t: 0 } ),
+        () => ( { shell: null, sleeve: null, membrane: null, mark: null, ends: 0, marks: 0, t: 0 } ),
         [],
     );
     const sink = useMemo< PortalEndSink >(
@@ -38,6 +39,13 @@ export function PortalField() {
         },
         [ frame ],
     );
+    const setMembrane = useCallback(
+        ( mesh: THREE.InstancedMesh | null ) => {
+            frame.membrane = mesh;
+            if ( mesh ) mesh.count = 0;
+        },
+        [ frame ],
+    );
     const setMark = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
             frame.mark = mesh;
@@ -53,14 +61,16 @@ export function PortalField() {
     );
 
     useFrame( ( state ) => {
-        const { shell, sleeve, mark } = frame;
-        if ( ! shell || ! sleeve || ! mark ) return;
+        const { shell, sleeve, membrane, mark } = frame;
+        if ( ! shell || ! sleeve || ! membrane || ! mark ) return;
         frame.ends = 0;
         frame.marks = 0;
         frame.t = state.clock.elapsedTime;
         collectPortalEnds( blockWorld.portals.values(), sink );
+        tuneMembrane( look.film, frame.t );
         commitInstances( shell, frame.ends );
         commitInstances( sleeve, frame.ends );
+        commitInstances( membrane, frame.ends );
         commitInstances( mark, frame.marks );
     } );
 
@@ -75,6 +85,11 @@ export function PortalField() {
                 ref={ setSleeve }
                 frustumCulled={ false }
                 args={ [ look.sleeve, look.glow, MAX_PORTAL_ENDS ] }
+            />
+            <instancedMesh
+                ref={ setMembrane }
+                frustumCulled={ false }
+                args={ [ look.membrane, look.film, MAX_PORTAL_ENDS ] }
             />
             <instancedMesh
                 ref={ setMark }

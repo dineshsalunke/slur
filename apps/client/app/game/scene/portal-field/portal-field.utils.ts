@@ -1,8 +1,10 @@
 import type { PortalState } from '@slur/shared';
 import * as THREE from 'three';
+import { num } from '../../../dev/tuning';
 import { accent } from '../accent';
 import { boxPart, mergeParts, ringGeometry, ringSleeveGeometry } from '../portal-ring';
 import { graphiteSurface } from '../track-materials';
+import { buildMembraneMaterial, membraneGeometry } from './membrane-material';
 import {
     _c,
     _o,
@@ -19,6 +21,8 @@ import {
     MARK_WIDTH,
     MAX_PORTAL_ENDS,
     MAX_PORTAL_MARKS,
+    MEMBRANE,
+    MEMBRANE_SEGMENTS,
     PORTAL_ARMED_INTENSITY,
     PORTAL_IDLE_INTENSITY,
     PORTAL_PULSE_DEPTH,
@@ -31,13 +35,16 @@ export interface PortalLook {
     shell: THREE.BufferGeometry;
     sleeve: THREE.BufferGeometry;
     mark: THREE.BufferGeometry;
+    membrane: THREE.BufferGeometry;
     metal: THREE.MeshStandardMaterial;
     glow: THREE.MeshBasicMaterial;
+    film: THREE.ShaderMaterial;
 }
 
 export interface PortalFrame {
     shell: THREE.InstancedMesh | null;
     sleeve: THREE.InstancedMesh | null;
+    membrane: THREE.InstancedMesh | null;
     mark: THREE.InstancedMesh | null;
     ends: number;
     marks: number;
@@ -60,8 +67,10 @@ export function buildPortalLook(): PortalLook {
         shell: gateShellGeometry(),
         sleeve: gateSleeveGeometry(),
         mark: new THREE.BoxGeometry( MARK_WIDTH, MARK_HEIGHT, MARK_DEPTH ).translate( 0, LUG_Y, 0 ),
+        membrane: membraneGeometry( MEMBRANE, MEMBRANE_SEGMENTS ),
         metal: new THREE.MeshStandardMaterial( graphiteSurface() ),
         glow: new THREE.MeshBasicMaterial(),
+        film: buildMembraneMaterial( MEMBRANE ),
     };
 }
 
@@ -69,8 +78,17 @@ export function disposePortalLook( look: PortalLook ): void {
     look.shell.dispose();
     look.sleeve.dispose();
     look.mark.dispose();
+    look.membrane.dispose();
     look.metal.dispose();
     look.glow.dispose();
+    look.film.dispose();
+}
+
+export function tuneMembrane( film: THREE.ShaderMaterial, t: number ): void {
+    film.uniforms.uTime.value = t;
+    film.uniforms.uOpacity.value = num( 'Portal.membraneOpacity' );
+    film.uniforms.uGlow.value = num( 'Portal.membraneGlow' );
+    film.uniforms.uFlow.value = num( 'Portal.membraneFlow' );
 }
 
 export function collectPortalEnds( portals: Iterable< PortalState >, sink: PortalEndSink ): void {
@@ -98,13 +116,17 @@ export function writePortalEnd(
     live: boolean,
     marks: number,
 ): void {
-    const { shell, sleeve, mark } = frame;
-    if ( ! shell || ! sleeve || ! mark || frame.ends >= MAX_PORTAL_ENDS ) return;
+    const { shell, sleeve, membrane, mark } = frame;
+    if ( ! shell || ! sleeve || ! membrane || ! mark || frame.ends >= MAX_PORTAL_ENDS ) return;
     const i = frame.ends++;
-    _c.copy( accent() ).multiplyScalar( portalGlow( live, frame.t ) );
+    const glow = portalGlow( live, frame.t );
     _o.position.set( x, y, z );
     _o.updateMatrix();
     shell.setMatrixAt( i, _o.matrix );
+    membrane.setMatrixAt( i, _o.matrix );
+    _c.copy( accent() ).multiplyScalar( glow / PORTAL_ARMED_INTENSITY );
+    membrane.setColorAt( i, _c );
+    _c.copy( accent() ).multiplyScalar( glow );
     sleeve.setMatrixAt( i, _o.matrix );
     sleeve.setColorAt( i, _c );
     for ( const dx of MARK_OFFSETS[ marks - 1 ] ) {
