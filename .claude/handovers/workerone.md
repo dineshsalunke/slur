@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #318 blocks missing in corridor until close — DONE · Updated: 2026-09-27 13:52
+Agent: workerone · Lane: #318 blocks missing in corridor until close — DONE · Updated: 2026-09-27 (pre-restart)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -22,7 +22,7 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Uncommitted
 
-None of mine. `tracks/groove-20260921.json` shows as deleted. That is owner data, not mine.
+None of mine. Owner data in `tracks/`, not mine, do not commit: `groove-20260921.json` deleted, `phrase-20260921.json` untracked (likely the owner's re-save).
 
 ## Held files
 
@@ -30,7 +30,7 @@ None. Claim released.
 
 ## Next
 
-Idle. Wait for the supervisor.
+Idle. Machine restart pending. After resume: run `ListAgents`, read `CLAUDE.local.md`, then wait for the supervisor. The supervisor handover 1647fa6 says the owner confirmed #318.
 
 ## Open questions
 
