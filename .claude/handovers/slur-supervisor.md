@@ -36,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #307 DONE ca9e35a (saved list moved into editor store, owner-visible departure). #308 undo/redo owner GO; cleared + resumed | building #308 | track-editor.state.ts, editor-history.utils.ts (+test), editor-undo.tsx, track-editor.tsx, track-editor.constants.ts |
-| workertwo | w2P:pF | #305 docs DONE 8d37e8d, SHA commented. Seam c1b289b, cleared + resumed on MEMORY.md compaction (< 17 KB) | working | MEMORY.md + merged memory files (list due) |
+| workertwo | w2P:pF | MEMORY.md compacted 20892 → 16052 B (39102e7), hooks only | idle, no lane | none |
 | workerthree | w2P:pG | #310 GO (supervisor, within owner scope): delete rail-glow.ts, use-rail-mask.ts, back-fill/*; edits in scene/*, tuning-schema/panel, ADD, ART_MATERIALS, perf-analysis SKILL + perf.mjs. Phrase S4 HOLD | building | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
@@ -63,7 +63,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
   Reopened for the eraser fix; workerone closes it again with the SHA.
 - **Untracked `tracks/groove-20260921-decompiled.json`** (saved 02:19): asked the owner if it is theirs →
   commit if yes, delete if not. Unanswered.
-- MEMORY.md compaction delegated to workertwo (2026-09-27).
+- MEMORY.md compacted to 16 KB (39102e7).
 - **Readability, still to ask the owner:** marigold glow on post faces; posts below camera eye line; floor
   chevrons at gaps. Owner stopped the multi-select to clarify spacing first.
 
@@ -89,7 +89,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 1. workerone #308 → report + owner check on /test-level.
 2. workerthree #310 → relay tap diff / draw calls / GPU ms to owner.
-3. workertwo MEMORY.md → check the size is < 17 KB.
+3. workertwo idle: offer a lane (e.g. the pilot check for the non-monotonic lead, if the owner says yes).
 4. Ask the owner: lead non-monotonic after #305 — investigate the pilot?
 5. Later candidates: #291 boomerang, #297 membrane, #293 hazards, #294 parry, #299 Seeker.flyY.
 
