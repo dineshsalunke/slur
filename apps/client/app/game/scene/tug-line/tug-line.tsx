@@ -4,8 +4,8 @@ import { useWorld } from 'koota/react';
 import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { drainTugs } from '../tug-events';
-import { MAX } from './tug-line.constants';
-import { placeTether, spawnTether, tetherDone } from './tug-line.utils';
+import { INSTANCES_PER_TETHER, MAX } from './tug-line.constants';
+import { placeTether, type RopeView, readView, spawnTether, tetherDone } from './tug-line.utils';
 
 export interface Tether {
     ownerId: string;
@@ -14,12 +14,14 @@ export interface Tether {
     y: number;
     z: number;
     age: number;
+    throwS: number;
 }
 
 export function TugLine() {
     const world = useWorld();
     const meshRef = useRef< THREE.InstancedMesh | null >( null );
     const tethers = useMemo< Tether[] >( () => [], [] );
+    const view = useMemo< RopeView >( () => ( { cam: new THREE.Vector3(), pxPerUnit: 1 } ), [] );
     const onTug = useMemo( () => ( e: TugEvent ) => spawnTether( tethers, e ), [ tethers ] );
 
     const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
@@ -27,14 +29,15 @@ export function TugLine() {
         if ( mesh ) mesh.count = 0;
     }, [] );
 
-    useFrame( ( _state, delta ) => {
+    useFrame( ( state, delta ) => {
         const mesh = meshRef.current;
         if ( ! mesh ) return;
         drainTugs( onTug );
+        readView( state, view );
         let n = 0;
         for ( const t of tethers ) {
             t.age += delta;
-            if ( ! tetherDone( t ) && placeTether( world, mesh, n, t ) ) n++;
+            if ( ! tetherDone( t ) ) n += placeTether( world, mesh, n, t, view );
         }
         while ( tethers.length > 0 && tetherDone( tethers[ 0 ] ) ) tethers.shift();
         mesh.count = n;
@@ -43,7 +46,12 @@ export function TugLine() {
     } );
 
     return (
-        <instancedMesh ref={ setMesh } frustumCulled={ false } renderOrder={ 2 } args={ [ undefined, undefined, MAX ] }>
+        <instancedMesh
+            ref={ setMesh }
+            frustumCulled={ false }
+            renderOrder={ 2 }
+            args={ [ undefined, undefined, MAX * INSTANCES_PER_TETHER ] }
+        >
             <boxGeometry args={ [ 1, 1, 1 ] } />
             <meshBasicMaterial transparent depthWrite={ false } blending={ THREE.AdditiveBlending } />
         </instancedMesh>
