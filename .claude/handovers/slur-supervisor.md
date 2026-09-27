@@ -109,8 +109,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    #320 DONE b760826 (closed): arch clear 5.94u × 4.97u; draws pair 131, 135–136 during rings; FOV 70→78.9,
    back in ~0.3 s. Owner Q open: ~1 amber frame after exit (bloom of near arch + burst) — tone down?
    #322 workerone plan APPROVED (arc InstancedMesh +1 draw, layer 2 kept out of the mirror, corner keeps hint
-   only; tick on any selection change; local ship only; touch unchanged). BUILDING. Holds game/scene/power-arc/*,
-   net-canvas.tsx, input/power-select.ts, hud/power-rack, deletes hud/power-cell + power-gem, GDD HUD bullet.
+   only; tick on any selection change; local ship only; touch unchanged). DONE 7696144 (closed; handover
+   b2bfe54): 124 draws (+1), no arc in mirror, glyphs ~40 px, MIN_BACK 3.4u for bob. workerone idle, no files.
+   Leftover (low): unused `--drop-shadow-power-gem` token in app.css. Owner checks pending: #320, #321, #322.
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
