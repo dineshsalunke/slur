@@ -1324,3 +1324,35 @@ The value in brackets is the value at `afcc66c`.
 - Length: 744–766 segments (at `afcc66c`: 744–768). Always 5 sections.
 - Flight, 5 classes × seeds 1–30: no change. The avoid pilot and the line pilot both have 0 bumps, 0 deaths and 30/30 finishes. Mean speed (avoid pilot, u/s): Interceptor 83.7, Fighter 95.5, Phantom 89.5, Comet 111.3, Freighter 121.7 (line pilot 121.9). This is 98.2–99.6% of each class's cap.
 - `pnpm test` (shared) at `b6e3372`: 521/521 pass.
+
+## ADR-024 — 4u fixed-distance strafe step
+
+**Date:** 2026-09-27 · **Status:** Accepted (owner flew it on `/test-level` and approved it, 2026-09-27) · **Supersedes:** the #256 speed-floor kick · **Issue:** #305 · **Built in:** `b6e3372`
+
+### Context
+
+The #256 kick set the lateral speed to at least `strafeKick`, and `strafeAccel` added to it on every held tick. So the distance of a tap followed the tap length. Measured at 60 Hz: a 1-tick tap moved 1.6–2.4u, and a 133 ms tap moved 8.3–10.9u. A human tap lasts 50–130 ms, so one tap moved 3u to 11u. A player could not place the ship on a lane.
+
+### Options
+
+- **A. Retune only.** Set `strafeKick = 4 × strafeDamp` and keep the speed floor. A 1-tick tap moves 4u. A 100 ms tap moves much more (inferred ~15u), because accel still adds to it. It has no state and no schema change.
+- **B. Fixed-distance step.** A press starts a step that carries the ship exactly 4u. The ship keeps the step state.
+
+### Decision
+
+1. **B.** Each press moves the ship `kickDistance` (4u, one `CELL`) at `strafeKick`, for every class. The step lasts one kick window, `kickDistance / strafeKick`: 80 ms (Interceptor) to 121 ms (Freighter).
+2. **Stop dead on release.** A tap shorter than the window still moves exactly 4u. Then `vx` goes to 0. The ship does not coast past the step.
+3. **Hold.** A press held past the window leaves the step at `strafeKick`, and the ramp at `strafeAccel` takes over.
+4. **Repeat and reverse.** A second press in the same direction adds 4u. A press in the other direction starts a new step. A ship that already moves faster than `strafeKick` in the press direction gets no step. A stun, a death or a respawn cancels the step.
+5. **Analog threshold.** Any strafe past `STRAFE_PRESS` (0.5) is a press and gives the full 4u. A touch pad and a stick give the same step as a key.
+6. **No step for a towed ship.** The tow scales strafe by `TOW_STRAFE_SCALE` (0.3). That is below the threshold, so a towed ship keeps the proportional ramp.
+7. **A stays the fallback, by config only.** `kickDistance: 0` for a class in `ship-classes.ts` restores the speed-floor kick. Option A then needs only the `strafeKick` retune. There is no code change.
+
+### Consequences
+
+- Tap travel (u) after `b6e3372`, for taps of 1 tick, 50, 83, 100 and 133 ms: 4.00 on every class up to the class window. Past the window the travel grows: Interceptor 4.00 / 4.00 / 4.92 / 5.95 / 8.31, Freighter 4.00 / 4.00 / 4.00 / 4.00 / 5.50. The full table for all five classes is in the `b6e3372` commit body.
+- **Held-strafe lag.** A held strafe trails the #256 kick by about one kick window. At 200 / 300 ms: Interceptor 16.73 / 30.60u became 12.85 / 24.28u, Freighter 10.93 / 19.93u became 7.26 / 13.51u. The owner accepted this with B.
+- The sim pilot (`strafeToward` in `pacing/pockets.ts`) caps its press at 0.99 × `STRAFE_PRESS` when the error is below `kickDistance`. So a fine correction ramps and does not commit a 4u step.
+- **Phrase pacing moved.** The pacing lead (`leadDistance`) comes from pilot cross times, so the phrase digests were re-frozen in `b6e3372` (owner decision). The weave and groove digests did not change. The lead no longer rises with the lateral offset: an 8u offset needs more lead than a 12u offset, so a 16u lane has a longer pitch than a 20u lane. The re-measured lead, pitch, posts and length are in ADR-023, *Re-measured after #305* (`8d3abdb`).
+- The track contract did not change. `TRACK_CONTRACT` has no kick term, and `rosterContractFailures` passes.
+- The step is ship state (`kickLeft`, `kicking`, `strafeHeld`) and syncs for prediction and replay.

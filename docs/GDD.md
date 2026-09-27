@@ -362,22 +362,31 @@ is a model + a `classId` (balance for free), adding a class is a new archetype. 
 **`shipId`** (set once at join/hot-swap); the sim resolves `shipId → class → tuning` identically on client and
 server (the netcode "one shared `simulate()`" requirement). Model/scale live client-side under the same id.
 
-**Flight stats (as built, #247 retune, `821a78a`).** The source of truth is
-`packages/shared/src/ship-classes.ts`. This table copies it.
+**Flight stats (as built, #247 retune `821a78a`, kick step #305 `b6e3372`).** The source of truth is
+`packages/shared/src/ship-classes.ts`. This table copies it. The kick window is `kickDistance / strafeKick`.
 
-| Class | Top speed | Accel | Brake | Strafe accel / clamp | Grip (damp) | Strafe kick | Jump h / jumps | `weaveThreadSpeed` |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| Interceptor | 84 | 60 | 150 | 367 / 166 | 31.5 | 50 | 3.0 / 2 | 122.2 |
-| **Fighter** | 96 | 58 | 130 | 288 / 140 | 24.5 | 42 | 3.2 / 2 | 108.3 |
-| Comet | 112 | 66 | 100 | 290 / 136 | 14.4 | 34 | 2.8 / 2 | 108.7 |
-| Phantom | 90 | 52 | 120 | 270 / 135 | 23.4 | 38 | 4.2 / **3** | 104.9 |
-| Freighter | **124** | 30 | 150 | 236 / 130 | 20 | 33 | 3.6 / 2 | 98.0 |
+| Class | Top speed | Accel | Brake | Strafe accel / clamp | Grip (damp) | Strafe kick (u/s) | `kickDistance` | Kick window | Jump h / jumps | `weaveThreadSpeed` |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| Interceptor | 84 | 60 | 150 | 367 / 166 | 31.5 | 50 | 4 | 80 ms | 3.0 / 2 | 122.2 |
+| **Fighter** | 96 | 58 | 130 | 288 / 140 | 24.5 | 42 | 4 | 95 ms | 3.2 / 2 | 108.3 |
+| Comet | 112 | 66 | 100 | 290 / 136 | 14.4 | 34 | 4 | 118 ms | 2.8 / 2 | 108.7 |
+| Phantom | 90 | 52 | 120 | 270 / 135 | 23.4 | 38 | 4 | 105 ms | 4.2 / **3** | 104.9 |
+| Freighter | **124** | 30 | 150 | 236 / 130 | 20 | 33 | 4 | 121 ms | 3.6 / 2 | 98.0 |
 
-**Strafe kick (#256).** A strafe press sets the lateral speed to at least `strafeKick · |strafe|` in the press
-direction at once, then ramps at `strafeAccel` as before. A 100 ms tap moves every class one CELL or more. The
-kick also reverses a drift at once. The track contract ignores it: `TRACK_CONTRACT` and `weaveThreadSpeed` read
-only strafe accel and clamp, and the contract ship has kick 0. So the kick only makes a ship more agile than the
-track assumes.
+**Strafe kick (#305, `b6e3372`; first built in #256).** A strafe press is a fixed step. When `|strafe|` passes
+`STRAFE_PRESS` (0.5), the ship moves `kickDistance` (4u, one CELL) sideways at `strafeKick`. The step lasts one
+kick window. A tap shorter than the window still moves exactly 4u, and then the ship stops dead. A press held
+past the window leaves the step at `strafeKick`, and the ramp at `strafeAccel` takes over. A second press in the
+same direction adds 4u to the step. A press in the other direction starts a new step. A ship that already moves
+faster than `strafeKick` in the press direction gets no step. A stun, a death or a respawn cancels the step. A
+towed ship gets no step, because the tow scales strafe by `TOW_STRAFE_SCALE` (0.3), below the press threshold.
+`kickDistance: 0` restores the #256 kick, which set only a speed floor. ADR-024 records the decision.
+
+The track contract has no kick term. `TRACK_CONTRACT` and `weaveThreadSpeed` read only strafe accel and clamp.
+The phrase generator does feel the kick: its pacing lead (`leadDistance`) comes from pilot cross times, and the
+pilot flies the kick. After #305 the lead no longer rises with the lateral offset. An 8u offset needs more lead
+than a 12u offset, so a 16u lane has a longer weave pitch than a 20u lane (ADR-023, *Re-measured after #305*,
+`8d3abdb`).
 
 The Freighter's top speed is **not** a top speed it can use everywhere. It follows the racing line at
 **98.0u/s** (`weaveThreadSpeed`), so holding 124 costs it a **21% scrub** into every weave, and at full throttle
@@ -431,7 +440,7 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Ingredient | Status | Notes |
 |---|---|---|
 | Throttle · brake · coast · cruise cap | **LIVE** | player-controlled speed (§5.1) |
-| Strafe (analog, drifty→snappy, tap kick) + open deck edges | **LIVE** | a press kicks the ship to `strafeKick` at once (#256); no side wall: a ship that strafes past the deck edge falls, like at a gap edge (same footprint rule, strafe back to land mid-fall); a fall is a death with respawn on the deck (fc65986) |
+| Strafe (analog, drifty→snappy, 4u step per press) + open deck edges | **LIVE** | each press moves the ship one 4u step at `strafeKick`, then it stops dead on release (#305, `b6e3372`; the #256 kick set only a speed floor); no side wall: a ship that strafes past the deck edge falls, like at a gap edge (same footprint rule, strafe back to land mid-fall); a fall is a death with respawn on the deck (fc65986) |
 | Jump — variable (tap/hold) + double + coyote/buffer | **LIVE** | derived from a jump-feel spec (GDC "Building a Better Jump") |
 | Track — deterministic from a descriptor; **rhythm-paced generator** (ADR-006): arrangement envelope + discrete slalom/flick + varied gaps | **LIVE** | plain / block / gap / finish; fairness caps asserted in `sim/track.test.ts` |
 | Hazards + collision — **AABB** (footprint = model box), swept land + swept body-bounce | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable), hit = bounce + stun (ADR-014); generous grounded rule; WYSIWYG |
