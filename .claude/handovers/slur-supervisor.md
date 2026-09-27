@@ -96,7 +96,15 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-0000. RESUME HERE (2026-09-27 ~23:30, seam 2 at ~150k). Pane ids unchanged: workerone w2Z:p2, workertwo w2Z:p3.
+00000. RESUME HERE (2026-09-27 late, after supervisor /clear). #333 DONE 69edb82 (closed; relayed with brief;
+   owner Q: pass ripple from hit point as follow-up?). workerone seamed at 182k (61419b8), cleared + resumed at 0%
+   → #331 PLAN RELAYED to owner (longest side = 5u, uniform fit at build, hover 2.4→3.2, pool 3.2→4.0, grabR stays;
+   client-only files: combat-look.ts, pickup-instances/*). Awaiting owner (a) longest side vs spin circle (b) hover/pool.
+   workertwo: #334 PLAN RELAYED (grazeDepth 0.5→1.0 corner slide; side contact = no stun, vz × scrapeKeep 0.88 on
+   fresh contact; contact kind returned from simulate()). Awaiting owner: flat 0.88 (rec) vs impact-scaled; scrape
+   sound (default spark only); no leva dial OK? #335 tug halving DONE f664fee (closed; handover aa18516), relayed.
+   Both workers idle-ish awaiting owner; neither holds files.
+0000. (seam 2, superseded) RESUME HERE (2026-09-27 ~23:30, seam 2 at ~150k). Pane ids unchanged: workerone w2Z:p2, workertwo w2Z:p3.
    Dev stack: client PID 1557 :5173; server now PID 46767 :2567 (restarted by someone after seam 1; not mine).
    LIVE LANES:
    - workerone: #333 marigold membrane in the portal aperture (build direct; leva dials Portal.membraneOpacity/
