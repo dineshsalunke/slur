@@ -1,33 +1,31 @@
-Agent: workertwo · Lane: #305 strafe kick — fixed 4u step (option B) · Updated: 2026-09-27
+Agent: workertwo · Lane: #309 editor shapes of one kind combine · Updated: 2026-09-27
 
 ## Goal
-Each strafe press past the threshold moves the ship exactly 4u (one CELL) for every class, whatever the tap length.
-Owner approved option B, "stop dead on release". B→A must stay a config change.
+Touching or overlapping editor shapes of the same kind combine into one shape with no seams. There is no sim or data-format change.
 
 ## Done
-- b6e3372 feat(#305): 4u kick step, pilot cap, phrase digest re-frozen (owner decision). Tap/hold/lead tables are in the
-  commit body.
+- 95834b1 feat(#309): `unionRects` + `normalizeLevel` (compressed grid, greedy x-then-z). `applyTool` normalizes after
+  every draw and erase. `outlineSegments` strokes only the union outline, once per kind. #309 is closed.
 
 ## State
-- Gates on HEAD 167c859 + my 9 files only (tree had no other dirty source): pnpm typecheck ok · shared 521/521 ·
-  server 40/40 · client 485/485 · pnpm lint ok (7 pre-existing line-count warnings, step.ts among them) · ratchet ok.
-- Phrase digests moved on all 5 seeds; weave and groove unchanged.
+- utils tests 34/34 · client vitest 496/496 · client typecheck ok · pnpm lint ok (8 warnings).
+- track-editor.utils.ts is 441 lines. The line-count warning existed before this change (305 lines) and has grown.
+- tracks/groove-20260921.json normalizes to the same counts: 48 blocks, 16 destructible, 7 gaps, same area.
 - Owner verification on /test-level: [unmeasured] pending.
 
 ## Uncommitted
 none
 
 ## Held files
-None after this seam. Released: packages/shared/src/{constants.ts, ship-classes.ts, schema.ts, sim/types.ts,
-sim/step.ts, pacing/pockets.ts, sim/strafe-kick.test.ts, race/director.test.ts, sim/track-digest.test.ts (lent, return
-to workerthree)}.
+none (released track-editor.utils.ts and track-editor.utils.test.ts)
 
 ## Next
-1. Owner verifies on /test-level. #305 closed with the SHA per the owner rule.
-2. Optional follow-up: move the strafe functions out of step.ts into sim/strafe.ts (line-count warning).
+1. workerone adds `state.level = normalizeLevel( level )` in openEditor as part of #308.
+2. Queued: fold #305 into docs/GDD.md and docs/DECISIONS.md (new ADR). Send the claim first; workerthree holds DECISIONS.md.
+3. Optional: split the shape helpers out of track-editor.utils.ts to clear the line-count warning.
 
 ## Open questions
-- Is the held-strafe lag (~one kick window: interceptor −3.9u at 200 ms, freighter −3.7u) acceptable to the owner?
+- Held-strafe lag from #305 (~one kick window): acceptable? It goes into the ADR as a known trade-off.
 
 ## Lessons → memory
 none
