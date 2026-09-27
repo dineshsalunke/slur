@@ -103,7 +103,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    #321 FILED (editor flight recorder: T manual start/stop, trace last 3 takes on the editor map, New Track
    = phrase default + seed field). Owner decisions: T manual; phrase default; seed option. Assigned to
    workertwo (w2Z:p3). Plan APPROVED (Q1–Q5 all yes: onTick hook in shared RunSim; keep takes until Clear;
-   Edit stops a live take; bare /test-level defaults to phrase; speed colour = vz/maxCruise). BUILDING.
+   Edit stops a live take; bare /test-level defaults to phrase; speed colour = vz/maxCruise). DONE 4012255
+   (closed; handover eab068e). workertwo idle, no files. Follow-up idea: editor opens at 100% = ~68u of track.
    #322 FILED (pickup HUD: arc of slot glyphs under the ship + pickup flash/Q tick; owner picked 1 + 4).
    #320 DONE b760826 (closed): arch clear 5.94u × 4.97u; draws pair 131, 135–136 during rings; FOV 70→78.9,
    back in ~0.3 s. Owner Q open: ~1 amber frame after exit (bloom of near arch + burst) — tone down?
