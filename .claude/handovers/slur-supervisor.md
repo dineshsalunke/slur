@@ -38,8 +38,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending | idle, ready for a lane | none |
-| workertwo | w2P:pF | Reconcile DONE a6a8eb0 + 928e0ca: closed #292 #6 #11 #114 #268 #269; filed #311 #312 #313 #314; GDD Q1 folded (BOTH). Cleared + resumed | idle, no lane | none |
+| workerone | w2P:pD | #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending. NEW: rear-view mirror shows in the lobby (owner report); files issue first. Cleared + briefed | building | claims pending |
+| workertwo | w2P:pF | Reconcile DONE a6a8eb0 + 928e0ca (closed #292 #6 #11 #114 #268 #269; filed #311–#314). NEW: engine hum keeps playing in the lobby after a race (owner report); files issue first | building | claims pending |
 | workerthree | w2P:pG | #310 landed 31e3131 but broke the frame: bloom on → black, owner 1 fps / MAX 1632 ms (bloom 0 renders fine, measured). Cause: deck-breakup patch stacked per re-render (rail-glow used to reset the chain). FIX e5f8e20 (shader-patch.ts, NOT pushed). Cleared + resumed from e4630ff on HOLD: push + close #310 only after owner confirms in Zen. Phrase S4 HOLD | holding for owner check | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
