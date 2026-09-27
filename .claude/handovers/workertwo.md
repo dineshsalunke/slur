@@ -1,18 +1,16 @@
-Agent: workertwo · Lane: issue + backlog + docs reconcile (DONE) · Updated: 2026-09-27
+Agent: workertwo · Lane: lobby engine hum #316 (DONE) · Updated: 2026-09-27
 
 ## Goal
-Make GitHub issues, .claude/backlog.md and docs/ match what has landed. Owner approved via slur-supervisor.
+Stop the engine hum in the lobby after a race.
 
 ## Done
-- 39102e7 MEMORY.md compacted 20892 → 16052 bytes.
-- Closed: #292 #6 #11 #114 (not planned), #268 #269 (completed), each with a comment and SHAs.
-- Filed: #311 gap-deck carve, #312 fixed-step hitch, #313 spectator camera z lag, #314 lobby pick-UI combat stats (follow-up to #8).
-- a6a8eb0 backlog + GDD/ADD/AUDIO/DECISIONS reconcile.
-- This commit: GDD §10 Q1 folded (owner: procgen AND authored), §5.2 paragraph rewritten, pick-UI rows point at #314.
+- #316 filed (bug).
+- b3965f7 engine loops play only in countdown + racing. bind-room-audio phase listener starts/stops the local loop; RemoteEngineAudio detaches remote emitters off-track; GameAudio no longer starts the loop at mount.
 
 ## State
-- GDD §10 has 3 questions: session length, breakable-block readability, portal loop.
-- ship-stepper.tsx renders buttons, class legend and ship name only; no stats (measured this session).
+- Client typecheck, biome, comment ratchet, 508 vitest tests pass.
+- Live hosted-room check not run by me [unmeasured]; owner verifies (race, finish, lobby, silence).
+- Results phase is silent too (supervisor-approved default).
 
 ## Uncommitted
 none
@@ -24,7 +22,7 @@ none
 1. Lane finished. Await a new lane from slur-supervisor.
 
 ## Open questions
-none
+- Owner may want the hum through results; change is `ON_TRACK_PHASES` → include `PHASE.finished` in both gates.
 
 ## Lessons → memory
 none
