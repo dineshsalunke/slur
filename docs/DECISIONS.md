@@ -1276,7 +1276,7 @@ merge removes most pockets it scanned).
 - Motif gate start = pin + `leadDistance(|to − from|)`. `noteBeats` spaces step and held notes by the lead. A motif after a weave gets a lead-in of `leadDistance(act, max |lane centre − x0|)`.
 - `phraseSegments(seed)` sets the length: 5 sections at minimum length, each with a full 480u weave.
 
-Measured 2026-09-27. Lead (u) by lateral offset:
+Measured 2026-09-27 at `afcc66c`. These numbers are before #305. See *Re-measured after #305* below for the current values. Lead (u) by lateral offset:
 
 | | 4u | 6u | 8u | 12u |
 |---|---|---|---|---|
@@ -1302,3 +1302,25 @@ Measured 2026-09-27. Lead (u) by lateral offset:
 3. The owner rule names four terms: speed while reacting, the cross, the settle and the hull. The build adds the post length (4u) on top of the lead in the weave pitch.
 4. Decision 2 and RFC Q1 say *"12,000u (600 segments) to start"*. The `phrase` length is now per seed, 744–768 segments on seeds 1–30. 600 stays only as the fallback in `TRACK_GEN_SEGMENTS`. Scripts must call `phraseSegments(seed)`.
 5. The S3 build measured a class split on narrow lanes (14u: Interceptor 84, Fighter 80, Comet 72, Phantom 72, Freighter 60). The derived pitch removes it: the weave no longer splits class speeds. The owner accepted this. Whether class identity needs another lever is an open owner question.
+
+**Re-measured after #305 (`b6e3372`, 2026-09-27).** #305 makes the strafe kick move a fixed 4u step for each press. This changes `crossSeconds`, so the lead and the weave pitch change. The code and the formula are unchanged.
+
+| Lead (u) | 4u | 6u | 8u | 12u |
+|---|---|---|---|---|
+| Act 1 (low) | 120 (120) | 120 (128) | 140 (132) | 136 (148) |
+| Act 2 (mid) | 108 (108) | 108 (116) | 128 (120) | 120 (136) |
+| Act 3 (high) | 92 (92) | 88 (96) | 108 (100) | 104 (112) |
+
+| Weave pitch (u) | 20u lane | 16u lane | 14u lane |
+|---|---|---|---|
+| Act 1 | 140 (152) | 144 (136) | 124 (132) |
+| Act 2 | 124 (140) | 132 (124) | 112 (120) |
+| Act 3 | 108 (116) | 112 (104) | 92 (100) |
+
+The value in brackets is the value at `afcc66c`.
+
+- The lead no longer rises with the offset. An 8u offset now needs a longer lead than a 12u offset, and a 6u offset needs the same lead as a 4u offset (or less). So a 16u lane (8u offset) has a longer pitch than a 20u lane (12u offset).
+- Posts per lane, in weaves of 464–480u on seeds 1–30: single lanes 20u (act 1) 2, 16u (act 2) 2–3 (mean 2.2), 14u (act 3) 4. Parallel lanes: act 2 20u 3, 16u 2–3; act 3 16u 3, 14u 4. At `afcc66c`: 2, 3 and 3 for single lanes.
+- Length: 744–766 segments (at `afcc66c`: 744–768). Always 5 sections.
+- Flight, 5 classes × seeds 1–30: no change. The avoid pilot and the line pilot both have 0 bumps, 0 deaths and 30/30 finishes. Mean speed (avoid pilot, u/s): Interceptor 83.7, Fighter 95.5, Phantom 89.5, Comet 111.3, Freighter 121.7 (line pilot 121.9). This is 98.2–99.6% of each class's cap.
+- `pnpm test` (shared) at `b6e3372`: 521/521 pass.
