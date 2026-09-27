@@ -39,7 +39,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | **LIVE (2026-09-27 evening)** workerone | w2Z:p2 | #327 DONE 7d52b75 (closed; handover 59e81c7): flat weave face, run-up 156–220u < 280u set, lengths unchanged, 0 bumps/deaths seeds 1–30. Owner /test-level check pending | idle | none |
-| **LIVE** workerone (cont.) | w2Z:p2 | #329 portal 8u across (portalR 4) + lower centre, partly sunk. PLAN FIRST (cleared + resumed at 0%) | PLANNING | none yet |
+| **LIVE** workerone (cont.) | w2Z:p2 | #329 portal: PLAN RELAYED (portalR 4, portalY 2; catch top 5.2 unchanged). Owner Qs: (a) A = exit clear 10.5u long × 10u wide (fixes existing Freighter-nose bug) or B = resize only; (b) pickup ×4/3 or leave | AWAITING OWNER | none yet |
+| **LIVE** workertwo (cont.) | w2Z:p3 | #330 tug timeline (throw 0.5–0.8 s, 1 s strong + 1 s ease, detach 1.5 s, reel in). PLAN FIRST (cleared + resumed at 0%) | PLANNING | none yet |
 | **LIVE** workertwo | w2Z:p3 | #328 DONE 8506bc1 (closed; handover 9598fdd): TUG_S 1.2, TOW_S 1.6, reel-in 0.4 s. Block tug still ≤0.75 s (release 0.35 s before a 150u anchor): OWNER Q raise TUG_RANGE / lower TUG_RELEASE_S? :2567 restart for hosted rooms | idle | none |
 | (stale rows below: pre-reboot panes w2P:*; workerthree/four/five NOT running) | | | | |
 | workerone | w2P:pD | #318 DONE 4b17a2e (block capacity per track, emit ahead-first) + fc85cd7 (editor union keeps walls whole; phrase round trip 3007→596 blocks), closed; OWNER CONFIRMED on /test-level 2026-09-27. #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending. #315 DONE c5436bb (closed): mirror gated to countdown+racing; hidden in results too (owner asked: keep hidden?). Browser check unmeasured | idle | none |
