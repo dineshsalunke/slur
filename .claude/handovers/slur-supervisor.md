@@ -112,7 +112,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    only; tick on any selection change; local ship only; touch unchanged). DONE 7696144 (closed; handover
    b2bfe54): 124 draws (+1), no arc in mirror, glyphs ~40 px, MIN_BACK 3.4u for bob. workerone idle, no files.
    Owner checks pending: #320, #321, #322.
-   #323 FILED (arc squares, not diamonds) → workerone, build direct; holds power-arc/* + app.css token cleanup.
+   #323 DONE e499eee (closed): empty slot + bolt frame now rounded squares; other powers keep own frames
+   (seeker square, mine star, boost chevrons, shield/portal circles, tug pill). Owner Q: all frames square?
+   workerone idle, no files. (011e6e1 is an accidental empty commit of mine; harmless.)
    #324 FILED (/test-level debug buttons grant each pickup) → workertwo, build direct; holds routes/test-level/*.
    TUG ROPE (no issue yet): owner wants a thin rope that shoots from the ship and latches; slack waves like a
    thrown rope paying out off a dropped coil. Asked owner to confirm my reading before filing.
