@@ -46,6 +46,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Open owner questions
 
+- **Stray edit 2026-09-27 10:05:** scene-effects.tsx bloom commented out + non-Biome reformat. Not the owner, no claim. Owner: revert. workerthree restores it before the #310 after-measure. If it recurs, find the source (a worker editor or HMR tool?).
+
 - **Lead non-monotonic after #305 (NOT yet told to owner):** ADR-023 8d3abdb: an 8u offset needs more lead than 12u, so a 16u lane has a longer pitch than a 20u lane. Flight still 0 bumps/deaths. May be a pilot artifact (strafeToward caps below the kick threshold for |err|<4u) [inferred]. Ask the owner whether to investigate.
 
 - **WEAVE SHAPE — ANSWERED 2026-09-27: B, straight sealed walls + slalom inside.** Owner wants the curved
