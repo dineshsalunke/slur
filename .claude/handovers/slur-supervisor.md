@@ -34,9 +34,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #306 DONE 6b982c6, closed (handover 167c859); owner: Close does not re-spawn. #307 delete saved track: owner GO. Seam a0bd3b9, cleared + resumed | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
-| workertwo | w2P:pF | #305 strafe kick B: kickDistance 4 (0 = A), window = 4/strafeKick, stop dead on release (owner GO). Seam 2520d41, cleared + resumed. OWNER: re-freeze phrase digest | committing | step.ts, constants.ts, ship-classes.ts, sim/types.ts, schema.ts, pacing/pockets.ts, strafe-kick.test.ts, race/director.test.ts (3 fields: strafeHeld, kickLeft, kicking), track-digest.test.ts (LENT by workerthree) |
-| workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded). NEXT: when #305 SHA lands, send it; it re-measures pitch tables/posts/length and amends ADR-023 | idle; OWNER: HOLD S4 until authored tracks exist (2026-09-27) | sim/phrase/*, avoid-pilot.test.ts, DECISIONS.md (ADR-023); track-digest.test.ts lent to workertwo |
+| workerone | w2P:pD | #306 DONE 6b982c6 (Close does not re-spawn). #307 delete saved track (owner GO), then #308 undo/redo (plan first; history snapshots after #309 normalize) | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
+| workertwo | w2P:pF | #305 DONE b6e3372, closed (handover 17eaed7). #309 editor shapes combine, same kind only, destructible pieces break separately (owner) | cleared + briefed, plan due | claim pending (expected track-editor.utils.ts + test, constants) |
+| workerthree | w2P:pG | #305 landed b6e3372: re-measuring ADR-023 pitch tables/posts/length (doc only) | working; OWNER: HOLD S4 until authored tracks exist | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
