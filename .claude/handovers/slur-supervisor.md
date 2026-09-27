@@ -126,8 +126,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    BUILDING (holds portal files, portal.ts, GDD portal, ART_SCALE §7b). #326 OWNER: visual only, short throw,
    no miss → workertwo BUILDING (holds tug-line/*, rope-curve.utils).
    #327 FILED: phrase weave funnel = pixel staircase (weave-emit.ts floor/ceil per 4u row). Owner annoyed,
-   says asked before (never filed). Recommended A (sloped block shape, sim+render+editor). Owner has NOT yet
-   confirmed A; unassigned.
+   says asked before (never filed). OWNER PICKED B: NO FUNNEL (straight wall face; run-up from ship physics).
+   Decision commented on #327. QUEUED for the first free worker (build direct, pilot sweep 0 bumps/deaths).
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
