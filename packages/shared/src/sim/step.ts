@@ -1,5 +1,5 @@
 import { hopThroughPortal } from '../combat/portal.js';
-import type { FlightTuning } from '../constants.js';
+import { type FlightTuning, STRAFE_PRESS } from '../constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
@@ -47,13 +47,57 @@ export function applyLongitudinal(
     s.vz = Math.min( Math.max( s.vz, -t.bounceBack ), cap );
 }
 
-export function applyStrafe( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
+function rampStrafe( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
     if ( input.strafe !== 0 ) {
         s.vx += t.strafeAccel * input.strafe * dt;
         const kick = t.strafeKick * input.strafe;
         if ( t.strafeKick > 0 && ( input.strafe > 0 ? s.vx < kick : s.vx > kick ) ) s.vx = kick;
     } else s.vx -= s.vx * Math.min( 1, t.strafeDamp * dt );
-    s.vx = Math.min( Math.max( s.vx, -t.strafeClamp ), t.strafeClamp );
+}
+
+export function strafePress( strafe: number ): number {
+    return Math.abs( strafe ) >= STRAFE_PRESS ? Math.sign( strafe ) : 0;
+}
+
+export function cancelKick( s: SimShip ): void {
+    s.strafeHeld = 0;
+    s.kickLeft = 0;
+    s.kicking = false;
+}
+
+function startKick( s: SimShip, press: number, t: FlightTuning ): void {
+    if ( t.kickDistance <= 0 || t.strafeKick <= 0 || press === 0 || press === s.strafeHeld ) return;
+    if ( s.vx * press > t.strafeKick ) return;
+    s.kickLeft = s.kickLeft * press > 0 ? s.kickLeft + press * t.kickDistance : press * t.kickDistance;
+}
+
+function clampStrafe( vx: number, t: FlightTuning ): number {
+    return Math.min( Math.max( vx, -t.strafeClamp ), t.strafeClamp );
+}
+
+function driveKick( s: SimShip, press: number, t: FlightTuning, dt: number ): void {
+    const dir = Math.sign( s.kickLeft );
+    const left = Math.abs( s.kickLeft );
+    const held = press === dir;
+    const step = held ? t.strafeKick * dt : Math.min( left, t.strafeKick * dt );
+    s.kickLeft = step >= left ? 0 : s.kickLeft - dir * step;
+    s.vx = clampStrafe( ( dir * step ) / dt, t );
+    s.kicking = ! held;
+}
+
+export function applyStrafe( s: SimShip, input: PlayerInput, t: FlightTuning, dt: number ): void {
+    if ( s.stunTimer > 0 ) cancelKick( s );
+    const press = strafePress( input.strafe );
+    startKick( s, press, t );
+    s.strafeHeld = press;
+    if ( s.kickLeft !== 0 ) {
+        driveKick( s, press, t, dt );
+        return;
+    }
+    if ( s.kicking && press === 0 ) s.vx = 0;
+    else rampStrafe( s, input, t, dt );
+    s.kicking = false;
+    s.vx = clampStrafe( s.vx, t );
 }
 
 function consumeBufferedJump( s: SimShip, t: FlightTuning ): void {
@@ -160,6 +204,7 @@ function landingFloor( segs: Segment[], s: SimShip, prevY: number, t: FlightTuni
 function markDead( s: SimShip, t: FlightTuning ): void {
     s.dead = true;
     clearStatus( s );
+    cancelKick( s );
     s.respawnTimer = t.respawnDelay;
     s.vx = 0;
     s.vy = 0;
@@ -179,6 +224,7 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.jumpsUsed = 0;
     s.stunTimer = 0;
     clearStatus( s );
+    cancelKick( s );
 }
 
 function overlapsBlock( b: Block, s: SimShip, prevY: number, t: FlightTuning ): boolean {

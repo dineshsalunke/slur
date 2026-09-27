@@ -1,4 +1,4 @@
-import { type FlightTuning, TRACK_CONTRACT } from '../constants.js';
+import { type FlightTuning, STRAFE_PRESS, TRACK_CONTRACT } from '../constants.js';
 import { SHIP_CLASSES, type ShipClassId } from '../ship-classes.js';
 import type { PlayerInput } from '../sim/input.js';
 import type { Track } from '../sim/space.js';
@@ -31,6 +31,7 @@ const STRAFE_TICKS = 3;
 const ARRIVE_U = 0.05;
 const ARRIVE_VX = 0.5;
 const DOOR_DEPTH = 2;
+const PILOT_FINE_PRESS = STRAFE_PRESS * 0.99;
 
 export interface PacingPocket extends RouteRegion {
     classId: ShipClassId;
@@ -180,7 +181,9 @@ export function strafeToward( t: FlightTuning, err: number, vx: number ): number
     if ( t.strafeKick <= 0 || s === 0 ) return s;
     const goal = vx + t.strafeAccel * s * DT;
     if ( Math.sign( goal ) !== Math.sign( s ) ) return 0;
-    return t.strafeKick * Math.abs( s ) > Math.abs( goal ) ? goal / t.strafeKick : s;
+    const eased = t.strafeKick * Math.abs( s ) > Math.abs( goal ) ? goal / t.strafeKick : s;
+    if ( t.kickDistance <= 0 || Math.abs( err ) >= t.kickDistance ) return eased;
+    return Math.sign( eased ) * Math.min( Math.abs( eased ), PILOT_FINE_PRESS );
 }
 
 export function squeezesThrough( track: Track, t: FlightTuning, a: SqueezeAttempt ): boolean {

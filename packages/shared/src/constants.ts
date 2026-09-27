@@ -2,6 +2,7 @@ export const TICK_RATE = 60;
 export const FIXED_DT = 1 / TICK_RATE;
 
 export const CELL = 4;
+export const STRAFE_PRESS = 0.5;
 
 export interface FlightTuning {
     accel: number;
@@ -13,6 +14,7 @@ export interface FlightTuning {
     strafeClamp: number;
     strafeDamp: number;
     strafeKick: number;
+    kickDistance: number;
 
     halfW: number;
     halfL: number;
@@ -75,6 +77,7 @@ export const DEFAULT_TUNING: FlightTuning = {
     strafeClamp: 80,
     strafeDamp: 14,
     strafeKick: 0,
+    kickDistance: 0,
     halfW: 1.3,
     halfL: 1.26,
     ...deriveJump( DEFAULT_JUMP ),

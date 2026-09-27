@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, deriveJump, type FlightTuning, rosterContractFailures } from './constants.js';
+import { CELL, DEFAULT_TUNING, deriveJump, type FlightTuning, rosterContractFailures } from './constants.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from './sim-config.js';
 
 export type ShipClassId = 'interceptor' | 'fighter' | 'comet' | 'phantom' | 'freighter';
@@ -31,6 +31,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             strafeClamp: 166,
             strafeDamp: 31.5,
             strafeKick: 50,
+            kickDistance: CELL,
             halfW: 1.0,
             halfL: 0.92,
             ...deriveJump( { height: 3.0, apexTime: 0.3, descentTime: 0.24, doubleHeight: 3.6, minHeight: 0.8 } ),
@@ -50,6 +51,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             strafeClamp: 140,
             strafeDamp: 24.5,
             strafeKick: 42,
+            kickDistance: CELL,
         },
     },
     comet: {
@@ -65,6 +67,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             strafeClamp: 136,
             strafeDamp: 14.4,
             strafeKick: 34,
+            kickDistance: CELL,
             halfW: 1.1,
             halfL: 0.59,
             ...deriveJump( { height: 2.8, apexTime: 0.3, descentTime: 0.24, doubleHeight: 3.3, minHeight: 0.8 } ),
@@ -84,6 +87,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             strafeClamp: 135,
             strafeDamp: 23.4,
             strafeKick: 38,
+            kickDistance: CELL,
             halfW: 1.2,
             halfL: 2.51,
             ...deriveJump( { height: 4.2, apexTime: 0.32, descentTime: 0.26, doubleHeight: 5.0, minHeight: 0.9 } ),
@@ -103,6 +107,7 @@ export const SHIP_CLASSES: Record< ShipClassId, ShipClass > = {
             strafeClamp: 130,
             strafeDamp: 20,
             strafeKick: 33,
+            kickDistance: CELL,
             halfW: 1.25,
             halfL: 3.0,
             ...deriveJump( { height: 3.6, apexTime: 0.3, descentTime: 0.24, doubleHeight: 4.3, minHeight: 0.9 } ),

@@ -26,6 +26,10 @@ export interface SimShip {
     towTimer: number;
     tugAnchorZ: number;
     portalHops: number;
+
+    strafeHeld: number;
+    kickLeft: number;
+    kicking: boolean;
 }
 
 export function spawnShip( x = 0, z = 0 ): SimShip {
@@ -53,6 +57,9 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         towTimer: 0,
         tugAnchorZ: 0,
         portalHops: 0,
+        strafeHeld: 0,
+        kickLeft: 0,
+        kicking: false,
     };
 }
 
@@ -95,6 +102,9 @@ export const SIM_SHIP_KEYS = keyTuple< SimShip >()(
     'towTimer',
     'tugAnchorZ',
     'portalHops',
+    'strafeHeld',
+    'kickLeft',
+    'kicking',
 );
 
 function assignKey< K extends keyof SimShip >( dst: SimShip, src: SimShip, k: K ): void {
@@ -125,6 +135,7 @@ export const SIM_FLOAT_KEYS = [
     'slowTimer',
     'towTimer',
     'tugAnchorZ',
+    'kickLeft',
 ] as const satisfies readonly NumberKey[];
 
 export function froundSimShip( ship: SimShip ): void {
