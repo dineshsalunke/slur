@@ -132,6 +132,54 @@ test( 'the tug fields replay identically through a copied ship', () => {
     assert.deepEqual( client, server );
 } );
 
+test( 'the pull thrust lifts a coasting ship to the lifted cap without throttle', () => {
+    const s = cruising();
+    catapult( s, cfg );
+    fly( s, cfg.tugRiseS + 0.1, emptyInput() );
+    assert.ok( Math.abs( s.vz - t.maxCruise * ( 1 + cfg.tugGain ) ) < 1e-6, `vz ${ s.vz }` );
+} );
+
+test( 'the brake cancels the pull thrust', () => {
+    const s = cruising();
+    catapult( s, cfg );
+    fly( s, 0.3, { ...emptyInput(), brake: 1 } );
+    assert.ok( s.vz < t.maxCruise, `vz ${ s.vz }` );
+} );
+
+test( 'the pull holds the lifted cap through the strong phase', () => {
+    const s = cruising();
+    catapult( s, cfg );
+    fly( s, cfg.tugS - cfg.tugEaseS - 0.05, emptyInput() );
+    assert.ok( Math.abs( s.vz - t.maxCruise * ( 1 + cfg.tugGain ) ) < 1e-6, `vz ${ s.vz }` );
+} );
+
+test( 'the ease is a smoothstep from the lifted cap back to top speed', () => {
+    const s = cruising();
+    catapult( s, cfg );
+    fly( s, cfg.tugS - cfg.tugEaseS / 2 );
+    const half = t.maxCruise * ( 1 + cfg.tugGain * 0.5 );
+    assert.ok( Math.abs( s.vz - half ) < t.maxCruise * 0.02, `vz ${ s.vz } half ${ half }` );
+    const quarter = cruising();
+    catapult( quarter, cfg );
+    fly( quarter, cfg.tugS - cfg.tugEaseS / 4 );
+    const smooth = t.maxCruise * ( 1 + cfg.tugGain * 0.15625 );
+    assert.ok( Math.abs( quarter.vz - smooth ) < t.maxCruise * 0.02, `vz ${ quarter.vz } smooth ${ smooth }` );
+    fly( s, cfg.tugEaseS / 2 + 0.05 );
+    assert.ok( Math.abs( s.vz - t.maxCruise ) < 1e-6, `vz ${ s.vz }` );
+} );
+
+test( 'towed controls return when the tow leaves its strong phase', () => {
+    const towed = cruising();
+    const free = cruising();
+    towTarget( towed, cfg );
+    fly( towed, towed.towTimer - cfg.tugEaseS + 0.05 );
+    fly( free, 0.1 );
+    const right = { ...full, strafe: 1 };
+    fly( towed, 0.1, right );
+    fly( free, 0.1, right );
+    assert.ok( Math.abs( towed.vx - free.vx ) < 1e-9, `towed ${ towed.vx } free ${ free.vx }` );
+} );
+
 test( 'clear and fround reach every tug field', () => {
     const s = cruising();
     s.tugTimer = 0.1;

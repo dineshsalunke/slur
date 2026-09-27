@@ -52,15 +52,21 @@ import {
     TOW_KICK,
     TOW_S,
     TOW_STRAFE_SCALE,
+    TUG_BLOCK_MAX,
+    TUG_BLOCK_MIN,
     TUG_EASE_S,
     TUG_GAIN,
     TUG_KICK,
+    TUG_LATCH_SLACK,
     TUG_RANGE,
     TUG_RATIO,
     TUG_RELEASE_S,
+    TUG_RISE_S,
     TUG_S,
     TUG_SLOW_S,
     TUG_SPEED_CUT,
+    TUG_THROW_MAX_S,
+    TUG_THROW_MIN_S,
 } from './combat/tug-constants.js';
 
 export interface SimConfig extends PortalConfig {
@@ -110,10 +116,16 @@ export interface SimConfig extends PortalConfig {
     shieldS: number;
     tugRatio: number;
     tugRange: number;
+    tugBlockMin: number;
+    tugBlockMax: number;
+    tugThrowMinS: number;
+    tugThrowMaxS: number;
+    tugLatchSlack: number;
     tugKick: number;
     tugS: number;
     tugGain: number;
     tugEaseS: number;
+    tugRiseS: number;
     tugReleaseS: number;
     tugSlowS: number;
     tugSpeedCut: number;
@@ -171,10 +183,16 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     shieldS: SHIELD_S,
     tugRatio: TUG_RATIO,
     tugRange: TUG_RANGE,
+    tugBlockMin: TUG_BLOCK_MIN,
+    tugBlockMax: TUG_BLOCK_MAX,
+    tugThrowMinS: TUG_THROW_MIN_S,
+    tugThrowMaxS: TUG_THROW_MAX_S,
+    tugLatchSlack: TUG_LATCH_SLACK,
     tugKick: TUG_KICK,
     tugS: TUG_S,
     tugGain: TUG_GAIN,
     tugEaseS: TUG_EASE_S,
+    tugRiseS: TUG_RISE_S,
     tugReleaseS: TUG_RELEASE_S,
     tugSlowS: TUG_SLOW_S,
     tugSpeedCut: TUG_SPEED_CUT,

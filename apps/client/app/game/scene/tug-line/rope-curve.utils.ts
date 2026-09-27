@@ -3,7 +3,7 @@ import {
     COIL_SPIN_TURNS,
     COIL_TAPER,
     COIL_TURNS,
-    HOOK_SPEED,
+    DETACH_S,
     LATE_S,
     MIN_PX,
     REEL_AMP,
@@ -20,8 +20,6 @@ import {
     SLACK_PIN,
     SLACK_TRAVEL_HZ,
     SLACK_WAVES,
-    THROW_MAX_S,
-    THROW_MIN_S,
     TREMOR_AMP,
     TREMOR_HZ,
     TREMOR_WAVES,
@@ -30,10 +28,6 @@ import {
 export interface RopeOffset {
     side: number;
     up: number;
-}
-
-export function throwSeconds( distance: number ): number {
-    return Math.min( THROW_MAX_S, Math.max( THROW_MIN_S, distance / HOOK_SPEED ) );
 }
 
 export function payout( age: number, throwS: number ): number {
@@ -71,9 +65,13 @@ export function ropeOffset( s: number, age: number, throwS: number, length: numb
     return out;
 }
 
-export function reelDue( age: number, throwS: number, hold: number, timer: number, pulled: boolean ): boolean {
-    if ( pulled && timer === 0 && age >= throwS ) return true;
-    return age >= hold + ( pulled ? LATE_S : 0 );
+export function detachAt( pullS: number ): number {
+    return Math.max( 0, pullS - DETACH_S );
+}
+
+export function reelDue( since: number, pullS: number, timer: number, released: boolean, pulled: boolean ): boolean {
+    if ( pulled && ( released || timer <= DETACH_S ) ) return true;
+    return since >= detachAt( pullS ) + ( pulled ? LATE_S : 0 );
 }
 
 export function reelProgress( since: number ): number {

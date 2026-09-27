@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     coilRadius,
+    detachAt,
     payout,
     pixelsPerUnitAt1,
     type RopeOffset,
@@ -10,9 +11,8 @@ import {
     reelPayout,
     ropeOffset,
     ropeWidth,
-    throwSeconds,
 } from './rope-curve.utils';
-import { LATE_S, MIN_PX, REEL_S, RIPPLE_S, ROPE_W, THROW_MAX_S, THROW_MIN_S, TREMOR_AMP } from './tug-line.constants';
+import { DETACH_S, LATE_S, MIN_PX, REEL_S, RIPPLE_S, ROPE_W, TREMOR_AMP } from './tug-line.constants';
 
 const out: RopeOffset = { side: 0, up: 0 };
 
@@ -24,14 +24,6 @@ function maxBend( age: number, throwS: number, length: number ): number {
     }
     return m;
 }
-
-describe( 'throwSeconds', () => {
-    it( 'keeps the throw between the short and long bounds', () => {
-        expect( throwSeconds( 1 ) ).toBe( THROW_MIN_S );
-        expect( throwSeconds( 150 ) ).toBeLessThanOrEqual( THROW_MAX_S );
-        expect( throwSeconds( 5000 ) ).toBe( THROW_MAX_S );
-    } );
-} );
 
 describe( 'payout', () => {
     it( 'runs from 0 at the throw to 1 at the latch', () => {
@@ -87,20 +79,25 @@ describe( 'ropeOffset', () => {
 } );
 
 describe( 'reelDue', () => {
-    it( 'starts the reel as soon as a seen pull ends, but not before the latch', () => {
-        expect( reelDue( 0.5, 0.15, 1.2, 0, true ) ).toBe( true );
-        expect( reelDue( 0.1, 0.15, 1.2, 0, true ) ).toBe( false );
-        expect( reelDue( 0.5, 0.15, 1.2, 0.3, true ) ).toBe( false );
+    it( 'detaches the detach time before a seen pull ends', () => {
+        expect( reelDue( 1.5, 2, DETACH_S, false, true ) ).toBe( true );
+        expect( reelDue( 1.4, 2, DETACH_S + 0.1, false, true ) ).toBe( false );
+    } );
+
+    it( 'detaches the moment a block anchor lets go', () => {
+        expect( reelDue( 0.3, 2, 1, true, true ) ).toBe( true );
     } );
 
     it( 'ignores a zero timer before the pull reaches the client', () => {
-        expect( reelDue( 0.5, 0.15, 1.2, 0, false ) ).toBe( false );
+        expect( reelDue( 0.1, 2, 0, false, false ) ).toBe( false );
     } );
 
-    it( 'falls back to the hold time, with a grace when a pull is still running', () => {
-        expect( reelDue( 1.2, 0.15, 1.2, -1, false ) ).toBe( true );
-        expect( reelDue( 1.2, 0.15, 1.2, 0.1, true ) ).toBe( false );
-        expect( reelDue( 1.2 + LATE_S, 0.15, 1.2, 0.1, true ) ).toBe( true );
+    it( 'falls back to the pull time less the detach time, with a grace when a pull is still running', () => {
+        expect( detachAt( 2 ) ).toBe( 2 - DETACH_S );
+        expect( detachAt( 0 ) ).toBe( 0 );
+        expect( reelDue( detachAt( 2 ), 2, -1, false, false ) ).toBe( true );
+        expect( reelDue( detachAt( 2 ) - 0.01, 2, -1, false, false ) ).toBe( false );
+        expect( reelDue( detachAt( 2 ) + LATE_S, 2, 0.6, false, true ) ).toBe( true );
     } );
 } );
 

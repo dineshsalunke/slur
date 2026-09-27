@@ -3,19 +3,41 @@ import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import type { SimShip } from './types.js';
 
+function pullOf( s: SimShip ): number {
+    return Math.max( s.tugTimer, s.towTimer );
+}
+
+function strong( pull: number, cfg: SimConfig ): boolean {
+    return pull > cfg.tugEaseS;
+}
+
+export function pullEase( pull: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
+    const e = cfg.tugEaseS > 0 ? Math.min( 1, Math.max( 0, pull / cfg.tugEaseS ) ) : 1;
+    return e * e * ( 3 - 2 * e );
+}
+
 function liftedCap( pull: number, t: FlightTuning, cfg: SimConfig ): number {
-    const ease = cfg.tugEaseS > 0 ? Math.min( 1, pull / cfg.tugEaseS ) : 1;
-    return t.maxCruise * ( 1 + cfg.tugGain * ease );
+    return t.maxCruise * ( 1 + cfg.tugGain * pullEase( pull, cfg ) );
 }
 
 export function tugCap( s: SimShip, t: FlightTuning, cap: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
-    const pull = Math.max( s.tugTimer, s.towTimer );
+    const pull = pullOf( s );
     const lifted = pull > 0 ? Math.max( cap, liftedCap( pull, t, cfg ) ) : cap;
     return s.slowTimer > 0 ? Math.min( lifted, t.maxCruise * cfg.slowCap ) : lifted;
 }
 
+export function tugThrust(
+    s: SimShip,
+    input: PlayerInput,
+    t: FlightTuning,
+    cfg: SimConfig = DEFAULT_SIM_CONFIG,
+): number {
+    if ( ! strong( pullOf( s ), cfg ) || s.stunTimer > 0 || input.brake > 0 || cfg.tugRiseS <= 0 ) return 0;
+    return ( cfg.tugGain * t.maxCruise ) / cfg.tugRiseS;
+}
+
 export function towedInput( s: SimShip, input: PlayerInput, cfg: SimConfig = DEFAULT_SIM_CONFIG ): PlayerInput {
-    if ( s.towTimer <= 0 ) return input;
+    if ( ! strong( s.towTimer, cfg ) ) return input;
     return { ...input, strafe: input.strafe * cfg.towStrafeScale, jump: cfg.towJump && input.jump };
 }
 

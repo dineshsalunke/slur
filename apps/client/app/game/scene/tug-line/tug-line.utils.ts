@@ -15,35 +15,39 @@ import {
     reelPayout,
     ropeOffset,
     ropeWidth,
-    throwSeconds,
     widthGlow,
 } from './rope-curve.utils';
 import type { Tether } from './tug-line';
 import {
+    ANCHOR_LET_GO_U,
     BRIGHT,
     COIL_SEGMENTS,
-    HOLD_S,
     HOOK_BRIGHT,
     HOOK_L,
     HOOK_W,
-    LATE_S,
     LIFT,
     MAX,
     REEL_S,
     ROPE_SEGMENTS,
     ROPE_W,
-    TOW_HOLD_S,
+    STALE_S,
+    UNLATCHED_S,
 } from './tug-line.constants';
-import { _a, _b, _c, _dir, _from, _hook, _o, _offset, _side, _start, _to, _up } from './tug-line.state';
+import { _a, _b, _c, _dir, _from, _hook, _o, _offset, _pull, _side, _start, _to, _up } from './tug-line.state';
 
 export interface RopeView {
     cam: THREE.Vector3;
     pxPerUnit: number;
 }
 
-export function spawnTether( tethers: Tether[], e: TugEvent ): void {
+export interface PullRead {
+    timer: number;
+    anchorZ: number;
+}
+
+function spawnTether( tethers: Tether[], e: TugEvent, throwS: number ): Tether {
     if ( tethers.length >= MAX ) tethers.shift();
-    tethers.push( {
+    const t: Tether = {
         ownerId: e.ownerId,
         targetId: e.targetId,
         dir: e.dir,
@@ -51,10 +55,41 @@ export function spawnTether( tethers: Tether[], e: TugEvent ): void {
         y: e.y,
         z: e.z,
         age: 0,
-        throwS: 0,
+        throwS,
+        latchAt: -1,
+        pullS: 0,
         reelAt: -1,
         pulled: false,
-    } );
+    };
+    tethers.push( t );
+    return t;
+}
+
+function inFlight( tethers: Tether[], e: TugEvent ): Tether | undefined {
+    for ( let i = tethers.length - 1; i >= 0; i-- ) {
+        const t = tethers[ i ];
+        if ( t.ownerId === e.ownerId && t.latchAt < 0 && t.reelAt < 0 ) return t;
+    }
+    return undefined;
+}
+
+export function applyTug( tethers: Tether[], e: TugEvent ): void {
+    if ( e.outcome === 'throw' ) {
+        spawnTether( tethers, e, e.seconds );
+        return;
+    }
+    if ( e.outcome === 'miss' ) {
+        const t = inFlight( tethers, e );
+        if ( t ) t.reelAt = t.age;
+        return;
+    }
+    if ( e.outcome !== 'latch' && e.outcome !== 'anchor' ) return;
+    const t = inFlight( tethers, e ) ?? spawnTether( tethers, e, 0 );
+    t.latchAt = t.age;
+    t.pullS = e.seconds;
+    t.x = e.x;
+    t.y = e.y;
+    t.z = e.z;
 }
 
 export function readView( state: RootState, view: RopeView ): void {
@@ -75,31 +110,41 @@ export function shipPosition( world: World, sessionId: string, out: THREE.Vector
     return false;
 }
 
-function holdSeconds( t: Tether ): number {
-    return t.dir < 0 ? TOW_HOLD_S : HOLD_S;
-}
-
-function pullTimer( world: World, t: Tether ): number {
+function readPull( world: World, t: Tether, out: PullRead ): void {
+    out.timer = -1;
+    out.anchorZ = -1;
     for ( const e of world.query( Net, Sim ) ) {
         const id = e.get( Net )?.sessionId;
         const s = e.get( Sim );
         if ( ! s ) continue;
-        if ( t.dir >= 0 && id === t.ownerId ) return s.tugTimer;
-        if ( t.dir < 0 && id === t.targetId ) return s.towTimer;
+        if ( t.dir >= 0 && id === t.ownerId ) {
+            out.timer = s.tugTimer;
+            out.anchorZ = s.tugAnchorZ;
+        }
+        if ( t.dir < 0 && id === t.targetId ) out.timer = s.towTimer;
     }
-    return -1;
+}
+
+function anchorLetGo( t: Tether, anchorZ: number ): boolean {
+    if ( t.targetId !== '' ) return false;
+    if ( anchorZ >= 0 ) return t.pulled && anchorZ === 0;
+    return t.z - _from.z <= ANCHOR_LET_GO_U;
 }
 
 function updateReel( world: World, t: Tether ): void {
     if ( t.reelAt >= 0 ) return;
-    const timer = pullTimer( world, t );
-    if ( timer > 0 ) t.pulled = true;
-    if ( reelDue( t.age, t.throwS, holdSeconds( t ), timer, t.pulled ) ) t.reelAt = t.age;
+    if ( t.latchAt < 0 ) {
+        if ( t.age >= t.throwS + UNLATCHED_S ) t.reelAt = t.age;
+        return;
+    }
+    readPull( world, t, _pull );
+    if ( _pull.timer > 0 ) t.pulled = true;
+    const released = anchorLetGo( t, _pull.anchorZ );
+    if ( reelDue( t.age - t.latchAt, t.pullS, _pull.timer, released, t.pulled ) ) t.reelAt = t.age;
 }
 
 export function tetherDone( t: Tether ): boolean {
-    const reelAt = t.reelAt >= 0 ? t.reelAt : holdSeconds( t ) + LATE_S;
-    return t.age >= reelAt + REEL_S;
+    return t.reelAt >= 0 ? t.age >= t.reelAt + REEL_S : t.age >= STALE_S;
 }
 
 function ropeFrame(): void {
@@ -156,7 +201,6 @@ export function placeTether(
     if ( t.targetId === '' || ! shipPosition( world, t.targetId, _to ) ) _to.set( t.x, t.y, t.z );
     const full = _from.distanceTo( _to );
     if ( full < 1e-3 ) return 0;
-    if ( t.throwS === 0 ) t.throwS = throwSeconds( full );
     updateReel( world, t );
     const reeling = t.reelAt >= 0;
     const p = reeling ? reelPayout( t.age - t.reelAt ) : payout( t.age, t.throwS );

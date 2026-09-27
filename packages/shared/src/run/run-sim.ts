@@ -34,6 +34,7 @@ import {
 import { isDoubleTap, type PortalTap, portalHopped, throwPortalFar } from './portal-run.js';
 import { type RaceWorld, stepRacer } from './racer.js';
 import { startPointFor } from './start-point.js';
+import type { TugThrow } from './tug-run.js';
 
 const MAX_NAME = 16;
 
@@ -58,6 +59,7 @@ export class RunSim {
     private readonly pickups: Pickup[];
     private readonly pickupRespawn = new Map< string, number >();
     private readonly portalTaps = new Map< string, PortalTap >();
+    private readonly tugThrows: TugThrow[] = [];
     private readonly config: SimConfig;
     private nextProjectileId = 0;
     private readonly countdownSeconds: number;
@@ -110,6 +112,7 @@ export class RunSim {
                         broadcast: this.hooks.broadcast,
                         pickups: this.pickups,
                         pickupRespawn: this.pickupRespawn,
+                        tugThrows: this.tugThrows,
                     },
                     dt,
                 );
@@ -214,6 +217,7 @@ export class RunSim {
         this.state.blockBroken.clear();
         this.world.blocks.broken.clear();
         this.pickupRespawn.clear();
+        this.tugThrows.length = 0;
         this.nextProjectileId = 0;
         this.state.players.forEach( ( p ) => {
             for ( let i = 0; i < POWER_SLOTS; i++ ) p.slots[ i ] = HeldPower.none;
@@ -248,6 +252,7 @@ export class RunSim {
             broken: this.world.blocks.broken,
             config: this.config,
             broadcast: this.hooks.broadcast,
+            tugThrows: this.tugThrows,
         };
         const tap = this.portalTaps.get( sessionId );
         this.portalTaps.delete( sessionId );

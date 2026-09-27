@@ -4,7 +4,7 @@ import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
 import { type Block, HALF_WIDTH, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
-import { clearStatus, tickStatus, towedInput, tugCap } from './tug-status.js';
+import { clearStatus, tickStatus, towedInput, tugCap, tugThrust } from './tug-status.js';
 import type { SimShip, SimWorld } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
@@ -377,7 +377,7 @@ export function simulate(
     }
 
     const control = towedInput( s, s.stunTimer > 0 ? NEUTRAL_INPUT : input, cfg );
-    const push = boostThrust( s, input, t, cfg );
+    const push = boostThrust( s, input, t, cfg ) + tugThrust( s, input, t, cfg );
     const cap = tugCap( s, t, boostCap( s, t, cfg ), cfg );
     tickStatus( s, t, dt, cfg );
 

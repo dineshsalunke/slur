@@ -7,6 +7,7 @@ import { ColyseusTestServer } from '@colyseus/testing';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import {
     COUNTDOWN_SECONDS,
+    DEFAULT_SIM_CONFIG,
     FIXED_DT,
     HeldPower,
     PHASE,
@@ -86,20 +87,27 @@ describe( 'RunRoom tug line', () => {
         return { room, host, other, firer, rival, seen, tug };
     }
 
-    test( 'a forward tug on the rival ahead slows it and broadcasts the latch', async () => {
-        const { host, other, firer, rival, seen, tug } = await duel();
+    test( 'a forward tug throws, then slows the rival and broadcasts the latch when the hook lands', async () => {
+        const { room, host, other, firer, rival, seen, tug } = await duel();
         firer.z = 0;
         rival.z = 30;
         await tug( 1 );
 
         assert.equal( firer.slots[ 0 ], HeldPower.none, 'the tug is spent' );
+        assert.equal( firer.tugTimer, 0, 'no pull during the throw' );
+        assert.equal( rival.slowTimer, 0, 'no slow during the throw' );
+
+        tick( room, DEFAULT_SIM_CONFIG.tugThrowMaxS );
         assert.ok( firer.tugTimer > 0, 'the firer is catapulted' );
         assert.ok( rival.slowTimer > 0, 'the rival is slowed' );
 
         await delay( 100 );
         assert.deepEqual(
             seen.map( ( e ) => [ e.outcome, e.ownerId, e.targetId, e.dir ] ),
-            [ [ 'latch', host.sessionId, other.sessionId, 1 ] ],
+            [
+                [ 'throw', host.sessionId, other.sessionId, 1 ],
+                [ 'latch', host.sessionId, other.sessionId, 1 ],
+            ],
         );
     } );
 

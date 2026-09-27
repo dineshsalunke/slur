@@ -41,6 +41,7 @@ function context( deck = true ) {
         broken: new Set(),
         config: CFG,
         broadcast: ( type, message ) => sent.push( { type, message } ),
+        tugThrows: [],
     };
     return { ctx, sent };
 }

@@ -1,9 +1,9 @@
-import { DEFAULT_SIM_CONFIG } from '@slur/shared';
-
 export const MAX = 8;
-export const HOLD_S = DEFAULT_SIM_CONFIG.tugS;
-export const TOW_HOLD_S = DEFAULT_SIM_CONFIG.towS;
 export const LATE_S = 0.25;
+export const DETACH_S = 0.5;
+export const ANCHOR_LET_GO_U = 60;
+export const UNLATCHED_S = 0.5;
+export const STALE_S = 6;
 
 export const REEL_S = 0.4;
 export const REEL_FADE_FROM = 0.75;
@@ -22,10 +22,6 @@ export const ROPE_W = 0.08;
 export const HOOK_W = 0.26;
 export const HOOK_L = 0.7;
 export const MIN_PX = 1.5;
-
-export const HOOK_SPEED = 900;
-export const THROW_MIN_S = 0.08;
-export const THROW_MAX_S = 0.2;
 
 export const SLACK_AMP = 1.1;
 export const SLACK_AMP_PER_U = 0.08;

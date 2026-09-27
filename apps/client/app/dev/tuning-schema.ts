@@ -110,6 +110,15 @@ export const NUMBER_TUNABLES = {
 
     'Pickup.grabR': { value: DEFAULT_SIM_CONFIG.pickupGrabR, min: 0, max: 10, step: 0.1, rebuild: false },
 
+    'Tug.throwMinS': { value: DEFAULT_SIM_CONFIG.tugThrowMinS, min: 0, max: 1.5, step: 0.01, rebuild: false },
+    'Tug.throwMaxS': { value: DEFAULT_SIM_CONFIG.tugThrowMaxS, min: 0, max: 1.5, step: 0.01, rebuild: false },
+    'Tug.pullS': { value: DEFAULT_SIM_CONFIG.tugS, min: 0.2, max: 5, step: 0.05, rebuild: false },
+    'Tug.towS': { value: DEFAULT_SIM_CONFIG.towS, min: 0.2, max: 5, step: 0.05, rebuild: false },
+    'Tug.range': { value: DEFAULT_SIM_CONFIG.tugRange, min: 20, max: 400, step: 5, rebuild: false },
+    'Tug.blockMin': { value: DEFAULT_SIM_CONFIG.tugBlockMin, min: 0, max: 800, step: 5, rebuild: false },
+    'Tug.blockMax': { value: DEFAULT_SIM_CONFIG.tugBlockMax, min: 20, max: 1000, step: 5, rebuild: false },
+    'Tug.latchSlack': { value: DEFAULT_SIM_CONFIG.tugLatchSlack, min: 1, max: 3, step: 0.05, rebuild: false },
+
     'Shadow.opacity': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
     'Shadow.size': { value: 2.4, min: 0.5, max: 10, step: 0.05, rebuild: false },
     'Shadow.spread': { value: 0.35, min: 0, max: 3, step: 0.01, rebuild: false },

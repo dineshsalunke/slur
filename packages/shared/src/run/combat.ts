@@ -19,7 +19,7 @@ import { stunDurationForShip, tuningForShip } from '../ship-classes.js';
 import type { Track } from '../sim/space.js';
 import type { SimConfig } from '../sim-config.js';
 import { isPortalPower, type PortalEnd, placePortal, stepPortals } from './portal-run.js';
-import { fireTug } from './tug-run.js';
+import { fireTug, stepTugThrows, type TugThrow } from './tug-run.js';
 
 export type Broadcast = ( type: string, message: unknown ) => void;
 
@@ -29,6 +29,7 @@ export interface FireContext {
     broken: ReadonlySet< number >;
     config: SimConfig;
     broadcast: Broadcast;
+    tugThrows: TugThrow[];
 }
 
 export interface CombatContext extends FireContext {
@@ -100,6 +101,7 @@ export function stepCombat( ctx: CombatContext, dt: number ): void {
         config,
     );
     stepMines( state.mines, seekerShips, dt, onMine, config );
+    stepTugThrows( ctx, dt );
     stepPortals( state, dt );
     stepPickups( state.players.values(), ctx.pickups, state.pickupTaken, ctx.pickupRespawn, dt, config );
     mirrorBreaks( state, broken );

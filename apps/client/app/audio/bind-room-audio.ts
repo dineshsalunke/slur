@@ -34,10 +34,8 @@ const TUG_FAR_GAIN = 0.4;
 const PORTAL_FAR_GAIN = 0.35;
 
 export function playTugEvent( e: TugEvent, me: string ): void {
-    if ( e.targetId === me ) {
-        playSfx( 'stun' );
-        return;
-    }
+    if ( e.outcome === 'latch' && e.targetId === me ) playSfx( 'stun' );
+    if ( e.outcome !== 'throw' ) return;
     playSfx( 'seekerFire', e.ownerId === me ? { rate: TUG_RATE } : { rate: TUG_RATE, gain: TUG_FAR_GAIN } );
 }
 

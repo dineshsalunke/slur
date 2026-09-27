@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { drainTugs } from '../tug-events';
 import { INSTANCES_PER_TETHER, MAX } from './tug-line.constants';
-import { placeTether, type RopeView, readView, spawnTether, tetherDone } from './tug-line.utils';
+import { applyTug, placeTether, type RopeView, readView, tetherDone } from './tug-line.utils';
 
 export interface Tether {
     ownerId: string;
@@ -16,6 +16,8 @@ export interface Tether {
     z: number;
     age: number;
     throwS: number;
+    latchAt: number;
+    pullS: number;
     reelAt: number;
     pulled: boolean;
 }
@@ -25,7 +27,7 @@ export function TugLine() {
     const meshRef = useRef< THREE.InstancedMesh | null >( null );
     const tethers = useMemo< Tether[] >( () => [], [] );
     const view = useMemo< RopeView >( () => ( { cam: new THREE.Vector3(), pxPerUnit: 1 } ), [] );
-    const onTug = useMemo( () => ( e: TugEvent ) => spawnTether( tethers, e ), [ tethers ] );
+    const onTug = useMemo( () => ( e: TugEvent ) => applyTug( tethers, e ), [ tethers ] );
 
     const setMesh = useCallback( ( mesh: THREE.InstancedMesh | null ) => {
         meshRef.current = mesh;

@@ -4,9 +4,15 @@ import type { SimShip } from '../sim/types.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { lockTarget, type SeekerShip } from './seeker.js';
 
-export type TugTarget = { kind: 'rival'; id: string } | { kind: 'block'; x: number; z: number } | null;
+export interface BlockAnchor {
+    x: number;
+    z: number;
+    id: number;
+}
 
-export type TugOutcome = 'latch' | 'anchor' | 'none';
+export type TugTarget = { kind: 'rival'; id: string } | ( { kind: 'block' } & BlockAnchor ) | null;
+
+export type TugOutcome = 'throw' | 'latch' | 'anchor' | 'miss' | 'none';
 
 export interface TugEvent {
     outcome: TugOutcome;
@@ -16,6 +22,7 @@ export interface TugEvent {
     x: number;
     y: number;
     z: number;
+    seconds: number;
 }
 
 export interface TugVictim extends SimShip {
@@ -27,17 +34,18 @@ export function blockAnchor(
     track: Track,
     broken: ReadonlySet< number >,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
-): { x: number; z: number } | null {
-    const reach = shooter.z + cfg.tugRange;
-    let best: { x: number; z: number; id: number } | null = null;
-    for ( let i = segIndexForZ( shooter.z ); i <= segIndexForZ( reach ); i++ ) {
+): BlockAnchor | null {
+    const near = shooter.z + cfg.tugBlockMin;
+    const reach = shooter.z + cfg.tugBlockMax;
+    let best: BlockAnchor | null = null;
+    for ( let i = segIndexForZ( near ); i <= segIndexForZ( reach ); i++ ) {
         for ( const b of track.segmentAt( i ).blocks ) {
-            if ( broken.has( b.id ) || b.z0 <= shooter.z || b.z0 > reach ) continue;
+            if ( broken.has( b.id ) || b.z0 < near || b.z0 > reach ) continue;
             if ( best !== null && ( b.z0 > best.z || ( b.z0 === best.z && b.id > best.id ) ) ) continue;
             best = { x: Math.min( Math.max( shooter.x, b.x0 ), b.x1 ), z: b.z0, id: b.id };
         }
     }
-    return best === null ? null : { x: best.x, z: best.z };
+    return best;
 }
 
 export function tugTarget(
@@ -54,6 +62,11 @@ export function tugTarget(
     if ( dir < 0 ) return null;
     const anchor = blockAnchor( shooter, track, broken, cfg );
     return anchor === null ? null : { kind: 'block', ...anchor };
+}
+
+export function throwSeconds( gap: number, range: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
+    const k = range > 0 ? Math.min( 1, Math.max( 0, gap / range ) ) : 1;
+    return cfg.tugThrowMinS + ( cfg.tugThrowMaxS - cfg.tugThrowMinS ) * k;
 }
 
 export function catapult( firer: SimShip, cfg: SimConfig = DEFAULT_SIM_CONFIG ): void {

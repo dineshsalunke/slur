@@ -45,6 +45,7 @@ function layOver( deck: boolean ) {
         broken: new Set(),
         config: DEFAULT_SIM_CONFIG,
         broadcast: ( type, message ) => sent.push( [ type, message as MineEvent ] ),
+        tugThrows: [],
     };
     firePower( ctx, 'm1', p, 'layer', 0 );
     return { state, p, sent };
