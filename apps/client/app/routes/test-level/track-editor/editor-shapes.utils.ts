@@ -20,80 +20,34 @@ export function subtractRect< T extends AuthoredRect >( a: T, r: AuthoredRect ):
     return pieces.filter( ( p ) => p.w > 0 && p.l > 0 );
 }
 
-function edgeIndex(
-    rects: readonly AuthoredRect[],
-    lo: ( r: AuthoredRect ) => number,
-    hi: ( r: AuthoredRect ) => number,
-) {
-    const edges = [ ...new Set( rects.flatMap( ( r ) => [ lo( r ), hi( r ) ] ) ) ].sort( ( a, b ) => a - b );
-    return { edges, at: new Map( edges.map( ( e, i ) => [ e, i ] ) ) };
+function joined( a: AuthoredRect, b: AuthoredRect ): AuthoredRect | null {
+    if ( a.x === b.x && a.w === b.w && ( a.z + a.l === b.z || b.z + b.l === a.z ) ) {
+        return { x: a.x, z: Math.min( a.z, b.z ), w: a.w, l: a.l + b.l };
+    }
+    if ( a.z === b.z && a.l === b.l && ( a.x + a.w === b.x || b.x + b.w === a.x ) ) {
+        return { x: Math.min( a.x, b.x ), z: a.z, w: a.w + b.w, l: a.l };
+    }
+    return null;
 }
 
-interface CellGrid {
-    cells: Uint8Array;
-    cols: number;
-    rows: number;
-}
-
-function rowFree( g: CellGrid, j: number, i0: number, i1: number ): boolean {
-    for ( let i = i0; i < i1; i++ ) if ( g.cells[ j * g.cols + i ] !== 1 ) return false;
-    return true;
-}
-
-function runEnd( g: CellGrid, i: number, j: number ): number {
-    let i1 = i + 1;
-    while ( i1 < g.cols && rowFree( g, j, i1, i1 + 1 ) ) i1++;
-    return i1;
-}
-
-function stackEnd( g: CellGrid, j: number, i0: number, i1: number ): number {
-    let j1 = j + 1;
-    while ( j1 < g.rows && rowFree( g, j1, i0, i1 ) ) j1++;
-    return j1;
-}
-
-function claim( g: CellGrid, i0: number, i1: number, j0: number, j1: number ): void {
-    for ( let j = j0; j < j1; j++ ) g.cells.fill( 2, j * g.cols + i0, j * g.cols + i1 );
+function absorb( out: AuthoredRect[], r: AuthoredRect ): void {
+    let cur = r;
+    for ( let k = 0; k < out.length; k++ ) {
+        const j = joined( out[ k ], cur );
+        if ( j === null ) continue;
+        out.splice( k, 1 );
+        cur = j;
+        k = -1;
+    }
+    out.push( cur );
 }
 
 export function unionRects( rects: readonly AuthoredRect[] ): AuthoredRect[] {
-    if ( rects.length === 0 ) return [];
-    const xs = edgeIndex(
-        rects,
-        ( r ) => r.x,
-        ( r ) => r.x + r.w,
-    );
-    const zs = edgeIndex(
-        rects,
-        ( r ) => r.z,
-        ( r ) => r.z + r.l,
-    );
-    const g: CellGrid = {
-        cols: xs.edges.length - 1,
-        rows: zs.edges.length - 1,
-        cells: new Uint8Array( ( xs.edges.length - 1 ) * ( zs.edges.length - 1 ) ),
-    };
-    for ( const r of rects ) {
-        const i0 = xs.at.get( r.x ) ?? 0;
-        const i1 = xs.at.get( r.x + r.w ) ?? 0;
-        for ( let j = zs.at.get( r.z ) ?? 0; j < ( zs.at.get( r.z + r.l ) ?? 0 ); j++ ) {
-            g.cells.fill( 1, j * g.cols + i0, j * g.cols + i1 );
-        }
-    }
     const out: AuthoredRect[] = [];
-    for ( let j = 0; j < g.rows; j++ ) {
-        for ( let i = 0; i < g.cols; i++ ) {
-            if ( ! rowFree( g, j, i, i + 1 ) ) continue;
-            const i1 = runEnd( g, i, j );
-            const j1 = stackEnd( g, j, i, i1 );
-            claim( g, i, i1, j, j1 );
-            out.push( {
-                x: xs.edges[ i ],
-                z: zs.edges[ j ],
-                w: xs.edges[ i1 ] - xs.edges[ i ],
-                l: zs.edges[ j1 ] - zs.edges[ j ],
-            } );
-        }
+    for ( const r of rects ) {
+        let pieces: AuthoredRect[] = [ { x: r.x, z: r.z, w: r.w, l: r.l } ];
+        for ( const o of out ) pieces = pieces.flatMap( ( p ) => subtractRect( p, o ) );
+        for ( const p of pieces ) absorb( out, p );
     }
     return out;
 }
