@@ -96,7 +96,26 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-000. RESUME HERE (2026-09-27 evening, seam at ~150k). On workerone #327 DONE → relay with /test-level +
+0000. RESUME HERE (2026-09-27 ~23:30, seam 2 at ~150k). Pane ids unchanged: workerone w2Z:p2, workertwo w2Z:p3.
+   Dev stack: client PID 1557 :5173; server now PID 46767 :2567 (restarted by someone after seam 1; not mine).
+   LIVE LANES:
+   - workerone: #333 marigold membrane in the portal aperture (build direct; leva dials Portal.membraneOpacity/
+     Glow/Flow already in 41bde5a). Holds portal-field/* + new portal-field/membrane-material.ts. Released
+     tuning-schema.ts + tuning-panel.tsx. On DONE → relay /test-level brief; then brief #331 PLAN FIRST (all
+     pickups ≈5u bbox incl. portal pickup; grab radius stays or scales?). workerone was 12% at #333 start.
+   - workertwo: #334 block side hit nearly stops the ship. PLAN FIRST, no edits (cleared+resumed 0%). Causes
+     [inferred from step.ts]: :264 grazeDepth 0.5 corner → z push; :316 vz = −bounceBack 9; bounceStun 0.25 s
+     → NEUTRAL_INPUT (:379). Relay plan to owner. tuning-schema.ts free for a scrape dial.
+   DONE THIS SEAM (all closed): #327 7d52b75 flat weave · #328 8506bc1 tug ×2 · #330 bf9199f tug timeline
+   (owner: band 250–450u, towed ctrl strong phase only, pull thrust, smoothstep, leva Tug.* dials; no block in
+   band = tug keeps charge) · #332 d883422 tug HUD glyph from board · #329 350febc portal R5 Y3 (owner's own live
+   value), clear window 11.5 × 12, placement nulls 1.64%/1.52% (was 0.69/0.76), catch top 7.2.
+   OWNER CHECKS PENDING on /test-level: #327, #329, #330, #332, plus older #320/#321/#322/#323/#324/#326.
+   OPEN OWNER Qs: tug glyph fleck <2 px at small size — drop? · #321 editor opens at 100% (zoom out / fit take?)
+   · amber frame on portal exit · stalled race exit (host "End race" recommended) · lead non-monotonic
+   · Freighter phrase-motif bumps · #14 Q1/Q2.
+   Worker cross-session addresses: workerone uds:/tmp/cc-socks/1146.sock, workertwo uds:/tmp/cc-socks/1219.sock.
+000. (seam 1, superseded by 0000) On workerone #327 DONE → relay with /test-level +
    editor brief (staircase gone). On workertwo #328 DONE → relay pull length near/far anchor + reel-in; remind
    :2567 restart for hosted rooms. Owner checks pending on /test-level: #320/#325 portal ring (my eyeball: glow
    dominates, rim barely reads; PORTAL_ARMED_INTENSITY dial), #321 recorder, #322/#323 arc, #324 pickup
