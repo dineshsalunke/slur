@@ -38,7 +38,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| **LIVE (2026-09-27 evening)** workerone | w2Z:p2 | #327 no-funnel weave (build direct) | BUILDING | packages/shared/src/sim/phrase/* + tests, phrase row of track-digest.test.ts |
+| **LIVE (2026-09-27 evening)** workerone | w2Z:p2 | #327 DONE 7d52b75 (closed; handover 59e81c7): flat weave face, run-up 156–220u < 280u set, lengths unchanged, 0 bumps/deaths seeds 1–30. Owner /test-level check pending | idle | none |
 | **LIVE** workertwo | w2Z:p3 | #328 tug ×2 (TUG_S 0.6→1.2) + reel-in animation (build direct) | BUILDING | shared tug-constants.ts, sim/tug-status(.test).ts, run/tug-run.test.ts, game/scene/tug-line/* |
 | (stale rows below: pre-reboot panes w2P:*; workerthree/four/five NOT running) | | | | |
 | workerone | w2P:pD | #318 DONE 4b17a2e (block capacity per track, emit ahead-first) + fc85cd7 (editor union keeps walls whole; phrase round trip 3007→596 blocks), closed; OWNER CONFIRMED on /test-level 2026-09-27. #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending. #315 DONE c5436bb (closed): mirror gated to countdown+racing; hidden in results too (owner asked: keep hidden?). Browser check unmeasured | idle | none |
