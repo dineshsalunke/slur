@@ -1,8 +1,7 @@
 import { useFrame } from '@react-three/fiber';
-import { SEG_LEN } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { Fragment, useCallback, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { LocalPlayer, Sim } from '../../ecs/traits';
@@ -16,12 +15,9 @@ import { fracturedBlockGeometry } from '../fractured-block-geometry';
 import { fracturedBlockUniforms, patchFracturedBlock } from '../fractured-block-shader';
 import { SEALED_BLOCK_UNIT_BEVEL, SEALED_BLOCK_UNIT_DIMS, sealedBlockGeometry } from '../sealed-block-geometry';
 import { patchSealedBlock, sealedBlockUniforms } from '../sealed-block-shader';
-import { SEALED_BLOCK_MAX_SEAMS } from '../sealed-block-variation';
-import { AHEAD, BACK } from '../track-instancing';
 import { graphiteSurface } from '../track-materials';
 import { patchWallBreakup } from '../wall-breakup';
-import { BLOCK_LIMIT, FRACTURED_LIMIT } from './track-blocks.constants';
-import { emitSegment, fracturedAttributes } from './track-blocks.utils';
+import { blockCapacity, emitWindow, fracturedAttributes, sealedAttributes } from './track-blocks.utils';
 
 export interface SealedVariation {
     seams: number[];
@@ -39,7 +35,13 @@ export interface FracturedAttributes {
     glow: THREE.InstancedBufferAttribute;
 }
 
+export interface BlockCapacity {
+    sealed: number;
+    fractured: number;
+}
+
 export interface Emit {
+    capacity: BlockCapacity;
     sealed: THREE.InstancedMesh;
     fractured: THREE.InstancedMesh;
     attrs: SealedAttributes;
@@ -63,16 +65,8 @@ export function TrackBlocks() {
     const uniforms = useMemo( () => sealedBlockUniforms(), [] );
     const fractureUniforms = useMemo( () => fracturedBlockUniforms(), [] );
     const breakup = useMemo( blotchWearUniforms, [] );
-    const attrs = useMemo< SealedAttributes >(
-        () => ( {
-            seams: new THREE.InstancedBufferAttribute(
-                new Float32Array( BLOCK_LIMIT * SEALED_BLOCK_MAX_SEAMS ),
-                SEALED_BLOCK_MAX_SEAMS,
-            ),
-            variation: new THREE.InstancedBufferAttribute( new Float32Array( BLOCK_LIMIT * 2 ), 2 ),
-        } ),
-        [],
-    );
+    const capacity = useMemo( () => blockCapacity( track ), [ track ] );
+    const attrs = useMemo( () => sealedAttributes( capacity.sealed ), [ capacity ] );
     const geometry = useMemo( () => {
         const g = sealedBlockGeometry( SEALED_BLOCK_UNIT_DIMS, SEALED_BLOCK_UNIT_BEVEL );
         g.setAttribute( 'aSealedSeams', attrs.seams );
@@ -80,7 +74,7 @@ export function TrackBlocks() {
         return g;
     }, [ attrs ] );
     const cells = useMemo( fracturedBlockGeometry, [] );
-    const fractured = useMemo( () => fracturedAttributes( cells ), [ cells ] );
+    const fractured = useMemo( () => fracturedAttributes( cells, capacity.fractured ), [ cells, capacity ] );
     const attachBlocks = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {
             blockRef.current = mesh;
@@ -122,10 +116,8 @@ export function TrackBlocks() {
         applyDeckFinish( blocks.material as THREE.MeshStandardMaterial );
         applyDeckFinish( cracked.material as THREE.MeshStandardMaterial );
 
-        const i0 = Math.max( 0, Math.floor( ( sim.z - BACK ) / SEG_LEN ) );
-        const i1 = Math.floor( ( sim.z + AHEAD ) / SEG_LEN );
-
         emitRef.current ??= {
+            capacity,
             sealed: blocks,
             fractured: cracked,
             attrs,
@@ -137,14 +129,17 @@ export function TrackBlocks() {
             preReach: 1,
         };
         const e = emitRef.current;
+        e.capacity = capacity;
         e.sealed = blocks;
         e.fractured = cracked;
+        e.attrs = attrs;
+        e.cracked = fractured.cracked;
         e.si = 0;
         e.fi = 0;
         e.ship = sim;
         e.preGlow = num( 'Fracture.preGlow' );
         e.preReach = num( 'Fracture.preReach' );
-        for ( let i = i0; i <= i1; i++ ) emitSegment( e, track.segmentAt( i ) );
+        emitWindow( e, track, sim.z );
         endFrame();
         blocks.count = e.si;
         cracked.count = e.fi;
@@ -163,7 +158,7 @@ export function TrackBlocks() {
                 geometry={ geometry }
                 count={ 0 }
                 frustumCulled={ false }
-                args={ [ undefined, undefined, BLOCK_LIMIT ] }
+                args={ [ undefined, undefined, capacity.sealed ] }
             >
                 <meshStandardMaterial
                     { ...surface }
@@ -179,7 +174,7 @@ export function TrackBlocks() {
                 geometry={ fractured.geometry }
                 count={ 0 }
                 frustumCulled={ false }
-                args={ [ undefined, undefined, FRACTURED_LIMIT ] }
+                args={ [ undefined, undefined, capacity.fractured ] }
             >
                 <meshStandardMaterial
                     { ...surface }
