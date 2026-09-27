@@ -99,7 +99,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    :2567 restart for hosted rooms. Owner checks pending on /test-level: #320/#325 portal ring (my eyeball: glow
    dominates, rim barely reads; PORTAL_ARMED_INTENSITY dial), #321 recorder, #322/#323 arc, #324 pickup
    buttons, #326 rope (COIL_R dial). Open owner Qs: #321 editor opens at 100% (~68u) — open zoomed out or
-   "fit take"? ~1 amber frame on portal exit — tone down? TOW_S (backward tug) double too? Stalled race exit;
+   "fit take"? ~1 amber frame on portal exit — tone down? (TOW_S: OWNER YES, 0.8→1.6, told workertwo.) Stalled race exit;
    lead non-monotonic; Freighter bumps; #14 Q1/Q2. Dev stack PIDs 1555/1557 still up at this seam.
 00. POST-REBOOT STATE (2026-09-27 19:35): pane IDs changed — workerone w2Z:p2, workertwo w2Z:p3 (cleared +
    resumed at 0%). workerthree/four/five NOT running (owner has not restarted them). Dev stack started by the
