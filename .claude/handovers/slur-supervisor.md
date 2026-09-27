@@ -117,8 +117,11 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    workerone idle, no files. (011e6e1 is an accidental empty commit of mine; harmless.)
    #324 DONE 16f962d (closed): leva panel (Backquote) → "Pickups" folder, 7 buttons, writes first empty server
    slot; full bag = no-op. workertwo idle, no files.
-   TUG ROPE (no issue yet): owner wants a thin rope that shoots from the ship and latches; slack waves like a
-   thrown rope paying out off a dropped coil. Asked owner to confirm my reading before filing.
+   OWNER 2026-09-27: arc — only the EMPTY frame square (bolt reverts; workerone, fix(#323), build direct).
+   #325 FILED: portal = full 6u circle ring, raised, LOOK per ingredients/portal/concept-board.png; owner calls
+   the #320 arch cartoon-ish/ugly. workerone PLAN FIRST (catch box vs circle, height).
+   #326 FILED: tug rope thin + marigold, thrown/pay-out/slack waves/latch taut (owner confirmed reading).
+   workertwo PLAN FIRST; holds tug-line/* on approval.
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
