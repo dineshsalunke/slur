@@ -122,6 +122,12 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    the #320 arch cartoon-ish/ugly. workerone PLAN FIRST (catch box vs circle, height).
    #326 FILED: tug rope thin + marigold, thrown/pay-out/slack waves/latch taut (owner confirmed reading).
    workertwo PLAN FIRST; holds tug-line/* on approval.
+   #323 bolt revert DONE bc96f51. #325 OWNER: P1 (centre y=3) + circle catch in shared portal.ts → workerone
+   BUILDING (holds portal files, portal.ts, GDD portal, ART_SCALE §7b). #326 OWNER: visual only, short throw,
+   no miss → workertwo BUILDING (holds tug-line/*, rope-curve.utils).
+   #327 FILED: phrase weave funnel = pixel staircase (weave-emit.ts floor/ceil per 4u row). Owner annoyed,
+   says asked before (never filed). Recommended A (sloped block shape, sim+render+editor). Owner has NOT yet
+   confirmed A; unassigned.
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
