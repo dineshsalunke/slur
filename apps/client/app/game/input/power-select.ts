@@ -51,10 +51,12 @@ export interface PowerActions {
     rack(): readonly number[];
     fire( slot: number, dir: FireDir ): void;
     drop( slot: number ): void;
+    tick(): void;
 }
 
 export function handlePowerKey( e: KeyboardEvent, act: PowerActions ): void {
     if ( e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || typingTarget( e.target ) ) return;
+    const before = selected;
     const digit = SLOT_KEYS.indexOf( e.code );
     if ( digit >= 0 ) select( digit );
     else if ( e.code === 'KeyQ' ) {
@@ -63,4 +65,5 @@ export function handlePowerKey( e: KeyboardEvent, act: PowerActions ): void {
     } else if ( e.code === 'KeyE' ) act.fire( selected, 1 );
     else if ( e.code === 'KeyF' ) act.fire( selected, -1 );
     else if ( e.code === 'KeyX' ) act.drop( selected );
+    if ( selected !== before ) act.tick();
 }

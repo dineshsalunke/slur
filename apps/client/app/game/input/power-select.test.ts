@@ -21,6 +21,7 @@ function actions( rack: number[] ) {
     const fired: number[] = [];
     const dirs: number[] = [];
     const dropped: number[] = [];
+    const ticks: number[] = [];
     const act: PowerActions = {
         rack: () => rack,
         fire: ( s, dir ) => {
@@ -28,8 +29,9 @@ function actions( rack: number[] ) {
             dirs.push( dir );
         },
         drop: ( s ) => dropped.push( s ),
+        tick: () => ticks.push( selectedSlot() ),
     };
-    return { act, fired, dirs, dropped };
+    return { act, fired, dirs, dropped, ticks };
 }
 
 describe( 'power slot selection', () => {
@@ -81,6 +83,16 @@ describe( 'power slot selection', () => {
         expect( selectedSlot() ).toBe( 0 );
         settleSlot( [ none, none, none ] );
         expect( selectedSlot() ).toBe( 0 );
+    } );
+
+    it( 'ticks on each Q or digit that changes the selection, never on fire, drop or a same-slot digit', () => {
+        const { act, ticks } = actions( [ bolt, seeker, bolt ] );
+        handlePowerKey( key( 'Digit1' ), act );
+        handlePowerKey( key( 'KeyQ' ), act );
+        handlePowerKey( key( 'Digit3' ), act );
+        handlePowerKey( key( 'KeyE' ), act );
+        handlePowerKey( key( 'KeyX' ), act );
+        expect( ticks ).toEqual( [ 1, 2 ] );
     } );
 
     it( 'modified and repeated keys are ignored', () => {

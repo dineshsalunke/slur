@@ -214,6 +214,13 @@ Pickups float on the track; drive through to collect. A racer holds up to **3 po
 Any mix is allowed, and duplicates are allowed. A grab fills the lowest empty slot. With 3 full slots the
 racer skips the pickup, and the pickup stays. A dropped power is gone (ADR-017 amendment, #223).
 
+**Slot HUD (#322).** The three slots show as glyphs in a shallow arc behind the ship, in the 3D scene.
+The arc moves with the ship. The selected slot is bright and slightly larger. A full slot that is not
+selected is dim. An empty slot is a faint outline. A pickup shows its glyph large over the ship, and the
+glyph then shrinks into its slot. A selection change (Q or 1–3) pulses the selected glyph and plays a
+short tick. Only the local ship has an arc. The rear-view mirror does not show it. The bottom-right
+corner keeps only the key hint.
+
 | Type | Example | Effect |
 |------|---------|--------|
 | Offensive | **Bolt** | Fire forward; hit ship = stun/knock/brief loss of control |

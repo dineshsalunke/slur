@@ -10,6 +10,7 @@ import { WorldProvider } from 'koota/react';
 import { type ReactNode, useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio/remote-engine-audio';
+import { playSfx } from '../audio/sfx-map';
 import { TuningPanelMount } from '../dev/tuning-panel-mount';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
@@ -22,9 +23,12 @@ import { attachKeyboard } from './input/keyboard';
 import { handlePowerKey } from './input/power-select';
 import { NetHud } from './net-hud';
 import { NetLoop } from './net-loop/net-loop';
+import { PhaseGate } from './phase-gate/phase-gate';
+import { ON_TRACK_PHASES } from './phase-gate/phase-gate.constants';
 import { CANVAS_GL } from './scene/canvas-gl';
 import { MineField } from './scene/mine-field';
 import { MineShock } from './scene/mine-shock/mine-shock';
+import { NetPowerArc } from './scene/net-power-arc';
 import { PickupField } from './scene/pickup-field';
 import { PortalField } from './scene/portal-field/portal-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
@@ -52,6 +56,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
             fire: ( slot: number, dir: FireDir ) =>
                 room.send( USE_POWERUP_MESSAGE, { slot, dir, seq: lastInputSeq() } ),
             drop: ( slot: number ) => room.send( DROP_POWERUP_MESSAGE, { slot } ),
+            tick: () => playSfx( 'uiNav' ),
         };
         const onKey = ( e: KeyboardEvent ) => handlePowerKey( e, actions );
         addEventListener( 'keydown', onKey );
@@ -75,6 +80,9 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <MineShock />
                             <TugLine />
                             <PortalField />
+                            <PhaseGate phases={ ON_TRACK_PHASES }>
+                                <NetPowerArc />
+                            </PhaseGate>
                             <RearView />
                             <GameAudio />
                             <RemoteEngineAudio />
