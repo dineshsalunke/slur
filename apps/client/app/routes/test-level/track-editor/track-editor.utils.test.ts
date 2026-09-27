@@ -1,5 +1,6 @@
 import { type AuthoredLevel, type AuthoredRect, BLOCK_ID_STRIDE, HALF_WIDTH, SEG_LEN, START_SAFE } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
+import { normalizeLevel, outlineSegments } from './editor-shapes.utils';
 import type { EditorPoint } from './track-editor.state';
 import {
     applyTool,
@@ -7,8 +8,6 @@ import {
     crowdedSegments,
     hash8,
     maxScrollX,
-    normalizeLevel,
-    outlineSegments,
     screenX,
     screenY,
     slugOf,
