@@ -1,30 +1,28 @@
-Agent: workertwo · Lane: editor flight recorder #321 (PLAN SENT) · Updated: 2026-09-27
+Agent: workertwo · Lane: editor flight recorder #321 (DONE, closed) · Updated: 2026-09-27
 
 ## Goal
 T starts/stops a recording of ship x/z/speed + events on /test-level; Edit traces the last 3 takes on the 2D map. Editor New Track: gen (default phrase) + seed field + roll.
 
 ## Done
 - 59feea6 #319 boost glides over gaps (earlier lane, closed).
-- #321 plan sent to slur-supervisor (files, tick-hook weighing, drawing, 5 owner questions, /test-level brief). No edits.
+- 4012255 #321: RunSim optional onTick hook; LoopbackRoom.onTick; flight-recorder/ (store, T key, REC badge); editor trace (flight-trace.utils.ts), Flight takes panel, New track panel; ?seed plumbing; bare /test-level defaults to phrase. Pushed; #321 closed with SHA.
 
 ## State
-- Editor map is Canvas2D (attachMap → drawMap), not SVG; trace reuses screenX/screenY for the #317 mirror.
-- Ship state: room.sim.state.players.get(sessionId); bumps: BOUNCE_MESSAGE via room.onMessage.
-- RunSim.advance has no per-tick hook; plan picks an optional RunSimHooks.onTick (Q1).
-- Seed is hard-wired TEST_LEVEL_SEED; DEFAULT_TRACK_GEN = 'groove'.
+- Tests: shared 527/527, client 539/539, server 40/40; typecheck + lint clean.
+- Headless /test-level check (scratch rec-check.mjs, rec-check2.mjs): ?seed=4242 loads phrase/4242; REC badge on/off; 3 takes, newest bright; bump ✕ on the block face; boost segments white; D-strafe take draws right of centre, A-strafe left (matches play); New track → /test-level/edit?gen=phrase&seed=777, name phrase-777.
+- Editor at 100% zoom shows ~68u of track; zoom out to see a whole take.
 
 ## Uncommitted
 none
 
 ## Held files
-none yet (claims listed in the plan; take them on approval)
+none
 
 ## Next
-1. Wait for the owner's answers to Q1–Q5 via slur-supervisor.
-2. On approval: shared hook → loopback onTick → recorder store + tests → T key + REC badge → trace draw + takes panel → new-track panel + ?seed plumbing → typecheck/lint/test → /test-level check → commit → close #321 with SHA.
+1. Lane finished. Await a new lane from slur-supervisor.
 
 ## Open questions
-- Q1 shared onTick hook OK? Q2 keep takes across tracks? Q3 Edit auto-stops take? Q4 bare /test-level default to phrase? Q5 speed = vz scaled to maxCruise?
+- Takes are in memory only (per owner); saving them to the track file is a possible follow-up.
 
 ## Lessons → memory
-none
+- .claude/memory/procgen-seed-zero-reads-as-unset.md
