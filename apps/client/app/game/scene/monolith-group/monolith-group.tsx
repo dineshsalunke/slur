@@ -8,7 +8,6 @@ import { applyDeckFinish } from '../deck-finish';
 import type { MonolithShapeConfig } from '../monolith-config';
 import { type MonolithSize, monolithGeometry, patchWallSpan } from '../monolith-geometry';
 import { bodySpan, type MonolithTransform, shapeProfile } from '../monolith-transforms';
-import { patchRailGlow, type RailMask, railGlowUniforms, updateRailGlow } from '../rail-glow';
 import { graphiteSurface } from '../track-materials';
 import { patchWallBreakup } from '../wall-breakup';
 import { SEAM_GEOMETRY } from './monolith-group.constants';
@@ -18,16 +17,13 @@ export function MonolithGroup( {
     shape,
     bodies,
     seams,
-    railMask,
 }: {
     shape: MonolithShapeConfig;
     bodies: readonly MonolithTransform[];
     seams: readonly MonolithTransform[];
-    railMask?: RailMask;
 } ) {
     const rebuild = useRebuildToken();
     const surface = useMemo( graphiteSurface, [ rebuild ] );
-    const glow = useMemo( railGlowUniforms, [] );
     const span = useMemo( () => ( { value: 1 } ), [] );
     const breakup = useMemo( blotchWearUniforms, [] );
 
@@ -38,7 +34,6 @@ export function MonolithGroup( {
     const attachBody = ( mat: THREE.MeshStandardMaterial | null ) => {
         bodyRef.current = mat;
         if ( ! mat ) return;
-        patchRailGlow( mat, glow );
         patchWallSpan( mat, span );
         patchWallBreakup( mat, breakup );
     };
@@ -63,7 +58,6 @@ export function MonolithGroup( {
             span.value = size[ 1 ];
             updateBlotchWear( breakup );
             applyDeckFinish( body );
-            if ( railMask ) updateRailGlow( glow, railMask.texture.current, railMask.count );
         }
         const seam = seamRef.current;
         if ( seam ) seam.emissiveIntensity = num( 'Monolith.seamEmissive' );

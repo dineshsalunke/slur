@@ -24,12 +24,6 @@ export function TuningPanel() {
         rotation: numberControl( 'Environment.rotation' ),
     } );
 
-    useControls( 'Rail lights', {
-        intensity: numberControl( 'RailLight.intensity' ),
-        lift: numberControl( 'RailLight.lift' ),
-        color: colorControl( 'RailLight.color' ),
-    } );
-
     useControls( 'Bloom', {
         intensity: numberControl( 'Bloom.intensity' ),
         threshold: numberControl( 'Bloom.threshold' ),
@@ -50,13 +44,6 @@ export function TuningPanel() {
         height: numberControl( 'NearFill.height' ),
         distance: numberControl( 'NearFill.distance' ),
         color: colorControl( 'NearFill.color' ),
-    } );
-
-    useControls( 'Fill', {
-        intensity: numberControl( 'Fill.intensity' ),
-        elevation: numberControl( 'Fill.elevation' ),
-        azimuth: numberControl( 'Fill.azimuth' ),
-        color: colorControl( 'Fill.color' ),
     } );
 
     useControls( 'Metal', {

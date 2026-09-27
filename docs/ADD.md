@@ -275,15 +275,13 @@ from the planet centre gives a sphere normal, a sun direction (`Sky.planetPhase`
 reads of the noise volume give relief. The planets are in the light cube too, so a large Deep Space
 planet contributes to the IBL.
 
-**The rail glow is an analytic line light in the deck material** (`scene/rail-glow.ts`), not a scene
-light. Two lines at the rail x positions give a wrapped `1/d` diffuse term and a specular
-streak from the closest point on the line to the reflection ray, patched into `lights_fragment_end`
-of the floor material only. A per-segment rail mask (built from `buildRailRuns`) turns each line off
-where its rail is absent, with a 2u ramp at run ends. The lines are in world space and the shader
-moves them to view space with `viewMatrix`, so the rear-view pass lights the deck correctly. The six `RectAreaLight`s it replaced were the single largest cost of a
-DPR 2 frame (8 ms of 17.7 on an M3 Pro at 3456×2160), because three.js evaluates every area light
-with LTC on every fragment of every standard material. The line light costs a few dozen ALU on deck
-fragments. The `Environment` band cylinder still gives blocks, monoliths and ships their marigold.
+**The rails do not light the scene.** The rail light and the directional fill were removed in #310
+(owner, 2026-09-27: they had no visible effect). The rail light was an analytic line light patched
+into the deck, monolith and finish-gate materials. Before it, six `RectAreaLight`s were the largest
+cost of a DPR 2 frame (8 ms of 17.7 on an M3 Pro at 3456×2160), because three.js evaluates every
+area light with LTC on every fragment of every standard material. Do not add area lights for a
+glow. The scene lights are now the `Environment` IBL, `NearFill` and the engine and VFX point
+lights. The `Environment` band cylinder gives blocks, monoliths and ships their marigold.
 
 **DPR 2 frame budget, M3 Pro, 3456×2160, GPU-synced medians while driving** (`readPixels` each
 frame; plain rAF timing does not track the GPU under ANGLE Metal): 10.0 ms with everything, 5.4 ms

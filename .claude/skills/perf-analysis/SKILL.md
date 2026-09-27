@@ -49,7 +49,7 @@ Delete the file and the two lines before committing. `git status` will show both
 ```
 export E=$HOME/Library/Caches/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-mac-arm64/chrome-headless-shell
 cd .claude/skills/perf-analysis/scripts
-REPS=2 T=baseline,allmesh,rails,points,backfill,sky,stars,rocks,deck node perf.mjs
+REPS=2 T=baseline,allmesh,points,sky,stars,rocks,deck node perf.mjs
 ```
 
 `E` is the headless Chromium; `PW` overrides where `playwright-core` is found when it is not
@@ -62,7 +62,7 @@ To see a look rather than time it, `scripts/tune.mjs` screenshots `/test-level` 
 preloaded through localStorage, resolving each key's schema default so `restore()` accepts it:
 
 ```
-TUNE='{"RailLight.intensity":10}' node --import <tsx loader> tune.mjs name 2500
+TUNE='{"NearFill.intensity":80}' node --import <tsx loader> tune.mjs name 2500
 ```
 
 The loader is `node_modules/.pnpm/tsx@*/node_modules/tsx/dist/loader.mjs` in the worktree. The second
@@ -84,12 +84,12 @@ argument is how long to hold `W` before the shot; `0` parks the ship. `S` is the
 
 | lever | verdict |
 |---|---|
-| `RectAreaLight` | LTC runs per light on every fragment of every standard material. Six lights were 8 ms of a 17.7 ms DPR 2 frame. Replaced by an analytic line light in the deck material (`scene/rail-glow.ts`). Do not bring them back for a glow. |
+| `RectAreaLight` | LTC runs per light on every fragment of every standard material. Six lights were 8 ms of a 17.7 ms DPR 2 frame. Replaced by an analytic line light, which was itself removed in #310 (no visible effect). Do not bring them back for a glow. |
 | Canvas `antialias`, `alpha` | Both off (`scene/canvas-gl.ts`). The composer's final quad gains nothing from MSAA; an opaque canvas skips the compositor blend. About 1 ms. |
 | Rear view | Half-scale rear view changed nothing measurable. Not a target. |
 | Sky pass | 1.4 ms at DPR 2 for four cube reads, three volume reads and two star hashes per pixel. Freezing motion saves nothing; the cost is the reads. Next step if needed: render the sky at half res, which softens stars. |
 | Rocks | 0.9 ms. The far-plane dither discard disables early-z on the rock shader; shrinking rocks at the far plane instead would restore it. Not yet worth it. |
-| Point and directional lights | 0.5 ms combined. Removing the directional fill saved nothing measurable. |
+| Point lights | 0.5 ms combined with the directional fill, which #310 removed. Removing it saved nothing measurable. |
 | DPR 1.5 | Meets any target instantly and is the last resort; it is the only lever here that spends quality. |
 
 ## 6. Frame budget as of 2026-09-23

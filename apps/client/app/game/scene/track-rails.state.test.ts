@@ -1,5 +1,5 @@
 import { HALF_WIDTH, SEG_LEN, type Segment, type Track } from '@slur/shared';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { trackRails } from './track-rails.state';
 
 function trackOf( segments: number ): Track {
@@ -21,18 +21,17 @@ function trackOf( segments: number ): Track {
 }
 
 describe( 'track rails cache', () => {
-    it( 'builds the runs and mask once per track', () => {
+    it( 'builds the runs once per track', () => {
         const track = trackOf( 4 );
         const first = trackRails( track, 4 );
         expect( trackRails( track, 4 ) ).toBe( first );
-        expect( trackRails( track, 4 ).mask ).toBe( first.mask );
+        expect( trackRails( track, 4 ).runs ).toBe( first.runs );
     } );
 
-    it( 'disposes the old mask when a new track is built', () => {
+    it( 'rebuilds the runs when a new track is built', () => {
         const old = trackRails( trackOf( 3 ), 3 );
-        const dispose = vi.spyOn( old.mask, 'dispose' );
         const next = trackRails( trackOf( 3 ), 3 );
-        expect( dispose ).toHaveBeenCalledOnce();
-        expect( next.mask ).not.toBe( old.mask );
+        expect( next ).not.toBe( old );
+        expect( next.runs ).not.toBe( old.runs );
     } );
 } );

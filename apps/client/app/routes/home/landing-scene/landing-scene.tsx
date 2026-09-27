@@ -1,7 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { WorldProvider } from 'koota/react';
 import { world } from '../../../game/ecs/world';
-import { BackFill } from '../../../game/scene/back-fill/back-fill';
 import { CANVAS_GL } from '../../../game/scene/canvas-gl';
 import { EngineLight } from '../../../game/scene/engine-light/engine-light';
 import { ExhaustField } from '../../../game/scene/exhaust-field/exhaust-field';
@@ -28,7 +27,6 @@ export function LandingScene() {
                         <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
                         <GameEnvironment />
                         <SceneEnvironment />
-                        <BackFill />
                         <NearFill />
                         <EngineLight />
                         <ExhaustField />

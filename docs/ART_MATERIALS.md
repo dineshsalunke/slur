@@ -906,7 +906,7 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       change. The brushed grain and the wear stay. A plate size different from the deck's costs one
       extra texture bake at load: about 60 ms, measured on a cold headless load.
     - Monoliths and the finish-gate body get the deck's rail glow. Blocks do not, on the owner's
-      instruction.
+      instruction. **Superseded 2026-09-27 (#310):** the rail glow is removed from every material.
     - The `Metal046B` maps are deleted. So are item 12's `Metal.mapTint` key and the `Block.*` and
       `Monolith.*` texture keys from rev. 6. The owner chose no separate value dial for blocks.
 
@@ -950,7 +950,8 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       keeps them dark at every distance, and a vacuum has no haze.
     - **Cold fill 0.50, the directional fill 1.0, and environment intensity 1.5 on deck and rail and
       2.0 on blocks,** on the owner's "too unlit" call against `action-lighting.png`, so a dielectric
-      wall has something to be lit by and the plates read. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
+      wall has something to be lit by and the plates read. **Superseded 2026-09-27 (#310):** the
+      directional fill (`Fill.*`) is removed; `NearFill` stays. Item 12's numbers stay on the panel as `Deck.*`, `Rail.*`, `Monolith.*`, `Block.*` and
       `Env.*` tunables; nothing is frozen until the owner gates §4 criterion 2 against this set.
 
 18. **Heavy fracture, travelling rock, meteor strikes, and a neutral graphite — 2026-09-24 (#234),

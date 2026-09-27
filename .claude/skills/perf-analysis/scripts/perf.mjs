@@ -57,21 +57,9 @@ const measure = () =>
 
 const toggles = {
     baseline: () => {},
-    rails: ( s ) =>
-        s.scene.traverse( ( o ) => {
-            if ( o.isRectAreaLight ) o.visible = false;
-        } ),
-    backfill: ( s ) =>
-        s.scene.traverse( ( o ) => {
-            if ( o.isDirectionalLight ) o.visible = false;
-        } ),
     points: ( s ) =>
         s.scene.traverse( ( o ) => {
             if ( o.isPointLight ) o.visible = false;
-        } ),
-    pointlights: ( s ) =>
-        s.scene.traverse( ( o ) => {
-            if ( o.isPointLight || o.isDirectionalLight ) o.visible = false;
         } ),
     sky: ( s ) =>
         s.scene.traverse( ( o ) => {

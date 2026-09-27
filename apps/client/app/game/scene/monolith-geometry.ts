@@ -150,7 +150,7 @@ export function patchWallSpan( material: THREE.Material, span: { value: number }
         shader.uniforms.uMonolithSpanY = span;
         shader.vertexShader = wallUvVertex( shader.vertexShader );
     };
-    material.customProgramCacheKey = () => 'slur-rail-glow-monolith';
+    material.customProgramCacheKey = () => 'slur-monolith-wall-span';
 }
 
 const cache = new Map< string, THREE.BufferGeometry >();
