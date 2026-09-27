@@ -2,13 +2,17 @@ import type { RootState } from '@react-three/fiber';
 import type { TugEvent } from '@slur/shared';
 import type { World } from 'koota';
 import * as THREE from 'three';
-import { Net, Render } from '../../ecs/traits';
+import { Net, Render, Sim } from '../../ecs/traits';
 import { accent } from '../accent';
 import {
     coilAngle,
     coilRadius,
     payout,
     pixelsPerUnitAt1,
+    reelDue,
+    reelFade,
+    reelOffset,
+    reelPayout,
     ropeOffset,
     ropeWidth,
     throwSeconds,
@@ -18,15 +22,17 @@ import type { Tether } from './tug-line';
 import {
     BRIGHT,
     COIL_SEGMENTS,
-    FADE_S,
     HOLD_S,
     HOOK_BRIGHT,
     HOOK_L,
     HOOK_W,
+    LATE_S,
     LIFT,
     MAX,
+    REEL_S,
     ROPE_SEGMENTS,
     ROPE_W,
+    TOW_HOLD_S,
 } from './tug-line.constants';
 import { _a, _b, _c, _dir, _from, _hook, _o, _offset, _side, _start, _to, _up } from './tug-line.state';
 
@@ -37,7 +43,18 @@ export interface RopeView {
 
 export function spawnTether( tethers: Tether[], e: TugEvent ): void {
     if ( tethers.length >= MAX ) tethers.shift();
-    tethers.push( { ownerId: e.ownerId, targetId: e.targetId, x: e.x, y: e.y, z: e.z, age: 0, throwS: 0 } );
+    tethers.push( {
+        ownerId: e.ownerId,
+        targetId: e.targetId,
+        dir: e.dir,
+        x: e.x,
+        y: e.y,
+        z: e.z,
+        age: 0,
+        throwS: 0,
+        reelAt: -1,
+        pulled: false,
+    } );
 }
 
 export function readView( state: RootState, view: RopeView ): void {
@@ -58,14 +75,31 @@ export function shipPosition( world: World, sessionId: string, out: THREE.Vector
     return false;
 }
 
-export function tetherFade( age: number ): number {
-    if ( age <= HOLD_S ) return 1;
-    const f = 1 - ( age - HOLD_S ) / FADE_S;
-    return Math.max( 0, f * f );
+function holdSeconds( t: Tether ): number {
+    return t.dir < 0 ? TOW_HOLD_S : HOLD_S;
+}
+
+function pullTimer( world: World, t: Tether ): number {
+    for ( const e of world.query( Net, Sim ) ) {
+        const id = e.get( Net )?.sessionId;
+        const s = e.get( Sim );
+        if ( ! s ) continue;
+        if ( t.dir >= 0 && id === t.ownerId ) return s.tugTimer;
+        if ( t.dir < 0 && id === t.targetId ) return s.towTimer;
+    }
+    return -1;
+}
+
+function updateReel( world: World, t: Tether ): void {
+    if ( t.reelAt >= 0 ) return;
+    const timer = pullTimer( world, t );
+    if ( timer > 0 ) t.pulled = true;
+    if ( reelDue( t.age, t.throwS, holdSeconds( t ), timer, t.pulled ) ) t.reelAt = t.age;
 }
 
 export function tetherDone( t: Tether ): boolean {
-    return t.age >= HOLD_S + FADE_S;
+    const reelAt = t.reelAt >= 0 ? t.reelAt : holdSeconds( t ) + LATE_S;
+    return t.age >= reelAt + REEL_S;
 }
 
 function ropeFrame(): void {
@@ -85,7 +119,8 @@ function coilPoint( frac: number, p: number, out: THREE.Vector3 ): THREE.Vector3
 }
 
 function ropePoint( s: number, t: Tether, length: number, out: THREE.Vector3 ): THREE.Vector3 {
-    ropeOffset( s, t.age, t.throwS, length, _offset );
+    if ( t.reelAt >= 0 ) reelOffset( s, t.age - t.reelAt, length, _offset );
+    else ropeOffset( s, t.age, t.throwS, length, _offset );
     return out
         .copy( _start )
         .lerp( _hook, s )
@@ -122,8 +157,10 @@ export function placeTether(
     const full = _from.distanceTo( _to );
     if ( full < 1e-3 ) return 0;
     if ( t.throwS === 0 ) t.throwS = throwSeconds( full );
-    const p = payout( t.age, t.throwS );
-    const fade = tetherFade( t.age );
+    updateReel( world, t );
+    const reeling = t.reelAt >= 0;
+    const p = reeling ? reelPayout( t.age - t.reelAt ) : payout( t.age, t.throwS );
+    const fade = reeling ? reelFade( t.age - t.reelAt ) : 1;
     _dir.subVectors( _to, _from ).divideScalar( full );
     ropeFrame();
     _hook.copy( _from ).addScaledVector( _dir, full * p );
@@ -143,7 +180,7 @@ export function placeTether(
             _a.copy( _b );
         }
     }
-    _a.copy( _hook ).addScaledVector( _dir, -HOOK_L );
+    _a.copy( _hook ).addScaledVector( _dir, -Math.min( HOOK_L, full * p ) );
     _b.copy( _hook );
     putSegment( mesh, n++, HOOK_W, HOOK_BRIGHT, fade, view );
     return n - start;

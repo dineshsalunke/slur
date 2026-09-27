@@ -4,11 +4,15 @@ import {
     payout,
     pixelsPerUnitAt1,
     type RopeOffset,
+    reelDue,
+    reelFade,
+    reelOffset,
+    reelPayout,
     ropeOffset,
     ropeWidth,
     throwSeconds,
 } from './rope-curve.utils';
-import { MIN_PX, RIPPLE_S, ROPE_W, THROW_MAX_S, THROW_MIN_S, TREMOR_AMP } from './tug-line.constants';
+import { LATE_S, MIN_PX, REEL_S, RIPPLE_S, ROPE_W, THROW_MAX_S, THROW_MIN_S, TREMOR_AMP } from './tug-line.constants';
 
 const out: RopeOffset = { side: 0, up: 0 };
 
@@ -79,6 +83,63 @@ describe( 'ropeOffset', () => {
 
     it( 'runs a ripple bigger than the tremor right after the latch', () => {
         expect( maxBend( 0.15 + RIPPLE_S * 0.4, 0.15, 60 ) ).toBeGreaterThan( TREMOR_AMP * 3 );
+    } );
+} );
+
+describe( 'reelDue', () => {
+    it( 'starts the reel as soon as a seen pull ends, but not before the latch', () => {
+        expect( reelDue( 0.5, 0.15, 1.2, 0, true ) ).toBe( true );
+        expect( reelDue( 0.1, 0.15, 1.2, 0, true ) ).toBe( false );
+        expect( reelDue( 0.5, 0.15, 1.2, 0.3, true ) ).toBe( false );
+    } );
+
+    it( 'ignores a zero timer before the pull reaches the client', () => {
+        expect( reelDue( 0.5, 0.15, 1.2, 0, false ) ).toBe( false );
+    } );
+
+    it( 'falls back to the hold time, with a grace when a pull is still running', () => {
+        expect( reelDue( 1.2, 0.15, 1.2, -1, false ) ).toBe( true );
+        expect( reelDue( 1.2, 0.15, 1.2, 0.1, true ) ).toBe( false );
+        expect( reelDue( 1.2 + LATE_S, 0.15, 1.2, 0.1, true ) ).toBe( true );
+    } );
+} );
+
+describe( 'reel', () => {
+    it( 'winds the hook from the anchor back to the ship', () => {
+        expect( reelPayout( 0 ) ).toBe( 1 );
+        expect( reelPayout( REEL_S / 2 ) ).toBeCloseTo( 0.5 );
+        expect( reelPayout( REEL_S ) ).toBe( 0 );
+        for ( let i = 1; i <= 20; i++ ) {
+            expect( reelPayout( ( i / 20 ) * REEL_S ) ).toBeLessThanOrEqual(
+                reelPayout( ( ( i - 1 ) / 20 ) * REEL_S ),
+            );
+        }
+    } );
+
+    it( 'stays bright while it winds and fades out only at the end', () => {
+        expect( reelFade( REEL_S * 0.5 ) ).toBe( 1 );
+        expect( reelFade( REEL_S * 0.9 ) ).toBeLessThan( 1 );
+        expect( reelFade( REEL_S ) ).toBe( 0 );
+    } );
+
+    it( 'pins both ends and settles as the rope comes in', () => {
+        for ( const since of [ 0, 0.1, 0.3 ] ) {
+            for ( const s of [ 0, 1 ] ) {
+                reelOffset( s, since, 60, out );
+                expect( Math.abs( out.side ) + Math.abs( out.up ) ).toBeLessThan( 1e-9 );
+            }
+        }
+        let early = 0;
+        let late = 0;
+        for ( let i = 0; i <= 100; i++ ) {
+            early = Math.max( early, Math.abs( reelOffset( i / 100, REEL_S * 0.1, 60, out ).side ) );
+            late = Math.max( late, Math.abs( reelOffset( i / 100, REEL_S * 0.9, 60, out ).side ) );
+        }
+        expect( late ).toBeLessThan( early );
+    } );
+
+    it( 'regrows the coil as the payout returns to zero', () => {
+        expect( coilRadius( 0, reelPayout( REEL_S ) ) ).toBeGreaterThan( coilRadius( 0, reelPayout( REEL_S / 2 ) ) );
     } );
 } );
 

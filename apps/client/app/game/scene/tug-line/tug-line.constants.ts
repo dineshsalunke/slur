@@ -2,7 +2,14 @@ import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 
 export const MAX = 8;
 export const HOLD_S = DEFAULT_SIM_CONFIG.tugS;
-export const FADE_S = DEFAULT_SIM_CONFIG.tugReleaseS;
+export const TOW_HOLD_S = DEFAULT_SIM_CONFIG.towS;
+export const LATE_S = 0.25;
+
+export const REEL_S = 0.4;
+export const REEL_FADE_FROM = 0.75;
+export const REEL_AMP = 0.45;
+export const REEL_WAVES = 2;
+export const REEL_TRAVEL_HZ = 6;
 export const LIFT = 0.4;
 export const BRIGHT = 4;
 export const HOOK_BRIGHT = 6;

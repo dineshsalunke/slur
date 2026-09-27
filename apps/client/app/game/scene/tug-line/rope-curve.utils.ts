@@ -4,7 +4,13 @@ import {
     COIL_TAPER,
     COIL_TURNS,
     HOOK_SPEED,
+    LATE_S,
     MIN_PX,
+    REEL_AMP,
+    REEL_FADE_FROM,
+    REEL_S,
+    REEL_TRAVEL_HZ,
+    REEL_WAVES,
     RIPPLE_AMP,
     RIPPLE_AMP_PER_U,
     RIPPLE_S,
@@ -62,6 +68,36 @@ export function ropeOffset( s: number, age: number, throwS: number, length: numb
     const p = payout( age, throwS );
     if ( p < 1 ) slackOffset( s, age, p, length, out );
     else tautOffset( s, age - throwS, length, out );
+    return out;
+}
+
+export function reelDue( age: number, throwS: number, hold: number, timer: number, pulled: boolean ): boolean {
+    if ( pulled && timer === 0 && age >= throwS ) return true;
+    return age >= hold + ( pulled ? LATE_S : 0 );
+}
+
+export function reelProgress( since: number ): number {
+    return Math.min( 1, Math.max( 0, since / REEL_S ) );
+}
+
+export function reelPayout( since: number ): number {
+    const r = reelProgress( since );
+    return 1 - r * r * ( 3 - 2 * r );
+}
+
+export function reelFade( since: number ): number {
+    const r = reelProgress( since );
+    if ( r <= REEL_FADE_FROM ) return 1;
+    const f = 1 - ( r - REEL_FADE_FROM ) / ( 1 - REEL_FADE_FROM );
+    return f * f;
+}
+
+export function reelOffset( s: number, since: number, length: number, out: RopeOffset ): RopeOffset {
+    const amp =
+        ( 1 - reelProgress( since ) ) * Math.min( REEL_AMP, length * SLACK_AMP_PER_U ) * Math.sin( Math.PI * s );
+    const phase = 2 * Math.PI * ( REEL_WAVES * s + REEL_TRAVEL_HZ * since );
+    out.side = amp * Math.sin( phase );
+    out.up = 0.5 * amp * Math.cos( phase );
     return out;
 }
 

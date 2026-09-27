@@ -10,11 +10,14 @@ import { placeTether, type RopeView, readView, spawnTether, tetherDone } from '.
 export interface Tether {
     ownerId: string;
     targetId: string;
+    dir: number;
     x: number;
     y: number;
     z: number;
     age: number;
     throwS: number;
+    reelAt: number;
+    pulled: boolean;
 }
 
 export function TugLine() {
