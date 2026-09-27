@@ -124,3 +124,4 @@ One line per memory; each memory lives in its own file here.
 - [Phrase length is per seed](phrase-length-is-per-seed.md) — use phraseSegments(seed) since afcc66c, never a literal 600
 - [Chained shader patches need a material guard](chained-shader-patches-need-a-material-guard.md) — ref re-attach re-wraps onBeforeCompile; use chainShaderPatch
 - [Block render cap drops silently](block-render-cap-drops-silently.md) — put() drops past its limit; blocks sized per track since 4b17a2e; stub /__tracks via page.route
+- [three devtools hook gives the scene](three-devtools-hook-gives-the-scene.md) — init-script EventTarget on __THREE_DEVTOOLS__ collects every Scene; bisect with no StoreExpose edit
