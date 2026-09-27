@@ -36,8 +36,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #306 DONE 6b982c6 (Close does not re-spawn). #307 delete saved track (owner GO), then #308 undo/redo (plan first; openEditor sets state.level = normalizeLevel(level) from #309, history starts there) | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
-| workertwo | w2P:pF | #305 DONE b6e3372. #309 shapes combine (owner GO on plan: grid-compress + greedy rects, odd-coverage outline; normalize-on-open is workerone #308) then #305 docs: GDD strafe-kick text + new ADR (DECISIONS.md serialized vs workerthree) | building | track-editor.utils.ts + track-editor.utils.test.ts |
-| workerthree | w2P:pG | ADR-023 re-measured after #305: 8d3abdb (handover 0040054). Flight unchanged (0 bumps/deaths, 30/30). Lead now non-monotonic (8u offset > 12u; 16u lane pitch > 20u) | idle; OWNER: HOLD S4 | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (release asked for workertwo #305 ADR) |
+| workertwo | w2P:pF | #309 DONE 95834b1, closed (handover e140752); groove file unchanged (no touching shapes). Now: #305 docs (GDD + ADR-024, cite 8d3abdb) + split shape helpers out of track-editor.utils.ts | building | docs/GDD.md, docs/DECISIONS.md, track-editor.utils.ts (+ new shape utils file) |
+| workerthree | w2P:pG | ADR-023 re-measured after #305: 8d3abdb (handover 0040054). Flight unchanged (0 bumps/deaths, 30/30). Lead now non-monotonic (8u offset > 12u; 16u lane pitch > 20u) | idle; OWNER: HOLD S4 | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md released to workertwo |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
