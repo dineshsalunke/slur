@@ -27,6 +27,8 @@ export function reelReleased( s: SimShip, t: FlightTuning, cfg: SimConfig = DEFA
 export function tickStatus( s: SimShip, t: FlightTuning, dt: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): void {
     if ( s.stunTimer > 0 ) s.stunTimer = Math.max( 0, s.stunTimer - dt );
     if ( s.boostTimer > 0 ) s.boostTimer = Math.max( 0, s.boostTimer - dt );
+    if ( s.boostTimer > 0 ) s.glideTimer = s.boostTimer + cfg.boostGlideS;
+    else if ( s.glideTimer > 0 ) s.glideTimer = Math.max( 0, s.glideTimer - dt );
     if ( reelReleased( s, t, cfg ) ) {
         s.tugTimer = Math.min( s.tugTimer, cfg.tugEaseS );
         s.tugAnchorZ = 0;
@@ -39,6 +41,7 @@ export function tickStatus( s: SimShip, t: FlightTuning, dt: number, cfg: SimCon
 
 export function clearStatus( s: SimShip ): void {
     s.boostTimer = 0;
+    s.glideTimer = 0;
     s.tugTimer = 0;
     s.slowTimer = 0;
     s.towTimer = 0;

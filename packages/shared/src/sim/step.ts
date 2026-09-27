@@ -10,6 +10,7 @@ import type { SimShip, SimWorld } from './types.js';
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
 
 const BOUNCE_CLEARANCE = 1e-3;
+const DECK_Y = 0;
 
 export function boostCap( s: SimShip, t: FlightTuning, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
     if ( s.boostTimer <= 0 ) return t.maxCruise;
@@ -201,6 +202,10 @@ function landingFloor( segs: Segment[], s: SimShip, prevY: number, t: FlightTuni
     return best;
 }
 
+function onBoostDeck( s: SimShip, prevY: number, t: FlightTuning ): boolean {
+    return s.glideTimer > 0 && Math.abs( s.x ) <= HALF_WIDTH && s.y <= DECK_Y && prevY + t.stepTol >= DECK_Y;
+}
+
 function markDead( s: SimShip, t: FlightTuning ): void {
     s.dead = true;
     clearStatus( s );
@@ -332,6 +337,11 @@ export function resolveCollisions(
         s.jumpsUsed = 0;
         s.lastSafeX = s.x;
         s.lastSafeZ = s.z;
+    } else if ( onBoostDeck( s, prevY, t ) ) {
+        s.y = DECK_Y;
+        if ( s.vy < 0 ) s.vy = 0;
+        s.grounded = true;
+        s.jumpsUsed = 0;
     } else {
         s.grounded = false;
     }

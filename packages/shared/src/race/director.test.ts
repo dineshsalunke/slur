@@ -124,6 +124,7 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
         finishTime: 88,
         stunTimer: 0.9,
         boostTimer: 1.1,
+        glideTimer: 1.4,
         tugTimer: 0.5,
         slowTimer: 0.7,
         towTimer: 0.6,
@@ -147,6 +148,7 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
             dirty.finishTime,
             dirty.stunTimer,
             dirty.boostTimer,
+            dirty.glideTimer,
             dirty.tugTimer,
             dirty.slowTimer,
             dirty.towTimer,
@@ -154,7 +156,7 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
             dirty.strafeHeld,
             dirty.kickLeft,
         ],
-        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+        [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
     );
     assert.equal( dirty.kicking, false );
     assert.equal( dirty.finished, false );

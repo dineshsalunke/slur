@@ -56,6 +56,7 @@ export class PlayerState extends Schema implements SimShip {
     @type( 'int8' ) strafeHeld = 0;
     @type( 'float32' ) kickLeft = 0;
     @type( 'boolean' ) kicking = false;
+    @type( 'float32' ) glideTimer = 0;
 }
 
 export class Projectile extends Schema implements ProjectileState {

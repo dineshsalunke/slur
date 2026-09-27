@@ -4,6 +4,7 @@ import {
     BOLT_TTL,
     BOOST_EASE_S,
     BOOST_GAIN,
+    BOOST_GLIDE_S,
     BOOST_RATIO,
     BOOST_RISE_S,
     BOOST_S,
@@ -104,6 +105,7 @@ export interface SimConfig extends PortalConfig {
     boostS: number;
     boostEaseS: number;
     boostRiseS: number;
+    boostGlideS: number;
     shieldRatio: number;
     shieldS: number;
     tugRatio: number;
@@ -164,6 +166,7 @@ export const DEFAULT_SIM_CONFIG: SimConfig = {
     boostS: BOOST_S,
     boostEaseS: BOOST_EASE_S,
     boostRiseS: BOOST_RISE_S,
+    boostGlideS: BOOST_GLIDE_S,
     shieldRatio: SHIELD_RATIO,
     shieldS: SHIELD_S,
     tugRatio: TUG_RATIO,

@@ -21,6 +21,7 @@ export interface SimShip {
 
     stunTimer: number;
     boostTimer: number;
+    glideTimer: number;
     tugTimer: number;
     slowTimer: number;
     towTimer: number;
@@ -52,6 +53,7 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         finished: false,
         stunTimer: 0,
         boostTimer: 0,
+        glideTimer: 0,
         tugTimer: 0,
         slowTimer: 0,
         towTimer: 0,
@@ -97,6 +99,7 @@ export const SIM_SHIP_KEYS = keyTuple< SimShip >()(
     'finished',
     'stunTimer',
     'boostTimer',
+    'glideTimer',
     'tugTimer',
     'slowTimer',
     'towTimer',
@@ -131,6 +134,7 @@ export const SIM_FLOAT_KEYS = [
     'lastSafeZ',
     'stunTimer',
     'boostTimer',
+    'glideTimer',
     'tugTimer',
     'slowTimer',
     'towTimer',

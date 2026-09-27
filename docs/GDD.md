@@ -262,6 +262,18 @@ pickup body. The server decides the grab; client prediction does not. `Pickup.gr
 - **Sync.** Mines are server state (`RunState.mines`). The server sends a `mineBurst` message on every
   trigger, clear, eviction and expiry, and the client shows the burst from it.
 
+**Boost (#319, built).** A pickup gives a Boost in 3 of every 20 pickups (`BOOST_RATIO` = 0.15).
+
+- **Speed.** For **2 s** (`BOOST_S`) the speed cap rises to **1.75×** cruise (`BOOST_GAIN` = 0.75).
+  The push reaches the new cap in **0.25 s** (`BOOST_RISE_S`) and eases off over the last **0.2 s**
+  (`BOOST_EASE_S`). A stun or the brake stops the push, but the timer keeps running.
+- **Gaps.** While the boost is on, the ship holds deck height over a gap and does not fall. It is
+  grounded there, so jump and double jump work as on the deck. When the boost ends, the ship keeps deck
+  height for **0.3 s** more (`BOOST_GLIDE_S`). Then gravity resumes. The slowest class crosses a
+  full-width gap in that time. A ship that has already dropped below the deck is not lifted back. The
+  respawn point never moves onto a gap.
+- **Sync.** The hold is sim state on the ship (`glideTimer`), so client prediction replays it.
+
 **Tug line (#290, built).** A pickup gives a Tug line in 2 of every 20 pickups (`TUG_RATIO` = 0.1). It
 replaces the Tractor beam and the Grapple of §5.7.
 
