@@ -15,9 +15,11 @@ import {
     TUG_MESSAGE,
     type TugEvent,
 } from '@slur/shared';
+import { ON_TRACK_PHASES } from '../game/phase-gate/phase-gate.constants';
 import type { RunRoomLike } from '../net/run-room-like';
 import { stateCallbacks } from '../net/state-callbacks';
 import { playMusic } from './audio-engine';
+import { startEngineLoop, stopEngineLoop } from './engine-loop';
 import { musicForPhase } from './music-for-phase';
 import { playBolt, playSfx, startSfxLoop, stopSfxLoop } from './sfx-map';
 
@@ -190,6 +192,8 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
     const offPhase = $( room.state ).listen( 'phase', ( v ) => {
         if ( v === PHASE.racing && prevPhase !== PHASE.racing ) playSfx( 'go' );
         playMusic( musicForPhase( v ) );
+        if ( ON_TRACK_PHASES.includes( v ) ) startEngineLoop();
+        else stopEngineLoop();
         prevPhase = v;
     } );
 

@@ -3,6 +3,9 @@ import { tuningForShip } from '@slur/shared';
 import { useQuery, useWorld } from 'koota/react';
 import { useEffect, useRef, useState } from 'react';
 import { Interp, LocalPlayer, Net, Remote, Render, Sim } from '../../game/ecs/traits';
+import { useRunPhase } from '../../game/net/run-view-store';
+import { ON_TRACK_PHASES } from '../../game/phase-gate/phase-gate.constants';
+import { useRoom } from '../../net/room-context/use-room';
 import { getContext, loadSample } from '../audio-engine';
 import { engineParams, engineVoice } from '../engine-voice';
 import { passByEdge } from '../movement-edges';
@@ -15,6 +18,7 @@ import { type Emitter, syncEmitters } from './remote-engine-audio.utils';
 export function RemoteEngineAudio() {
     const world = useWorld();
     const remotes = useQuery( Remote, Render );
+    const onTrack = ON_TRACK_PHASES.includes( useRunPhase( useRoom() ) );
     const camera = useThree( ( s ) => s.camera );
     const [ ready, setReady ] = useState( false );
     const active = useRef( new Map< number, Emitter >() );
@@ -31,10 +35,10 @@ export function RemoteEngineAudio() {
         };
     }, [ camera ] );
 
-    // Syncs the ECS remote ships into the three.js scene graph: one positional engine loop per remote ship.
+    // Syncs the ECS remote ships into the three.js scene graph: one positional engine loop per remote ship while on track.
     useEffect( () => {
-        if ( ready ) syncEmitters( remotes, active.current );
-    }, [ remotes, ready ] );
+        if ( ready ) syncEmitters( onTrack ? remotes : [], active.current );
+    }, [ remotes, ready, onTrack ] );
 
     // Releases Web Audio at unmount: detaches and disconnects every positional engine loop.
     useEffect( () => {

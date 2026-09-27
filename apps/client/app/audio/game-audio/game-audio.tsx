@@ -9,7 +9,7 @@ import { touchInput } from '../../game/input/touch-state';
 import { useRoom } from '../../net/room-context/use-room';
 import { isMuted, playMusic, setMuted, stopMusic } from '../audio-engine';
 import { bindRoomAudio } from '../bind-room-audio';
-import { setEngineSpeed, startEngineLoop, stopEngineLoop } from '../engine-loop';
+import { setEngineSpeed, stopEngineLoop } from '../engine-loop';
 import { createMoveEdges, stepMoveEdges } from '../movement-edges';
 import { musicForPhase } from '../music-for-phase';
 import { ensureListener } from '../positional';
@@ -25,7 +25,6 @@ export function GameAudio() {
     // Syncs with the Web Audio engine and the Colyseus room: preload, the engine loop, music and room sound cues.
     useEffect( () => {
         ensureListener( camera );
-        startEngineLoop();
         const unbind = bindRoomAudio( room );
         void preloadAudio().then( () => playMusic( musicForPhase( room.state.phase ) ) );
         return () => {
