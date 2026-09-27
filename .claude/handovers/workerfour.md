@@ -1,40 +1,50 @@
-Agent: workerfour · Lane: #295 Blink pickup (after the portal) · Updated: 2026-09-26
+Agent: workerfour · Lane: URGENT perf regression (owner saw 5–12 fps), diagnose only; #295 Blink on hold · Updated: 2026-09-27
 
 ## Goal
 
-Build a Blink pickup: an instant short self-hop, forward, back or diagonal. Reuse the portal's BC4 path
-(`clearSpotAt()` + the `portalHops` snap counter).
+Find why the owner saw 5–12 fps in the game: measure, name the subsystem or commit, and send the supervisor
+the cause, a fix plan and a file claim. No edits. #295 Blink waits for the owner's approval of the plan.
 
 ## Done
 
-- 1ef88f0 — ADR-022: the exit-ring bloom is kept as the hop flash (owner decision). Open item closed.
-- #289 portal: all slices shipped, issue closed (see git log of this file).
+- 1ef88f0 — ADR-022: the exit-ring bloom is kept as the hop flash.
+- #295 plan sent to the supervisor: 4 slices, 5 questions, S1 claim. No approval relayed yet.
+- dfdbecf — memory `three-devtools-hook-gives-the-scene.md` (scene handle with no repo edit).
+- Perf verdict sent to the supervisor: not reproduced in Chrome. The owner's repro was requested.
 
 ## State
 
-- The plan went to slur-supervisor: 4 slices, 5 open questions. No approval yet.
-- Clients do not predict powers. Fire intents are applied on the server at their input seq (`run-sim.ts` `fireReady`). [read this session]
-- Ratios: seeker, mine, boost and shield 0.15 each; portal and tug 0.1 each; the bolt takes the remaining 0.2. [read this session]
+- Headless Chrome with Metal, readPixels GPU wait per frame, driving W, /test-level [measured]:
+  - DPR1: default gen, ?gen=phrase and ?level=phrase-20260921 all ~17.5 ms (vsync cap). JS ≤ 2.1 ms. 70–126 draws.
+  - DPR2 default gen: GPU 17.5–20 ms, JS 1.5–2.2 ms, 126 draws → ~50 fps.
+  - CPU profile: 64% readPixels (GPU wait), no hot JS. 4b17a2e emitWindow and 59feea6 onBoostDeck are not visible.
+  - DPR2 bisect: hiding MeshStandardMaterial saves ~0 ms; hiding ShaderMaterial (sky + post) takes 18 → 11 ms.
+  - The shared dist has glideTimer, so there is no schema skew.
+- The owner plays in Zen (Firefox). Headless Firefox fails here (sandbox, software GL). Firefox is not measured.
+- Drivers are in the old session scratchpad (`perf/gpu.mjs`, `frame.mjs`, `top.mjs`). They may not survive the
+  restart; the memory above describes how to rebuild them.
+- Not mine, uncommitted: `tracks/groove-20260921.json` (deleted), `tracks/phrase-20260921.json` (untracked).
 
 ## Uncommitted
 
-None.
+None of mine.
 
 ## Held files
 
-None. The S1 claim is requested and not yet cleared: `combat/blink.ts`, `blink.test.ts`, `combat/constants.ts`,
-`combat/power-bag.ts`, `sim-config.ts`, `index.ts` (all under `packages/shared/src/`).
+None.
 
 ## Next
 
-1. Wait for the owner's approval and answers, relayed by the supervisor.
-2. S1 shared sim → S2 server (`run/combat.ts`; serialize with workerfive on `run-sim.ts`) → S3 client → S4 docs.
-3. Verify on /test-level. Close #295 with the SHAs.
+1. Wait for the owner's repro through the supervisor: browser, URL, DPR/window, slow from the start or after
+   some distance, Chrome on the same URL, and a Zen `about:profiling` capture if possible.
+2. With the repro: measure that exact route (a hosted /game room if that is where it happens), bisect, and send the cause + fix plan + claim.
+3. Then resume #295 once the owner approves the Blink plan (S1 shared sim first).
 
 ## Open questions
 
-- Distance fixed or speed-scaled; lateral from the held strafe; back-hop vz; prediction deferred; the share.
+- Perf: the owner's exact repro (above).
+- #295: distance fixed or speed-scaled; lateral offset from the held strafe; back-hop vz; prediction deferred; share 0.1 taken from the bolt.
 
 ## Lessons → memory
 
-- none.
+- `.claude/memory/three-devtools-hook-gives-the-scene.md` (dfdbecf).
