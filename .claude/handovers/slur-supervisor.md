@@ -37,7 +37,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | #306 DONE 6b982c6 (Close does not re-spawn). #307 delete saved track (owner GO), then #308 undo/redo (plan first; openEditor sets state.level = normalizeLevel(level) from #309, history starts there) | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
 | workertwo | w2P:pF | #305 DONE b6e3372. #309 shapes combine (owner GO on plan: grid-compress + greedy rects, odd-coverage outline; normalize-on-open is workerone #308) then #305 docs: GDD strafe-kick text + new ADR (DECISIONS.md serialized vs workerthree) | building | track-editor.utils.ts + track-editor.utils.test.ts |
-| workerthree | w2P:pG | #305 landed b6e3372: re-measuring ADR-023 pitch tables/posts/length (doc only) | working; OWNER: HOLD S4 until authored tracks exist | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
+| workerthree | w2P:pG | ADR-023 re-measured after #305: 8d3abdb (handover 0040054). Flight unchanged (0 bumps/deaths, 30/30). Lead now non-monotonic (8u offset > 12u; 16u lane pitch > 20u) | idle; OWNER: HOLD S4 | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (release asked for workertwo #305 ADR) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
