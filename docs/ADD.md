@@ -329,12 +329,9 @@ A Blender MCP toolchain remains available if an authored asset turns out to be g
    *Correction to our own framing:* we claimed an 8u block gives "half a second" to react. v2 rightly notes
    *"at 55 u/s, half a second is 27.5u travel; obstacle height does not establish the detection window"* —
    the window is set by draw distance and framing, not block height. The gate still stands, measured properly.
-8. **NEW — camera height 4–5u vs the 8u see-over-walls rule.** v2 proposes a low camera (nominal **4.5u**)
-   with **selective occlusion fade**. This collides directly with ADR-006, where the chase cam sits at **+9u**
-   *specifically* so you can see over the 8u pillars and plan a line (see `camera/chase.ts`). Fading occluders
-   is the proposed mitigation, and v2 is clear it is **a prototype, not a frozen setting**, requiring a 6–8u
-   control camera alongside. **This is a gameplay-affecting change, not an art change** — it needs an ADR and
-   a feel-gate before any of it lands. It also overlaps PR #120 (chase-cam reframe), which is still open.
+8. ~~**camera height 4–5u vs the 8u see-over-walls rule**~~ — **RESOLVED:** ADR-010 does not accept the
+   low-camera proposal (nominal 4.5u with selective occlusion fade). ADR-011 lowers the chase camera to 7.5u.
+   PR #120 (chase-cam reframe) is merged.
 
 ## 11. As-built + art research (2026-08-10) — inputs for the S6 art pass
 

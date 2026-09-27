@@ -941,7 +941,9 @@ anchor.
 
 ## ADR-017 — The homing seeker: one at a time, locks what it can see, dodged only late
 
-**Date:** 2026-09-23 · **Status:** PROPOSED (design approved by the owner via slur-supervisor; not built) ·
+**Date:** 2026-09-23 · **Status:** ACCEPTED and BUILT (#219: sim `5771ee3`, server `dfae252`, client
+`cc3debe` and `7fcabd4`). **Amended by #226** (`eae791d`): seekers fire back to back, and the one-in-flight
+cap is removed ·
 **Issue:** #219 · **Implements:** GDD §5 *"Homing seeker … Locks the nearest ship ahead and chases;
 dodge-able"* · **Uses:** BC8 (server distance queries)
 

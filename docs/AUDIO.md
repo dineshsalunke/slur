@@ -26,10 +26,10 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 - **Wipeout series** overall — the gold standard for "electronic music + antigrav racing."
 
 ## 3. Music
-- **In-run:** looping synthwave bed, ~120–140 BPM feel. *OPEN:* single loop vs intensity layers (add layers as speed/threat ramps — stems that fade in). Layered is nicer but more work; start single-loop.
+- **In-run:** looping synthwave bed, ~120–140 BPM feel. A single loop first; add intensity layers later only if it feels flat (§8 item 2).
 - **Lobby/host/join:** calmer synth idle — same palette, lower energy.
 - **Stingers:** run-start countdown, round-win, elimination, "you died" — short musical hits.
-- *OPEN:* licensing — royalty-free/CC synthwave packs, or commission/generate? It's an office toy, so **royalty-free/CC first**; keep a credits list.
+- Licensing: CC0, CC-BY and CC-BY-SA are accepted; keep a credits list (§8 item 1, #267, ADR-021).
 
 ## 4. SFX vocabulary (the essentials)
 
@@ -48,7 +48,7 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 | UI (nav/select/confirm/error) | TRON synth chirps | Consistent set, not per-screen randoms |
 | Countdown / go | Rising blips → downbeat | Syncs to run-start |
 
-*As-built hooks (S5): the combat **events** to bind SFX to now exist — `USE_POWERUP` fire, the `'hit'` broadcast, `stunTimer` (disrupt), pickup grab, and a directional threat-warning HUD (pairs with the "incoming" blip + OQ5 lead-time). No audio is implemented yet — S6 binds these.*
+*As-built hooks (S5): the combat **events** to bind SFX to now exist — `USE_POWERUP` fire, the `'hit'` broadcast, `stunTimer` (disrupt), pickup grab, and a directional threat-warning HUD (pairs with the "incoming" blip + OQ5 lead-time). S6 binds these to audio (`app/audio/bind-room-audio.ts`).*
 
 ## 5. Spatial / mix
 - **3D positional audio** for other ships and threats (Web Audio `PannerNode` via three.js `PositionalAudio`) —
@@ -62,7 +62,7 @@ Together: *fast and neon* (music) + *slick spaceship* (SFX/UI). Sound must sell 
 - Preload/decode a small SFX set; **object-pool** audio nodes for rapid-fire sounds (bolts) to avoid GC/stutter.
 - All audio is **client-local**, driven by ECS/game events (a "sound" reaction to networked events) — never networked. See TDD §5.
 - Respect browser autoplay policy: audio context **resumes on first user gesture** (the host's Start / player's Join click).
-- *OPEN:* is three's audio enough, or do we want Howler.js / a small Web Audio wrapper for buses & ducking? Decide after first pass — likely three.js is enough for v1.
+- Audio tech: three.js `PositionalAudio` only for v1, no Howler (§8 item 3).
 
 ## 7. Non-goals (v1)
 Dynamic adaptive music engine, voice-over/announcer (maybe later — a cool TRON-style "system" announcer would be *chef's kiss*), per-surface footstep-style detail.

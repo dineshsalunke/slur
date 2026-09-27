@@ -446,12 +446,12 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Hazards + collision — **AABB** (footprint = model box), swept land + swept body-bounce | **LIVE** | gap = fall/jump · cube = strafe-weave (un-jumpable), hit = bounce + stun (ADR-014); generous grounded rule; WYSIWYG |
 | Death → shard-burst VFX → respawn (position-scoped grace) | **LIVE** | falling only; 1s derezz, setback + re-approach |
 | Netcode — authoritative, predict+reconcile, interp, drop-in | **LIVE** | inputs-not-positions, 60Hz sim / 20Hz patch |
-| **Boost** | **PLANNED (S5 fast-follow)** | *removed from base flight → pickup power-up; v1 shipped Bolt only* |
-| Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine/Shield/Boost/auto-lock = fast-follows |
+| **Boost** | **LIVE** | A pickup power-up, not base flight. It runs in the shared `simulate()` (#269) |
+| Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine, Shield and Boost are LIVE (#20, #269); auto-lock → #18 |
 | Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); **`armour` (stun-multiplier sidegrade) is LIVE** on `ShipClass`, with invariant tests. Lobby pick-UI identity stats still REMAINING |
 | **Audio** — singleton engine, synth hum (pitch∝speed), CC0 SFX + CC-BY music, positional, event-bound | **LIVE (S6)** | `app/audio/**`; `M`=mute; `RemoteEngineAudio` not hear-verified |
-| **Front-of-house UI** — angular neon landing over Grid-Void | **LIVE (S6), palette PENDING** | Art direction re-frozen by `docs/art-direction/` (**ADR-008**): marigold-primary, TRON-*influenced*. The shipped palette is still the old cyan×marigold retone — recolour is the next art pass. Lobby pick-UI stats + in-game env integration REMAINING |
-| **Art review instruments** — `/art-lab`, `/art-gallery`, `/iso-*` | **REMOVED 2026-09-21** | Nothing replaces them. What is left: `/env-lab` and a hosted room. Restore: `git show e56f643 -- apps/client/app/routes/art-lab` |
+| **Front-of-house UI** — angular neon landing over Grid-Void | **LIVE (S6)** | Art direction re-frozen by `docs/art-direction/` (**ADR-008**): marigold-primary, TRON-*influenced*. The palette is marigold-primary with cyan as a sparing accent (`app.css`, #302). The in-game environment is integrated (#31). Lobby pick-UI stats REMAINING |
+| **Art review instruments** — `/art-lab`, `/art-gallery`, `/iso-*` | **REMOVED 2026-09-21** | Nothing replaces them. What is left: `/test-level` and a hosted room (`/env-lab` was removed 2026-09-22, #196). Restore: `git show e56f643 -- apps/client/app/routes/art-lab` |
 | **Track surface** — generated slab (`TrackFloor`): one mesh from real `FloorSpan` data, procedural graphite + 16×20u panel texture | **LIVE** | It **is** the game floor — `scene/track-view.tsx` renders `TrackFloor` + `TrackBoundary` + `TrackBlocks` |
 | **Track edge rail** — chamfered bar standing **outboard** of ±`HALF_WIDTH` (ADR-012) | **LIVE** | No drawn element may consume playable width; the deck's top face ends at exactly ±`HALF_WIDTH`. Final height + material tier still open |
 | Session flow (lobby→race→results, standings, restart) | **LIVE (S4)** | round lifecycle + room list + spectator + host migration |
@@ -537,7 +537,7 @@ render only). Implement one at a time; the BC changes are called out so they're 
 
 | Mechanic | Play | BC | What it does |
 |---|:--:|:--:|---|
-| **Boost** | R | sim (S5) | Burst of forward speed — the planned starter. |
+| **Boost** | R | sim (S5) | Burst of forward speed. LIVE (#269). |
 | **Blink / dash** | R | BC4 | Short instant reposition forward or lateral (dodge / gap-cross / cut a weave). |
 | **Air-brake / hard-stop** | R | sim | Instant strong decel to nail a tight weave entry (a tuning, not necessarily a pickup). |
 | **Grapple** | R | sim | Folded into the **Tug line** (#290): with no rival ahead, the line reels the firer toward the nearest block. No teleport. |
@@ -629,15 +629,10 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 
 1. **Procgen vs authored** — an open choice again since ADR-004 removed the endless necessity. Hybrid with
    the ruleset grammar as pivot? Where does the split land?
-2. **Beat vocabulary + when to build the macro grammar** (ADR-003) — which BC5-family beats land first
-   (boost/slow/launch), and how long does the difficulty arc of a "long" track run?
-3. **Death penalty** — respawn into the same round, wait for the next, or spectate-only until it ends?
-4. **Power-up carry** — hold 1, hold 2, or slot + queue?
-5. **Friendly targeting** — free-for-all only, or teams mode later?
-6. **Session length** — target minutes per round / per session?
-7. **Slow vs breakable blocks** — ADR-009 is PROPOSED and gated on a readability test; slow blocks stay live
-   in the generator until it is accepted (§5.2).
-8. **Portal loop (#289)** — both ends of a portal pair are entries. A chaser who flies forward into the far
+2. **Session length** — target minutes per round / per session?
+3. **Breakable-block readability** — ADR-015 accepts one fractured block kind. Its readability gate is not
+   yet run (ADR-015, `docs/ART_MATERIALS.md`).
+4. **Portal loop (#289)** — both ends of a portal pair are entries. A chaser who flies forward into the far
    end exits past the near end, lined up with the far end again. If the chaser does not strafe clear, the
    loop repeats until the pair expires (`portalTtl` 9 s, about 1 s per lap). Owner decision (2026-09-26):
    keep this for now. If playtests show it is too harsh, the candidate fixes are one throw-back per ship per
@@ -645,7 +640,11 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 
 *Resolved and folded in:* v1 mode = finite **Race** (endless Survival dropped — ADR-004) · fuel/energy
 **cut** (it only gated boost, which is now a pickup — §5.1/§5.3) · descriptor shape shipped as
-`TrackDescriptorState` (ADR-001; fields in TDD §5).
+`TrackDescriptorState` (ADR-001; fields in TDD §5) · beat vocabulary and macro grammar: ADR-006 supersedes
+ADR-003, and the track is a score (ADR-020, ADR-023, #300) · death penalty: a quick respawn into the same
+round (§4; ADR-014, ADR-016) · power-up carry: three slots (§5.3, #223) · friendly targeting: free-for-all,
+owner-immune only; teams mode is a later option (§5.3) · slow blocks: removed; ADR-009 is accepted as
+amended by ADR-015.
 
 ---
 
