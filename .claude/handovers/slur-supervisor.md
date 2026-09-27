@@ -106,6 +106,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    - workertwo: #334 block side hit nearly stops the ship. PLAN FIRST, no edits (cleared+resumed 0%). Causes
      [inferred from step.ts]: :264 grazeDepth 0.5 corner → z push; :316 vz = −bounceBack 9; bounceStun 0.25 s
      → NEUTRAL_INPUT (:379). Relay plan to owner. tuning-schema.ts free for a scrape dial.
+     THEN build direct: halve tug (owner: "feels exactly like boost") — pull 1 s (0.5 strong + 0.5 ease),
+     detach 0.75 s, tow 1 s × (1−armour); throw/peak/band/reel unchanged (issue "halve the pull", ~#335).
    DONE THIS SEAM (all closed): #327 7d52b75 flat weave · #328 8506bc1 tug ×2 · #330 bf9199f tug timeline
    (owner: band 250–450u, towed ctrl strong phase only, pull thrust, smoothstep, leva Tug.* dials; no block in
    band = tug keeps charge) · #332 d883422 tug HUD glyph from board · #329 350febc portal R5 Y3 (owner's own live
