@@ -34,7 +34,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #304 eraser subtract DONE ff54424, #304 closed again (handover 27403c1) | idle, no lane | none |
+| workerone | w2P:pD | #306 /test-level reset key + editor right-click Start here (R is rear view) | cleared + briefed 2026-09-27, plan due before build | claim pending |
 | workertwo | w2P:pF | #305 strafe kick 4u/tap: owner picked B (fixed-distance step), keep cheap swap to A (retune) | briefed 2026-09-27, plan due before build | claim pending |
 | workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded) | idle; OWNER: HOLD S4 until authored tracks exist (2026-09-27) | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
