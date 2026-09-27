@@ -308,8 +308,14 @@ describe( 'view mapping', () => {
         expect( c.scrollX ).toBeCloseTo( maxScrollX( 1000, 8 ) );
         expect( c.scrollZ ).toBe( 0 );
         const v = viewOf( 1000, 700, c );
-        expect( screenX( v, HALF_WIDTH ) ).toBeCloseTo( 1000 - 24 );
+        expect( screenX( v, -HALF_WIDTH ) ).toBeCloseTo( 1000 - 24 );
         expect( maxScrollX( 1000, 1 ) ).toBe( 0 );
+    } );
+
+    it( 'draws +x on the left, as the chase camera shows it', () => {
+        const v = viewOf( 1000, 700, { zoom: 1, scrollX: 0, scrollZ: 0 } );
+        expect( screenX( v, 10 ) ).toBeLessThan( screenX( v, -10 ) );
+        expect( worldAt( v, screenX( v, -HALF_WIDTH ) + 1, 350 ).x ).toBeLessThan( -HALF_WIDTH );
     } );
 } );
 

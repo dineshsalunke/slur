@@ -82,13 +82,13 @@ export function zoomAround(
     const scale = scaleOf( width, next );
     return clampCamera( width, height, level, {
         zoom: next,
-        scrollX: ( MAP_MARGIN_LEFT - px ) / scale + p.x + HALF_WIDTH,
+        scrollX: ( MAP_MARGIN_LEFT - px ) / scale + HALF_WIDTH - p.x,
         scrollZ: p.z - ( height - py ) / scale,
     } );
 }
 
 export function screenX( v: EditorView, x: number ): number {
-    return v.left + ( x + HALF_WIDTH ) * v.scale;
+    return v.left + ( HALF_WIDTH - x ) * v.scale;
 }
 
 export function screenY( v: EditorView, z: number ): number {
@@ -96,7 +96,7 @@ export function screenY( v: EditorView, z: number ): number {
 }
 
 export function worldAt( v: EditorView, px: number, py: number ): EditorPoint {
-    return { x: ( px - v.left ) / v.scale - HALF_WIDTH, z: v.scrollZ + ( v.height - py ) / v.scale };
+    return { x: HALF_WIDTH - ( px - v.left ) / v.scale, z: v.scrollZ + ( v.height - py ) / v.scale };
 }
 
 export function visibleSpan( v: EditorView ): number {
@@ -176,11 +176,16 @@ export function hash8( text: string ): string {
 }
 
 function fillRect( ctx: CanvasRenderingContext2D, v: EditorView, r: AuthoredRect ): void {
-    ctx.fillRect( screenX( v, r.x ), screenY( v, r.z + r.l ), r.w * v.scale, r.l * v.scale );
+    ctx.fillRect( screenX( v, r.x + r.w ), screenY( v, r.z + r.l ), r.w * v.scale, r.l * v.scale );
 }
 
 function strokeRect( ctx: CanvasRenderingContext2D, v: EditorView, r: AuthoredRect ): void {
-    ctx.strokeRect( screenX( v, r.x ) + 0.5, screenY( v, r.z + r.l ) + 0.5, r.w * v.scale - 1, r.l * v.scale - 1 );
+    ctx.strokeRect(
+        screenX( v, r.x + r.w ) + 0.5,
+        screenY( v, r.z + r.l ) + 0.5,
+        r.w * v.scale - 1,
+        r.l * v.scale - 1,
+    );
 }
 
 function inView( v: EditorView, r: AuthoredRect ): boolean {
@@ -303,7 +308,7 @@ export function drawMap( ctx: CanvasRenderingContext2D, v: EditorView, s: Editor
     ctx.fillStyle = MAP_COLORS.locked;
     fillRect( ctx, v, { ...deck, l: lockedZ() } );
     ctx.fillStyle = MAP_COLORS.finish;
-    ctx.fillRect( screenX( v, -HALF_WIDTH ), screenY( v, length ) - 1, 2 * HALF_WIDTH * v.scale, 3 );
+    ctx.fillRect( screenX( v, HALF_WIDTH ), screenY( v, length ) - 1, 2 * HALF_WIDTH * v.scale, 3 );
     drawPreview( ctx, v, s, length );
     if ( s.start !== null ) drawStart( ctx, v, s.start );
 }
