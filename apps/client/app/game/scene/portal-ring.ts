@@ -24,15 +24,12 @@ function sector( inner: number, outer: number, a0: number, a1: number ): THREE.S
     return s;
 }
 
-function rect( xa: number, xb: number, y0: number, y1: number ): THREE.Shape {
-    const x0 = Math.min( xa, xb );
-    const x1 = Math.max( xa, xb );
+function annulus( inner: number, outer: number ): THREE.Shape {
     const s = new THREE.Shape();
-    s.moveTo( x0, y0 );
-    s.lineTo( x1, y0 );
-    s.lineTo( x1, y1 );
-    s.lineTo( x0, y1 );
-    s.closePath();
+    s.absarc( 0, 0, outer, 0, Math.PI * 2, false );
+    const hole = new THREE.Path();
+    hole.absarc( 0, 0, inner, 0, Math.PI * 2, true );
+    s.holes.push( hole );
     return s;
 }
 
@@ -88,44 +85,13 @@ export function dashedSleeveGeometry( spec: RingSpec, sleeve: SleeveSpec, dash: 
     return mergeParts( parts );
 }
 
-export function archLegSegments( spec: RingSpec, leg: number ): number {
-    const mid = ( spec.inner + spec.outer ) / 2;
-    return Math.max( 1, Math.round( leg / ( mid * wedgeStep( spec ) ) ) );
-}
-
-export function archGeometry( spec: RingSpec, leg: number ): THREE.BufferGeometry {
-    const { inner, outer, depth, seam, bevel } = spec;
-    const step = wedgeStep( spec );
-    const parts: THREE.BufferGeometry[] = [];
-    const wedge = wedgeGeometry( spec );
-    for ( let i = 0; i < spec.wedges / 2; i++ )
-        parts.push(
-            wedge
-                .clone()
-                .rotateZ( ( i + 0.5 ) * step )
-                .translate( 0, leg, 0 ),
-        );
-    wedge.dispose();
-    const count = archLegSegments( spec, leg );
-    const len = leg / count;
-    for ( let k = 0; k < count; k++ ) {
-        const y0 = k * len + seam / 2 + bevel;
-        const y1 = ( k + 1 ) * len - seam / 2 - bevel;
-        for ( const side of [ -1, 1 ] )
-            parts.push(
-                extrude( rect( side * ( inner + bevel ), side * ( outer - bevel ), y0, y1 ), depth, bevel, 1 ),
-            );
-    }
-    return mergeParts( parts );
-}
-
-export function archSleeveGeometry( spec: RingSpec, sleeve: SleeveSpec, leg: number ): THREE.BufferGeometry {
-    const a = spec.inner - sleeve.inset;
-    const b = spec.inner + sleeve.reach;
-    const depth = spec.depth + 2 * sleeve.proud;
-    const parts = [ extrude( sector( a, b, 0, Math.PI ), depth, 0, ( spec.wedges * 3 ) / 2 ).translate( 0, leg, 0 ) ];
-    for ( const side of [ -1, 1 ] ) parts.push( extrude( rect( side * a, side * b, 0, leg ), depth, 0, 1 ) );
-    return mergeParts( parts );
+export function ringSleeveGeometry( spec: RingSpec, sleeve: SleeveSpec ): THREE.BufferGeometry {
+    return extrude(
+        annulus( spec.inner - sleeve.inset, spec.inner + sleeve.reach ),
+        spec.depth + 2 * sleeve.proud,
+        0,
+        spec.wedges * 3,
+    );
 }
 
 export function boxPart( w: number, h: number, d: number, x: number, y: number, z: number ): THREE.BufferGeometry {

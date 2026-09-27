@@ -321,8 +321,11 @@ prediction replays it.
   (`portalFinishGap`). With no clear spot the portal fizzles and the power is lost.
 - **Arm.** An end arms **0.3 s** after it is placed (`portalArmS`). Only a pair with both ends armed
   moves a ship.
-- **Hop.** A ship hops when its z crosses the plane of an armed end and its hull is within **3u** of the
-  ring in x (`portalR`) and less than **5u** above it (`portalH`). It keeps its speed and its height above
+- **Hop.** A ship hops when its z crosses the plane of an armed end and its hull overlaps the ring's
+  circle. The circle has radius **3u** (`portalR`) and its centre is **3u** above the gate floor
+  (`portalY`). The sim tests the hull at **0.8u** above the ship's y (`portalRideY`, the middle of the drawn
+  hover), so the catch half-width is the circle's half-chord at that height plus the hull half-width. A
+  grounded fighter hops at up to **3.34u** off-centre. It keeps its speed and its height above
   the floor. It comes out past the other end in its direction of travel, clear of the ring by **0.5u**
   (`portalExitGap`). A seeker locked on the ship loses the lock.
 - **Limits.** A pair lasts **9 s** (`portalTtl`). The timer restarts when end B goes down. An owner has
@@ -337,8 +340,8 @@ prediction replays it.
   exit gate. For the local ship, the cue starts on the predicted hop (or on a reconcile that adds a hop).
   The camera field of view kicks **+10°** and eases back over **0.3 s**, and the `portalHop` sound plays.
   For other ships, the `portalHop` message starts the rings and a quieter sound.
-- **Gate.** The drawn gate is an arch with a **6u × 5u** aperture (`2 × portalR` by `portalH`), which is
-  the catch box. See `docs/ART_SCALE_REFERENCE.md` §7b.
+- **Gate (#325).** The drawn gate is a full ring with a **6u** clear aperture (`2 × portalR`), centred
+  `portalY` above the deck. The aperture is the catch circle. See `docs/ART_SCALE_REFERENCE.md` §7b.
 
 > The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the **Tug line** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 

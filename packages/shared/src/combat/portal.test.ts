@@ -9,6 +9,7 @@ import {
     type PortalRider,
     type PortalState,
     placePortalEnd,
+    portalHalfChord,
     portalReach,
     portalTargetZ,
 } from './portal.js';
@@ -159,8 +160,22 @@ test( 'a lone end, an unarmed end, a miss wide and a jump over are all inert', (
     assert.ok( ! hopThroughPortal( cross(), 49, HULL, [ pair( 50, 300, { armA: false } ) ] ) );
     const wide = rider( { z: 51, x: CFG.portalR + HULL.halfW } );
     assert.ok( ! hopThroughPortal( wide, 49, HULL, [ pair( 50, 300 ) ] ) );
-    const high = rider( { z: 51, y: CFG.portalH } );
+    const high = rider( { z: 51, y: CFG.portalY + CFG.portalR - CFG.portalRideY } );
     assert.ok( ! hopThroughPortal( high, 49, HULL, [ pair( 50, 300 ) ] ) );
+} );
+
+test( 'the catch is the ring circle: a deck-level ship gets the chord at its ride height', () => {
+    const edge = portalHalfChord( CFG.portalRideY - CFG.portalY ) + HULL.halfW;
+    assert.ok( edge < CFG.portalR + HULL.halfW );
+    assert.ok( hopThroughPortal( rider( { z: 51, x: edge - 0.01 } ), 49, HULL, [ pair( 50, 300 ) ] ) );
+    assert.ok( ! hopThroughPortal( rider( { z: 51, x: edge + 0.01 } ), 49, HULL, [ pair( 50, 300 ) ] ) );
+    const mid = rider( { z: 51, x: CFG.portalR + HULL.halfW - 0.01, y: CFG.portalY - CFG.portalRideY } );
+    assert.ok( hopThroughPortal( mid, 49, HULL, [ pair( 50, 300 ) ] ) );
+} );
+
+test( 'the catch follows the gate floor height', () => {
+    const s = rider( { z: 51, y: 4 } );
+    assert.ok( hopThroughPortal( s, 49, HULL, [ pair( 50, 300, { ay: 4 } ) ] ) );
 } );
 
 test( 'dead and finished ships never hop', () => {

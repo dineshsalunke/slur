@@ -1,7 +1,7 @@
 import type { PortalState } from '@slur/shared';
 import * as THREE from 'three';
 import { accent } from '../accent';
-import { archGeometry, archSleeveGeometry, boxPart, mergeParts } from '../portal-ring';
+import { boxPart, mergeParts, ringGeometry, ringSleeveGeometry } from '../portal-ring';
 import { graphiteSurface } from '../track-materials';
 import {
     _c,
@@ -10,9 +10,9 @@ import {
     FOOT_TOP,
     FOOT_WIDTH,
     FOOT_X,
-    GATE_LEG,
     GATE_RING,
     GATE_SLEEVE,
+    GATE_Y,
     LUG_DEPTH,
     LUG_HEIGHT,
     LUG_WIDTH,
@@ -50,7 +50,7 @@ export interface PortalFrame {
 
 export function gateShellGeometry(): THREE.BufferGeometry {
     return mergeParts( [
-        archGeometry( GATE_RING, GATE_LEG ),
+        ringGeometry( GATE_RING ).translate( 0, GATE_Y, 0 ),
         boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, -FOOT_X, FOOT_TOP / 2, 0 ),
         boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, FOOT_X, FOOT_TOP / 2, 0 ),
         boxPart( LUG_WIDTH, LUG_HEIGHT, LUG_DEPTH, 0, LUG_Y, 0 ),
@@ -58,7 +58,7 @@ export function gateShellGeometry(): THREE.BufferGeometry {
 }
 
 export function gateSleeveGeometry(): THREE.BufferGeometry {
-    return archSleeveGeometry( GATE_RING, GATE_SLEEVE, GATE_LEG );
+    return ringSleeveGeometry( GATE_RING, GATE_SLEEVE ).translate( 0, GATE_Y, 0 );
 }
 
 export function buildPortalLook(): PortalLook {

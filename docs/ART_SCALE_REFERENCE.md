@@ -202,25 +202,34 @@ tall, with six short spikes. The ground decal is six spokes and a ring at the **
 the ring shows the danger area. A mine is ~2.2 ship-widths across at the ring. Sizes live in
 `apps/client/app/game/scene/mine-look.ts`.
 
-### 7b. Portal gate (#289, #303, #320)
+### 7b. Portal gate (#289, #303, #320, #325)
 
 | Thing | Value | Constant |
 |---|---:|---|
-| Catch half-width (x, the hull must overlap it) | **3u** | `portalR` |
-| Catch height above the gate floor | **5u** | `portalH` |
-| Drawn aperture | **6u wide × 5u tall** | `2 × portalR`, `portalH` |
-| Straight leg height | **2u** | `portalH − portalR` |
+| Clear aperture (ring inner diameter) | **6u** | `2 × portalR` |
+| Ring centre above the gate floor | **3u** | `portalY` |
+| Catch test height above the ship's y | **0.8u** | `portalRideY` |
 | Ring thickness / depth | **0.9u / 1.2u** | `GATE_RING` |
 
-The sim catch is a box, so the gate is an **arch**, not a circle. Straight legs run from the deck up to
-2u, and a semicircle of radius 3u closes the top at 5u. The aperture is 6u wide at every ship height
-(ships ride 0.35u to 1.25u above the deck). The feet stand outside the aperture. Sizes live in
+The gate is a full ring. Its inner edge touches the deck, and the bottom 0.9u of the rim is under the
+deck. The top of the rim is 6.9u above the deck. The sim catch is the same circle: the hull must overlap
+it at the test height. Aperture width at drawn ship heights:
+
+| Height above the deck | 0.35u | 0.8u | 1.25u | 2u | 3u |
+|---|---:|---:|---:|---:|---:|
+| Aperture width | 2.8u | 4.1u | 4.9u | 5.7u | 6u |
+
+Base blocks cradle the outer rim at the deck. A lug with the A/B marks sits on top. Sizes live in
 `apps/client/app/game/scene/portal-field/portal-field.constants.ts`.
 
-**Decisions + departures.** The #303 board drew a round 4u ring. The build first used a 6u circle
-centred 3u above the deck. At ship height that circle measured only **3.2u to 4.7u** wide, so the gate
-read as 4u. The arch replaces the circle (#320). A 6u-wide circle at ship height would need a 12u
-radius-6 ring and would still misstate the catch at other heights.
+**Decisions + departures (#325, owner, 2026-09-27).** The #320 arch (6u × 5u, straight legs to 2u) read
+as a cartoon arch. The owner chose a full ring (placement P1) and a circular catch. LOOK follows
+`docs/art-direction/ingredients/portal/concept-board.png`, *"UPRIGHT TRAVERSABLE RING (NOT A RAMP)"*. The
+board's *"4u CLEAR INNER APERTURE"* is overridden: the aperture is **6u**. A ring that stands on the deck
+with its whole rim visible would put the aperture 0.9u above the deck, and a deck-level ship would pass
+through the bottom rim. For that reason the rim bottom is under the deck. The cost: at deck height the
+aperture is narrow, and the catch is narrower than the old box (a grounded fighter hops at up to 3.34u
+off-centre, before 4.3u).
 
 ## 8. Player colour
 

@@ -1,7 +1,7 @@
-import { DEFAULT_PORTAL_CONFIG, type PortalState } from '@slur/shared';
+import { DEFAULT_PORTAL_CONFIG, type PortalState, portalHalfChord } from '@slur/shared';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { PORTAL_ARMED_INTENSITY, PORTAL_IDLE_INTENSITY } from './portal-field.constants';
+import { GATE_RING, PORTAL_ARMED_INTENSITY, PORTAL_IDLE_INTENSITY } from './portal-field.constants';
 import { collectPortalEnds, gateShellGeometry, gateSleeveGeometry, portalGlow } from './portal-field.utils';
 
 function portal( over: Partial< PortalState > ): PortalState {
@@ -32,7 +32,7 @@ describe( 'collectPortalEnds', () => {
 } );
 
 describe( 'gate aperture', () => {
-    const { portalR, portalH } = DEFAULT_PORTAL_CONFIG;
+    const { portalR, portalY } = DEFAULT_PORTAL_CONFIG;
     const mat = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide } );
     const meshes = [ new THREE.Mesh( gateShellGeometry(), mat ), new THREE.Mesh( gateSleeveGeometry(), mat ) ];
     const ray = new THREE.Raycaster();
@@ -42,20 +42,23 @@ describe( 'gate aperture', () => {
         return ray.intersectObjects( meshes )[ 0 ]?.point.x ?? Number.NaN;
     }
 
-    it( 'is the catch width at every ship height up to the catch height', () => {
-        for ( const y of [ 0.1, 0.35, 0.8, 1.25, 2, portalH - portalR ] ) {
+    it( 'is the catch chord at every ship height', () => {
+        for ( const y of [ 0.35, 0.8, 1.25, 2, portalY, 5 ] ) {
             const width = edge( y, 1 ) - edge( y, -1 );
-            expect( width ).toBeGreaterThan( 2 * portalR - 0.1 );
-            expect( width ).toBeLessThanOrEqual( 2 * portalR );
+            const chord = 2 * portalHalfChord( y - portalY );
+            expect( width ).toBeLessThanOrEqual( chord + 0.01 );
+            expect( width ).toBeGreaterThan( chord - 0.2 );
         }
     } );
 
-    it( 'closes its top at the catch height and stands on the deck', () => {
-        const up = new THREE.Raycaster( new THREE.Vector3( 0, 0.01, 0 ), new THREE.Vector3( 0, 1, 0 ) );
-        expect( up.intersectObjects( meshes )[ 0 ]?.point.y ).toBeCloseTo( portalH, 1 );
+    it( 'is a full ring whose aperture touches the deck and closes at the top of the catch', () => {
+        const up = new THREE.Raycaster( new THREE.Vector3( 0, portalY, 0 ), new THREE.Vector3( 0, 1, 0 ) );
+        expect( up.intersectObjects( meshes )[ 0 ]?.point.y ).toBeCloseTo( portalY + portalR, 1 );
+        const down = new THREE.Raycaster( new THREE.Vector3( 0, portalY, 0 ), new THREE.Vector3( 0, -1, 0 ) );
+        expect( down.intersectObjects( meshes )[ 0 ]?.point.y ).toBeCloseTo( portalY - portalR, 1 );
         const g = gateShellGeometry();
         g.computeBoundingBox();
-        expect( g.boundingBox?.min.y ).toBeCloseTo( 0, 3 );
+        expect( g.boundingBox?.min.y ).toBeCloseTo( portalY - GATE_RING.outer, 1 );
     } );
 } );
 

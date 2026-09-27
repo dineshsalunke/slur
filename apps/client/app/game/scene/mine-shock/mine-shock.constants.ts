@@ -7,10 +7,8 @@ export const MAX = 16;
 export const LIFT = 0.05;
 export const UPRIGHT = Math.PI / 2;
 
-const GATE_MID = DEFAULT_PORTAL_CONFIG.portalH - DEFAULT_PORTAL_CONFIG.portalR;
-
 const FLAT = { lift: LIFT, upright: false };
-const GATE = { lift: GATE_MID, upright: true };
+const GATE = { lift: DEFAULT_PORTAL_CONFIG.portalY, upright: true };
 
 export const LOOKS: Record< ShockKind, ShockLook > = {
     big: { reach: DEFAULT_SIM_CONFIG.mineTriggerR * 3, life: 0.55, bright: 5, collapse: false, ...FLAT },
