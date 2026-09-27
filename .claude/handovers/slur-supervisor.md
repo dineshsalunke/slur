@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-27 (seam at 150k)
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-27 (bloom edit reverted, groove JSON deleted)
 
 ## Goal
 
@@ -46,8 +46,6 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Open owner questions
 
-- **Stray edit 2026-09-27 10:05:** scene-effects.tsx bloom commented out + non-Biome reformat. Not the owner, no claim. Owner: revert. workerthree restores it before the #310 after-measure. If it recurs, find the source (a worker editor or HMR tool?).
-
 - **Lead non-monotonic after #305 (NOT yet told to owner):** ADR-023 8d3abdb: an 8u offset needs more lead than 12u, so a 16u lane has a longer pitch than a 20u lane. Flight still 0 bumps/deaths. May be a pilot artifact (strafeToward caps below the kick threshold for |err|<4u) [inferred]. Ask the owner whether to investigate.
 
 - **WEAVE SHAPE — ANSWERED 2026-09-27: B, straight sealed walls + slalom inside.** Owner wants the curved
@@ -63,8 +61,6 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
   + gaps; snap 1/2/4u; Edit → Save → Play loop; saved tracks = repo files for designing the generator.
 - **#304 editor** shipped 5165d46, d382904, 6982014, 0130a63, 12a91b7 (sim freeze), 249d47f (zoom 25–800%).
   Reopened for the eraser fix; workerone closes it again with the SHA.
-- **Untracked `tracks/groove-20260921-decompiled.json`** (saved 02:19): asked the owner if it is theirs →
-  commit if yes, delete if not. Unanswered.
 - MEMORY.md compacted to 16 KB (39102e7).
 - **Readability, still to ask the owner:** marigold glow on post faces; posts below camera eye line; floor
   chevrons at gaps. Owner stopped the multi-select to clarify spacing first.
