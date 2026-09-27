@@ -127,7 +127,10 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    no miss → workertwo BUILDING (holds tug-line/*, rope-curve.utils).
    #327 FILED: phrase weave funnel = pixel staircase (weave-emit.ts floor/ceil per 4u row). Owner annoyed,
    says asked before (never filed). OWNER PICKED B: NO FUNNEL (straight wall face; run-up from ship physics).
-   Decision commented on #327. QUEUED for the first free worker (build direct, pilot sweep 0 bumps/deaths).
+   Decision commented on #327. → workerone (cleared, resumed), build direct; holds sim/phrase/* + tests.
+   #325 DONE 1fc6aef (closed): ring centre 3, inner R3, rim 0.9; catch portalY 3 + portalRideY 0.8 (sim ship y=0
+   on deck); widths 2.8@0.35 … 6@3; draws +6. Hosted rooms need :2567 restart if tsx watch missed shared dist.
+   My read of ring-front.png: glowing marigold circle dominates; graphite rim barely reads [eyeballed].
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
