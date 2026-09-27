@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-27 (seam at 150k, after #310 owner-confirmed)
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-27 afternoon (owner machine restart; all workers told to hand over)
 
 ## Goal
 
@@ -41,7 +41,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 | workerone | w2P:pD | #318 DONE 4b17a2e (block capacity per track, emit ahead-first) + fc85cd7 (editor union keeps walls whole; phrase round trip 3007→596 blocks), closed; OWNER CONFIRMED on /test-level 2026-09-27. #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending. #315 DONE c5436bb (closed): mirror gated to countdown+racing; hidden in results too (owner asked: keep hidden?). Browser check unmeasured | idle | none |
 | workertwo | w2P:pF | #319 DONE 59feea6 (closed): boost holds deck height over gaps, jump unchanged, gravity after boost + 0.3 s grace. Schema gained glideTimer (end of PlayerState): owner may need a server restart. Follow-up idea: no visual cue for the hold. Owner check pending. Reconcile DONE a6a8eb0 + 928e0ca (closed #292 #6 #11 #114 #268 #269; filed #311–#314). #316 DONE b3965f7 (closed): engine loops only in countdown+racing; results silent (owner asked; to keep hum add PHASE.finished to the gate in bind-room-audio.ts + remote-engine-audio.tsx). Live check unmeasured | idle | none |
 | workerthree | w2P:pG | #310 landed 31e3131 but broke the frame: bloom on → black, owner 1 fps / MAX 1632 ms (bloom 0 renders fine, measured). Cause: deck-breakup patch stacked per re-render (rail-glow used to reset the chain). FIX e5f8e20 OWNER CONFIRMED in Zen; #310 CLOSED. #317 DONE 6af07fe (closed; handover 68f3ec6): editor view mirrors x to match the chase camera (+x = player's left); verified headless on /test-level. Phrase S4 HOLD, phrase files kept | idle | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
-| workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
+| workerfour | w2P:pH | PERF (no issue yet): owner saw 5–12 fps. Diagnosed, no edits: Chrome headless shows no regression (DPR2 ~50 fps, DPR1 vsync-capped, JS ≤2.2 ms; today's commits invisible; fullscreen passes dominate GPU). Owner plays in Zen (Firefox) — cannot measure it here. Waiting on owner: Chrome vs Zen on same URL, exact URL, slow from start or later, a 30 s about:profiling capture. Memory dfdbecf. Also #295 blink: plan relayed, awaiting owner | idle | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
 #300 landed so far: S1 8a4f1dd · S2 0ae9967 + b90f436 · ADR-023 (Proposed) bbb44b4, 7b696f3. Owner can fly
@@ -91,8 +91,16 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
+0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
+   "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
+   `herdr agent prompt <pane> "You are <name>. Resume from .claude/handovers/<name>.md. Read CLAUDE.local.md first."`.
+   Owner's dev stack must be restarted (`pnpm dev`) — also needed for #319's new schema field on the server.
+0a. PERF: get the owner's answers (Chrome vs Zen, URL, when slow, about:profiling capture) → workerfour.
+0b. Owner checks pending: #319 boost over a gap on /test-level; #319 follow-up (visual cue for the hold) — file an issue?
+0c. `tracks/phrase-20260921.json` (untracked) vanished at 13:17 and is back at 13:56 (9364 B — new editor save,
+   small = post-fc85cd7 union) [inferred]. Owner's file; leave it. `tracks/groove-20260921.json` (tracked) still shows D.
+0d. Open follow-up (low): #318 B union is order-dependent; a scribble can leave more pieces than the old grid.
 1. Relay #315 (workerone, mirror) and workertwo's engine-hum issue + fixes to the owner, with issue titles. Owner checks in a hosted room: race → finish → lobby: no mirror, no hum.
-1a. Confirm workerthree closed #310; it is then idle.
 1b. Owner still to: check #308 undo/redo on /test-level/edit + answer the no-op undo step question; decide on restarting the client dev server (PID 85264, ~157% CPU, 2.1 GB after 2.5 days).
 1c. `tracks/groove-20260921.json` shows as DELETED in the tree (tracked file, not ours; maybe the #307 editor delete). Owner not yet asked.
 2. workerthree #310 → relay tap diff / draw calls / GPU ms to owner.
