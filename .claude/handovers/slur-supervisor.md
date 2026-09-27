@@ -91,6 +91,11 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
+00. POST-REBOOT STATE (2026-09-27 19:35): pane IDs changed — workerone w2Z:p2, workertwo w2Z:p3 (cleared +
+   resumed at 0%). workerthree/four/five NOT running (owner has not restarted them). Dev stack started by the
+   supervisor as a background shell: client PID 1557 :5173, server PID 1555 :2567 (it dies with the supervisor
+   session — after /clear, check `lsof -iTCP:5173 -iTCP:2567 -sTCP:LISTEN` and tell the owner if it is gone).
+   Workerone resumed at handover 2cc7d28, idle. Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
    `herdr agent prompt <pane> "You are <name>. Resume from .claude/handovers/<name>.md. Read CLAUDE.local.md first."`.
