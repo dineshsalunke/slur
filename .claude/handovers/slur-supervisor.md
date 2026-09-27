@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-27
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-27 (seam at 150k)
 
 ## Goal
 
@@ -37,7 +37,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | #306 DONE 6b982c6 (Close does not re-spawn). #307 delete saved track (owner GO), then #308 undo/redo (plan first; openEditor sets state.level = normalizeLevel(level) from #309, history starts there) | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
 | workertwo | w2P:pF | #309 DONE 95834b1, closed (handover e140752); groove file unchanged (no touching shapes). Now: #305 docs (GDD + ADR-024, cite 8d3abdb) + split shape helpers out of track-editor.utils.ts | building | docs/GDD.md, docs/DECISIONS.md, track-editor.utils.ts (+ new shape utils file) |
-| workerthree | w2P:pG | ADR-023 re-measured after #305: 8d3abdb (handover 0040054). Flight unchanged (0 bumps/deaths, 30/30). Lead now non-monotonic (8u offset > 12u; 16u lane pitch > 20u) | idle; OWNER: HOLD S4 | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md released to workertwo |
+| workerthree | w2P:pG | ADR-023 re-measured 8d3abdb; DECISIONS.md released (3d1d68e) | idle; OWNER: HOLD S4 | phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
@@ -45,6 +45,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 `/test-level?gen=phrase`.
 
 ## Open owner questions
+
+- **Lead non-monotonic after #305 (NOT yet told to owner):** ADR-023 8d3abdb: an 8u offset needs more lead than 12u, so a 16u lane has a longer pitch than a 20u lane. Flight still 0 bumps/deaths. May be a pilot artifact (strafeToward caps below the kick threshold for |err|<4u) [inferred]. Ask the owner whether to investigate.
+- **track-editor.utils.ts split:** workertwo moves the #309 shape helpers to a new file; it sends the new normalizeLevel path, and that must reach workerone for #308.
 
 - **WEAVE SHAPE — ANSWERED 2026-09-27: B, straight sealed walls + slalom inside.** Owner wants the curved
   corridor gone first. LANDED 4ca02e7. Owner: Comet 72 in 14u "ok i think".
@@ -85,9 +88,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-1. Clear workertwo's #302 claim when it arrives; relay its paste-ready ChatGPT note to the owner; confirm close.
-2. Clear/resume workerthree at seams; relay S3 results.
-3. Relay any owner answers above to the right worker.
+1. workerone: #307 delete in flight → then #308 undo/redo (plan first; openEditor normalizeLevel; history starts there). Relay its #308 plan to the owner.
+2. workertwo: #305 docs (GDD + ADR-024) + utils split. Relay the new normalizeLevel path to workerone.
+3. Raise the lead non-monotonic question with the owner.
 4. Later candidates: #291 boomerang, #297 membrane, #293 hazards (needs art cues), #294 parry, #299 Seeker.flyY.
 
 ## Uncommitted
