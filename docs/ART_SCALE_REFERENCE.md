@@ -202,6 +202,26 @@ tall, with six short spikes. The ground decal is six spokes and a ring at the **
 the ring shows the danger area. A mine is ~2.2 ship-widths across at the ring. Sizes live in
 `apps/client/app/game/scene/mine-look.ts`.
 
+### 7b. Portal gate (#289, #303, #320)
+
+| Thing | Value | Constant |
+|---|---:|---|
+| Catch half-width (x, the hull must overlap it) | **3u** | `portalR` |
+| Catch height above the gate floor | **5u** | `portalH` |
+| Drawn aperture | **6u wide × 5u tall** | `2 × portalR`, `portalH` |
+| Straight leg height | **2u** | `portalH − portalR` |
+| Ring thickness / depth | **0.9u / 1.2u** | `GATE_RING` |
+
+The sim catch is a box, so the gate is an **arch**, not a circle. Straight legs run from the deck up to
+2u, and a semicircle of radius 3u closes the top at 5u. The aperture is 6u wide at every ship height
+(ships ride 0.35u to 1.25u above the deck). The feet stand outside the aperture. Sizes live in
+`apps/client/app/game/scene/portal-field/portal-field.constants.ts`.
+
+**Decisions + departures.** The #303 board drew a round 4u ring. The build first used a 6u circle
+centred 3u above the deck. At ship height that circle measured only **3.2u to 4.7u** wide, so the gate
+read as 4u. The arch replaces the circle (#320). A 6u-wide circle at ship height would need a 12u
+radius-6 ring and would still misstate the catch at other heights.
+
 ## 8. Player colour
 
 `COLOR_COUNT = 12` — **already 12 in source.** ADD §11's "raise `COLOR_COUNT` 8→12" task is stale and

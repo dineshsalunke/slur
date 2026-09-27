@@ -15,6 +15,7 @@ import {
     TUG_MESSAGE,
     type TugEvent,
 } from '@slur/shared';
+import { onLocalHop } from '../game/local-hop';
 import { ON_TRACK_PHASES } from '../game/phase-gate/phase-gate.constants';
 import type { RunRoomLike } from '../net/run-room-like';
 import { stateCallbacks } from '../net/state-callbacks';
@@ -41,7 +42,7 @@ export function playTugEvent( e: TugEvent, me: string ): void {
 }
 
 export function playPortalHop( m: PortalHopMessage, me: string ): void {
-    playSfx( 'portalHop', m.victimId === me ? {} : { gain: PORTAL_FAR_GAIN } );
+    if ( m.victimId !== me ) playSfx( 'portalHop', { gain: PORTAL_FAR_GAIN } );
 }
 
 export function playPortalFizzle( m: PortalFizzleMessage, me: string ): void {
@@ -184,6 +185,7 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) => playMineEvent( e, me ) );
     const offTug = room.onMessage( TUG_MESSAGE, ( e: TugEvent ) => playTugEvent( e, me ) );
     const offPortalHop = room.onMessage( PORTAL_HOP_MESSAGE, ( m: PortalHopMessage ) => playPortalHop( m, me ) );
+    const offLocalHop = onLocalHop( () => playSfx( 'portalHop' ) );
     const offPortalFizzle = room.onMessage( PORTAL_FIZZLE_MESSAGE, ( m: PortalFizzleMessage ) =>
         playPortalFizzle( m, me ),
     );
@@ -216,6 +218,7 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
         offMineBurst();
         offTug();
         offPortalHop();
+        offLocalHop();
         offPortalFizzle();
         offPhase();
         offCd();

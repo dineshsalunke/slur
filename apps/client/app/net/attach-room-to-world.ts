@@ -39,9 +39,10 @@ import {
     Sim,
 } from '../game/ecs/traits';
 import { settleSlot } from '../game/input/power-select';
+import { noteLocalHops } from '../game/local-hop';
 import { clearPickupState, markPickup } from '../game/pickup-state';
 import { pushHit } from '../game/scene/hit-events';
-import { burstMine, pushMineShock } from '../game/scene/mine-shock-events';
+import { burstMine, burstPortalHop, pushMineShock } from '../game/scene/mine-shock-events';
 import { launchMine } from '../game/scene/mine-shots';
 import { pushTug } from '../game/scene/tug-events';
 import { localRole, runPhase } from '../game/spectator';
@@ -61,8 +62,11 @@ function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, trac
     const s = ent.get( Sim );
     if ( ! s ) return;
     const hops = s.portalHops;
+    const from = { x: s.x, y: s.y, z: s.z };
     predictor.reconcile( s, p, track );
-    if ( s.portalHops !== hops ) ent.set( Prev, { x: s.x, y: s.y, z: s.z } );
+    if ( s.portalHops === hops ) return;
+    noteLocalHops( hops, s.portalHops, from, s, blockWorld.portals.values() );
+    ent.set( Prev, { x: s.x, y: s.y, z: s.z } );
 }
 
 function pushRemote( ent: Entity, p: PlayerState ): void {
@@ -256,8 +260,8 @@ export function attachRoomToWorld(
     const offPortalAdd = $( room.state ).portals.onAdd( ( p, id ) => blockWorld.portals.set( id, p ) );
     const offPortalRemove = $( room.state ).portals.onRemove( ( _p, id ) => blockWorld.portals.delete( id ) );
     const offPortalHop = room.onMessage( PORTAL_HOP_MESSAGE, ( m: PortalHopMessage ) => {
-        pushHit( { x: m.fromX, y: m.fromY, z: m.fromZ } );
-        pushHit( { x: m.x, y: m.y, z: m.z } );
+        if ( m.victimId === room.sessionId ) return;
+        burstPortalHop( { x: m.fromX, y: m.fromY, z: m.fromZ }, m, blockWorld.portals.values() );
     } );
     const offPortalFizzle = room.onMessage( PORTAL_FIZZLE_MESSAGE, ( m: PortalFizzleMessage ) =>
         pushMineShock( { x: m.x, y: m.y, z: m.z, kind: 'fizzle' } ),

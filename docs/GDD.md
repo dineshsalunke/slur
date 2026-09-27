@@ -324,8 +324,14 @@ prediction replays it.
 - **Loop.** Both ends are entries. See §10 open question 8.
 - **Sync.** Portals are server state (`RunState.portals`) and mirror into the prediction world. The ship
   counts its hops (`portalHops`). A changed count snaps the render and the camera. The server sends a
-  `portalHop` message on every hop and a `portalFizzle` message on every fizzle. The client shows a spark
-  at both ends of a hop, and a fizzle shock at the ship.
+  `portalHop` message on every hop and a `portalFizzle` message on every fizzle. The client shows a fizzle
+  shock at the ship.
+- **Hop cue (#320).** An upright ring collapses into the entry gate and a larger ring bursts out of the
+  exit gate. For the local ship, the cue starts on the predicted hop (or on a reconcile that adds a hop).
+  The camera field of view kicks **+10°** and eases back over **0.3 s**, and the `portalHop` sound plays.
+  For other ships, the `portalHop` message starts the rings and a quieter sound.
+- **Gate.** The drawn gate is an arch with a **6u × 5u** aperture (`2 × portalR` by `portalH`), which is
+  the catch box. See `docs/ART_SCALE_REFERENCE.md` §7b.
 
 > The **full curated power-up + combat roster** (offensive / defensive / mobility / status-verbs, incl. the **Tug line** and **Mines**) lives in the master menu **§5.7**. This trinity is just the starter set.
 

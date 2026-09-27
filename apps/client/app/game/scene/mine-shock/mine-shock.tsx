@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { accent } from '../accent';
 import { drainMineShocks, type MineShock as Shock } from '../mine-shock-events';
-import { _c, _o, LIFT, MAX } from './mine-shock.constants';
+import { _c, _o, MAX, UPRIGHT } from './mine-shock.constants';
 import { buildLook, spawn, spread } from './mine-shock.utils';
 
 export interface ShockLook {
@@ -11,6 +11,8 @@ export interface ShockLook {
     life: number;
     bright: number;
     collapse: boolean;
+    lift: number;
+    upright: boolean;
 }
 
 export interface Ring {
@@ -53,7 +55,8 @@ export function MineShock() {
             r.age += delta;
             if ( r.age >= r.look.life ) continue;
             const f = r.age / r.look.life;
-            _o.position.set( r.x, r.y + LIFT, r.z );
+            _o.position.set( r.x, r.y + r.look.lift, r.z );
+            _o.rotation.set( r.look.upright ? UPRIGHT : 0, 0, 0 );
             _o.scale.setScalar( Math.max( 0.01, spread( r, f ) ) );
             _o.updateMatrix();
             mesh.setMatrixAt( n, _o.matrix );

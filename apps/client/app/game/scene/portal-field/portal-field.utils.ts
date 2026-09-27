@@ -1,16 +1,16 @@
 import type { PortalState } from '@slur/shared';
 import * as THREE from 'three';
 import { accent } from '../accent';
-import { boxPart, mergeParts, ringGeometry, sleeveGeometry } from '../portal-ring';
+import { archGeometry, archSleeveGeometry, boxPart, mergeParts } from '../portal-ring';
 import { graphiteSurface } from '../track-materials';
 import {
     _c,
     _o,
-    FOOT_ANGLE,
     FOOT_DEPTH,
     FOOT_TOP,
     FOOT_WIDTH,
-    GATE_CENTRE_Y,
+    FOOT_X,
+    GATE_LEG,
     GATE_RING,
     GATE_SLEEVE,
     LUG_DEPTH,
@@ -49,20 +49,22 @@ export interface PortalFrame {
 }
 
 export function gateShellGeometry(): THREE.BufferGeometry {
-    const mid = ( GATE_RING.inner + GATE_RING.outer ) / 2;
-    const footX = mid * Math.sin( FOOT_ANGLE );
     return mergeParts( [
-        ringGeometry( GATE_RING ).translate( 0, GATE_CENTRE_Y, 0 ),
-        boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, -footX, FOOT_TOP / 2, 0 ),
-        boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, footX, FOOT_TOP / 2, 0 ),
+        archGeometry( GATE_RING, GATE_LEG ),
+        boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, -FOOT_X, FOOT_TOP / 2, 0 ),
+        boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, FOOT_X, FOOT_TOP / 2, 0 ),
         boxPart( LUG_WIDTH, LUG_HEIGHT, LUG_DEPTH, 0, LUG_Y, 0 ),
     ] );
+}
+
+export function gateSleeveGeometry(): THREE.BufferGeometry {
+    return archSleeveGeometry( GATE_RING, GATE_SLEEVE, GATE_LEG );
 }
 
 export function buildPortalLook(): PortalLook {
     return {
         shell: gateShellGeometry(),
-        sleeve: sleeveGeometry( GATE_RING, GATE_SLEEVE ).translate( 0, GATE_CENTRE_Y, 0 ),
+        sleeve: gateSleeveGeometry(),
         mark: new THREE.BoxGeometry( MARK_WIDTH, MARK_HEIGHT, MARK_DEPTH ).translate( 0, LUG_Y, 0 ),
         metal: new THREE.MeshStandardMaterial( graphiteSurface() ),
         glow: new THREE.MeshBasicMaterial(),

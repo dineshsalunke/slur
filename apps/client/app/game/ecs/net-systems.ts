@@ -3,6 +3,7 @@ import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { blockWorld } from '../block-state';
 import { currentInput } from '../input/current-input';
+import { noteLocalHops } from '../local-hop';
 import { localRole } from '../spectator';
 import { bankTuning, driveAttitude } from './attitude';
 import { sparkIfBounced } from './bounce-spark';
@@ -50,6 +51,7 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
         simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
         froundSimShip( s );
         if ( s.portalHops !== hopsBefore ) {
+            noteLocalHops( hopsBefore, s.portalHops, prev, s, blockWorld.portals.values() );
             prev.x = s.x;
             prev.y = s.y;
             prev.z = s.z;

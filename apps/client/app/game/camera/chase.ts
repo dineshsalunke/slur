@@ -3,6 +3,7 @@ import type { PerspectiveCamera } from 'three';
 import { num } from '../../dev/tuning';
 import { Hover, LocalPlayer, Net, Remote, Render, Sim } from '../ecs/traits';
 import { boostSurplus, maxCruiseOf } from './boost-surplus';
+import { hopFov } from './hop-kick';
 import { applyShake } from './shake';
 
 let followBack = num( 'Chase.back' );
@@ -35,7 +36,8 @@ export function updateChaseCamera( cam: PerspectiveCamera, world: World, dt: num
     cam.lookAt( p.x, baseY + num( 'Chase.lookAtLift' ), p.z + num( 'Chase.lookAhead' ) );
     applyShake( cam, dt );
 
-    const fov = num( 'Chase.fov' ) + stretch * num( 'Chase.fovStretch' ) + surplus * num( 'Chase.boostFov' );
+    const fov =
+        num( 'Chase.fov' ) + stretch * num( 'Chase.fovStretch' ) + surplus * num( 'Chase.boostFov' ) + hopFov( dt );
     if ( Math.abs( cam.fov - fov ) > 0.1 ) {
         cam.fov = fov;
         cam.updateProjectionMatrix();
