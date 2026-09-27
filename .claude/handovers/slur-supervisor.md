@@ -36,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #307 DONE ca9e35a (saved list moved into editor store, owner-visible departure). #308 undo/redo owner GO; cleared + resumed | building #308 | track-editor.state.ts, editor-history.utils.ts (+test), editor-undo.tsx, track-editor.tsx, track-editor.constants.ts |
-| workertwo | w2P:pF | #305 docs DONE 8d37e8d (GDD + ADR-024). Now: compact MEMORY.md 20.2 KB → < 17 KB | working | MEMORY.md + any merged memory files (list due) |
+| workertwo | w2P:pF | #305 docs DONE 8d37e8d, SHA commented. Seam c1b289b, cleared + resumed on MEMORY.md compaction (< 17 KB) | working | MEMORY.md + merged memory files (list due) |
 | workerthree | w2P:pG | #310 GO (supervisor, within owner scope): delete rail-glow.ts, use-rail-mask.ts, back-fill/*; edits in scene/*, tuning-schema/panel, ADD, ART_MATERIALS, perf-analysis SKILL + perf.mjs. Phrase S4 HOLD | building | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
