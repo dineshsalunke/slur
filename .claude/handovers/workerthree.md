@@ -19,11 +19,13 @@ derive obstacle spacing from ship physics (owner decision, supersedes `WEAVE_PIT
     `/test-level` use it.
   - Phrase digests re-frozen.
 - `97692ad` ADR-023 amendment: S3 lanes, derived pitch numbers, five departures.
+- `8d3abdb` ADR-023 re-measured after #305 (b6e3372): lead/pitch tables, posts 2 / 2–3 / 4, length 744–766,
+  flight unchanged.
 
 ## State
 
-- Lead (u) by offset 4/6/8/12: act1 120/128/132/148 · act2 108/116/120/136 · act3 92/96/100/112.
-- Weave pitch 20/16/14u lanes: act1 152/136/132 · act2 140/124/120 · act3 116/104/100.
+- After #305: lead (u) by offset 4/6/8/12: act1 120/120/140/136 · act2 108/108/128/120 · act3 92/88/108/104.
+- After #305: weave pitch 20/16/14u lanes: act1 140/144/124 · act2 124/132/112 · act3 108/112/92.
 - Seeds 1–30 × 5 classes: avoid and line pilot 0 bumps, 0 deaths, 30/30 finish. Speed (avoid): Int 83.7,
   Fig 95.5, Pha 89.5, Com 111.3, Fre 121.7. Before: Freighter bumps avoid 792, line 211.
 - Phrase length 744–768 segments (14,880–15,360u) on seeds 1–30. Always 5 sections: low, low, mid, mid, high.
@@ -45,10 +47,6 @@ route files, `src/index.ts`.
 
 1. IDLE. Owner decision 2026-09-27: #300 S4 is on HOLD. The owner hand-authors tracks with the #304 editor
    first; generator design resumes from those. Take no work until slur-supervisor assigns it.
-   Exception (supervisor, 2026-09-27): when slur-supervisor sends #305 SHA (4u strafe kick; workertwo holds
-   `sim/track-digest.test.ts` until then), re-measure the lead + weave pitch tables, posts per lane and the
-   phrase length range (seeds 1–30); amend ADR-023 with the new numbers; report before/after to the
-   supervisor. Doc refresh only, not S4.
 2. Readability (post glow, lower posts) is a separate owner question. Do not build it unasked.
 3. S4 per the RFC — only after the hold lifts.
 
