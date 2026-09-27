@@ -34,7 +34,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #306 DONE 6b982c6, closed (handover 167c859); owner: Close does not re-spawn. #307 delete saved track: owner GO | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
+| workerone | w2P:pD | #306 DONE 6b982c6, closed (handover 167c859); owner: Close does not re-spawn. #307 delete saved track: owner GO. Seam a0bd3b9, cleared + resumed | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
 | workertwo | w2P:pF | #305 strafe kick B: kickDistance 4 (0 = A), window = 4/strafeKick, stop dead on release (owner GO). Seam 2520d41, cleared + resumed. OWNER: re-freeze phrase digest | committing | step.ts, constants.ts, ship-classes.ts, sim/types.ts, schema.ts, pacing/pockets.ts, strafe-kick.test.ts, race/director.test.ts (3 fields: strafeHeld, kickLeft, kicking), track-digest.test.ts (LENT by workerthree) |
 | workerthree | w2P:pG | #300 ADR-023 amended 97692ad (handover e913ded). NEXT: when #305 SHA lands, send it; it re-measures pitch tables/posts/length and amends ADR-023 | idle; OWNER: HOLD S4 until authored tracks exist (2026-09-27) | sim/phrase/*, avoid-pilot.test.ts, DECISIONS.md (ADR-023); track-digest.test.ts lent to workertwo |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
