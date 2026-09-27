@@ -111,7 +111,11 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    #322 workerone plan APPROVED (arc InstancedMesh +1 draw, layer 2 kept out of the mirror, corner keeps hint
    only; tick on any selection change; local ship only; touch unchanged). DONE 7696144 (closed; handover
    b2bfe54): 124 draws (+1), no arc in mirror, glyphs ~40 px, MIN_BACK 3.4u for bob. workerone idle, no files.
-   Leftover (low): unused `--drop-shadow-power-gem` token in app.css. Owner checks pending: #320, #321, #322.
+   Owner checks pending: #320, #321, #322.
+   #323 FILED (arc squares, not diamonds) → workerone, build direct; holds power-arc/* + app.css token cleanup.
+   #324 FILED (/test-level debug buttons grant each pickup) → workertwo, build direct; holds routes/test-level/*.
+   TUG ROPE (no issue yet): owner wants a thin rope that shoots from the ship and latches; slack waves like a
+   thrown rope paying out off a dropped coil. Asked owner to confirm my reading before filing.
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
