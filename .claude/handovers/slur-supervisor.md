@@ -35,9 +35,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #306 DONE 6b982c6 (Close does not re-spawn). #307 delete saved track (owner GO), then #308 undo/redo (plan first; openEditor sets state.level = normalizeLevel(level) from #309, history starts there) | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
-| workertwo | w2P:pF | #309 DONE 95834b1, closed (handover e140752); groove file unchanged (no touching shapes). Now: #305 docs (GDD + ADR-024, cite 8d3abdb) (split DONE 0ac518e: normalizeLevel in editor-shapes.utils.ts, path sent to workerone) | building | docs/GDD.md, docs/DECISIONS.md, track-editor.utils.ts (+ new shape utils file) |
-| workerthree | w2P:pG | #310 remove rail lights + directional Fill (owner: Fill panel only, keep Near fill); phrase S4 on HOLD | cleared + briefed, plan due | phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts; #310 claim pending |
+| workerone | w2P:pD | #307 DONE ca9e35a (saved list moved into editor store, owner-visible departure). #308 undo/redo owner GO; cleared + resumed | building #308 | track-editor.state.ts, editor-history.utils.ts (+test), editor-undo.tsx, track-editor.tsx, track-editor.constants.ts |
+| workertwo | w2P:pF | #305 docs DONE 8d37e8d (GDD + ADR-024). Now: compact MEMORY.md 20.2 KB → < 17 KB | working | MEMORY.md + any merged memory files (list due) |
+| workerthree | w2P:pG | #310 GO (supervisor, within owner scope): delete rail-glow.ts, use-rail-mask.ts, back-fill/*; edits in scene/*, tuning-schema/panel, ADD, ART_MATERIALS, perf-analysis SKILL + perf.mjs. Phrase S4 HOLD | building | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
@@ -63,7 +63,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
   Reopened for the eraser fix; workerone closes it again with the SHA.
 - **Untracked `tracks/groove-20260921-decompiled.json`** (saved 02:19): asked the owner if it is theirs →
   commit if yes, delete if not. Unanswered.
-- **MEMORY.md is 20.7 KB** (hook read limit 24.4 KB; compact to < 17 KB). Supervisor job, not started.
+- MEMORY.md compaction delegated to workertwo (2026-09-27).
 - **Readability, still to ask the owner:** marigold glow on post faces; posts below camera eye line; floor
   chevrons at gaps. Owner stopped the multi-select to clarify spacing first.
 
@@ -87,11 +87,11 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-1. workerone: #307 delete in flight → then #308 undo/redo (plan first; openEditor normalizeLevel; history starts there). Relay its #308 plan to the owner.
-2. workertwo: #305 docs (GDD + ADR-024).
-2b. workerthree: #310 plan → relay to owner → go.
-3. Raise the lead non-monotonic question with the owner.
-4. Later candidates: #291 boomerang, #297 membrane, #293 hazards (needs art cues), #294 parry, #299 Seeker.flyY.
+1. workerone #308 → report + owner check on /test-level.
+2. workerthree #310 → relay tap diff / draw calls / GPU ms to owner.
+3. workertwo MEMORY.md → check the size is < 17 KB.
+4. Ask the owner: lead non-monotonic after #305 — investigate the pilot?
+5. Later candidates: #291 boomerang, #297 membrane, #293 hazards, #294 parry, #299 Seeker.flyY.
 
 ## Uncommitted
 
