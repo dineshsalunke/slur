@@ -1,58 +1,56 @@
-Agent: workerone · Lane: #306 /test-level reset key + editor "Start here" (done) → #307 next · Updated: 2026-09-27 09:55
+Agent: workerone · Lane: #307 delete a saved track (done) → #308 undo/redo next · Updated: 2026-09-27 10:40
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#306: one key restarts /test-level, and an editor right-click sets where Play and reset start. **Done, pushed, #306 closed.** Next lane: #307 (delete a saved track), plan sent to the supervisor.
+#307: delete a saved track from the editor. **Done, pushed, #307 closed.** Next lane: #308 editor undo/redo. The plan below goes to the supervisor. Do not build until the supervisor says GO.
 
 ## Done
 
-- 6b982c6 #306.
-  - Backspace resets through the LoopbackRoom sim: `resetToLobby()` + START, then the new `RunSim.spawnAt()`.
-  - Shift+Backspace also drops `?start`.
-  - Editor right-click menu: Start here / Clear start / Cancel. It writes `?start=x,z` through RR navigation.
-  - Save + Play carries `?start`. The saved-track links drop it.
-  - The snap is the shared `startPointFor()` (wraps `respawnPoint`). The editor snaps for `widestShip()` and shows a note when the point moved.
-  - The edit route's `shouldRevalidate` ignores `?start`.
+- ca9e35a #307.
+  - `tracks-plugin.ts`: `deleteTrack()` + `DELETE /__tracks/<id>` behind `trackPath()`. The middleware body moved to `handleTrack()` because of the Biome complexity limit of 15.
+  - `editor-saved-row.tsx` (new): edit · play · delete, then "delete? yes / no". A `useFetcher` form submits `intent=delete`.
+  - `edit/route.tsx` clientAction: on delete of the `?level=` track, redirect to `/test-level/edit`. Otherwise `reloadSaved()`.
+  - The saved list moved from loader data into the editor store (`state.saved`, `state.confirmDelete`). A loader revalidation re-runs `openEditor` and would drop unsaved edits.
+  - `editor-tracks.ts` (new): `editorSource`, `savedTracks` and `SavedTrack` moved out of `track-editor.state.ts`, which had reached 300 lines.
+  - shared `forgetAuthoredLevel(id)`.
 
 ## State
 
-- Shared tests 514/514, run in a HEAD copy in the scratchpad. workertwo's #305 WIP breaks the in-tree `director.test.ts` compile, so the in-tree run fails.
-- Client vitest 485/485. Typecheck is clean. `pnpm lint` exits 0 with the 7 existing warnings.
-- Live headless run on :5173:
-  - `?start=-20,300` spawns at (−20, 300).
-  - After flying to z 346, Backspace put the ship back at (−20, 300).
-  - Shift+Backspace put it at (0, 0) and removed `?start`.
-  - Start here on a painted block moved the point to x 1.3 and showed the note. The level stayed dirty.
-  - Esc closes the menu.
-  - After Close, Backspace spawned at the editor start.
-- The first reading after a cold page load can come before the sim runs (elapsed ≈ 0). Wait 1 s after load.
+- Lint 0 with 7 warnings. The 8th warning is in workertwo's `track-editor.utils.ts` (organizeImports), not mine. Typecheck clean. Client 496/496. Shared 521/521, run in the tree.
+- Live headless on :5173 (Playwright, Chrome closed after each run):
+  - DELETE `..%2Fpackage` → 400. DELETE `nope` → 404.
+  - "no" keeps the file. "yes" removes it, the list updates with no reload, and the URL stays.
+  - With the level dirty ("Discard"), deleting another track keeps it dirty.
+  - Deleting the open track goes to `/test-level/edit` and opens `groove-20260921`.
+- To draw headless, first scroll the map forward with the wheel. The first screen is the locked start band.
 - Owner verification on /test-level [unmeasured].
 
 ## Uncommitted
 
-None.
+None. The untracked `tracks/*.json` files belong to the owner. Leave them alone.
 
 ## Held files
 
-#307, approved and cleared: `apps/client/tracks-plugin.ts` + `tracks-plugin.test.ts`, `apps/client/app/routes/test-level/edit/route.tsx`, `track-editor/editor-saved.tsx`, new `track-editor/editor-saved-row.tsx`, `track-editor/track-editor.state.ts`, `packages/shared/src/sim/authored/authored-level.ts` (only the new `forgetAuthoredLevel(id)` export).
+None. #308 claims are listed in Next and are not cleared yet.
 
 ## Next
 
-1. Build #307 (owner GO, not started). Read `gh issue view 307` first.
-   - `tracks-plugin.ts`: add `deleteTrack(dir, slug)` behind the `trackPath()` guard. It returns 400 for a bad or traversal slug and 404 for an unknown id, then `unlinkSync`. The middleware accepts `DELETE /__tracks/<id>`. Tests: delete a known id, reject an unknown id, reject each HOSTILE slug.
-   - `edit/route.tsx` clientAction: branch on form field `intent`. `intent=delete` sends the DELETE and calls `forgetAuthoredLevel(id)`. If `id` is the current `?level=`, redirect to `/test-level/edit`. Otherwise return `{ deleted }`.
-   - `shouldRevalidate`: when `formMethod` is set, return `defaultShouldRevalidate`. Today a same-URL action does not revalidate.
-   - UI: `editor-saved.tsx` maps rows to `EditorSavedRow`. The row shows edit · play · delete, then "delete? yes / no". `yes` is a `<Form method="post">` submit with intent=delete and id. The confirm id lives in the editor store as `confirmDelete`. No `window.confirm`.
-   - Do not commit track deletions the owner makes.
-2. workertwo is committing #305 in shared. Before a live check, grep `packages/shared/dist` for the new export (memory `shared-watcher-can-leave-dist-stale`).
-3. Push, then `gh issue close 307 -c "<what shipped + SHA>"`.
+1. #308 undo/redo. Send the supervisor this plan and these claims, then wait for GO:
+   - Depends on #309 `normalizeLevel` (workertwo, 95834b1 per the supervisor handover [unmeasured]). `openEditor` sets `state.level = normalizeLevel( level )`, and the history starts there.
+   - New `track-editor/editor-history.utils.ts` + `.test.ts`: a pure `{ past, future }` with push / undo / redo / cap 200 / clear.
+   - `track-editor.state.ts`: `commitLevel(next)` is used by `releaseMap` (and by any other level change). `undo()` / `redo()`. `openEditor` clears the history.
+   - Keys: add them to the existing `editorKeys` window listener that `attachMap` attaches. Cmd/Ctrl+Z, Shift+Cmd/Ctrl+Z, Ctrl+Y. Skip them in a text field with `typingTarget`. The guard today returns early on meta/ctrl, so it must be reordered. Weigh ≥5 options in the commit body: the existing listener, a new `use-*` hook with useEffect, `onKeyDown` on a focusable wrapper, a hotkeys library (not installed), `useSyncExternalStore` plus a module keymap.
+   - New `track-editor/editor-undo.tsx`: undo/redo buttons that subscribe to `canUndo`/`canRedo`. Mounted in `track-editor.tsx`.
+   - `track-editor.constants.ts`: `HISTORY_CAP`. workertwo may still hold it; check.
+   - Test: undo after an erase that split a block brings the whole block back.
+2. Push, then `gh issue close 308 -c "<what + SHA>"`.
 
 ## Open questions
 
-None. Owner answer on #306: editor Close does not re-spawn at `?start`. Keep it as is.
+- `.claude/memory/MEMORY.md` is 20.2 KB. The hook says to compact it under 17.1 KB. It is shared, so the supervisor decides who compacts it.
 
 ## Lessons → memory
 
-none
+`.claude/memory/unmounted-fetcher-drops-its-redirect.md`

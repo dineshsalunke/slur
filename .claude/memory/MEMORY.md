@@ -120,4 +120,5 @@ lives in its own file beside this one.
 - [Avoid pilot sidestep needs a dense check](avoid-pilot-sidestep-needs-dense-check.md) — at vz≈0 the per-slice check tests only the endpoint; it crossed a hole divider and wedged on a wall
 - [Obstacle spacing from ship physics](obstacle-spacing-from-ship-physics.md) — OWNER RULE: pitch = reaction + kick/accel cross + settle + hull at act speed 100/90/75%; never a fixed pitch
 - [Wheel clientX is an integer](wheel-event-clientx-is-integer.md) — probe cursor-anchored zoom at whole pixels; React onWheel is passive, use a native listener
+- [Unmounted fetcher drops its redirect](unmounted-fetcher-drops-its-redirect.md) — a fetcher action that unmounts its own row loses `redirect()`; touch the store only on the non-redirect path
 - [Phrase length is per seed](phrase-length-is-per-seed.md) — since afcc66c use phraseSegments(seed); a script passing 600 silently measures a 4-section track
