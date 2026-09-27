@@ -105,7 +105,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    workertwo (w2Z:p3). Plan APPROVED (Q1–Q5 all yes: onTick hook in shared RunSim; keep takes until Clear;
    Edit stops a live take; bare /test-level defaults to phrase; speed colour = vz/maxCruise). BUILDING.
    #322 FILED (pickup HUD: arc of slot glyphs under the ship + pickup flash/Q tick; owner picked 1 + 4).
-   UNASSIGNED: needs a worker (workerthree/four/five not running) or waits for workerone/workertwo.
+   #320 DONE b760826 (closed): arch clear 5.94u × 4.97u; draws pair 131, 135–136 during rings; FOV 70→78.9,
+   back in ~0.3 s. Owner Q open: ~1 amber frame after exit (bloom of near arch + burst) — tone down?
+   #322 assigned to workerone (cleared → resumed), PLAN FIRST. On plan: relay to owner.
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
