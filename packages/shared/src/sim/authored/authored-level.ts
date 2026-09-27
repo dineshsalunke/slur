@@ -154,6 +154,10 @@ export function registerAuthoredLevel( level: AuthoredLevel ): void {
     levels.set( level.id, level );
 }
 
+export function forgetAuthoredLevel( id: string ): void {
+    levels.delete( id );
+}
+
 export function authoredLevel( id: string ): AuthoredLevel | undefined {
     return levels.get( id );
 }

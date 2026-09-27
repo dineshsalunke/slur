@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { resolve, sep } from 'node:path';
 import { isLevelSlug, parseAuthoredLevel, serializeAuthoredLevel } from '@slur/shared';
@@ -62,6 +62,14 @@ export function saveTrack( dir: string, slug: string, body: string ): TrackResul
     return { ok: true, value: { file: `${ slug }.json`, bytes: Buffer.byteLength( text ) } };
 }
 
+export function deleteTrack( dir: string, slug: string ): TrackResult< { file: string } > {
+    const path = trackPath( dir, slug );
+    if ( path === null ) return { ok: false, status: 400, error: 'bad track slug' };
+    if ( ! existsSync( path ) ) return { ok: false, status: 404, error: `no track ${ slug }` };
+    unlinkSync( path );
+    return { ok: true, value: { file: `${ slug }.json` } };
+}
+
 function readBody( req: IncomingMessage ): Promise< string > {
     return new Promise( ( done, fail ) => {
         const chunks: Buffer[] = [];
@@ -101,6 +109,24 @@ function slugOfUrl( url: string | undefined ): string {
     }
 }
 
+function handleTrack( dir: string, slug: string, req: IncomingMessage, res: ServerResponse ): void {
+    switch ( req.method ) {
+        case 'GET':
+            sendResult( res, readTrack( dir, slug ), ( text ) => text );
+            break;
+        case 'DELETE':
+            sendResult( res, deleteTrack( dir, slug ), ( v ) => JSON.stringify( v ) );
+            break;
+        case 'POST':
+            readBody( req )
+                .then( ( body ) => sendResult( res, saveTrack( dir, slug, body ), ( v ) => JSON.stringify( v ) ) )
+                .catch( ( e: unknown ) => send( res, 413, JSON.stringify( { error: String( e ) } ) ) );
+            break;
+        default:
+            send( res, 405, JSON.stringify( { error: 'GET, POST or DELETE a track' } ) );
+    }
+}
+
 export function tracksPlugin( { dir }: { dir: string } ): Plugin {
     return {
         name: 'slur-tracks',
@@ -108,16 +134,9 @@ export function tracksPlugin( { dir }: { dir: string } ): Plugin {
         configureServer( server ) {
             server.middlewares.use( '/__tracks', ( req, res ) => {
                 const slug = slugOfUrl( req.url );
-                if ( slug === '' ) {
-                    if ( req.method !== 'GET' ) return send( res, 405, JSON.stringify( { error: 'GET the list' } ) );
-                    return send( res, 200, JSON.stringify( listTracks( dir ) ) );
-                }
-                if ( req.method === 'GET' ) return sendResult( res, readTrack( dir, slug ), ( text ) => text );
-                if ( req.method !== 'POST' )
-                    return send( res, 405, JSON.stringify( { error: 'GET or POST a track' } ) );
-                readBody( req )
-                    .then( ( body ) => sendResult( res, saveTrack( dir, slug, body ), ( v ) => JSON.stringify( v ) ) )
-                    .catch( ( e: unknown ) => send( res, 413, JSON.stringify( { error: String( e ) } ) ) );
+                if ( slug !== '' ) return handleTrack( dir, slug, req, res );
+                if ( req.method !== 'GET' ) return send( res, 405, JSON.stringify( { error: 'GET the list' } ) );
+                return send( res, 200, JSON.stringify( listTracks( dir ) ) );
             } );
         },
     };

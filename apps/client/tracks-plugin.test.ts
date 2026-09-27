@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { type AuthoredLevel, serializeAuthoredLevel } from '@slur/shared';
 import { afterEach, describe, expect, it } from 'vitest';
-import { listTracks, readTrack, saveTrack } from './tracks-plugin';
+import { deleteTrack, listTracks, readTrack, saveTrack } from './tracks-plugin';
 
 const HOSTILE = [ '../escape', '..', '/abs', 'a/../../b', 'UPPER', '-dash', 'a.json', '%2e%2e', '' ];
 
@@ -91,5 +91,34 @@ describe( 'listTracks and readTrack', () => {
         const dir = tracksDir();
         expect( listTracks( dir ) ).toEqual( [] );
         expect( readTrack( dir, 'nope' ) ).toMatchObject( { ok: false, status: 404 } );
+    } );
+} );
+
+describe( 'deleteTrack', () => {
+    it( 'removes a known track and leaves the others', () => {
+        const dir = tracksDir();
+        saveTrack( dir, 'wall-run', serializeAuthoredLevel( LEVEL ) );
+        saveTrack( dir, 'a-first', serializeAuthoredLevel( { ...LEVEL, id: 'a-first' } ) );
+        expect( deleteTrack( dir, 'wall-run' ) ).toEqual( { ok: true, value: { file: 'wall-run.json' } } );
+        expect( readdirSync( dir ) ).toEqual( [ 'a-first.json' ] );
+        expect( readTrack( dir, 'wall-run' ) ).toMatchObject( { ok: false, status: 404 } );
+    } );
+
+    it( 'answers 404 for an unknown id', () => {
+        const dir = tracksDir();
+        saveTrack( dir, 'wall-run', serializeAuthoredLevel( LEVEL ) );
+        expect( deleteTrack( dir, 'nope' ) ).toMatchObject( { ok: false, status: 404 } );
+        expect( readdirSync( dir ) ).toEqual( [ 'wall-run.json' ] );
+    } );
+
+    it( 'refuses hostile slugs and deletes nothing outside the dir', () => {
+        const dir = tracksDir();
+        saveTrack( dir, 'wall-run', serializeAuthoredLevel( LEVEL ) );
+        writeFileSync( join( scratch, 'escape.json' ), '{}' );
+        for ( const slug of HOSTILE ) {
+            expect( deleteTrack( dir, slug ) ).toMatchObject( { ok: false, status: 400 } );
+        }
+        expect( readdirSync( dir ) ).toEqual( [ 'wall-run.json' ] );
+        expect( readdirSync( scratch ).sort() ).toEqual( [ 'escape.json', 'tracks' ] );
     } );
 } );

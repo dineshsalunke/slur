@@ -1,19 +1,13 @@
 import {
     type AuthoredLevel,
-    authoredLevel,
-    DEFAULT_TRACK_GEN,
-    decompileTrack,
+    forgetAuthoredLevel,
     isLevelSlug,
-    isTrackGen,
-    parseAuthoredLevel,
     registerAuthoredLevel,
-    resolveTrack,
     serializeAuthoredLevel,
 } from '@slur/shared';
 import type { MouseEvent, PointerEvent } from 'react';
 import { typingTarget } from '../../../dev/typing-target';
-import { TEST_LEVEL_SEED } from '../test-level-canvas/test-level-canvas.constants';
-import { testLevelDescriptor } from '../test-level-canvas/test-level-canvas.utils';
+import { type SavedTrack, savedTracks } from './editor-tracks';
 import { EDITOR_TOOLS, WHEEL_ZOOM_RATE } from './track-editor.constants';
 import {
     applyTool,
@@ -62,11 +56,8 @@ export interface EditorState {
     start: EditorPoint | null;
     startMenu: EditorStartMenu | null;
     startNote: string | null;
-}
-
-export interface SavedTrack {
-    id: string;
-    name: string;
+    saved: SavedTrack[];
+    confirmDelete: string | null;
 }
 
 const state: EditorState = {
@@ -90,6 +81,8 @@ const state: EditorState = {
     start: null,
     startMenu: null,
     startNote: null,
+    saved: [],
+    confirmDelete: null,
 };
 
 const listeners = new Set< () => void >();
@@ -109,8 +102,10 @@ function changed(): void {
     for ( const listener of listeners ) listener();
 }
 
-export function openEditor( level: AuthoredLevel, start: EditorPoint | null ): void {
+export function openEditor( level: AuthoredLevel, start: EditorPoint | null, saved: SavedTrack[] ): void {
     state.level = level;
+    state.saved = saved;
+    state.confirmDelete = null;
     state.camera = { zoom: 1, scrollX: 0, scrollZ: 0 };
     state.anchor = null;
     state.hover = null;
@@ -277,40 +272,23 @@ export function attachMap( canvas: HTMLCanvasElement | null ): ( () => void ) | 
     };
 }
 
-async function fetchLevel( id: string ): Promise< AuthoredLevel | undefined > {
-    const res = await fetch( `/__tracks/${ id }` );
-    return res.ok ? parseAuthoredLevel( await res.json() ) : undefined;
+export function askDelete( id: string | null ): void {
+    state.confirmDelete = id;
+    changed();
 }
 
-export async function editorSource( params: URLSearchParams ): Promise< AuthoredLevel > {
-    const id = params.get( 'level' );
-    if ( isLevelSlug( id ) ) {
-        const level = authoredLevel( id ) ?? ( await fetchLevel( id ) );
-        if ( level !== undefined ) return level;
-    }
-    const param = params.get( 'gen' );
-    const gen = isTrackGen( param ) ? param : DEFAULT_TRACK_GEN;
-    const name = `${ gen }-${ TEST_LEVEL_SEED }`;
-    return decompileTrack( resolveTrack( testLevelDescriptor( gen ) ), {
-        id: name,
-        name,
-        source: { gen, seed: TEST_LEVEL_SEED },
-    } );
+export async function deleteSavedTrack( id: string ): Promise< { deleted: string } | { error: string } > {
+    if ( ! isLevelSlug( id ) ) return { error: 'No such track.' };
+    const res = await fetch( `/__tracks/${ id }`, { method: 'DELETE' } ).catch( () => null );
+    if ( res === null || ! res.ok ) return { error: `Delete failed (${ res?.status ?? 'no server' }).` };
+    forgetAuthoredLevel( id );
+    return { deleted: id };
 }
 
-function savedTrack( v: unknown ): SavedTrack | null {
-    if ( typeof v === 'string' ) return { id: v, name: v };
-    if ( typeof v !== 'object' || v === null ) return null;
-    const { id, name } = v as { id?: unknown; name?: unknown };
-    return typeof id === 'string' ? { id, name: typeof name === 'string' ? name : id } : null;
-}
-
-export async function savedTracks(): Promise< SavedTrack[] > {
-    const res = await fetch( '/__tracks' ).catch( () => null );
-    if ( res === null || ! res.ok ) return [];
-    const body: unknown = await res.json().catch( () => null );
-    const rows = Array.isArray( body ) ? body : ( ( body as { tracks?: unknown } | null )?.tracks ?? [] );
-    return Array.isArray( rows ) ? rows.map( savedTrack ).filter( ( t ) => t !== null ) : [];
+export async function reloadSaved(): Promise< void > {
+    state.saved = await savedTracks();
+    state.confirmDelete = null;
+    changed();
 }
 
 export async function saveEditorLevel( name: string ): Promise< { url: string } | { error: string } > {
