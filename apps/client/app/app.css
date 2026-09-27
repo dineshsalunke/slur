@@ -68,10 +68,6 @@
     --shadow-stat: 0 0 6px rgba( 245, 176, 36, 0.75 ); /* ship-card stat-bar fill */
     --shadow-swatch: 0 0 10px var( --color-white ); /* selected colour swatch ring */
 
-    /* The HUD power-slot gem. A drop-shadow FILTER, not a box-shadow: the glow has to follow the SVG polygons,
-       not the element's rectangle. */
-    --drop-shadow-power-gem: 0 0 9px rgba( 245, 176, 36, 0.65 );
-
     --text-shadow-timer: 0 0 10px rgba( 59, 214, 255, 0.7 ); /* race timer readout */
     --text-shadow-count: 0 0 40px rgba( 59, 214, 255, 0.8 ), 0 0 12px #fff; /* the 3-2-1 countdown numeral */
     --text-shadow-power: 0 0 10px rgba( 255, 210, 74, 0.7 ); /* held-power chip label */
