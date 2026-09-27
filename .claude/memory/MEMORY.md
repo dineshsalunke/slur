@@ -127,5 +127,6 @@ One line per memory; each memory lives in its own file here.
 - [three devtools hook gives the scene](three-devtools-hook-gives-the-scene.md) — init-script EventTarget on __THREE_DEVTOOLS__ collects every Scene; bisect with no StoreExpose edit
 - [SDK buffers sends while dropped](sdk-buffers-sends-while-dropped.md) — room.send during a drop is flushed on reconnect; no auto-reconnect < 5 s after join
 - [Raycast instanced mesh: clear bounds](raycast-instanced-mesh-clear-bounds.md) — boundingSphere cached at count 0 makes every ray miss; null it first
+- [Step the loopback room by hand](step-the-loopback-room-by-hand.md) — advance(s) starves the loopback sim; room.step + room.send + ?start=
 - [Procgen seed 0 reads as unset](procgen-seed-zero-reads-as-unset.md) — schema treats seed 0 as no descriptor; seeds must be ≥ 1
 - [Sim ship y is 0 on the deck](sim-ship-y-is-zero-on-deck.md) — hover 0.35–1.25 is client-only; shared height tests need a ride offset (#325 portalRideY)
