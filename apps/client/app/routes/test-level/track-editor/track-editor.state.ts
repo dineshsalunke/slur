@@ -7,6 +7,8 @@ import {
 } from '@slur/shared';
 import type { MouseEvent, PointerEvent } from 'react';
 import { typingTarget } from '../../../dev/typing-target';
+import { type EditorHistory, emptyHistory, historyKeyOf, pushHistory, stepHistory } from './editor-history.utils';
+import { normalizeLevel } from './editor-shapes.utils';
 import { type SavedTrack, savedTracks } from './editor-tracks';
 import { EDITOR_TOOLS, WHEEL_ZOOM_RATE } from './track-editor.constants';
 import {
@@ -46,6 +48,7 @@ export interface EditorStartMenu {
 
 export interface EditorState {
     level: AuthoredLevel;
+    history: EditorHistory< AuthoredLevel >;
     tool: EditorTool;
     snap: EditorSnap;
     camera: EditorCamera;
@@ -71,6 +74,7 @@ const state: EditorState = {
         blocks: [],
         gaps: [],
     },
+    history: emptyHistory(),
     tool: 'destructible',
     snap: 4,
     camera: { zoom: 1, scrollX: 0, scrollZ: 0 },
@@ -84,6 +88,8 @@ const state: EditorState = {
     saved: [],
     confirmDelete: null,
 };
+
+let clean: AuthoredLevel = state.level;
 
 const listeners = new Set< () => void >();
 
@@ -103,7 +109,9 @@ function changed(): void {
 }
 
 export function openEditor( level: AuthoredLevel, start: EditorPoint | null, saved: SavedTrack[] ): void {
-    state.level = level;
+    state.level = normalizeLevel( level );
+    state.history = emptyHistory();
+    clean = state.level;
     state.saved = saved;
     state.confirmDelete = null;
     state.camera = { zoom: 1, scrollX: 0, scrollZ: 0 };
@@ -195,11 +203,20 @@ export function releaseMap( e: PointerEvent< HTMLCanvasElement > ): void {
     if ( state.anchor === null ) return;
     const r = snapRect( state.anchor, pointOf( e ), state.snap, trackLength( state.level ) );
     state.anchor = null;
-    if ( r !== null ) {
-        state.level = applyTool( state.level, state.tool, r );
-        state.dirty = true;
-    }
+    if ( r !== null ) setShapes( pushHistory( state.history, state.level, applyTool( state.level, state.tool, r ) ) );
     changed();
+}
+
+function setShapes( step: { present: AuthoredLevel; history: EditorHistory< AuthoredLevel > } | null ): void {
+    if ( step === null ) return;
+    state.level = { ...state.level, blocks: step.present.blocks, gaps: step.present.gaps };
+    state.history = step.history;
+    state.dirty = state.level.blocks !== clean.blocks || state.level.gaps !== clean.gaps;
+    changed();
+}
+
+export function travel( key: 'undo' | 'redo' ): void {
+    setShapes( stepHistory( state.history, state.level, key ) );
 }
 
 export function cancelMap(): void {
@@ -233,7 +250,13 @@ function wheelMap( canvas: HTMLCanvasElement, e: WheelEvent ): void {
 }
 
 function editorKeys( e: KeyboardEvent ): void {
-    if ( e.repeat || e.metaKey || e.ctrlKey || e.altKey || typingTarget( e.target ) ) return;
+    if ( typingTarget( e.target ) ) return;
+    const key = historyKeyOf( e );
+    if ( key !== null ) {
+        e.preventDefault();
+        travel( key );
+    }
+    if ( e.repeat || e.metaKey || e.ctrlKey || e.altKey ) return;
     const tool = EDITOR_TOOLS.find( ( t ) => t.key === e.key );
     if ( tool !== undefined ) setTool( tool.id );
     if ( e.key === 'Escape' ) {
@@ -304,6 +327,7 @@ export async function saveEditorLevel( name: string ): Promise< { url: string } 
     if ( res === null || ! res.ok ) return { error: `Save failed (${ res?.status ?? 'no server' }).` };
     registerAuthoredLevel( level );
     state.level = level;
+    clean = level;
     state.dirty = false;
     changed();
     return { url: `/test-level?level=${ id }&v=${ hash8( body ) }` };

@@ -39,6 +39,8 @@ export const MAP_COLORS = {
 
 export const START_SNAP_EPS = 0.01;
 
+export const HISTORY_CAP = 200;
+
 export const START_MARKER_MIN_PX = 6;
 
 export const TOOL_PREVIEW: Readonly< Record< EditorTool, string > > = {
