@@ -1,59 +1,51 @@
-Agent: workerthree · Lane: #310 remove rail lights + directional fill · Updated: 2026-09-27 10:40
+Agent: workerthree · Lane: #310 remove rail lights + directional fill (+ black-frame fix) · Updated: 2026-09-27 10:40
 
 ## Goal
 
-Remove the rail lights and the `Fill` directional light completely. Keep `NearFill`. Now also: find why
-/test-level renders black / 1 fps for the owner after 31e3131 (supervisor, URGENT).
+Remove the rail lights and the `Fill` light (done). Fix the black frame / ~2 fps the owner saw after 31e3131.
 
 ## Done
 
-- `31e3131` removal: `rail-glow.ts`, `use-rail-mask.ts`, `back-fill/`, `RailLight.*` + `Fill.*` keys and
-  panel groups, the rail mask in `trackRails()` (runs only now), monolith/finish-gate `railMask` props.
-  `patchWallSpan` cache key is now `slur-monolith-wall-span`. Docs: ADD, ART_MATERIALS §7,
-  perf-analysis SKILL.md + perf.mjs.
-- `e65f313` handover.
+- `31e3131` removed the rail lights and Fill.
+- `e5f8e20` black-frame fix. New `scene/shader-patch.ts` `chainShaderPatch` tracks patch tags per
+  material. `patchDeckBreakup`, `patchWallBreakup` and `patchWallSpan` use it. The attach ref callbacks in
+  `track-floor.tsx` and `monolith-group.tsx` are stable `useCallback`s. Root cause:
+  `patchRailGlow` used to reset the chain on every ref call. Without it the chain re-wrapped. The deck swap
+  then threw and its cache key grew (program rebuilds). The monolith/gate body applied wall-span + breakup
+  twice ('vWallWorld' redefinition → invisible bodies).
 
 ## State
 
-- Before (10:03, old code, bloom on, headless M1 Pro DPR 1 1600×900, frozen spawn, vsync off): 9.5 / 9.7 ms,
-  125 draws, HUD "106 FPS · CPU 1.2". Taps: scratchpad `before-0.png`, `before-1.png`.
-- 10:11 run: rep 0 black frame (`after-0.png`), rep 1 rendered (`after-1.png`, HUD "8 FPS · CPU 114").
-  Whether bloom was on then is [unmeasured].
-- 10:35, HEAD 12859b0, scene-effects.tsx == HEAD (bloom on), headless 800×450: scene renders, NOT black
-  (`probe.png`). rAF 301 in 5 s, HUD "11 FPS · CPU 73.8 · MAX 457".
-- 4 s CPU profile after 20 s warm-up: 3512 ms idle of ~4000. Hot: `getParameters` 40 ms, `getProgram`
-  32 ms, `deckBreakupFragment` 13 ms, `setProgram` 13, `cloneUniforms` 10. `deckBreakupFragment` only runs
-  in `onBeforeCompile`, so programs are being built in steady state [inferred: recompile loop].
-- NaN count: not measured. The `EffectComposer.prototype.render` wrap (scratchpad `nan.mjs`) was never
-  called in 10 s, so the page composer is not that prototype instance.
-- Machine load 7–8 all session; another agent's `node --test` at 100% CPU (PID 19868).
+- Headless Chrome, /test-level, 800×450, after e5f8e20: 0 shader errors, 45 programs flat over 20 s,
+  60 FPS · CPU ~2 · MAX 18, bodies + gate crossbar visible (scratchpad `prog.png`).
+- HEAD before the fix: programs flat at 64 in Chrome and no error logged. Chrome did not reproduce the
+  owner's black frame. The owner's browser is Zen (Firefox engine).
+- Owner verification in Zen: [unmeasured]. The supervisor relayed it.
+- Playwright Firefox 1509 with playwright-core 1.60 hung at launch. It is not a usable Firefox repro here.
+- Vite dev server PID 85264 at ~157% CPU, 2.1 GB RSS. Supervisor says leave it.
 
 ## Uncommitted
 
-none in the repo. Scratch drivers in the session scratchpad: `measure.mjs`, `diff.mjs`, `nan.mjs`,
-`probe.mjs`, `prof.mjs`.
+none (the handover and memory are committed with this seam).
 
 ## Held files
 
-The #310 files in `31e3131`. Phrase lane files (on hold): `packages/shared/src/sim/phrase/*`,
+The #310 files in `31e3131` + `e5f8e20`. Phrase lane files (on hold): `packages/shared/src/sim/phrase/*`,
 `sim/avoid-pilot.test.ts`, `sim/track-digest.test.ts` (phrase row).
 
 ## Next
 
-1. Test the recompile lead: read `renderer.info.programs.length` over CDP at t and t+5 s. If it grows,
-   log `customProgramCacheKey()` of the deck, deck-side and monolith materials. Since 31e3131 the deck and
-   side keys start from the default `onBeforeCompile.toString()` (it was `'slur-rail-glow'`). Check
-   `deck-breakup.ts:179-186`, `wall-breakup.ts:58-71`, `applyDeckFinish` (needsUpdate?).
-2. If there is no recompile loop, do the NaN bisect with the right composer instance (find it through the
-   R3F store: `canvas.__r3f` or the fiber root), then hide `scene.children` one by one.
-3. Then the #310 A/B: `measure.mjs after`, then my source files at `31e3131^` in the working tree only,
-   `measure.mjs before`, restore HEAD, `diff.mjs before-1.png:after-1.png` + noise pair.
-4. `gh issue close 310` with SHA + numbers.
+1. Wait for the supervisor's word that the owner confirmed in Zen. Then `git push origin dev` and
+   `gh issue close 310 -c "31e3131 removal + e5f8e20 shader-chain fix; <numbers>"`.
+2. If the owner still sees problems, ask for the Zen console text, then check the other material
+   patches (`sealed-block-shader.ts`, `fractured-block-shader.ts`, `ship-model.utils.ts` assign
+   `onBeforeCompile` directly, so they cannot chain).
+3. Optional #310 A/B (`measure.mjs` in scratchpad `57407bce…`) only if the owner asks for numbers.
 
 ## Open questions
 
-- Supervisor: is the owner's black frame present at a small window / DPR 1? Mine was not black at 10:35.
+- None for the owner. Push waits on the supervisor.
 
 ## Lessons → memory
 
-none (the lead is not confirmed yet).
+`.claude/memory/chained-shader-patches-need-a-material-guard.md`
