@@ -1,28 +1,30 @@
-Agent: workertwo · Lane: boost glides over gaps #319 (DONE) · Updated: 2026-09-27
+Agent: workertwo · Lane: editor flight recorder #321 (PLAN SENT) · Updated: 2026-09-27
 
 ## Goal
-While Boost is on (and 0.3 s after), a ship holds deck height over gaps instead of falling.
+T starts/stops a recording of ship x/z/speed + events on /test-level; Edit traces the last 3 takes on the 2D map. Editor New Track: gen (default phrase) + seed field + roll.
 
 ## Done
-- b3965f7 #316 lobby engine hum (earlier lane, closed).
-- 59feea6 #319: `glideTimer` sim field (wire + SIM_SHIP_KEYS + SIM_FLOAT_KEYS), set to boostTimer + BOOST_GLIDE_S (0.3) in tickStatus, cleared by clearStatus. resolveCollisions holds y = 0 inside the deck while glideTimer > 0 and prevY + stepTol >= 0; grounded, jumps reset, lastSafe untouched. GDD §5.3 Boost paragraph added.
+- 59feea6 #319 boost glides over gaps (earlier lane, closed).
+- #321 plan sent to slur-supervisor (files, tick-hook weighing, drawing, 5 owner questions, /test-level brief). No edits.
 
 ## State
-- Shared tests 526/526 (5 new in boost.test.ts), server 40/40, client 513/513, typecheck + lint clean.
-- /test-level live (headless, scratch gap-check.mjs): full gap z 1617–1636 at x=0; no boost → died at z ~1636; boost → y 0 over the gap, alive to z 1696; client state has glideTimer.
-- Whether the owner's server (tsx watch, pid 68209) reloaded the new shared dist [unmeasured]; a hosted room may need a server restart.
+- Editor map is Canvas2D (attachMap → drawMap), not SVG; trace reuses screenX/screenY for the #317 mirror.
+- Ship state: room.sim.state.players.get(sessionId); bumps: BOUNCE_MESSAGE via room.onMessage.
+- RunSim.advance has no per-tick hook; plan picks an optional RunSimHooks.onTick (Q1).
+- Seed is hard-wired TEST_LEVEL_SEED; DEFAULT_TRACK_GEN = 'groove'.
 
 ## Uncommitted
 none
 
 ## Held files
-none
+none yet (claims listed in the plan; take them on approval)
 
 ## Next
-1. Lane finished. Await a new lane from slur-supervisor.
+1. Wait for the owner's answers to Q1–Q5 via slur-supervisor.
+2. On approval: shared hook → loopback onTick → recorder store + tests → T key + REC badge → trace draw + takes panel → new-track panel + ?seed plumbing → typecheck/lint/test → /test-level check → commit → close #321 with SHA.
 
 ## Open questions
-- No visual cue for "boost deck" over a gap; owner may want one (follow-up issue if so).
+- Q1 shared onTick hook OK? Q2 keep takes across tracks? Q3 Edit auto-stops take? Q4 bare /test-level default to phrase? Q5 speed = vz scaled to maxCruise?
 
 ## Lessons → memory
 none
