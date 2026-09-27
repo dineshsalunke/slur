@@ -5,6 +5,7 @@ import type { Route } from './+types/route';
 import { EditButton } from './edit-button/edit-button';
 import { RecIndicator } from './flight-recorder/rec-indicator';
 import { RecordKey } from './flight-recorder/record-key';
+import { PickupGrantsMount } from './pickup-grants/pickup-grants-mount';
 import { ResetKey } from './start-point/reset-key';
 import { startOf } from './start-point/start-point.utils';
 import { TestLevelCanvas } from './test-level-canvas/test-level-canvas';
@@ -38,6 +39,7 @@ export default function TestLevel( { loaderData }: Route.ComponentProps ) {
             <ResetKey room={ loaderData.room } />
             <RecordKey />
             <RecIndicator />
+            <PickupGrantsMount room={ loaderData.room } />
             <Outlet />
         </Fragment>
     );
