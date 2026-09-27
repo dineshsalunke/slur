@@ -1,45 +1,46 @@
-Agent: workerone · Lane: #320 portal gate width + hop cue · Updated: 2026-09-27 (lane done, closed)
+Agent: workerone · Lane: #322 pickup HUD (arc of slot glyphs + pickup flash) · Updated: 2026-09-27 (plan sent, awaiting owner)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#320: the drawn gate matches the sim catch (6u × 5u), and a hop has a clear cue. Owner approved A + 1 + 2.
+#322: replace the corner power rack with a 3-glyph arc behind/below the ship (in 3D), a pickup flash that shrinks into its slot, and a tick on Q. Owner picked options 1 + 4.
 
 ## Done
 
 - #318: 4b17a2e, fc85cd7. Closed.
-- #320: b760826 (pushed). Issue closed with the SHA.
-  - The gate is an arch: legs to 2u, a radius-3 top at 5u (`archGeometry`, `archSleeveGeometry` in portal-ring.ts). The feet are outside the aperture.
-  - Hop cue: MineShock kinds `portalIn`/`portalOut` (upright, lift 2u) at the gates. `camera/hop-kick.ts` FOV +10° over 0.3 s. `game/local-hop.ts` fires on the predicted hop and on a reconcile that adds a hop. The local sound comes via `onLocalHop`; the server message covers only other ships.
-  - Docs: ART_SCALE_REFERENCE §7b (portal gate, with decisions + departures), GDD §5 Hop cue + Gate bullets.
+- #320: b760826. Closed.
+- #322: plan sent to slur-supervisor. No edits yet.
 
 ## State
 
-- Live /test-level (headless, DPR 1, 1280×720): clear width 5.94u at y = 0.35 / 0.8 / 1.25 / 2, top 4.97u.
-- Draws: open deck 125, pair 131 (+6, the same as #303), 135–136 while the rings show.
-- FOV 70 → 78.9 on the hop frame, back to 70 in about 0.3 s.
-- Screenshots: the exit ring bursts around the ship, and the entry ring collapses in the rear-view mirror.
-- 519 client tests pass, typecheck 0, lint 0 errors (8 old warnings; attach-room-to-world.ts was already over 300 lines: 333 → 337).
-- Files claimed after the plan: `game/local-hop.ts` (+test) and `audio/bind-room-audio.ts`. No one else held them.
+- Plan: one InstancedMesh (3 slots + 1 flash) = +1 draw call. Glyph atlas is a CanvasTexture drawn with Path2D. The arc goes on three.js layer 2, and the rear camera renders layer 0 only, so the mirror does not show it.
+- Rear view `rear-view-pass.tsx:36` is the only other `gl.render(scene)` (grep, this session).
+- /test-level mounts `NetCanvas`, so the arc goes in `game/net-canvas.tsx` with no edit to routes/test-level (workertwo, #321).
+- Chase camera defaults: back 14, height 4, FOV 70. Hull halfL 0.59 (bob) to 3.0 (split-crown), halfW 1.0–1.25.
+- Glyph size readability (~50 px at 720p) is [unmeasured].
 
 ## Uncommitted
 
-None of mine. Owner data in `tracks/` is not mine. Do not commit it.
+None of mine. Owner data in `tracks/` and workertwo's `run-sim.ts` are not mine.
 
 ## Held files
 
-None. Lane finished.
+None until approval. Proposed claim: `game/scene/power-arc/*` (new), `game/net-canvas.tsx`, `game/input/power-select.ts`, `game/hud/power-rack/power-rack.tsx`, delete `game/hud/power-cell/*` + `game/hud/power-gem/*`, GDD HUD bullet.
 
 ## Next
 
-1. Wait for the next lane from slur-supervisor.
+1. Wait for the owner's approval via slur-supervisor.
+2. Claim the files, build, run vitest + typecheck + lint.
+3. Measure on /test-level (headless, DPR 1): draw calls, glyph px, mirror screenshot, bob vs split-crown.
+4. Commit, push, `gh issue close 322` with the SHA.
 
 ## Open questions
 
-- Owner: is the near-arch bloom on the exit frame (the screen goes amber for about 1 frame) too strong? Tune `PORTAL_ARMED_INTENSITY` or the `portalOut` `bright` if so.
+- Owner: tick on Q only, or also on 1/2/3? Arc on remote ships? Touch buttons unchanged?
+- From #320: is the exit-frame bloom too strong?
 - #315, #308, `unionRects` order: still open from an earlier lane.
 
 ## Lessons → memory
 
-`.claude/memory/raycast-instanced-mesh-clear-bounds.md`
+none
