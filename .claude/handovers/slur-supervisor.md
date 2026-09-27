@@ -96,8 +96,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    supervisor as a background shell: client PID 1557 :5173, server PID 1555 :2567 (it dies with the supervisor
    session — after /clear, check `lsof -iTCP:5173 -iTCP:2567 -sTCP:LISTEN` and tell the owner if it is gone).
    #320 FILED (portal gate looks ~4u, sim catch is 6u = portalR 3; plus a hop cue). Assigned to workerone
-   (plan-first, no edits until owner approves) — but it was at 15%, so it was told to seam first; on its
-   AT A SEAM message: /clear w2Z:p2 and resume it on #320. Owner not yet answered: perf after reboot, #319 check, glide cue issue.
+   (plan-first, no edits until owner approves). Seamed at fc2961f, cleared, resumed on #320 at 0% — WORKING;
+   its plan comes to slur-supervisor → relay to owner. Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
    `herdr agent prompt <pane> "You are <name>. Resume from .claude/handovers/<name>.md. Read CLAUDE.local.md first."`.
