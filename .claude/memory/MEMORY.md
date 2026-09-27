@@ -123,4 +123,4 @@ One line per memory; each memory lives in its own file here.
 - [Summarise issues when asking the owner](summarise-issues-when-asking-the-owner.md) — OWNER RULE: title + one line, never a bare #n
 - [Phrase length is per seed](phrase-length-is-per-seed.md) — use phraseSegments(seed) since afcc66c, never a literal 600
 - [Chained shader patches need a material guard](chained-shader-patches-need-a-material-guard.md) — ref re-attach re-wraps onBeforeCompile; use chainShaderPatch
-- [Block render cap drops silently](block-render-cap-drops-silently.md) — invisible-but-solid block = TrackBlocks cap; editor save 5× the blocks
+- [Block render cap drops silently](block-render-cap-drops-silently.md) — put() drops past its limit; blocks sized per track since 4b17a2e; stub /__tracks via page.route
