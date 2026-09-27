@@ -35,7 +35,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2P:pD | #307 DONE ca9e35a (saved list moved into editor store, owner-visible departure). #308 undo/redo owner GO; cleared + resumed | building #308 | track-editor.state.ts, editor-history.utils.ts (+test), editor-undo.tsx, track-editor.tsx, track-editor.constants.ts |
+| workerone | w2P:pD | #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending | idle, ready for a lane | none |
 | workertwo | w2P:pF | MEMORY.md compacted 20892 → 16052 B (39102e7), hooks only | idle, no lane | none |
 | workerthree | w2P:pG | #310 GO (supervisor, within owner scope): delete rail-glow.ts, use-rail-mask.ts, back-fill/*; edits in scene/*, tuning-schema/panel, ADD, ART_MATERIALS, perf-analysis SKILL + perf.mjs. Phrase S4 HOLD | building | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
@@ -45,6 +45,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 `/test-level?gen=phrase`.
 
 ## Open owner questions
+
+- **#308 no-op undo step:** a click that changes nothing (erase on empty space) still adds an undo step.
+  Skip it? Needs code moved out of track-editor.state.ts first (297/300 Biome lines).
 
 - **Lead non-monotonic after #305 (NOT yet told to owner):** ADR-023 8d3abdb: an 8u offset needs more lead than 12u, so a 16u lane has a longer pitch than a 20u lane. Flight still 0 bumps/deaths. May be a pilot artifact (strafeToward caps below the kick threshold for |err|<4u) [inferred]. Ask the owner whether to investigate.
 
@@ -85,7 +88,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-1. workerone #308 → report + owner check on /test-level.
+1. Owner checks #308 on /test-level/edit; answer the no-op undo question. workerone idle.
 2. workerthree #310 → relay tap diff / draw calls / GPU ms to owner.
 3. workertwo idle: offer a lane (e.g. the pilot check for the non-monotonic lead, if the owner says yes).
 4. Ask the owner: lead non-monotonic after #305 — investigate the pilot?
