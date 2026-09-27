@@ -7,6 +7,8 @@ import {
     crowdedSegments,
     hash8,
     maxScrollX,
+    normalizeLevel,
+    outlineSegments,
     screenX,
     screenY,
     slugOf,
@@ -155,6 +157,102 @@ describe( 'applyTool', () => {
         const start = level();
         applyTool( start, 'gap', r );
         expect( start.gaps ).toEqual( [] );
+    } );
+} );
+
+describe( 'shapes of one kind combine', () => {
+    function cellsOf( rects: readonly AuthoredRect[] ): Set< string > {
+        const cells = new Set< string >();
+        for ( const r of rects ) {
+            for ( let x = r.x; x < r.x + r.w; x++ )
+                for ( let z = r.z; z < r.z + r.l; z++ ) cells.add( `${ x },${ z }` );
+        }
+        return cells;
+    }
+
+    function cellCount( rects: readonly AuthoredRect[] ): number {
+        return rects.reduce( ( s, q ) => s + q.w * q.l, 0 );
+    }
+
+    it( 'two touching rects with a rectangular union become one', () => {
+        const block = applyTool( level(), 'solid', { x: 0, z: 200, w: 8, l: 8 } );
+        const bar = applyTool( block, 'solid', { x: 0, z: 208, w: 8, l: 2 } );
+        expect( bar.blocks ).toEqual( [ { x: 0, z: 200, w: 8, l: 10, destructible: false } ] );
+        const side = applyTool( level(), 'gap', { x: 0, z: 200, w: 4, l: 6 } );
+        expect( applyTool( side, 'gap', { x: 4, z: 200, w: 6, l: 6 } ).gaps ).toEqual( [
+            { x: 0, z: 200, w: 10, l: 6 },
+        ] );
+    } );
+
+    it( 'an overlapping draw adds no area twice', () => {
+        const a = applyTool( level(), 'destructible', { x: 0, z: 200, w: 8, l: 8 } );
+        const b = applyTool( a, 'destructible', { x: 4, z: 204, w: 8, l: 8 } );
+        expect( cellCount( b.blocks ) ).toBe( 64 + 64 - 16 );
+        expect( cellsOf( b.blocks ).size ).toBe( cellCount( b.blocks ) );
+    } );
+
+    it( 'an L stays two rects', () => {
+        const a = applyTool( level(), 'solid', { x: 0, z: 200, w: 12, l: 4 } );
+        const b = applyTool( a, 'solid', { x: 0, z: 204, w: 4, l: 8 } );
+        expect( b.blocks ).toHaveLength( 2 );
+        expect( cellCount( b.blocks ) ).toBe( 48 + 32 );
+    } );
+
+    it( 'an erase through the middle then a redraw gives back one rect', () => {
+        const whole = { x: -8, z: 200, w: 16, l: 16 };
+        const cut = applyTool( level( { gaps: [ whole ] } ), 'eraser', { x: -8, z: 206, w: 16, l: 4 } );
+        expect( cut.gaps ).toHaveLength( 2 );
+        const back = applyTool( cut, 'gap', { x: -8, z: 206, w: 16, l: 4 } );
+        expect( back.gaps ).toEqual( [ whole ] );
+    } );
+
+    it( 'keeps the union exact over a random scribble', () => {
+        let seed = 7;
+        const rand = ( n: number ) => {
+            seed = ( Math.imul( seed, 1103515245 ) + 12345 ) >>> 0;
+            return seed % n;
+        };
+        let lvl = level();
+        let want = new Set< string >();
+        for ( let k = 0; k < 60; k++ ) {
+            const r = { x: rand( 20 ) - 10, z: 200 + rand( 30 ), w: 1 + rand( 8 ), l: 1 + rand( 8 ) };
+            const erase = rand( 3 ) === 0;
+            lvl = applyTool( lvl, erase ? 'eraser' : 'gap', r );
+            const drawn = cellsOf( [ r ] );
+            want = erase
+                ? new Set( [ ...want ].filter( ( c ) => ! drawn.has( c ) ) )
+                : new Set( [ ...want, ...drawn ] );
+            expect( cellsOf( lvl.gaps ) ).toEqual( want );
+            expect( cellCount( lvl.gaps ) ).toBe( want.size );
+        }
+    } );
+
+    it( 'kinds never merge', () => {
+        const a = applyTool( level(), 'solid', { x: 0, z: 200, w: 8, l: 4 } );
+        const b = applyTool( a, 'destructible', { x: 0, z: 204, w: 8, l: 4 } );
+        const c = applyTool( b, 'gap', { x: 0, z: 208, w: 8, l: 4 } );
+        expect( c.blocks ).toEqual( [
+            { x: 0, z: 200, w: 8, l: 4, destructible: false },
+            { x: 0, z: 204, w: 8, l: 4, destructible: true },
+        ] );
+        expect( c.gaps ).toEqual( [ { x: 0, z: 208, w: 8, l: 4 } ] );
+    } );
+
+    it( 'normalizeLevel cleans a fragmented level and keeps its fields', () => {
+        const pieces = [ 0, 4, 8, 12 ].map( ( z ) => ( { x: 0, z: 200 + z, w: 4, l: 4, destructible: true } ) );
+        const out = normalizeLevel( level( { name: 'kept', blocks: pieces } ) );
+        expect( out.name ).toBe( 'kept' );
+        expect( out.blocks ).toEqual( [ { x: 0, z: 200, w: 4, l: 16, destructible: true } ] );
+    } );
+
+    it( 'the outline of an L has no internal edge', () => {
+        const segs = outlineSegments( [
+            { x: 0, z: 0, w: 12, l: 4 },
+            { x: 0, z: 4, w: 4, l: 8 },
+        ] );
+        expect( segs ).toHaveLength( 6 );
+        const perimeter = segs.reduce( ( s, g ) => s + Math.abs( g.x1 - g.x0 ) + Math.abs( g.z1 - g.z0 ), 0 );
+        expect( perimeter ).toBe( 2 * ( 12 + 12 ) );
     } );
 } );
 
