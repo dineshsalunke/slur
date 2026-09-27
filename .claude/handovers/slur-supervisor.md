@@ -38,6 +38,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
+| **LIVE (2026-09-27 evening)** workerone | w2Z:p2 | #327 no-funnel weave (build direct) | BUILDING | packages/shared/src/sim/phrase/* + tests, phrase row of track-digest.test.ts |
+| **LIVE** workertwo | w2Z:p3 | #328 tug ×2 (TUG_S 0.6→1.2) + reel-in animation (build direct) | BUILDING | shared tug-constants.ts, sim/tug-status(.test).ts, run/tug-run.test.ts, game/scene/tug-line/* |
+| (stale rows below: pre-reboot panes w2P:*; workerthree/four/five NOT running) | | | | |
 | workerone | w2P:pD | #318 DONE 4b17a2e (block capacity per track, emit ahead-first) + fc85cd7 (editor union keeps walls whole; phrase round trip 3007→596 blocks), closed; OWNER CONFIRMED on /test-level 2026-09-27. #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending. #315 DONE c5436bb (closed): mirror gated to countdown+racing; hidden in results too (owner asked: keep hidden?). Browser check unmeasured | idle | none |
 | workertwo | w2P:pF | #319 DONE 59feea6 (closed): boost holds deck height over gaps, jump unchanged, gravity after boost + 0.3 s grace. Schema gained glideTimer (end of PlayerState): owner may need a server restart. Follow-up idea: no visual cue for the hold. Owner check pending. Reconcile DONE a6a8eb0 + 928e0ca (closed #292 #6 #11 #114 #268 #269; filed #311–#314). #316 DONE b3965f7 (closed): engine loops only in countdown+racing; results silent (owner asked; to keep hum add PHASE.finished to the gate in bind-room-audio.ts + remote-engine-audio.tsx). Live check unmeasured | idle | none |
 | workerthree | w2P:pG | #310 landed 31e3131 but broke the frame: bloom on → black, owner 1 fps / MAX 1632 ms (bloom 0 renders fine, measured). Cause: deck-breakup patch stacked per re-render (rail-glow used to reset the chain). FIX e5f8e20 OWNER CONFIRMED in Zen; #310 CLOSED. #317 DONE 6af07fe (closed; handover 68f3ec6): editor view mirrors x to match the chase camera (+x = player's left); verified headless on /test-level. Phrase S4 HOLD, phrase files kept | idle | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
@@ -91,6 +94,13 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
+000. RESUME HERE (2026-09-27 evening, seam at ~150k). On workerone #327 DONE → relay with /test-level +
+   editor brief (staircase gone). On workertwo #328 DONE → relay pull length near/far anchor + reel-in; remind
+   :2567 restart for hosted rooms. Owner checks pending on /test-level: #320/#325 portal ring (my eyeball: glow
+   dominates, rim barely reads; PORTAL_ARMED_INTENSITY dial), #321 recorder, #322/#323 arc, #324 pickup
+   buttons, #326 rope (COIL_R dial). Open owner Qs: #321 editor opens at 100% (~68u) — open zoomed out or
+   "fit take"? ~1 amber frame on portal exit — tone down? TOW_S (backward tug) double too? Stalled race exit;
+   lead non-monotonic; Freighter bumps; #14 Q1/Q2. Dev stack PIDs 1555/1557 still up at this seam.
 00. POST-REBOOT STATE (2026-09-27 19:35): pane IDs changed — workerone w2Z:p2, workertwo w2Z:p3 (cleared +
    resumed at 0%). workerthree/four/five NOT running (owner has not restarted them). Dev stack started by the
    supervisor as a background shell: client PID 1557 :5173, server PID 1555 :2567 (it dies with the supervisor
