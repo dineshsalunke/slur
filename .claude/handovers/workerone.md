@@ -36,16 +36,22 @@ None.
 
 ## Held files
 
-None for #306. #307 claims are pending the supervisor's answer.
+#307, approved and cleared: `apps/client/tracks-plugin.ts` + `tracks-plugin.test.ts`, `apps/client/app/routes/test-level/edit/route.tsx`, `track-editor/editor-saved.tsx`, new `track-editor/editor-saved-row.tsx`, `track-editor/track-editor.state.ts`, `packages/shared/src/sim/authored/authored-level.ts` (only the new `forgetAuthoredLevel(id)` export).
 
 ## Next
 
-1. Wait for the supervisor's go on the #307 plan. Then build: `tracks-plugin.ts` DELETE plus its test, the edit-route action intent, and an inline confirm row in `editor-saved`.
-2. Close #307 with the SHA.
+1. Build #307 (owner GO, not started). Read `gh issue view 307` first.
+   - `tracks-plugin.ts`: add `deleteTrack(dir, slug)` behind the `trackPath()` guard. It returns 400 for a bad or traversal slug and 404 for an unknown id, then `unlinkSync`. The middleware accepts `DELETE /__tracks/<id>`. Tests: delete a known id, reject an unknown id, reject each HOSTILE slug.
+   - `edit/route.tsx` clientAction: branch on form field `intent`. `intent=delete` sends the DELETE and calls `forgetAuthoredLevel(id)`. If `id` is the current `?level=`, redirect to `/test-level/edit`. Otherwise return `{ deleted }`.
+   - `shouldRevalidate`: when `formMethod` is set, return `defaultShouldRevalidate`. Today a same-URL action does not revalidate.
+   - UI: `editor-saved.tsx` maps rows to `EditorSavedRow`. The row shows edit · play · delete, then "delete? yes / no". `yes` is a `<Form method="post">` submit with intent=delete and id. The confirm id lives in the editor store as `confirmDelete`. No `window.confirm`.
+   - Do not commit track deletions the owner makes.
+2. workertwo is committing #305 in shared. Before a live check, grep `packages/shared/dist` for the new export (memory `shared-watcher-can-leave-dist-stale`).
+3. Push, then `gh issue close 307 -c "<what shipped + SHA>"`.
 
 ## Open questions
 
-- #306: the room does not re-spawn at a new `?start` on editor **Close**, only on Play or a reset. Is that what the owner expects?
+None. Owner answer on #306: editor Close does not re-spawn at `?start`. Keep it as is.
 
 ## Lessons → memory
 
