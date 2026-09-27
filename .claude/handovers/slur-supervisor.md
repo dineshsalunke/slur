@@ -115,7 +115,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    #323 DONE e499eee (closed): empty slot + bolt frame now rounded squares; other powers keep own frames
    (seeker square, mine star, boost chevrons, shield/portal circles, tug pill). Owner Q: all frames square?
    workerone idle, no files. (011e6e1 is an accidental empty commit of mine; harmless.)
-   #324 FILED (/test-level debug buttons grant each pickup) → workertwo, build direct; holds routes/test-level/*.
+   #324 DONE 16f962d (closed): leva panel (Backquote) → "Pickups" folder, 7 buttons, writes first empty server
+   slot; full bag = no-op. workertwo idle, no files.
    TUG ROPE (no issue yet): owner wants a thin rope that shoots from the ship and latches; slack waves like a
    thrown rope paying out off a dropped coil. Asked owner to confirm my reading before filing.
    On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
