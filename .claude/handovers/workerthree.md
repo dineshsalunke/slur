@@ -28,7 +28,7 @@ derive obstacle spacing from ship physics (owner decision, supersedes `WEAVE_PIT
 - After #305: weave pitch 20/16/14u lanes: act1 140/144/124 · act2 124/132/112 · act3 108/112/92.
 - Seeds 1–30 × 5 classes: avoid and line pilot 0 bumps, 0 deaths, 30/30 finish. Speed (avoid): Int 83.7,
   Fig 95.5, Pha 89.5, Com 111.3, Fre 121.7. Before: Freighter bumps avoid 792, line 211.
-- Phrase length 744–768 segments (14,880–15,360u) on seeds 1–30. Always 5 sections: low, low, mid, mid, high.
+- Phrase length 744–766 segments on seeds 1–30 (after #305). Always 5 sections: low, low, mid, mid, high.
 - Posts per lane: 20u 2, 16u 3, 14u 3 (before: 2.4 / 4.2 / 7.2).
 - `pnpm test` (shared) 501/501; `pnpm typecheck` 0; `pnpm lint` 0 (7 pre-existing line-count warnings).
 - Owner look on /test-level [unmeasured by me].
@@ -40,7 +40,7 @@ none.
 ## Held files
 
 `packages/shared/src/sim/phrase/*`, `sim/avoid-pilot.test.ts`, `sim/track-digest.test.ts` (phrase row),
-`docs/DECISIONS.md` (ADR-023 only). Released to workertwo (#304): `sim/track-provider.ts`, test-level
+Released: `docs/DECISIONS.md` (to workertwo for a #305 ADR, 2026-09-27). Released to workertwo (#304): `sim/track-provider.ts`, test-level
 route files, `src/index.ts`.
 
 ## Next
