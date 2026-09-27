@@ -21,6 +21,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 - Every power fires forward (E) or back (F). Audio sci-fi; reuse existing sfx for new pickups for now.
 - Bag (owner-final): bolt 4 · seeker 3 · mine 3 · boost 3 · shield 3 · portal 2 · tug 2.
 - Portal loop stays as built (GDD §10 Q8, 7980f45; comment on #289).
+- Strafe kick (2026-09-27, #305 b6e3372): OWNER APPROVED the 4u fixed-distance step (B). A (retune, kickDistance 0) not needed.
 - Race end (2026-09-26, #301 DONE f811400): grace 45 s, NO time cap.
 - Draw-call budget (2026-09-27): soft 200, hard 300; baseline 127 (perf-analysis SKILL §7, 3de8baa).
 - Sky: keep procedural nebula (image would save ≤1.3 ms; half-res sky is the cheaper lever if ever needed).
@@ -35,7 +36,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2P:pD | #306 DONE 6b982c6 (Close does not re-spawn). #307 delete saved track (owner GO), then #308 undo/redo (plan first; openEditor sets state.level = normalizeLevel(level) from #309, history starts there) | building #307 | tracks-plugin.ts + test, edit/route.tsx, editor-saved.tsx, editor-saved-row.tsx, track-editor.state.ts, shared sim/authored/authored-level.ts |
-| workertwo | w2P:pF | #305 DONE b6e3372. #309 shapes combine (owner GO on plan: grid-compress + greedy rects, odd-coverage outline; normalize-on-open is workerone #308) | building | track-editor.utils.ts + track-editor.utils.test.ts |
+| workertwo | w2P:pF | #305 DONE b6e3372. #309 shapes combine (owner GO on plan: grid-compress + greedy rects, odd-coverage outline; normalize-on-open is workerone #308) then #305 docs: GDD strafe-kick text + new ADR (DECISIONS.md serialized vs workerthree) | building | track-editor.utils.ts + track-editor.utils.test.ts |
 | workerthree | w2P:pG | #305 landed b6e3372: re-measuring ADR-023 pitch tables/posts/length (doc only) | working; OWNER: HOLD S4 until authored tracks exist | sim/phrase/*, avoid-pilot.test.ts, track-digest.test.ts, DECISIONS.md (ADR-023) |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
