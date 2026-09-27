@@ -37,7 +37,7 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 |---|---|---|---|---|
 | workerone | w2P:pD | #308 DONE 5e51feb (closed; handover f4f21df). Owner check on /test-level/edit pending | idle, ready for a lane | none |
 | workertwo | w2P:pF | MEMORY.md compacted 20892 → 16052 B (39102e7), hooks only | idle, no lane | none |
-| workerthree | w2P:pG | #310 GO (supervisor, within owner scope): delete rail-glow.ts, use-rail-mask.ts, back-fill/*; edits in scene/*, tuning-schema/panel, ADD, ART_MATERIALS, perf-analysis SKILL + perf.mjs. Phrase S4 HOLD | building | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
+| workerthree | w2P:pG | #310 landed 31e3131 but broke the frame: bloom on → black, owner 1 fps / MAX 1632 ms (bloom 0 renders fine, measured). Lead: programs rebuild each frame (deck cache keys changed in 31e3131). Cleared + resumed from 2409752. Phrase S4 HOLD | fixing black frame | those + phrase/*, avoid-pilot.test.ts, phrase row of track-digest.test.ts |
 | workerfour | w2P:pH | #295 blink: plan relayed, awaiting owner | idle, 8% | none |
 | workerfive | w2P:pK | #14 reconnection: plan relayed, awaiting owner | idle, 8% | none |
 
