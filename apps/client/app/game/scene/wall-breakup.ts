@@ -1,5 +1,6 @@
 import type * as THREE from 'three';
 import { BLOTCH_WEAR_GLSL, type BlotchWearUniforms } from './deck-breakup';
+import { chainShaderPatch } from './shader-patch';
 
 const VERT_HEAD = /* glsl */ `
 varying vec3 vWallWorld;
@@ -55,18 +56,12 @@ export function wallBreakupFragment( fragmentShader: string ): string {
     return FRAG_HEAD + out;
 }
 
-const patched = new WeakSet< THREE.Material[ 'onBeforeCompile' ] >();
-
 export function patchWallBreakup( material: THREE.Material, uniforms: BlotchWearUniforms ): void {
-    const prior = material.onBeforeCompile;
-    if ( patched.has( prior ) ) return;
     const key = material.customProgramCacheKey();
-    material.onBeforeCompile = ( shader, renderer ) => {
-        prior.call( material, shader, renderer );
+    const patched = chainShaderPatch( material, 'wall-breakup', ( shader ) => {
         Object.assign( shader.uniforms, uniforms );
         shader.vertexShader = wallBreakupVertex( shader.vertexShader );
         shader.fragmentShader = wallBreakupFragment( shader.fragmentShader );
-    };
-    patched.add( material.onBeforeCompile );
-    material.customProgramCacheKey = () => `${ key }-wall-breakup`;
+    } );
+    if ( patched ) material.customProgramCacheKey = () => `${ key }-wall-breakup`;
 }

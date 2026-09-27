@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { deckBreakupFragment } from './deck-breakup';
+import { deckBreakupFragment, deckBreakupUniforms, patchDeckBreakup } from './deck-breakup';
 
 describe( 'deck breakup', () => {
     const out = deckBreakupFragment( THREE.ShaderLib.physical.fragmentShader );
@@ -30,5 +30,22 @@ describe( 'deck breakup', () => {
     it( 'drives roughness and metalness from the blotch wear', () => {
         expect( out ).toContain( 'roughnessFactor *= texelRoughness.g - deckWear * uWearRoughSpan;' );
         expect( out ).toContain( 'texelMetalness.b + deckWear * uWearMetalSlope' );
+    } );
+
+    it( 'patches once, so a repeated attach still compiles', () => {
+        const mat = new THREE.MeshStandardMaterial();
+        const uniforms = deckBreakupUniforms();
+        patchDeckBreakup( mat, uniforms );
+        const first = mat.onBeforeCompile;
+        const key = mat.customProgramCacheKey();
+        patchDeckBreakup( mat, uniforms );
+        expect( mat.onBeforeCompile ).toBe( first );
+        expect( mat.customProgramCacheKey() ).toBe( key );
+        const shader = {
+            uniforms: {},
+            vertexShader: THREE.ShaderLib.physical.vertexShader,
+            fragmentShader: THREE.ShaderLib.physical.fragmentShader,
+        } as unknown as THREE.WebGLProgramParametersWithUniforms;
+        expect( () => mat.onBeforeCompile( shader, {} as THREE.WebGLRenderer ) ).not.toThrow();
     } );
 } );

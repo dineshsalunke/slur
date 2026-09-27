@@ -31,12 +31,15 @@ export function MonolithGroup( {
     const seamRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const size: MonolithSize = [ shape.width, bodySpan( shape ), shape.depth ];
 
-    const attachBody = ( mat: THREE.MeshStandardMaterial | null ) => {
-        bodyRef.current = mat;
-        if ( ! mat ) return;
-        patchWallSpan( mat, span );
-        patchWallBreakup( mat, breakup );
-    };
+    const attachBody = useCallback(
+        ( mat: THREE.MeshStandardMaterial | null ) => {
+            bodyRef.current = mat;
+            if ( ! mat ) return;
+            patchWallSpan( mat, span );
+            patchWallBreakup( mat, breakup );
+        },
+        [ span, breakup ],
+    );
 
     const fillBodies = useCallback(
         ( mesh: THREE.InstancedMesh | null ) => {

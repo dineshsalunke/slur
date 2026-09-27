@@ -1,5 +1,12 @@
+import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { crossSection, monolithGeometry, monolithProfileGeometry, wallUvVertex } from './monolith-geometry';
+import {
+    crossSection,
+    monolithGeometry,
+    monolithProfileGeometry,
+    patchWallSpan,
+    wallUvVertex,
+} from './monolith-geometry';
 
 function extent( geometry: ReturnType< typeof monolithProfileGeometry >, axis: 'x' | 'z', top: boolean ): number {
     const position = geometry.attributes.position;
@@ -82,5 +89,14 @@ describe( 'wall uv span', () => {
         const undef = out.indexOf( '#undef uv' );
         expect( scaled ).toBeGreaterThan( 0 );
         expect( scaled < define && define < chunk && chunk < undef ).toBe( true );
+    } );
+
+    it( 'patches a material once', () => {
+        const mat = new THREE.MeshStandardMaterial();
+        const span = { value: 1 };
+        patchWallSpan( mat, span );
+        const first = mat.onBeforeCompile;
+        patchWallSpan( mat, span );
+        expect( mat.onBeforeCompile ).toBe( first );
     } );
 } );

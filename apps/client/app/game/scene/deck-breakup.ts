@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
+import { chainShaderPatch } from './shader-patch';
 import {
     BLOTCH_BRIGHT_BAND,
     BLOTCH_CELLS_U,
@@ -176,12 +177,10 @@ export function deckBreakupFragment( fragmentShader: string ): string {
 }
 
 export function patchDeckBreakup( material: THREE.MeshStandardMaterial, uniforms: DeckBreakupUniforms ): void {
-    const prior = material.onBeforeCompile;
     const key = material.customProgramCacheKey();
-    material.onBeforeCompile = ( shader, renderer ) => {
-        prior.call( material, shader, renderer );
+    const patched = chainShaderPatch( material, 'deck-breakup', ( shader ) => {
         Object.assign( shader.uniforms, uniforms );
         shader.fragmentShader = deckBreakupFragment( shader.fragmentShader );
-    };
-    material.customProgramCacheKey = () => `${ key }-deck-breakup`;
+    } );
+    if ( patched ) material.customProgramCacheKey = () => `${ key }-deck-breakup`;
 }

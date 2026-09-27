@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { useTrack } from '../../track-context/use-track';
@@ -24,16 +24,22 @@ export function TrackFloor() {
     const deck = useMemo( floorSurface, [ rebuild ] );
     const side = useMemo( graphiteSurface, [ rebuild ] );
     const breakup = useMemo( deckBreakupUniforms, [] );
-    const attachDeck = ( mat: THREE.MeshStandardMaterial | null ) => {
-        deckRef.current = mat;
-        if ( ! mat ) return;
-        patchDeckBreakup( mat, breakup );
-    };
-    const attachSide = ( mat: THREE.MeshStandardMaterial | null ) => {
-        sideRef.current = mat;
-        if ( ! mat ) return;
-        patchWallBreakup( mat, breakup );
-    };
+    const attachDeck = useCallback(
+        ( mat: THREE.MeshStandardMaterial | null ) => {
+            deckRef.current = mat;
+            if ( ! mat ) return;
+            patchDeckBreakup( mat, breakup );
+        },
+        [ breakup ],
+    );
+    const attachSide = useCallback(
+        ( mat: THREE.MeshStandardMaterial | null ) => {
+            sideRef.current = mat;
+            if ( ! mat ) return;
+            patchWallBreakup( mat, breakup );
+        },
+        [ breakup ],
+    );
 
     // GPU buffers outlive React's tree: a geometry replaced by a width change must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { chainShaderPatch } from './shader-patch';
 import { TEX_SPAN_X } from './track-texture';
 
 export interface MonolithProfile {
@@ -144,13 +145,11 @@ export function wallUvVertex( vertexShader: string ): string {
 }
 
 export function patchWallSpan( material: THREE.Material, span: { value: number } ): void {
-    const prior = material.onBeforeCompile;
-    material.onBeforeCompile = ( shader, renderer ) => {
-        prior.call( material, shader, renderer );
+    const patched = chainShaderPatch( material, 'monolith-wall-span', ( shader ) => {
         shader.uniforms.uMonolithSpanY = span;
         shader.vertexShader = wallUvVertex( shader.vertexShader );
-    };
-    material.customProgramCacheKey = () => 'slur-monolith-wall-span';
+    } );
+    if ( patched ) material.customProgramCacheKey = () => 'slur-monolith-wall-span';
 }
 
 const cache = new Map< string, THREE.BufferGeometry >();
