@@ -1,29 +1,27 @@
-Agent: workerone · Lane: #320 portal gate width + hop cue (PLAN FIRST) · Updated: 2026-09-27 (plan sent, awaiting owner)
+Agent: workerone · Lane: #320 portal gate width + hop cue · Updated: 2026-09-27 (lane done, closed)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#320 "Portal looks 4u wide (should read 6u) and a hop has no clear cue".
-1. The drawn gate must match the sim catch width (6u, `portalR: 3`, `portalH: 5`).
-2. Add a clear hop cue.
-
-**Plan sent to slur-supervisor. No edits until the owner approves.**
+#320: the drawn gate matches the sim catch (6u × 5u), and a hop has a clear cue. Owner approved A + 1 + 2.
 
 ## Done
 
 - #318: 4b17a2e, fc85cd7. Closed.
-- #320: measured the gate and sent the plan + claim (no code changes).
+- #320: b760826 (pushed). Issue closed with the SHA.
+  - The gate is an arch: legs to 2u, a radius-3 top at 5u (`archGeometry`, `archSleeveGeometry` in portal-ring.ts). The feet are outside the aperture.
+  - Hop cue: MineShock kinds `portalIn`/`portalOut` (upright, lift 2u) at the gates. `camera/hop-kick.ts` FOV +10° over 0.3 s. `game/local-hop.ts` fires on the predicted hop and on a reconcile that adds a hop. The local sound comes via `onLocalHop`; the server message covers only other ships.
+  - Docs: ART_SCALE_REFERENCE §7b (portal gate, with decisions + departures), GDD §5 Hop cue + Gate bullets.
 
 ## State
 
-- The gate is a circle: inner radius 3, centre at deck + 3 (`GATE_CENTRE_Y`). Feet inner edge at x=±2.35 up to y=1.35.
-- Raycast of the real geometry (node strip-types script in scratch, imports portal-ring.ts): clear width y=0.5 → 3.21u, 0.8 → 3.99u, 1.0 → 4.39u, 1.25 → 4.71u, 3 → 5.94u.
-- Ship ride height is deck + 0.35 to 1.25 (`Hover.base` + `Hover.speedLift`).
-- The sim catch is a box: `|dx| < portalR + halfW`, `dy < portalH` (portal.ts `enters`).
-- Existing hop cue: two `pushHit` sparks (attach-room-to-world.ts:258) + `portalHop` sfx (respawn.ogg ×1.6). The chase camera hard-cuts x/z.
-- ART_SCALE_REFERENCE has no portal row.
-- Proposed: arch aperture (straight sides ±3 up to y=2, radius-3 semicircle top at y=5) + gate bursts (MineShock kinds, upright) + FOV punch from the predicted hop. Rejected: bigger circle, lowered circle, HUD tag, camera smoothing. Screen warp is kept as a follow-up.
+- Live /test-level (headless, DPR 1, 1280×720): clear width 5.94u at y = 0.35 / 0.8 / 1.25 / 2, top 4.97u.
+- Draws: open deck 125, pair 131 (+6, the same as #303), 135–136 while the rings show.
+- FOV 70 → 78.9 on the hop frame, back to 70 in about 0.3 s.
+- Screenshots: the exit ring bursts around the ship, and the entry ring collapses in the rear-view mirror.
+- 519 client tests pass, typecheck 0, lint 0 errors (8 old warnings; attach-room-to-world.ts was already over 300 lines: 333 → 337).
+- Files claimed after the plan: `game/local-hop.ts` (+test) and `audio/bind-room-audio.ts`. No one else held them.
 
 ## Uncommitted
 
@@ -31,20 +29,17 @@ None of mine. Owner data in `tracks/` is not mine. Do not commit it.
 
 ## Held files
 
-None until approval. Claim sent: portal-ring.ts(+test), portal-field/{constants,utils,utils.test}, mine-shock-events.ts, mine-shock/{tsx,constants,utils}, net/attach-room-to-world.ts, camera/chase.ts + new camera/hop-kick.ts, ecs/net-systems.ts, docs/ART_SCALE_REFERENCE.md, docs/GDD.md §5.
+None. Lane finished.
 
 ## Next
 
-1. Wait for the owner's pick, relayed by slur-supervisor.
-2. Build the arch geometry and tests. Re-run the raycast: expect 6.0u at every hover height.
-3. Build the cues. Verify on /test-level: draw calls unchanged, headless tap of a hop (DPR 1, mute, kill after).
-4. Commit by pathspec, then `gh issue close 320 -c "<SHA>"`.
+1. Wait for the next lane from slur-supervisor.
 
 ## Open questions
 
-- Owner: A + 1 + 2 as recommended? Deck threshold strip (D)? Screen warp (3) now or later?
-- #315, #308, `unionRects` order: still open from the last lane.
+- Owner: is the near-arch bloom on the exit frame (the screen goes amber for about 1 frame) too strong? Tune `PORTAL_ARMED_INTENSITY` or the `portalOut` `bright` if so.
+- #315, #308, `unionRects` order: still open from an earlier lane.
 
 ## Lessons → memory
 
-none this seam.
+`.claude/memory/raycast-instanced-mesh-clear-bounds.md`
