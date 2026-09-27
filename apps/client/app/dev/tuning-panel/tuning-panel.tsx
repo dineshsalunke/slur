@@ -128,6 +128,12 @@ export function TuningPanel() {
         cool: colorControl( 'Exhaust.cool' ),
     } );
 
+    useControls( 'Portal', {
+        membraneOpacity: numberControl( 'Portal.membraneOpacity' ),
+        membraneGlow: numberControl( 'Portal.membraneGlow' ),
+        membraneFlow: numberControl( 'Portal.membraneFlow' ),
+    } );
+
     useControls( 'Ship', {
         envMapIntensity: numberControl( 'Ship.envMapIntensity' ),
     } );

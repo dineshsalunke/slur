@@ -156,6 +156,10 @@ export const NUMBER_TUNABLES = {
     'Exhaust.falloff': { value: 1.6, min: 0.2, max: 8, step: 0.05, rebuild: false },
     'Exhaust.heat': { value: 1, min: 0.2, max: 8, step: 0.05, rebuild: false },
 
+    'Portal.membraneOpacity': { value: 0.22, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Portal.membraneGlow': { value: 1.2, min: 0, max: 8, step: 0.05, rebuild: false },
+    'Portal.membraneFlow': { value: 0.6, min: 0, max: 4, step: 0.05, rebuild: false },
+
     'EngineLight.intensity': { value: 18, min: 0, max: 200, step: 0.5, rebuild: false },
     'EngineLight.distance': { value: 14, min: 1, max: 80, step: 0.5, rebuild: false },
     'EngineLight.back': { value: 3.4, min: 0, max: 14, step: 0.1, rebuild: false },
