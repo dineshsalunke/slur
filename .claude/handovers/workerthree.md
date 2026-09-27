@@ -45,6 +45,10 @@ route files, `src/index.ts`.
 
 1. IDLE. Owner decision 2026-09-27: #300 S4 is on HOLD. The owner hand-authors tracks with the #304 editor
    first; generator design resumes from those. Take no work until slur-supervisor assigns it.
+   Exception (supervisor, 2026-09-27): when slur-supervisor sends #305 SHA (4u strafe kick; workertwo holds
+   `sim/track-digest.test.ts` until then), re-measure the lead + weave pitch tables, posts per lane and the
+   phrase length range (seeds 1–30); amend ADR-023 with the new numbers; report before/after to the
+   supervisor. Doc refresh only, not S4.
 2. Readability (post glow, lower posts) is a separate owner question. Do not build it unasked.
 3. S4 per the RFC — only after the hold lifts.
 
