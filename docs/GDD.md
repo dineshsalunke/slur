@@ -186,9 +186,11 @@ resolved separately, client-side, never synced** (ADR-002, the 3-layer model). S
 - **Locked constraints:** straight ribbon · strafe-only lateral · no autonomous moving geometry ·
   impulse-only verticality. Stated once, in full, in **§5.7** — they bound the whole mechanic catalog, not
   just the track.
-- **Procgen vs authored is now an OPEN choice** *(ADR-004 — "procgen is PRIMARY" was justified by endless
-  Survival, which is dropped; recommendation: **hybrid, ruleset grammar as the pivot**)*. Both feed the same
-  `Track` interface, so the sim is unchanged either way. **Fairness = two hard floors only:** **FIT** (a
+- **Procgen and authored: BOTH** (owner, 2026-09-27: *"its not a question of either or or, we will need
+  both."*). Procgen ships the tracks now. The track editor (#304) exists now to tune and polish the procgen
+  algorithm. Hand-authored levels come later. An author uses procgen as a quick fill-in and edits from there:
+  `decompileTrack` already does this (`editor-tracks.ts:33`, fixed `TEST_LEVEL_SEED`). It keeps geometry only;
+  motif and set-piece intent is lost. Both feed the same `Track` interface, so the sim is unchanged either way. **Fairness = two hard floors only:** **FIT** (a
   connected corridor ≥ the widest ship links entry→exit) and **GAP-REACH** (every gap ≤ the worst jumper's
   reach). **Weave difficulty is *uncapped*** — it self-balances via the speed dial. A **validator**
   (z-monotonic flood-fill + per-gap reach) enforces the two floors on *any* track, authored or generated —
@@ -448,9 +450,9 @@ Where each mechanic actually stands in code. Exact tuned values live in `@slur/s
 | Netcode — authoritative, predict+reconcile, interp, drop-in | **LIVE** | inputs-not-positions, 60Hz sim / 20Hz patch |
 | **Boost** | **LIVE** | A pickup power-up, not base flight. It runs in the shared `simulate()` (#269) |
 | Power-ups + combat — **Bolt** (fire→stun) + pickups + hit-spark + stun-flicker + threat HUD | **LIVE (S5)** | server-authoritative hits; `E` = discrete `USE_POWERUP`; Mine, Shield and Boost are LIVE (#20, #269); auto-lock → #18 |
-| Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); **`armour` (stun-multiplier sidegrade) is LIVE** on `ShipClass`, with invariant tests. Lobby pick-UI identity stats still REMAINING |
+| Ship classes — 5 classes, per-ship `FlightTuning` + AABB footprint, dev hot-swap | **LIVE** | flight / size / models wired (§5.5); **`armour` (stun-multiplier sidegrade) is LIVE** on `ShipClass`, with invariant tests. Lobby pick-UI identity stats still REMAINING (#314) |
 | **Audio** — singleton engine, synth hum (pitch∝speed), CC0 SFX + CC-BY music, positional, event-bound | **LIVE (S6)** | `app/audio/**`; `M`=mute; `RemoteEngineAudio` not hear-verified |
-| **Front-of-house UI** — angular neon landing over Grid-Void | **LIVE (S6)** | Art direction re-frozen by `docs/art-direction/` (**ADR-008**): marigold-primary, TRON-*influenced*. The palette is marigold-primary with cyan as a sparing accent (`app.css`, #302). The in-game environment is integrated (#31). Lobby pick-UI stats REMAINING |
+| **Front-of-house UI** — angular neon landing over Grid-Void | **LIVE (S6)** | Art direction re-frozen by `docs/art-direction/` (**ADR-008**): marigold-primary, TRON-*influenced*. The palette is marigold-primary with cyan as a sparing accent (`app.css`, #302). The in-game environment is integrated (#31). Lobby pick-UI stats REMAINING (#314) |
 | **Art review instruments** — `/art-lab`, `/art-gallery`, `/iso-*` | **REMOVED 2026-09-21** | Nothing replaces them. What is left: `/test-level` and a hosted room (`/env-lab` was removed 2026-09-22, #196). Restore: `git show e56f643 -- apps/client/app/routes/art-lab` |
 | **Track surface** — generated slab (`TrackFloor`): one mesh from real `FloorSpan` data, procedural graphite + 16×20u panel texture | **LIVE** | It **is** the game floor — `scene/track-view.tsx` renders `TrackFloor` + `TrackBoundary` + `TrackBlocks` |
 | **Track edge rail** — chamfered bar standing **outboard** of ±`HALF_WIDTH` (ADR-012) | **LIVE** | No drawn element may consume playable width; the deck's top face ends at exactly ±`HALF_WIDTH`. Final height + material tier still open |
@@ -627,12 +629,10 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 
 ## 10. OPEN QUESTIONS (resolve with team)
 
-1. **Procgen vs authored** — an open choice again since ADR-004 removed the endless necessity. Hybrid with
-   the ruleset grammar as pivot? Where does the split land?
-2. **Session length** — target minutes per round / per session?
-3. **Breakable-block readability** — ADR-015 accepts one fractured block kind. Its readability gate is not
+1. **Session length** — target minutes per round / per session?
+2. **Breakable-block readability** — ADR-015 accepts one fractured block kind. Its readability gate is not
    yet run (ADR-015, `docs/ART_MATERIALS.md`).
-4. **Portal loop (#289)** — both ends of a portal pair are entries. A chaser who flies forward into the far
+3. **Portal loop (#289)** — both ends of a portal pair are entries. A chaser who flies forward into the far
    end exits past the near end, lined up with the far end again. If the chaser does not strafe clear, the
    loop repeats until the pair expires (`portalTtl` 9 s, about 1 s per lap). Owner decision (2026-09-26):
    keep this for now. If playtests show it is too harsh, the candidate fixes are one throw-back per ship per
@@ -644,7 +644,8 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 ADR-003, and the track is a score (ADR-020, ADR-023, #300) · death penalty: a quick respawn into the same
 round (§4; ADR-014, ADR-016) · power-up carry: three slots (§5.3, #223) · friendly targeting: free-for-all,
 owner-immune only; teams mode is a later option (§5.3) · slow blocks: removed; ADR-009 is accepted as
-amended by ADR-015.
+amended by ADR-015 · procgen vs authored: both — procgen now, authored levels later, seeded from procgen
+(§5.2).
 
 ---
 
