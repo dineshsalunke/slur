@@ -103,3 +103,14 @@ test( 'spawnAt places a fresh racer at a clear start point', () => {
     assert.ok( p );
     assert.deepEqual( [ p.x, p.z, p.vz, p.lastSafeX, p.lastSafeZ ], [ 4, 200, 0, 4, 200 ] );
 } );
+
+test( 'onTick fires once per fixed step that advance runs', () => {
+    let ticks = 0;
+    const sim = new RunSim( procgenDescriptor( 1 ), {
+        broadcast: () => {},
+        onMeta: () => {},
+        onTick: () => ticks++,
+    } );
+    sim.advance( FIXED_DT * 3.5 );
+    assert.equal( ticks, 3 );
+} );

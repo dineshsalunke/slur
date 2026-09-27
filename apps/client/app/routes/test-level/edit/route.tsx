@@ -1,4 +1,5 @@
 import { redirect, type ShouldRevalidateFunctionArgs } from 'react-router';
+import { stopTake } from '../flight-recorder/flight-recorder.state';
 import { startOf, withStart } from '../start-point/start-point.utils';
 import { editorSource, savedTracks } from '../track-editor/editor-tracks';
 import { TrackEditor } from '../track-editor/track-editor';
@@ -10,6 +11,7 @@ export function meta() {
 }
 
 export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
+    stopTake();
     const url = new URL( request.url );
     const [ level, saved ] = await Promise.all( [ editorSource( url.searchParams ), savedTracks() ] );
     openEditor( level, startOf( url.search ), saved );

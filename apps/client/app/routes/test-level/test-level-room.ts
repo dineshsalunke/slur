@@ -10,8 +10,9 @@ import {
 import { simFreeze } from '../../dev/sim-freeze';
 import { finishWatch, resetFinishWatch } from '../../game/finish/finish-watch';
 import { LoopbackRoom } from '../../net/loopback-room/loopback-room';
+import { attachRecorder } from './flight-recorder/flight-recorder.state';
 import { editorOpen } from './test-level-canvas/pause-while-editing/pause-while-editing.state';
-import { testLevelDescriptor } from './test-level-canvas/test-level-canvas.utils';
+import { seedOf, testLevelDescriptor } from './test-level-canvas/test-level-canvas.utils';
 import { autoRestart } from './test-level-dev/test-level-dev.state';
 import { spawnAtStart } from './test-level-dev/test-level-dev.utils';
 import { tunedSimConfig } from './tuned-sim-config';
@@ -20,7 +21,7 @@ let stopCurrent: ( () => void ) | null = null;
 
 export async function testLevelDescriptorFor( params: URLSearchParams ): Promise< TrackDescriptor > {
     const level = params.get( 'level' );
-    if ( ! isLevelSlug( level ) ) return testLevelDescriptor( params.get( 'gen' ) );
+    if ( ! isLevelSlug( level ) ) return testLevelDescriptor( params.get( 'gen' ), seedOf( params.get( 'seed' ) ) );
     if ( authoredLevel( level ) === undefined ) {
         const res = await fetch( `/__tracks/${ level }` );
         if ( ! res.ok ) throw new Error( `track ${ level }: ${ res.status } ${ await res.text() }` );
@@ -40,6 +41,7 @@ export function openTestLevelRoom( descriptor: TrackDescriptor, start: RespawnPo
     } );
     room.send( START_MESSAGE );
     spawnAtStart( room, start );
+    attachRecorder( room );
     stopCurrent = room.run( () => simFreeze.on || editorOpen.on );
     return room;
 }

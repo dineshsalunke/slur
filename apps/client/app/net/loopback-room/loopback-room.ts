@@ -37,6 +37,7 @@ export class LoopbackRoom implements RunRoomLike {
 
     private readonly encoder: Encoder< RunState >;
     private readonly handlers = new Map< string, Set< Handler > >();
+    private readonly tickListeners = new Set< () => void >();
     private readonly outbox: [ string, unknown ][] = [];
     private readonly commands: Record< string, Handler >;
     private sincePatch = 0;
@@ -47,6 +48,9 @@ export class LoopbackRoom implements RunRoomLike {
             {
                 broadcast: ( type, message ) => this.outbox.push( [ type, structuredClone( message ) ] ),
                 onMeta: () => {},
+                onTick: () => {
+                    for ( const listener of this.tickListeners ) listener();
+                },
             },
             options,
         );
@@ -81,6 +85,11 @@ export class LoopbackRoom implements RunRoomLike {
         set.add( handler );
         this.handlers.set( type, set );
         return () => set.delete( handler );
+    }
+
+    onTick( listener: () => void ): () => void {
+        this.tickListeners.add( listener );
+        return () => this.tickListeners.delete( listener );
     }
 
     step( seconds: number ): void {

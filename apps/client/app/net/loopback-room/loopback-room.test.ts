@@ -27,6 +27,17 @@ describe( 'LoopbackRoom', () => {
         expect( room.state.descriptor.seed ).toBe( room.sim.state.descriptor.seed );
     } );
 
+    it( 'calls tick listeners once per fixed step until unsubscribed', () => {
+        const room = new LoopbackRoom( procgenDescriptor( 1, DEFAULT_TRACK_GEN ) );
+        let ticks = 0;
+        const off = room.onTick( () => ticks++ );
+        room.step( FIXED_DT * 2.5 );
+        expect( ticks ).toBe( 2 );
+        off();
+        room.step( FIXED_DT * 2 );
+        expect( ticks ).toBe( 2 );
+    } );
+
     it( 'starts, fires a bolt and delivers the decoded projectile and the hit', () => {
         const room = new LoopbackRoom( procgenDescriptor( 1, DEFAULT_TRACK_GEN ) );
         room.sim.join( 'target' );

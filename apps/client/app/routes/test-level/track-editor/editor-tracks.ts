@@ -1,15 +1,12 @@
 import {
     type AuthoredLevel,
     authoredLevel,
-    DEFAULT_TRACK_GEN,
     decompileTrack,
     isLevelSlug,
-    isTrackGen,
     parseAuthoredLevel,
     resolveTrack,
 } from '@slur/shared';
-import { TEST_LEVEL_SEED } from '../test-level-canvas/test-level-canvas.constants';
-import { testLevelDescriptor } from '../test-level-canvas/test-level-canvas.utils';
+import { genOf, seedOf, testLevelDescriptor } from '../test-level-canvas/test-level-canvas.utils';
 
 export interface SavedTrack {
     id: string;
@@ -27,13 +24,13 @@ export async function editorSource( params: URLSearchParams ): Promise< Authored
         const level = authoredLevel( id ) ?? ( await fetchLevel( id ) );
         if ( level !== undefined ) return level;
     }
-    const param = params.get( 'gen' );
-    const gen = isTrackGen( param ) ? param : DEFAULT_TRACK_GEN;
-    const name = `${ gen }-${ TEST_LEVEL_SEED }`;
-    return decompileTrack( resolveTrack( testLevelDescriptor( gen ) ), {
+    const gen = genOf( params.get( 'gen' ) );
+    const seed = seedOf( params.get( 'seed' ) );
+    const name = `${ gen }-${ seed }`;
+    return decompileTrack( resolveTrack( testLevelDescriptor( gen, seed ) ), {
         id: name,
         name,
-        source: { gen, seed: TEST_LEVEL_SEED },
+        source: { gen, seed },
     } );
 }
 

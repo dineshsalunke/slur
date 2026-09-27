@@ -7,9 +7,11 @@ import {
 } from '@slur/shared';
 import type { MouseEvent, PointerEvent } from 'react';
 import { typingTarget } from '../../../dev/typing-target';
+import { recorderView, subscribeRecorder } from '../flight-recorder/flight-recorder.state';
 import { type EditorHistory, emptyHistory, historyKeyOf, pushHistory, stepHistory } from './editor-history.utils';
 import { normalizeLevel } from './editor-shapes.utils';
 import { type SavedTrack, savedTracks } from './editor-tracks';
+import { drawTakes } from './flight-trace.utils';
 import { EDITOR_TOOLS, WHEEL_ZOOM_RATE } from './track-editor.constants';
 import {
     applyTool,
@@ -280,16 +282,17 @@ export function attachMap( canvas: HTMLCanvasElement | null ): ( () => void ) | 
         state.viewport = { width: w, height: h };
         state.camera = clampCamera( w, h, state.level, state.camera );
         drawMap( ctx, viewOf( w, h, state.camera ), state );
+        drawTakes( ctx, viewOf( w, h, state.camera ), recorderView().takes );
     };
     const wheel = ( e: WheelEvent ) => wheelMap( canvas, e );
     const resize = new ResizeObserver( redraw );
     resize.observe( canvas );
-    const unsubscribe = subscribeEditor( redraw );
+    const unsubscribe = [ subscribeEditor( redraw ), subscribeRecorder( redraw ) ];
     addEventListener( 'keydown', editorKeys );
     canvas.addEventListener( 'wheel', wheel, { passive: false } );
     return () => {
         resize.disconnect();
-        unsubscribe();
+        for ( const off of unsubscribe ) off();
         removeEventListener( 'keydown', editorKeys );
         canvas.removeEventListener( 'wheel', wheel );
     };

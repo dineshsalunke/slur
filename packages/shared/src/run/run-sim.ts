@@ -40,6 +40,7 @@ const MAX_NAME = 16;
 export interface RunSimHooks {
     broadcast: Broadcast;
     onMeta: ( meta: RunMetadata ) => void;
+    onTick?: () => void;
 }
 
 export interface RunSimOptions {
@@ -80,7 +81,10 @@ export class RunSim {
     }
 
     advance( seconds: number ): void {
-        this.clock( seconds, ( dt ) => this.fixedStep( dt ) );
+        this.clock( seconds, ( dt ) => {
+            this.fixedStep( dt );
+            this.hooks.onTick?.();
+        } );
     }
 
     fixedStep( dt: number ): void {

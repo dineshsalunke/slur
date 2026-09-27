@@ -49,3 +49,43 @@ export const TOOL_PREVIEW: Readonly< Record< EditorTool, string > > = {
     gap: 'rgba(5, 6, 10, 0.85)',
     eraser: 'rgba(255, 43, 214, 0.35)',
 };
+
+export const TRACE_SPEED_COLORS: readonly string[] = [
+    '#6b7787',
+    '#5b97af',
+    '#4bb6d7',
+    '#3bd6ff',
+    '#6acdc8',
+    '#98c392',
+    '#c7ba5b',
+    '#f5b024',
+    '#ffffff',
+];
+
+export const TRACE_TAKE_STYLES: readonly { alpha: number; width: number }[] = [
+    { alpha: 1, width: 2 },
+    { alpha: 0.45, width: 1.5 },
+    { alpha: 0.2, width: 1.5 },
+];
+
+export const TRACE_MARKER_PX = 5;
+
+export const TRACE_MARKER_COLORS = {
+    takeoff: '#3bd6ff',
+    landing: '#3bd6ff',
+    bump: '#ff2bd6',
+    death: '#ff5c6e',
+    pickup: '#ffd24a',
+    boost: '#f5b024',
+} as const;
+
+export const TRACE_LEGEND: readonly { glyph: string; label: string; className: string }[] = [
+    { glyph: '▲', label: 'Takeoff', className: 'text-cyan' },
+    { glyph: '●', label: 'Landing', className: 'text-cyan' },
+    { glyph: '✕', label: 'Bump', className: 'text-magenta' },
+    { glyph: '⊗', label: 'Death', className: 'text-threat' },
+    { glyph: '◆', label: 'Pickup', className: 'text-gold' },
+    { glyph: '︽', label: 'Boost', className: 'text-marigold' },
+];
+
+export const TAKE_ROW_CLASSES: readonly string[] = [ 'text-hud', 'text-hud/60', 'text-hud/35' ];

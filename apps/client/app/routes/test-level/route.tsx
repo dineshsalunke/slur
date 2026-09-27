@@ -3,6 +3,8 @@ import { Outlet, type ShouldRevalidateFunctionArgs } from 'react-router';
 import { loadSfx } from '../../audio/sfx-map';
 import type { Route } from './+types/route';
 import { EditButton } from './edit-button/edit-button';
+import { RecIndicator } from './flight-recorder/rec-indicator';
+import { RecordKey } from './flight-recorder/record-key';
 import { ResetKey } from './start-point/reset-key';
 import { startOf } from './start-point/start-point.utils';
 import { TestLevelCanvas } from './test-level-canvas/test-level-canvas';
@@ -23,7 +25,9 @@ export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
 }
 
 export function shouldRevalidate( { currentUrl, nextUrl }: ShouldRevalidateFunctionArgs ) {
-    return [ 'gen', 'level', 'v' ].some( ( k ) => currentUrl.searchParams.get( k ) !== nextUrl.searchParams.get( k ) );
+    return [ 'gen', 'seed', 'level', 'v' ].some(
+        ( k ) => currentUrl.searchParams.get( k ) !== nextUrl.searchParams.get( k ),
+    );
 }
 
 export default function TestLevel( { loaderData }: Route.ComponentProps ) {
@@ -32,6 +36,8 @@ export default function TestLevel( { loaderData }: Route.ComponentProps ) {
             <TestLevelCanvas room={ loaderData.room } descriptor={ loaderData.descriptor } />
             <EditButton />
             <ResetKey room={ loaderData.room } />
+            <RecordKey />
+            <RecIndicator />
             <Outlet />
         </Fragment>
     );
