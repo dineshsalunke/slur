@@ -120,5 +120,6 @@ One line per memory; each memory lives in its own file here.
 - [Obstacle spacing from ship physics](obstacle-spacing-from-ship-physics.md) — OWNER RULE: pitch from reaction + cross + settle + hull; never fixed
 - [Wheel clientX is an integer](wheel-event-clientx-is-integer.md) — probe zoom at whole pixels; React onWheel is passive
 - [Unmounted fetcher drops its redirect](unmounted-fetcher-drops-its-redirect.md) — touch the store only on the non-redirect path
+- [Summarise issues when asking the owner](summarise-issues-when-asking-the-owner.md) — OWNER RULE: title + one line, never a bare #n
 - [Phrase length is per seed](phrase-length-is-per-seed.md) — use phraseSegments(seed) since afcc66c, never a literal 600
 - [Chained shader patches need a material guard](chained-shader-patches-need-a-material-guard.md) — ref re-attach re-wraps onBeforeCompile; use chainShaderPatch
