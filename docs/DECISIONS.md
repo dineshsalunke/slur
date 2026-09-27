@@ -1233,6 +1233,7 @@ merge removes most pockets it scanned).
 - Both ends are entries, so a chaser can loop until the pair expires (9 s). The owner keeps this for now (GDD §10 question 8). The candidate fixes are one throw-back per ship per pair, or a per-ship hop cooldown.
 - A hop drops any seeker lock on the ship.
 - The camera passes through the bright exit ring and the whole frame blooms orange for less than ~150 ms. The owner keeps this as the hop flash (2026-09-26). Do not dim the exit end or cap its pulse.
+- **#329 amendment (2026-09-27): the ring is 10u across and 2u into the deck.** Owner values: `portalR` 5 and `portalY` 3. The catch is the ring's circle (#325). A ship on the deck (y 0.8) gets a chord of 8.98u. The top of the catch is ship y 7.2. A single jump catches for all classes. A Comet double jump catches at any timing (apex 6.69). For the other classes, a double jump catches only when the ship crosses the ring below 7.2. The clear window grows to hold the exit hull and the rim: `portalClearHalfL` = R + `portalExitGap` + 2 × the largest halfL (11.5), `portalClearW` = 2 × (R + 1) = 12. On 30 phrase seeds, the placement-null rate changes from 0.69% / 0.76% to 1.64% / 1.52% (Comet / Freighter). The ring band and depth scale with `portalR`. The feet are removed.
 
 ## ADR-023 — One phrase generator: weave, motifs, arenas and set pieces in three acts
 

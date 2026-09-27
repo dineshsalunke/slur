@@ -6,10 +6,6 @@ import { graphiteSurface } from '../track-materials';
 import {
     _c,
     _o,
-    FOOT_DEPTH,
-    FOOT_TOP,
-    FOOT_WIDTH,
-    FOOT_X,
     GATE_RING,
     GATE_SLEEVE,
     GATE_Y,
@@ -51,8 +47,6 @@ export interface PortalFrame {
 export function gateShellGeometry(): THREE.BufferGeometry {
     return mergeParts( [
         ringGeometry( GATE_RING ).translate( 0, GATE_Y, 0 ),
-        boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, -FOOT_X, FOOT_TOP / 2, 0 ),
-        boxPart( FOOT_WIDTH, FOOT_TOP, FOOT_DEPTH, FOOT_X, FOOT_TOP / 2, 0 ),
         boxPart( LUG_WIDTH, LUG_HEIGHT, LUG_DEPTH, 0, LUG_Y, 0 ),
     ] );
 }

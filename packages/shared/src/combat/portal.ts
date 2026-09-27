@@ -1,4 +1,3 @@
-import { MAX_SHIP_WIDTH } from '../constants.js';
 import { intersectRuns, type Run } from '../sim/clearance.js';
 import { HALF_WIDTH, type Segment, spanZ0, spanZ1, type Track } from '../sim/space.js';
 import { PORTAL_RATIO } from './constants.js';
@@ -23,7 +22,7 @@ export interface PortalConfig {
 }
 
 export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
-    portalR: 3,
+    portalR: 5,
     portalY: 3,
     portalRideY: 0.8,
     portalNearLeadS: 0.4,
@@ -32,8 +31,8 @@ export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
     portalArmS: 0.3,
     portalTtl: 9,
     portalDoubleTapTicks: 15,
-    portalClearW: MAX_SHIP_WIDTH + 3,
-    portalClearHalfL: 6,
+    portalClearW: 12,
+    portalClearHalfL: 11.5,
     portalExitGap: 0.5,
     portalFinishGap: 20,
     portalZStep: 1,

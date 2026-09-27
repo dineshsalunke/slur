@@ -10,19 +10,14 @@ export const PORTAL_PULSE_DEPTH = 0.25;
 
 export const GATE_RING: RingSpec = {
     inner: DEFAULT_PORTAL_CONFIG.portalR,
-    outer: DEFAULT_PORTAL_CONFIG.portalR + 0.9,
-    depth: 1.2,
+    outer: DEFAULT_PORTAL_CONFIG.portalR * 1.3,
+    depth: DEFAULT_PORTAL_CONFIG.portalR * 0.4,
     wedges: 24,
     seam: 0.07,
     bevel: 0.08,
 };
 export const GATE_SLEEVE: SleeveSpec = { inset: 0.03, reach: 0.11, proud: 0.015 };
 export const GATE_Y = DEFAULT_PORTAL_CONFIG.portalY;
-
-export const FOOT_WIDTH = 1.1;
-export const FOOT_X = GATE_RING.outer - 0.3;
-export const FOOT_TOP = 0.6;
-export const FOOT_DEPTH = GATE_RING.depth * 1.4;
 
 export const LUG_WIDTH = 1.0;
 export const LUG_HEIGHT = 0.55;

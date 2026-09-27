@@ -51,7 +51,9 @@ describe( 'gate aperture', () => {
         }
     } );
 
-    it( 'is a full ring whose aperture touches the deck and closes at the top of the catch', () => {
+    it( 'is a full ring sunk into the deck that closes at the top of the catch', () => {
+        expect( portalY - portalR ).toBeLessThan( 0 );
+        expect( portalY ).toBeGreaterThan( 0 );
         const up = new THREE.Raycaster( new THREE.Vector3( 0, portalY, 0 ), new THREE.Vector3( 0, 1, 0 ) );
         expect( up.intersectObjects( meshes )[ 0 ]?.point.y ).toBeCloseTo( portalY + portalR, 1 );
         const down = new THREE.Raycaster( new THREE.Vector3( 0, portalY, 0 ), new THREE.Vector3( 0, -1, 0 ) );
