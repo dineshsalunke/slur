@@ -100,7 +100,10 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
    gate bursts via MineShock; local FOV punch on predicted hop; keep hop sound). D + 3 skipped. Workerone
    BUILDING; holds portal-ring.ts(+test), portal-field/*, mine-shock*, attach-room-to-world.ts (hop handler),
    camera/chase.ts + hop-kick.ts, ecs/net-systems.ts (hop branch), ART_SCALE_REFERENCE, GDD §5.
-   On its DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
+   #321 FILED (editor flight recorder: T manual start/stop, trace last 3 takes on the editor map, New Track
+   = phrase default + seed field). Owner decisions: T manual; phrase default; seed option. Assigned to
+   workertwo (w2Z:p3), PLAN FIRST; told to avoid workerone's #320 files. On plan: relay to owner.
+   On workerone's DONE: relay to owner with a /test-level brief (fly through a portal; gate reads 6u; burst + FOV kick). Owner not yet answered: perf after reboot, #319 check, glide cue issue.
 0. After the restart: ListAgents (names/panes may change; re-map the table), `herdr pane list`, confirm each worker's
    "READY FOR RESTART — handover <sha>" landed (git log -- .claude/handovers/), then resume each worker with
    `herdr agent prompt <pane> "You are <name>. Resume from .claude/handovers/<name>.md. Read CLAUDE.local.md first."`.
