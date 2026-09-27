@@ -1,51 +1,40 @@
-Agent: workerthree · Lane: #310 remove rail lights + directional fill (+ black-frame fix) · Updated: 2026-09-27 10:40
+Agent: workerthree · Lane: none (idle; #317 done) · Updated: 2026-09-27
 
 ## Goal
 
-Remove the rail lights and the `Fill` light (done). Fix the black frame / ~2 fps the owner saw after 31e3131.
+Idle. Waiting for the supervisor to assign a lane.
 
 ## Done
 
-- `31e3131` removed the rail lights and Fill.
-- `e5f8e20` black-frame fix. New `scene/shader-patch.ts` `chainShaderPatch` tracks patch tags per
-  material. `patchDeckBreakup`, `patchWallBreakup` and `patchWallSpan` use it. The attach ref callbacks in
-  `track-floor.tsx` and `monolith-group.tsx` are stable `useCallback`s. Root cause:
-  `patchRailGlow` used to reset the chain on every ref call. Without it the chain re-wrapped. The deck swap
-  then threw and its cache key grew (program rebuilds). The monolith/gate body applied wall-span + breakup
-  twice ('vWallWorld' redefinition → invisible bodies).
+- #310 closed. `31e3131` removed the rail lights and Fill. `e5f8e20` patches each material's shader
+  chain once. The owner verified it in Zen.
+- #317 closed. `6af07fe` mirrors x in the track editor view mapping (`screenX`, `worldAt`,
+  `zoomAround`, rect draws from `r.x + r.w`, finish bar). Saved levels stay in world x.
 
 ## State
 
-- Headless Chrome, /test-level, 800×450, after e5f8e20: 0 shader errors, 45 programs flat over 20 s,
-  60 FPS · CPU ~2 · MAX 18, bodies + gate crossbar visible (scratchpad `prog.png`).
-- HEAD before the fix: programs flat at 64 in Chrome and no error logged. Chrome did not reproduce the
-  owner's black frame. The owner's browser is Zen (Firefox engine).
-- Owner verification in Zen: [unmeasured]. The supervisor relayed it.
-- Playwright Firefox 1509 with playwright-core 1.60 hung at launch. It is not a usable Firefox repro here.
-- Vite dev server PID 85264 at ~157% CPU, 2.1 GB RSS. Supervisor says leave it.
+- Editor tests 42/42, typecheck and biome clean after `6af07fe`.
+- /test-level, headless Chrome 1280×720: a solid block drawn at the editor's right edge saved as
+  `x -48, w 12, z 644`. With the ship placed at z 600 it shows on the player's right.
+- The scratch track `zz-mirror-317` was deleted (DELETE /__tracks → 200).
 
 ## Uncommitted
 
-none (the handover and memory are committed with this seam).
+none
 
 ## Held files
 
-The #310 files in `31e3131` + `e5f8e20`. Phrase lane files (on hold): `packages/shared/src/sim/phrase/*`,
+none. #317 claims released. Phrase lane files stay on hold (S4 HOLD): `packages/shared/src/sim/phrase/*`,
 `sim/avoid-pilot.test.ts`, `sim/track-digest.test.ts` (phrase row).
 
 ## Next
 
-1. Wait for the supervisor's word that the owner confirmed in Zen. Then `git push origin dev` and
-   `gh issue close 310 -c "31e3131 removal + e5f8e20 shader-chain fix; <numbers>"`.
-2. If the owner still sees problems, ask for the Zen console text, then check the other material
-   patches (`sealed-block-shader.ts`, `fractured-block-shader.ts`, `ship-model.utils.ts` assign
-   `onBeforeCompile` directly, so they cannot chain).
-3. Optional #310 A/B (`measure.mjs` in scratchpad `57407bce…`) only if the owner asks for numbers.
+1. Wait for a lane from the supervisor.
 
 ## Open questions
 
-- None for the owner. Push waits on the supervisor.
+none
 
 ## Lessons → memory
 
-`.claude/memory/chained-shader-patches-need-a-material-guard.md`
+none
