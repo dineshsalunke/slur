@@ -22,9 +22,14 @@ none
 ## Held files
 none
 
+- #305: docs SHA commented (issuecomment-5852650213).
+
 ## Next
-1. workerone imports normalizeLevel from './editor-shapes.utils' in openEditor (#308).
-2. Wait for a new lane from slur-supervisor.
+1. Assigned, NOT started (seam at ~163k): compact .claude/memory/MEMORY.md from 20.2 KB to under 17 KB. Shorten the
+   hooks. Merge only memories that cover the same fact. Delete only a memory verified wrong or superseded. Every file
+   keeps its pointer. First send the claim (MEMORY.md + the files to merge) to slur-supervisor, then commit by
+   pathspec and report the before/after size.
+2. workerone imports normalizeLevel from './editor-shapes.utils' in openEditor (#308).
 
 ## Open questions
 none
