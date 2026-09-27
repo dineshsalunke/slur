@@ -3,6 +3,8 @@ import { Outlet, type ShouldRevalidateFunctionArgs } from 'react-router';
 import { loadSfx } from '../../audio/sfx-map';
 import type { Route } from './+types/route';
 import { EditButton } from './edit-button/edit-button';
+import { ResetKey } from './start-point/reset-key';
+import { startOf } from './start-point/start-point.utils';
 import { TestLevelCanvas } from './test-level-canvas/test-level-canvas';
 import { openTestLevelRoom, testLevelDescriptorFor } from './test-level-room';
 
@@ -15,8 +17,9 @@ export function meta() {
 
 export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
     void loadSfx( 'pickup' );
-    const descriptor = await testLevelDescriptorFor( new URL( request.url ).searchParams );
-    return { room: openTestLevelRoom( descriptor ), descriptor };
+    const url = new URL( request.url );
+    const descriptor = await testLevelDescriptorFor( url.searchParams );
+    return { room: openTestLevelRoom( descriptor, startOf( url.search ) ), descriptor };
 }
 
 export function shouldRevalidate( { currentUrl, nextUrl }: ShouldRevalidateFunctionArgs ) {
@@ -28,6 +31,7 @@ export default function TestLevel( { loaderData }: Route.ComponentProps ) {
         <Fragment>
             <TestLevelCanvas room={ loaderData.room } descriptor={ loaderData.descriptor } />
             <EditButton />
+            <ResetKey room={ loaderData.room } />
             <Outlet />
         </Fragment>
     );

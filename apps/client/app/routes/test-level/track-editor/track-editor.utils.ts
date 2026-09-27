@@ -2,11 +2,15 @@ import {
     type AuthoredBlock,
     type AuthoredLevel,
     type AuthoredRect,
+    authoredTrack,
     BLOCK_ID_STRIDE,
     clamp,
     HALF_WIDTH,
     SEG_LEN,
     START_SAFE,
+    startPointFor,
+    tuningForShip,
+    widestShip,
 } from '@slur/shared';
 import {
     LABEL_EVERY_SEGMENTS,
@@ -15,6 +19,8 @@ import {
     MAP_MARGIN_RIGHT,
     MAP_MAX_SCALE,
     MIN_GRID_PX,
+    START_MARKER_MIN_PX,
+    START_SNAP_EPS,
     TOOL_PREVIEW,
     ZOOM_MAX,
     ZOOM_MIN,
@@ -252,6 +258,26 @@ function drawPreview( ctx: CanvasRenderingContext2D, v: EditorView, s: EditorSta
     ctx.setLineDash( [] );
 }
 
+export function snapStart( level: AuthoredLevel, at: EditorPoint ): { point: EditorPoint; moved: boolean } {
+    const point = startPointFor( authoredTrack( level ), widestShip(), at.x, at.z );
+    return { point, moved: Math.hypot( point.x - at.x, point.z - at.z ) > START_SNAP_EPS };
+}
+
+function drawStart( ctx: CanvasRenderingContext2D, v: EditorView, p: EditorPoint ): void {
+    const t = tuningForShip( widestShip() );
+    const w = Math.max( START_MARKER_MIN_PX, t.halfW * v.scale );
+    const l = Math.max( START_MARKER_MIN_PX, t.halfL * v.scale );
+    const cx = screenX( v, p.x );
+    const cy = screenY( v, p.z );
+    ctx.fillStyle = MAP_COLORS.start;
+    ctx.beginPath();
+    ctx.moveTo( cx, cy - l );
+    ctx.lineTo( cx + w, cy + l );
+    ctx.lineTo( cx - w, cy + l );
+    ctx.closePath();
+    ctx.fill();
+}
+
 export function drawMap( ctx: CanvasRenderingContext2D, v: EditorView, s: EditorState ): void {
     const length = trackLength( s.level );
     const deck = { x: -HALF_WIDTH, z: 0, w: 2 * HALF_WIDTH, l: length };
@@ -275,4 +301,5 @@ export function drawMap( ctx: CanvasRenderingContext2D, v: EditorView, s: Editor
     ctx.fillStyle = MAP_COLORS.finish;
     ctx.fillRect( screenX( v, -HALF_WIDTH ), screenY( v, length ) - 1, 2 * HALF_WIDTH * v.scale, 3 );
     drawPreview( ctx, v, s, length );
+    if ( s.start !== null ) drawStart( ctx, v, s.start );
 }

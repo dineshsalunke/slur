@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { HeldPower, HIT_MESSAGE, STUN_SECONDS } from '../combat/constants.js';
 import { COUNTDOWN_SECONDS, FIXED_DT } from '../constants.js';
 import { PHASE, type RunMetadata } from '../race/director.js';
+import { AUTHORED_LEVEL_VERSION, registerAuthoredLevel } from '../sim/authored/authored-level.js';
 import { procgenDescriptor } from '../sim/track-provider.js';
 import { RunSim } from './run-sim.js';
 
@@ -76,4 +77,29 @@ test( 'a leaving host hands the room to the next connected racer', () => {
     sim.leave( 'a' );
     assert.equal( sim.state.hostId, 'b' );
     assert.equal( sim.queues.has( 'a' ), false );
+} );
+
+test( 'spawnAt places a fresh racer at a clear start point', () => {
+    registerAuthoredLevel( {
+        version: AUTHORED_LEVEL_VERSION,
+        id: 'spawn-at',
+        name: 'spawn-at',
+        length: 20,
+        source: null,
+        savedAt: '',
+        blocks: [],
+        gaps: [],
+    } );
+    const sim = new RunSim(
+        { kind: 'authored', levelId: 'spawn-at' },
+        { broadcast: () => {}, onMeta: () => {} },
+        { countdownSeconds: 0 },
+    );
+    sim.join( 'a' );
+    sim.start( 'a' );
+    tick( sim, 1 );
+    sim.spawnAt( 'a', 4, 200 );
+    const p = sim.state.players.get( 'a' );
+    assert.ok( p );
+    assert.deepEqual( [ p.x, p.z, p.vz, p.lastSafeX, p.lastSafeZ ], [ 4, 200, 0, 4, 200 ] );
 } );

@@ -2,6 +2,7 @@ import {
     authoredLevel,
     isLevelSlug,
     parseAuthoredLevel,
+    type RespawnPoint,
     registerAuthoredLevel,
     START_MESSAGE,
     type TrackDescriptor,
@@ -12,6 +13,7 @@ import { LoopbackRoom } from '../../net/loopback-room/loopback-room';
 import { editorOpen } from './test-level-canvas/pause-while-editing/pause-while-editing.state';
 import { testLevelDescriptor } from './test-level-canvas/test-level-canvas.utils';
 import { autoRestart } from './test-level-dev/test-level-dev.state';
+import { spawnAtStart } from './test-level-dev/test-level-dev.utils';
 import { tunedSimConfig } from './tuned-sim-config';
 
 let stopCurrent: ( () => void ) | null = null;
@@ -27,7 +29,7 @@ export async function testLevelDescriptorFor( params: URLSearchParams ): Promise
     return { kind: 'authored', levelId: level };
 }
 
-export function openTestLevelRoom( descriptor: TrackDescriptor ): LoopbackRoom {
+export function openTestLevelRoom( descriptor: TrackDescriptor, start: RespawnPoint | null ): LoopbackRoom {
     stopCurrent?.();
     autoRestart.pending = false;
     resetFinishWatch( finishWatch );
@@ -37,6 +39,7 @@ export function openTestLevelRoom( descriptor: TrackDescriptor ): LoopbackRoom {
         config: tunedSimConfig(),
     } );
     room.send( START_MESSAGE );
+    spawnAtStart( room, start );
     stopCurrent = room.run( () => simFreeze.on || editorOpen.on );
     return room;
 }

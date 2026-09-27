@@ -3,6 +3,8 @@ import { EditorMap } from './editor-map';
 import { EditorPalette } from './editor-palette';
 import { EditorSaved } from './editor-saved';
 import { EditorSnap } from './editor-snap';
+import { EditorStartMenu } from './editor-start-menu';
+import { EditorStartNote } from './editor-start-note';
 import { EditorWarnings } from './editor-warnings';
 import { EditorZoom } from './editor-zoom';
 
@@ -15,15 +17,18 @@ export function TrackEditor() {
                 <EditorSnap />
                 <EditorZoom />
                 <EditorWarnings />
+                <EditorStartNote />
                 <EditorActions />
                 <EditorSaved />
                 <p className="mt-auto text-[11px] leading-relaxed text-dim">
                     Click places one cell. Drag draws a rectangle. Wheel scrolls. Ctrl or ⌘ + wheel, or a pinch, zooms
-                    at the pointer. Esc cancels a drag. Start at the bottom; the grey band is locked.
+                    at the pointer. Esc cancels a drag. Start at the bottom; the grey band is locked. Right-click sets
+                    where Play starts. In the game, Backspace resets the run; Shift + Backspace also clears the start.
                 </p>
             </aside>
-            <main className="min-w-0 flex-1">
+            <main className="relative min-w-0 flex-1">
                 <EditorMap />
+                <EditorStartMenu />
             </main>
         </div>
     );

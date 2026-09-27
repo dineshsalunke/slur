@@ -1,4 +1,4 @@
-import { attachMap, cancelMap, leaveMap, moveMap, pressMap, releaseMap } from './track-editor.state';
+import { attachMap, cancelMap, leaveMap, moveMap, openStartMenu, pressMap, releaseMap } from './track-editor.state';
 
 export function EditorMap() {
     return (
@@ -9,6 +9,7 @@ export function EditorMap() {
             onPointerUp={ releaseMap }
             onPointerCancel={ cancelMap }
             onPointerLeave={ leaveMap }
+            onContextMenu={ openStartMenu }
             className="block h-full w-full cursor-crosshair touch-none"
         />
     );

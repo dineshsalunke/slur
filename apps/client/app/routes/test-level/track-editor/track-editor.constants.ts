@@ -34,7 +34,12 @@ export const MAP_COLORS = {
     gapEdge: '#ff5c6e',
     eraser: '#ff2bd6',
     finish: '#00ff85',
+    start: '#35e0ff',
 } as const;
+
+export const START_SNAP_EPS = 0.01;
+
+export const START_MARKER_MIN_PX = 6;
 
 export const TOOL_PREVIEW: Readonly< Record< EditorTool, string > > = {
     destructible: 'rgba(245, 176, 36, 0.55)',

@@ -10,7 +10,7 @@ import {
     resolveTrack,
     serializeAuthoredLevel,
 } from '@slur/shared';
-import type { PointerEvent } from 'react';
+import type { MouseEvent, PointerEvent } from 'react';
 import { typingTarget } from '../../../dev/typing-target';
 import { TEST_LEVEL_SEED } from '../test-level-canvas/test-level-canvas.constants';
 import { testLevelDescriptor } from '../test-level-canvas/test-level-canvas.utils';
@@ -22,6 +22,7 @@ import {
     hash8,
     slugOf,
     snapRect,
+    snapStart,
     trackLength,
     viewOf,
     worldAt,
@@ -43,6 +44,12 @@ export interface EditorCamera {
     scrollZ: number;
 }
 
+export interface EditorStartMenu {
+    px: number;
+    py: number;
+    at: EditorPoint;
+}
+
 export interface EditorState {
     level: AuthoredLevel;
     tool: EditorTool;
@@ -52,6 +59,9 @@ export interface EditorState {
     anchor: EditorPoint | null;
     hover: EditorPoint | null;
     dirty: boolean;
+    start: EditorPoint | null;
+    startMenu: EditorStartMenu | null;
+    startNote: string | null;
 }
 
 export interface SavedTrack {
@@ -77,6 +87,9 @@ const state: EditorState = {
     anchor: null,
     hover: null,
     dirty: false,
+    start: null,
+    startMenu: null,
+    startNote: null,
 };
 
 const listeners = new Set< () => void >();
@@ -96,13 +109,42 @@ function changed(): void {
     for ( const listener of listeners ) listener();
 }
 
-export function openEditor( level: AuthoredLevel ): void {
+export function openEditor( level: AuthoredLevel, start: EditorPoint | null ): void {
     state.level = level;
     state.camera = { zoom: 1, scrollX: 0, scrollZ: 0 };
     state.anchor = null;
     state.hover = null;
     state.dirty = false;
+    state.start = start;
+    state.startMenu = null;
+    state.startNote = null;
     changed();
+}
+
+export function openStartMenu( e: MouseEvent< HTMLCanvasElement > ): void {
+    e.preventDefault();
+    const r = e.currentTarget.getBoundingClientRect();
+    state.anchor = null;
+    state.startMenu = { px: e.clientX - r.left, py: e.clientY - r.top, at: pointOf( e ) };
+    changed();
+}
+
+export function closeStartMenu(): void {
+    if ( state.startMenu === null ) return;
+    state.startMenu = null;
+    changed();
+}
+
+export function pickStart( at: EditorPoint | null ): EditorPoint | null {
+    const snapped = at === null ? null : snapStart( state.level, at );
+    state.start = snapped?.point ?? null;
+    state.startMenu = null;
+    state.startNote =
+        snapped?.moved === true
+            ? `Start moved to x ${ snapped.point.x.toFixed( 1 ) }, z ${ snapped.point.z.toFixed( 1 ) }: the point you picked has no room for a ship.`
+            : null;
+    changed();
+    return state.start;
 }
 
 export function setTool( tool: EditorTool ): void {
@@ -135,13 +177,14 @@ export function fitWidth(): void {
     setCamera( { ...state.camera, zoom: 1, scrollX: 0 } );
 }
 
-function pointOf( e: PointerEvent< HTMLCanvasElement > ): EditorPoint {
+function pointOf( e: MouseEvent< HTMLCanvasElement > ): EditorPoint {
     const r = e.currentTarget.getBoundingClientRect();
     return worldAt( viewFor( e.currentTarget ), e.clientX - r.left, e.clientY - r.top );
 }
 
 export function pressMap( e: PointerEvent< HTMLCanvasElement > ): void {
     if ( e.button !== 0 ) return;
+    state.startMenu = null;
     e.currentTarget.setPointerCapture( e.pointerId );
     state.anchor = pointOf( e );
     state.hover = state.anchor;
@@ -198,7 +241,10 @@ function editorKeys( e: KeyboardEvent ): void {
     if ( e.repeat || e.metaKey || e.ctrlKey || e.altKey || typingTarget( e.target ) ) return;
     const tool = EDITOR_TOOLS.find( ( t ) => t.key === e.key );
     if ( tool !== undefined ) setTool( tool.id );
-    if ( e.key === 'Escape' ) cancelMap();
+    if ( e.key === 'Escape' ) {
+        cancelMap();
+        closeStartMenu();
+    }
 }
 
 export function attachMap( canvas: HTMLCanvasElement | null ): ( () => void ) | undefined {

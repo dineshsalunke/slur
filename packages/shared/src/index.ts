@@ -27,6 +27,7 @@ export * from './run/combat.js';
 export * from './run/input-queue.js';
 export * from './run/racer.js';
 export * from './run/run-sim.js';
+export * from './run/start-point.js';
 export * from './schema.js';
 export * from './ship-classes.js';
 export * from './sim/authored/authored-level.js';

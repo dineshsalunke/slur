@@ -18,7 +18,7 @@ import { createFixedStep } from '../sim/fixed-step.js';
 import type { InputMessage } from '../sim/input.js';
 import type { Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
-import { createSimWorld, froundSimShip } from '../sim/types.js';
+import { copySimShip, createSimWorld, froundSimShip, spawnShip } from '../sim/types.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { type Broadcast, firePower, stepCombat } from './combat.js';
 import {
@@ -33,6 +33,7 @@ import {
 } from './input-queue.js';
 import { isDoubleTap, type PortalTap, portalHopped, throwPortalFar } from './portal-run.js';
 import { type RaceWorld, stepRacer } from './racer.js';
+import { startPointFor } from './start-point.js';
 
 const MAX_NAME = 16;
 
@@ -189,6 +190,14 @@ export class RunSim {
 
     resetToLobby(): void {
         this.resetRun( PHASE.lobby, 0 );
+    }
+
+    spawnAt( sessionId: string, x: number, z: number ): void {
+        const p = this.state.players.get( sessionId );
+        if ( ! p || p.spectating ) return;
+        const at = startPointFor( this.track, p.shipId, x, z );
+        copySimShip( p, spawnShip( at.x, at.z ) );
+        froundSimShip( p );
     }
 
     clearCombat(): void {
