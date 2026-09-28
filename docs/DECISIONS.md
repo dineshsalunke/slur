@@ -1538,3 +1538,28 @@ Rooms are public on the web (ADR-025, ADR-026). A host had no way to remove a pl
 - The kick button is on the lobby roster only, because the roster renders only in the lobby. The server accepts a kick in the countdown and on the results screen too.
 - Known gaps, measured: spaced letters ("f u c k") pass, and "Dick Grayson" is masked. Stripping `\p{Cf}` splits emoji ZWJ sequences into their parts.
 - Verified with two node clients on the dev server: a bad name joins as "Racer", "gg you sh1t" posts as "gg you ****", the kicked guest gets a 4000 close, its rejoin gets 403, and a new token joins.
+
+## ADR-029 — Brighter track metal and a cool key light
+
+**Date:** 2026-09-28 · **Status:** Accepted (owner approved option 6 for #345, 2026-09-28) · **Issue:** #345 · **Built in:** the #345 commit
+
+### Context
+
+The track read dark and uneven on every tier. All track metal is metalness 1 with base `#4a4d52`, so F0 ≈ 0.07. The metal reflects little of a dark sky, and no light faces the block fronts. Measured at spawn on `/test-level`, high tier: deck luma 15 under 30u, block fronts 14 (0–255 medians).
+
+### Options
+
+The plan listed eight. The measured ones: a hemisphere light or lower metalness alone (+3 to +4 luma). **Option 6: base F0 ≈ 0.2, metalness 1, a cool directional key.** Option 7: metalness 0.6, albedo ×2.5 and the same key. Option 7 was brighter (deck 57 near) but departs from the one-metal rule.
+
+### Decision
+
+1. `Metal.baseColor` is `#7b7f86`. Metalness stays 1.
+2. Ship hulls keep `#4a4d52` on a new `Hull.baseColor` (owner: brighter track, not hulls).
+3. `KeyLight` (`game/scene/key-light/key-light.tsx`): one `DirectionalLight`, `#cfd8e6`, intensity 2, from (10, 30, −20). World-fixed, no shadows. `KeyLight.*` dials on the panel.
+
+### Consequences
+
+- High tier: deck 15.2 → 43.5 near and 34.4 → 58.0 at 80–160u; block fronts 14.5 → 36.2. Low tier: deck 15.2 → 42.3; block fronts 5.9 → 30.8.
+- No draw calls added (124 high, 47 low). GPU time unchanged within noise (high 9.5 ms both, uncapped 1600×900).
+- Saved `Metal.baseColor` overrides reset once, because their stored `from` no longer matches the default.
+- Details and departures: `ART_MATERIALS.md` §7 item 21.

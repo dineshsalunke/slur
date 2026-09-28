@@ -18,6 +18,11 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
+> **Revision 9** — 2026-09-28. **Brighter track metal, a separate hull colour, and a cool key light.**
+> Owner's call (#345). `Metal.baseColor` moves from `#4a4d52` to `#7b7f86` (F0 ≈ 0.07 → ≈ 0.2).
+> Ship hulls keep `#4a4d52` on a new `Hull.baseColor`. A world-fixed directional key lights the track
+> from behind the camera. Metalness stays 1. Details: §7 item 21.
+>
 > **Revision 8** — 2026-09-24. **Obstacle blocks and monoliths use the deck material.** Owner's call.
 > Sealed, fractured and debris blocks, the monoliths and the finish-gate body now use M1's procedural
 > deck plates and the `Deck.*` finish. The `Metal046B` photographic maps are deleted. Block seams, wear,
@@ -1095,7 +1100,34 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     **Departures from package wording.** None in `docs/art-direction/`, which does not state the hex. The
     change is to M7 and to `docs/ADD.md` §3.
 
+21. **Brighter track metal, a separate hull colour, and a cool key light — 2026-09-28 (#345).** The
+    owner chose option 6 of the #345 plan. The track read dark and uneven: deck luma 15 at under 30u
+    and 34 at 80–160u, block fronts 14 (0–255 medians, raycast probe, `/test-level`, high tier). The
+    cause is the base colour. At metalness 1, `#4a4d52` gives F0 ≈ 0.07, so the metal reflects little
+    of the dark sky and no light source faces the fronts.
+
+    - **`Metal.baseColor` is `#7b7f86`** (F0 ≈ 0.2). It drives the deck, rails, blocks, monoliths and
+      the finish gate. Metalness stays 1 and roughness stays 0.4.
+    - **`Hull.baseColor` is `#4a4d52`.** Ship hulls keep the old value, on the owner's instruction.
+    - **`KeyLight`** is one `DirectionalLight`, colour `#cfd8e6`, intensity 2, from (10, 30, −20)
+      toward the origin. It is fixed in the world, has no shadows and adds no draw calls. The `KeyLight.*`
+      dials are on the panel.
+    - **Measured, high tier, spawn:** deck 15.2 / 27.4 / 34.4 → 43.5 / 50.0 / 58.0 (under 30u, 30–80u,
+      80–160u); block fronts 14.5 → 36.2; frame mean 23.2 → 36.9. **Low tier:** deck 15.2 / 25.2 / 30.4
+      → 42.3 / 47.2 / 53.4; block fronts 5.9 → 30.8. GPU time is unchanged within noise: high 9.5 ms
+      before and after, low 3.0–5.6 ms before and 4.6–5.8 ms after, uncapped, 1600×900.
+    - **Why a directional light is back.** #310 removed the directional fill because it had no visible
+      effect. At F0 ≈ 0.07 that was true. At F0 ≈ 0.2 the key adds about 11 luma on the near deck and
+      12 on block fronts.
+
+    **Departures.** Item 19 said *"The value stays one value for every surface (item 12)."* Hulls now
+    have their own value. `docs/ADD.md` said *"The scene lights are now the `Environment` IBL,
+    `NearFill` and the engine and VFX point lights."* The key light joins that list.
+
 ## 8. Review log
+
+**Revision 8 → 9, brighter track metal and a key light (2026-09-28).** No family table changes. §7 gains
+item 21. Item 19's one-value rule no longer covers ship hulls.
 
 **Revision 7 → 8, the deck material on blocks and monoliths (2026-09-24).** No family table changes.
 §7 gains item 16. M2 gains a note: its seam, wear and variation rows still apply to blocks, and its

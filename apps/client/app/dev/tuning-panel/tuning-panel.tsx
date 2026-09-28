@@ -48,6 +48,15 @@ export function TuningPanel() {
 
     useControls( 'Metal', {
         baseColor: colorControl( 'Metal.baseColor' ),
+        hullColor: colorControl( 'Hull.baseColor' ),
+    } );
+
+    useControls( 'Key light', {
+        intensity: numberControl( 'KeyLight.intensity' ),
+        x: numberControl( 'KeyLight.x' ),
+        y: numberControl( 'KeyLight.y' ),
+        z: numberControl( 'KeyLight.z' ),
+        color: colorControl( 'KeyLight.color' ),
     } );
 
     useControls( 'Shadow', {

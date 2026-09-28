@@ -280,8 +280,9 @@ planet contributes to the IBL.
 into the deck, monolith and finish-gate materials. Before it, six `RectAreaLight`s were the largest
 cost of a DPR 2 frame (8 ms of 17.7 on an M3 Pro at 3456×2160), because three.js evaluates every
 area light with LTC on every fragment of every standard material. Do not add area lights for a
-glow. The scene lights are now the `Environment` IBL, `NearFill` and the engine and VFX point
-lights. The `Environment` band cylinder gives blocks, monoliths and ships their marigold.
+glow. The scene lights are now the `Environment` IBL, `NearFill`, the engine and VFX point
+lights, and `KeyLight`: one world-fixed cool directional light from behind the camera, without
+shadows (#345, `ART_MATERIALS.md` §7 item 21). The `Environment` band cylinder gives blocks, monoliths and ships their marigold.
 
 **DPR 2 frame budget, M3 Pro, 3456×2160, GPU-synced medians while driving** (`readPixels` each
 frame; plain rAF timing does not track the GPU under ANGLE Metal): 10.0 ms with everything, 5.4 ms

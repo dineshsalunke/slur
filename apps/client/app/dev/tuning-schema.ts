@@ -1,7 +1,7 @@
 import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import { ACCENT_ANCHOR } from '../game/scene/accent';
 import { ROCK_ALBEDO } from '../game/scene/asteroid-surface';
-import { METAL_BASE_COLOR, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
+import { HULL_BASE_COLOR, METAL_BASE_COLOR, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
 import { NEBULA_PRESET } from '../game/scene/nebula-presets';
 
 interface NumberTunable {
@@ -40,6 +40,11 @@ export const NUMBER_TUNABLES = {
     'NearFill.forward': { value: 6, min: -10, max: 30, step: 0.5, rebuild: false },
     'NearFill.height': { value: 3, min: -5, max: 20, step: 0.5, rebuild: false },
     'NearFill.distance': { value: 45, min: 5, max: 200, step: 1, rebuild: false },
+
+    'KeyLight.intensity': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
+    'KeyLight.x': { value: 10, min: -100, max: 100, step: 1, rebuild: false },
+    'KeyLight.y': { value: 30, min: 0, max: 100, step: 1, rebuild: false },
+    'KeyLight.z': { value: -20, min: -100, max: 100, step: 1, rebuild: false },
 
     'Deck.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Deck.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
@@ -236,6 +241,8 @@ export const COLOR_TUNABLES = {
     'NearFill.color': { value: '#ffb964', rebuild: false },
     'Rock.color': { value: ROCK_ALBEDO, rebuild: false },
     'Metal.baseColor': { value: METAL_BASE_COLOR, rebuild: true },
+    'Hull.baseColor': { value: HULL_BASE_COLOR, rebuild: false },
+    'KeyLight.color': { value: '#cfd8e6', rebuild: false },
     'Shadow.color': { value: '#01040a', rebuild: false },
     'Exhaust.hot': { value: '#fff1dc', rebuild: false },
     'Exhaust.cool': { value: ACCENT_ANCHOR, rebuild: false },

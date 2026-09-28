@@ -8,6 +8,7 @@ import { ExplosionField } from './explosion-field/explosion-field';
 import { FinishGate } from './finish-gate/finish-gate';
 import { GameEnvironment } from './game-environment';
 import { HitSpark } from './hit-spark/hit-spark';
+import { KeyLight } from './key-light/key-light';
 import { NearFill } from './near-fill/near-fill';
 import { PlainRender } from './plain-render/plain-render';
 import { SceneEffects } from './scene-effects/scene-effects';
@@ -21,6 +22,7 @@ export function WorldScene( { children }: { children?: ReactNode } ) {
             <GameEnvironment />
             <SceneEnvironment />
             <NearFill />
+            <KeyLight />
             <RenderScale />
             <EngineLight />
             <ExplosionField />
