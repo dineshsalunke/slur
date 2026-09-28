@@ -56,7 +56,6 @@ export function TuningPanel() {
     useControls( 'Deck', {
         metalness: numberControl( 'Deck.metalness' ),
         roughness: numberControl( 'Deck.roughness' ),
-        envMapIntensity: numberControl( 'Deck.envMapIntensity' ),
         normalScale: numberControl( 'Deck.normalScale' ),
         plate: numberControl( 'Deck.plate' ),
         seamEmissive: numberControl( 'Deck.seamEmissive' ),
@@ -65,7 +64,6 @@ export function TuningPanel() {
     useControls( 'Rail', {
         metalness: numberControl( 'Rail.metalness' ),
         roughness: numberControl( 'Rail.roughness' ),
-        envMapIntensity: numberControl( 'Rail.envMapIntensity' ),
         normalScale: numberControl( 'Rail.normalScale' ),
         railEmissive: numberControl( 'Rail.railEmissive' ),
         rimEmissive: numberControl( 'Rail.rimEmissive' ),
@@ -126,10 +124,6 @@ export function TuningPanel() {
         membraneFlow: numberControl( 'Portal.membraneFlow' ),
     } );
 
-    useControls( 'Ship', {
-        envMapIntensity: numberControl( 'Ship.envMapIntensity' ),
-    } );
-
     useControls( 'Hover', {
         base: numberControl( 'Hover.base' ),
         speedLift: numberControl( 'Hover.speedLift' ),
@@ -173,7 +167,6 @@ export function TuningPanel() {
 
     useControls( 'Rock', {
         color: colorControl( 'Rock.color' ),
-        envMapIntensity: numberControl( 'Rock.envMapIntensity' ),
         textureScale: numberControl( 'Rock.textureScale' ),
         normalScale: numberControl( 'Rock.normalScale' ),
         roughness: numberControl( 'Rock.roughness' ),

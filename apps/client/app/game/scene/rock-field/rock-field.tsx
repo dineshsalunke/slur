@@ -54,8 +54,6 @@ export function RockField() {
         uniforms.uRockDetail.value = num( 'Rock.detail' );
         uniforms.uRockFar.value = Math.min( ROCK_FAR, ( state.camera as THREE.PerspectiveCamera ).far );
         uniforms.uRockHeatColor.value.copy( accent() ).multiplyScalar( num( 'Rock.heat' ) );
-        field.envMapIntensity = num( 'Rock.envMapIntensity' );
-        loose.envMapIntensity = field.envMapIntensity;
         const rock = col( 'Rock.color' );
         if ( rock !== color.current ) {
             color.current = rock;

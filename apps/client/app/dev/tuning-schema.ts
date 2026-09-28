@@ -34,14 +34,12 @@ export const NUMBER_TUNABLES = {
 
     'Deck.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Deck.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
-    'Deck.envMapIntensity': { value: 1.5, min: 0, max: 6, step: 0.05, rebuild: false },
     'Deck.normalScale': { value: 0.8, min: 0, max: 3, step: 0.01, rebuild: false },
     'Deck.plate': { value: 4, min: 1, max: 24, step: 1, rebuild: true },
     'Deck.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
     'Rail.metalness': { value: METAL_METALNESS, min: 0, max: 1, step: 0.01, rebuild: false },
     'Rail.roughness': { value: METAL_ROUGHNESS, min: 0.02, max: 1, step: 0.01, rebuild: false },
-    'Rail.envMapIntensity': { value: 1.5, min: 0, max: 6, step: 0.05, rebuild: false },
     'Rail.normalScale': { value: 0.8, min: 0, max: 3, step: 0.01, rebuild: false },
     'Rail.railEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
     'Rail.rimEmissive': { value: 2, min: 0, max: 30, step: 0.05, rebuild: false },
@@ -171,7 +169,6 @@ export const NUMBER_TUNABLES = {
     'EngineLight.back': { value: 3.4, min: 0, max: 14, step: 0.1, rebuild: false },
     'EngineLight.lift': { value: 0.5, min: -2, max: 6, step: 0.05, rebuild: false },
 
-    'Rock.envMapIntensity': { value: 1.85, min: 0, max: 6, step: 0.05, rebuild: false },
     'Rock.textureScale': { value: 1.15, min: 0.2, max: 4, step: 0.05, rebuild: false },
     'Rock.normalScale': { value: 2.5, min: 0, max: 3, step: 0.05, rebuild: false },
     'Rock.roughness': { value: 1, min: 0.1, max: 1.5, step: 0.01, rebuild: false },
@@ -195,7 +192,6 @@ export const NUMBER_TUNABLES = {
 
     'Shake.strength': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
 
-    'Ship.envMapIntensity': { value: 0.45, min: 0, max: 3, step: 0.05, rebuild: false },
     'Ship.engineIdle': { value: 1, min: 0, max: 20, step: 0.05, rebuild: false },
     'Ship.engineCruise': { value: 2.2, min: 0, max: 20, step: 0.05, rebuild: false },
 

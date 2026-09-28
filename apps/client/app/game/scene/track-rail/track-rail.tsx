@@ -36,7 +36,6 @@ export function TrackRail() {
         const scale = num( 'Rail.normalScale' );
         metal.metalness = num( 'Rail.metalness' );
         metal.roughness = cleanToMapRoughness( num( 'Rail.roughness' ) );
-        metal.envMapIntensity = num( 'Rail.envMapIntensity' );
         metal.normalScale.set( scale, scale );
         strip.emissiveIntensity = num( 'Rail.railEmissive' );
     } );

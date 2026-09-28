@@ -6,7 +6,6 @@ import { TEX_SPAN_X } from './track-texture';
 export function applyDeckFinish( mat: THREE.MeshStandardMaterial ): void {
     mat.metalness = num( 'Deck.metalness' );
     mat.roughness = cleanToMapRoughness( num( 'Deck.roughness' ) );
-    mat.envMapIntensity = num( 'Deck.envMapIntensity' );
     const scale = num( 'Deck.normalScale' );
     mat.normalScale.set( scale, scale );
 }

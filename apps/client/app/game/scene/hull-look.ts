@@ -7,10 +7,8 @@ export function applyHullLook( hulls: readonly THREE.MeshStandardMaterial[], tin
         for ( const hull of hulls ) hull.color.set( base );
         tinted.current = base;
     }
-    const envMapIntensity = num( 'Ship.envMapIntensity' );
     const normalScale = num( 'Deck.normalScale' );
     for ( const hull of hulls ) {
-        hull.envMapIntensity = envMapIntensity;
         hull.normalScale.set( normalScale, normalScale );
     }
 }
