@@ -121,6 +121,9 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   cap, server throws at boot). New owner Q7: add valibot or zod so the server validates command messages
   (Colyseus 0.17 validate())? Waiting on workerthree §5 → workerone sends owner summary §8 Q1–Q8.
 
+- #350 FILED (owner screenshot): long wall blocks have a marigold seam at one end only; open end facing the gap has
+  none → seam on every exposed end. workertwo PLAN FIRST (briefed via herdr).
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
