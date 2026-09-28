@@ -218,7 +218,6 @@ export const WALL_DENSITY_MAX = 0.9;
 export const WALL_NOISE_FZ_LANE = 4.0;
 export const WALL_NOISE_FZ_SEG = 1.5;
 export const WALL_RUN_LANES_MIN = 2;
-export const BLOCK_MAX_LANES = 3;
 export const BLOCK_DEPTH_MIN = 3;
 export const BLOCK_DEPTH_MAX = 18;
 export const BLOCK_DEPTH_CURVE_K_REST = 3.5948;

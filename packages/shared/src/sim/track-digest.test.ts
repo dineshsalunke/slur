@@ -8,11 +8,11 @@ const DIGEST_SEEDS = [ 1, 7, 42, 1337, 24301 ];
 
 const FROZEN: Partial< Record< TrackGen, Record< number, string > > > = {
     weave: {
-        1: 'c78e794b40a4db08',
-        7: '4bf512943bec56be',
-        42: 'e50cf66a6f0bda87',
-        1337: 'c980d5acb52c8ac9',
-        24301: '9fd8eac3611abecf',
+        1: '2016bfab544d70db',
+        7: 'bf36b5dc7bab9163',
+        42: '26e0d6e50e4f8cab',
+        1337: '2f529bfc3bb2906e',
+        24301: '891d2561764a5454',
     },
     groove: {
         1: '3d86632aac77f5d7',

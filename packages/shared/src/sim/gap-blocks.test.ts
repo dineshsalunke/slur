@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+    BLOCK_WIDTH_MIN,
     isFullSpan,
     isHole,
     MIN_LANE,
@@ -64,6 +65,28 @@ test( 'a gap block sits on a full-span deck and on the landing side of the segme
             }
         }
     }
+} );
+
+test( 'gap block widths are continuous, not the 4/8/12 lane picket', () => {
+    const widths: number[] = [];
+    for ( const seed of SEEDS ) {
+        for ( const s of gapSegments( resolveTrack( procgenDescriptor( seed, 'weave' ) ) ) ) {
+            for ( const b of s.blocks ) widths.push( b.x1 - b.x0 );
+        }
+    }
+    assert.ok( widths.length > 50, `only ${ widths.length } gap blocks` );
+    const counts = new Map< string, number >();
+    for ( const w of widths ) counts.set( w.toFixed( 2 ), ( counts.get( w.toFixed( 2 ) ) ?? 0 ) + 1 );
+    const top = Math.max( ...counts.values() );
+    assert.ok( top / widths.length <= 0.1, `one width holds ${ top } of ${ widths.length } gap blocks` );
+    assert.ok(
+        widths.some( ( w ) => w > 12 ),
+        'no gap block is wider than the old 12u cap',
+    );
+    assert.ok(
+        widths.every( ( w ) => w >= BLOCK_WIDTH_MIN - 1e-6 ),
+        'a gap block is narrower than BLOCK_WIDTH_MIN',
+    );
 } );
 
 test( 'the combined gap-plus-block result still clears MIN_LANE at every slice', () => {
