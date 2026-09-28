@@ -10,6 +10,10 @@ import type { SimShip, SimWorld } from './types.js';
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
 
 const BOUNCE_CLEARANCE = 1e-3;
+const CONTACTS = {
+    hit: { [ -1 ]: { kind: 'hit', dir: -1 }, 1: { kind: 'hit', dir: 1 } },
+    scrape: { [ -1 ]: { kind: 'scrape', dir: -1 }, 1: { kind: 'scrape', dir: 1 } },
+} as const satisfies Record< BlockContact[ 'kind' ], Record< BlockContact[ 'dir' ], BlockContact > >;
 const DECK_Y = 0;
 
 export function boostCap( s: SimShip, t: FlightTuning, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
@@ -243,9 +247,17 @@ function overlapsBlock( b: Block, s: SimShip, prevY: number, t: FlightTuning ): 
     );
 }
 
+export interface BlockContact {
+    kind: 'hit' | 'scrape';
+    dir: -1 | 1;
+}
+
+export type Contact = BlockContact | null;
+
 interface BlockPush {
     axis: 'x' | 'z';
     delta: number;
+    fresh: boolean;
 }
 
 function nearer( a: number, b: number ): number {
@@ -256,14 +268,39 @@ function outsideSpan( c: number, half: number, lo: number, hi: number ): boolean
     return c + half <= lo || c - half >= hi;
 }
 
+function entryFraction( p: number, c: number, half: number, lo: number, hi: number ): number {
+    const d = c - p;
+    return d > 0 ? ( lo - ( p + half ) ) / d : ( hi - ( p - half ) ) / d;
+}
+
+function sideGap( b: Block, prevX: number, delta: number, t: FlightTuning ): number {
+    return delta < 0 ? b.x0 - ( prevX + t.halfW ) : prevX - t.halfW - b.x1;
+}
+
 function entryPush( b: Block, s: SimShip, prevX: number, prevZ: number, t: FlightTuning ): BlockPush {
-    const x: BlockPush = { axis: 'x', delta: nearer( b.x0 - ( s.x + t.halfW ), b.x1 - ( s.x - t.halfW ) ) };
-    const z: BlockPush = { axis: 'z', delta: nearer( b.z0 - ( s.z + t.halfL ), b.z1 - ( s.z - t.halfL ) ) };
+    const xDelta = nearer( b.x0 - ( s.x + t.halfW ), b.x1 - ( s.x - t.halfW ) );
+    const zDelta = nearer( b.z0 - ( s.z + t.halfL ), b.z1 - ( s.z - t.halfL ) );
+    const side: BlockPush = {
+        axis: 'x',
+        delta: xDelta,
+        fresh: sideGap( b, prevX, xDelta, t ) > 2 * BOUNCE_CLEARANCE,
+    };
+    const end: BlockPush =
+        Math.abs( xDelta ) < t.grazeDepth
+            ? { axis: 'x', delta: xDelta, fresh: true }
+            : { axis: 'z', delta: zDelta, fresh: true };
     const fromSide = outsideSpan( prevX, t.halfW, b.x0, b.x1 );
     const fromEnd = outsideSpan( prevZ, t.halfL, b.z0, b.z1 );
-    if ( fromEnd ) return Math.abs( x.delta ) < t.grazeDepth ? x : z;
-    if ( fromSide ) return x;
-    return Math.abs( x.delta ) <= Math.abs( z.delta ) ? x : z;
+    if ( fromSide && fromEnd ) {
+        const fx = entryFraction( prevX, s.x, t.halfW, b.x0, b.x1 );
+        const fz = entryFraction( prevZ, s.z, t.halfL, b.z0, b.z1 );
+        return fx > fz ? side : end;
+    }
+    if ( fromEnd ) return end;
+    if ( fromSide ) return side;
+    return Math.abs( xDelta ) <= Math.abs( zDelta )
+        ? { axis: 'x', delta: xDelta, fresh: false }
+        : { axis: 'z', delta: zDelta, fresh: true };
 }
 
 function breakable( b: Block, world: SimWorld | undefined ): boolean {
@@ -304,18 +341,22 @@ function blockPush(
     return best;
 }
 
-function bounceOffBlock( s: SimShip, push: BlockPush, t: FlightTuning ): void {
+function bounceOffBlock( s: SimShip, push: BlockPush, t: FlightTuning ): Contact {
     const dir = push.delta < 0 ? -1 : 1;
     const stunned = s.stunTimer > 0;
     const kick = stunned ? 0 : t.bounceBack;
     if ( push.axis === 'x' ) {
         s.x += push.delta + dir * BOUNCE_CLEARANCE;
         if ( s.vx * dir < 0 ) s.vx = dir * kick;
-    } else {
-        s.z += push.delta + dir * BOUNCE_CLEARANCE;
-        if ( s.vz * dir < 0 ) s.vz = dir * kick;
+        if ( ! push.fresh ) return null;
+        if ( s.vz > 0 ) s.vz *= t.scrapeKeep;
+        return CONTACTS.scrape[ dir ];
     }
-    if ( ! stunned ) s.stunTimer = t.bounceStun;
+    s.z += push.delta + dir * BOUNCE_CLEARANCE;
+    if ( s.vz * dir < 0 ) s.vz = dir * kick;
+    if ( stunned ) return null;
+    s.stunTimer = t.bounceStun;
+    return CONTACTS.hit[ dir ];
 }
 
 export function resolveCollisions(
@@ -326,7 +367,7 @@ export function resolveCollisions(
     track: Track,
     t: FlightTuning,
     world?: SimWorld,
-): void {
+): Contact {
     const segs = footprintSegs( track, s.z, t.halfL );
 
     const floorY = landingFloor( segs, s, prevY, t );
@@ -348,14 +389,15 @@ export function resolveCollisions(
 
     if ( s.y < t.deathY ) {
         markDead( s, t );
-        return;
+        return null;
     }
 
     if ( world !== undefined ) smashThrough( segs, s, prevY, t, world );
     const push = blockPush( segs, s, prevX, prevY, prevZ, t, world );
-    if ( push !== null ) bounceOffBlock( s, push, t );
+    const contact = push === null ? null : bounceOffBlock( s, push, t );
 
     if ( track.segmentAtZ( s.z ).isFinish && s.z >= track.finishZ && ! s.finished ) s.finished = true;
+    return contact;
 }
 
 export function simulate(
@@ -366,14 +408,14 @@ export function simulate(
     track?: Track,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
     world?: SimWorld,
-): void {
+): Contact {
     if ( s.dead ) {
         s.respawnTimer -= dt;
         if ( s.respawnTimer <= 0 ) {
             if ( track ) respawn( s, track, t );
             else s.dead = false;
         }
-        return;
+        return null;
     }
 
     const control = towedInput( s, s.stunTimer > 0 ? NEUTRAL_INPUT : input, cfg );
@@ -389,7 +431,9 @@ export function simulate(
     const prevY = s.y;
     const prevZ = s.z;
     integrate( s, dt );
-    if ( track ) resolveCollisions( s, prevX, prevY, prevZ, track, t, world );
+    let contact: Contact = null;
+    if ( track ) contact = resolveCollisions( s, prevX, prevY, prevZ, track, t, world );
     else resolveFlatFloor( s, t );
     if ( world && world.portals.size > 0 ) hopThroughPortal( s, prevZ, t, world.portals.values(), cfg );
+    return contact;
 }

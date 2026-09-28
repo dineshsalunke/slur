@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { DEFAULT_TUNING, FIXED_DT } from '../constants.js';
 import { emptyInput } from './input.js';
 import { BLOCK_HEIGHT, type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from './space.js';
-import { simulate } from './step.js';
+import { type Contact, simulate } from './step.js';
 import { spawnShip } from './types.js';
 
 const t = DEFAULT_TUNING;
@@ -45,11 +45,13 @@ function trackWithSeg3( seg3: ( i: number ) => Segment ): Track {
     return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ), anchors: [] };
 }
 
-function cruiseUntilHit( s: ReturnType< typeof spawnShip >, track: Track, ticks = 160 ): void {
+function cruiseUntilHit( s: ReturnType< typeof spawnShip >, track: Track, ticks = 160 ): Contact {
     s.vz = t.maxCruise;
     const inp = emptyInput();
     inp.throttle = 1;
-    for ( let i = 0; i < ticks && ! s.dead && s.stunTimer === 0; i++ ) simulate( s, inp, FIXED_DT, t, track );
+    let contact: Contact = null;
+    for ( let i = 0; i < ticks && ! s.dead && contact === null; i++ ) contact = simulate( s, inp, FIXED_DT, t, track );
+    return contact;
 }
 
 test( 'grounded on a floor resets jumpsUsed and records a safe anchor (jump contract preserved)', () => {
@@ -89,8 +91,11 @@ test( 'AABB wing-clip: a cube the ship CENTER misses but its wing overlaps still
         } ),
     );
     const s = spawnShip( 0, SEG_LEN * 2.5 );
-    cruiseUntilHit( s, track );
-    assert.ok( s.stunTimer > 0, 'wing overlap did not hit — collision is still point-sampling the centre' );
+    assert.notEqual(
+        cruiseUntilHit( s, track ),
+        null,
+        'wing overlap did not hit — collision is still point-sampling the centre',
+    );
     assert.equal( s.dead, false, 'a block hit killed instead of bouncing' );
     assert.ok( s.x + t.halfW <= 1.0 + 1e-3, `wing was not pushed clear of the cube face (x=${ s.x })` );
     assert.ok( s.z < SEG_LEN * 4, 'ship passed the whole cube segment without touching it' );
@@ -109,8 +114,7 @@ test( 'AABB wing-clear: the same lateral offset with the cube just past the wing
         } ),
     );
     const s = spawnShip( 0, SEG_LEN * 2.5 );
-    cruiseUntilHit( s, track, 200 );
-    assert.equal( s.stunTimer, 0, 'hit on a clear pass — halfW inflate is too wide' );
+    assert.equal( cruiseUntilHit( s, track, 200 ), null, 'hit on a clear pass — halfW inflate is too wide' );
     assert.equal( s.dead, false, 'killed on a clear pass' );
     assert.ok( s.z > SEG_LEN * 4, 'ship did not make it past the cube segment' );
 } );

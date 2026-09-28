@@ -32,6 +32,7 @@ export interface FlightTuning {
     bounceBack: number;
     bounceStun: number;
     grazeDepth: number;
+    scrapeKeep: number;
     smashKeep: number;
 
     deathY: number;
@@ -86,7 +87,8 @@ export const DEFAULT_TUNING: FlightTuning = {
     jumpBuffer: 0.1,
     bounceBack: 9,
     bounceStun: 0.25,
-    grazeDepth: 0.5,
+    grazeDepth: 1,
+    scrapeKeep: 0.9,
     smashKeep: 0.45,
     deathY: -6,
     stepTol: 0.3,

@@ -23,11 +23,9 @@ export function stepRacer(
     broadcast: Broadcast,
 ): void {
     const tuning = tuningForShip( player.shipId );
-    const stunBefore = player.stunTimer;
-    const vzBefore = player.vz;
-    simulate( player, input, dt, tuning, world.track, world.config, world.blocks );
+    const kind = simulate( player, input, dt, tuning, world.track, world.config, world.blocks );
     player.lastProcessedInput = input.seq;
-    const contact = bounceContact( player, stunBefore, vzBefore, dt, tuning );
+    const contact = bounceContact( player, kind, tuning );
     if ( ! contact ) return;
     const message: BounceMessage = { ...contact, victimId: sessionId };
     broadcast( BOUNCE_MESSAGE, message );

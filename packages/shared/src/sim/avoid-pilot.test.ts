@@ -147,9 +147,9 @@ export function fly( track: Track, t: FlightTuning, steer: Steer ): Flight {
             strafe: strafeToward( t, plan.target - s.x, s.vx ),
             jump: nextJump( jump, track, t, s, plan.jump ),
         };
-        simulate( s, input, FIXED_DT, t, track, DEFAULT_SIM_CONFIG, world );
+        const contact = simulate( s, input, FIXED_DT, t, track, DEFAULT_SIM_CONFIG, world );
         deaths( s.dead );
-        bumps( s.stunTimer > 0 );
+        bumps( contact !== null || s.stunTimer > 0 );
     }
     return {
         finished: s.finished,

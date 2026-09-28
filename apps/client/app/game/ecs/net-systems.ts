@@ -45,10 +45,8 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
         prev.y = s.y;
         prev.z = s.z;
         const tuning = tuningForShip( net.shipId );
-        const stunBefore = s.stunTimer;
-        const vzBefore = s.vz;
         const hopsBefore = s.portalHops;
-        simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+        const contact = simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
         froundSimShip( s );
         if ( s.portalHops !== hopsBefore ) {
             noteLocalHops( hopsBefore, s.portalHops, prev, s, blockWorld.portals.values() );
@@ -56,7 +54,7 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
             prev.y = s.y;
             prev.z = s.z;
         }
-        sparkIfBounced( s, stunBefore, vzBefore, dt, tuning );
+        sparkIfBounced( s, contact, tuning );
     } );
 }
 

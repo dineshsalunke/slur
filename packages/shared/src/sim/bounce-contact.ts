@@ -1,4 +1,5 @@
 import type { FlightTuning } from '../constants.js';
+import type { Contact } from './step.js';
 import type { SimShip } from './types.js';
 
 export const BOUNCE_MESSAGE = 'bounce';
@@ -13,18 +14,8 @@ export interface BounceMessage extends BounceContact {
     victimId: string;
 }
 
-export function bounceContact(
-    s: SimShip,
-    stunBefore: number,
-    vzBefore: number,
-    dt: number,
-    t: FlightTuning,
-): BounceContact | null {
-    if ( s.dead || s.stunTimer <= Math.max( 0, stunBefore - dt ) + 1e-6 ) return null;
-    const zFace = vzBefore !== 0 && Math.sign( s.vz ) !== Math.sign( vzBefore );
-    return {
-        x: zFace ? s.x : s.x - Math.sign( s.vx ) * t.halfW,
-        y: s.y,
-        z: zFace ? s.z - Math.sign( s.vz ) * t.halfL : s.z,
-    };
+export function bounceContact( s: SimShip, contact: Contact, t: FlightTuning ): BounceContact | null {
+    if ( s.dead || contact === null ) return null;
+    if ( contact.kind === 'hit' ) return { x: s.x, y: s.y, z: s.z - contact.dir * t.halfL };
+    return { x: s.x - contact.dir * t.halfW, y: s.y, z: s.z };
 }

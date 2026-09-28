@@ -38,12 +38,10 @@ function flyInto( track: Track, escapeStrafe: number ): HitEvent[] {
     const hits: HitEvent[] = [];
     let bounced = false;
     for ( let i = 0; i < TICKS; i++ ) {
-        const stunBefore = s.stunTimer;
-        const vzBefore = s.vz;
         const strafe = bounced ? escapeStrafe : 0;
-        simulate( s, { ...emptyInput( i ), throttle: 1, strafe }, FIXED_DT, t, track );
-        bounced ||= s.stunTimer > 0;
-        sparkIfBounced( s, stunBefore, vzBefore, FIXED_DT, t );
+        const contact = simulate( s, { ...emptyInput( i ), throttle: 1, strafe }, FIXED_DT, t, track );
+        bounced ||= contact !== null;
+        sparkIfBounced( s, contact, t );
     }
     drainHits( ( e ) => hits.push( e ) );
     return hits;
@@ -59,6 +57,12 @@ describe( 'sparkIfBounced', () => {
         expect( hits.length ).toBeGreaterThan( 0 );
         expect( hits[ 0 ].x ).toBeCloseTo( 0, 1 );
         expect( hits[ 0 ].z ).toBeCloseTo( 104, 0 );
+    } );
+
+    it( 'fires once at the side face when a wing clips the corner', () => {
+        const hits = flyInto( trackWith( t.halfW - 0.3, 20 ), 0 );
+        expect( hits.length ).toBe( 1 );
+        expect( hits[ 0 ].x ).toBeCloseTo( t.halfW - 0.3, 1 );
     } );
 
     it( 'fires again for each fresh bounce while the ship keeps driving into the wall', () => {

@@ -28,7 +28,7 @@ function pillar( x0: number ): Block {
     return { x0, x1: x0 + 4, y0: 0, y1: BLOCK_HEIGHT, z0: BLOCK_Z0, z1: BLOCK_Z1, id: 3 * 64, kind: 'sealed' };
 }
 
-type Outcome = 'glance' | 'stop' | 'miss';
+type Outcome = 'glance' | 'stop' | 'miss' | 'wrong';
 
 function flyPast( t: FlightTuning, clip: number, phase: number ): Outcome {
     const track = trackWith( pillar( t.halfW - clip ) );
@@ -38,8 +38,12 @@ function flyPast( t: FlightTuning, clip: number, phase: number ): Outcome {
     const inp = emptyInput();
     inp.throttle = 1;
     for ( let i = 0; i < 40; i++ ) {
-        simulate( s, inp, FIXED_DT, t, track );
-        if ( s.stunTimer > 0 ) return s.vz > 0 ? 'glance' : 'stop';
+        const contact = simulate( s, inp, FIXED_DT, t, track );
+        if ( contact?.kind === 'hit' ) return s.vz < 0 && s.stunTimer > 0 ? 'stop' : 'wrong';
+        if ( contact?.kind === 'scrape' ) {
+            const kept = Math.abs( s.vz - t.maxCruise * t.scrapeKeep ) < 1e-9;
+            return kept && s.stunTimer === 0 ? 'glance' : 'wrong';
+        }
     }
     return 'miss';
 }
@@ -57,47 +61,47 @@ function sweep( clip: number ): Map< Outcome, number > {
 
 const RUNS = Object.keys( SHIP_CLASSES ).length * PHASES;
 
-test( 'a clip shallower than grazeDepth glances at every sub-tick phase and every class', () => {
-    for ( const clip of [ 0.1, 0.2, 0.3, 0.4, 0.45 ] ) {
-        assert.equal( sweep( clip ).get( 'glance' ), RUNS, `clip ${ clip }u did not always glance` );
+test( 'a clip shallower than grazeDepth scrapes at scrapeKeep with no stun, every phase and class', () => {
+    for ( const clip of [ 0.1, 0.3, 0.5, 0.7, 0.9, 0.95 ] ) {
+        assert.equal( sweep( clip ).get( 'glance' ), RUNS, `clip ${ clip }u did not always scrape` );
     }
 } );
 
 test( 'a clip at or past grazeDepth hard-stops at every sub-tick phase and every class', () => {
-    for ( const clip of [ 0.55, 0.6, 0.7, 0.8 ] ) {
+    for ( const clip of [ 1, 1.2, 1.6 ] ) {
         assert.equal( sweep( clip ).get( 'stop' ), RUNS, `clip ${ clip }u did not always stop` );
     }
 } );
 
-test( 'a glance nudges the hull off the face and the ship flies on past the block', () => {
+test( 'a scrape nudges the hull off the face and the ship flies on past the block', () => {
     const t = SHIP_CLASSES.fighter.tuning;
     const track = trackWith( pillar( t.halfW - 0.3 ) );
     const s = spawnShip( 0, BLOCK_Z0 - 10 );
     s.vz = t.maxCruise;
     const inp = emptyInput();
     inp.throttle = 1;
-    let bounces = 0;
+    let contacts = 0;
     for ( let i = 0; i < 60; i++ ) {
-        const before = s.stunTimer;
-        simulate( s, inp, FIXED_DT, t, track );
-        if ( s.stunTimer > before ) bounces += 1;
+        if ( simulate( s, inp, FIXED_DT, t, track ) !== null ) contacts += 1;
+        assert.equal( s.stunTimer, 0, 'a scrape stunned the ship' );
     }
-    assert.equal( bounces, 1 );
+    assert.equal( contacts, 1 );
     assert.ok( s.x + t.halfW <= t.halfW - 0.3, `hull still overlaps the pillar at x=${ s.x }` );
     assert.ok( s.z - t.halfL > BLOCK_Z1, `ship never cleared the block (z=${ s.z })` );
 } );
 
-test( 'strafing into the side of a block resolves on the side face at any depth', () => {
+test( 'strafing into the side of a block scrapes on the side face with no stun', () => {
     const t = SHIP_CLASSES.fighter.tuning;
     const track = trackWith( pillar( 5 ) );
     const s = spawnShip( 5 - t.halfW - 0.2, ( BLOCK_Z0 + BLOCK_Z1 ) / 2 );
-    s.vz = 20;
+    s.vz = t.maxCruise;
     s.vx = t.strafeClamp;
     const inp = emptyInput();
+    inp.throttle = 1;
     inp.strafe = 1;
-    simulate( s, inp, FIXED_DT, t, track );
-    assert.ok( s.stunTimer > 0, 'the strafe never reached the block' );
+    assert.deepEqual( simulate( s, inp, FIXED_DT, t, track ), { kind: 'scrape', dir: -1 } );
+    assert.equal( s.stunTimer, 0 );
     assert.equal( s.vx, -t.bounceBack );
-    assert.ok( s.vz > 0, `a side hit stopped the ship dead (vz=${ s.vz })` );
+    assert.ok( s.vz >= t.maxCruise * t.scrapeKeep - 1e-9, `a side hit cost more than a scrape (vz=${ s.vz })` );
     assert.ok( s.x + t.halfW < 5, `hull left inside the block at x=${ s.x }` );
 } );

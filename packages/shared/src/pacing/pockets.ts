@@ -193,8 +193,8 @@ export function squeezesThrough( track: Track, t: FlightTuning, a: SqueezeAttemp
         const err = a.toX - s.x;
         if ( Math.abs( err ) < ARRIVE_U && Math.abs( s.vx ) < ARRIVE_VX ) return true;
         input.strafe = strafeToward( t, err, s.vx );
-        simulate( s, input, DT, t, track );
-        if ( s.dead || s.stunTimer > 0 ) return false;
+        const contact = simulate( s, input, DT, t, track );
+        if ( s.dead || s.stunTimer > 0 || contact !== null ) return false;
     }
     return false;
 }

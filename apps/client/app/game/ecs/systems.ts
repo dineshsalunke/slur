@@ -13,10 +13,8 @@ export function localFlightSystem( world: World, dt: number, track: Track ): voi
         prev.y = s.y;
         prev.z = s.z;
         const tuning = tuningForShip( net.shipId );
-        const stunBefore = s.stunTimer;
-        const vzBefore = s.vz;
-        simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
-        sparkIfBounced( s, stunBefore, vzBefore, dt, tuning );
+        const contact = simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+        sparkIfBounced( s, contact, tuning );
     } );
 }
 

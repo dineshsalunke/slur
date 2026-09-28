@@ -784,6 +784,36 @@ change, and **1** after (0.0005u slack, which no ship can enter). A bolt-stunned
 block now stops dead with no extra stun (owner). `sim/pocket.test.ts` scans every pocket with slack
 ≥ 0.01u.
 
+### As-built — a side hit scrapes (#334)
+
+The owner said: *"sidehit should not really reduce the speed; if we want to it should be very less, ~10%
+is ok."* Before this change, a side contact stunned the ship like a head-on hit.
+
+- **A side push is a scrape.** `bounceOffBlock()` pushes the hull out on x and keeps the lateral kick. It
+  multiplies `vz` by the new `FlightTuning.scrapeKeep` (**0.9**). It does **not** stun, so the throttle
+  stays live. A push on z is unchanged: `-bounceBack` plus `bounceStun`.
+- **`grazeDepth` is 1.0u** (was 0.5u). A nose-in clip shallower than 1.0u slides off the corner.
+- **Only a fresh contact costs speed.** A held strafe floors `vx` at `strafeKick` every tick, so the hull
+  re-touches the face every tick. A side contact is fresh only when the previous tick's gap to the face
+  was more than `2 × BOUNCE_CLEARANCE`. Flush re-contacts cost nothing and report nothing.
+- **Corner entry uses the swept entry fraction.** When the hull was outside the block on both axes last
+  tick, the axis it crossed later decides the face.
+- **`simulate()` returns the contact** — `{ kind: 'hit' | 'scrape', dir }` or `null`. `bounceContact()`
+  places the spark from it, not from a rise in `stunTimer`. A scrape throws a spark only. It has no sound
+  and no blink, because both key off `stunTimer`.
+
+Measured on `dist` with `simulate()`, throttle held, all 5 classes:
+
+| Case | Before | After |
+|---|---|---|
+| 0.8u straight clip | `vz` → -9, stun | `vz` → 0.9 × cruise, time lost 0.006–0.020 s |
+| 4 s strafe held into a wall | `vz` → 0 in about 3 s | one 10% loss, back to cruise |
+| Head-on (clip ≥ 1.0u) | `-bounceBack` + stun | unchanged |
+
+`sim/scrape.test.ts` and `sim/graze.test.ts` hold these. The pilot harnesses (`avoid-pilot.test.ts`,
+`pacing/pockets.ts`) now count a scrape as a bump, so the phrase/weave/groove gates and the track digest
+are unchanged.
+
 ### Not decided here
 
 The local ship throws the hit spark on a predicted bounce (`afb2642`,
