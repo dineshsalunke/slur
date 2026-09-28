@@ -2,8 +2,10 @@ import os from 'node:os';
 import { LobbyRoom, Server } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import { ROOM_NAME } from '@slur/shared';
+import { createQuota } from './create-quota.js';
 import { FailedJoinLimit } from './failed-join-limit.js';
 import { mountHttp } from './http.js';
+import { MAX_PAYLOAD_BYTES } from './limits.js';
 import { installMatchmakeGuard } from './matchmake-guard.js';
 import { RunRoom } from './rooms/run-room.js';
 
@@ -21,14 +23,14 @@ function lanAddress(): string {
 }
 
 const gameServer = new Server( {
-    transport: new WebSocketTransport(),
+    transport: new WebSocketTransport( { maxPayload: MAX_PAYLOAD_BYTES } ),
     express: ( app ) => mountHttp( app, clientDir ),
     greet: false,
 } );
 
 gameServer.define( ROOM_NAME, RunRoom ).enableRealtimeListing();
 gameServer.define( 'lobby', LobbyRoom );
-installMatchmakeGuard( [ new FailedJoinLimit() ] );
+installMatchmakeGuard( [ new FailedJoinLimit(), createQuota ] );
 
 gameServer
     .listen( port, host )

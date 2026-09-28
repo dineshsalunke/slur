@@ -1,4 +1,11 @@
-import { type Client, Room, ServerError } from '@colyseus/core';
+import {
+    type AuthContext,
+    type Client,
+    Room,
+    type RoomException,
+    type RoomMethodName,
+    ServerError,
+} from '@colyseus/core';
 import {
     CHAT_HISTORY_MESSAGE,
     CHAT_LINE_MESSAGE,
@@ -18,11 +25,15 @@ import {
     type RunMetadata,
     RunSim,
     type RunState,
+    SERVER_FULL_CODE,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
     START_MESSAGE,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
+import { clientIp } from '../client-ip.js';
+import { createQuota } from '../create-quota.js';
+import { MAX_MESSAGES_PER_SECOND, SEAT_RESERVATION_SECONDS } from '../limits.js';
 import { logEvent, phaseLogger } from '../log.js';
 import { ChatLog } from './chat-log.js';
 import { roomCodes } from './room-codes.js';
@@ -31,17 +42,21 @@ const RECONNECT_SECONDS = 20;
 
 export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > {
     maxClients = 12;
+    maxMessagesPerSecond = MAX_MESSAGES_PER_SECOND;
+    seatReservationTimeout = SEAT_RESERVATION_SECONDS;
 
     sim!: RunSim;
 
     readonly chat = new ChatLog();
 
     onCreate( options?: RunCreateOptions ): void {
+        if ( createQuota.full() ) throw new ServerError( SERVER_FULL_CODE, 'The server is full' );
         const listed = isPublicCreate( options );
         if ( listed && roomCodes.publicRoom() !== null ) {
             throw new ServerError( PUBLIC_ROOM_TAKEN_CODE, 'Quick play is full' );
         }
         this.roomId = roomCodes.claim();
+        createQuota.opened( this.roomId );
         if ( listed ) roomCodes.claimPublic( this.roomId );
         else void this.setPrivate( true );
         const envGen = process.env.SLUR_TRACK_GEN;
@@ -79,7 +94,12 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.setSimulationInterval( ( deltaMs ) => this.sim.advance( deltaMs / 1000 ) );
     }
 
-    onJoin( client: Client, options?: { name?: string } ): void {
+    onAuth( _client: Client, _options: unknown, context: AuthContext ): boolean {
+        createQuota.owned( this.roomId, clientIp( context ), Date.now() );
+        return true;
+    }
+
+    onJoin( client: Client, options?: { name?: unknown } ): void {
         this.sim.join( client.sessionId, options?.name );
         logEvent( 'client.join', { room: this.roomId, session: client.sessionId, players: this.state.players.size } );
     }
@@ -108,7 +128,12 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
     onDispose(): void {
         roomCodes.release( this.roomId );
+        createQuota.closed( this.roomId );
         logEvent( 'room.dispose', { room: this.roomId } );
+    }
+
+    onUncaughtException( error: RoomException, method: RoomMethodName ): void {
+        logEvent( 'room.error', { room: this.roomId, method, error: JSON.stringify( error.message ) } );
     }
 
     private postChat( client: Client, text: unknown ): void {

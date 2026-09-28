@@ -4,6 +4,8 @@ export const ROOM_CODE_LENGTH = 5;
 export const ROOM_NOT_FOUND_CODE = 522;
 export const PUBLIC_ROOM_TAKEN_CODE = 409;
 export const TOO_MANY_WRONG_CODES_CODE = 429;
+export const CREATE_LIMIT_CODE = 430;
+export const SERVER_FULL_CODE = 503;
 
 export interface RunCreateOptions {
     name?: string;

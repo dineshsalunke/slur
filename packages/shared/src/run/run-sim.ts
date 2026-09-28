@@ -161,9 +161,9 @@ export class RunSim {
         if ( p && isSlot( msg?.slot ) ) dropPower( p, msg.slot );
     }
 
-    join( sessionId: string, name?: string ): void {
+    join( sessionId: string, name?: unknown ): void {
         const p = new PlayerState();
-        p.name = name?.trim().slice( 0, MAX_NAME ) || 'Racer';
+        p.name = ( typeof name === 'string' ? name.trim().slice( 0, MAX_NAME ) : '' ) || 'Racer';
         p.colorId = this.state.players.size % COLOR_COUNT;
         p.spectating = shouldSpectateOnJoin( this.state.phase );
         if ( ! p.spectating ) {

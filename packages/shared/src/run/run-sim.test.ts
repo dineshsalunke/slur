@@ -34,6 +34,18 @@ test( 'only the host starts the run, and the countdown hands over to racing', ()
     assert.deepEqual( metas.at( -1 ), { hostName: 'Host', phase: PHASE.racing } );
 } );
 
+test( 'join names a racer from a string only, trimmed and capped (#339)', () => {
+    const { sim } = harness();
+    sim.join( 'a', 42 );
+    sim.join( 'b', { toString: 'x' } );
+    sim.join( 'c', '   ' );
+    sim.join( 'd', '  Ann the very long call sign  ' );
+    assert.equal( sim.state.players.get( 'a' )?.name, 'Racer' );
+    assert.equal( sim.state.players.get( 'b' )?.name, 'Racer' );
+    assert.equal( sim.state.players.get( 'c' )?.name, 'Racer' );
+    assert.equal( sim.state.players.get( 'd' )?.name, 'Ann the very lon' );
+} );
+
 test( 'a zero countdown starts the run straight into racing', () => {
     const sim = new RunSim(
         procgenDescriptor( 1 ),
