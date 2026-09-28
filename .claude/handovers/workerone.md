@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #354 fake deck reflections (owner-approved A+B+C) · Updated: 2026-09-28 23:30
+Agent: workerone · Lane: #354 fake deck reflections (owner-approved A+B+C) · Updated: 2026-09-28 23:59
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -14,76 +14,71 @@ scene-effects.
 
 ## Done
 
-- `3c576aa` part 1, **typecheck + lint + 318 scene tests pass, NOT verified on screen**:
-  - `deck-reflection/deck-reflection.ts`: shared uniforms, `updateReflection( u, deckMat )`,
-    `streakMaterial( shared, emitterGlsl, extra )`, `streakQuads( slots )`. Each source provides
-    GLSL `bool reflEmitter( out vec3 base, out float h0, out float h1, out float power, out float point )`.
-    Streak length is the mirror geometry `d·h/(H+h)`. Fragment: line/spot profile, distance fade,
-    grazing, deck roughness fetched per plate via `deckTileUv`.
-  - `deck-reflection/rail-sheen.ts`: deck patch (chainShaderPatch, tag `rail-sheen`), injected after
-    `#include <emissivemap_fragment>`, uses `roughnessFactor`. Wired in `track-floor.tsx`.
-  - `deck-reflection/deck-reflection.state.ts`: `reflection` singleton, updated in TrackFloor useFrame.
-  - `block-reflections/`: InstancedMesh sharing the sealed blocks' instanceMatrix + aSealedSeams +
-    aSealedVariation; count and matrix synced in `onBeforeRender`; `dispose={null}`. Mounted in
-    `track-blocks.tsx`. Culls seams on faces turned away from the camera.
-  - `deck-breakup.ts` now exports `DECK_HASH_GLSL` and `DECK_TILE_GLSL` (same emitted text).
-  - `Reflect.*` dials in `tuning-schema.ts` (strength, stretch, length, width, falloff, fadeNear,
-    fadeFar, grazing, roughMix, railSpread, rail, block, pickup, exhaust).
+- `3c576aa` part 1: rail sheen (deck patch) + block-seam streaks. Shared streak shader in
+  `deck-reflection/deck-reflection.ts`.
+- `668df76` FIX: 3c576aa blacked the main view (NaN). Cause: spot profile
+  `exp( - pow( ( v - centre ) * 2.5, 2.0 ) )`, pow of a negative base. Now squared by
+  multiplication, quad varyings clamped. Reported to supervisor.
+- `f0562e7` pickups + exhausts + tuned defaults:
+  - `pickup-reflections/`: InstancedMesh, one quad per pickup anchor, matrix = translation,
+    `m[0]` = alive (0 when taken). Mounted in `pickup-field.tsx`. Utils test added.
+  - `exhaust-reflections/`: shares ExhaustField's instanceMatrix + aDrive via onBeforeRender, plus
+    new `aDeckY` (floorBelow per ship, `NO_FLOOR` = -1e5 → skipped). Reach 6u.
+  - Defaults: stretch 1.5, length 36, width 0.6, rail 1, block 0.6, pickup 1.5, exhaust 0.3.
+    Spot factor 2.5 → 3.5 (soft ends).
 
 ## State
 
-- workertwo #350 (committing soon): aSealedSeams layout unchanged, count can be 4, extra seams on
-  the front face. The block emitter decodes every slot, so it is compatible [inferred from code].
-- Default dial values are guesses. Tune them on screen.
-- Draw cost: +1 draw so far (blocks); rails +0 [unmeasured].
+- On screen [measured, headless DPR 1, /test-level]: block seams cast columns toward the camera,
+  pickup casts a line to the ship, exhaust a soft streak behind the ship, rail sheen reads on the
+  right rim (left rim is washed out by the white sky light on the deck). Shots in session scratchpad
+  only (lost on clear); driver recipe below.
+- Perf [measured, DPR 1 1728×1080, GPU-synced median, best of 2, owner tab may share GPU]:
+  low on 3.40 / off 3.20 / no rail patch 3.10 ms, draws 49 vs 46;
+  high on 9.60 / off 7.90 / no rail patch 8.00 ms, draws 129 vs 123 (rear view doubles streak draws).
+  high runs were noisy (16.1 / 9.6 on). The +1.7 ms at high is [unconfirmed]; rerun before the ADR.
+  Draws 129 is under the 200 soft cap.
+- Gap-lip artefact count over a drive: [unmeasured].
+- Driver recipe: playwright-core from `~/.npm/_npx/9833c18b2d85bc59`, system Chrome `--headless=new`
+  `--force-device-scale-factor=1 --mute-audio`; tuning through `slur.tuning.v1` localStorage; use
+  `page.screenshot` (canvas toDataURL gives black); place ship via loaderData room
+  `sim.state.players.get(sessionId)` x/z/lastSafeX/lastSafeZ. Draw count: init-script wrapper on
+  `HTMLCanvasElement.prototype.getContext`. Rail-off: `page.route` rewrite of `track-floor.tsx`
+  `patchRailSheen( mat, reflection )` → `0`. perf skill's `perf.mjs` needs a StoreExpose edit — avoided.
 
 ## Uncommitted
 
-- none of mine. The tree shows workertwo's #350 files as modified (sealed-block-variation*,
-  track-blocks.utils*). Not mine, do not commit them.
+- none of mine. `scene-backdrop/*` modified in the tree are NOT mine.
 
 ## Held files
 
-- Claimed and cleared: `deck-reflection/*`, `block-reflections/*`, `pickup-reflections/*` (new),
-  `exhaust-reflections/*` (new), `track-floor/track-floor.tsx`, `track-blocks/track-blocks.tsx`,
-  `pickup-field.tsx`, `exhaust-field/exhaust-field.tsx` + `exhaust-field.utils.ts`,
-  `dev/tuning-schema.ts`, `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`.
-  Part 2 adds `track-materials.ts` (claim it when you get there).
+- `deck-reflection/*`, `block-reflections/*`, `pickup-reflections/*`, `exhaust-reflections/*`,
+  `track-floor/track-floor.tsx`, `track-blocks/track-blocks.tsx`, `pickup-field.tsx`,
+  `exhaust-field/*`, `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`.
+- `dev/tuning-schema.ts`: supervisor handoff — do NOT edit until the supervisor says workerthree's
+  envMapIntensity deletion (#355) has landed. My Reflect defaults are already committed (f0562e7).
+- Part 2 adds `track-materials.ts` (claim it first).
 
 ## Next
 
-1. **Pickups:** `pickup-reflections/pickup-reflections.tsx` (+ `.utils.ts`, `.constants.ts` GLSL).
-   Use a plain `<mesh>` with an `InstancedBufferGeometry` (streakQuads(1)) plus an instanced
-   `aPickup` vec4 (x, deckY = anchor.y, z, alive), built once from `pickupsOf( track )`. Per frame,
-   loop the anchors, set alive = !isPickupTaken(id), and set needsUpdate only when a value flips.
-   Emitter: point = 1, h0 = h1 = PICKUP_HOVER (combat-look.ts, 3.2). Gain = Reflect.pickup. Mount it
-   in `pickup-field.tsx`. Add a utils test.
-2. **Exhausts:** add an `aDeckY` InstancedBufferAttribute(MAX_PLUMES). In `writeShip` (pass track),
-   compute `floorBelow( track, x, y, z )` once per ship (`ship-shadow/ship-shadow.utils.ts`); use
-   -1e5 when there is no floor. `exhaust-reflections.tsx`: InstancedMesh sharing ExhaustField's
-   instanceMatrix + aDrive + aDeckY via onBeforeRender, `dispose={null}`. Emitter: origin =
-   instanceMatrix[3].xyz, h = origin.y − aDeckY, skip if h < 0 or h > ~6, power = aDrive.z.
-   Gain = Reflect.exhaust.
-3. Verify on /test-level in headless Chrome (DPR 1, muted, kill it afterwards): look against the
-   golden crop, then tune the defaults. Check that the rail sheen shows and that the block streaks
-   point toward the camera.
-4. Measure (perf-analysis skill, `scripts/perf.mjs`): `?quality=low` and `?quality=high`, reflections
-   off vs on, count draws. Count gap-lip artefacts over a drive.
-5. ADR in `docs/DECISIONS.md` + ART_MATERIALS note. Commit. Close #354 with SHAs after part 2.
-6. **Part 2 (separate commit):** (a) widen Wear ranges (metalMin/metalMax, roughSpan, valueSpan),
-   with before/after taps. (b) Deck anisotropy. The supervisor verified that in three 0.185.1,
-   Standard and Physical compile ONE 'physical' program (WebGLPrograms.js:36-37), and anisotropy
-   compiles only when > 0 (WebGLPrograms.js:140). So use MeshPhysicalMaterial with the extras at 0.
-   Do NOT hand-copy chunks. Check that `#define PHYSICAL` (ior/specularIntensity) is a no-op at
-   metalness 1. Measure the low tier before excluding it. Dials Deck.anisotropy +
-   Deck.anisotropyRotation (along the track); consider anisotropyMap for brushed scratches. Check
-   that chainShaderPatch/deck-breakup still work. workerthree may send Metal.baseColor/roughness
-   values to fold in.
+1. Rerun the perf at high (3 reps) alone on the GPU to confirm or drop the +1.7 ms.
+2. Count gap-lip artefacts over a drive (streak drawn where the deck has a hole). Report the rate.
+3. ADR in `docs/DECISIONS.md` + ART_MATERIALS note (element → material map: reflections are
+   additive accent, tone-mapped). Commit.
+4. **Part 2 (separate commit):** (a) widen Wear ranges (metalMin/metalMax, roughSpan, valueSpan)
+   with before/after taps. (b) Deck anisotropy via MeshPhysicalMaterial with extras at 0 (three
+   0.185.1 compiles Standard and Physical as one 'physical' program; anisotropy compiles only when
+   > 0). Check `#define PHYSICAL` is a no-op at metalness 1. Measure the low tier. Dials
+   Deck.anisotropy + Deck.anisotropyRotation (after the tuning-schema handoff clears). Check
+   chainShaderPatch / deck-breakup / rail-sheen still work. workerthree may send Metal values.
+5. Close #354 with SHAs after part 2.
 
 ## Open questions
 
-- none new. RFC-349 §8 Q1–Q10 are still with the owner.
+- Left rim sheen is invisible under the white sky light on the deck. Accept, or raise rail gain?
+  (owner, via supervisor)
 
 ## Lessons → memory
 
-- `.claude/memory/share-instance-buffers-via-onbeforerender.md`
+- Updated `.claude/memory/msaa-edge-samples-extrapolate-varyings.md` (second incident: `pow(x, 2.0)`
+  on a signed value; triage by zeroing gains through `slur.tuning.v1`).

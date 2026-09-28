@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: b15452d0-891e-4b6d-80ea-7b16cea185ff
-  modified: 2026-09-23T20:29:32.311Z
+  modified: 2026-09-28T18:07:03.238Z
 ---
 
 With composer MSAA on, the fragment shader runs at the pixel centre even when the centre is
@@ -24,6 +24,10 @@ without the method below.
   `/node_modules/.vite/deps/postprocessing.js?v=…` is the page's own instance). After each render,
   `readRenderTargetPixels( this.inputBuffer, … , Uint16Array )` and count half-floats with exponent
   `0x7c00` and a non-zero mantissa. Then hide `scene.children[i]` one at a time until the count is 0.
+- Never square with `pow( x, 2.0 )` — write `x * x`. Second incident 2026-09-28 (#354, 3c576aa →
+  fixed 668df76): a streak spot profile `exp( - pow( v - centre, 2.0 ) )` was NaN on every fragment
+  before its centre, not just at edges, and blacked the main view on a fresh page. Fast triage: set
+  the feature's gains to 0 through `slur.tuning.v1`; if the frame comes back, it is that shader.
 - Do not add a scene-wide NaN scrub unless a second source appears. Supervisor ruling, 2026-09-24.
 
 Related: [[sub-pixel-geometry-drops-out-without-aa]], [[drive-the-live-module-not-a-reload]].

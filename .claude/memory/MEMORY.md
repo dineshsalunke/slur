@@ -38,7 +38,7 @@ One line per memory; each memory lives in its own file here.
 - [Check the CDP port is yours](check-the-cdp-port-is-yours.md) — a taken port fails silently; you steer another agent's tab
 - [Count draw calls without repo edits](count-draw-calls-without-repo-edits.md) — CDP-inject a WebGL + rAF wrapper; ms is JS only
 - [Owner may waive issue filing](owner-may-waive-issue-filing.md) — "no issue, go ahead" means build without one
-- [MSAA edge samples extrapolate varyings](msaa-edge-samples-extrapolate-varyings.md) — `pow` on unclamped varying → NaN → black bloom; clamp
+- [MSAA edge samples extrapolate varyings](msaa-edge-samples-extrapolate-varyings.md) — `pow` on a negative base → NaN → black bloom; clamp, and square as x*x
 - [Narrow headless captures need a CDP viewport](narrow-headless-captures-need-cdp-viewport.md) — `--window-size` crops; use `setDeviceMetricsOverride`
 - [A sweep that hits its bound fakes a reading](a-sweep-that-hits-its-bound-fakes-a-reading.md) — clipped window; test no-input first
 - [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer multisampling 0; <1 px strips vanish; verify dials applied
