@@ -1,9 +1,15 @@
 import { resolve } from 'node:path';
 import express, { type Application } from 'express';
+import { renderMetrics } from './metrics.js';
 
 export function mountHttp( app: Application, clientDir: string | undefined ): void {
     app.get( '/healthz', ( _req, res ) => {
         res.status( 200 ).type( 'text/plain' ).send( 'ok' );
+    } );
+
+    app.get( '/metrics', async ( _req, res ) => {
+        res.setHeader( 'Cache-Control', 'no-store' );
+        res.type( 'text/plain; version=0.0.4' ).send( await renderMetrics() );
     } );
 
     if ( ! clientDir ) return;
