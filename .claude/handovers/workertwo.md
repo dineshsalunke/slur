@@ -17,7 +17,11 @@ Agent: workertwo · Lane: #349 architecture RFC — my section: net / input / cl
 - Today, keyboard (keyboard.ts, power-select.ts): W/↑ throttle · S/↓ brake · A/D or ←/→ strafe · Space jump · E fire forward · F fire back · Q next power · R previous power · 1/2/3 select slot · X drop · M mute.
 - Today, gamepad (gamepad.ts PAD_KEYS): RT throttle · LT brake · left stick or d-pad ←/→ strafe · A jump · B(1) F back · X(2) E · RB(5) E · Y(3) Q · LB(4) Q · Back(8) M · Start(9) Enter.
 - Dev keys that can clash: V rear-view toggle (dev/rear-view-toggle.ts, DEV only) · Backquote panel · P freeze · T flight recorder · Backspace reset · Shift+1–5 ship class (test-level). Spectator: Tab / ←/→.
-- Blur research: a researcher subagent was launched this seam. Its result had not arrived at pause time. Re-run it if it is lost. It must cite the manual.
+- Blur research is done. Source: the official Blur PC Manual, p.2 "Controls", https://www.scribd.com/document/613527396/Blur-PC-Manual (page scan viewed this session). The console tables come from a third-party guide, pp.19–20, https://www.scribd.com/document/667374813/blur-manual. Its PC table is word-for-word the same as the manual.
+  - PC (verified): Q accelerate · A brake/reverse · ←/→ steer · ↓ handbrake · Right Ctrl fire · Left Shift force fire forward · Right Shift force fire back · ↑ toggle (cycle) power-up · Left Ctrl drop · Tab look back · V camera · P pause · Delete minimap zoom.
+  - Xbox 360 (guide): RT accelerate · LT brake · left stick or d-pad steer · A fire · B handbrake · X toggle power-up · LB toggle power-up · Y drop · RB camera · Back standings · Start pause · right stick camera. There is NO separate fire-back button listed for consoles. The console fire-back mechanism is UNVERIFIED.
+  - Blur cycles power-ups one way only (a single "Toggle"). SLUR has Q next plus R previous.
+  - Clashes if copied literally: Blur Q = accelerate but SLUR Q = next power · Blur V = camera but dev V = mirror · Blur P = pause but dev P = freeze · Blur Tab = look back but spectator Tab = cycle target. Blur has no jump. Candidates for jump: Space on keyboard, since Blur puts Space on menus only; B on the pad, since Blur's handbrake has no SLUR equivalent. [inferred proposal, not agreed]
 
 ## Uncommitted
 none.
