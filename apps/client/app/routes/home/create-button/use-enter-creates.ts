@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { isBareEnter } from '../../ship/ship-keys';
-import { MENU_FORM } from './menu-form';
+import { isBareEnter } from '../../../ship/ship-keys';
+import { MENU_FORM } from '../menu-form';
 
-export function useEnterHosts() {
-    // Syncs with the browser keyboard: a bare Enter anywhere on the menu submits the host form.
+export function useEnterCreates() {
+    // Syncs with the browser keyboard: a bare Enter anywhere on the menu submits the create form.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
             if ( ! isBareEnter( e ) ) return;

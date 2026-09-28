@@ -2,6 +2,7 @@ import type { Room } from '@colyseus/sdk';
 import {
     descriptorReady,
     ROOM_NAME,
+    type RunCreateOptions,
     type RunState,
     SET_CLASS_MESSAGE,
     type TrackDescriptor,
@@ -54,8 +55,14 @@ async function enter( joining: Promise< Room< RunState > > ): Promise< Room< Run
     return room;
 }
 
-export function hostRoom( name: string ): Promise< Room< RunState > > {
-    return enter( getClient().create< RunState >( ROOM_NAME, { name } ) );
+export function quickPlay( name: string ): Promise< Room< RunState > > {
+    const options: RunCreateOptions = { name, public: true };
+    return enter( getClient().joinOrCreate< RunState >( ROOM_NAME, options ) );
+}
+
+export function createPrivate( name: string ): Promise< Room< RunState > > {
+    const options: RunCreateOptions = { name };
+    return enter( getClient().create< RunState >( ROOM_NAME, options ) );
 }
 
 export function joinRoom( roomId: string, name: string ): Promise< Room< RunState > > {

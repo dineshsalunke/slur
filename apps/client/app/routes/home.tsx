@@ -1,12 +1,13 @@
+import { normalizeRoomCode } from '@slur/shared';
 import { Fragment } from 'react';
 import { redirect } from 'react-router';
-import { RoomList } from '../lobby/room-list/room-list';
-import { hostRoom, joinLobby, joinRoom, leaveRoom } from '../net/matchmaking';
+import { createPrivate, joinLobby, joinRoom, leaveRoom, quickPlay } from '../net/matchmaking';
 import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { NAME_KEY } from './home/call-sign-field/call-sign-field.constants';
 import { LandingScene } from './home/landing-scene/landing-scene';
-import { MENU_FORM, RUN_CLOSED } from './home/menu-form';
+import { BAD_CODE, NO_CODE, RUN_CLOSED } from './home/menu-form';
+import { menuErrorFor, menuIntent } from './home/menu-form.utils';
 import { MenuStrip } from './home/menu-strip/menu-strip';
 
 export function meta( _args: Route.MetaArgs ) {
@@ -26,15 +27,21 @@ export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
 export async function clientAction( { request }: Route.ClientActionArgs ) {
     const form = await request.formData();
     const name = String( form.get( 'name' ) ?? '' ).trim() || 'Racer';
-    const join = form.get( 'join' );
+    const intent = menuIntent( form.get( 'intent' ) );
+    const typed = String( form.get( 'code' ) ?? '' ).trim();
+    const code = normalizeRoomCode( typed );
     localStorage.setItem( NAME_KEY, name );
+    if ( intent === 'join' && ! code ) return { error: typed ? BAD_CODE : NO_CODE };
     try {
-        const room = typeof join === 'string' && join ? await joinRoom( join, name ) : await hostRoom( name );
+        const room =
+            intent === 'join' && code
+                ? await joinRoom( code, name )
+                : intent === 'quick'
+                  ? await quickPlay( name )
+                  : await createPrivate( name );
         return redirect( `/game/${ room.roomId }` );
-    } catch {
-        return {
-            error: join ? RUN_CLOSED : 'Could not reach the server. Check the connection and try again.',
-        };
+    } catch ( error ) {
+        return { error: menuErrorFor( intent, code ?? typed, error ) };
     }
 }
 
@@ -60,10 +67,9 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                             Race your friends. Wreck their run.
                         </h2>
                         <p className="m-0 mt-3 max-w-[60ch] text-[16px] leading-[1.5] text-readout text-shadow-readout">
-                            Host a room, send your crew the link, and drop into the next round.
+                            Create a room and send your crew the code, or drop into quick play.
                         </p>
                     </section>
-                    <RoomList form={ MENU_FORM } />
                 </div>
 
                 <MenuStrip savedName={ loaderData.savedName } />

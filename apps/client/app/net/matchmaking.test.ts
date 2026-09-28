@@ -1,8 +1,8 @@
 import type { Room } from '@colyseus/sdk';
-import type { RunState } from '@slur/shared';
+import { ROOM_NAME, type RunState } from '@slur/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectionStatus } from './connection-status';
-import { hostRoom, joinByLink, joinLobby, joinRoom, leaveRoom, waitForDescriptor } from './matchmaking';
+import { createPrivate, joinByLink, joinLobby, joinRoom, leaveRoom, quickPlay, waitForDescriptor } from './matchmaking';
 import { session } from './session';
 
 const client = vi.hoisted( () => ( {
@@ -145,12 +145,26 @@ describe( 'room lifetime (#271)', () => {
         const second = fakeRoom( 'b' );
         client.create.mockResolvedValueOnce( first.typed ).mockResolvedValueOnce( second.typed );
 
-        await hostRoom( 'p' );
-        await hostRoom( 'p' );
+        await createPrivate( 'p' );
+        await createPrivate( 'p' );
 
         expect( first.room.leave ).toHaveBeenCalledOnce();
         expect( second.room.leave ).not.toHaveBeenCalled();
         expect( session.room ).toBe( second.typed );
+    } );
+
+    it( 'createPrivate creates a room without the public flag (#340)', async () => {
+        client.create.mockResolvedValueOnce( fakeRoom( 'K7QXM' ).typed );
+        await createPrivate( 'p' );
+        expect( client.create ).toHaveBeenCalledWith( ROOM_NAME, { name: 'p' } );
+    } );
+
+    it( 'quickPlay joins or creates the one public room (#340)', async () => {
+        const run = fakeRoom( 'K7QXM' );
+        client.joinOrCreate.mockResolvedValueOnce( run.typed );
+        await quickPlay( 'p' );
+        expect( client.joinOrCreate ).toHaveBeenCalledWith( ROOM_NAME, { name: 'p', public: true } );
+        expect( session.room ).toBe( run.typed );
     } );
 
     it( 'a consented leave clears the room without reporting a lost connection', async () => {
