@@ -4,7 +4,8 @@ instruction per sentence. See CONTRIBUTING.md §8. -->
 # RFC-349 — Architecture: feature modules, ECS drift, server-owned game config
 
 - **Issue:** #349 · **Status:** DRAFT (not approved) · **Lead:** workerone · **Updated:** 2026-09-28
-- **Authors:** §1, §3, §6, §7 workerone · §4 workertwo (merged) · §5 workerthree (pending). One voice.
+- **Authors:** §1, §3, §6, §7 workerone · §4 workertwo (merged, incl. the net half §4.4–4.5) · §5
+  workerthree (pending). One voice.
 - **Scope:** this RFC proposes. It changes no source. Each stage in §7 needs its own issue and owner approval.
 - **Owner direction (2026-09-28, via the supervisor):** organise code as **feature modules**. A feature
   folder exports its traits, systems and views by a convention, and the engine wires them. The goal is to
@@ -25,6 +26,8 @@ The rest of the RFC supports that shape:
 - §6.1 sets one rule for where state lives inside a module (entity, tag, world trait or service).
 - §4.3 B gives server-owned room config. Each module declares its own Rules defaults.
 - §4.3 A gives one event mechanism for module-to-module talk.
+- §3.4 and §4.5 give the net half: schema fields by `schema()` composition, messages by the Colyseus 0.17
+  table, Rules by one `defineRules` spec. The limit is 64 fields per Schema class; `PlayerState` uses 39.
 - §5 gives the frame phases that systems declare.
 
 ## 1. Current map (measured 2026-09-28)
@@ -183,13 +186,15 @@ Rank = cost to dev speed plus cost to look/perf work. §5 problems fold in when 
 | 1 | **A feature is spread across central files.** Tug edits 19 central files. Mounts, message handlers, sim hooks, glyphs, dials and SFX are hand-wired lists. | §1.8 | Each new power-up re-edits the same 19 files. Two workers on two features collide in them. Removing a feature is a hunt. |
 | 2 | **Config has no single owner, and the predictor hard-codes the default.** | §1.3 | Every sim-dial test on `/test-level` shows reconcile snaps that live play does not have. #70 and #23 cannot ship. A deploy can pair an old tab with a new server [inferred]. |
 | 3 | **No declared order.** koota has no scheduler; order is `useFrame` call-site order. | §1.1, §5 | A new system's position is a guess. Order bugs show as one-frame lag. |
-| 4 | **State has no placement rule and no reset point.** | §1.2 | Each feature re-decides where state goes. Cross-run leaks are real: `resetSlot()` has no caller. |
-| 5 | **Discrete input is fake DOM keys.** | §1.5 | #348 must change key codes in three files. Dev-key listeners also receive the fake keys. |
-| 6 | **Value flags instead of tags.** `dead` (13 files), `stunTimer`, `localRole.spectating`. | §1.2 | Breaks `conventions/ecs.md` rule 3: *"Model state transitions by adding/removing components … not by branching on values."* |
-| 7 | **Six event queues, three shapes, two overflow rules.** Drain is single-consumer and nothing enforces it. | §4.1 | Each new VFX/SFX copies a queue. A second listener silently misses events. |
-| 8 | **Two input clocks.** 30 Hz `setInterval` send next to the 60 Hz sim tick. | §1.5 | A send can land on either side of a tick. NN-13 rejects a second clock when a loop exists. |
-| 9 | **Hand-rolled stores and bridge boilerplate.** 18 store copies; 8 bridge maps. | §1.1, §1.2 | Boilerplate per store and per networked kind. |
-| 10 | **Flat `game/scene/`.** 95 loose files. | §1.6 | Slow to find the owner of a look. Feature modules (§3) dissolve most of it. |
+| 4 | **`PlayerState` is at 39 of 64 schema fields.** The cap is hard: `Metadata.ts:73` throws at boot. | §3.4, §4.4 fact 3 | 25 slots for every future feature. Tug alone uses 3. A feature that crosses the cap stops the server from starting. |
+| 5 | **State has no placement rule and no reset point.** | §1.2 | Each feature re-decides where state goes. Cross-run leaks are real: `resetSlot()` has no caller. |
+| 6 | **Discrete input is fake DOM keys.** | §1.5 | #348 must change key codes in three files. Dev-key listeners also receive the fake keys. |
+| 7 | **Value flags instead of tags.** `dead` (13 files), `stunTimer`, `localRole.spectating`. | §1.2 | Breaks `conventions/ecs.md` rule 3: *"Model state transitions by adding/removing components … not by branching on values."* |
+| 8 | **Six event queues, three shapes, two overflow rules.** Drain is single-consumer and nothing enforces it. | §4.1 | Each new VFX/SFX copies a queue. A second listener silently misses events. |
+| 9 | **Two input clocks.** 30 Hz `setInterval` send next to the 60 Hz sim tick. | §1.5 | A send can land on either side of a tick. NN-13 rejects a second clock when a loop exists. |
+| 10 | **Messages are hand-wired and unvalidated.** 22 `*_MESSAGE` constants in 8 shared files; 8 `onMessage` calls in `run-room.ts:88–101`; no payload check. | §4.4 facts 5–6 | Each message edits 3 files. A bad payload reaches the sim. |
+| 11 | **Hand-rolled stores and bridge boilerplate.** 18 store copies; 8 bridge maps. | §1.1, §1.2 | Boilerplate per store and per networked kind. |
+| 12 | **Flat `game/scene/`.** 95 loose files. | §1.6 | Slow to find the owner of a look. Feature modules (§3) dissolve most of it. |
 
 Not a problem today: the koota 16-world cap (§1.4). It only constrains a server ECS, which §6.1.4 rejects.
 
@@ -199,7 +204,7 @@ Not a problem today: the koota 16-world cap (§1.4). It only constrains a server
 
 A new feature is **one folder per end plus at most one registry line per end**. It edits no other file.
 The test is the tug count in §1.8: 19 central files today, **≤ 2 registry lines** after the pilot. Schema
-fields are the one known exception (§3.4).
+fields need no exception (§3.4). They share a hard cap of 64 fields per class instead.
 
 ### 3.2 Two halves per feature
 
@@ -224,7 +229,8 @@ The contract file is `<name>.feature.ts` (sim half) and `<name>.client.ts` (clie
 export const tugFeature = defineSimFeature( {
     id: 'tug',
     power: { kind: HeldPower.tug, bagWeight: TUG_BAG_WEIGHT },
-    rules: TUG_RULES,
+    rules: defineRules( 'tug', TUG_RULE_SPECS ),
+    fields: { player: { tugTimer: 'float32', towTimer: 'float32', tugAnchorZ: 'float32' } },
     ship: { thrust: tugThrust, cap: tugCap, tick: tickTugStatus },
     run: { use: throwTug, tick: tickTugThrows, reset: clearTugThrows },
     messages: [ TUG_MESSAGE ],
@@ -250,7 +256,8 @@ What each slot replaces in §1.8:
 | Slot | Replaces |
 |---|---|
 | `ship.thrust / cap / tick` | the hand-wired sum in `step.ts:422–423` |
-| `rules` | the tug block in `sim-config.ts` and `tuned-sim-config.ts`; keys become `tug.*` in the B2 overrides map (§4.3 B) |
+| `rules` | the tug block in `sim-config.ts`, `tuned-sim-config.ts` and the 8 `Tug.*` dials in `tuning-schema.ts:118–125`; one spec (§4.5 c4); keys become `tug.*` in the B2 overrides map (§4.3 B) |
+| `fields.player` | the tug lines in `schema.ts:51,53,54` and in `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` (`sim/types.ts:83`) (§3.4) |
 | `run.use / tick / reset` | `run-sim.ts` `tugThrows` plumbing and the dispatch in `run/combat.ts` |
 | `power` | `power-bag.ts` and the enum entry |
 | `views.scene`, `views.pickups` | the mounts in `net-canvas.tsx:86` and `pickup-field.tsx:26` |
@@ -268,16 +275,38 @@ The engine side is a small, fixed set of consumers. Each loops over the registry
 - The scheduler runs every `systems` entry by phase (§3.5).
 - The dev panel builds its schema from every `dials` entry.
 
-### 3.4 The schema exception
+### 3.4 Schema fields: composed, not decorated
 
-Colyseus 4 schema fields are class decorators. Field order is wire order. The memory
-`deprecated-breaks-reflection-decoding.md` records that a shifted field index breaks reflection decoding.
-So a feature cannot add fields to `PlayerState` by itself without a rule for order.
+Field order is wire order. The memory `deprecated-breaks-reflection-decoding.md` records that a shifted
+field index breaks reflection decoding. So a feature needs a fixed rule for where its fields go.
 
-Candidate: each feature owns a child `Schema` class (for example `TugState` with `timer`, `anchorZ`), and
-`PlayerState` holds one field per feature in registry order. That is one central line per feature. Whether
-the installed `@colyseus/schema` 4 can declare fields without decorators is **[unverified]** — workertwo
-checks the installed `.d.ts` (§4). Until then, schema is the one accepted central edit.
+The installed `@colyseus/schema` 4.0.30 can declare fields without decorators (workertwo, §4.4 facts 1–2):
+
+- `schema( fields, name )` (`annotations.d.ts:108`) builds a class from a plain object. Spread order is wire
+  order (`Metadata.ts:202–206`).
+- The client decodes by reflection (`net/matchmaking.ts:65,70,75`). So the order must be deterministic **on
+  the server only**.
+
+**Proposal (b5, §4.5):** `PlayerState = schema( { ...CORE_PLAYER_FIELDS, ...tug.fields.player, … },
+'PlayerState' )`, with the spread list built from the D1 registry in array order. The same object builds
+`SIM_SHIP_KEYS` and `SIM_FLOAT_KEYS`, so the sim stays flat (`simulate()` still reads `ship.tugTimer`). Types
+come from `InferSchemaInstanceType`, with no module augmentation. So **schema is not a central edit**.
+
+Rejected: a child Schema per feature (b2/b3). It costs one slot per feature, but `simulate()` would read
+`ship.tug.timer`, and `copySimShip` / `froundSimShip` would need a deep copy.
+
+Rules for every change:
+
+1. Never remove or reorder a field. A new feature appends to the end of the registry.
+2. A registry test fails if a change moves the index of an existing field.
+3. Assert on the **client-decoded** state after every schema change, as `run-room.test.ts` does for the rack.
+
+**Cap.** A Schema class holds at most 64 fields. `@colyseus/schema/src/Metadata.ts:73–74` — *"`if (index >
+64) { throw new Error(… "Schema instances may only have up to 64 fields.") }`"*. `PlayerState` has **39**
+(verified this session: `@type(` count per class in `packages/shared/src/schema.ts`). So 25 slots remain for
+every future feature. Feature modules make adding fields cheap, so the cap becomes a real limit (§2 rank 4).
+If a feature needs many fields, it takes one child Schema slot and accepts the nested read in its own
+hooks only.
 
 ### 3.5 System order is declared, never implied
 
@@ -344,7 +373,8 @@ Measure before and after:
 
 | Measure | Before | Target | How |
 |---|---|---|---|
-| Central files a feature edits | 19 (§1.8) | ≤ 2 registry lines (+ schema, §3.4) | `rg -il tug` outside the two folders |
+| Central files a feature edits | 19 (§1.8) | ≤ 2 registry lines | `rg -il tug` outside the two folders |
+| Wire order | — | existing field indexes unchanged; client-decoded state matches | registry index test + `run-room.test.ts` |
 | `step()` time per tick | [to measure] | no regression beyond noise | in Chrome with a CDP CPU throttle (memory `time-hot-loops-in-chrome-not-tsx.md`) |
 | Frame time on `/test-level` | [to measure] | no regression beyond noise | `perf-analysis` skill |
 | Determinism | `room-tug.test.ts`, `tug-run.test.ts`, `tug.test.ts` pass | same tests pass unchanged | `pnpm test` |
@@ -354,8 +384,8 @@ The owner decides go / no-go on the numbers before any other feature moves.
 
 ## 4. Net, input, client state, room config (workertwo)
 
-> **Pending from workertwo:** the net half of the module contract — how a module declares its messages,
-> its schema fields (§3.4) and its Rules defaults as a namespace in the B2 overrides map.
+Measured on `dev` at `4b58658` (§4.1–4.3) and `a25b332` (§4.4–4.5). Installed versions, read from the
+`package.json` files: `@colyseus/schema` **4.0.30**, `@colyseus/core` **0.17.47**.
 
 ### 4.1 Event queues (measured)
 
@@ -373,7 +403,7 @@ Power-ups do not use the input stream. They are separate messages: `game/net-can
 
 ### 4.2 Problems
 
-Folded into §2 (ranks 2, 4, 5, 7, 8).
+Folded into §2 (ranks 2, 4, 5, 6, 8, 9, 10).
 
 ### 4.3 Options
 
@@ -415,10 +445,105 @@ server rejects writes to `preset`/`overrides` when `phase !== lobby`. The client
 a `RunConfig` world trait, and every `simulate()` call reads it. That removes rank 2. The #70 ADR still
 decides the scope (combat only, or ship tuning too).
 
+Each feature declares its Rules with one `defineRules` spec (§4.5 c4). The spec drives the defaults, the
+server clamp and key check for B2 overrides, and the dev dials. Override values travel as float32. The
+server must merge the **fround-ed** value too, or the server and the predictor differ in the last bits
+(memory `fround-makes-float-asserts-fail.md`).
+
 #### C. Discrete input
 
-The action map in §7 S2 is the only proposal so far. [≥5-option weighing: open with workertwo, or left
-to #348.]
+Today gamepad and touch send fake DOM `keydown`s (`game/input/synth-key.ts:2`), and `power-select.ts:65–78`
+reads `e.code`.
+
+| # | Option | Correctness | Clocks | Re-renders | Idiom | Existing loop |
+|---|---|---|---|---|---|---|
+| C1 | Keep synthetic DOM keys. | Dev keys also see fake keys. | DOM events | none | low | no |
+| **C2** | **Module action map:** `type Action = 'fireForward' \| 'fireBack' \| 'next' \| 'previous' \| 'drop' \| 'mute'`, one binding table per device (`{ keyboard: { KeyE: 'fireForward' }, pad: { 2: 'fireForward' } }`). Sources call `press( action )`. One consumer runs the power actions. | Good. One table drives remapping and on-screen hints. | event time | none | good | keyboard: DOM; pad: its `addEffect` |
+| C3 | Action edges as bits in `PlayerInput` (sequence-numbered). Drop `USE_POWERUP_MESSAGE`. | Best: the server applies the action at the exact tick. Today the message carries only `seq: lastInputSeq()` (`net-canvas.tsx:58`). | one: the sim tick | none | good (netcode) | yes |
+| C4 | A koota input entity with per-frame action tags (§6.1). Systems query them. | Good | frame | none | good if tags are adopted | yes |
+| C5 | A third-party input-mapping library. | unknown | its own | unknown | new dependency | no |
+| C6 | Each device calls the power actions directly (no map). | OK | mixed | none | low: binding logic repeated 3 times | no |
+
+**Recommendation: C2 now** (§7 S2). It is the base for #348 (Blur controls), which today must rebind keys
+in three places. **C3 later**, under a netcode ADR.
+
+### 4.4 The net half of a feature module: facts (measured)
+
+1. **The client decodes by reflection.** `net/matchmaking.ts:65,70,75` joins with `joinOrCreate< RunState >`
+   / `create< RunState >` / `joinById< RunState >`. It passes only the type argument, no root Schema class.
+   So the client takes field order from the server handshake. Field order must be deterministic **on the
+   server only**, and it must never depend on import side effects.
+2. **Dynamic declaration exists.** `@colyseus/schema/build/annotations.d.ts:76` — *"`export declare function
+   defineTypes(target: typeof Schema, fields: Definition, options?: TypeOptions): typeof Schema;`"* and
+   `:108` `schema( fieldsAndMethods, name?, inherits? )`. Both are exported from `build/index.d.ts:20`.
+   `defineTypes` calls `type()` for each field in turn (`build/index.mjs:3589–3593`), and the index is the
+   next free one (`src/Metadata.ts:202–206`). **Call order = wire order.**
+3. **At most 64 fields per Schema class** (`src/Metadata.ts:73–74`). Fields today: `PlayerState` 39,
+   `RunState` 14, `Portal` 10, `Seeker` 9, `TrackDescriptorState` 8, `Projectile` 6, `Mine` 5 (re-counted by
+   workerone this session).
+4. **The sim reads feature fields flat off the ship.** Tug writes `tugTimer`, `towTimer`, `tugAnchorZ` on
+   `PlayerState` (`schema.ts:51,53,54`), and `simulate()` reads the same names on `SimShip`. Prediction
+   copies and rounds by key list: `packages/shared/src/sim/types.ts:83` `SIM_SHIP_KEYS`, plus
+   `SIM_FLOAT_KEYS` (a test asserts it matches the float32 fields, `sim/fround.test.ts:27`).
+5. **Colyseus 0.17 has a declarative message table.** `@colyseus/core/build/Room.d.ts:174` —
+   *"`messages?: Messages<any>;`"*, and `:51` `validate( format: StandardSchemaV1, handler )`. We do not use
+   it: the server registers 8 handlers by hand (`apps/server/src/rooms/run-room.ts:88–101`). `validate()`
+   needs a Standard Schema library. No workspace `package.json` lists `zod` or `valibot`; valibot 1.4.2 is
+   present only as a transitive package.
+6. **Message names are spread over 8 shared files.** 22 `*_MESSAGE =` constants
+   (`rg "_MESSAGE = " packages/shared/src`), for example `combat/constants.ts` (9) and
+   `combat/tug-constants.ts:1`. The client binds 7 of them in one function
+   (`attach-room-to-world.ts:258–288`).
+7. **Tug config is flat and duplicated.** `sim-config.ts` holds 64 flat fields, including `tugS` and
+   `towS`. Only `run/tug-run.ts` reads `config.tug*` / `config.tow*` (5 reads). `dev/tuning-schema.ts`
+   repeats 8 `Tug.*` dials with their own min/max (`:118–125`).
+
+### 4.5 The net half of a feature module: options
+
+Criteria: correctness (wire order, determinism) · central files per new feature · type safety · idiom fit
+(Colyseus 0.17, schema 4) · migration cost.
+
+#### a. Messages and handlers
+
+| # | Option | Correctness | Central edits per feature | Types | Idiom | Migration |
+|---|---|---|---|---|---|---|
+| a1 | Today: constants in shared; `onMessage` in `run-room.ts` and `attach-room-to-world.ts`. | OK | 3 files | manual | Colyseus classic | none |
+| a2 | The feature exports `messages: { 'tug/pull': { server?, client? } }`. The engine loops the registry and calls `room.onMessage` on both ends. Names are namespaced by feature id. | OK. The registry build catches name clashes. | 0 | from the feature's types | good | medium: move 22 constants |
+| a3 | The feature exports a table that the engine spreads into the 0.17 `messages = { … }` (`Room.d.ts:174`), with `validate( schema, handler )`. | Best on the server: payloads are validated. | 0 | inferred from the validator | best (installed API) | needs a direct Standard Schema dependency; client side as a2 |
+| a4 | One envelope message `'f'` carrying `{ m: id, p }`, with our own dispatch. | OK | 0 | manual | low: hides message types from Colyseus tools | medium |
+| a5 | Transient events move into state (a `MapSchema` of events per feature, with a TTL). | Good for late joiners. | 0 | schema | medium: more bytes, stale-event cleanup | high |
+| a6 | Features emit typed events through the existing `ctx.broadcast` (`run/combat.ts`). One generic transport maps event → message. The client registry maps message → feature handler. | OK | 0 | event union type | good: reuses the `RunSim` seam; the loopback room gets it free | low–medium |
+
+**Recommendation: a6 for server → client events, a3 for client → server commands** once the owner approves
+a validator dependency (§8 Q7). a2 is the fallback without a validator.
+
+#### b. Schema fields
+
+| # | Option | Wire order | Central edits | Types | 64-field cap | Fits the flat `SimShip`? |
+|---|---|---|---|---|---|---|
+| b1 | Today: every field in `schema.ts`. | static, safe | 1 file | decorators | shared by all | yes |
+| b2 | Child Schema per feature (`TugPlayer`); one static `@type( TugPlayer ) tug` line in `schema.ts`. | static, safe | 1 line | decorators | 1 slot per feature | **no**: `ship.tug.timer`; deep copy in `copySimShip` / `froundSimShip` |
+| b3 | The registry attaches child Schemas at boot: `defineTypes( PlayerState, { [ f.id ]: f.PlayerSchema } )`. | safe **only if** it runs before the first `new PlayerState()` | 0 | module augmentation | 1 slot per feature | no, as b2 |
+| b4 | The registry adds **flat** fields: `defineTypes( PlayerState, f.playerFields )`, and builds the key lists. | as b3 | 0 | module augmentation | shared | yes |
+| **b5** | **Compose:** `schema( { ...core, ...tug.fields, … }, 'PlayerState' )`. Spread order = wire order. | safe; order is one visible expression | 0–1 (the spread list comes from the registry) | **inferred** (`InferSchemaInstanceType`) | shared | yes; key lists from the same object |
+| b6 | A generic map per ship: `@type( { map: 'float32' } ) feat`, keyed `'tug.timer'`. | safe | 0 | lost (strings) | none | poor: map lookups in the hot sim; float32 only; a string key per entry on the wire |
+
+**Recommendation: b5** (§3.4). Room-level collections (mines, seekers, portals) are already child Schemas,
+so b5 fits `RunState` too. b3 and b4 work, but they depend on boot-order side effects and type augmentation.
+
+#### c. Rules defaults as a namespace in the B2 overrides map
+
+| # | Option | Determinism | Central edits | One spec for defaults, validation and dials? | Migration |
+|---|---|---|---|---|---|
+| c1 | Today: flat `SimConfig` with prefixed names (`tugS`, `towS`); dials repeated in `tuning-schema.ts`. | OK | 2–3 files | no: defaults and dials drift | none |
+| c2 | Nested `SimConfig = { tug: TugRules, … }` composed from the registry. The override key `'tug.pullS'` is a path. | OK | 0 | only with c4 | medium: every `config.x` reader moves (tug: 5 reads) |
+| c3 | Flat in memory, namespaced on the wire only: `'tug.pullS'` ↔ `config.tugPullS` through a key table from the registry. | OK | 0 | only with c4 | low: no reader changes; two names per value |
+| **c4** | **One rules spec per feature:** `defineRules( 'tug', { pullS: { value, min, max, step } } )`. The engine builds the default config, the server clamp and key check for B2, and the dev dials. | best: the server rejects unknown keys and clamps | 0 | **yes** | medium: removes the 8 duplicated `Tug.*` dials |
+| c5 | One override map per feature in the schema: `@type( { map: 'float32' } ) tug`. | OK | 0 with b5 | only with c4 | medium: more fields; the GO lock checks each |
+| c6 | Named presets only (`'standard-v3'`), no per-key overrides. | best | 0 | n/a | low, but #70 loses per-key tuning between rounds |
+
+**Recommendation: c4 as the spec, c2 as the in-memory shape for new features, c3 as a bridge** so existing
+flat readers work during the migration. The server rejects override writes when `phase !== lobby`.
 
 ## 5. Render, frame schedule, quality tiers (workerthree)
 
@@ -444,7 +569,7 @@ has` (`koota/dist/types-DONaXEhM.d.ts:441–460`). React hooks accept a world as
 
 | | Option | Correctness | One clock | Re-render cost | Idiom fit |
 |---|---|---|---|---|---|
-| A | Keep both models; write the rule down only | same as today | no change | no change | low: rank 6 stays |
+| A | Keep both models; write the rule down only | same as today | no change | no change | low: rank 7 stays |
 | B | Everything into koota, including room, audio and input devices | risk: services with lifetimes become traits | yes | low | low: NN-8 keeps services on module singletons |
 | **C** | **Split by kind:** per-thing data → entities and tags; per-run state → world traits; services → module singletons | good: one home per kind; one reset | yes | low | high: `ecs.md` rules 1, 3, 5 and NN-8 |
 | D | zustand for global state, koota for entities | good | two subscription systems | low | medium: duplicates world traits |
@@ -529,18 +654,20 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S1 | One config source on the client. The predictor and client systems read the room's config. Fixes `/test-level` mispredicts. | `net/prediction.ts`, `game/ecs/systems.ts`, `game/ecs/net-systems.ts`, `routes/beat-deck/deck-flight.ts`, `routes/test-level/test-level-room.ts`, `net/run-room-like.ts` | — |
 | S2 | Input action map (`fireForward`, `fireBack`, `next`, `previous`, `drop`, `mute`). Delete `synthKey`. Base for #348. | `game/input/power-select.ts`, `gamepad.ts`, `synth-key.ts`, `touch-dpad.constants.ts`, `game/net-canvas.tsx`, `audio/game-audio/game-audio.tsx` | — |
 | S3 | Event-queue helper (A1). Move the 6 queues onto it. One overflow rule. | `hit-events.ts`, `mine-shock-events.ts`, `tug-events.ts`, `block-burst/*`, `meteor-chunks/*`, `meteor-scorch/*`, new helper | — |
-| **F1** | **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, the O1 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. Zero features registered; behaviour unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, §5 phases |
+| **F1** | **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, the O1 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, §5 phases |
 | **F2** | **Pilot: move tug into two feature folders.** Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
 | F3 | Owner go / no-go on the F2 numbers. | — | F2 |
 | F4… | One feature per stage: bolt, seeker, mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F3 |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
-| S6 | Room config (B2). ADR for #70. Rules defaults merged from every sim feature's `rules`. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `docs/DECISIONS.md` | S1, F1, ADR |
+| S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |
 | S7 | Generic bridge helper `mirrorCollection( schemaMap, spawn, patch )` replaces the 8 maps. | `net/attach-room-to-world.ts` | S4 |
 | S8 | Input send on the sim tick (flush after `predictor.record`). Delete the `setInterval`. | `net/attach-room-to-world.ts`, `game/ecs/net-systems.ts` | §5 phases |
 | S9 | Event queues move to A3 (world-trait rings, declared per feature). | S3 helper and its consumers | S3, S5, F1 |
 | S10 | Rename scratch-only `.state.ts` files (e.g. `tug-line.state.ts` → `.scratch.ts`) with an ls-lint rule. | `tug-line.state.ts` and importers, `.ls-lint.yml` | — |
 | S11 | Group the world that no feature owns in `game/scene/` (`track/`, `ships/`, `sky/`, `post/`), one per commit. | `game/scene/**` | a window with no held `game/scene/` files |
+| S12 | Messages: server → client events through `ctx.broadcast` (a6); client → server commands through the 0.17 `messages` table with `validate()` (a3). | `apps/server/src/rooms/run-room.ts`, `run/combat.ts`, `net/attach-room-to-world.ts`, the 8 files with `*_MESSAGE` constants | F1, validator approval (§8 Q7) |
+| S13 | Action edges in `PlayerInput` (C3). Drop `USE_POWERUP_MESSAGE`. | `schema.ts` input, `net/prediction.ts`, `run/combat.ts`, `game/net-canvas.tsx` | S2, S8, netcode ADR |
 
 Order: S1, S2, S3 and S10 can start now. F1 waits for S0 and the §5 phase list. §5 stages merge in when
 that section lands.
@@ -553,6 +680,7 @@ that section lands.
 4. Owner: accept rule C (§6.1) and room config B2 with the four tiers (§4.3 B, §6.2)?
 5. Owner (#70 ADR): does room config cover combat only, or ship tuning too?
 6. May dev dials override Rules values in a hosted room, or only on `/test-level`?
-7. workertwo: can the installed `@colyseus/schema` 4 declare a feature's fields without a central edit
-   (§3.4)?
+7. Owner: approve a direct Standard Schema dependency (valibot or zod) for validated commands (a3, §4.5)?
+   Without it, commands use a2 and stay unvalidated. (The former Q7, schema without a central edit, is
+   answered: yes, by `schema()` composition, §3.4.)
 8. workerthree: the phase list (§3.5, §5), and whether a feature may register a post effect or quality hook.
