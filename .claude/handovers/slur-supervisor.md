@@ -110,6 +110,13 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   auto-wires them. Sent to workerone as the RFC's centre: contract, registry vs import.meta.glob, declared system
   order, shared-sim half vs client half, no cross-module internals, tug-line pilot.
 
+- #349 RFC DRAFT af25d7c (docs/RFC-349-ARCHITECTURE.md): §3 feature modules, §4 merged, §5 pending (workerthree).
+  Facts: tug = 11 own files + edits to 19 central files; koota has no scheduler; import.meta.glob client-only;
+  predictor hard-codes DEFAULT_SIM_CONFIG in 4 places; resetSlot() has no caller (power slot leaks between runs —
+  file a bug?). RELAYED owner Qs §8: (1) modules + tug pilot (2) explicit registry now, codegen later (3) order =
+  phase + before/after, ties by id (4) state rule C + room config B2 (preset + sparse overrides, locked at GO)
+  (5) #70 scope combat only or ship tuning too (6) dev dials in hosted rooms or /test-level only. Await answers.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
