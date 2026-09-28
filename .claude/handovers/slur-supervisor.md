@@ -139,3 +139,4 @@ none
   owner's frame time while it runs → ASK THE OWNER FOR A TIME WINDOW before saying go.
 - Owner Qs pending: #349 §8 Q1–Q8 (+ workerthree §5.7: O1 for views; tier change rebuilds sky/track textures
   mid-race or reload-only?); deploy; power-slot leak bug (resetSlot never called) — file it?
+- #349 RFC COMPLETE 77d7df6 (all sections merged). §8 Q1–Q9 RELAYED to owner; awaiting answers. Risk: a 65th PlayerState field passes the check and silently corrupts client data (39/64 used).
