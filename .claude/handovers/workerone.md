@@ -4,26 +4,21 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#349 RFC ONLY, no source edits. I own `docs/RFC-349-ARCHITECTURE.md` and write it in one voice.
-OWNER DIRECTION (via supervisor, 2026-09-28): FEATURE MODULES — a folder exports traits, systems (declared
-phase + before/after), views, net messages, dials; the engine wires them. Pilot = tug.
+#349 RFC ONLY, no source edits. I own `docs/RFC-349-ARCHITECTURE.md`. Feature modules, pilot = tug.
 
 ## Done
 
-- Draft RFC `af25d7c`.
-- workertwo's net half MERGED (commit carrying this handover): §3.4 rewritten (schema exception dropped;
-  b5 `schema()` composition; 64-field cap), §2 new rank 4 (PlayerState 39/64) and rank 10 (messages
-  hand-wired, unvalidated), §3.3 `fields` + `defineRules` slots, §4.3 C full C1–C6 table, new §4.4 facts
-  and §4.5 options a/b/c, §7 F1 + S6 extended, new S12 (messages a6/a3) and S13 (C3), §8 Q7 → validator
-  dependency question.
-- `8c94537` #345 option 6. Earlier: #339 `fda4814` `e8bb786` `8fc2486`, #337 `59a4599` (not deployed).
+- Draft `af25d7c`. workertwo net half `1a1c39c`. Schema off-by-one `b304d32`.
+- workerthree §5 MERGED (commit carrying this handover): §5.1–5.6 full; §2 rank 3 widened (mount-time
+  order), new rank 6 (render/quality by mount), new rank 14 (per-frame waste); §3.5 → O1 systems + O5 views,
+  9 phases; §7 their stages renumbered S13–S20 → S14–S21 (S12/S13 already taken); F1/S8/S9 now need S16;
+  §8 Q8–Q10 from their §5.7.
+- RFC is complete: no pending sections.
 
 ## State
 
-- Verified this session: Metadata.ts:73 throws at `index > 64`; PlayerState 39, RunState 14 `@type(` count.
-- Tug footprint: 11 own files + 19 central files. Pilot target: ≤ 2 registry lines (no schema exception now).
-- koota 0.6.6 has no scheduler; world traits exist. Vite glob client-only. Server has no koota.
-- Predictor hard-codes DEFAULT_SIM_CONFIG in 4 places. `resetSlot()` has no caller.
+- Verified this session: schema guard `index > 64`, index 64 = DELETE bit; PlayerState 39 fields;
+  R3F events-156d8d12.esm.js :1129, :16171, :16188.
 
 ## Uncommitted
 
@@ -35,18 +30,15 @@ phase + before/after), views, net messages, dials; the engine wires them. Pilot 
 
 ## Next
 
-1. Wait for workerthree's §5 scratchpad path. Merge into §5: phase list, O1 confirmation, system-vs-view
-   classification of 46 useFrame sites, quality/post hooks for modules. Fold §5 problems into §2 and
-   stages into §7. Update §8 Q8.
-2. Send the supervisor the summary to relay to the owner (§8 questions 1–7).
-3. #345: close after owner sign-off. After deploy: prod /metrics, then close #337/#339.
+1. Supervisor relays §8 Q1–Q10 to the owner. Fold owner answers into the RFC; set Status APPROVED or revise.
+2. #345: close after owner sign-off. After deploy: prod /metrics, then close #337/#339.
 
 ## Open questions
 
-- Owner: §8 of the RFC (feature modules, D1→D3, O1, rule C, B2, #70 scope, dev dials, validator dep).
+- Owner: RFC §8 Q1–Q10.
 - Owner (#345): hulls dark (#4a4d52, current) or bright (#7b7f86)?
 - Kick button on the results rows (#342 follow-up)?
 
 ## Lessons → memory
 
-- none this seam (schema cap memory already written by workertwo).
+- none this seam.

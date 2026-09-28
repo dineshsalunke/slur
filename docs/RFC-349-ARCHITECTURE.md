@@ -4,8 +4,8 @@ instruction per sentence. See CONTRIBUTING.md §8. -->
 # RFC-349 — Architecture: feature modules, ECS drift, server-owned game config
 
 - **Issue:** #349 · **Status:** DRAFT (not approved) · **Lead:** workerone · **Updated:** 2026-09-28
-- **Authors:** §1, §3, §6, §7 workerone · §4 workertwo (merged, incl. the net half §4.4–4.5) · §5
-  workerthree (pending). One voice.
+- **Authors:** §1, §3, §6, §7 workerone · §4 workertwo (incl. the net half §4.4–4.5) · §5 workerthree.
+  All merged. One voice.
 - **Scope:** this RFC proposes. It changes no source. Each stage in §7 needs its own issue and owner approval.
 - **Owner direction (2026-09-28, via the supervisor):** organise code as **feature modules**. A feature
   folder exports its traits, systems and views by a convention, and the engine wires them. The goal is to
@@ -28,7 +28,8 @@ The rest of the RFC supports that shape:
 - §4.3 A gives one event mechanism for module-to-module talk.
 - §3.4 and §4.5 give the net half: schema fields by `schema()` composition, messages by the Colyseus 0.17
   table, Rules by one `defineRules` spec. The limit is 64 fields per Schema class; `PlayerState` uses 39.
-- §5 gives the frame phases that systems declare.
+- §5 gives the nine frame phases that systems declare, one render owner, and quality as a service. Frame
+  order today is mount time, so it changes with spawn time and quality tier.
 
 ## 1. Current map (measured 2026-09-28)
 
@@ -141,8 +142,8 @@ Reset points, callers outside tests: `clearBlockState()`/`clearPickupState()` on
 
 ### 1.7 Frame schedule
 
-→ §5. Headline numbers from workerthree: 46 `useFrame` sites (39 at priority 0, 7 explicit) and 6
-`addEffect` users [measured by workerthree, not re-measured here].
+→ §5. Headline numbers from workerthree: 46 `useFrame` sites (39 at priority 0) and 8
+`addEffect`/`addAfterEffect` calls in 7 files [measured by workerthree, not re-measured here].
 
 ### 1.8 Feature footprint: tug
 
@@ -179,22 +180,27 @@ pilot (§7 F2) must bring down.
 
 ## 2. Problems, ranked
 
-Rank = cost to dev speed plus cost to look/perf work. §5 problems fold in when that section lands.
+Rank = cost to dev speed plus cost to look/perf work. §5.6 problems are folded in.
 
 | Rank | Problem | Evidence | Cost |
 |---|---|---|---|
 | 1 | **A feature is spread across central files.** Tug edits 19 central files. Mounts, message handlers, sim hooks, glyphs, dials and SFX are hand-wired lists. | §1.8 | Each new power-up re-edits the same 19 files. Two workers on two features collide in them. Removing a feature is a hunt. |
 | 2 | **Config has no single owner, and the predictor hard-codes the default.** | §1.3 | Every sim-dial test on `/test-level` shows reconcile snaps that live play does not have. #70 and #23 cannot ship. A deploy can pair an old tab with a new server [inferred]. |
-| 3 | **No declared order.** koota has no scheduler; order is `useFrame` call-site order. | §1.1, §5 | A new system's position is a guess. Order bugs show as one-frame lag. |
+| 3 | **No declared order; frame order is mount time.** koota has no scheduler. R3F sorts `useFrame` by priority, then by subscribe time (a layout effect), not JSX order. Priorities are magic numbers, copied (`0.25` ×3, `0.5`, `1`, `2`, `−1` in 7 files). | §1.1, §5.1, §5.2 hazards 1–4 | Sky, fill light and rocks lag the camera by one frame. Order changes with ship spawn time and quality tier. A new system's position is a guess. |
 | 4 | **`PlayerState` is at 39 of 64 schema fields.** The cap is hard: `Metadata.ts:73` throws at boot. | §3.4, §4.4 fact 3 | 25 slots for every future feature. Tug alone uses 3. A 66th field stops the server at boot. A 65th field (index 64) passes the guard and silently corrupts the wire: it decodes as a DELETE of field 0 (§3.4). |
 | 5 | **State has no placement rule and no reset point.** | §1.2 | Each feature re-decides where state goes. Cross-run leaks are real: `resetSlot()` has no caller. |
-| 6 | **Discrete input is fake DOM keys.** | §1.5 | #348 must change key codes in three files. Dev-key listeners also receive the fake keys. |
-| 7 | **Value flags instead of tags.** `dead` (13 files), `stunTimer`, `localRole.spectating`. | §1.2 | Breaks `conventions/ecs.md` rule 3: *"Model state transitions by adding/removing components … not by branching on values."* |
-| 8 | **Six event queues, three shapes, two overflow rules.** Drain is single-consumer and nothing enforces it. | §4.1 | Each new VFX/SFX copies a queue. A second listener silently misses events. |
-| 9 | **Two input clocks.** 30 Hz `setInterval` send next to the 60 Hz sim tick. | §1.5 | A send can land on either side of a tick. NN-13 rejects a second clock when a loop exists. |
-| 10 | **Messages are hand-wired and unvalidated.** 22 `*_MESSAGE` constants in 8 shared files; 8 `onMessage` calls in `run-room.ts:88–101`; no payload check. | §4.4 facts 5–6 | Each message edits 3 files. A bad payload reaches the sim. |
-| 11 | **Hand-rolled stores and bridge boilerplate.** 18 store copies; 8 bridge maps. | §1.1, §1.2 | Boilerplate per store and per networked kind. |
-| 12 | **Flat `game/scene/`.** 95 loose files. | §1.6 | Slow to find the owner of a look. Feature modules (§3) dissolve most of it. |
+| 6 | **Render and quality act by mount.** Three `gl.render` owners chosen by `QualityGate` mounts. Quality knobs act at three times; the build-time ones ignore a mid-race step-down. `/test-level` never steps down (`game-shell.tsx:11`). | §5.3, §5.4 | Removing one render owner blacks the canvas (#345). A step-down leaves sky and track textures at the old tier. The owner's test route does not show step-down. |
+| 7 | **Discrete input is fake DOM keys.** | §1.5 | #348 must change key codes in three files. Dev-key listeners also receive the fake keys. |
+| 8 | **Value flags instead of tags.** `dead` (13 files), `stunTimer`, `localRole.spectating`. | §1.2 | Breaks `conventions/ecs.md` rule 3: *"Model state transitions by adding/removing components … not by branching on values."* |
+| 9 | **Six event queues, three shapes, two overflow rules.** Drain is single-consumer and nothing enforces it. | §4.1 | Each new VFX/SFX copies a queue. A second listener silently misses events. |
+| 10 | **Two input clocks.** 30 Hz `setInterval` send next to the 60 Hz sim tick. | §1.5, §5.2 hazard 6 | A send can land on either side of a tick. NN-13 rejects a second clock when a loop exists. |
+| 11 | **Messages are hand-wired and unvalidated.** 22 `*_MESSAGE` constants in 8 shared files; 8 `onMessage` calls in `run-room.ts:88–101`; no payload check. | §4.4 facts 5–6 | Each message edits 3 files. A bad payload reaches the sim. |
+| 12 | **Hand-rolled stores and bridge boilerplate.** 18 store copies; 8 bridge maps. | §1.1, §1.2 | Boilerplate per store and per networked kind. |
+| 13 | **Flat `game/scene/`.** 95 loose files. | §1.6 | Slow to find the owner of a look. Feature modules (§3) dissolve most of it. |
+| 14 | **Per-frame waste.** 6 components copy dials into their materials every frame. About 25 koota queries per frame copy their result. | §5.1, §5.6 | Low. App frame code is 0.08 ms of 1.60 ms at 1× (§5.1). GC pauses [unmeasured]. |
+
+The frame schedule (rank 3) is a correctness and dev-speed problem, not a CPU problem. The CPU lever is
+three.js per-object work: draw calls and passes (§5.1).
 
 Not a problem today: the koota 16-world cap (§1.4). It only constrains a server ECS, which §6.1.4 rejects.
 
@@ -242,7 +248,7 @@ export const tugFeature = defineSimFeature( {
 export const tugClient = defineClientFeature( {
     sim: tugFeature,
     traits: [ TugRope ],
-    systems: [ { id: 'tug-rope', phase: 'visual', after: [ 'ship-sync' ], run: tugRopeSystem } ],
+    systems: [ { id: 'tug-rope', phase: 'react', after: [ 'ship-sync' ], run: tugRopeSystem } ],
     views: { scene: TugLine, pickups: TugPickups },
     hud: { glyph: TUG_GLYPH },
     net: { [ TUG_MESSAGE ]: onTugMessage },
@@ -327,10 +333,11 @@ from the same declarations.
 | O5 | Phase only; systems inside a phase must not depend on each other | clean when true; unenforced | one | medium | none until a hidden dependency appears |
 | O6 | Derive order from declared trait reads/writes | strongest | one | Bevy ambiguity checks | heavy to build |
 
-**Recommendation: O1**, with a dev-only print of the resolved schedule. The phase list comes from §5
-(workerthree owns it; draft: input → net/predict → sim-sync → visual → pre-render → render →
-after-render). Each phase runs from one `useFrame` at that phase's priority, so the 46 call sites shrink to
-one per phase. For the sim half, phases are fixed hook points in `step()` (thrust, cap, tick), and the tie
+**Recommendation: O1 for systems, O5 for views**, with a dev-only print of the resolved schedule. §5.2
+confirms this and also weighs O7 (the `directed` package) and O8 (a phase constants file, the first stage).
+The phase list is in §5.2: `input` → `simulate` → `sync` → `react` → `view` → `prerender` → `render` →
+`overlay` → `cleanup`. Each phase runs its systems from one `useFrame` at that phase's priority. Views keep
+their own `useFrame` in phase `view`; they write only their own objects, so their order does not matter. For the sim half, phases are fixed hook points in `step()` (thrust, cap, tick), and the tie
 break by `id` makes the order identical on both ends.
 
 ### 3.6 Discovery
@@ -407,7 +414,7 @@ Power-ups do not use the input stream. They are separate messages: `game/net-can
 
 ### 4.2 Problems
 
-Folded into §2 (ranks 2, 4, 5, 6, 8, 9, 10).
+Folded into §2 (ranks 2, 4, 5, 7, 9, 10, 11).
 
 ### 4.3 Options
 
@@ -552,14 +559,210 @@ flat readers work during the migration. The server rejects override writes when 
 
 ## 5. Render, frame schedule, quality tiers (workerthree)
 
-> **PENDING** — workerthree sends this section. Agreed content: R1 map of every `useFrame`/`addEffect` ·
-> R2 the phase list and the ordering choice for §3.5 · R3 who owns `gl.render` · R4 quality tiers, and
-> whether a feature module may register a post effect or a quality hook · R5 perf hooks · R6 problems,
-> options, stages. Also: which of the 46 `useFrame` sites are systems and which are views animating
-> themselves.
->
-> Fact from #345 (measured): any `useFrame` priority > 0 turns off R3F auto-render
-> (`@react-three/fiber` `events-*.esm.js:1117`). `PlainRender` (priority 1) or the composer renders.
+Measured 2026-09-28 at `07e6c95`. R3F facts come from the installed `@react-three/fiber` 9.7.0,
+`dist/events-156d8d12.esm.js` (workerone re-checked lines 1129, 16171 and 16188 this session). The full
+per-site table (265 lines) is in workerthree's scratchpad `useframe-inventory.md`. This section keeps the
+facts that drive a decision.
+
+### 5.1 Current map
+
+**How R3F orders a frame** (verified):
+
+| Step | Source | Behaviour |
+|---|---|---|
+| 1 | `loop()` `:16188` — *"`flushGlobalEffects('before', timestamp)`"* | `addEffect` callbacks, in `Set` insertion order |
+| 2 | `update()` `:16165–16168` | `useFrame` subscribers in array order |
+| 3 | `update()` `:16171` — *"`if (!state.internal.priority && state.gl.render) state.gl.render(...)`"* | auto-render, only when no subscriber has priority > 0 |
+| 4 | `loop()` `:16204` | `addAfterEffect` callbacks |
+
+The subscriber array is sorted by priority on each subscribe — `:1129` *"`internal.subscribers.sort((a, b)
+=> a.priority - b.priority)`"*. The sort is stable, so equal priorities keep **subscribe order**. A
+subscribe happens in a layout effect — `:1229` *"`useIsomorphicLayoutEffect(() => subscribe(ref,
+renderPriority, store), …)`"*. So priority-0 order is **the time a component mounted**, not its JSX
+position. A component that mounts later (a ship that spawns, a `QualityGate` that flips) goes to the end of
+its priority band.
+
+**Inventory.** 46 `useFrame` sites and 8 `addEffect`/`addAfterEffect` calls in 7 files.
+
+| Priority | Sites |
+|---|---|
+| −1 | `game/scene/nebula-sky.tsx:11` (sky bake + uniforms) |
+| 0 | 39 sites, one of them explicit (`dev/frame-tap.tsx:9`) |
+| 0.25 `AFTER_RENDER_SYNC` | `engine-light.tsx:15`, `exhaust-field.tsx:40`, `boost-streaks.tsx:33`. The constant is defined 3 times: `engine-light.constants.ts:1`, `exhaust-field.constants.ts:7`, `boost-streaks.constants.ts:6` |
+| 0.5 `PASS_PRIORITY` | `rear-view-pass.tsx:27`, a full scene render into an FBO (`:34–37`) |
+| 1 | `plain-render.tsx:5` **or** the `EffectComposer` internal pass (`@react-three/postprocessing` default `renderPriority = 1`) |
+| 2 `HUD_PRIORITY` | drei `<Hud>` for the rear panel (`rear-view-pass.tsx:41`) |
+| before | `net/loopback-room/loopback-room.ts:108` (loopback sim tick), `game/input/gamepad.ts:87`, HUD DOM writers `game/hud/flight-readout.tsx:23`, `race-deadline.tsx:12`, `idle-warning.tsx:12`, `game/overlays/threat-hud/threat-hud.tsx:13`, `dev/frame-meter.ts:17` |
+| after | `dev/frame-meter.ts:21` |
+
+Other per-frame hooks: drei `PerformanceMonitor` has its own `useFrame`
+(`drei/core/PerformanceMonitor.js:38`). `nebula-baker.ts:165` sets `background.onBeforeRender`. The input
+send is a 30 Hz `setInterval` (`net/attach-room-to-world.ts:293`).
+
+**System or view.** A *system* writes state that other code reads (ECS, camera, renderer, audio, a queue,
+a shared material, `scene.environment`). A *view* animates only its own objects from state.
+
+| Class | Count | Sites |
+|---|---|---|
+| System | 13 `useFrame` + 3 `addEffect` | `NetLoop`, `DeckLoop`, `LandingRig` (camera + `Sim`/`Render` writers, one per route) · `SceneEnvironment` · `RenderScale` · `RockField` (shared material) · `NebulaSky` · `RearViewPass` · `SceneEffects`/`PlainRender` · `GameAudio`, `RemoteEngineAudio` · `TestLevelDev` · addEffect: loopback tick, gamepad, frame meter |
+| Dial-sync | 6 | `KeyLight`, `TrackSeams`, `TrackRail`, `TrackRim`, `TrackFloor`, `MonolithGroup` (×N). Each copies tuning into its own material every frame |
+| View | 27 | the rest, plus the 4 HUD DOM writers |
+
+**Cost** (CDP Profiler, `/test-level`, driving, 1280×720, DPR 1, Vite dev build; rAF callback time, median):
+
+| Tier / CPU throttle | Total | three.js | app `useFrame` code | shared sim | koota |
+|---|---|---|---|---|---|
+| high, 1× | 1.60 ms | 1.05 | 0.08 | 0.07 | ~0.05 |
+| low, 6× | 5.70 ms | 2.98 | 0.55 | 0.17 | 0.26 |
+| high, 6× | 10.10 ms | 6.54 | 0.61 | 0.23 | 0.33 |
+
+Draw calls per frame: low 47, medium 125, high 125. `bindFramebuffer` per frame: 0, 26, 36. The rear view
+and the post passes cause most of the gap [inferred; not bisected]. GPU time per tier [unmeasured].
+Production build [unmeasured].
+
+**Reading:** app frame code costs less than a tenth of three.js. The schedule is a correctness and
+dev-speed problem, not a CPU problem.
+
+### 5.2 Frame schedule
+
+#### Order hazards today (read from source)
+
+1. **Camera readers run before the camera writer.** `NetLoop` writes the camera at
+   `game/net-loop/net-loop.tsx:35` — *"`updateNetCamera( state.camera as PerspectiveCamera, world, delta,
+   room, phase, cut )`"*. It mounts in `{ children }` after `<Ships />` (`game/scene/world-scene.tsx:34–35`).
+   `SkyFollow`, `NearFill`, `AsteroidBand`, `MeteorScorch`, `MeteorChunks` and `BlockDebris` mount earlier
+   in the same band, so they read last frame's camera: a one-frame lag between them and the ship.
+2. **`Sim` readers run before the `Sim` writer.** `TrackBlocks` (`track-blocks.tsx:100`) and `MeteorStrikes`
+   (`meteor-strikes.tsx:79`) read `queryFirst( LocalPlayer, Sim )` before `netFlightSystem`
+   (`net-loop.tsx:26`) runs.
+3. **Ship views depend on spawn time.** `Ships` (`ships.tsx:7`) mounts one `ShipView` per `Render` entity.
+   A ship that spawns after `NetLoop` subscribed goes to the end of band 0 [inferred from `:1229`; spawn
+   timing not traced]. So ship views read fresh or stale `Render` by arrival time.
+4. **A quality change reorders the frame.** `QualityGate` unmounts and remounts its children, which
+   re-subscribe at the end of the band. After a step-down, `RockField` runs after `NetLoop` [inferred].
+5. **The HUD shows last frame.** The 4 HUD DOM writers are `addEffect` (step 1), so they run before
+   `NetLoop`.
+6. **Two input clocks.** The 30 Hz send is not tied to the 60 Hz fixed step (§2 rank 10).
+
+The one fix in place: `AFTER_RENDER_SYNC = 0.25` pushes 3 views past `NetLoop`. The name is wrong (they run
+before render), and the value is copied 3 times.
+
+#### The phases
+
+| # | Phase | Runs | Examples today |
+|---|---|---|---|
+| 1 | `input` | sample devices into the action map (§4.3 C) | `gamepad.ts:87` poll |
+| 2 | `simulate` | loopback host tick; fixed-step predict; **input send after `predictor.record`** (§7 S8) | `loopback-room.ts:108`, `netFlightSystem` |
+| 3 | `sync` | render interpolation, remote interp, hover, death VFX, **camera last** | rest of `NetLoop`, `DeckLoop`, `LandingRig` |
+| 4 | `react` | systems that react to this frame's state: event drain, audio, shared-material and `scene.environment` writes, dial sync | `GameAudio`, `SceneEnvironment`, `RockField`, the 6 dial-sync sites |
+| 5 | `view` | every view; no order inside the phase | 27 views |
+| 6 | `prerender` | off-screen passes that read the final scene | `NebulaSky` bake, `RearViewPass` |
+| 7 | `render` | exactly one main render | composer or `PlainRender` |
+| 8 | `overlay` | layers on top of the main render | drei `Hud` |
+| 9 | `cleanup` | end of frame: event cleanup (§4.3 A2/A3), HUD DOM writes, frame meter | `frame-meter.ts:21` |
+
+Event cleanup (§4.3 A2/A3) runs in `cleanup`. The input send (§7 S8) runs in `simulate`, once per fixed
+step, after `predictor.record`.
+
+#### Options — how a system gets its place
+
+Criteria: correctness · one clock · re-render cost · idiom fit · reuses the existing loop · order is
+declared (owner rule).
+
+| # | Option | Correct | One clock | Idiom | Declared | Notes |
+|---|---|---|---|---|---|---|
+| **O1** | **Phase + `before`/`after`, topo-sort at boot, tie-break by system id.** One `useFrame` per phase runs the sorted list | yes | yes: R3F loop | good: Bevy-plugin shape (§3) | yes | ~80 lines. A cycle fails at boot and names the cycle |
+| O2 | Numeric priority per system | until two teams pick the same number | yes | medium: today's `0.25`/`0.5` | magic numbers | 3 copies of `0.25` already |
+| O3 | Registration or import order | no: today's bug class | yes | low | **no** | the owner rejects it |
+| O4 | One central ordered list of every system | yes | yes | low: every feature edits one file | yes | merge conflicts between workers |
+| **O5** | Phase only, no order inside a phase | only if no two members share data | yes | good | partly | right for **views**; wrong for `sync` (camera must be last) |
+| O6 | Order derived from declared trait reads/writes | if every access is declared | yes | high in theory | implicit | camera, audio and renderer are not traits; most machinery for the least gain |
+| O7 | `directed` (npm 0.1.6): a DAG scheduler with `before`/`after`/tags, by the koota author | yes | yes | good | yes | pre-1.0; last publish 2025-02-28 (npm, verified by workerthree). Its React hook `useSchedule` registers on mount, which brings back mount-time order |
+| **O8** | Keep `useFrame` per component; one priority constants file per phase | phase order only | yes | good: smallest change | partly | the cheap first stage, not the end state |
+
+**Recommendation: O1 for systems, O5 for views, O8 as the first stage.**
+
+- A **system** declares `{ phase, before?, after? }` in its feature module. The engine sorts once at boot:
+  phase, then topological order, then system id. One `useFrame` per phase runs that phase's list. A system is
+  a plain function over `( world, frame )`. It never mounts, so a remount cannot reorder it.
+- A **view** stays a component with `useFrame( cb, PHASE.view )`. Views never read each other.
+- **Not O7:** a pre-1.0 dependency for ~80 lines is poor value. Its API shape is a good model, and it stays
+  the fallback if our scheduler grows tags.
+- **Not O6:** it is O1 with more to declare. It can come later as a dev-only check that a declared order
+  does not contradict trait access.
+
+In dev, the engine prints the resolved order, one line per system.
+
+### 5.3 Render pipeline: who owns `gl.render`
+
+Today three code paths call `gl.render` in a frame: `RearViewPass` (`rear-view-pass.tsx:36`), the composer
+or `PlainRender` (`plain-render.tsx:5`), and drei `Hud`. `QualityGate feature="post"` picks the composer or
+`PlainRender` by mount (`world-scene.tsx:36`). A `useFrame` priority > 0 turns off auto-render, so removing
+the composer without `PlainRender` gives a black canvas (#345; memory
+`removing-the-composer-blacks-the-canvas.md`).
+
+| # | Option | Notes |
+|---|---|---|
+| P1 | Keep today: render by mount, gated by `QualityGate` | a remount reorders the frame (hazard 4); two components compete for one job |
+| **P2** | **One render system in phase `render`.** It owns the composer and calls `composer.render()` or `gl.render()` by the current tier | one owner; a tier change is a branch, not a remount |
+| P3 | R3F auto-render; composer only when post is on | auto-render stops when any priority > 0 exists; fragile |
+| P4 | Each feature renders its own pass | many owners; no single pass order |
+| P5 | A render graph (named passes with inputs and outputs) | right at 10+ passes; we have 4 |
+
+**Recommendation: P2.** A feature module may register:
+
+- **a post effect**, as `{ effect, slot }` in a fixed slot list: `beforeBloom` · `bloom` · `afterBloom` ·
+  `beforeToneMap`. Today: `BoostBlur` before bloom, `Bloom`, `ToneMapping` last. The render system builds the
+  chain once and rebuilds it on a tier change.
+- **an off-screen pass**, as a system in `prerender` (rear view, sky bake).
+- **an overlay**, as a system in `overlay` (the rear panel).
+
+A feature never calls `gl.render` for the main frame.
+
+### 5.4 Quality tiers
+
+`quality/quality.constants.ts` `PROFILES` has 10 knobs. They act at three different times:
+
+| When | Knobs | Where | Problem |
+|---|---|---|---|
+| Mount (a `QualityGate`) | `post`, `rocks`, `rearView` | `world-scene.tsx:36`, `game-environment.tsx:13`, `rear-view.tsx:12` | a remount reorders the frame (hazard 4) |
+| Every frame (`qualityProfile()`) | `dprCap`, `msaa`, `skyMotion` | `dev/render-scale.utils.ts:8`, `scene-effects/scene-effects.utils.ts:8`, `nebula-baker.ts:202` | none |
+| Build time only | `skyFace`, `noiseSize`, `surfaceRes` | `nebula-baker.ts:80`, `nebula-noise-volume.ts:52`, `track-texture.ts:15` | a mid-race step-down does not change them |
+
+Step-down: `QualityStepDown` = drei `PerformanceMonitor` → `stepDownQuality`
+(`game/quality-step-down/quality-step-down.tsx:6`). Only `game/game-shell.tsx:11` mounts it, so
+`/test-level` never steps down.
+
+| # | Option | Notes |
+|---|---|---|
+| Q1 | Keep today | three timings, one of them silent |
+| **Q2** | **Quality is a service (§6.1 rule C, item 5). A feature module declares a `quality` hook: `( profile ) => settings`. One `react`-phase system applies a tier change once, on the frame it happens** | one place per change; no remount |
+| Q3 | Tier as a world trait; views subscribe with `useTrait` | one re-render per tier change (rare), but keeps mount-time gating |
+| Q4 | Per-feature budget (ms or draws) and an auto-tuner | needs GPU timing we do not have [unmeasured] |
+| Q5 | Only a reload applies a tier | simple; bad mid-race |
+
+**Recommendation: Q2.** A gated feature does not unmount. Its systems and views stay registered, and its
+hook turns it off (`visible = false`; the system returns early). A build-time knob rebuilds its resource on
+a tier change, or the profile marks it `reload-only` and the UI says so (§8 Q9). `QualityStepDown` moves to
+the shared canvas shell, so `/test-level` and the game behave the same.
+
+### 5.5 Perf hooks
+
+The scheduler gives per-system timing. In dev it wraps each system in `performance.now()` and keeps a
+rolling median per system and per phase. `dev/frame-meter.ts` reads it. The wrap is dev-only, so production
+pays nothing. GPU time per phase needs `EXT_disjoint_timer_query_webgl2` [not on every device;
+unmeasured]. Until then the `perf-analysis` skill's readPixels-synced median stays the GPU number.
+
+### 5.6 Problems and stages
+
+Problems are ranked in §2 (ranks 3, 6, 10, 14). Two details not in §2:
+
+- Per-frame allocation: about 25 koota `query`/`queryFirst` calls per frame (koota 0.6.6 copies the result);
+  `track-blocks/track-blocks.utils.ts:49` makes one object per sealed block per frame;
+  `game/ecs/net-systems.ts:41` spreads the input each step.
+- Dial-sync: the 6 components write even when nothing changed.
+
+Stages are S14–S21 in §7.
 
 ## 6. State and code organisation inside a module
 
@@ -574,7 +777,7 @@ has` (`koota/dist/types-DONaXEhM.d.ts:441–460`). React hooks accept a world as
 
 | | Option | Correctness | One clock | Re-render cost | Idiom fit |
 |---|---|---|---|---|---|
-| A | Keep both models; write the rule down only | same as today | no change | no change | low: rank 7 stays |
+| A | Keep both models; write the rule down only | same as today | no change | no change | low: rank 8 stays |
 | B | Everything into koota, including room, audio and input devices | risk: services with lifetimes become traits | yes | low | low: NN-8 keeps services on module singletons |
 | **C** | **Split by kind:** per-thing data → entities and tags; per-run state → world traits; services → module singletons | good: one home per kind; one reset | yes | low | high: `ecs.md` rules 1, 3, 5 and NN-8 |
 | D | zustand for global state, koota for entities | good | two subscription systems | low | medium: duplicates world traits |
@@ -659,7 +862,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S1 | One config source on the client. The predictor and client systems read the room's config. Fixes `/test-level` mispredicts. | `net/prediction.ts`, `game/ecs/systems.ts`, `game/ecs/net-systems.ts`, `routes/beat-deck/deck-flight.ts`, `routes/test-level/test-level-room.ts`, `net/run-room-like.ts` | — |
 | S2 | Input action map (`fireForward`, `fireBack`, `next`, `previous`, `drop`, `mute`). Delete `synthKey`. Base for #348. | `game/input/power-select.ts`, `gamepad.ts`, `synth-key.ts`, `touch-dpad.constants.ts`, `game/net-canvas.tsx`, `audio/game-audio/game-audio.tsx` | — |
 | S3 | Event-queue helper (A1). Move the 6 queues onto it. One overflow rule. | `hit-events.ts`, `mine-shock-events.ts`, `tug-events.ts`, `block-burst/*`, `meteor-chunks/*`, `meteor-scorch/*`, new helper | — |
-| **F1** | **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, the O1 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, §5 phases |
+| **F1** | **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, feature systems fed to the S16 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, S16 |
 | **F2** | **Pilot: move tug into two feature folders.** Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
 | F3 | Owner go / no-go on the F2 numbers. | — | F2 |
 | F4… | One feature per stage: bolt, seeker, mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F3 |
@@ -667,15 +870,28 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |
 | S7 | Generic bridge helper `mirrorCollection( schemaMap, spawn, patch )` replaces the 8 maps. | `net/attach-room-to-world.ts` | S4 |
-| S8 | Input send on the sim tick (flush after `predictor.record`). Delete the `setInterval`. | `net/attach-room-to-world.ts`, `game/ecs/net-systems.ts` | §5 phases |
-| S9 | Event queues move to A3 (world-trait rings, declared per feature). | S3 helper and its consumers | S3, S5, F1 |
+| S8 | Input send on the sim tick: a `simulate`-phase system flushes after `predictor.record`. Delete the `setInterval`. | `net/attach-room-to-world.ts`, `game/ecs/net-systems.ts` | S16 |
+| S9 | Event queues move to A3 (world-trait rings, declared per feature). Cursors reset in `cleanup`. | S3 helper and its consumers | S3, S5, F1, S16 |
 | S10 | Rename scratch-only `.state.ts` files (e.g. `tug-line.state.ts` → `.scratch.ts`) with an ls-lint rule. | `tug-line.state.ts` and importers, `.ls-lint.yml` | — |
 | S11 | Group the world that no feature owns in `game/scene/` (`track/`, `ships/`, `sky/`, `post/`), one per commit. | `game/scene/**` | a window with no held `game/scene/` files |
 | S12 | Messages: server → client events through `ctx.broadcast` (a6); client → server commands through the 0.17 `messages` table with `validate()` (a3). | `apps/server/src/rooms/run-room.ts`, `run/combat.ts`, `net/attach-room-to-world.ts`, the 8 files with `*_MESSAGE` constants | F1, validator approval (§8 Q7) |
 | S13 | Action edges in `PlayerInput` (C3). Drop `USE_POWERUP_MESSAGE`. | `schema.ts` input, `net/prediction.ts`, `run/combat.ts`, `game/net-canvas.tsx` | S2, S8, netcode ADR |
 
-Order: S1, S2, S3 and S10 can start now. F1 waits for S0 and the §5 phase list. §5 stages merge in when
-that section lands.
+Frame schedule, render and quality stages (§5, workerthree):
+
+| Stage | Change | Files | Needs |
+|---|---|---|---|
+| S14 | One phase constants file (O8). Replace `AFTER_RENDER_SYNC` ×3, `PASS_PRIORITY`, `HUD_PRIORITY`, `PLAIN_RENDER_PRIORITY`, `−1`. No behaviour change. | new `game/frame/frame-phase.constants.ts`; `engine-light/*`, `exhaust-field/*`, `boost-streaks/*`, `rear-view-pass/*`, `plain-render/*`, `nebula-sky.tsx` | — |
+| S15 | Fix hazards 1–2: camera and `Sim` readers take `PHASE.view` (after `sync`). | `sky-follow.tsx`, `near-fill/*`, `asteroid-band/*`, `meteor-scorch/*`, `meteor-chunks/*`, `block-debris/*`, `track-blocks/*`, `meteor-strikes/*`, ship views | S14 |
+| S16 | Scheduler (O1). Split `NetLoop`/`DeckLoop`/`LandingRig` into `simulate` + `sync` systems. Dev order print and per-system timing (§5.5). | new `game/frame/schedule.ts`; `game/net-loop/*`, `routes/beat-deck/deck-loop/*`, `routes/home/landing-rig/*`, `dev/frame-meter.ts` | S14 |
+| S17 | Move gamepad, loopback tick and HUD DOM writers from `addEffect` into `input` / `simulate` / `cleanup`. | `game/input/gamepad.ts`, `net/loopback-room/loopback-room.ts`, 4 HUD files | S16 |
+| S18 | Render system (P2) with the post-effect slot list. | `game/scene/scene-effects/*`, `plain-render/*`, `world-scene.tsx`, `landing-scene.tsx` | S16 |
+| S19 | Quality hooks (Q2). Remove `QualityGate` remounts. Rebuild build-time knobs on a tier change. Step-down in the shared shell. | `quality/*`, `game-environment.tsx`, `rear-view.tsx`, `nebula-baker.ts`, `track-texture.ts`, `nebula-noise-volume.ts`, `game/game-shell.tsx` | S18, §8 Q9 |
+| S20 | One dial-sync system (`react` phase) that writes only on a tuning change. | the 6 dial-sync files, `dev/tuning.ts` | S16 |
+| S21 | Hoist koota queries with `createQuery` (`koota/dist/index.d.ts:28`). Measure the gain first (§8 Q10). | the ~25 query sites | S16 |
+
+Order: S1, S2, S3, S10 and S14 can start now. S16 (scheduler) unblocks F1, S8, S9 and S17–S21. F1 also
+waits for S0.
 
 ## 8. Open questions
 
@@ -688,4 +904,9 @@ that section lands.
 7. Owner: approve a direct Standard Schema dependency (valibot or zod) for validated commands (a3, §4.5)?
    Without it, commands use a2 and stay unvalidated. (The former Q7, schema without a central edit, is
    answered: yes, by `schema()` composition, §3.4.)
-8. workerthree: the phase list (§3.5, §5), and whether a feature may register a post effect or quality hook.
+8. Owner: accept the frame plan (§5)? It has nine fixed phases, O1 ordering for systems and phase-only
+   ordering for views, and one render system (P2) with a fixed list of post-effect slots. It also makes
+   quality a service with per-feature hooks (Q2).
+9. Owner: may a tier change rebuild the sky cube and track textures mid-race (one hitch), or should those
+   knobs be `reload-only` (§5.4)?
+10. Measure before S21: does `createQuery` remove the per-call copy in koota 0.6.6, or only the hash lookup?
