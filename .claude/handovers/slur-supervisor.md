@@ -106,6 +106,10 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - Supervisor built (owner ask): drei <Stats /> dev-only, mounted in root.tsx App (3d9eed0). Unchecked in browser;
   may overlap top-left HUD — offer move/toggle.
 
+- OWNER DIRECTION for #349: FEATURE MODULES — e.g. tug-line exports traits/systems/views by convention, the engine
+  auto-wires them. Sent to workerone as the RFC's centre: contract, registry vs import.meta.glob, declared system
+  order, shared-sim half vs client half, no cross-module internals, tug-line pilot.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
