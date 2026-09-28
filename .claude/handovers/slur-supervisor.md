@@ -94,6 +94,11 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   step (race profile per tier, cheaper still sky, .glb models) → workerthree PLAN FIRST. Lighting: await owner
   check of #345 (8c94537) on /test-level before the next lighting lane.
 
+- OWNER OVERRIDE (later same night): ARCHITECTURE FIRST. #348 and the #344 perf step PAUSED. All three on #349:
+  workerone leads + sole writer of docs/RFC-349-ARCHITECTURE.md (claimed, clear); workertwo = net/input/state/
+  server-config section; workerthree = render/useFrame schedule/pipeline/quality section. RFC only, no source edits.
+  On RFC summary → relay to owner. The deploy is still worth doing now (ships phone + lighting fixes).
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
