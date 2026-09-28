@@ -45,7 +45,9 @@ scene-effects.
   `exhaust-field/*`, `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`.
 - `dev/tuning-schema.ts` + `dev/tuning-panel/tuning-panel.tsx`: ON LOAN to workerthree (#356). Do not
   edit until the supervisor says workerthree committed.
-- Part 2 wants `track-texture.ts` (Wear) and `track-materials.ts` (anisotropy). Claim first.
+- `track-texture.ts` (Wear) and `track-materials.ts` (anisotropy): CLEARED by the supervisor for part 2
+  (2026-09-29). Nothing edited yet.
+- Both owner questions below are with the owner (supervisor confirmed).
 
 ## Next
 
