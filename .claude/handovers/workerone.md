@@ -1,34 +1,34 @@
-Agent: workerone · Lane: #349 architecture RFC (LEAD, just started) · #345 shipped, owner check pending · #337/#339 open until deploy · Updated: 2026-09-28
+Agent: workerone · Lane: #349 architecture RFC (LEAD) · #345 shipped, owner check pending · #337/#339 open until deploy · Updated: 2026-09-28
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#349 "Architecture RFC: code organisation, ECS drift, server-owned game config". RFC ONLY, no source
-edits. Supervisor says it is THE priority now. I LEAD and own the doc. workertwo writes the
-net/input/state/server-config section. workerthree writes the render/useFrame-schedule/quality-tier
-section. They send me their sections; I merge them and keep one voice.
+#349 RFC ONLY, no source edits. I own `docs/RFC-349-ARCHITECTURE.md` and write it in one voice.
+OWNER DIRECTION (via supervisor, 2026-09-28): the central proposal is FEATURE MODULES — a folder exports
+traits, systems (declared phase + before/after), views, net messages, dials; the engine wires them.
+"Scale by adding a folder, not by editing central files." Pilot = tug.
 
 ## Done
 
-- #349: read the issue (`gh issue view 349`) and `conventions/ecs.md` (TL;DR rules 1–6 and the systems-loop
-  section). Sent slur-supervisor a claim for NEW `docs/RFC-349-ARCHITECTURE.md`. No answer yet.
-- `8c94537` #345 option 6 (track metal #7b7f86, `Hull.baseColor` #4a4d52, KeyLight, docs rev. 9 / ADR-029).
-  Commented on #345 and left it open for the owner. Owner brief sent to the supervisor.
-- `7022faf` memory index line. Earlier: #339 `fda4814` `e8bb786` `8fc2486`, #337 `59a4599` (not deployed).
+- Draft RFC committed (see the commit that carries this handover). Sections: §1 measured map (incl. §1.8
+  tug footprint) · §2 ranked problems · §3 feature modules (contract, two halves, schema exception, O1
+  ordering, D1→D3 discovery, E1 boundary lint, tug pilot measures) · §4 workertwo's section MERGED ·
+  §5 PENDING (workerthree) · §6 data rule C + constant tiers + folders · §7 stages S0–S11 + F1–F4 · §8 questions.
+- Sent the outline to workertwo and workerthree. Sent both the feature-module direction.
+- `8c94537` #345 option 6. Earlier: #339 `fda4814` `e8bb786` `8fc2486`, #337 `59a4599` (not deployed).
 
 ## State
 
-- Issue #349 asks for: a measured current map (koota entities vs module singletons, useFrame count and
-  order, where constants live), problems ranked by cost to dev speed and to look/perf work, ≥5 options
-  per mechanism (NN-13), a staged migration that never blocks feature work, and the files each stage touches.
-- Issue inputs, all [unmeasured] by me: only ships/bolts/seekers/mines are koota entities; blockWorld,
-  pickup-state, the *-events queues and ~14 *.state.ts singletons hold the rest; ~44 useFrame callbacks
-  with no schedule; server koota is capped at 16 worlds per process (WORLD_ID_BITS 4). Gameplay constants
-  should become server-owned room config in 3 tiers: rules / track gen / look (relates to #70, #23).
-- Measured by me in #345: three useFrames run at priority 0.25 (`AFTER_RENDER_SYNC` in engine-light,
-  exhaust-field, boost-streaks). Any priority > 0 turns off R3F auto-render
-  (`@react-three/fiber` events-*.esm.js:1117). PlainRender (priority 1) or the composer renders.
+- Tug footprint (measured, `rg -il tug`, tests excluded): 11 own files + 19 central files. Pilot target:
+  ≤ 2 registry lines + the schema exception.
+- koota 0.6.6 has no scheduler (index.d.ts:89 export list). World traits exist (types-*.d.ts:441–460);
+  `useTrait`/`useTraitEffect` accept a World (react.d.ts:26,28). Verified.
+- Vite 8.2.1 has `import.meta.glob` (types/importGlob.d.ts); client does not use it; server/shared cannot.
+- Server has no koota. MAX_ROOMS = 12 (limits.ts:1). Cap 16 live worlds.
+- Predictor hard-codes DEFAULT_SIM_CONFIG in 4 places (prediction.ts:52, systems.ts:16, net-systems.ts:49,
+  deck-flight.ts:21); /test-level loopback uses tunedSimConfig → mispredicts.
+- `resetSlot()` has no caller (power-select.ts:54) — real cross-run leak.
 
 ## Uncommitted
 
@@ -36,41 +36,23 @@ section. They send me their sections; I merge them and keep one voice.
 
 ## Held files
 
-- `docs/RFC-349-ARCHITECTURE.md` (new) — CLEARED by the supervisor. Only I write it.
-
-## Agreed with workerthree (render section)
-
-- Their section "R. Render & frame schedule": R1 map of every useFrame/addEffect · R2 schedule as-is vs
-  named phases (input → net/predict → sim-sync → visual systems → pre-render → render → after-render; one
-  priority constants file) · R3 render pipeline, who owns gl.render · R4 quality tiers as a system · R5 perf
-  hooks · R6 problems + ≥5 options + stages. Their measurements: 46 useFrame sites (39 at prio 0, 7 explicit),
-  6 addEffect users.
-- I own the data model (entity/trait/tag vs singleton). They own the tick order, including where the koota
-  visual systems run. They send a scratchpad path or text; I merge and rank all problems together.
-- workertwo (section "Net, input, client state, room config"), agreed: 1 map (net path, input sources in
-  current-input.ts, 20 *.state.ts files + blockWorld in game/block-state.ts + pickup-state.ts + 3 event
-  queues, config sources) · 2 problems (unranked) · 3 options ≥5 each for state home, event queues and room
-  config (3 tiers, locked at GO) · 4 stages + files · 5 server koota maxWorlds 16 (WORLD_ID_BITS 4, verified
-  by workertwo: koota dist/chunk-ZWIGMIL4.js:34,74). They map; I own the ECS target model; their options
-  point at it. They send a scratchpad path or text.
+- `docs/RFC-349-ARCHITECTURE.md` — only I write it.
 
 ## Next
 
-1. Get the supervisor's answer on the doc path.
-2. SendMessage workertwo and workerthree with a section outline and agree on it. Draft outline:
-   §1 Current map (measured) · §2 Problems ranked · §3 Entities and state (mine: ECS drift, singletons,
-   tags vs values) · §4 Net/input/state + server-owned config tiers (workertwo) · §5 Render, useFrame
-   schedule, quality tiers (workerthree) · §6 Code organisation and constants (mine) · §7 Staged migration
-   + files per stage (mine, merging theirs) · §8 Open questions. Each mechanism: ≥5 options, weighed.
-3. Measure my part: `grep -rn "useFrame(" apps/client/app`, list `*.state.ts`, `world.spawn`/traits in
-   `game/ecs`, and module-level `let`/`Map` singletons. Verify WORLD_ID_BITS in node_modules/koota.
-4. Write the doc, merge the sections, send the supervisor a summary to relay.
-5. #345: close after the owner signs off. After deploy: prod /metrics, then close #337/#339.
+1. Wait for workerthree's §5 scratchpad path (they are at a seam; handover d5efbe3). Merge into §5: phase
+   list, O1 confirmation, system-vs-view classification of 46 useFrame sites, quality/post hooks for modules.
+   Fold §5 problems into §2 ranking and stages into §7.
+2. Wait for workertwo's net-half answer: messages, schema fields without a central edit (§3.4, verify
+   installed @colyseus/schema), Rules namespace in B2; optional §4.3 C input options. Merge into §3.4/§4.
+3. Send the supervisor the summary to relay to the owner (§8 questions 1–6).
+4. #345: close after owner sign-off. After deploy: prod /metrics, then close #337/#339.
 
 ## Open questions
 
+- Owner: §8 of the RFC (feature modules, D1→D3, O1, rule C, B2, #70 scope, dev dials in hosted rooms).
 - Owner (#345): hulls dark (#4a4d52, current) or bright (#7b7f86)?
-- Kick button on the results rows (#342 follow-up)? Still with the owner.
+- Kick button on the results rows (#342 follow-up)?
 
 ## Lessons → memory
 
