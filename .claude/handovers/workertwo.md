@@ -1,31 +1,38 @@
-Agent: workertwo · Lane: #338 lobby chat on the ship-selection screen (PLANNING) · Updated: 2026-09-28
+Agent: workertwo · Lane: #338 lobby chat on the ship-selection screen · Updated: 2026-09-28
 
 ## Goal
-Text chat on the lobby screen of `/game/:roomId`. The server relays each line through room messages, not schema state. The server trims the text, caps it at 140 chars, rate-limits each client and stamps the call sign. A player who joins mid-lobby sees the last 30 lines.
+Text chat on the lobby screen of `/game/:roomId`. The server relays each line through room messages, not schema. It trims the text, caps it at 140 chars, allows 5 lines per 5 s and stamps the call sign. A mid-lobby joiner sees the last 30 lines.
 
 ## Done
-- Plan sent to slur-supervisor for owner approval. No edits yet.
+- 282428f feat(#338): lobby chat. Pushed to dev.
+  - Shared `chat.ts`: message names, `CHAT_MAX_CHARS` 140, `CHAT_HISTORY_LINES` 30, `cleanChatText()`.
+  - Server `rooms/chat-log.ts`: `ChatLog` (sliding-window limiter, 30-line ring). `run-room.ts` accepts lines only in the lobby, only from a seated player, and forgets the sender on leave.
+  - Client `net/chat-store.ts`: attached in `matchmaking.ts` `enter()`. It pulls history on attach and again on reconnect.
+  - UI `overlays/lobby-chat/`: LobbyChat shell, ChatLines (the only subscriber), ChatInput (keydown stopPropagation, Escape blurs).
+  - GDD §3: one bullet.
 
 ## State
-- `@colyseus/sdk` 0.17.43 `Room.mjs:292`: a message type with no handler is dropped with a warn. So the client pulls history (it sends `chatHistory` after it attaches its handlers). The server does not push it in onJoin.
-- `@colyseus/core` `maxMessagesPerSecond` disconnects a client that sends too much. It is unfit for chat. Use our own per-session limiter (5 lines / 5 s).
-- Unguarded window keydown listeners in the lobby: `game/input/keyboard.ts` (WASD/Space), `audio/game-audio` (M), `dev/sim-freeze.ts` (P). Plan: the chat input's onKeyDown calls stopPropagation. keyup is not stopped.
-- React 19 root-container listening, and whether stopPropagation reaches window listeners [unmeasured; recalled].
-- #337 landed 59a4599. run-room.ts is free once workerone releases it.
+- shared 550/550, server 53/53, client 589/589. `pnpm typecheck` clean. `pnpm lint` exit 0.
+- React 19.2.8 `createRoot` → `listenToAllSupportedEvents(container)`, and synthetic stopPropagation calls the native one (verified in react-dom-client.development.js).
+- Headless two-client check on :5173 at 1440×900 and 390×844:
+  - Typing "wasd m e" in chat left the roster unchanged and did not start the race.
+  - Joiner B got A's 2 history lines.
+  - A saw B's line.
+  - The panel sits right of "YOUR RUN" on desktop and stacks under COPY LINK on mobile.
+- Prod (slur.kurmah.studio) [unmeasured; waits for the owner's deploy].
 
 ## Uncommitted
 none
 
 ## Held files
-none yet. The claim list is in the plan: shared chat.ts + index.ts, server chat-log.ts + room-chat.test.ts + run-room.ts, client net/chat-store.ts, matchmaking.ts, overlays/lobby-chat/*, lobby-overlay.tsx, overlays.test.tsx, docs/GDD.md.
+Released after prod verification: the #338 files in 282428f.
 
 ## Next
-1. Wait for the owner's approval via slur-supervisor. Get "clear" on the claims.
-2. Build shared → server (with tests) → client store → UI → focus test.
-3. `pnpm typecheck && pnpm test && pnpm lint`. Commit by pathspec. Push. Close #338 with the SHA.
+1. The owner runs ./scripts/deploy.sh. Then verify on slur.kurmah.studio with two clients.
+2. `gh issue close 338` with 282428f.
 
 ## Open questions
-- Would the owner rather have typingTarget guards in the 3 unguarded listeners than stopPropagation at the chat input?
+none
 
 ## Lessons → memory
-none
+none (nothing durable beyond the commit)
