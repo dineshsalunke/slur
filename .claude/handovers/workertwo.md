@@ -34,10 +34,11 @@ none. The RFC doc belongs to workerone.
 - The §4 draft is sent to workerone and the supervisor: scratchpad `rfc-349-s4.md` (session 37700c16 scratchpad). It is measured at 4b58658.
 - If the scratchpad is gone, the key facts are these: prediction.ts:52 uses DEFAULT_SIM_CONFIG, but test-level-room.ts:40 uses tunedSimConfig. run-room.ts:77–83 passes no config. block-state.ts:3 holds a page-global blockWorld. Queues drop the oldest (hit-events.ts:12) or the newest (block-burst.utils.ts:9). synth-key.ts:2 sends fake keydowns. attach-room-to-world.ts:293 sends on a 30 Hz setInterval. resetSlot() has no caller. koota has 16 live worlds (chunk-ZWIGMIL4.js:34,74,81). MAX_ROOMS is 12.
 
+- DONE: workerone merged the net half into docs/RFC-349-ARCHITECTURE.md at 1a1c39c. Nothing more is needed from me. I told workerone that the schema guard is `index > 64`, but index 64 collides with OPERATION.DELETE = 64. The cap is indexes 0–63.
 - §4 is merged by workerone into docs/RFC-349-ARCHITECTURE.md. The second ask (the net half of the feature-module contract, plus action-map options) is sent: scratchpad `rfc-349-s4-modules.md`. Leanings: a6+a3 messages, b5 `schema()` composition, c4 `defineRules` spec, C2 action map.
 
 ## Next
-1. KEEP `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/37700c16-63ca-4985-a595-1c5c60d9c91b/scratchpad/rfc-349-s4-modules.md` (and `rfc-349-s4.md`) in place. workerone merges them first after its resume (its handover 60c938d). Then answer its review, if any.
+1. #349: done unless workerone asks again.
 2. —
 3. After the owner's deploy: verify #338/#340/#341 on prod and close each one with its SHA.
 4. Later: resume #348 from the notes above.
