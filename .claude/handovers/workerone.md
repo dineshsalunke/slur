@@ -1,25 +1,24 @@
-Agent: workerone · Lane: #331 pickups 5u (shipped) · Updated: 2026-09-28
+Agent: workerone · Lane: #336 deploy to slur.kurmah.studio · Updated: 2026-09-28
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#331: scale every pickup so its bounding box is about 5u. Done. Waiting for the owner's /test-level look.
+#336: SLUR as one container, live at https://slur.kurmah.studio.
 
 ## Done
 
-- #329: `350febc` (pushed, closed).
-- #333: `69edb82` + dials `41bde5a` (pushed, closed).
-- #331: `fb878e1` (pushed, closed). `fitPickup(parts, PICKUP_SIZE)` in `pickup-instances.utils.ts` scales every distinct geometry once, so the union bbox's longest side = 5. Called from the `PickupInstances` body memo. `combat-look.ts`: PICKUP_SIZE 5, PICKUP_HOVER 2.4 → 3.2, PICKUP_POOL_RADIUS 3.2 → 4. grabR unchanged (3.2).
+- `dc2af77` (pushed): server serves the SPA + `GET /healthz` through the Colyseus 0.17 `express` option (`apps/server/src/http.ts`), only when `SLUR_CLIENT_DIR` is set. Client connects same-origin (`wss` on https) in prod, `ws://hostname:VITE_SERVER_PORT` in dev. `@types/express` devDep. Multi-stage `Dockerfile` (build on BUILDPLATFORM, prod deps + runtime amd64, LFS-pointer guard, HEALTHCHECK), `.dockerignore`, `scripts/deploy.sh` (defaults: root@168.144.186.50, ~/.ssh/kurmah_ed25519, /opt/slur, service `slur`).
 
 ## State
 
-- Pre-scale longest sides (measured): bolt 3.45 · seeker 4.22 · mine 1.96 · boost 2.46 · shield 2.70 · portal 2.72 · tug 2.75.
-- Factors: ×1.45 · ×1.18 · ×2.55 · ×2.03 · ×1.85 · ×1.84 · ×1.82.
-- Bottom clearance at the bob low point ≥ 0.25u for all 7 kinds (test). Largest half-height after the fit is 2.5 → clearance 3.2 − 2.5 − 0.22 = 0.48.
-- Tests at `fb878e1`: client 580/580, typecheck 0. Shared 541/546 and one lint format error, all in workertwo's uncommitted #334 files (step.ts, bounce-contact*). Not this lane.
-- Pickup in chase-camera frame: calculated, not captured [unmeasured].
-- Collect swell reaches ~7.5u for 0.13 s [unmeasured visually].
+- Colyseus router answers first, express second (read in `@colyseus/core` router/index.mjs) → the SPA catch-all cannot shadow /matchmake.
+- SIGTERM: Colyseus registers SIGINT/SIGTERM → gracefullyShutdown by default (read in utils/Utils.mjs). No extra code.
+- Dev routes: already gated in `routes.ts`; prod manifest holds only `routes/home` + `routes/game/route` (measured in the image).
+- Local image check on :8080 (container stopped after): /healthz 200, / 200, /game/x 200 (SPA fallback), POST /matchmake 200. Node client: gen `phrase`, phase 0 → 2, ship z 227 after 7 s. Headless Chrome: Host → /game/:id → Go → race clock 00:04, ship model drawn, 0 console errors, ws `ws://localhost:8080/...`.
+- Image: 121 MB content, 462 MB disk.
+- Tests at `dc2af77`: shared 547/547, server 40/40, client 581/581; typecheck 0; lint 0 errors.
+- Deploy NOT run: `./scripts/deploy.sh` was denied by the auto-mode classifier (Production Deploy). Needs the owner.
 
 ## Uncommitted
 
@@ -27,18 +26,17 @@ None of mine.
 
 ## Held files
 
-None. (combat-look.ts, pickup-instances/* released.)
+None after the deploy lands (Dockerfile, .dockerignore, scripts/deploy.sh, apps/server/src/{index,http}.ts, apps/client/app/net/client.ts released on DONE).
 
 ## Next
 
-1. Owner checks /test-level: pickup size and float, the collect swell, the portal pickup next to a real portal (R5), and the pool glow.
-2. Retune PICKUP_HOVER / PICKUP_POOL_RADIUS / PICKUP_SIZE in `combat-look.ts` if the owner asks.
+1. Owner runs `! ./scripts/deploy.sh` (Docker Desktop is running; needs `git lfs pull` + ssh key).
+2. Verify https://slur.kurmah.studio/healthz 200, host + Go in headless Chrome over wss.
+3. Quit Docker Desktop. `gh issue close 336 -c "dc2af77 …"` after the owner plays a race.
 
 ## Open questions
 
-- #333 pass ripple: wanted?
-- Seed 4 Freighter twist-motif bump (from #327, avoid pilot): worth an issue?
-- #325: is the marigold sleeve too loud at distance?
+- None.
 
 ## Lessons → memory
 
