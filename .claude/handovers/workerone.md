@@ -43,8 +43,24 @@ traits, systems (declared phase + before/after), views, net messages, dials; the
 1. Wait for workerthree's §5 scratchpad path (they are at a seam; handover d5efbe3). Merge into §5: phase
    list, O1 confirmation, system-vs-view classification of 46 useFrame sites, quality/post hooks for modules.
    Fold §5 problems into §2 ranking and stages into §7.
-2. Wait for workertwo's net-half answer: messages, schema fields without a central edit (§3.4, verify
-   installed @colyseus/schema), Rules namespace in B2; optional §4.3 C input options. Merge into §3.4/§4.
+2. MERGE workertwo's net-half section — RECEIVED, NOT YET MERGED:
+   `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/37700c16-63ca-4985-a595-1c5c60d9c91b/scratchpad/rfc-349-s4-modules.md`
+   (4.6 facts, 4.7 options a1–a6 / b1–b6 / c1–c6, 4.3 C action map C1–C6). Their headline, verified by
+   them against @colyseus/schema 4.0.30 / core 0.17.47:
+   - `defineTypes` (annotations.d.ts:76) and `schema()` (:108) exist; call order = wire order
+     (Metadata.ts:202–206). Client decodes by reflection (matchmaking.ts:65/70/75), so order only needs to
+     be deterministic on the server.
+   - HARD CAP 64 fields per Schema (Metadata.ts:73); PlayerState has 39 → 25 left for all features.
+   - Child Schema per feature breaks the flat sim (tug fields flat on PlayerState/SimShip, SIM_SHIP_KEYS /
+     SIM_FLOAT_KEYS sim/types.ts:83). Lean b5: `schema({...core, ...tug.fields})`; key lists from the same object.
+     → rewrite RFC §3.4: the schema exception goes away; add the 64-field cap as a new ranked problem/risk.
+   - Messages: Colyseus 0.17 declarative `messages` + validate() (Room.d.ts:174, :51), unused. Lean a6
+     (events via RunSim ctx.broadcast) + a3 for commands once a validator is approved.
+   - Config: lean c4 — one `defineRules` spec per feature drives defaults, server clamp, B2 key check and
+     dev dials; removes 8 duplicated Tug.* dials (tuning-schema.ts:118–125). Keys `tug.pullS`; server
+     merges the fround-ed float32 value.
+   - Action map: C2 now (base for #348), C3 (action bits in PlayerInput) later under a netcode ADR.
+   Update §8 Q7 (answered) and §4.3 C.
 3. Send the supervisor the summary to relay to the owner (§8 questions 1–6).
 4. #345: close after owner sign-off. After deploy: prod /metrics, then close #337/#339.
 
