@@ -132,3 +132,4 @@ One line per memory; each memory lives in its own file here.
 - [Sim ship y is 0 on the deck](sim-ship-y-is-zero-on-deck.md) — hover 0.35–1.25 is client-only; shared height tests need a ride offset (#325 portalRideY)
 - [Weave pilot must use the run-up](weave-pilot-must-use-the-run-up.md) — flat weave face since #327; aim at the lane from z0 − weaveRunUp
 - [Test-level dials miss the predictor](test-level-dials-miss-the-predictor.md) — tunedSimConfig is server-only; dial only fields simulate() never reads
+- [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — holding strafe into a wall hits it each tick; charge fresh contacts only
