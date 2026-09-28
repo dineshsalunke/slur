@@ -81,6 +81,9 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   (owner decisions), #15, .glb models issue (owner not yet answered).
 - Tree clean + pushed after 8c94537/1236573 → deploy window open until workertwo writes.
 
+- #347 DONE 7c34699 (closed). #346: owner picked KeyR = previous, dev mirror toggle KeyR → KeyV
+  (rear-view-toggle.ts added to workertwo's claim).
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
