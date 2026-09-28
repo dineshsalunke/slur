@@ -105,6 +105,21 @@
     src: url( "/fonts/chakra-petch-700-latin.woff2" ) format( "woff2" );
 }
 
+@utility still-space {
+    background:
+        radial-gradient(
+            60% 30% at 50% 58%,
+            color-mix( in oklab, var( --color-marigold ) 16%, transparent ) 0%,
+            transparent 100%
+        ),
+        radial-gradient(
+            90% 60% at 70% 20%,
+            color-mix( in oklab, var( --color-space ) 80%, transparent ) 0%,
+            transparent 100%
+        ),
+        var( --color-void );
+}
+
 @utility scrim {
     background:
         radial-gradient(

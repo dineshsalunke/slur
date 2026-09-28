@@ -5,7 +5,7 @@ import { createPrivate, joinLobby, joinRoom, leaveRoom, quickPlay } from '../net
 import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { NAME_KEY } from './home/call-sign-field/call-sign-field.constants';
-import { LandingScene } from './home/landing-scene/landing-scene';
+import { LandingBackdrop } from './home/landing-backdrop/landing-backdrop';
 import { BAD_CODE, NO_CODE, REMOVED, RUN_CLOSED } from './home/menu-form';
 import { menuErrorFor, menuIntent } from './home/menu-form.utils';
 import { MenuStrip } from './home/menu-strip/menu-strip';
@@ -17,9 +17,9 @@ export function meta( _args: Route.MetaArgs ) {
     ];
 }
 
-export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
+export function clientLoader( { request }: Route.ClientLoaderArgs ) {
     leaveRoom();
-    await joinLobby();
+    joinLobby().catch( () => {} );
     const run = new URL( request.url ).searchParams.get( 'run' );
     const notice = run === 'closed' ? RUN_CLOSED : run === 'removed' ? REMOVED : null;
     return { savedName: localStorage.getItem( NAME_KEY ) ?? '', notice };
@@ -49,7 +49,7 @@ export async function clientAction( { request }: Route.ClientActionArgs ) {
 export default function Home( { loaderData }: Route.ComponentProps ) {
     return (
         <Fragment>
-            <LandingScene />
+            <LandingBackdrop />
             <Scrim />
 
             <main className="relative z-[2] flex min-h-dvh flex-col font-readout text-readout selection:bg-marigold selection:text-deep">

@@ -2,6 +2,7 @@ import { MatchMakeError } from '@colyseus/sdk';
 import { KICKED_CODE, normalizeRoomCode } from '@slur/shared';
 import { redirect } from 'react-router';
 import { GameShell } from '../../game/game-shell';
+import { preloadShipModels } from '../../game/scene/ship-model/preload-ship-models';
 import { joinByLink, waitForDescriptor } from '../../net/matchmaking';
 import { RoomProvider } from '../../net/room-context/room-context';
 import { NAME_KEY } from '../home/call-sign-field/call-sign-field.constants';
@@ -16,6 +17,7 @@ export async function clientLoader( { params }: Route.ClientLoaderArgs ) {
     if ( ! code ) throw redirect( '/?run=closed' );
     if ( code !== params.roomId ) throw redirect( `/game/${ code }` );
     const name = localStorage.getItem( NAME_KEY )?.trim() || 'Racer';
+    preloadShipModels();
     try {
         const room = await joinByLink( code, name );
         const descriptor = await waitForDescriptor( room );

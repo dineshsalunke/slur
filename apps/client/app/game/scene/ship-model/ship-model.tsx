@@ -8,7 +8,7 @@ import { accent } from '../accent';
 import { guardLfsPointer } from '../gltf-lfs-guard';
 import { applyHullLook } from '../hull-look';
 import { isDead } from '../ship-dead';
-import { SHIP_VISUALS, shipVisual } from '../ship-visuals';
+import { shipVisual } from '../ship-visuals';
 import {
     DISSOLVE_DURATION,
     DISSOLVE_EDGE_INTENSITY,
@@ -16,10 +16,6 @@ import {
     DISSOLVE_NOISE_SCALE,
 } from './ship-model.constants';
 import { collectSurfaces, dressHulls, driveEngines } from './ship-model.utils';
-
-for ( const v of Object.values( SHIP_VISUALS ) ) {
-    useGLTF.preload( v.url, undefined, undefined, guardLfsPointer );
-}
 
 export interface DissolveUniforms {
     uDissolve: { value: number };

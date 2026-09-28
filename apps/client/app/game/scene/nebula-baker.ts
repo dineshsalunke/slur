@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
+import { qualityProfile } from '../../quality/quality.state';
 import { NebulaEnvShell } from './nebula-env-shell';
 import { noiseVolume } from './nebula-noise-volume';
 import { applyPlanets, planetUniforms } from './nebula-planets';
@@ -15,7 +16,6 @@ import {
 } from './nebula-shaders';
 import { prefersReducedMotion } from './reduced-motion';
 
-const FIELD_FACE = 1024;
 const LIGHT_FACE = 128;
 const BACKGROUND_SCALE = 100;
 const DEG = Math.PI / 180;
@@ -77,7 +77,7 @@ export class NebulaBaker {
 
     private readonly still = prefersReducedMotion();
     private readonly noise = noiseVolume();
-    private readonly fields = new THREE.WebGLCubeRenderTarget( FIELD_FACE, {
+    private readonly fields = new THREE.WebGLCubeRenderTarget( qualityProfile().skyFace, {
         type: THREE.UnsignedByteType,
         generateMipmaps: false,
         minFilter: THREE.LinearFilter,

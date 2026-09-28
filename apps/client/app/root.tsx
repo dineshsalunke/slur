@@ -2,6 +2,7 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 
 import type { Route } from './+types/root';
 import './app.css';
+import { StillBackdrop } from './ui/still-backdrop';
 
 export function Layout( { children }: { children: React.ReactNode } ) {
     return (
@@ -25,6 +26,10 @@ export function Layout( { children }: { children: React.ReactNode } ) {
             </body>
         </html>
     );
+}
+
+export function HydrateFallback() {
+    return <StillBackdrop />;
 }
 
 export default function App() {

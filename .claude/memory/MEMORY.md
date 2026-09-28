@@ -135,3 +135,4 @@ One line per memory; each memory lives in its own file here.
 - [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — holding strafe into a wall hits it each tick; charge fresh contacts only
 - [kurmah DO infra](kurmah-netbird-infra.md) — droplets `netbird` (NetBird only) + `slur` (Traefik, /opt/slur); `--context kurmah`; key ~/.ssh/kurmah_ed25519
 - [Quit Docker Desktop via its CLI](quit-docker-desktop-via-cli.md) — osascript quit leaves the backend; use `docker desktop stop`
+- [Time hot loops in Chrome, not tsx](time-hot-loops-in-chrome-not-tsx.md) — node+tsx read a loop 15x slow; time in page with CDP CPU throttle

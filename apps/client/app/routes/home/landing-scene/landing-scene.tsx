@@ -13,6 +13,7 @@ import { TrackContext } from '../../../game/track-context/track-context.constant
 import { LandingRig } from '../landing-rig/landing-rig';
 import { LandingShip } from '../landing-ship/landing-ship';
 import { LOOP_MARGIN, track } from './landing-scene.constants';
+import { prepareLanding } from './prepare-landing';
 
 export function LandingScene() {
     return (
@@ -20,6 +21,7 @@ export function LandingScene() {
             <div className="fixed inset-0 z-0">
                 <Canvas
                     gl={ CANVAS_GL }
+                    onCreated={ prepareLanding }
                     aria-hidden="true"
                     camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
                 >

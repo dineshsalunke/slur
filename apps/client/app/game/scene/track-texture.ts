@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
 import { rebuildToken, subscribeRebuild } from '../../dev/tuning-rebuild';
+import { qualityProfile } from '../../quality/quality.state';
 
 export const AUTHOR_PLATE_U = 4;
 
@@ -10,7 +11,9 @@ export const ROWS = 1;
 export const TEX_SPAN_X = AUTHOR_PLATE_U * COLS;
 export const TEX_SPAN_Z = AUTHOR_PLATE_U * ROWS;
 
-const RES = 1024;
+function res(): number {
+    return qualityProfile().surfaceRes;
+}
 
 export const NORMAL_SIGN_X = 1;
 export const NORMAL_SIGN_Y = 1;
@@ -131,12 +134,12 @@ interface Ctx extends SurfaceParams {
 }
 
 export function texelDensity( p: SurfaceParams ): { pxPerU: number; pxPerV: number } {
-    return { pxPerU: RES / ( p.plate * COLS ), pxPerV: RES / ( p.plate * ( p.joints ? ROWS : COLS ) ) };
+    return { pxPerU: res() / ( p.plate * COLS ), pxPerV: res() / ( p.plate * ( p.joints ? ROWS : COLS ) ) };
 }
 
 export function tileSpanU( p: SurfaceParams ): { x: number; y: number } {
     const { pxPerU, pxPerV } = texelDensity( p );
-    return { x: RES / pxPerU, y: RES / pxPerV };
+    return { x: res() / pxPerU, y: res() / pxPerV };
 }
 
 export function scratchPlan( p: SurfaceParams ): Scratch[] {
@@ -172,8 +175,8 @@ function context( p: SurfaceParams ): Ctx {
         grain: p.joints ? DECK_GRAIN : GRAPHITE_GRAIN,
         scratches: scratchPlan( p ),
         blotches: p.bakedBlotches ? blotchField( p ) : new Float32Array( 0 ),
-        plateW: RES / COLS,
-        plateL: RES / ROWS,
+        plateW: res() / COLS,
+        plateL: res() / ROWS,
         jointPx: Math.max( 1, p.jointWidth * pxPerU ),
         rgb: baseRgb( p.base ),
     };
@@ -222,14 +225,14 @@ function between( r: () => number, lo: number, hi: number ): number {
 }
 
 function wrapRect( ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number ): void {
-    for ( const dx of [ -RES, 0, RES ] ) {
-        for ( const dy of [ -RES, 0, RES ] ) ctx.fillRect( x + dx, y + dy, w, h );
+    for ( const dx of [ -res(), 0, res() ] ) {
+        for ( const dy of [ -res(), 0, res() ] ) ctx.fillRect( x + dx, y + dy, w, h );
     }
 }
 
 function wrapDraw( draw: ( dx: number, dy: number ) => void ): void {
-    for ( const dx of [ -RES, 0, RES ] ) {
-        for ( const dy of [ -RES, 0, RES ] ) draw( dx, dy );
+    for ( const dx of [ -res(), 0, res() ] ) {
+        for ( const dy of [ -res(), 0, res() ] ) draw( dx, dy );
     }
 }
 
@@ -247,8 +250,8 @@ function fillJoints( c: Ctx, ctx: CanvasRenderingContext2D, style: string ): voi
     ctx.fillStyle = style;
     eachJoint(
         c,
-        ( cx ) => wrapRect( ctx, cx - c.jointPx / 2, 0, c.jointPx, RES ),
-        ( cy ) => wrapRect( ctx, 0, cy - c.jointPx / 2, RES, c.jointPx ),
+        ( cx ) => wrapRect( ctx, cx - c.jointPx / 2, 0, c.jointPx, res() ),
+        ( cy ) => wrapRect( ctx, 0, cy - c.jointPx / 2, res(), c.jointPx ),
     );
 }
 
@@ -283,8 +286,8 @@ function paintMottle( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     const g = c.grain;
     const r = seeded( 0x5c0ff4 );
     for ( let i = 0; i < g.mottleBlobs; i++ ) {
-        const x = r() * RES;
-        const y = r() * RES;
+        const x = r() * res();
+        const y = r() * res();
         const rx = between( r, g.mottleRadiusU[ 0 ], g.mottleRadiusU[ 1 ] ) * c.pxPerU;
         const f = 1 + ( r() - 0.5 ) * 2 * g.mottleAmount;
         valueLobe( c, ctx, x, y, rx, rx * g.mottleStretch, ( r() - 0.5 ) * 2 * MOTTLE_TILT_RAD, f );
@@ -324,13 +327,14 @@ function tileNoise( fx: number, fy: number, cx: number, cy: number, seed: number
 
 export function blotchField( p: SurfaceParams ): Float32Array {
     const span = tileSpanU( p );
-    const field = new Float32Array( RES * RES );
+    const size = res();
+    const field = new Float32Array( size * size );
     const cx = Math.max( 1, Math.round( span.x * BLOTCH_CELLS_U ) );
     const cy = Math.max( 1, Math.round( span.y * BLOTCH_CELLS_U ) );
-    for ( let py = 0; py < RES; py++ ) {
-        const fy = ( py + 0.5 ) / RES;
-        for ( let px = 0; px < RES; px++ ) {
-            const fx = ( px + 0.5 ) / RES;
+    for ( let py = 0; py < size; py++ ) {
+        const fy = ( py + 0.5 ) / size;
+        for ( let px = 0; px < size; px++ ) {
+            const fx = ( px + 0.5 ) / size;
             let n = 0;
             let amp = 0.5;
             let norm = 0;
@@ -341,7 +345,7 @@ export function blotchField( p: SurfaceParams ): Float32Array {
                 amp *= 0.5;
             }
             n /= norm;
-            field[ py * RES + px ] =
+            field[ py * size + px ] =
                 band( BLOTCH_DARK_BAND[ 0 ], BLOTCH_DARK_BAND[ 1 ], n ) -
                 band( BLOTCH_BRIGHT_BAND[ 0 ], BLOTCH_BRIGHT_BAND[ 1 ], 1 - n );
         }
@@ -351,7 +355,7 @@ export function blotchField( p: SurfaceParams ): Float32Array {
 
 function paintBlotches( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     if ( c.blotchDark <= 0 && c.blotchBright <= 0 ) return;
-    const img = ctx.getImageData( 0, 0, RES, RES );
+    const img = ctx.getImageData( 0, 0, res(), res() );
     const d = img.data;
     for ( let t = 0; t < c.blotches.length; t++ ) {
         const b = c.blotches[ t ];
@@ -444,8 +448,8 @@ function paintNormalBrush( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     const across: readonly [ number, number ] = [ Math.cos( g.brushRot ), Math.sin( g.brushRot ) ];
     const r = seeded( 0x5c0ff6 );
     for ( let i = 0; i < BRUSH_STROKES; i++ ) {
-        const x = r() * RES;
-        const y = r() * RES;
+        const x = r() * res();
+        const y = r() * res();
         const rx = between( r, BRUSH_WIDTH_U[ 0 ], BRUSH_WIDTH_U[ 1 ] ) * c.pxPerU;
         const ry = between( r, BRUSH_LENGTH_U[ 0 ], BRUSH_LENGTH_U[ 1 ] ) * c.pxPerU;
         const tilt = ( r() < 0.5 ? -1 : 1 ) * between( r, BRUSH_NORMAL_TILT * 0.3, BRUSH_NORMAL_TILT ) * g.brushScale;
@@ -476,7 +480,7 @@ function paintScratchNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
 
 function paintNormal( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     ctx.fillStyle = normal( 0, 0 );
-    ctx.fillRect( 0, 0, RES, RES );
+    ctx.fillRect( 0, 0, res(), res() );
     paintNormalBrush( c, ctx );
     paintScratchNormals( c, ctx );
     paintJointNormals( c, ctx );
@@ -492,19 +496,19 @@ function paintJointNormals( c: Ctx, ctx: CanvasRenderingContext2D ): void {
         c,
         ( cx ) => {
             ctx.fillStyle = normal( c.wallTilt, 0 );
-            wrapRect( ctx, cx - hw, 0, bevel, RES );
+            wrapRect( ctx, cx - hw, 0, bevel, res() );
             ctx.fillStyle = normal( 0, 0 );
-            wrapRect( ctx, cx - hw + bevel, 0, floorPx, RES );
+            wrapRect( ctx, cx - hw + bevel, 0, floorPx, res() );
             ctx.fillStyle = normal( -c.wallTilt, 0 );
-            wrapRect( ctx, cx + hw - bevel, 0, bevel, RES );
+            wrapRect( ctx, cx + hw - bevel, 0, bevel, res() );
         },
         ( cy ) => {
             ctx.fillStyle = normal( 0, -c.wallTilt );
-            wrapRect( ctx, 0, cy - hw, RES, bevel );
+            wrapRect( ctx, 0, cy - hw, res(), bevel );
             ctx.fillStyle = normal( 0, 0 );
-            wrapRect( ctx, 0, cy - hw + bevel, RES, floorPx );
+            wrapRect( ctx, 0, cy - hw + bevel, res(), floorPx );
             ctx.fillStyle = normal( 0, c.wallTilt );
-            wrapRect( ctx, 0, cy + hw - bevel, RES, bevel );
+            wrapRect( ctx, 0, cy + hw - bevel, res(), bevel );
         },
     );
 }
@@ -562,8 +566,8 @@ function finishPatchPlan( c: Ctx ): FinishPatch[] {
     const r = seeded( 0x5c0ff1 );
     const plan: FinishPatch[] = [];
     for ( let i = 0; i < FINISH_PATCHES; i++ ) {
-        const cx = r() * RES;
-        const cy = r() * RES;
+        const cx = r() * res();
+        const cy = r() * res();
         const rougher = r() < FINISH_ROUGHER_SHARE;
         const delta =
             ( rougher
@@ -593,21 +597,21 @@ function paintFinishPatches( c: Ctx, ctx: CanvasRenderingContext2D ): void {
 
 function paintMetalness( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     ctx.fillStyle = grey( METAL_PLATE, 1 );
-    ctx.fillRect( 0, 0, RES, RES );
+    ctx.fillRect( 0, 0, res(), res() );
     fillJoints( c, ctx, grey( c.jointMetal, 1 ) );
 }
 
 function paintJointMask( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     ctx.fillStyle = grey( 0, 1 );
-    ctx.fillRect( 0, 0, RES, RES );
+    ctx.fillRect( 0, 0, res(), res() );
     fillJoints( c, ctx, grey( 1, 1 ) );
 }
 
 function paintScuffClusters( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     const r = seeded( 0x5c0ff2 );
     for ( let i = 0; i < SCUFF_CLUSTERS; i++ ) {
-        const cx = r() * RES;
-        const cy = r() * RES;
+        const cx = r() * res();
+        const cy = r() * res();
         const strokes = 3 + Math.floor( r() * 4 );
         for ( let s = 0; s < strokes; s++ ) {
             softLobe(
@@ -665,8 +669,8 @@ function paintBrush( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     if ( c.grain.brushScale <= 0 ) return;
     const r = seeded( 0x5c0ff5 );
     for ( let i = 0; i < BRUSH_STROKES; i++ ) {
-        const x = r() * RES;
-        const y = r() * RES;
+        const x = r() * res();
+        const y = r() * res();
         const rx = between( r, BRUSH_WIDTH_U[ 0 ], BRUSH_WIDTH_U[ 1 ] ) * c.pxPerU;
         const ry = between( r, BRUSH_LENGTH_U[ 0 ], BRUSH_LENGTH_U[ 1 ] ) * c.pxPerU;
         const delta = ( r() < 0.5 ? -1 : 1 ) * between( r, BRUSH_ROUGHER_MIN, BRUSH_ROUGHER_MAX ) * c.grain.brushScale;
@@ -676,7 +680,7 @@ function paintBrush( c: Ctx, ctx: CanvasRenderingContext2D ): void {
 
 function paintRoughness( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     ctx.fillStyle = roughGrey( 0, 1 );
-    ctx.fillRect( 0, 0, RES, RES );
+    ctx.fillRect( 0, 0, res(), res() );
     paintBrush( c, ctx );
     paintFinishPatches( c, ctx );
     paintScuffClusters( c, ctx );
@@ -690,28 +694,28 @@ function paintCavity( c: Ctx, ctx: CanvasRenderingContext2D ): void {
     const floorPx = c.jointPx - 2 * bevel;
     const lip = Math.min( 1, c.cavity + CAVITY_BEVEL_LIFT );
     ctx.fillStyle = grey( 1, 1 );
-    ctx.fillRect( 0, 0, RES, RES );
+    ctx.fillRect( 0, 0, res(), res() );
     eachJoint(
         c,
         ( cx ) => {
             ctx.fillStyle = grey( lip, 1 );
-            wrapRect( ctx, cx - hw, 0, c.jointPx, RES );
+            wrapRect( ctx, cx - hw, 0, c.jointPx, res() );
             ctx.fillStyle = grey( c.cavity, 1 );
-            wrapRect( ctx, cx - hw + bevel, 0, floorPx, RES );
+            wrapRect( ctx, cx - hw + bevel, 0, floorPx, res() );
         },
         ( cy ) => {
             ctx.fillStyle = grey( lip, 1 );
-            wrapRect( ctx, 0, cy - hw, RES, c.jointPx );
+            wrapRect( ctx, 0, cy - hw, res(), c.jointPx );
             ctx.fillStyle = grey( c.cavity, 1 );
-            wrapRect( ctx, 0, cy - hw + bevel, RES, floorPx );
+            wrapRect( ctx, 0, cy - hw + bevel, res(), floorPx );
         },
     );
 }
 
 function canvasFor( c: Ctx, paint: ( c: Ctx, ctx: CanvasRenderingContext2D ) => void ): HTMLCanvasElement {
     const canvas = document.createElement( 'canvas' );
-    canvas.width = RES;
-    canvas.height = RES;
+    canvas.width = res();
+    canvas.height = res();
     const ctx = canvas.getContext( '2d' );
     if ( ! ctx ) throw new Error( 'track-texture: 2D context unavailable' );
     paint( c, ctx );
@@ -741,7 +745,7 @@ export function applyWear(
 function pixels( canvas: HTMLCanvasElement ): Uint8ClampedArray {
     const ctx = canvas.getContext( '2d' );
     if ( ! ctx ) throw new Error( 'track-texture: 2D context unavailable' );
-    return ctx.getImageData( 0, 0, RES, RES ).data;
+    return ctx.getImageData( 0, 0, res(), res() ).data;
 }
 
 function packedSurfaceCanvas( c: Ctx, albedo: HTMLCanvasElement ): HTMLCanvasElement {
@@ -749,11 +753,11 @@ function packedSurfaceCanvas( c: Ctx, albedo: HTMLCanvasElement ): HTMLCanvasEle
     const md = pixels( canvasFor( c, paintMetalness ) );
     const cd = pixels( canvasFor( c, paintCavity ) );
     const canvas = document.createElement( 'canvas' );
-    canvas.width = RES;
-    canvas.height = RES;
+    canvas.width = res();
+    canvas.height = res();
     const ctx = canvas.getContext( '2d' );
     if ( ! ctx ) throw new Error( 'track-texture: 2D context unavailable' );
-    const out = ctx.createImageData( RES, RES );
+    const out = ctx.createImageData( res(), res() );
     for ( let i = 0; i < out.data.length; i += 4 ) {
         out.data[ i ] = cd[ i ];
         out.data[ i + 1 ] = rd[ i + 1 ];

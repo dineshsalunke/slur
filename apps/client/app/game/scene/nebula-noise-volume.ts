@@ -1,6 +1,6 @@
 import * as THREE from 'three';
+import { qualityProfile } from '../../quality/quality.state';
 
-const SIZE = 64;
 const PERIOD = 16;
 const OCTAVES = 3;
 const CHANNELS = 4;
@@ -33,12 +33,12 @@ function valueNoise( x: number, y: number, z: number, period: number, seed: numb
     );
 }
 
-function fbm( x: number, y: number, z: number, seed: number ): number {
+function fbm( x: number, y: number, z: number, seed: number, size: number ): number {
     let sum = 0;
     let amp = 0.5;
     let period = PERIOD;
-    for ( let i = 0; i < OCTAVES; i++ ) {
-        const s = period / SIZE;
+    for ( let i = 0; i < OCTAVES && period <= size; i++ ) {
+        const s = period / size;
         sum += amp * valueNoise( x * s, y * s, z * s, period, seed + i * 17 );
         amp *= 0.5;
         period *= 2;
@@ -49,25 +49,25 @@ function fbm( x: number, y: number, z: number, seed: number ): number {
 let shared: THREE.Data3DTexture | null = null;
 
 export function noiseVolume(): THREE.Data3DTexture {
-    shared ??= createNoiseVolume();
+    shared ??= createNoiseVolume( qualityProfile().noiseSize );
     return shared;
 }
 
-function createNoiseVolume(): THREE.Data3DTexture {
-    const data = new Uint8Array( SIZE * SIZE * SIZE * CHANNELS );
+function createNoiseVolume( size: number ): THREE.Data3DTexture {
+    const data = new Uint8Array( size * size * size * CHANNELS );
     let i = 0;
-    for ( let z = 0; z < SIZE; z++ ) {
-        for ( let y = 0; y < SIZE; y++ ) {
-            for ( let x = 0; x < SIZE; x++ ) {
+    for ( let z = 0; z < size; z++ ) {
+        for ( let y = 0; y < size; y++ ) {
+            for ( let x = 0; x < size; x++ ) {
                 for ( let c = 0; c < CHANNELS; c++ ) {
                     data[ i++ ] = Math.round(
-                        THREE.MathUtils.clamp( fbm( x, y, z, c * 101 ) * 0.5 + 0.5, 0, 1 ) * 255,
+                        THREE.MathUtils.clamp( fbm( x, y, z, c * 101, size ) * 0.5 + 0.5, 0, 1 ) * 255,
                     );
                 }
             }
         }
     }
-    const texture = new THREE.Data3DTexture( data, SIZE, SIZE, SIZE );
+    const texture = new THREE.Data3DTexture( data, size, size, size );
     texture.format = THREE.RGBAFormat;
     texture.type = THREE.UnsignedByteType;
     texture.minFilter = THREE.LinearFilter;
