@@ -12,6 +12,7 @@ Parked: MEASURE + RECOMMEND the deck albedo against the golden crop (body + groo
   high via setNum = 17 / 85 / 147 (before 3c576aa); low via the leva input = 18 / 92 / 135.
 - CDP: `renderer.properties.get(m).uniforms.envMapIntensity` equals the scene dial on every MeshStandardMaterial.
   `scene.environment` is set. No material has its own `envMap`.
+- After 668df76 (the high-black fix), the leva input on HIGH gives mean luma 19 / 112 / 180 at 0 / 1.2 / 5 (92-99% of pixels change). The dial works on both tiers.
 - Dead dials: Deck/Rail/Rock/Ship.envMapIntensity. three 0.185.1 WebGLRenderer.js:2694 overwrites them with
   scene.environmentIntensity whenever material.envMap is null. Memory: scene-env-intensity-overrides-material.md.
 - The owner's symptom is not reproduced. Candidates [unmeasured]: the owner turns a per-material dial, or the
@@ -31,11 +32,10 @@ none
 apps/client/app/game/scene/scene-environment.tsx (claimed for #355, no edits yet).
 
 ## Next
-1. Wait for workerone's fix SHA for the black high path. Then re-run levaprobe2.mjs on high.
-2. Owner decision on composition: (a) keep one global dial, delete the four dead per-material dials; or
+1. Owner decision on composition: (a) keep one global dial, delete the four dead per-material dials; or
    (b) set material.envMap explicitly and drive envMapIntensity = perMaterial × global. That touches workerone's
    material files. Then fix, verify on /test-level, and close #355 with the SHA.
-3. Albedo sweep: tap.mjs variants (Metal.baseColor, Deck.roughness, Environment.intensity, ToneMapping.exposure)
+2. Albedo sweep: tap.mjs variants (Metal.baseColor, Deck.roughness, Environment.intensity, ToneMapping.exposure)
    with st.mjs on the near-left deck region, against crop stats p10/50/90 = 26/35/47, body (34,33,33), groove (12,9,7).
 
 ## Open questions
