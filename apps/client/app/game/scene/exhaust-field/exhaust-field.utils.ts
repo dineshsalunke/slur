@@ -1,3 +1,4 @@
+import type { Track } from '@slur/shared';
 import type { Entity } from 'koota';
 import type * as THREE from 'three';
 import { col, num } from '../../../dev/tuning';
@@ -5,8 +6,9 @@ import { Net, Render } from '../../ecs/traits';
 import { followAccent } from '../accent';
 import { exhaustDrive } from '../exhaust-drive';
 import { exhaustPorts } from '../exhaust-ports';
+import { floorBelow } from '../ship-shadow/ship-shadow.utils';
 import type { Palette } from './exhaust-field';
-import { _instance, _port, _ship, MAX_PLUMES, SPREAD_AT_IDLE } from './exhaust-field.constants';
+import { _instance, _port, _ship, MAX_PLUMES, NO_FLOOR, SPREAD_AT_IDLE } from './exhaust-field.constants';
 
 export function syncPalette( material: THREE.ShaderMaterial, applied: Palette ): void {
     const hot = col( 'Exhaust.hot' );
@@ -24,7 +26,14 @@ export function syncPalette( material: THREE.ShaderMaterial, applied: Palette ):
     material.uniforms.uHeat.value = num( 'Exhaust.heat' );
 }
 
-export function writeShip( mesh: THREE.InstancedMesh, drive: Float32Array, at: number, entity: Entity ): number {
+export function writeShip(
+    mesh: THREE.InstancedMesh,
+    drive: Float32Array,
+    deckY: Float32Array,
+    at: number,
+    entity: Entity,
+    track: Track,
+): number {
     const group = entity.get( Render );
     const net = entity.get( Net );
     if ( ! group || ! net || ! group.visible ) return 0;
@@ -40,6 +49,8 @@ export function writeShip( mesh: THREE.InstancedMesh, drive: Float32Array, at: n
     const stretch = num( 'Exhaust.length' ) * ramp;
     const widen = num( 'Exhaust.spread' ) * ( SPREAD_AT_IDLE + ( 1 - SPREAD_AT_IDLE ) * throttle );
     const brightness = num( 'Exhaust.glow' ) * ramp;
+    const { x, y, z } = group.position;
+    const floor = floorBelow( track, x, y, z ) ?? NO_FLOOR;
 
     _ship.compose( group.position, group.quaternion, group.scale );
     for ( let p = 0; p < ports.length; p++ ) {
@@ -50,6 +61,7 @@ export function writeShip( mesh: THREE.InstancedMesh, drive: Float32Array, at: n
         drive[ ( at + p ) * 3 ] = stretch;
         drive[ ( at + p ) * 3 + 1 ] = widen;
         drive[ ( at + p ) * 3 + 2 ] = brightness;
+        deckY[ at + p ] = floor;
     }
     return ports.length;
 }

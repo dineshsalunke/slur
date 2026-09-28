@@ -5,6 +5,7 @@ import { useTrack } from '../track-context/use-track';
 import { BoltPickups } from './bolt-pickups/bolt-pickups';
 import { BoostPickups } from './boost-pickups/boost-pickups';
 import { MinePickups } from './mine-pickups/mine-pickups';
+import { PickupReflections } from './pickup-reflections/pickup-reflections';
 import { PortalPickups } from './portal-pickups/portal-pickups';
 import { SeekerPickups } from './seeker-pickups/seeker-pickups';
 import { splitPickupLayout } from './seeker-pickups/seeker-pickups.utils';
@@ -13,10 +14,12 @@ import { TugPickups } from './tug-pickups/tug-pickups';
 
 export function PickupField() {
     const track = useTrack();
-    const layout = useMemo( () => splitPickupLayout( pickupsOf( track ) ), [ track ] );
+    const all = useMemo( () => pickupsOf( track ), [ track ] );
+    const layout = useMemo( () => splitPickupLayout( all ), [ all ] );
 
     return (
         <Fragment>
+            <PickupReflections layout={ all } isTaken={ isPickupTaken } />
             <BoltPickups layout={ layout.bolts } isTaken={ isPickupTaken } />
             <SeekerPickups layout={ layout.seekers } isTaken={ isPickupTaken } />
             <MinePickups layout={ layout.mines } isTaken={ isPickupTaken } />

@@ -29,9 +29,9 @@ export function reflectionUniforms(): ReflectionUniforms {
     return {
         uReflColor: { value: accent() },
         uReflStrength: { value: 1 },
-        uReflStretch: { value: 1 },
-        uReflLength: { value: 14 },
-        uReflWidth: { value: 0.35 },
+        uReflStretch: { value: 1.5 },
+        uReflLength: { value: 36 },
+        uReflWidth: { value: 0.6 },
         uReflFalloff: { value: 1.5 },
         uReflFadeNear: { value: 40 },
         uReflFadeFar: { value: 220 },
@@ -138,7 +138,7 @@ void main() {
 	float across = 1.0 - qx * qx;
 	float v = clamp( vReflQuad.y, 0.0, 1.0 );
 	float line = pow( 1.0 - v, uReflFalloff ) * smoothstep( 0.0, 0.08, v );
-	float k = ( v - clamp( vReflCenter, 0.0, 1.0 ) ) * 2.5;
+	float k = ( v - clamp( vReflCenter, 0.0, 1.0 ) ) * 3.5;
 	float spot = exp( - k * k );
 	float profile = mix( line, spot, vReflPoint ) * across * across;
 	vec3 toCam = cameraPosition - vReflWorld;
