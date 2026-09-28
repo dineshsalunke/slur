@@ -45,4 +45,5 @@ if ( typeof window !== 'undefined' ) {
     addEventListener( 'pointerup', release, true );
     addEventListener( 'pointercancel', release, true );
     addEventListener( 'blur', releaseAllTouch );
+    document.addEventListener( 'fullscreenchange', releaseAllTouch );
 }

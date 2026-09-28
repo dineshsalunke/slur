@@ -68,6 +68,16 @@ React Router (SPA) — apps/client/app/routes.ts
   `'hit'` / `stunTimer` edge / pickup grab / the threat HUD); positional panning via three.js
   `PositionalAudio` (camera = listener), read in `useFrame`. Engine hum = synthesized oscillator (pitch ∝
   speed); discrete SFX = CC0/CC-BY samples. See `AUDIO.md`.
+- **Fullscreen (#347).** `ui/fullscreen.ts` enters fullscreen from the play gesture: the home form's
+  `onSubmit` (Create / Quick play / Join) and the lobby **Go** click. The browser needs transient user
+  activation, so no route load or effect can do it. `slur.fullscreen` in `localStorage` follows the last
+  state the player reached. An exit (Esc or the toggle) stores `off`, and the next play then stays
+  windowed. The toggle sits on the home header and in the in-game top-right cluster. A `fullscreenchange`
+  releases every held key and touch.
+  **iPhone has no element Fullscreen API** (caniuse: "supporting only iPad, not iPhone"), and it has no
+  `screen.orientation.lock`. Since iOS 26, a site added to the Home Screen opens as a web app with no
+  browser bars. The home screen shows a one-time "Add to Home Screen" hint when `navigator.standalone`
+  exists, the Fullscreen API is off and the page is not standalone.
 - **Front-of-house over live 3D.** The landing renders the ambient Grid-Void scene (`scene/environment.tsx`)
   behind a de-rounded neon UI; the lobby likewise overlays the live scene.
 

@@ -1,3 +1,5 @@
+import { FULLSCREEN_KEY } from './fullscreen.constants';
+
 export function canFullscreen(): boolean {
     return typeof document !== 'undefined' && document.fullscreenEnabled === true;
 }
@@ -11,13 +13,35 @@ export function subscribeFullscreen( listener: () => void ): () => void {
     return () => document.removeEventListener( 'fullscreenchange', listener );
 }
 
-export async function toggleFullscreen(): Promise< void > {
+function wantsFullscreen(): boolean {
     try {
-        if ( document.fullscreenElement ) {
-            await document.exitFullscreen();
-            return;
-        }
-        await document.documentElement.requestFullscreen( { navigationUI: 'hide' } );
-        await screen.orientation?.lock?.( 'landscape' );
+        return localStorage.getItem( FULLSCREEN_KEY ) !== 'off';
+    } catch {
+        return true;
+    }
+}
+
+function rememberFullscreen(): void {
+    try {
+        localStorage.setItem( FULLSCREEN_KEY, isFullscreen() ? 'on' : 'off' );
     } catch {}
 }
+
+async function enterFullscreen(): Promise< void > {
+    await document.documentElement.requestFullscreen( { navigationUI: 'hide' } );
+    await screen.orientation?.lock?.( 'landscape' ).catch( () => {} );
+}
+
+export async function toggleFullscreen(): Promise< void > {
+    try {
+        if ( document.fullscreenElement ) await document.exitFullscreen();
+        else await enterFullscreen();
+    } catch {}
+}
+
+export function fullscreenForPlay(): void {
+    if ( ! canFullscreen() || isFullscreen() || ! wantsFullscreen() ) return;
+    enterFullscreen().catch( () => {} );
+}
+
+if ( typeof document !== 'undefined' ) document.addEventListener( 'fullscreenchange', rememberFullscreen );

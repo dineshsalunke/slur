@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
-import { canFullscreen, isFullscreen, subscribeFullscreen, toggleFullscreen } from '../../ui/fullscreen';
-import { FullscreenGlyph } from '../../ui/fullscreen-glyph';
-import { GHOST, keepFocusOff } from '../../ui/ghost';
+import { canFullscreen, isFullscreen, subscribeFullscreen, toggleFullscreen } from '../fullscreen';
+import { FullscreenGlyph } from '../fullscreen-glyph';
+import { GHOST, keepFocusOff } from '../ghost';
 
 export function FullscreenToggle() {
     const on = useSyncExternalStore( subscribeFullscreen, isFullscreen, () => false );

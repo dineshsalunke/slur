@@ -35,10 +35,12 @@ export function attachKeyboard(): () => void {
     addEventListener( 'keyup', off );
     addEventListener( 'blur', releaseAll );
     document.addEventListener( 'visibilitychange', onVisibility );
+    document.addEventListener( 'fullscreenchange', releaseAll );
     return () => {
         removeEventListener( 'keydown', on );
         removeEventListener( 'keyup', off );
         removeEventListener( 'blur', releaseAll );
         document.removeEventListener( 'visibilitychange', onVisibility );
+        document.removeEventListener( 'fullscreenchange', releaseAll );
     };
 }

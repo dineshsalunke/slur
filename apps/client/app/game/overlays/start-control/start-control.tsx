@@ -3,6 +3,7 @@ import { Fragment } from 'react';
 import type { RunRoomLike } from '../../../net/run-room-like';
 import { Button } from '../../../ui/button';
 import { Chevron } from '../../../ui/chevron';
+import { fullscreenForPlay } from '../../../ui/fullscreen';
 import { KeyHint } from '../../../ui/key-hint';
 import { useHostId, useRunPlayers } from '../../net/run-view-store';
 import { GUEST_HINTS, HOST_HINTS } from './start-control.constants';
@@ -16,7 +17,14 @@ export function StartControl( { room }: { room: RunRoomLike } ) {
     return (
         <Fragment>
             { isHost ? (
-                <Button type="button" className="w-full sm:w-auto" onClick={ () => room.send( START_MESSAGE ) }>
+                <Button
+                    type="button"
+                    className="w-full sm:w-auto"
+                    onClick={ () => {
+                        fullscreenForPlay();
+                        room.send( START_MESSAGE );
+                    } }
+                >
                     Go
                     <Chevron dir="right" />
                 </Button>

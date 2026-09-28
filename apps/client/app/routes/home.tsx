@@ -2,6 +2,9 @@ import { normalizeRoomCode } from '@slur/shared';
 import { Fragment } from 'react';
 import { redirect } from 'react-router';
 import { createPrivate, joinLobby, joinRoom, leaveRoom, quickPlay } from '../net/matchmaking';
+import { FullscreenToggle } from '../ui/fullscreen-toggle/fullscreen-toggle';
+import { HomeScreenHint } from '../ui/home-screen-hint/home-screen-hint';
+import { homeScreenHintDue } from '../ui/home-screen-hint/home-screen-hint.utils';
 import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { NAME_KEY } from './home/call-sign-field/call-sign-field.constants';
@@ -22,7 +25,7 @@ export function clientLoader( { request }: Route.ClientLoaderArgs ) {
     joinLobby().catch( () => {} );
     const run = new URL( request.url ).searchParams.get( 'run' );
     const notice = run === 'closed' ? RUN_CLOSED : run === 'removed' ? REMOVED : null;
-    return { savedName: localStorage.getItem( NAME_KEY ) ?? '', notice };
+    return { savedName: localStorage.getItem( NAME_KEY ) ?? '', notice, homeScreenHint: homeScreenHintDue() };
 }
 
 export async function clientAction( { request }: Route.ClientActionArgs ) {
@@ -53,10 +56,14 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
             <Scrim />
 
             <main className="relative z-[2] flex min-h-dvh flex-col font-readout text-readout selection:bg-marigold selection:text-deep">
-                <header className="px-5 pt-5 sm:px-10 sm:pt-7">
+                <header className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-10 sm:pt-7">
                     <h1 className="m-0 text-[20px] font-bold tracking-[0.42em] text-readout text-shadow-readout">
                         SLUR
                     </h1>
+                    <div className="flex items-start gap-2">
+                        <HomeScreenHint due={ loaderData.homeScreenHint } />
+                        <FullscreenToggle />
+                    </div>
                 </header>
 
                 <div className="mt-auto flex flex-col gap-6 px-5 pb-6 pt-10 sm:px-10 sm:pb-7">

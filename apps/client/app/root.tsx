@@ -19,7 +19,7 @@ export function Layout( { children }: { children: React.ReactNode } ) {
                 <Meta />
                 <Links />
             </head>
-            <body className="min-h-screen overflow-hidden bg-void font-display text-fg antialiased">
+            <body className="min-h-dvh overflow-hidden bg-void font-display text-fg antialiased">
                 { children }
                 <ScrollRestoration />
                 <Scripts />

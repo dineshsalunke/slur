@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import { useRoom } from '../../net/room-context/use-room';
+import { FullscreenToggle } from '../../ui/fullscreen-toggle/fullscreen-toggle';
 import { PhaseGate } from '../phase-gate/phase-gate';
 import {
     COUNTDOWN_PHASES,
@@ -12,7 +13,6 @@ import { AudioToggle } from './audio-toggle';
 import { ConnectionNotice } from './connection-notice';
 import { CountdownOverlay } from './countdown-overlay';
 import { EndRace } from './end-race/end-race';
-import { FullscreenToggle } from './fullscreen-toggle';
 import { LeaveButton } from './leave-button';
 import { LeaveGuard } from './leave-guard';
 import { LobbyOverlay } from './lobby-overlay';
