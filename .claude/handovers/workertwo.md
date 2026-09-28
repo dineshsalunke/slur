@@ -1,35 +1,31 @@
-Agent: workertwo · Lane: #334 block side hit should scrape (DONE, closed) · Updated: 2026-09-28 14:25
+Agent: workertwo · Lane: #338 lobby chat on the ship-selection screen (PLANNING) · Updated: 2026-09-28
 
 ## Goal
-A side or corner hit on a block scrapes and keeps about 90% of vz, with no stun. A head-on hit is unchanged.
+Text chat on the lobby screen of `/game/:roomId`. The server relays each line through room messages, not schema state. The server trims the text, caps it at 140 chars, rate-limits each client and stamps the call sign. A player who joins mid-lobby sees the last 30 lines.
 
 ## Done
-- f664fee #335: tug halved. Closed.
-- bcad382 #334: side hit scrapes. Closed with the SHA.
-  - `FlightTuning.scrapeKeep` 0.9 (new). `grazeDepth` 0.5 → 1.0.
-  - `simulate()` returns `Contact` = `{ kind: 'hit' | 'scrape', dir: -1 | 1 } | null`. Only a fresh side contact returns 'scrape'. A flush re-contact returns null.
-  - `bounceContact( s, contact, t )` places the spark from `contact.dir`. A straight clip has vx = 0, so `sign(vx)` could not place it.
-  - Client callers (systems.ts, net-systems.ts, bounce-spark.ts) and racer.ts pass the contact through.
-  - Harnesses: avoid-pilot counts `contact !== null || stun`. pockets.ts fails on any contact.
-  - DECISIONS.md ADR-014 "As-built — a side hit scrapes (#334)".
+- Plan sent to slur-supervisor for owner approval. No edits yet.
 
 ## State
-- `pnpm --filter @slur/shared test`: 547/547 pass. Server 40/40. Client ecs vitest 17/17. `pnpm typecheck` clean. `pnpm lint` exit 0 (step.ts >300-line warning was already there).
-- Measured on dist, all 5 classes, throttle held: 0.3u and 0.8u clips → minVz 0.9 × cruise, time lost 0.006–0.020 s. Clip 1.2u → -9 + stun.
-- 4 s strafe held into a wall: one scrape, no stun, back to cruise (scrape.test.ts).
-- Not checked on /test-level by me [unmeasured in the browser].
+- `@colyseus/sdk` 0.17.43 `Room.mjs:292`: a message type with no handler is dropped with a warn. So the client pulls history (it sends `chatHistory` after it attaches its handlers). The server does not push it in onJoin.
+- `@colyseus/core` `maxMessagesPerSecond` disconnects a client that sends too much. It is unfit for chat. Use our own per-session limiter (5 lines / 5 s).
+- Unguarded window keydown listeners in the lobby: `game/input/keyboard.ts` (WASD/Space), `audio/game-audio` (M), `dev/sim-freeze.ts` (P). Plan: the chat input's onKeyDown calls stopPropagation. keyup is not stopped.
+- React 19 root-container listening, and whether stopPropagation reaches window listeners [unmeasured; recalled].
+- #337 landed 59a4599. run-room.ts is free once workerone releases it.
 
 ## Uncommitted
 none
 
 ## Held files
-none (release all #334 claims)
+none yet. The claim list is in the plan: shared chat.ts + index.ts, server chat-log.ts + room-chat.test.ts + run-room.ts, client net/chat-store.ts, matchmaking.ts, overlays/lobby-chat/*, lobby-overlay.tsx, overlays.test.tsx, docs/GDD.md.
 
 ## Next
-1. Wait for the supervisor's next lane.
+1. Wait for the owner's approval via slur-supervisor. Get "clear" on the claims.
+2. Build shared → server (with tests) → client store → UI → focus test.
+3. `pnpm typecheck && pnpm test && pnpm lint`. Commit by pathspec. Push. Close #338 with the SHA.
 
 ## Open questions
-none
+- Would the owner rather have typingTarget guards in the 3 unguarded listeners than stopPropagation at the chat input?
 
 ## Lessons → memory
-none (the fresh-contact lesson is already in .claude/memory/strafe-kick-recontacts-every-tick.md)
+none
