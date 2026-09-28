@@ -138,3 +138,4 @@ One line per memory; each memory lives in its own file here.
 - [Time hot loops in Chrome, not tsx](time-hot-loops-in-chrome-not-tsx.md) — node+tsx read a loop 15x slow; time in page with CDP CPU throttle
 - [Raycast luma probe per surface](raycast-luma-probe-per-surface.md) — grid raycast + screenshot pixel per face/distance; metal-1 F0 0.07 is why the track is dark (#345)
 - [Removing the composer blacks the canvas](removing-the-composer-blacks-the-canvas.md) — priority > 0 useFrame kills auto-render; PlainRender at priority 1
+- [Schema fields cap at 64](schema-fields-cap-at-64.md) — Metadata.ts:73 throws; PlayerState 39/64; defineTypes order = wire order

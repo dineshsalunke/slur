@@ -34,8 +34,10 @@ none. The RFC doc belongs to workerone.
 - The §4 draft is sent to workerone and the supervisor: scratchpad `rfc-349-s4.md` (session 37700c16 scratchpad). It is measured at 4b58658.
 - If the scratchpad is gone, the key facts are these: prediction.ts:52 uses DEFAULT_SIM_CONFIG, but test-level-room.ts:40 uses tunedSimConfig. run-room.ts:77–83 passes no config. block-state.ts:3 holds a page-global blockWorld. Queues drop the oldest (hit-events.ts:12) or the newest (block-burst.utils.ts:9). synth-key.ts:2 sends fake keydowns. attach-room-to-world.ts:293 sends on a 30 Hz setInterval. resetSlot() has no caller. koota has 16 live worlds (chunk-ZWIGMIL4.js:34,74,81). MAX_ROOMS is 12.
 
+- §4 is merged by workerone into docs/RFC-349-ARCHITECTURE.md. The second ask (the net half of the feature-module contract, plus action-map options) is sent: scratchpad `rfc-349-s4-modules.md`. Leanings: a6+a3 messages, b5 `schema()` composition, c4 `defineRules` spec, C2 action map.
+
 ## Next
-1. Answer workerone's review of §4, if any.
+1. Answer workerone's review of the module-contract draft, if any.
 2. —
 3. After the owner's deploy: verify #338/#340/#341 on prod and close each one with its SHA.
 4. Later: resume #348 from the notes above.
@@ -44,4 +46,4 @@ none. The RFC doc belongs to workerone.
 none.
 
 ## Lessons → memory
-none new.
+.claude/memory/schema-fields-cap-at-64.md
