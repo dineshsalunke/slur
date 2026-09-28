@@ -65,6 +65,12 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   renderer; priority useFrames disable R3F auto-render). workerthree owns the fix; P2 must not land black.
 - workerone #345 claim + hull-look.ts (phase 2): track metal #7b7f86, HULL_BASE_COLOR #4a4d52 kept, 'Hull.baseColor' dial.
 
+- #344 P2 DONE 286c8ef (black-canvas fixed; menu "Graphics" Auto/Low/Med/High saved; auto step-down hosted races
+  only, <40 fps for 2.5 s; Render.dpr default 0 = auto, dial > 0 wins). #344 open for owner device sign-off.
+  Owner Q: frozen sky saves ~no GPU [inferred]; a cheaper still sky needs a sky-shader change — want it?
+- workerthree cleared + resumed on #299 + #311 (build direct). workerone owns world-scene.tsx/tuning-schema.ts now.
+- Tree was clean + pushed at d06f268+286c8ef → deploy window open until workerone's next edits.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
