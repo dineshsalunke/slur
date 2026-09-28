@@ -1,41 +1,38 @@
-Agent: workerone · Lane: #331 pickups ~5u (plan only, not started) · Updated: 2026-09-27 23:10
+Agent: workerone · Lane: #331 pickups 5u (shipped) · Updated: 2026-09-28
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#331: scale every pickup (bolt, seeker, mine, boost, shield, portal, tug) so that its overall bounding box is about 5u. PLAN FIRST, no edits. Send the plan to slur-supervisor, who relays it to the owner.
+#331: scale every pickup so its bounding box is about 5u. Done. Waiting for the owner's /test-level look.
 
 ## Done
 
-- #329: `350febc` (pushed, closed). Owner values portalR 5 / portalY 3 (the owner's own edit, kept). portalClearHalfL 11.5, portalClearW 12. Ring band = R×1.3, depth = R×0.4. Feet removed. ADR-022 #329 amendment.
-- #333: `69edb82` + dials `41bde5a` (pushed, closed). Marigold additive membrane, clipped at the deck (`portal-field/membrane-material.ts`). Leva Portal.membraneOpacity 0.22 / Glow 1.2 / Flow 0.6.
+- #329: `350febc` (pushed, closed).
+- #333: `69edb82` + dials `41bde5a` (pushed, closed).
+- #331: `fb878e1` (pushed, closed). `fitPickup(parts, PICKUP_SIZE)` in `pickup-instances.utils.ts` scales every distinct geometry once, so the union bbox's longest side = 5. Called from the `PickupInstances` body memo. `combat-look.ts`: PICKUP_SIZE 5, PICKUP_HOVER 2.4 → 3.2, PICKUP_POOL_RADIUS 3.2 → 4. grabR unchanged (3.2).
 
 ## State
 
-- #329 placement-null rate, 30 phrase seeds: 0.69% / 0.76% → 1.64% / 1.52% (Comet / Freighter). Driver: this session's scratch `portal-null.mjs`.
-- #329 catch at R5 Y3: deck chord 8.98u, top ship y 7.2. A Comet double jump always catches (6.69). Other doubles catch only when crossing below 7.2.
-- #333: draws 131 → 133 with a pair (+1 per view: main + mirror). No blown pixels. The A/B diff is inside the scene noise (7–10%).
-- #333 pass ripple from the hit point: NOT built (it needs a per-end hop time). Follow-up only if the owner asks.
-- Tests at `69edb82`: shared 546/546, client 497/497, typecheck 0, lint 0 errors (9 warnings, not mine).
-- Owner has not viewed #329/#333 on /test-level yet [unmeasured].
+- Pre-scale longest sides (measured): bolt 3.45 · seeker 4.22 · mine 1.96 · boost 2.46 · shield 2.70 · portal 2.72 · tug 2.75.
+- Factors: ×1.45 · ×1.18 · ×2.55 · ×2.03 · ×1.85 · ×1.84 · ×1.82.
+- Bottom clearance at the bob low point ≥ 0.25u for all 7 kinds (test). Largest half-height after the fit is 2.5 → clearance 3.2 − 2.5 − 0.22 = 0.48.
+- Tests at `fb878e1`: client 580/580, typecheck 0. Shared 541/546 and one lint format error, all in workertwo's uncommitted #334 files (step.ts, bounce-contact*). Not this lane.
+- Pickup in chase-camera frame: calculated, not captured [unmeasured].
+- Collect swell reaches ~7.5u for 0.13 s [unmeasured visually].
 
 ## Uncommitted
 
-None of mine. `tracks/` is owner data.
+None of mine.
 
 ## Held files
 
-None. (portal-field/*, tuning-schema.ts, tuning-panel.tsx all released.)
+None. (combat-look.ts, pickup-instances/* released.)
 
 ## Next
 
-1. #331 plan, no edits. `gh issue view 331`. The plan needs:
-   - Today's bounding box per pickup, measured from the built geometry. Builders are `build*Pickup()`/`build*Body()` in `apps/client/app/game/scene/<kind>-pickups/<kind>-pickups.utils.ts`. The portal uses `PICKUP_RING` in `portal-pickups.constants.ts`. Shared body: `pickup-body.ts`. Measure via `npx tsx` (extensionless imports) from apps/client, or a vitest run: build parts, merge the bbox, and print the size.
-   - The scale factor for each pickup.
-   - The float height after scaling. Hover and bob are `PICKUP_HOVER`/`PICKUP_BOB` in `combat-look.ts`; the pose is in `pickup-instances.utils.ts` `writeInstance`. The pickup must clear the deck and stay in view of the chase camera. The pool disc `PICKUP_POOL_RADIUS` may need to scale too.
-   - Whether `Pickup.grabR` (sim, shared) stays or scales. Do not touch shared sim without a claim: workertwo is in step.ts for #334.
-2. Send the plan to slur-supervisor. Build only after the owner approves. Then check it on /test-level and close with the SHA.
+1. Owner checks /test-level: pickup size and float, the collect swell, the portal pickup next to a real portal (R5), and the pool glow.
+2. Retune PICKUP_HOVER / PICKUP_POOL_RADIUS / PICKUP_SIZE in `combat-look.ts` if the owner asks.
 
 ## Open questions
 
