@@ -1435,6 +1435,44 @@ The home screen listed every live room. On a hosted server, any stranger could s
 - A bad-shape code fails on the client and never reaches the server.
 - Error codes reach the SDK as `MatchMakeError.code`: 522 = no room (the message holds `locked` when the room is full), 429 = too many wrong codes, 409 = public slot taken.
 
+## ADR-026 — Public-server limits: room cap, per-IP quota, message caps, deploy from pushed code
+
+**Date:** 2026-09-28 · **Status:** Accepted (owner approved the numbers for #339, 2026-09-28) · **Issue:** #339 · **Built in:** `fda4814` (server), `e8bb786` (client), plus the deploy.sh commit
+
+### Context
+
+The server runs on one public droplet (s-1vcpu-1gb). Before #339 any client could create rooms without limit, send messages without limit, and send a frame up to the transport default of 4 KiB (`@colyseus/ws-transport` `WebSocketTransport.mjs:19`). A throwing message handler could end the process. `deploy.sh` built from the working tree, so a peer's uncommitted edit could ship.
+
+### Measurements
+
+- **CPU per room.** Node bots at 30 Hz × 2 inputs, groove track, tsx dev, on an M1 Pro. Server CPU: 1 room 4.4%, 4 rooms 9.6%, 8 rooms 10.8–11.8%, 16 rooms 18.0%, 24 rooms 23.5%. The slope is about 0.75% of one core per full room. RSS grew 14 MB for 24 rooms.
+- **Droplet factor.** One droplet vCPU is about 3× slower than one M1 Pro core [inferred]. Combat and phrase tracks add about 2× [guessed]. That gives about 4.5% per room.
+- **Message sizes (msgpackr).** Keyboard / touch inputs: 2 → 104 / 152 B, 10 → 448 / 688 B, 20 → 880 / 1360 B. 60 touch inputs → 4040 B. The largest chat message is 429 B after the server slices it (569 B before).
+
+### Decision
+
+1. **Room cap.** `MAX_ROOMS` = 12. `RunRoom.onCreate` checks it, and the matchmake gate checks it before a seat is reserved. A full server answers `SERVER_FULL_CODE` (503).
+2. **Per-IP quota.** One address may own 3 live rooms (`MAX_LIVE_ROOMS_PER_IP`) and create 10 rooms in 10 min (`MAX_CREATES_PER_WINDOW`, `CREATE_WINDOW_MS`). Past either limit the server answers `CREATE_LIMIT_CODE` (430). The gate is `create-quota.ts`, appended to `installMatchmakeGuard([ new FailedJoinLimit(), createQuota ])`.
+3. **Owner address.** `RunRoom.onAuth` records the owner IP when the creator joins. Until then the create holds a pending slot for `SEAT_RESERVATION_SECONDS` (15 s). `onDispose` frees the slot. The WS auth context reads `x-real-ip` first, and the HTTP matchmake reads `X-Forwarded-For`. Behind Traefik both give the client address [inferred].
+4. **Message rate.** `maxMessagesPerSecond` = 60. The installed rule is a fixed window, from `@colyseus/core` 0.17.47 `Room.mjs:970–975`:
+
+   > *`if (this.clock.currentTime - client._lastMessageTime >= 1e3) { client._numMessagesLastSecond = 0; … } else if (++client._numMessagesLastSecond > this.maxMessagesPerSecond) { … this.#_forciblyCloseClient(client, CloseCode.WITH_ERROR); }`*
+
+   The count resets 1 s after the message that opened the window. A client over the limit is closed, not throttled. A normal client sends 30 input messages per second.
+5. **Payload cap.** The ws `maxPayload` is 2 KiB (`MAX_PAYLOAD_BYTES`), not the 4 KiB default.
+6. **Input chunks.** The client sends the newest `MAX_QUEUED_INPUTS` (120) inputs, at most 20 per message (`net/input-chunks.ts`). 20 touch inputs are 1360 B, so a legal client never reaches the 2 KiB cap.
+7. **Exception guard.** `RunRoom.onUncaughtException` logs `room.error`. A throwing handler no longer ends the process.
+8. **Join name.** `RunSim.join` accepts only a string name. The other inputs (`sanitizeInputs`, `enqueueFire`, `isSlot`, `isShipId`, `isColorId`, chat `post`) already checked type and range.
+9. **Deploy from pushed code only.** `scripts/deploy.sh` refuses to run when a tracked file differs from `HEAD`, or when `HEAD` is not on `origin/dev`. It builds from `git archive HEAD` in a temp directory, so an untracked or ignored file cannot ship. `git archive` applies the LFS smudge filter, so the models arrive as content (verified on `bob.gltf`). The script checks SSH first, and never writes `/opt/slur/docker-compose.yml`: the droplet owns that file (it holds the `/metrics` basic-auth hash). Only the owner deploys.
+
+### Consequences
+
+- 12 rooms × 4.5% ≈ 54% of one droplet core. The rest is headroom for Traefik, the OS and spikes.
+- An unknown message type closes the client in production (`Room.mjs:94–101`). This was the behaviour before #339.
+- In dev and tests the HTTP address is `unknown`. So pending creates share one key and expire after 15 s.
+- The flood test takes 20 s: the dropped flooder holds a reconnection seat for `RECONNECT_SECONDS` (20).
+- A dirty shared tree blocks a deploy. The owner deploys when every worker has committed.
+
 ## ADR-027 — A race always ends: stall rule, course-scaled cap, host End race
 
 **Date:** 2026-09-28 · **Status:** Accepted (owner approved A+B+C for #341, 2026-09-28) · **Amends:** #301 ("no race time cap") · **Issue:** #341 · **Built in:** `26cc118` (shared helpers), plus the RunSim and client commit
