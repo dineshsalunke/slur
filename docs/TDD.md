@@ -147,6 +147,7 @@ PlayerState (implements SimShip → the server runs the shared simulate() on the
   ├─ dead, respawnTimer, lastSafeX, lastSafeZ           // collision / respawn
   ├─ invulnTimer                                        // dead field, never written (#281, ADR-016)
   ├─ finished, finishTime                               // finish latch + server-stamped race time
+  ├─ progressAt: float32                                // race time of the last new best z; bestZ stays server-only (#341, ADR-027)
   ├─ shipId: string                                     // → class → FlightTuning + armour, resolved BOTH ends
   ├─ name: string, colorId: uint8                       // identity — lobby list, standings, ship tint
   ├─ spectating: boolean                                // joined mid-round → NOT simulated
@@ -168,11 +169,13 @@ The fixed loop switches on `phase`:
 
 - **countdown:** bleed the countdown timer; NO ship motion; → racing at 0 (queues cleared).
 - **racing:** ingest queued inputs (seq #) → integrate ONLY racers (spectators skipped) → resolve track
-  collisions / deaths / respawns → stamp `finishTime` on finish → `raceShouldEnd?` (all-done / leader-grace
-  `RACE_GRACE_SECONDS` 45 s / no racers left; no time cap, #301) → finished.
+  collisions / deaths / respawns → stamp `finishTime` on finish → `noteProgress` → `raceShouldEnd?`
+  (finished + stalled ≥ racers, where stalled = no new best z for `STALL_SECONDS` 30 s / leader-grace
+  `RACE_GRACE_SECONDS` 45 s / `raceCapSeconds` = 3 × finishZ ÷ slowest maxCruise / no racers left;
+  ADR-027) → finished.
 - **lobby / finished:** idle — ships hold pose.
-- Host `start`/`restart` + ship/colour picks (lobby-only) are **messages**, validated server-side (host +
-  phase).
+- Host `start`/`restart`/`endRace` + ship/colour picks (lobby-only) are **messages**, validated server-side
+  (host + phase). `endRace` is valid in countdown and racing.
 - **`stepWorld`** (after `stepRace`) advances bolts (shared `stepProjectiles`) → owner-immune AABB
   `boltHits` → victim `stunTimer` (`stunDurationForShip` = `SimConfig.stunSeconds × (1 − class armour)`) +
   one-shot `broadcast('hit')` → prune; pickup grab-on-overlap → `heldPower` + server-plain respawn timer;

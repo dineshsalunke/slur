@@ -134,7 +134,9 @@ Host a room ──► players join & pick ship/colour ──► host hits GO ─
 **One mode: Race (finite track).** A course with a start and a **finish line**; first across wins. Given the
 north star, the win condition exists to give a round *shape*, not to be fair — pickups and combat are
 **sabotage tools** to mess with each other. Natural round end, obvious goal, trivially re-runnable, clear
-winner. (Blur.) *Optional round timer as a backstop.*
+winner. (Blur.) **A race always ends** (ADR-027): 45 s after the first finisher; when every racer has
+finished or gone idle (no forward progress for 30 s); at a cap of three clean runs of the slowest class;
+or when the host ends it. A racer who does not finish is DNF.
 
 **Track length is a spectrum, not a mode.** Courses range **short → long**; a long course is the home of the
 difficulty **arc/progression** (§5.2), replacing what "endless" used to provide. No separate endless generator.

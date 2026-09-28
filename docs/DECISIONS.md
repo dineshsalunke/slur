@@ -1434,3 +1434,37 @@ The home screen listed every live room. On a hosted server, any stranger could s
 - `joinById` ignores the private flag, so a code and a link both join. `joinOrCreate` skips private and locked rooms. Verified in `@colyseus/core` 0.17.47.
 - A bad-shape code fails on the client and never reaches the server.
 - Error codes reach the SDK as `MatchMakeError.code`: 522 = no room (the message holds `locked` when the room is full), 429 = too many wrong codes, 409 = public slot taken.
+
+## ADR-027 — A race always ends: stall rule, course-scaled cap, host End race
+
+**Date:** 2026-09-28 · **Status:** Accepted (owner approved A+B+C for #341, 2026-09-28) · **Amends:** #301 ("no race time cap") · **Issue:** #341 · **Built in:** `26cc118` (shared helpers), plus the RunSim and client commit
+
+### Context
+
+Since #301 a race ends only when every racer finishes, 45 s after the first finisher, or when no racers remain. A connected racer who is AFK or wedged before anyone finishes keeps the room racing forever. The host has no control mid-race. On a public server this holds a room against the room cap.
+
+### Options
+
+- **A. Stall rule.** A racer with no new best z for N s counts as done.
+- **B. Cap scaled from course length.** #301 removed the fixed 180 s cap because tracks grow. A cap from `finishZ` grows with the track.
+- **C. Host "End race".** Gives control to the host. It needs an attentive host, and the host can be the AFK racer.
+- **D. Grace timer after the first drop-out.** Rejected. A dropped racer already leaves after `RECONNECT_SECONDS` (20 s).
+
+### Decision
+
+1. **A + B + C.**
+2. **Stall:** `STALL_SECONDS` = 30. The HUD warns from `STALL_WARN_SECONDS` = 20. The rule is reversible: a new best z clears it. A stalled racer keeps flying and stays DNF unless they finish.
+3. **Cap:** `raceCapSeconds(finishZ)` = `RACE_CAP_FACTOR` (3) × `finishZ` ÷ `SLOWEST_CRUISE` (84 u/s). That gives 286 s on an 8,000u track and ≤ 546 s on a phrase track (≤ 15,300u).
+4. **End race:** `END_RACE_MESSAGE`. It is valid for the host in countdown or racing. The client asks for a second click ("End for all?").
+
+### Why these numbers
+
+- No auto-cruise: with no throttle, `coastDrag` 40 u/s² stops a 124 u/s ship in ≤ 3.1 s. So an AFK racer and a wedged racer both stop making a new best z.
+- A death costs about 2 s (`respawnDelay` 1 s + 12u setback at `respawnVz` 20). So 30 s allows about 15 retries at one obstacle.
+- Clean runs on 8,000u take 65–95 s. A 286 s cap never cuts a racer who keeps moving.
+
+### Consequences
+
+- `PlayerState` appends `progressAt` (float32, synced). `bestZ` is undecorated and stays on the server.
+- The HUD shows "Race ends M:SS" once the grace deadline is set, or in the last 60 s before the cap. The grace countdown was not visible before this change.
+- The roster dims a stalled racer and tags it IDLE. The results screen shows DNF, as before.
