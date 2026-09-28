@@ -1,26 +1,21 @@
-Agent: workerone · Lane: #339 server hardening (BUILT, awaiting owner check + deploy) · #337 open until final deploy · Updated: 2026-09-28
+Agent: workerone · Lane: #342 moderation (PLAN sent, waiting for owner D1–D3) · #337/#339 open until owner deploys · Updated: 2026-09-28
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#339: room caps, message rate limit, input validation, payload cap, and deploy.sh built from committed code. #337: verify prod `/metrics` and close it after the ONE final deploy (owner deploys).
+#342: host kick + name/chat filter. Plan only until the owner approves. #337/#339: after the owner deploys, verify prod /metrics in a race, then close both with SHAs (supervisor pings).
 
 ## Done
 
-- #337 `59a4599` (pushed): `/metrics` + logfmt lifecycle lines. Not deployed.
-- #339 `fda4814` (pushed): server limits, create quota, rate + payload caps, exception guard, join name check.
-- #339 `e8bb786` (pushed): client input chunks; menu messages SERVER_FULL / CREATE_LIMIT.
-- #339 `8fc2486` (pushed): `scripts/deploy.sh` (SSH preflight, refuse tracked diffs / HEAD not on origin/dev, `git archive` build in a temp dir, SHA image label, never writes the droplet compose, /metrics via keychain + `curl --config -`) · ADR-026 in `docs/DECISIONS.md`.
+- #339 `fda4814`, `e8bb786`, `8fc2486` (deploy.sh + ADR-026). #337 `59a4599`. All pushed. Not deployed.
+- #342 plan sent to slur-supervisor (message, 2026-09-28).
 
 ## State
 
-- Tests measured last seam: shared 561/561 · server 89/89 · client input-chunks + menu-form.utils + prediction 12/12.
-- deploy.sh: `bash -n` clean. shellcheck not installed. Not run (owner deploys).
-- `git archive` applies the LFS smudge: `bob.gltf` came out as glTF JSON (measured).
-- The deploy refuses while any tracked file is dirty, which includes peers' uncommitted work. Intended: deploy only when every worker has committed.
-- `pnpm lint` fails at 8fc2486 time on `apps/client/app/game/scene/ship-view.tsx` formatting — a peer's uncommitted file, not mine.
-- /metrics has no app auth; Traefik adds basic auth on its own router (memory `kurmah-netbird-infra.md`).
+- Colyseus 0.17.47 `Room.mjs:1043` sends any non-4000 close to `onDrop`. Our onDrop calls allowReconnection, so a kick must be `KICKED_MESSAGE` + `client.leave(4000)` (measured by reading the source).
+- obscenity 0.4.6: MIT, no dependencies, 153 KB unpacked (npm view). Dataset size [unmeasured].
+- Plan recommendations: D1 = browser token blocked for the room's lifetime · D2 = lobby + countdown + results · D3 = obscenity. Mask chat matches. A matching name becomes 'Racer'.
 
 ## Uncommitted
 
@@ -28,17 +23,17 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Held files
 
-- apps/server/src/index.ts, limits.ts, create-quota.ts(+test), rooms/room-hardening.test.ts · scripts/deploy.sh · docs/DECISIONS.md (ADR-026). Release on the supervisor's word.
+- none. Released all #339 files on the supervisor's word.
 
 ## Next
 
-1. Owner: /test-level + hosted-room check of #339 (normal play unaffected; menu messages on 503/430).
-2. After the owner's final deploy: curl prod `/metrics` during a race, then close #337 and #339 with SHAs.
+1. Wait for the owner's D1–D3. Then claim the files listed in the plan. run-room.ts goes last, after workertwo's #341 commits.
+2. On the supervisor's ping after the deploy: curl prod /metrics during a race, then close #337 and #339.
 
 ## Open questions
 
-- None.
+- D1–D3 for the owner (via the supervisor).
 
 ## Lessons → memory
 
-- none new (LFS-in-archive recorded in ADR-026).
+- none.
