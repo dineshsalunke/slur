@@ -117,6 +117,10 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   phase + before/after, ties by id (4) state rule C + room config B2 (preset + sparse overrides, locked at GO)
   (5) #70 scope combat only or ship tuning too (6) dev dials in hosted rooms or /test-level only. Await answers.
 
+- #349 net half merged 1a1c39c: schema exception gone (schema() composition); risk PlayerState 39/64 fields (hard
+  cap, server throws at boot). New owner Q7: add valibot or zod so the server validates command messages
+  (Colyseus 0.17 validate())? Waiting on workerthree §5 → workerone sends owner summary §8 Q1–Q8.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
