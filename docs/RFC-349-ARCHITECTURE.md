@@ -186,7 +186,7 @@ Rank = cost to dev speed plus cost to look/perf work. §5 problems fold in when 
 | 1 | **A feature is spread across central files.** Tug edits 19 central files. Mounts, message handlers, sim hooks, glyphs, dials and SFX are hand-wired lists. | §1.8 | Each new power-up re-edits the same 19 files. Two workers on two features collide in them. Removing a feature is a hunt. |
 | 2 | **Config has no single owner, and the predictor hard-codes the default.** | §1.3 | Every sim-dial test on `/test-level` shows reconcile snaps that live play does not have. #70 and #23 cannot ship. A deploy can pair an old tab with a new server [inferred]. |
 | 3 | **No declared order.** koota has no scheduler; order is `useFrame` call-site order. | §1.1, §5 | A new system's position is a guess. Order bugs show as one-frame lag. |
-| 4 | **`PlayerState` is at 39 of 64 schema fields.** The cap is hard: `Metadata.ts:73` throws at boot. | §3.4, §4.4 fact 3 | 25 slots for every future feature. Tug alone uses 3. A feature that crosses the cap stops the server from starting. |
+| 4 | **`PlayerState` is at 39 of 64 schema fields.** The cap is hard: `Metadata.ts:73` throws at boot. | §3.4, §4.4 fact 3 | 25 slots for every future feature. Tug alone uses 3. A 66th field stops the server at boot. A 65th field (index 64) passes the guard and silently corrupts the wire: it decodes as a DELETE of field 0 (§3.4). |
 | 5 | **State has no placement rule and no reset point.** | §1.2 | Each feature re-decides where state goes. Cross-run leaks are real: `resetSlot()` has no caller. |
 | 6 | **Discrete input is fake DOM keys.** | §1.5 | #348 must change key codes in three files. Dev-key listeners also receive the fake keys. |
 | 7 | **Value flags instead of tags.** `dead` (13 files), `stunTimer`, `localRole.spectating`. | §1.2 | Breaks `conventions/ecs.md` rule 3: *"Model state transitions by adding/removing components … not by branching on values."* |
@@ -304,7 +304,11 @@ Rules for every change:
 **Cap.** A Schema class holds at most 64 fields. `@colyseus/schema/src/Metadata.ts:73–74` — *"`if (index >
 64) { throw new Error(… "Schema instances may only have up to 64 fields.") }`"*. `PlayerState` has **39**
 (verified this session: `@type(` count per class in `packages/shared/src/schema.ts`). So 25 slots remain for
-every future feature. Feature modules make adding fields cheap, so the cap becomes a real limit (§2 rank 4).
+every future feature. The library guard is off by one: `index > 64` lets index 64 through. The encoder
+writes `(index | operation) & 255` (`encoder/EncodeOperation.ts:74`), and `DELETE = 64`
+(`encoding/spec.ts:10`). So a field at index 64 decodes as a DELETE of field 0, with no error. The usable
+cap is 64 (indexes 0–63). Our field-index test (rule 2) must assert `index < 64` itself. Feature modules
+make adding fields cheap, so the cap becomes a real limit (§2 rank 4).
 If a feature needs many fields, it takes one child Schema slot and accepts the nested read in its own
 hooks only.
 
@@ -478,7 +482,8 @@ in three places. **C3 later**, under a netcode ADR.
    `:108` `schema( fieldsAndMethods, name?, inherits? )`. Both are exported from `build/index.d.ts:20`.
    `defineTypes` calls `type()` for each field in turn (`build/index.mjs:3589–3593`), and the index is the
    next free one (`src/Metadata.ts:202–206`). **Call order = wire order.**
-3. **At most 64 fields per Schema class** (`src/Metadata.ts:73–74`). Fields today: `PlayerState` 39,
+3. **At most 64 fields per Schema class** (`src/Metadata.ts:73–74`). The guard is `index > 64`, so index 64
+   passes but collides with the DELETE bit (§3.4). Fields today: `PlayerState` 39,
    `RunState` 14, `Portal` 10, `Seeker` 9, `TrackDescriptorState` 8, `Projectile` 6, `Mine` 5 (re-counted by
    workerone this session).
 4. **The sim reads feature fields flat off the ship.** Tug writes `tugTimer`, `towTimer`, `tugAnchorZ` on
