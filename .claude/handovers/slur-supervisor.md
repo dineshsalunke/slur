@@ -119,6 +119,8 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
      workertwo pushed fcd917b (client-ip.ts, matchmake-guard.ts, failed-join-limit.ts, room-code.ts, room-codes.ts);
      building client + docs; also owns gap A (chatHistory 1 reply/2 s in chat-log.ts). workerone adds the single
      installMatchmakeGuard([new FailedJoinLimit(), …]) line in index.ts; never edits matchmake-guard.ts.
+     workerone seamed (faca865) and is CLEARED at 0%, NOT resumed. On owner #339 approval: `herdr agent prompt w2Z:p2
+     "You are workerone. Resume from .claude/handovers/workerone.md. Read CLAUDE.local.md first. OWNER APPROVED #339 — BUILD." --wait --until working`.
 00000000. (superseded) RESUME HERE (2026-09-28 night). HARDENING QUEUE (owner approved all; stay anonymous):
    #337 metrics pushed 59a4599 — awaits OWNER deploy; do NOT deploy while #338 edits are in the tree (deploy.sh builds
    the working tree). #338 chat: workertwo BUILDING (holds chat files, run-room.ts, lobby-overlay, matchmaking).
