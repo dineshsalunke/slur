@@ -46,6 +46,7 @@ import { burstMine, burstPortalHop, pushMineShock } from '../game/scene/mine-sho
 import { launchMine } from '../game/scene/mine-shots';
 import { pushTug } from '../game/scene/tug-events';
 import { localRole, runPhase } from '../game/spectator';
+import { inputChunks } from './input-chunks';
 import { copyShip, type Predictor } from './prediction';
 import type { RunRoomLike } from './run-room-like';
 import { stateCallbacks } from './state-callbacks';
@@ -290,8 +291,7 @@ export function attachRoomToWorld(
 
     // Wall clock, not useFrame: sends must hold 30Hz when a backgrounded tab throttles rAF.
     const timer = setInterval( () => {
-        const inputs = predictor.drainUnsent();
-        if ( inputs.length > 0 ) room.send( INPUT_MESSAGE, { inputs } );
+        for ( const inputs of inputChunks( predictor.drainUnsent() ) ) room.send( INPUT_MESSAGE, { inputs } );
     }, INPUT_SEND_MS );
 
     return () => {

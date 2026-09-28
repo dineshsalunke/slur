@@ -1,7 +1,13 @@
 import { MatchMakeError } from '@colyseus/sdk';
-import { PUBLIC_ROOM_TAKEN_CODE, ROOM_NOT_FOUND_CODE, TOO_MANY_WRONG_CODES_CODE } from '@slur/shared';
+import {
+    CREATE_LIMIT_CODE,
+    PUBLIC_ROOM_TAKEN_CODE,
+    ROOM_NOT_FOUND_CODE,
+    SERVER_FULL_CODE,
+    TOO_MANY_WRONG_CODES_CODE,
+} from '@slur/shared';
 import { describe, expect, it } from 'vitest';
-import { NO_SERVER, QUICK_PLAY_FULL, RUN_FULL, TOO_MANY_WRONG_CODES } from './menu-form';
+import { CREATE_LIMIT, NO_SERVER, QUICK_PLAY_FULL, RUN_FULL, SERVER_FULL, TOO_MANY_WRONG_CODES } from './menu-form';
 import { menuErrorFor, menuIntent } from './menu-form.utils';
 
 describe( 'menuIntent (#340)', () => {
@@ -32,6 +38,12 @@ describe( 'menuErrorFor (#340)', () => {
     it( 'points quick play at a private room when the public slot is taken', () => {
         const error = new MatchMakeError( 'Quick play is full', PUBLIC_ROOM_TAKEN_CODE );
         expect( menuErrorFor( 'quick', '', error ) ).toBe( QUICK_PLAY_FULL );
+    } );
+
+    it( 'names the server room cap and the per-network create cap (#339)', () => {
+        expect( menuErrorFor( 'create', '', new MatchMakeError( 'full', SERVER_FULL_CODE ) ) ).toBe( SERVER_FULL );
+        expect( menuErrorFor( 'quick', '', new MatchMakeError( 'full', SERVER_FULL_CODE ) ) ).toBe( SERVER_FULL );
+        expect( menuErrorFor( 'create', '', new MatchMakeError( 'cap', CREATE_LIMIT_CODE ) ) ).toBe( CREATE_LIMIT );
     } );
 
     it( 'blames the connection for anything else', () => {
