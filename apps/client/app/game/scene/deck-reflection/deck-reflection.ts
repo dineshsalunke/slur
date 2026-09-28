@@ -134,10 +134,12 @@ varying float vReflCenter;
 ${ DECK_HASH_GLSL }
 ${ DECK_TILE_GLSL }
 void main() {
-	float across = 1.0 - vReflQuad.x * vReflQuad.x;
-	float v = vReflQuad.y;
+	float qx = clamp( vReflQuad.x, - 1.0, 1.0 );
+	float across = 1.0 - qx * qx;
+	float v = clamp( vReflQuad.y, 0.0, 1.0 );
 	float line = pow( 1.0 - v, uReflFalloff ) * smoothstep( 0.0, 0.08, v );
-	float spot = exp( - pow( ( v - vReflCenter ) * 2.5, 2.0 ) );
+	float k = ( v - clamp( vReflCenter, 0.0, 1.0 ) ) * 2.5;
+	float spot = exp( - k * k );
 	float profile = mix( line, spot, vReflPoint ) * across * across;
 	vec3 toCam = cameraPosition - vReflWorld;
 	float dist = length( toCam );
@@ -149,7 +151,7 @@ void main() {
 	float rough = textureGrad( uReflRoughMap, tileUv, dFdx( mapUv ), dFdy( mapUv ) ).g * uReflRoughness;
 	float gloss = clamp( ( 1.0 - rough ) / max( 1.0 - uReflClean, 0.05 ), 0.0, 2.0 );
 	float plate = mix( 1.0, gloss, uReflRoughMix );
-	float glow = uReflStrength * uReflGain * vReflPower * profile * graze * fade * plate;
+	float glow = max( uReflStrength * uReflGain * vReflPower * profile * graze * fade * plate, 0.0 );
 	gl_FragColor = vec4( uReflColor * glow, 1.0 );
 	#include <tonemapping_fragment>
 	#include <colorspace_fragment>
