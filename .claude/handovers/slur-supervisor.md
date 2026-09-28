@@ -23,9 +23,9 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | — (#352 done 90a2699) | IDLE, cleared + resumed | none |
+| workerone | w2Z:p2 | #354 fake deck reflections OWNER APPROVED: rail sheen in deck shader + instanced streaks for block seams/pickups/exhausts; v1 no stencil; exhausts in; block streaks LAST (#350 may change aSealedSeams). THEN, separate commit: stronger Wear map ranges + deck anisotropy via MeshPhysicalMaterial (verified: Standard and Physical share the 'physical' program, WebGLPrograms.js:36-37; anisotropy compiled only if >0, :140) — measure low tier too | BUILDING | deck-reflection/*, block-/pickup-/exhaust-reflections/*, track-floor.tsx, track-blocks.tsx, pickup-field.tsx, exhaust-field(+utils), tuning-schema.ts, deck-breakup.ts, DECISIONS, ART_MATERIALS; later track-materials.ts |
 | workertwo | w2Z:p3 | #350 seam on every exposed wall end: plan done (option A = seam 0.28u inside each open corner) | WAITING: "go ahead with option A" sits UNSENT in its prompt box — owner must press Enter or say go | sealed-block-variation.ts(+test), track-blocks/track-blocks.utils.ts(+test) |
-| workerthree | w2Z:p5 | — (#351 826340a, #353 765ab59 done) | IDLE | none |
+| workerthree | w2Z:p5 | Deck albedo match vs golden crop (owner, no issue): MEASURE + RECOMMEND only, no source edits. Crop + stats.mjs in supervisor scratchpad (39e24082…/scratchpad). Golden body median sRGB(34,33,33) neutral, p10/50/90 26/35/50, grooves (12,9,7) | MEASURING (cleared + briefed) | none |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Done this seam
@@ -36,9 +36,7 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 
 ## Open owner questions
 
-1. Seam reflections (golden reference streaks on the deck): file + give workerthree plan-first? Options relayed:
-   fake additive streaks (all tiers, cheap) · emissive-only mirror pass (high tier) · RectAreaLights near camera ·
-   full planar reflector / SSR (too costly).
+1. (answered: #354 filed + approved, see workerone row)
 2. Bring back the marigold band the baked env reflected into blocks/monoliths/ships?
 3. Low tier: sky image ignores tone-mapping dials (three never tone-maps an sRGB background) — match it?
 4. #344 perf run: needs an owner time window (one headless Chrome ~20 min); run after #352 (done).
@@ -53,8 +51,10 @@ None.
 
 ## Next
 
-1. On owner go for #350 → workertwo builds.
-2. On owner answer to Q1 → file the reflections issue, brief workerthree plan-first.
+1. On owner go for #350 → workertwo builds; tell workerone if #350 lands before its block streaks.
+2. On workerthree's albedo report → relay to owner; forward recommended values to workerone (#354 part 2).
+   Owner may want an issue for it.
+2b. On workerone's #354 streak commit → relay measurement + /test-level brief to owner.
 3. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
 
 ## Lessons → memory
