@@ -18,6 +18,10 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
+> **Revision 10** — 2026-09-28. **An image backdrop and a Poly Haven HDRI replace the procedural sky.**
+> Owner's call (#352). The key light and the near fill are removed. The scene lights are the HDRI and the
+> engine and VFX point lights. Details: §7 item 22.
+>
 > **Revision 9** — 2026-09-28. **Brighter track metal, a separate hull colour, and a cool key light.**
 > Owner's call (#345). `Metal.baseColor` moves from `#4a4d52` to `#7b7f86` (F0 ≈ 0.07 → ≈ 0.2).
 > Ship hulls keep `#4a4d52` on a new `Hull.baseColor`. A world-fixed directional key lights the track
@@ -1124,7 +1128,26 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     have their own value. `docs/ADD.md` said *"The scene lights are now the `Environment` IBL,
     `NearFill` and the engine and VFX point lights."* The key light joins that list.
 
+22. **Image backdrop, Poly Haven HDRI, no key or near fill — 2026-09-28 (#352).** Owner's request.
+    - **Background** is `nebula-backdrop.jpg`, cover-fitted to the screen. It is a flat image, not a
+      sky, so it does not turn with the camera.
+    - **Environment** is a Poly Haven HDRI, loaded from a link in the dev panel. The default is
+      `kloppenheim_02_puresky` at 1k. It lights the scene and is not drawn.
+    - **`KeyLight` and `NearFill` are removed**, with their dials. Item 21's key light no longer exists.
+    - **Rocks** lose their probed key term. The HDRI lights them through `Rock.envMapIntensity`
+      (was `Sky.environment`, same default 1.85).
+    - **The marigold band is gone.** The baked env had a thin marigold band at the horizon. Blocks,
+      monoliths and ships no longer reflect it.
+    - Luma is not re-measured. The owner tunes `Environment.intensity` on `/test-level`.
+
+    **Departures.** Item 21 said *"`KeyLight` is one `DirectionalLight`, colour `#cfd8e6`."* It is
+    removed. `docs/ADD.md` said *"The `Environment` band cylinder gives blocks, monoliths and ships
+    their marigold."* The band is removed. None in `docs/art-direction/`.
+
 ## 8. Review log
+
+**Revision 9 → 10, image backdrop and HDRI (2026-09-28).** No family table changes. §7 gains item 22.
+Item 21's key light is removed.
 
 **Revision 8 → 9, brighter track metal and a key light (2026-09-28).** No family table changes. §7 gains
 item 21. Item 19's one-value rule no longer covers ship hulls.

@@ -7,7 +7,6 @@ import { CANVAS_GL } from '../../../game/scene/canvas-gl';
 import { EngineLight } from '../../../game/scene/engine-light/engine-light';
 import { ExhaustField } from '../../../game/scene/exhaust-field/exhaust-field';
 import { GameEnvironment } from '../../../game/scene/game-environment';
-import { NearFill } from '../../../game/scene/near-fill/near-fill';
 import { PlainRender } from '../../../game/scene/plain-render/plain-render';
 import { SceneEffects } from '../../../game/scene/scene-effects/scene-effects';
 import { SceneEnvironment } from '../../../game/scene/scene-environment';
@@ -34,7 +33,6 @@ export function LandingScene() {
                         <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
                         <GameEnvironment />
                         <SceneEnvironment />
-                        <NearFill />
                         <RenderScale />
                         <EngineLight />
                         <ExhaustField />

@@ -9,7 +9,6 @@ import { ASTEROID_BANDS, ROCK_FAR } from '../asteroid-config';
 import { packRockSurface, patchRock, prepareRockNormal, rockUniforms } from '../asteroid-surface';
 import { MeteorChunks } from '../meteor-chunks/meteor-chunks';
 import { MeteorStrikes } from '../meteor-strikes/meteor-strikes';
-import { NEBULA_LIGHT } from '../nebula-baker';
 import { prefersReducedMotion } from '../reduced-motion';
 import { ROCK_TEXTURES } from './rock-field.constants';
 import { rockMaterial } from './rock-field.utils';
@@ -54,10 +53,8 @@ export function RockField() {
         uniforms.uRockRough.value = num( 'Rock.roughness' );
         uniforms.uRockDetail.value = num( 'Rock.detail' );
         uniforms.uRockFar.value = Math.min( ROCK_FAR, ( state.camera as THREE.PerspectiveCamera ).far );
-        uniforms.uRockKeyDir.value.copy( NEBULA_LIGHT.direction ).normalize();
-        uniforms.uRockKeyColor.value.copy( NEBULA_LIGHT.color ).multiplyScalar( num( 'Sky.keyLight' ) );
         uniforms.uRockHeatColor.value.copy( accent() ).multiplyScalar( num( 'Rock.heat' ) );
-        field.envMapIntensity = num( 'Sky.environment' );
+        field.envMapIntensity = num( 'Rock.envMapIntensity' );
         loose.envMapIntensity = field.envMapIntensity;
         const rock = col( 'Rock.color' );
         if ( rock !== color.current ) {

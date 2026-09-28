@@ -1563,3 +1563,28 @@ The plan listed eight. The measured ones: a hemisphere light or lower metalness 
 - No draw calls added (124 high, 47 low). GPU time unchanged within noise (high 9.5 ms both, uncapped 1600×900).
 - Saved `Metal.baseColor` overrides reset once, because their stored `from` no longer matches the default.
 - Details and departures: `ART_MATERIALS.md` §7 item 21.
+- **Superseded in part by ADR-030:** the `KeyLight` is removed.
+
+## ADR-030 — Image backdrop and a Poly Haven HDRI replace the procedural sky
+
+**Date:** 2026-09-28 · **Status:** Accepted (owner request and answers, 2026-09-28) · **Issue:** #352 · **Built in:** the #352 commit
+
+### Context
+
+The owner asked for a simpler scene. The procedural nebula (#215) baked a sky cube, a light cube with a ground disc and a marigold band, and a probe for the rock key light. Two scene lights, `KeyLight` (ADR-029) and `NearFill`, sat on top of it.
+
+### Decision
+
+1. **Background:** `public/textures/nebula-backdrop.jpg` (1672×941, restored from before #215) is `scene.background`. It is cover-fitted to the viewport. It does not turn with the camera.
+2. **Lighting:** a Poly Haven HDRI is `scene.environment` only. It is not the background. The default is `public/textures/hdri/kloppenheim_02_puresky_1k.hdr` (CC0), self-hosted so production does not depend on Poly Haven.
+3. **Dev panel:** the `Environment` folder has an `hdri` text field. A pasted `https://polyhaven.com/a/<slug>` link, a bare slug or a direct `.hdr` URL loads live. The link resolves through `https://api.polyhaven.com/files/<slug>` to `.hdri[res].hdr.url` on `dl.polyhaven.org`. Both hosts send `access-control-allow-origin: *` (verified 2026-09-28), so there is no proxy. `Environment.rotation` turns the HDRI.
+4. **Resolution by tier:** low 1k, medium 1k, high 2k (`QualityProfile.hdriRes`). No 4k: the file is about 20 MB and PMREM uses 256 px faces.
+5. **Loader:** three's `HDRLoader` in a module singleton (`game/scene/hdri/hdri.state.ts`). Not `RGBELoader` (deprecated since r180), and not drei `useEnvironment` (it uses the three-stdlib loader and suspends the scene on each swap). The renderer PMREM-converts the equirect texture itself.
+6. **Removed:** the nebula sky and its baker, the drei star field, `KeyLight`, `NearFill`, the rock key term, and the `Sky.*`, `Env.*`, `KeyLight.*` and `NearFill.*` dials. The panel's `Tuning` folder (copy changed defaults, reset to schema) is removed too.
+
+### Consequences
+
+- The scene lights are the HDRI and the engine and VFX point lights. Track brightness now depends on `Environment.intensity` and the chosen HDRI. The owner tunes it on `/test-level` [unmeasured].
+- The marigold band that the baked env gave to blocks, monoliths and ships is gone.
+- The 1k default costs 1.4 MB. A pasted high-tier link costs about 6 MB.
+- Details and departures: `ART_MATERIALS.md` §7 item 22.

@@ -1,8 +1,5 @@
 import { button, useControls } from 'leva';
-import { DEEP_SPACE_PRESET, NEBULA_PRESET } from '../../game/scene/nebula-presets';
-import { copyDefaults } from '../tuning-export';
-import { forget } from '../tuning-persist';
-import { accentControl, colorControl, copyAccent, numberControl, skyControls } from './tuning-panel.utils';
+import { accentControl, colorControl, copyAccent, hdriLinkControl, numberControl } from './tuning-panel.utils';
 
 export function TuningPanel() {
     useControls( 'Accent', {
@@ -16,18 +13,12 @@ export function TuningPanel() {
         device: { value: String( devicePixelRatio ), editable: false },
     } );
 
-    useControls( 'Environment', {
-        skyIntensity: numberControl( 'Env.skyIntensity' ),
-        fillColor: colorControl( 'Env.fillColor' ),
-        fillIntensity: numberControl( 'Env.fillIntensity' ),
-        groundColor: colorControl( 'Env.groundColor' ),
-        groundIntensity: numberControl( 'Env.groundIntensity' ),
-        bandColor: colorControl( 'Env.bandColor' ),
-        bandIntensity: numberControl( 'Env.bandIntensity' ),
-        bandHeight: numberControl( 'Env.bandHeight' ),
+    const [ , setEnvironment ] = useControls( 'Environment', () => ( {
+        hdri: hdriLinkControl( ( status ) => setEnvironment( { status } ) ),
+        status: { value: '', editable: false },
         intensity: numberControl( 'Environment.intensity' ),
         rotation: numberControl( 'Environment.rotation' ),
-    } );
+    } ) );
 
     useControls( 'Bloom', {
         intensity: numberControl( 'Bloom.intensity' ),
@@ -35,33 +26,9 @@ export function TuningPanel() {
         smoothing: numberControl( 'Bloom.smoothing' ),
     } );
 
-    useControls( 'Tuning', {
-        'copy changed defaults': button( copyDefaults ),
-        'reset to schema': button( () => {
-            forget();
-            location.reload();
-        } ),
-    } );
-
-    useControls( 'Near fill', {
-        intensity: numberControl( 'NearFill.intensity' ),
-        forward: numberControl( 'NearFill.forward' ),
-        height: numberControl( 'NearFill.height' ),
-        distance: numberControl( 'NearFill.distance' ),
-        color: colorControl( 'NearFill.color' ),
-    } );
-
     useControls( 'Metal', {
         baseColor: colorControl( 'Metal.baseColor' ),
         hullColor: colorControl( 'Hull.baseColor' ),
-    } );
-
-    useControls( 'Key light', {
-        intensity: numberControl( 'KeyLight.intensity' ),
-        x: numberControl( 'KeyLight.x' ),
-        y: numberControl( 'KeyLight.y' ),
-        z: numberControl( 'KeyLight.z' ),
-        color: colorControl( 'KeyLight.color' ),
     } );
 
     useControls( 'Shadow', {
@@ -193,14 +160,9 @@ export function TuningPanel() {
         color: colorControl( 'EngineLight.color' ),
     } );
 
-    const [ , setSky ] = useControls( 'Sky', () => ( {
-        Nebula: button( () => setSky( NEBULA_PRESET ) ),
-        'Deep Space': button( () => setSky( DEEP_SPACE_PRESET ) ),
-        ...skyControls(),
-    } ) );
-
     useControls( 'Rock', {
         color: colorControl( 'Rock.color' ),
+        envMapIntensity: numberControl( 'Rock.envMapIntensity' ),
         textureScale: numberControl( 'Rock.textureScale' ),
         normalScale: numberControl( 'Rock.normalScale' ),
         roughness: numberControl( 'Rock.roughness' ),

@@ -71,8 +71,6 @@ export interface RockUniforms {
     uRockDetail: { value: number };
     uRockColor: { value: THREE.Color };
     uRockFar: { value: number };
-    uRockKeyDir: { value: THREE.Vector3 };
-    uRockKeyColor: { value: THREE.Color };
     uRockHeatColor: { value: THREE.Color };
 }
 
@@ -90,8 +88,6 @@ export function rockUniforms( surface: THREE.Texture, normal: THREE.Texture ): R
         uRockDetail: { value: 1 },
         uRockColor: { value: new THREE.Color() },
         uRockFar: { value: 1000 },
-        uRockKeyDir: { value: new THREE.Vector3( 0, 1, 0 ) },
-        uRockKeyColor: { value: new THREE.Color( 0, 0, 0 ) },
         uRockHeatColor: { value: new THREE.Color( 0, 0, 0 ) },
     };
 }
@@ -184,8 +180,6 @@ uniform float uRockRough;
 uniform float uRockDetail;
 uniform vec3 uRockColor;
 uniform float uRockFar;
-uniform vec3 uRockKeyDir;
-uniform vec3 uRockKeyColor;
 uniform vec3 uRockHeatColor;
 varying vec3 vRockPos;
 varying vec3 vRockNormal;
@@ -240,11 +234,6 @@ const FRAG_EMISSIVE = `
 totalEmissiveRadiance += uRockHeatColor * vRockHeat * smoothstep( 0.5, 0.12, rockS.b ) * ( 2.0 - rockS.r );
 `;
 
-const FRAG_KEY = `
-#include <lights_fragment_end>
-reflectedLight.directDiffuse += BRDF_Lambert( material.diffuseColor ) * uRockKeyColor * max( dot( normal, mat3( viewMatrix ) * uRockKeyDir ), 0.0 );
-`;
-
 export function patchRock( material: THREE.MeshStandardMaterial, uniforms: RockUniforms, loose = false ): void {
     if ( loose ) material.defines = { ...material.defines, ROCK_LOOSE: '' };
     material.onBeforeCompile = ( shader ) => {
@@ -262,8 +251,7 @@ export function patchRock( material: THREE.MeshStandardMaterial, uniforms: RockU
                 .replace( '#include <color_fragment>', FRAG_COLOR )
                 .replace( '#include <roughnessmap_fragment>', FRAG_ROUGHNESS )
                 .replace( '#include <normal_fragment_maps>', FRAG_NORMAL )
-                .replace( '#include <emissivemap_fragment>', FRAG_EMISSIVE )
-                .replace( '#include <lights_fragment_end>', FRAG_KEY );
+                .replace( '#include <emissivemap_fragment>', FRAG_EMISSIVE );
     };
     material.customProgramCacheKey = () => ( loose ? 'slur-rock-loose' : 'slur-rock' );
 }

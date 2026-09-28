@@ -16,7 +16,7 @@ function load(): Record< string, Stored > {
     }
 }
 
-let stored = load();
+const stored = load();
 
 export function restore< T extends Value >( path: string, fallback: T ): T {
     const entry = stored[ path ];
@@ -28,12 +28,5 @@ export function remember( path: string, value: Value, fallback: Value ): void {
     stored[ path ] = { value, from: fallback };
     try {
         globalThis.localStorage?.setItem( KEY, JSON.stringify( stored ) );
-    } catch {}
-}
-
-export function forget(): void {
-    stored = {};
-    try {
-        globalThis.localStorage?.removeItem( KEY );
     } catch {}
 }

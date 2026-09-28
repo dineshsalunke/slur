@@ -2,15 +2,15 @@ export const QUALITY_TIERS = [ 'low', 'medium', 'high' ] as const;
 
 export type QualityTier = ( typeof QUALITY_TIERS )[ number ];
 
+export type HdriResolution = '1k' | '2k';
+
 export interface QualityProfile {
     landing3d: boolean;
     surfaceRes: number;
-    noiseSize: number;
-    skyFace: number;
+    hdriRes: HdriResolution;
     dprCap: number;
     msaa: boolean;
     post: boolean;
-    skyMotion: boolean;
     rocks: boolean;
     rearView: boolean;
 }
@@ -23,36 +23,30 @@ export const PROFILES: Record< QualityTier, QualityProfile > = {
     low: {
         landing3d: false,
         surfaceRes: 512,
-        noiseSize: 32,
-        skyFace: 512,
+        hdriRes: '1k',
         dprCap: 1,
         msaa: false,
         post: false,
-        skyMotion: false,
         rocks: false,
         rearView: false,
     },
     medium: {
         landing3d: true,
         surfaceRes: 512,
-        noiseSize: 64,
-        skyFace: 512,
+        hdriRes: '1k',
         dprCap: 1.5,
         msaa: false,
         post: true,
-        skyMotion: true,
         rocks: true,
         rearView: true,
     },
     high: {
         landing3d: true,
         surfaceRes: 1024,
-        noiseSize: 64,
-        skyFace: 1024,
+        hdriRes: '2k',
         dprCap: 2,
         msaa: true,
         post: true,
-        skyMotion: true,
         rocks: true,
         rearView: true,
     },

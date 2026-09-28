@@ -225,8 +225,8 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 | Asteroids (Angular · Plate · Broken) | **BUILT** — displaced icosahedron with planar cuts and boulder knobs, three streamed bands, shader spin and straight-line travel, triplanar CC0 rock maps (see below) | **done** |
 | Meteor strikes | **BUILT** — seeded strikes ahead of the player: heat trail, flash, point light, camera shake, scorch, rigid-body rock chunks. Visual only (`ART_MATERIALS.md` §7 item 18, #235 for a sim hazard) | **done** |
 | Block fracture | **BUILT** — 18 Voronoi cells, CPU rigid bodies that land, bounce and rest on the deck (`ART_MATERIALS.md` §7 item 18) | **done** |
-| Nebula sky | **BUILT** — domain-warped fBm and Worley noise baked to a cubemap, composited live, and the source of the IBL and the key light (see below) | **done** |
-| Planets / moons | **BUILT** — analytic discs in the sky pass: terminator, lit limb, noise-volume relief; one planet in each preset (size 21 in Nebula, 17 in Deep Space), no moons by default (`Sky.planet*`, `Sky.moons` = 0) | **done** |
+| Sky | **BUILT** — one flat image, `nebula-backdrop.jpg`, cover-fitted as `scene.background` (#352; the procedural nebula of #215 is removed) | **done** |
+| Environment light | **BUILT** — a Poly Haven HDRI as `scene.environment`, set from a link in the dev panel (see below) | **done** |
 | Pickups | procedural — low-poly geometric icons | high |
 | **Ships** | **keep the authored Quaternius CC0 models** — already integrated, WYSIWYG-locked (GDD §5.5) | — |
 
@@ -249,40 +249,25 @@ GLSL functions, so "procedural textures" rather than "texture assets".
 > which over a 16u tile is 0.05u — a five-centimetre line on a 64u ribbon, sub-pixel at any real distance.
 > The surface read as flat grey until this was fixed.
 
-**The sky is procedural (issue #215).** `scene/nebula-baker.ts` bakes the nebula once, and again only when
-a structural tunable changes. The bake writes four continuous fields into a 1024² cubemap: glow (crest
-lines across a warped band, with self-shadowed billow texture), clump density, crest proximity and cloud
-shading. The fields are smooth, so the live pass can threshold them per pixel: the dark clumps get crisp
-edges at any DPR, and a directional derivative of the density toward the crest lights only the side of
-each clump that faces it. Stars are drawn live from a hash, not baked. The live pass reads the cubemap
-four times and a 64³ tiling noise volume three times (`scene/nebula-noise-volume.ts`; the volume replaces
-per-pixel hash noise, which was ALU-bound at DPR 2). Motion is a two-phase shear around the band axis,
-faster near the crest, plus a brightness stream that travels along the crest and star twinkle. The sky
-box follows the camera with no parallax term: a strafe offset on a sky layer reads as a rotation, so the
-asteroids carry all parallax. Sky output is soft-knee limited to 0.56 linear, under the bloom threshold.
-The same shade also goes into a 128² cube, with a ground disc and a thin marigold band at the horizon,
-and that cube is PMREM-filtered into `scene.environment`. **The sky lights the scene.** Deck, rails,
-monoliths, blocks, ships and rocks all reflect the sky the player sees; the flat grey gradient IBL is
-gone. The cube re-renders only when a sky or `Env.*` tunable changes, never per frame. A 64×32 probe
-measures two values: the horizon colour (`NEBULA_HORIZON`, which the scene fog follows) and the
-direction and colour of the rock key light. The `Nebula` and `Deep Space` presets on the `/test-level`
-panel make the two sky families from one parameter set. Measured sky-only cost, M3 Pro, 1600×900:
-0.62 ms at DPR 1, 1.05 ms at DPR 2.
-
-**Planets are analytic, not meshes.** Each is a disc test in the same sky pass: the direction's offset
-from the planet centre gives a sphere normal, a sun direction (`Sky.planetPhase` around the view axis,
-`Sky.planetTilt` around the planet) gives the terminator, `pow( r, 16 )` gives the lit limb, and three
-reads of the noise volume give relief. The planets are in the light cube too, so a large Deep Space
-planet contributes to the IBL.
+**The sky is an image and the light is an HDRI (issue #352).** The procedural nebula of #215 is
+removed: its baker, noise volume, planets, probe and star field. `scene/scene-backdrop/` draws
+`public/textures/nebula-backdrop.jpg` as `scene.background`, cover-fitted to the viewport. It is a flat
+image, so it does not turn with the camera; the asteroids carry all parallax. `scene/hdri/hdri.state.ts`
+loads a Poly Haven HDRI with three's `HDRLoader` and sets it as `scene.environment`. The renderer
+PMREM-filters it. The HDRI lights the scene and is not drawn. The default is
+`public/textures/hdri/kloppenheim_02_puresky_1k.hdr` (CC0, 1.4 MB). On `/test-level`, the `Environment`
+folder has an `hdri` text field: paste `https://polyhaven.com/a/<slug>`, a bare slug or a `.hdr` URL.
+The slug resolves through `api.polyhaven.com/files/<slug>` at the tier's resolution (1k low and
+medium, 2k high). `Environment.rotation` turns it and `Environment.intensity` scales it. ADR-030.
 
 **The rails do not light the scene.** The rail light and the directional fill were removed in #310
 (owner, 2026-09-27: they had no visible effect). The rail light was an analytic line light patched
 into the deck, monolith and finish-gate materials. Before it, six `RectAreaLight`s were the largest
 cost of a DPR 2 frame (8 ms of 17.7 on an M3 Pro at 3456×2160), because three.js evaluates every
 area light with LTC on every fragment of every standard material. Do not add area lights for a
-glow. The scene lights are now the `Environment` IBL, `NearFill`, the engine and VFX point
-lights, and `KeyLight`: one world-fixed cool directional light from behind the camera, without
-shadows (#345, `ART_MATERIALS.md` §7 item 21). The `Environment` band cylinder gives blocks, monoliths and ships their marigold.
+glow. The scene lights are now the HDRI environment and the engine and VFX point lights. `KeyLight`
+(#345) and `NearFill` are removed (#352, `ART_MATERIALS.md` §7 item 22), and so is the marigold band
+of the baked env.
 
 **DPR 2 frame budget, M3 Pro, 3456×2160, GPU-synced medians while driving** (`readPixels` each
 frame; plain rAF timing does not track the GPU under ANGLE Metal): 10.0 ms with everything, 5.4 ms
@@ -291,11 +276,11 @@ point lights 0.5 ms. The canvas is created with `antialias: false, alpha: false`
 the composer's final quad gains nothing from a multisampled default framebuffer, and an opaque
 canvas skips the compositor blend. The next millisecond lives in the post chain, not the scene.
 
-**The rock maps are the only bitmaps in the pipeline.** They are `public/textures/dark-rock-*.jpg`, Poly
+**The rock maps, the backdrop and the HDRI are the only bitmaps in the pipeline.** The rock maps are `public/textures/dark-rock-*.jpg`, Poly
 Haven `dark_rock` (CC0), 1k. The asteroid shader uses the luminance of the diffuse map, tinted to
 graphite, and the AO, roughness and normal maps. It samples them triplanar in object space, so the
 maps rotate with the rock. The maps are not in LFS. `rock-field.tsx` loads them with `useTexture` and
-has no error boundary, so a missing map is expected to throw out of the Canvas (not tested). The `nebula-backdrop.jpg` placeholder is deleted.
+has no error boundary, so a missing map is expected to throw out of the Canvas (not tested). The `nebula-backdrop.jpg` removed in #215 is back as the backdrop (#352).
 
 > **Honest cost:** shader noise trades texture memory for per-pixel ALU, which is in tension with §8 rule 3
 > ("light does the work, not texels"). With instanced fields and 12 ships it is usually a win, but it is a

@@ -1,5 +1,5 @@
 import { syncAccent } from '../../game/scene/accent';
-import { SKY_BAKE_KEYS, SKY_LIVE_KEYS, SKY_LOOK_KEYS, type SkyKey } from '../../game/scene/nebula-presets';
+import { hdriLink, showHdri } from '../../game/scene/hdri/hdri.state';
 import { col, num, setCol, setNum } from '../tuning';
 import { type ColorPath, NUMBER_TUNABLES, type NumberPath } from '../tuning-schema';
 
@@ -41,10 +41,12 @@ export function copyAccent(): void {
     void navigator.clipboard?.writeText( value );
 }
 
-export function skyControls() {
-    const keys: readonly SkyKey[] = [ ...SKY_BAKE_KEYS, ...SKY_LOOK_KEYS, ...SKY_LIVE_KEYS ];
-    return Object.fromEntries( keys.map( ( key ) => [ key, numberControl( `Sky.${ key }` ) ] ) ) as Record<
-        SkyKey,
-        ReturnType< typeof numberControl >
-    >;
+export function hdriLinkControl( report: ( status: string ) => void ) {
+    return {
+        value: hdriLink(),
+        onChange: ( value: string ) => {
+            void showHdri( value ).then( report );
+        },
+        transient: true as const,
+    };
 }
