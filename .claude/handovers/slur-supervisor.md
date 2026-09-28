@@ -131,3 +131,11 @@ None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMOR
 ## Lessons → memory
 
 none
+
+## Latest (seam 6, ~238k — clear me)
+
+- #351 FILED: dev dial for marigold (3D + Tailwind token, one dial) → workerthree BUILD (owner asked directly).
+- workerthree's #344 race-profile run is PARKED behind #351. Its plan: one headless Chrome ~20 min, doubles the
+  owner's frame time while it runs → ASK THE OWNER FOR A TIME WINDOW before saying go.
+- Owner Qs pending: #349 §8 Q1–Q8 (+ workerthree §5.7: O1 for views; tier change rebuilds sky/track textures
+  mid-race or reload-only?); deploy; power-slot leak bug (resetSlot never called) — file it?
