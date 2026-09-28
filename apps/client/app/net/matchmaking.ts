@@ -9,6 +9,7 @@ import {
 } from '@slur/shared';
 import { attachLobbyStore } from '../lobby/lobby-store';
 import { currentShip } from '../ship/ship-choice';
+import { attachChatStore } from './chat-store';
 import { getClient } from './client';
 import { setConnectionStatus } from './connection-status';
 import { session } from './session';
@@ -48,6 +49,7 @@ async function enter( joining: Promise< Room< RunState > > ): Promise< Room< Run
     session.room = room;
     setConnectionStatus( 'live' );
     watchRoom( room );
+    attachChatStore( room );
     room.send( SET_CLASS_MESSAGE, currentShip().id );
     return room;
 }

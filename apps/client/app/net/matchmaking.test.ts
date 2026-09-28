@@ -13,6 +13,7 @@ const client = vi.hoisted( () => ( {
 
 vi.mock( './client', () => ( { getClient: () => client } ) );
 vi.mock( '../lobby/lobby-store', () => ( { attachLobbyStore: vi.fn() } ) );
+vi.mock( './chat-store', () => ( { attachChatStore: vi.fn() } ) );
 vi.mock( '../ship/ship-choice', () => ( { currentShip: () => ( { id: 'freighter' } ) } ) );
 
 interface Descriptor {

@@ -1,3 +1,4 @@
+export * from './chat.js';
 export * from './combat/combat-step.js';
 export * from './combat/constants.js';
 export * from './combat/fire-dir.js';

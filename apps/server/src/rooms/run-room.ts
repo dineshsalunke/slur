@@ -1,10 +1,14 @@
 import { type Client, Room } from '@colyseus/core';
 import {
+    CHAT_HISTORY_MESSAGE,
+    CHAT_LINE_MESSAGE,
+    CHAT_SEND_MESSAGE,
     DEFAULT_TRACK_GEN,
     DROP_POWERUP_MESSAGE,
     INPUT_MESSAGE,
     type InputMessage,
     isTrackGen,
+    PHASE,
     type PowerSlotMessage,
     procgenDescriptor,
     RESTART_MESSAGE,
@@ -17,6 +21,7 @@ import {
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { logEvent, phaseLogger } from '../log.js';
+import { ChatLog } from './chat-log.js';
 
 const RECONNECT_SECONDS = 20;
 
@@ -24,6 +29,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     maxClients = 12;
 
     sim!: RunSim;
+
+    readonly chat = new ChatLog();
 
     onCreate(): void {
         const envGen = process.env.SLUR_TRACK_GEN;
@@ -52,6 +59,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.onMessage< PowerSlotMessage >( DROP_POWERUP_MESSAGE, ( client, msg ) =>
             this.sim.dropPower( client.sessionId, msg ),
         );
+        this.onMessage( CHAT_SEND_MESSAGE, ( client, text ) => this.postChat( client, text ) );
+        this.onMessage( CHAT_HISTORY_MESSAGE, ( client ) => client.send( CHAT_HISTORY_MESSAGE, this.chat.history() ) );
 
         this.setSimulationInterval( ( deltaMs ) => this.sim.advance( deltaMs / 1000 ) );
     }
@@ -79,10 +88,18 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
     onLeave( client: Client ): void {
         this.sim.leave( client.sessionId );
+        this.chat.forget( client.sessionId );
         logEvent( 'client.leave', { room: this.roomId, session: client.sessionId, players: this.state.players.size } );
     }
 
     onDispose(): void {
         logEvent( 'room.dispose', { room: this.roomId } );
+    }
+
+    private postChat( client: Client, text: unknown ): void {
+        const p = this.state.players.get( client.sessionId );
+        if ( ! p || this.state.phase !== PHASE.lobby ) return;
+        const line = this.chat.post( { id: client.sessionId, name: p.name, colorId: p.colorId }, text, Date.now() );
+        if ( line ) this.broadcast( CHAT_LINE_MESSAGE, line );
     }
 }

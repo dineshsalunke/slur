@@ -4,6 +4,7 @@ import { Scrim } from '../../ui/scrim';
 import { ColourSwatches } from './colour-swatches';
 import { CopyLink } from './copy-link';
 import { LeaveButton } from './leave-button';
+import { LobbyChat } from './lobby-chat/lobby-chat';
 import { LobbyShipPicker } from './lobby-ship-picker/lobby-ship-picker';
 import { RoomTitle } from './room-title';
 import { Roster } from './roster/roster';
@@ -22,10 +23,11 @@ export function LobbyOverlay( { room }: { room: RunRoomLike } ) {
                     <LeaveButton tone="ghost" />
                 </header>
 
-                <div className="mt-auto px-5 pb-6 sm:px-10">
+                <div className="mt-auto flex flex-col gap-5 px-5 pb-6 sm:flex-row sm:items-end sm:justify-between sm:px-10">
                     <RoomTitle room={ room }>
                         <CopyLink />
                     </RoomTitle>
+                    <LobbyChat room={ room } className="w-full sm:w-[22rem] sm:flex-none" />
                 </div>
 
                 <div className="flex min-w-0 items-end gap-6 px-5 sm:px-10">
