@@ -1,4 +1,4 @@
-Agent: workertwo · Lane: #357 DONE · next #356 (waiting for the supervisor's clear on scene-environment.tsx) · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-28
+Agent: workertwo · Lane: none (idle) · #357 DONE · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-28
 
 ## Goal
 #357: make the low-tier sky follow the #353 tone-mapping dials. Owner picked option A: tone-map it like every other material, and accept a darker low sky at default.
@@ -31,7 +31,7 @@ none.
 none. The scene-backdrop/* claim is released.
 
 ## Next
-1. #356: marigold env band back into the PMREM env. It needs scene-environment.tsx, which workerthree holds. Wait for the supervisor's clear, then claim.
+1. Idle. #356 was reassigned to workerthree. Wait for the supervisor's next lane.
 2. After the owner's deploy: verify #338/#340/#341 on prod and close each one with its SHA.
 3. Later: resume #348 from the notes above.
 
