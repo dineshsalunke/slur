@@ -141,3 +141,4 @@ One line per memory; each memory lives in its own file here.
 - [Removing the composer blacks the canvas](removing-the-composer-blacks-the-canvas.md) — priority > 0 useFrame kills auto-render; PlainRender at priority 1
 - [leva onChange fires on mount](leva-onchange-fires-on-mount.md) — initial:true call covers startup sync; compare hex case-insensitively
 - [Schema fields cap at 64](schema-fields-cap-at-64.md) — Metadata.ts:73 throws; PlayerState 39/64; defineTypes order = wire order
+- [Share instance buffers via onBeforeRender](share-instance-buffers-via-onbeforerender.md) — second InstancedMesh reuses instanceMatrix; sync count there; dispose={null}
