@@ -5,7 +5,7 @@ import { NetFlightReadout } from './hud/net-flight-readout';
 import { NetPowerRack } from './hud/net-power-rack';
 import { NetRoster } from './hud/net-roster';
 import { RaceDeadline } from './hud/race-deadline/race-deadline';
-import { TouchPad } from './hud/touch-pad';
+import { TouchPad } from './hud/touch-pad/touch-pad';
 import { PhaseGate } from './phase-gate/phase-gate';
 import { ON_TRACK_PHASES } from './phase-gate/phase-gate.constants';
 

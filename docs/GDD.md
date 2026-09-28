@@ -81,7 +81,7 @@ just moved every track in the game.
 | Track width | `96u` (`HALF_WIDTH 48`) | 24 lanes *in the current generator*; the width, not the lane count, is what matters |
 | Segment depth | `SEG_LEN` `20u` | one segment; a gap is one segment long |
 | Deadly block height | `8u` (`BLOCK_HEIGHT`) | **above double-jump reach on purpose** — strafe around, never hop |
-| Deadly block width/depth | 1–3 lanes wide; depth drawn from `BLOCK_DEPTHS` `4/8/16u` at a varied z-offset; close blocks then merge into one (ADR-019) | a *generation artifact*, **not** a rule — any size is legal |
+| Deadly block width/depth | continuous 4–20u wide (`carveRun`, #311); depth drawn from `BLOCK_DEPTHS` `4/8/16u` at a varied z-offset; close blocks then merge into one (ADR-019) | a *generation artifact*, **not** a rule — any size is legal |
 | `MAX_SHIP_WIDTH` | `1 cell = 4u` | the ship-size **contract**; ceiling for `MIN_CLEAR`; roster asserted ≤ this |
 | `CLEARANCE_MARGIN` | `3u` | the **only** clearance tunable (raise = easier tracks) |
 | `MIN_CLEAR` | `7u` | `MAX_SHIP_WIDTH + CLEARANCE_MARGIN`; per-slice threadable-floor floor |
@@ -239,7 +239,7 @@ corner keeps only the key hint.
 *OPEN: full roster + cooldowns. **S5 resolved:** v1 roster = **Bolt** (fire→stun); **three slots** (#223, replaces the single held slot); owner-immune only — everyone else is a target (teams / friendly-fire are a later mode). Shield/Boost = fast-follows.*
 
 **Fire forward or back (#261, built).** Every power can go either way. **E** fires forward, **F** fires
-back. The gamepad uses **B** for back, and the touch pad has a **Back** button. A back bolt flies −z. A
+back. The gamepad uses **B** for back, and the touch d-pad uses its **down** arm. A back bolt flies −z. A
 back seeker locks onto the nearest rival behind, launches at 0 u/s and ramps to top speed toward −z.
 The owner still has to confirm F as the back key.
 
@@ -640,12 +640,18 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 | Brake / slow | S or ↓ | Hold to decelerate (no reverse) |
 | Strafe left/right | A / D or ← / → | Lateral, **not turning**; smooth analog (lanes fallback) |
 | Jump | Space | Tap = small hop · hold = higher · double-tap = double jump |
-| Select power slot | 1 / 2 / 3 · Q | 1–3 select a slot. Q cycles to the next full slot. An emptied slot advances to the next full one |
+| Select power slot | 1 / 2 / 3 · Q · R | 1–3 select a slot. Q cycles to the next full slot, R to the previous one (#346). An emptied slot advances to the next full one |
 | Use power-up | E | Fires the selected slot (incl. **Boost**, now a pickup — LMB is not bound) |
 | Drop power-up | X | Empties the selected slot. The power is gone |
 | Mute | M | Someone always needs to mute fast |
 | Leave run | Esc | No pause; leaving drops you to spectate/menu |
 
+- **Touch (#346, phones).** The left half of the screen holds a floating stick. Its base appears where the
+  thumb lands. Touch = thrust. Slide left or right = strafe, digital, with hysteresis: it presses at 45% of
+  the radius and releases at 25%, so a jittering thumb cannot re-fire the strafe kick. Pull down past 50% =
+  brake. A d-pad sits bottom-right. The centre is Jump (tap / hold / double). Up = fire forward (E). Down =
+  fire back (F). Left / right = previous / next power-up (R / Q). A thumb that slides onto another arm
+  fires that arm once.
 - **Aiming (design intent — NOT built).** Offensive power-ups should **auto-lock the nearest target in a
   forward cone** — combat is disruption, not precision, so no aim skill-wall. **As built the Bolt is dumb
   and fires straight forward**; auto-lock needs BC8 (proximity/targeting) and is a fast-follow. Mines drop

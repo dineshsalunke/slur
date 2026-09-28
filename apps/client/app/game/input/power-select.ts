@@ -4,6 +4,9 @@ import { typingTarget } from '../../dev/typing-target';
 
 const SLOT_KEYS = [ 'Digit1', 'Digit2', 'Digit3' ];
 
+export const NEXT_SLOT_KEY = 'KeyQ';
+export const PREVIOUS_SLOT_KEY = 'KeyR';
+
 const listeners = new Set< () => void >();
 
 let selected = 0;
@@ -29,12 +32,17 @@ function select( slot: number ): void {
     for ( const listener of listeners ) listener();
 }
 
-function nextFull( rack: readonly number[], from: number ): number {
+function nextFull( rack: readonly number[], from: number, dir: 1 | -1 = 1 ): number {
     for ( let step = 1; step <= POWER_SLOTS; step++ ) {
-        const i = ( from + step ) % POWER_SLOTS;
+        const i = ( from + dir * step + POWER_SLOTS * step ) % POWER_SLOTS;
         if ( ( rack[ i ] ?? HeldPower.none ) !== HeldPower.none ) return i;
     }
     return -1;
+}
+
+function cycle( rack: readonly number[], dir: 1 | -1 ): void {
+    const next = nextFull( rack, selected, dir );
+    select( next >= 0 ? next : ( selected + dir + POWER_SLOTS ) % POWER_SLOTS );
 }
 
 export function settleSlot( rack: readonly number[] ): void {
@@ -59,10 +67,9 @@ export function handlePowerKey( e: KeyboardEvent, act: PowerActions ): void {
     const before = selected;
     const digit = SLOT_KEYS.indexOf( e.code );
     if ( digit >= 0 ) select( digit );
-    else if ( e.code === 'KeyQ' ) {
-        const next = nextFull( act.rack(), selected );
-        select( next >= 0 ? next : ( selected + 1 ) % POWER_SLOTS );
-    } else if ( e.code === 'KeyE' ) act.fire( selected, 1 );
+    else if ( e.code === NEXT_SLOT_KEY ) cycle( act.rack(), 1 );
+    else if ( e.code === PREVIOUS_SLOT_KEY ) cycle( act.rack(), -1 );
+    else if ( e.code === 'KeyE' ) act.fire( selected, 1 );
     else if ( e.code === 'KeyF' ) act.fire( selected, -1 );
     else if ( e.code === 'KeyX' ) act.drop( selected );
     if ( selected !== before ) act.tick();

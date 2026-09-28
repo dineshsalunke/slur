@@ -65,6 +65,17 @@ describe( 'power slot selection', () => {
         expect( selectedSlot() ).toBe( 0 );
     } );
 
+    it( 'R cycles to the previous full slot and wraps (#346)', () => {
+        const { act } = actions( [ bolt, seeker, none ] );
+        handlePowerKey( key( 'KeyR' ), act );
+        expect( selectedSlot() ).toBe( 1 );
+        handlePowerKey( key( 'KeyR' ), act );
+        expect( selectedSlot() ).toBe( 0 );
+        const empty = actions( [ none, none, none ] );
+        handlePowerKey( key( 'KeyR' ), empty.act );
+        expect( selectedSlot() ).toBe( 2 );
+    } );
+
     it( 'Q on an empty rack still steps the selection', () => {
         const { act } = actions( [ none, none, none ] );
         handlePowerKey( key( 'KeyQ' ), act );

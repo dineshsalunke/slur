@@ -22,7 +22,7 @@ export function useRearViewShown(): boolean {
 
 if ( import.meta.env.DEV && typeof window !== 'undefined' ) {
     addEventListener( 'keydown', ( e ) => {
-        if ( e.code !== 'KeyR' || e.repeat || e.metaKey || e.ctrlKey || e.altKey ) return;
+        if ( e.code !== 'KeyV' || e.repeat || e.metaKey || e.ctrlKey || e.altKey ) return;
         if ( typingTarget( e.target ) ) return;
         e.preventDefault();
         shown = ! shown;

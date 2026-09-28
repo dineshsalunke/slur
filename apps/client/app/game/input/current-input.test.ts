@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { currentInput } from './current-input';
 import { JUMP_LATCH_MS, latchJump, takeJumpLatch } from './jump-latch';
-import { pressTouch, releaseAllTouch, releasePointer } from './touch-state';
+import { holdStick, moveStick, pressJump, releaseAllTouch, releasePointer } from './touch-state';
 
 afterEach( () => {
     releaseAllTouch();
@@ -14,34 +14,48 @@ describe( 'currentInput', () => {
         expect( currentInput().seq ).toBe( a + 1 );
     } );
 
-    it( 'reads a held touch control', () => {
-        pressTouch( 'throttle', 1 );
-        pressTouch( 'left', 2 );
-        const input = currentInput();
-        expect( input.throttle ).toBe( 1 );
-        expect( input.strafe ).toBe( 1 );
+    it( 'thrusts while the stick is touched and strafes when pushed (#346)', () => {
+        expect( holdStick( 1 ) ).toBe( true );
+        expect( currentInput().throttle ).toBe( 1 );
+        moveStick( 1, -0.6, 0 );
+        expect( currentInput().strafe ).toBe( 1 );
+        moveStick( 1, 0.6, 0 );
+        expect( currentInput().strafe ).toBe( -1 );
         releasePointer( 1 );
         expect( currentInput().throttle ).toBe( 0 );
-    } );
-
-    it( 'cancels opposite strafe buttons', () => {
-        pressTouch( 'left', 1 );
-        pressTouch( 'right', 2 );
         expect( currentInput().strafe ).toBe( 0 );
     } );
 
-    it( 'keeps a control held while any pointer holds it', () => {
-        pressTouch( 'brake', 1 );
-        pressTouch( 'brake', 2 );
-        releasePointer( 1 );
+    it( 'holds strafe inside the hysteresis band so a jittering thumb cannot re-press (#346)', () => {
+        holdStick( 1 );
+        moveStick( 1, -0.5, 0 );
+        moveStick( 1, -0.3, 0 );
+        expect( currentInput().strafe ).toBe( 1 );
+        moveStick( 1, -0.2, 0 );
+        expect( currentInput().strafe ).toBe( 0 );
+        moveStick( 1, -0.4, 0 );
+        expect( currentInput().strafe ).toBe( 0 );
+    } );
+
+    it( 'brakes instead of thrusting when the stick is pulled down (#346)', () => {
+        holdStick( 1 );
+        moveStick( 1, 0, 0.6 );
         expect( currentInput().brake ).toBe( 1 );
-        releasePointer( 2 );
-        releasePointer( 2 );
+        expect( currentInput().throttle ).toBe( 0 );
+        moveStick( 1, 0, 0.2 );
         expect( currentInput().brake ).toBe( 0 );
+        expect( currentInput().throttle ).toBe( 1 );
+    } );
+
+    it( 'lets one pointer own the stick', () => {
+        holdStick( 1 );
+        expect( holdStick( 2 ) ).toBe( false );
+        moveStick( 2, 1, 0 );
+        expect( currentInput().strafe ).toBe( 0 );
     } );
 
     it( 'reports a jump tap released before the next read', () => {
-        pressTouch( 'jump', 1 );
+        pressJump( 1 );
         releasePointer( 1 );
         expect( currentInput().jump ).toBe( true );
         expect( currentInput().jump ).toBe( false );
