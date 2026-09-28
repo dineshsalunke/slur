@@ -1,38 +1,39 @@
-Agent: workertwo · Lane: #338 lobby chat on the ship-selection screen · Updated: 2026-09-28
+Agent: workertwo · Lane: #340 private rooms + join code (plan stage); #338 open until prod verify · Updated: 2026-09-28
 
 ## Goal
-Text chat on the lobby screen of `/game/:roomId`. The server relays each line through room messages, not schema. It trims the text, caps it at 140 chars, allows 5 lines per 5 s and stamps the call sign. A mid-lobby joiner sees the last 30 lines.
+Rooms are private by default and joined with a short code. The server keeps at most one public room (quick play, created on demand). #338 stays open: verify prod after the owner's single post-hardening deploy, then close it with 282428f.
 
 ## Done
-- 282428f feat(#338): lobby chat. Pushed to dev.
-  - Shared `chat.ts`: message names, `CHAT_MAX_CHARS` 140, `CHAT_HISTORY_LINES` 30, `cleanChatText()`.
-  - Server `rooms/chat-log.ts`: `ChatLog` (sliding-window limiter, 30-line ring). `run-room.ts` accepts lines only in the lobby, only from a seated player, and forgets the sender on leave.
-  - Client `net/chat-store.ts`: attached in `matchmaking.ts` `enter()`. It pulls history on attach and again on reconnect.
-  - UI `overlays/lobby-chat/`: LobbyChat shell, ChatLines (the only subscriber), ChatInput (keydown stopPropagation, Escape blurs).
-  - GDD §3: one bullet.
+- 282428f feat(#338): lobby chat (pushed to dev).
+- #340 plan sent to slur-supervisor (2026-09-28). No edits yet.
 
 ## State
-- shared 550/550, server 53/53, client 589/589. `pnpm typecheck` clean. `pnpm lint` exit 0.
-- React 19.2.8 `createRoot` → `listenToAllSupportedEvents(container)`, and synthetic stopPropagation calls the native one (verified in react-dom-client.development.js).
-- Headless two-client check on :5173 at 1440×900 and 390×844:
-  - Typing "wasd m e" in chat left the roster unchanged and did not start the race.
-  - Joiner B got A's 2 history lines.
-  - A saw B's line.
-  - The panel sits right of "YOUR RUN" on desktop and stacks under COPY LINK on mobile.
-- Prod (slur.kurmah.studio) [unmeasured; waits for the owner's deploy].
+- Colyseus @colyseus/core 0.17.47 facts, verified in the installed build:
+  - `this.roomId` can be replaced only in onCreate. The matchmaker does not check ids for uniqueness.
+  - setPrivate(true) hides the room from LobbyRoom (queries `private: false, unlisted: false`; updateLobby skips private rooms).
+  - joinById ignores private and rejects only not-found or locked.
+  - joinOrCreate skips private and locked rooms and holds a concurrency lock around the create.
+  - The only matchmake HTTP route is POST /matchmake/:method/:roomName, through the overridable `matchMaker.controller.invokeMethod`. authContext.ip comes from XFF ?? x-client-ip ?? x-real-ip.
+- Plan:
+  - 5-char code from `23456789BCDFGHJKMNPQRSTVWXYZ` (28^5 = 17.2M). The code is the roomId.
+  - The public-room slot is guarded in onCreate.
+  - The failed-join guard wraps invokeMethod: 10 per IP per minute, keyed on the last XFF hop.
+  - The route stays /game/:code.
+- #338 prod [unmeasured; waits for the deploy].
 
 ## Uncommitted
 none
 
 ## Held files
-Released after prod verification: the #338 files in 282428f.
+none yet. The plan claims the files listed in the plan message, pending approval.
 
 ## Next
-1. The owner runs ./scripts/deploy.sh. Then verify on slur.kurmah.studio with two clients.
-2. `gh issue close 338` with 282428f.
+1. Wait for owner approval via slur-supervisor. Owner questions: 5 or 6 chars; global failed-join ceiling; keep LobbyRoom.
+2. Build the new files first (room-code.ts, join-guard.ts, client home/overlay leaves, docs). Touch run-room.ts/index.ts only after #339 commits them.
+3. After the final deploy: two-client check of #338 on slur.kurmah.studio, then `gh issue close 338` with 282428f.
 
 ## Open questions
-none
+- Who owns the client-IP helper and the invokeMethod wrapper, #339 or #340 (supervisor to sequence).
 
 ## Lessons → memory
-none (nothing durable beyond the commit)
+none
