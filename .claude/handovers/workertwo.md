@@ -1,33 +1,31 @@
-Agent: workertwo · Lane: #341 race always ends (A stall + B cap + C host End race, owner-approved) · #338/#340 open until final deploy · Updated: 2026-09-28
+Agent: workertwo · Lane: #346 phone pad + #347 fullscreen (PLAN sent, awaiting owner) · #338/#340/#341 prod verify after deploy · Updated: 2026-09-28
 
 ## Goal
-A race must always end. Stall rule 30 s (warn 20 s), cap 3 × finishZ ÷ slowest cruise (84), host End race with a two-step confirm. ADR-027.
+#346: left floating stick (touch = thrust, pull down = brake, left/right = strafe) and right d-pad (prev/next pickup, fire forward/back, centre = jump). #347: fullscreen on the play gesture where supported; iPhone gets an Add to Home Screen hint.
 
 ## Done
-- 26cc118 shared helpers (STALL_SECONDS, raceCapSeconds, noteProgress, isStalled, …); PlayerState progressAt + bestZ.
-- 4be2e39 docs: ADR-027, GDD round end, TDD.
-- 7eb2da0 HUD: IdleWarning, RaceDeadline, roster IDLE; RunState.raceCap.
-- 9b0c726 RunSim: raceCap from track (raceLimits option, default true), noteProgress + stalledCount into raceShouldEnd, host-only endRace (countdown|racing), spawnAt resets bestZ/progressAt. RunRoom + LoopbackRoom route END_RACE_MESSAGE. /test-level raceLimits false. EndRace button (two-step) in the HUD. TDD raceCap line; ADR-027 Consequences.
-- #341 commented with SHAs; left OPEN until the owner's final deploy.
-- #340 cf922f8 and #338 282428f: leave open until the owner's final deploy, then verify prod and close.
+- #341 landed: 26cc118, 4be2e39, 7eb2da0, 9b0c726. Commented on #341, left OPEN until the final deploy.
+- Plans for #346 and #347 sent to slur-supervisor on 2026-09-28 (the SendMessage holds the full text).
 
 ## State
-- 9b0c726: shared 570/570, client 615/615, server 89/89, typecheck 0, comment ratchet clean. Biome warns run-sim.ts > 300 lines (was 334 at HEAD before this change).
-- Live on :2567 (node @colyseus/sdk client, no Chrome): End race → finished at elapsed 1.98 s; idle solo racer → finished at elapsed 30.03 s; raceCap synced 285.7 s.
-- The End race button click was not driven in a browser; covered by 3 vitest tests only. [unmeasured live]
+- iPhone has no element fullscreen, iOS 26/27 included (caniuse). iOS 26 opens every Home Screen site as a web app (webkit.org/blog/17333). There is no orientation.lock on iOS. [verified by a researcher subagent]
+- [unverified] iOS reading manifest orientation; iOS multi-touch pointerId reliability; a -webkit-touch-callout regression on iOS 26.1.
+- Strafe kick fires at |strafe| ≥ STRAFE_PRESS 0.5 (step.ts:64). The plan uses client hysteresis: press at 0.45, release at 0.25, digital ±1.
 
 ## Uncommitted
-none of mine (ship-view.tsx and tracks/phrase-20260921.json are other agents').
+none of mine.
 
 ## Held files
-none — release run-sim.ts, run-sim.test.ts, run-room.ts, loopback-room.ts, test-level-room.ts, end-race/*, overlays.tsx, overlays.test.tsx, docs/TDD.md, docs/DECISIONS.md.
+none until the supervisor clears the claim lists in the plans.
 
 ## Next
-1. After the owner's final deploy: verify #338, #340, #341 on prod, then `gh issue close` each with its SHA.
-2. Otherwise idle; take the next lane from the supervisor.
+1. Wait for the owner's decisions: brake (pull-down recommended), KeyR for previous pickup (recommended).
+2. #347 first: submit-capture listener in ui/fullscreen.ts + start-control click; pref in localStorage; toggle moved to ui/ and mounted on home; iOS hint; release input on fullscreenchange; root min-h-dvh.
+3. #346: touch-pad/ folder (stick + d-pad), touch-state analogue fields, selectPrevious; vitest + CDP touch run.
+4. After the owner's deploy: verify #338/#340/#341 on prod, then gh issue close each with its SHA.
 
 ## Open questions
-none
+Brake mapping; KeyR for previous pickup (sent to supervisor for the owner).
 
 ## Lessons → memory
 none new.
