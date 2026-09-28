@@ -1,38 +1,35 @@
-Agent: workerone · Lane: #336 deploy to slur.kurmah.studio · Updated: 2026-09-28
+Agent: workerone · Lane: #336 deploy to slur.kurmah.studio (DONE, closed) · Updated: 2026-09-28
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#336: SLUR as one container, live at https://slur.kurmah.studio.
+#336: SLUR as one container, live at https://slur.kurmah.studio. Done.
 
 ## Done
 
-- `dc2af77` (pushed): server serves the SPA + `GET /healthz` through the Colyseus 0.17 `express` option (`apps/server/src/http.ts`), only when `SLUR_CLIENT_DIR` is set. Client connects same-origin (`wss` on https) in prod, `ws://hostname:VITE_SERVER_PORT` in dev. `@types/express` devDep. Multi-stage `Dockerfile` (build on BUILDPLATFORM, prod deps + runtime amd64, LFS-pointer guard, HEALTHCHECK), `.dockerignore`, `scripts/deploy.sh` (defaults: root@168.144.186.50, ~/.ssh/kurmah_ed25519, /opt/slur, service `slur`).
+- `dc2af77` (pushed): server serves the SPA + `GET /healthz` via the Colyseus 0.17 `express` option (`apps/server/src/http.ts`, only when `SLUR_CLIENT_DIR` is set); same-origin wss client in prod; amd64 multi-stage `Dockerfile` with LFS guard; `.dockerignore`; `scripts/deploy.sh`.
+- Owner ran `scripts/deploy.sh` → "live: https://slur.kurmah.studio". #336 closed.
 
 ## State
 
-- Colyseus router answers first, express second (read in `@colyseus/core` router/index.mjs) → the SPA catch-all cannot shadow /matchmake.
-- SIGTERM: Colyseus registers SIGINT/SIGTERM → gracefullyShutdown by default (read in utils/Utils.mjs). No extra code.
-- Dev routes: already gated in `routes.ts`; prod manifest holds only `routes/home` + `routes/game/route` (measured in the image).
-- Local image check on :8080 (container stopped after): /healthz 200, / 200, /game/x 200 (SPA fallback), POST /matchmake 200. Node client: gen `phrase`, phase 0 → 2, ship z 227 after 7 s. Headless Chrome: Host → /game/:id → Go → race clock 00:04, ship model drawn, 0 console errors, ws `ws://localhost:8080/...`.
-- Image: 121 MB content, 462 MB disk.
+- Live, measured: node client over wss → gen phrase, phase 0 → 2, z 217 after 7 s. Headless Chrome Host → Go: race clock running, ship drawn, 0 console errors, ws `wss://slur.kurmah.studio/...`. `/test-level` renders the app 404.
+- Local image check (:8080) passed the same checks before the deploy.
 - Tests at `dc2af77`: shared 547/547, server 40/40, client 581/581; typecheck 0; lint 0 errors.
-- Deploy NOT run: `./scripts/deploy.sh` was denied by the auto-mode classifier (Production Deploy). Needs the owner.
+- Docker Desktop stopped (`docker desktop stop`; no backend PID).
+- Redeploy: `./scripts/deploy.sh` (owner runs it; the auto-mode classifier blocks agents from a production deploy).
 
 ## Uncommitted
 
-None of mine.
+- `.claude/memory/MEMORY.md`: my index line for `quit-docker-desktop-via-cli.md`, next to do-setup's uncommitted `kurmah-netbird-infra.md` line. Not committed, so do-setup's line is not taken with mine.
 
 ## Held files
 
-None after the deploy lands (Dockerfile, .dockerignore, scripts/deploy.sh, apps/server/src/{index,http}.ts, apps/client/app/net/client.ts released on DONE).
+None.
 
 ## Next
 
-1. Owner runs `! ./scripts/deploy.sh` (Docker Desktop is running; needs `git lfs pull` + ssh key).
-2. Verify https://slur.kurmah.studio/healthz 200, host + Go in headless Chrome over wss.
-3. Quit Docker Desktop. `gh issue close 336 -c "dc2af77 …"` after the owner plays a race.
+1. None. Wait for a new lane.
 
 ## Open questions
 
@@ -40,4 +37,4 @@ None after the deploy lands (Dockerfile, .dockerignore, scripts/deploy.sh, apps/
 
 ## Lessons → memory
 
-none
+- `.claude/memory/quit-docker-desktop-via-cli.md`
