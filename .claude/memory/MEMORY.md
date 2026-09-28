@@ -133,3 +133,5 @@ One line per memory; each memory lives in its own file here.
 - [Weave pilot must use the run-up](weave-pilot-must-use-the-run-up.md) — flat weave face since #327; aim at the lane from z0 − weaveRunUp
 - [Test-level dials miss the predictor](test-level-dials-miss-the-predictor.md) — tunedSimConfig is server-only; dial only fields simulate() never reads
 - [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — holding strafe into a wall hits it each tick; charge fresh contacts only
+- [kurmah DO infra](kurmah-netbird-infra.md) — droplets `netbird` (NetBird only) + `slur` (Traefik, /opt/slur); `--context kurmah`; key ~/.ssh/kurmah_ed25519
+- [Quit Docker Desktop via its CLI](quit-docker-desktop-via-cli.md) — osascript quit leaves the backend; use `docker desktop stop`
