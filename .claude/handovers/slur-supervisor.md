@@ -119,6 +119,10 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
      workertwo pushed fcd917b (client-ip.ts, matchmake-guard.ts, failed-join-limit.ts, room-code.ts, room-codes.ts);
      building client + docs; also owns gap A (chatHistory 1 reply/2 s in chat-log.ts). workerone adds the single
      installMatchmakeGuard([new FailedJoinLimit(), …]) line in index.ts; never edits matchmake-guard.ts.
+     SEAM 4d: #340 BUILT cf922f8 (handover 63801bc); run-room.ts + index.ts RELEASED to workerone (index has
+     installMatchmakeGuard([new FailedJoinLimit()]) — workerone APPENDS its gate). #338/#340 stay open until the final deploy.
+     Owner brief given (Create room → code chip; Join by code; Quick play; bad code error). workertwo cleared + resumed on
+     #341 stalled race PLAN FIRST. Still waiting: OWNER approval of #339 → resume workerone.
      SEQUENCE FLIPPED (seam 4c): run-room.ts + index.ts RELEASED TO workertwo first (#339 unapproved, workerone idle).
      workertwo lands RunRoom codes + installMatchmakeGuard([new FailedJoinLimit()]) line, pushes, reports SHA → then
      release both to workerone; tell workerone to APPEND its gate to that array (not add the line) and use ADR-026.
