@@ -99,6 +99,13 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   server-config section; workerthree = render/useFrame schedule/pipeline/quality section. RFC only, no source edits.
   On RFC summary → relay to owner. The deploy is still worth doing now (ships phone + lighting fixes).
 
+- #349: workertwo §4 draft sent to workerone (handover 4b58658). Top finding: on /test-level the predictor uses
+  DEFAULT_SIM_CONFIG (prediction.ts:52) while the loopback server uses tunedSimConfig (test-level-room.ts:40) →
+  sim-dial tests show reconcile snaps live play lacks; RFC stage S1 fixes it. workerthree render section agreed
+  (6118831). Awaiting workerone's merged RFC → relay summary to owner.
+- Supervisor built (owner ask): drei <Stats /> dev-only, mounted in root.tsx App (3d9eed0). Unchecked in browser;
+  may overlap top-left HUD — offer move/toggle.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
