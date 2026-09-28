@@ -71,6 +71,16 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - workerthree cleared + resumed on #299 + #311 (build direct). workerone owns world-scene.tsx/tuning-schema.ts now.
 - Tree was clean + pushed at d06f268+286c8ef → deploy window open until workerone's next edits.
 
+- #345 DONE 8c94537 (open for owner sign-off): track metal #7b7f86, KeyLight #cfd8e6 ×2 behind camera; near deck
+  15→43, far 34→58, block fronts 14→36 (low tier similar); +0 draws, GPU same. Hull stays #4a4d52; owner option
+  Metal > hullColor #7b7f86 (hull luma 50→83). Old saved Metal.baseColor overrides reset once.
+- #299 DONE ea2552b + #311 DONE 1236573 (both closed by workerthree): gap blocks 283 widths 4–20u; weave digest moved.
+- #346/#347 OWNER APPROVED (brake = stick down >50%, KeyR = previous pickup) → workertwo BUILDING #347 then #346;
+  also fixes stale GDD.md:84 "1–3 lanes wide".
+- workerone + workerthree IDLE, no files. Next lane candidates: #14 reconnection (needs owner Q1/Q2), #313/#312
+  (owner decisions), #15, .glb models issue (owner not yet answered).
+- Tree clean + pushed after 8c94537/1236573 → deploy window open until workertwo writes.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
