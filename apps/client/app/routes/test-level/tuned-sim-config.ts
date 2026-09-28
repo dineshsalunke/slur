@@ -31,5 +31,8 @@ export function tunedSimConfig(): SimConfig {
         get tugLatchSlack() {
             return num( 'Tug.latchSlack' );
         },
+        get seekerFlyY() {
+            return num( 'Seeker.flyY' );
+        },
     };
 }
