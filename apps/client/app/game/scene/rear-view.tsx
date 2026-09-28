@@ -1,4 +1,5 @@
 import { useRearViewShown } from '../../dev/rear-view-toggle';
+import { QualityGate } from '../../quality/quality-gate/quality-gate';
 import { PhaseGate } from '../phase-gate/phase-gate';
 import { ON_TRACK_PHASES } from '../phase-gate/phase-gate.constants';
 import { RearViewPass } from './rear-view-pass/rear-view-pass';
@@ -8,7 +9,9 @@ export function RearView() {
 
     return (
         <PhaseGate phases={ ON_TRACK_PHASES }>
-            <RearViewPass />
+            <QualityGate feature="rearView">
+                <RearViewPass />
+            </QualityGate>
         </PhaseGate>
     );
 }

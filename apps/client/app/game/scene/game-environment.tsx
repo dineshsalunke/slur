@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { QualityGate } from '../../quality/quality-gate/quality-gate';
 import { DeepSpaceSky } from './deep-space-sky/deep-space-sky';
 import { MeteorScorch } from './meteor-scorch/meteor-scorch';
 import { Monoliths } from './monoliths';
@@ -11,7 +12,9 @@ export function GameEnvironment() {
         <Fragment>
             <NebulaSky />
             <DeepSpaceSky config={ DEEP_SPACE } />
-            <RockField />
+            <QualityGate feature="rocks">
+                <RockField />
+            </QualityGate>
             <MeteorScorch />
             <Monoliths />
         </Fragment>

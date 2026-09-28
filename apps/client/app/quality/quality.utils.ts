@@ -1,4 +1,6 @@
 import {
+    DECLINE_FLOOR_FPS,
+    DECLINE_REFRESH_SHARE,
     FEW_CORES,
     LOW_MEMORY_GB,
     QUALITY_TIERS,
@@ -32,4 +34,16 @@ export function detectTier( probe: DeviceProbe ): QualityTier {
     if ( probe.coarse ) return lowMemory ? 'low' : 'medium';
     if ( lowMemory || probe.cores <= FEW_CORES ) return 'low';
     return STRONG_GPU.test( probe.renderer ) ? 'high' : 'medium';
+}
+
+export function lowerTier( tier: QualityTier ): QualityTier {
+    return QUALITY_TIERS[ Math.max( 0, QUALITY_TIERS.indexOf( tier ) - 1 ) ];
+}
+
+export function autoDpr( deviceDpr: number, cap: number ): number {
+    return Math.min( Math.max( 1, deviceDpr ), cap );
+}
+
+export function declineBounds( refreshRate: number ): [ number, number ] {
+    return [ Math.min( DECLINE_FLOOR_FPS, refreshRate * DECLINE_REFRESH_SHARE ), Number.POSITIVE_INFINITY ];
 }

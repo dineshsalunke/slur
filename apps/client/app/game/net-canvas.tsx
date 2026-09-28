@@ -11,6 +11,7 @@ import { type ReactNode, useEffect, useMemo, useRef } from 'react';
 import { GameAudio } from '../audio/game-audio/game-audio';
 import { RemoteEngineAudio } from '../audio/remote-engine-audio/remote-engine-audio';
 import { playSfx } from '../audio/sfx-map';
+import { renderDpr } from '../dev/render-scale.utils';
 import { TuningPanelMount } from '../dev/tuning-panel-mount';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
@@ -70,7 +71,11 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
         <WorldProvider world={ world }>
             <TrackContext value={ track }>
                 <div className="fixed inset-0">
-                    <Canvas gl={ CANVAS_GL } camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }>
+                    <Canvas
+                        gl={ CANVAS_GL }
+                        dpr={ renderDpr() }
+                        camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
+                    >
                         <WorldScene>
                             <NetLoop predictor={ predictor } room={ room } />
                             <PickupField />

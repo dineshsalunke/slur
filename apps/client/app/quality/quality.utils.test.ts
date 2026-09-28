@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { type DeviceProbe, detectTier, parseTier } from './quality.utils';
+import { PROFILES } from './quality.constants';
+import { autoDpr, type DeviceProbe, declineBounds, detectTier, lowerTier, parseTier } from './quality.utils';
 
 const DESKTOP: DeviceProbe = {
     webgl2: true,
@@ -52,5 +53,30 @@ describe( 'detectTier (#344)', () => {
 
     it( 'gives a desktop Mac high', () => {
         expect( detectTier( { ...DESKTOP, renderer: 'Apple M3 Pro' } ) ).toBe( 'high' );
+    } );
+} );
+
+describe( 'lowerTier (#344)', () => {
+    it( 'steps one tier down and stops at low', () => {
+        expect( lowerTier( 'high' ) ).toBe( 'medium' );
+        expect( lowerTier( 'medium' ) ).toBe( 'low' );
+        expect( lowerTier( 'low' ) ).toBe( 'low' );
+    } );
+} );
+
+describe( 'autoDpr (#344)', () => {
+    it( 'caps the device ratio at the tier cap and never goes under 1', () => {
+        expect( autoDpr( 3, PROFILES.high.dprCap ) ).toBe( 2 );
+        expect( autoDpr( 3, PROFILES.medium.dprCap ) ).toBe( 1.5 );
+        expect( autoDpr( 2, PROFILES.low.dprCap ) ).toBe( 1 );
+        expect( autoDpr( 0.75, PROFILES.high.dprCap ) ).toBe( 1 );
+    } );
+} );
+
+describe( 'declineBounds (#344)', () => {
+    it( 'declines under 40 fps on 60 Hz and up, but not on a display locked to 30 Hz', () => {
+        expect( declineBounds( 60 )[ 0 ] ).toBe( 40 );
+        expect( declineBounds( 120 )[ 0 ] ).toBe( 40 );
+        expect( declineBounds( 30 )[ 0 ] ).toBeLessThan( 30 );
     } );
 } );

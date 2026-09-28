@@ -7,13 +7,58 @@ export interface QualityProfile {
     surfaceRes: number;
     noiseSize: number;
     skyFace: number;
+    dprCap: number;
+    msaa: boolean;
+    post: boolean;
+    skyMotion: boolean;
+    rocks: boolean;
+    rearView: boolean;
 }
 
+export type QualityFeature = {
+    [ K in keyof QualityProfile ]: QualityProfile[ K ] extends boolean ? K : never;
+}[ keyof QualityProfile ];
+
 export const PROFILES: Record< QualityTier, QualityProfile > = {
-    low: { landing3d: false, surfaceRes: 512, noiseSize: 32, skyFace: 512 },
-    medium: { landing3d: true, surfaceRes: 512, noiseSize: 64, skyFace: 512 },
-    high: { landing3d: true, surfaceRes: 1024, noiseSize: 64, skyFace: 1024 },
+    low: {
+        landing3d: false,
+        surfaceRes: 512,
+        noiseSize: 32,
+        skyFace: 512,
+        dprCap: 1,
+        msaa: false,
+        post: false,
+        skyMotion: false,
+        rocks: false,
+        rearView: false,
+    },
+    medium: {
+        landing3d: true,
+        surfaceRes: 512,
+        noiseSize: 64,
+        skyFace: 512,
+        dprCap: 1.5,
+        msaa: false,
+        post: true,
+        skyMotion: true,
+        rocks: true,
+        rearView: true,
+    },
+    high: {
+        landing3d: true,
+        surfaceRes: 1024,
+        noiseSize: 64,
+        skyFace: 1024,
+        dprCap: 2,
+        msaa: true,
+        post: true,
+        skyMotion: true,
+        rocks: true,
+        rearView: true,
+    },
 };
+
+export const TIER_LABEL: Record< QualityTier, string > = { low: 'Low', medium: 'Med', high: 'High' };
 
 export const DEFAULT_TIER: QualityTier = 'high';
 export const QUALITY_KEY = 'slur:quality';
@@ -26,3 +71,6 @@ export const WEAK_GPU =
 export const STRONG_GPU = /nvidia|geforce|quadro|radeon|amd|apple m\d|apple gpu/i;
 export const FEW_CORES = 4;
 export const LOW_MEMORY_GB = 4;
+
+export const DECLINE_FLOOR_FPS = 40;
+export const DECLINE_REFRESH_SHARE = 0.67;

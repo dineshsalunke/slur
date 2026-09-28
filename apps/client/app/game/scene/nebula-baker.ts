@@ -199,7 +199,7 @@ export class NebulaBaker {
         }
         if ( relit ) this.relight( renderer );
 
-        this.liveUniforms.uTime.value = this.still ? 0 : elapsed;
+        this.liveUniforms.uTime.value = this.still || ! qualityProfile().skyMotion ? 0 : elapsed;
         this.liveUniforms.uFlow.value = sky( 'motion' );
     }
 

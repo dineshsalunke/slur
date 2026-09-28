@@ -1,0 +1,2 @@
+export const PICK =
+    'inline-flex h-11 min-w-0 flex-1 cursor-pointer items-center justify-center border border-readout/25 bg-deep px-3 text-[12px] font-bold uppercase tracking-[0.16em] text-readout-dim transition-colors duration-150 hover:border-marigold hover:text-marigold focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-readout aria-pressed:border-marigold aria-pressed:text-marigold not-first:-ml-px lg:flex-none';

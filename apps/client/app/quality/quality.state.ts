@@ -7,19 +7,29 @@ import {
     type QualityProfile,
     type QualityTier,
 } from './quality.constants';
-import { type DeviceProbe, detectTier, parseTier } from './quality.utils';
+import { type DeviceProbe, detectTier, lowerTier, parseTier } from './quality.utils';
 
 export type QualitySource = 'flag' | 'saved' | 'auto';
 
 export interface Quality {
     tier: QualityTier;
     source: QualitySource;
+    detected: QualityTier;
     canvasAllowed: boolean;
     backdrop3d: boolean;
     renderer: string;
 }
 
-const SERVER: Quality = { tier: DEFAULT_TIER, source: 'auto', canvasAllowed: false, backdrop3d: false, renderer: '' };
+type QualityBase = Omit< Quality, 'tier' | 'source' | 'backdrop3d' >;
+
+const SERVER: Quality = {
+    tier: DEFAULT_TIER,
+    source: 'auto',
+    detected: DEFAULT_TIER,
+    canvasAllowed: false,
+    backdrop3d: false,
+    renderer: '',
+};
 
 let current: Quality | null = null;
 const listeners = new Set< () => void >();
@@ -48,19 +58,27 @@ function savedTier(): QualityTier | null {
     }
 }
 
-function withTier( base: Omit< Quality, 'tier' | 'source' | 'backdrop3d' >, tier: QualityTier, source: QualitySource ) {
-    return { ...base, tier, source, backdrop3d: base.canvasAllowed && PROFILES[ tier ].landing3d };
+function withTier( base: QualityBase, tier: QualityTier, source: QualitySource ): Quality {
+    return {
+        canvasAllowed: base.canvasAllowed,
+        detected: base.detected,
+        renderer: base.renderer,
+        tier,
+        source,
+        backdrop3d: base.canvasAllowed && PROFILES[ tier ].landing3d,
+    };
 }
 
 function resolve(): Quality {
     const params = new URLSearchParams( window.location.search );
     const probe = probeDevice();
+    const detected = detectTier( probe );
     const flag = parseTier( params.get( QUALITY_PARAM ) );
     const saved = savedTier();
-    const tier = flag ?? saved ?? detectTier( probe );
+    const tier = flag ?? saved ?? detected;
     const source: QualitySource = flag ? 'flag' : saved ? 'saved' : 'auto';
     const canvasAllowed = probe.webgl2 && ! params.has( NO_CANVAS_PARAM );
-    return withTier( { canvasAllowed, renderer: probe.renderer }, tier, source );
+    return withTier( { canvasAllowed, detected, renderer: probe.renderer }, tier, source );
 }
 
 function publish( next: Quality ): void {
@@ -92,6 +110,20 @@ export function setQualityTier( tier: QualityTier ): void {
         localStorage.setItem( QUALITY_KEY, tier );
     } catch {}
     publish( withTier( quality(), tier, 'saved' ) );
+}
+
+export function clearQualityTier(): void {
+    try {
+        localStorage.removeItem( QUALITY_KEY );
+    } catch {}
+    const was = quality();
+    publish( withTier( was, was.detected, 'auto' ) );
+}
+
+export function stepDownQuality(): void {
+    const was = quality();
+    if ( was.source !== 'auto' || was.tier === 'low' ) return;
+    publish( withTier( was, lowerTier( was.tier ), 'auto' ) );
 }
 
 export function dropBackdrop3d(): void {

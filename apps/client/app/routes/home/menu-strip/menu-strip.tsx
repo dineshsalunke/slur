@@ -5,6 +5,7 @@ import { CreateButton } from '../create-button/create-button';
 import { JoinCodeField } from '../join-code-field/join-code-field';
 import { MenuError } from '../menu-error';
 import { MENU_FORM } from '../menu-form';
+import { QualityPicker } from '../quality-picker/quality-picker';
 import { QuickPlay } from '../quick-play/quick-play';
 import { HINTS } from './menu-strip.constants';
 
@@ -20,7 +21,10 @@ export function MenuStrip( { savedName }: { savedName: string } ) {
                 <CreateButton />
                 <QuickPlay />
                 <JoinCodeField />
-                <KeyHint hints={ HINTS } className="hidden justify-end self-center lg:flex" />
+                <div className="flex min-w-0 items-end gap-6 lg:justify-end">
+                    <QualityPicker />
+                    <KeyHint hints={ HINTS } className="hidden h-11 lg:flex" />
+                </div>
             </div>
             <MenuError />
         </Form>
