@@ -18,7 +18,11 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 - msgpackr sizes, measured: 2 inputs 104/152 B (keyboard/touch); 10 inputs 448/688 B; 20 inputs 880/1360 B; 60 touch inputs 4040 B. Chat max 429 B (569 B before the server slices).
 - ws-transport default maxPayload is 4 KiB (`WebSocketTransport.mjs:19`). Rate-limit close is at `Room.mjs:973`. Unknown message types are closed in production (`Room.mjs:94–101`).
 - Crash gap: no `onUncaughtException` on RunRoom, so a throw in a handler or the tick ends the process [inferred from `Room.mjs:112, 372–378, 603`].
-- Sequencing: I land run-room.ts + index.ts first. workertwo (#340) owns `client-ip.ts` + `matchmake-guard.ts`; my per-IP call goes there after their SHA. chat-log.ts is workertwo's.
+- Sequencing: I land run-room.ts + index.ts first, then release them to workertwo (#340).
+- workertwo pushed `client-ip.ts` + `matchmake-guard.ts` in `fcd917b` [API relayed by supervisor, not read by me]: `clientIp(authContext)` → last XFF hop or 'unknown'. `installMatchmakeGuard(gates)` wraps invokeMethod once. Gate = `{ admit?(call, nowMs), failed?(call, error, nowMs) }`, `call = { method, roomName, ip }`. Throw `ServerError(code, msg)` from admit to refuse.
+- My per-IP create cap = a gate in MY `create-quota.ts` that counts `create`/`joinOrCreate` in admit. NEVER edit `matchmake-guard.ts`.
+- Supervisor's call: in index.ts I add the one line `installMatchmakeGuard([ new FailedJoinLimit(), <my gates> ])`, importing workertwo's `apps/server/src/failed-join-limit.ts`.
+- GAP A (chatHistory throttle) is workertwo's, in chat-log.ts. Dropped from my claims.
 - deploy.sh contract (do-setup #343): root@168.144.186.50:22, key ~/.ssh/kurmah_ed25519. NEVER write /opt/slur/docker-compose.yml. /metrics basic auth user `owner`, password `security find-generic-password -s slur-metrics -w`.
 
 ## Uncommitted
@@ -33,7 +37,7 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 1. Wait for the owner's approval via slur-supervisor.
 2. Build step 1: measure the real max input batch in one headless /test-level race with a forced 2 s block.
-3. Land run-room.ts + index.ts, release them, then the rest; the per-IP call after workertwo's matchmake-guard SHA.
+3. Land run-room.ts + index.ts (including the installMatchmakeGuard line and the create-quota gate), release them, then the rest. Read `fcd917b` for the real gate types before writing create-quota.ts.
 4. After the owner's final deploy: verify prod /metrics during a race, close #337 and #339.
 
 ## Open questions
