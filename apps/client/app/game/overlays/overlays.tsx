@@ -11,6 +11,7 @@ import {
 import { AudioToggle } from './audio-toggle';
 import { ConnectionNotice } from './connection-notice';
 import { CountdownOverlay } from './countdown-overlay';
+import { EndRace } from './end-race/end-race';
 import { FullscreenToggle } from './fullscreen-toggle';
 import { LeaveButton } from './leave-button';
 import { LeaveGuard } from './leave-guard';
@@ -29,6 +30,7 @@ export function Overlays() {
 
             <PhaseGate phases={ ON_TRACK_PHASES }>
                 <div className="fixed top-[clamp(16px,4.4vh,46px)] right-[clamp(16px,2.7vw,48px)] z-[26] flex items-center gap-2">
+                    <EndRace room={ room } />
                     <FullscreenToggle />
                     <AudioToggle />
                     <LeaveButton tone="ghost" />

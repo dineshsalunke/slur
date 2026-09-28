@@ -1506,3 +1506,6 @@ Since #301 a race ends only when every racer finishes, 45 s after the first fini
 - `PlayerState` appends `progressAt` (float32, synced). `bestZ` is undecorated and stays on the server.
 - The HUD shows "Race ends M:SS" once the grace deadline is set, or in the last 60 s before the cap. The grace countdown was not visible before this change.
 - The roster dims a stalled racer and tags it IDLE. The results screen shows DNF, as before.
+- `RunState` appends `raceCap` (float32, synced). `RunSim` sets it once from the track. The client reads the cap from state and does not compute it.
+- `RunSimOptions.raceLimits` (default true). When it is false, `raceCap` is 0, and the stall rule and the cap do not apply. `/test-level` sets it to false, because the owner idles there.
+- `spawnAt` resets `bestZ` and `progressAt`. A teleport does not count as a stall or as progress.

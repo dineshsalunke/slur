@@ -127,6 +127,7 @@ RunState (room state)
   ├─ hostId: string          // sessionId; owns GO / Play-Again; reassigned on host leave
   ├─ countdown: float32      // >0 only during countdown; client renders ceil()
   ├─ finishDeadline: float32 // leader+grace race-end clock (0 until first finisher)
+  ├─ raceCap: float32        // raceCapSeconds(finishZ), set once at room create; 0 = no stall rule, no cap (RunSimOptions.raceLimits false, /test-level) (#341, ADR-027)
   ├─ projectiles: MapSchema<Projectile>  // server-sim bolts; interp-only on clients; pruned on hit/expire
   └─ pickupTaken: MapSchema<boolean>     // per-anchor availability (present && true = taken); keyed by pickup ANCHOR id (ADR-002) — positions derive from the descriptor, NEVER synced
 

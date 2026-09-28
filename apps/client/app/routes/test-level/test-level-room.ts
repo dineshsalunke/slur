@@ -38,6 +38,7 @@ export function openTestLevelRoom( descriptor: TrackDescriptor, start: RespawnPo
         name: 'You',
         countdownSeconds: 0,
         config: tunedSimConfig(),
+        raceLimits: false,
     } );
     room.send( START_MESSAGE );
     spawnAtStart( room, start );

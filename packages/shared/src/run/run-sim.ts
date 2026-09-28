@@ -5,8 +5,11 @@ import { dropShield } from '../combat/shield.js';
 import { COLOR_COUNT, COUNTDOWN_SECONDS, FIXED_DT, RACE_GRACE_SECONDS } from '../constants.js';
 import {
     isColorId,
+    isStalled,
+    noteProgress,
     PHASE,
     type RunMetadata,
+    raceCapSeconds,
     raceShouldEnd,
     resetPlayerForRace,
     shouldSpectateOnJoin,
@@ -47,6 +50,7 @@ export interface RunSimHooks {
 export interface RunSimOptions {
     countdownSeconds?: number;
     config?: SimConfig;
+    raceLimits?: boolean;
 }
 
 export class RunSim {
@@ -73,6 +77,7 @@ export class RunSim {
         this.config = options.config ?? DEFAULT_SIM_CONFIG;
         applyDescriptor( this.state.descriptor, descriptor );
         this.track = resolveTrack( descriptor );
+        this.state.raceCap = ( options.raceLimits ?? true ) ? raceCapSeconds( this.track.finishZ ) : 0;
         this.world = {
             track: this.track,
             config: this.config,
@@ -146,6 +151,13 @@ export class RunSim {
         if ( sessionId === this.state.hostId && this.state.phase === PHASE.finished ) this.resetToLobby();
     }
 
+    endRace( sessionId: string ): void {
+        if ( sessionId !== this.state.hostId ) return;
+        if ( this.state.phase !== PHASE.countdown && this.state.phase !== PHASE.racing ) return;
+        this.state.phase = PHASE.finished;
+        this.refreshMetadata();
+    }
+
     usePower( sessionId: string, msg: PowerSlotMessage | undefined ): void {
         if ( this.state.phase !== PHASE.racing ) return;
         const q = this.queues.get( sessionId );
@@ -205,6 +217,8 @@ export class RunSim {
         const at = startPointFor( this.track, p.shipId, x, z );
         copySimShip( p, spawnShip( at.x, at.z ) );
         froundSimShip( p );
+        p.bestZ = p.z;
+        p.progressAt = this.state.elapsed;
     }
 
     clearCombat(): void {
@@ -265,6 +279,8 @@ export class RunSim {
     private stepRace( dt: number ): void {
         let racerCount = 0;
         let finishedCount = 0;
+        let stalledCount = 0;
+        const raceCap = this.state.raceCap;
         this.state.players.forEach( ( player, sessionId ) => {
             if ( player.spectating ) return;
             racerCount++;
@@ -272,7 +288,10 @@ export class RunSim {
             if ( player.finished ) {
                 if ( player.finishTime === 0 ) player.finishTime = this.state.elapsed;
                 finishedCount++;
+                return;
             }
+            noteProgress( player, this.state.elapsed );
+            if ( raceCap > 0 && isStalled( this.state.elapsed, player.progressAt ) ) stalledCount++;
         } );
         this.state.elapsed += dt;
         if ( finishedCount > 0 && this.state.finishDeadline === 0 ) {
@@ -284,6 +303,8 @@ export class RunSim {
                 finishDeadline: this.state.finishDeadline,
                 racerCount,
                 finishedCount,
+                stalledCount,
+                raceCap,
             } )
         ) {
             this.state.phase = PHASE.finished;

@@ -2,6 +2,7 @@ import { Decoder, Encoder } from '@colyseus/schema';
 import { addEffect } from '@react-three/fiber';
 import {
     DROP_POWERUP_MESSAGE,
+    END_RACE_MESSAGE,
     INPUT_MESSAGE,
     type InputMessage,
     type PowerSlotMessage,
@@ -61,6 +62,7 @@ export class LoopbackRoom implements RunRoomLike {
             [ SET_COLOR_MESSAGE ]: ( p ) => this.sim.setColor( id, p ),
             [ START_MESSAGE ]: () => this.sim.start( id ),
             [ RESTART_MESSAGE ]: () => this.sim.restart( id ),
+            [ END_RACE_MESSAGE ]: () => this.sim.endRace( id ),
             [ USE_POWERUP_MESSAGE ]: ( p ) => this.sim.usePower( id, p as PowerSlotMessage ),
             [ DROP_POWERUP_MESSAGE ]: ( p ) => this.sim.dropPower( id, p as PowerSlotMessage ),
         };

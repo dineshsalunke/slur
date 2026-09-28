@@ -12,6 +12,7 @@ import {
     CHAT_SEND_MESSAGE,
     DEFAULT_TRACK_GEN,
     DROP_POWERUP_MESSAGE,
+    END_RACE_MESSAGE,
     INPUT_MESSAGE,
     type InputMessage,
     isPublicCreate,
@@ -79,6 +80,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.onMessage( SET_COLOR_MESSAGE, ( client, colorId ) => this.sim.setColor( client.sessionId, colorId ) );
         this.onMessage( START_MESSAGE, ( client ) => this.sim.start( client.sessionId ) );
         this.onMessage( RESTART_MESSAGE, ( client ) => this.sim.restart( client.sessionId ) );
+        this.onMessage( END_RACE_MESSAGE, ( client ) => this.sim.endRace( client.sessionId ) );
         this.onMessage< PowerSlotMessage >( USE_POWERUP_MESSAGE, ( client, msg ) =>
             this.sim.usePower( client.sessionId, msg ),
         );

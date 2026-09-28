@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { PHASE, SET_CLASS_MESSAGE, START_MESSAGE } from '@slur/shared';
+import { END_RACE_MESSAGE, PHASE, SET_CLASS_MESSAGE, START_MESSAGE } from '@slur/shared';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { currentShip } from '../../ship/ship-choice';
@@ -171,5 +171,44 @@ describe( 'Lobby overlay subscription boundary', () => {
         bus.state.hostId = 'other';
         await pressEnter();
         expect( send ).not.toHaveBeenCalledWith( START_MESSAGE );
+    } );
+} );
+
+describe( 'End race (#341)', () => {
+    const button = ( root: HTMLElement, label: string ) =>
+        [ ...root.querySelectorAll( 'button' ) ].find( ( b ) => b.textContent === label );
+
+    it( 'asks the host to confirm, then sends END_RACE_MESSAGE', async () => {
+        const container = await mountOverlays();
+
+        await act( async () => {
+            button( container, 'End race' )?.click();
+        } );
+        expect( send ).not.toHaveBeenCalledWith( END_RACE_MESSAGE );
+
+        await act( async () => {
+            button( container, 'End for all?' )?.click();
+        } );
+        expect( send ).toHaveBeenCalledWith( END_RACE_MESSAGE );
+    } );
+
+    it( 'backs out on Cancel without sending', async () => {
+        const container = await mountOverlays();
+
+        await act( async () => {
+            button( container, 'End race' )?.click();
+        } );
+        await act( async () => {
+            button( container, 'Cancel' )?.click();
+        } );
+
+        expect( button( container, 'End race' ) ).toBeDefined();
+        expect( send ).not.toHaveBeenCalledWith( END_RACE_MESSAGE );
+    } );
+
+    it( 'shows no End race control to a guest', async () => {
+        bus.state.hostId = 'other';
+        const container = await mountOverlays();
+        expect( button( container, 'End race' ) ).toBeUndefined();
     } );
 } );
