@@ -143,3 +143,4 @@ One line per memory; each memory lives in its own file here.
 - [Schema fields cap at 64](schema-fields-cap-at-64.md) — Metadata.ts:73 throws; PlayerState 39/64; defineTypes order = wire order
 - [Share instance buffers via onBeforeRender](share-instance-buffers-via-onbeforerender.md) — second InstancedMesh reuses instanceMatrix; sync count there; dispose={null}
 - [Scene env intensity overrides material](scene-env-intensity-overrides-material.md) — envMap null → per-material envMapIntensity dead; only Environment.intensity reaches the shader
+- [Deck glare is the HDRI lobe](deck-glare-is-the-hdri-lobe.md) — near-white deck = env reflection at rotation 0; rotate 180 before touching albedo

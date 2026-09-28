@@ -1,46 +1,35 @@
-Agent: workerthree · Lane: #355 Environment.intensity dial (plus the parked deck-albedo match, no issue) · Updated: 2026-09-28 23:50
+Agent: workerthree · Lane: #355 Environment.intensity dial (CLOSED) + deck albedo match (report sent) · Updated: 2026-09-28
 
 ## Goal
-#355: find out why the Environment.intensity dial does nothing, then fix it (scene-environment.tsx; ask before any material file).
-Parked: MEASURE + RECOMMEND the deck albedo against the golden crop (body + grooves; streaks come after #354).
+#355: one global reflection dial (owner chose option a). Albedo: measure the deck against the golden crop and recommend. No source edits.
 
 ## Done
-- No source edits. Diagnosis only (see State).
+- 5c85b52: deleted the Deck/Rail/Rock/Ship.envMapIntensity dials (schema, leva, material writes). #355 closed with the SHA.
+- Albedo report sent to the supervisor. No source edits.
 
 ## State
-- The Environment.intensity dial WORKS on a fresh headless page. Mean frame luma at 0 / 1.2 / 5:
-  high via setNum = 17 / 85 / 147 (before 3c576aa); low via the leva input = 18 / 92 / 135.
-- CDP: `renderer.properties.get(m).uniforms.envMapIntensity` equals the scene dial on every MeshStandardMaterial.
-  `scene.environment` is set. No material has its own `envMap`.
-- After 668df76 (the high-black fix), the leva input on HIGH gives mean luma 19 / 112 / 180 at 0 / 1.2 / 5 (92-99% of pixels change). The dial works on both tiers.
-- Dead dials: Deck/Rail/Rock/Ship.envMapIntensity. three 0.185.1 WebGLRenderer.js:2694 overwrites them with
-  scene.environmentIntensity whenever material.envMap is null. Memory: scene-env-intensity-overrides-material.md.
-- The owner's symptom is not reproduced. Candidates [unmeasured]: the owner turns a per-material dial, or the
-  owner's view is black. Since 3c576aa (#354 part 1, 23:25:43) quality=high renders a black main view in
-  headless (mean luma 0.4), with no console error. The supervisor routed this to workerone. workertwo sees it too.
-- The default HDRI makes the deck near-white pale blue at defaults (v-base.png). Far from golden body sRGB 34.
-- Albedo lane: the owner's crop is a Display P3 screenshot. Its best match is action-lighting.png: body neutral
-  32, p50 34 over x0-1000 y1000-1510. cruise-lighting.png's deck is darker (body 23-25, slightly cool). The exact
-  crop location was not found.
-- Scratch: /private/tmp/claude-501/-Users-apple-Projects-personal-slur/4c4a9afb-6e2e-4fe8-a74a-af2ada955bb9/scratchpad
-  (envprobe.mjs uniform dump, levaprobe2/3.mjs leva drive, st.mjs region stats, tap.mjs variant taps, diff.mjs).
+- A/B at defaults, headless high: deck stats identical before and after 5c85b52. Environment.intensity 0 / 5 gives mid-deck p50 7 / 150.
+- Albedo (L/R/M deck regions, p10/50/90; target 26/35/47):
+  defaults L 112/203/237, R 34/44/55, M 44/59/77. The near-white L is the HDRI lobe (rotation 0).
+  rot180 + Metal.baseColor #595c62: L 23/32/38, R 20/25/38, M 27/41/54. Recommended.
+  rot180 + Environment.intensity 0.8: L 26/35/41, R 22/28/39, M 27/39/50. Also dims rocks, ship and rails.
+- Residual: the deck stays cool (body ~41,40,47 vs 34,33,33; groove 14,13,23 vs 12,9,7). The HDRI is the cause.
+- Rotation relights rocks and the ship too [seen, unmeasured].
+- Scratch: /private/tmp/claude-501/-Users-apple-Projects-personal-slur/4621d17c-671f-43db-996e-8a7fe59a604e/scratchpad
+  (sweep.mjs takes a variants JSON, st.mjs region stats, v-*.png taps).
 
 ## Uncommitted
 none
 
 ## Held files
-apps/client/app/game/scene/scene-environment.tsx (claimed for #355, no edits yet).
+none (all released to the supervisor at 5c85b52)
 
 ## Next
-1. Owner decision on composition: (a) keep one global dial, delete the four dead per-material dials; or
-   (b) set material.envMap explicitly and drive envMapIntensity = perMaterial × global. That touches workerone's
-   material files. Then fix, verify on /test-level, and close #355 with the SHA.
-2. Albedo sweep: tap.mjs variants (Metal.baseColor, Deck.roughness, Environment.intensity, ToneMapping.exposure)
-   with st.mjs on the near-left deck region, against crop stats p10/50/90 = 26/35/47, body (34,33,33), groove (12,9,7).
+1. Owner decides whether to apply rotation 180 + #595c62 (the defaults live in tuning-schema.ts / metal.ts; workerone holds those).
+2. Idle. Wait for the supervisor.
 
 ## Open questions
-- Owner: which /test-level quality tier, and which dial did they turn when #355 was seen?
-- Owner: option (a) or (b) above?
+- Owner: apply the albedo recommendation? Is the cool deck acceptable, or does the HDRI need a warm tint?
 
 ## Lessons → memory
-.claude/memory/scene-env-intensity-overrides-material.md
+.claude/memory/deck-glare-is-the-hdri-lobe.md
