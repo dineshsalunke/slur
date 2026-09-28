@@ -96,7 +96,15 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-0000000. RESUME HERE (2026-09-28 evening). #336 DEPLOY DONE dc2af77 (closed): LIVE at https://slur.kurmah.studio.
+00000000. RESUME HERE (2026-09-28 night). HARDENING QUEUE (owner approved all; stay anonymous):
+   #337 metrics pushed 59a4599 — awaits OWNER deploy; do NOT deploy while #338 edits are in the tree (deploy.sh builds
+   the working tree). #338 chat: workertwo BUILDING (holds chat files, run-room.ts, lobby-overlay, matchmaking).
+   Owner: "confirm both workers done first" → then workerone #339 (room caps from measured CPU/room, maxMessagesPerSecond,
+   input validation, payload cap 2–3× measured max, deploy.sh from git archive HEAD) PLAN FIRST; workertwo #340 private
+   rooms + join code, max ONE public room (quick play) PLAN FIRST. Queued: #341 stalled race exit (owner: "seriously
+   missing"), #342 kick + name/chat filter (after #338). do-setup assigned #343 (Traefik rate/conn limit, SSH, upgrades,
+   /metrics basic auth).
+0000000. (superseded) RESUME HERE (2026-09-28 evening). #336 DEPLOY DONE dc2af77 (closed): LIVE at https://slur.kurmah.studio.
    Droplet `slur` 168.144.186.50 (blr1, $6 s-1vcpu-1gb, 1 GB swap), root + ~/.ssh/kurmah_ed25519, compose /opt/slur,
    own Traefik /opt/traefik (do-setup's; leave alone). Redeploy = OWNER runs `! ./scripts/deploy.sh` (auto-mode denies
    workers a production deploy; never route it to another session). Verified live: healthz/matchmake 200, wss race,
