@@ -10,6 +10,7 @@ export interface TestPlayer {
     finishTime: number;
     connected: boolean;
     z: number;
+    progressAt?: number;
 }
 
 type Listener = ( v: unknown ) => void;
@@ -61,6 +62,7 @@ export const bus = {
                     finishTime: 0,
                     connected: true,
                     z: 0,
+                    progressAt: 0,
                 },
             ],
         ] );

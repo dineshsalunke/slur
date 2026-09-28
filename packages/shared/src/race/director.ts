@@ -103,6 +103,7 @@ export interface RaceEndInput {
 export function raceShouldEnd( i: RaceEndInput ): boolean {
     if ( i.racerCount === 0 ) return true;
     if ( i.finishedCount + ( i.stalledCount ?? 0 ) >= i.racerCount ) return true;
-    if ( i.raceCap !== undefined && i.elapsed >= i.raceCap ) return true;
+    const cap = i.raceCap ?? 0;
+    if ( cap > 0 && i.elapsed >= cap ) return true;
     return i.finishDeadline > 0 && i.elapsed >= i.finishDeadline;
 }

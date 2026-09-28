@@ -167,4 +167,5 @@ export class RunState extends Schema {
     @type( { map: Seeker } ) seekers = new MapSchema< Seeker >();
     @type( { map: Mine } ) mines = new MapSchema< Mine >();
     @type( { map: Portal } ) portals = new MapSchema< Portal >();
+    @type( 'float32' ) raceCap = 0;
 }

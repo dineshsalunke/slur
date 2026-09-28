@@ -12,6 +12,7 @@ function racer( id: string, z: number, extra: Partial< RacerInput > = {} ): Race
         finishTime: 0,
         z,
         connected: true,
+        progressAt: 0,
         ...extra,
     };
 }
@@ -68,6 +69,34 @@ describe( 'readStandings', () => {
 
     it( 'names an empty name Racer', () => {
         expect( readStandings( [ racer( 'self', 0, { name: '' } ) ], 'self' ).entries[ 0 ]?.name ).toBe( 'Racer' );
+    } );
+
+    it( 'flags a racer idle after STALL_SECONDS without progress, never a finisher', () => {
+        const players = [
+            racer( 'a', 10, { progressAt: 5 } ),
+            racer( 'self', 30, { progressAt: 40 } ),
+            racer( 'b', 50, { finished: true, progressAt: 0 } ),
+        ];
+        const idle = ( elapsed: number ) =>
+            readStandings( players, 'self', elapsed, true ).entries.map( ( e ) => [ e.id, e.idle ] );
+        expect( idle( 34 ) ).toEqual( [
+            [ 'b', false ],
+            [ 'self', false ],
+            [ 'a', false ],
+        ] );
+        expect( idle( 35 ) ).toEqual( [
+            [ 'b', false ],
+            [ 'self', false ],
+            [ 'a', true ],
+        ] );
+        expect( standingsKey( readStandings( players, 'self', 35, true ) ) ).not.toBe(
+            standingsKey( readStandings( players, 'self', 34, true ) ),
+        );
+    } );
+
+    it( 'flags nobody idle when the stall rule is off (open-ended run)', () => {
+        const s = readStandings( [ racer( 'a', 10, { progressAt: 0 } ) ], 'a', 999, false );
+        expect( s.entries[ 0 ]?.idle ).toBe( false );
     } );
 } );
 

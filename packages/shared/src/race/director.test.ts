@@ -92,6 +92,13 @@ test( 'raceShouldEnd: a finisher-less race runs until the cap', () => {
     assert.equal( raceShouldEnd( { ...base, elapsed: 286 } ), true );
 } );
 
+test( 'raceShouldEnd: raceCap 0 is an open-ended run, not an instant end', () => {
+    assert.equal(
+        raceShouldEnd( { elapsed: 3600, finishDeadline: 0, racerCount: 1, finishedCount: 0, raceCap: 0 } ),
+        false,
+    );
+} );
+
 test( 'raceShouldEnd: stalled racers count as done', () => {
     const base = { elapsed: 40, finishDeadline: 0, racerCount: 3 };
     assert.equal( raceShouldEnd( { ...base, finishedCount: 1, stalledCount: 1 } ), false );

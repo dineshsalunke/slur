@@ -1,4 +1,4 @@
-import { computeStandings, type StandingInput } from '@slur/shared';
+import { computeStandings, isStalled, type StandingInput } from '@slur/shared';
 import { useSyncExternalStore } from 'react';
 import type { RunRoomLike } from '../../net/run-room-like';
 import { stateCallbacks } from '../../net/state-callbacks';
@@ -8,6 +8,7 @@ export const ROSTER_WINDOW = 5;
 
 export interface RacerInput extends StandingInput {
     connected: boolean;
+    progressAt: number;
 }
 
 export interface StandingsSnapshot {
@@ -29,10 +30,16 @@ export function rosterWindow< T >( rows: readonly T[], centre: number, size = RO
     return rows.slice( start, start + size );
 }
 
-export function readStandings( players: readonly RacerInput[], selfId: string ): StandingsSnapshot {
+export function readStandings(
+    players: readonly RacerInput[],
+    selfId: string,
+    elapsed = 0,
+    stallRule = false,
+): StandingsSnapshot {
     const standings = computeStandings( players );
     const selfIndex = standings.findIndex( ( s ) => s.id === selfId );
     const self = players.find( ( p ) => p.id === selfId );
+    const progressAt = new Map( players.map( ( p ) => [ p.id, p.progressAt ] ) );
     return {
         connected: players.filter( ( p ) => p.connected ).length,
         field: standings.length,
@@ -44,12 +51,13 @@ export function readStandings( players: readonly RacerInput[], selfId: string ):
             rank: s.rank,
             name: s.name || 'Racer',
             self: s.id === selfId,
+            idle: stallRule && ! s.finished && isStalled( elapsed, progressAt.get( s.id ) ?? elapsed ),
         } ) ),
     };
 }
 
 export function standingsKey( s: StandingsSnapshot ): string {
-    const rows = s.entries.map( ( e ) => `${ e.rank }:${ e.id }:${ e.name }` ).join( '|' );
+    const rows = s.entries.map( ( e ) => `${ e.rank }:${ e.id }:${ e.name }:${ e.idle }` ).join( '|' );
     return `${ s.connected }/${ s.field }/${ s.rank }/${ s.selfSpectating }/${ s.selfFinished }/${ rows }`;
 }
 
@@ -66,6 +74,7 @@ function racersOf( room: RunRoomLike ): RacerInput[] {
             finishTime: p.finishTime,
             z: p.z,
             connected: p.connected,
+            progressAt: p.progressAt,
         } );
     } );
     return racers;
@@ -78,7 +87,8 @@ function createStore( room: RunRoomLike ): StandingsStore {
     let detach: ( () => void ) | null = null;
 
     const recompute = (): boolean => {
-        const next = readStandings( racersOf( room ), room.sessionId );
+        const s = room.state;
+        const next = readStandings( racersOf( room ), room.sessionId, s.elapsed, s.raceCap > 0 );
         const nextKey = standingsKey( next );
         if ( nextKey === key ) return false;
         key = nextKey;
@@ -94,6 +104,7 @@ function createStore( room: RunRoomLike ): StandingsStore {
     const attach = () => {
         const $ = stateCallbacks( room );
         const perPlayer = new Map< string, () => void >();
+        const offElapsed = $( room.state ).listen( 'elapsed', refresh );
         const offAdd = $( room.state ).players.onAdd( ( p, sid ) => {
             perPlayer.set( sid, $( p ).onChange( refresh ) );
             refresh();
@@ -104,6 +115,7 @@ function createStore( room: RunRoomLike ): StandingsStore {
             refresh();
         } );
         return () => {
+            offElapsed();
             offAdd();
             offRemove();
             for ( const off of perPlayer.values() ) off();

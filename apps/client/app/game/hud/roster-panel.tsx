@@ -5,6 +5,7 @@ export interface RosterEntry {
     rank: number;
     name: string;
     self?: boolean;
+    idle?: boolean;
 }
 
 export function RosterPanel( { connected, entries }: { connected: number; entries: readonly RosterEntry[] } ) {
@@ -15,7 +16,7 @@ export function RosterPanel( { connected, entries }: { connected: number; entrie
                 <span>Connected</span>
             </li>
             { entries.map( ( e ) => (
-                <RosterLine key={ e.id } rank={ e.rank } name={ e.name } self={ e.self } />
+                <RosterLine key={ e.id } rank={ e.rank } name={ e.name } self={ e.self } idle={ e.idle } />
             ) ) }
         </ol>
     );
