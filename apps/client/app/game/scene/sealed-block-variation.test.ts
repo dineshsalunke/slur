@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { type BlockDims, SEALED_BLOCK_BEVEL } from './sealed-block-geometry';
 import {
     SEALED_BLOCK_MAX_SEAMS,
+    SEALED_BLOCK_OPEN_X0,
+    SEALED_BLOCK_OPEN_X1,
     SEALED_BLOCK_SEAM_WIDTH,
     sealedBlockInset,
     sealedBlockSeamCount,
@@ -96,6 +98,45 @@ describe( 'sealed block seams', () => {
                     expect( p - front[ 0 ] ).toBeGreaterThan( SEALED_BLOCK_SEAM_WIDTH );
                 }
             }
+        }
+    } );
+
+    it( 'marks each open end with a front seam just inside its corner and keeps the front seam last', () => {
+        for ( const dims of [
+            { w: 38, h: 8, d: 4 },
+            { w: 6, h: 8, d: 8 },
+            { w: 20, h: 6, d: 12 },
+        ] ) {
+            const [ a, b ] = sealedBlockInset( dims );
+            const frontStart = 4 * b + 2 * a;
+            const p = sealedBlockPerimeter( dims );
+            const near = ( seams: number[], corner: number ) =>
+                seams.some( ( u ) => Math.abs( u - corner ) <= SEALED_BLOCK_SEAM_WIDTH * 6 + 1e-6 );
+            for ( let seed = -300; seed < 300; seed++ ) {
+                for ( let n = 1; n <= 3; n++ ) {
+                    const plain = sealedBlockSeams( seed, n, dims );
+                    const both = sealedBlockSeams( seed, n, dims, SEALED_BLOCK_OPEN_X0 | SEALED_BLOCK_OPEN_X1 );
+                    const left = sealedBlockSeams( seed, n, dims, SEALED_BLOCK_OPEN_X0 );
+                    const right = sealedBlockSeams( seed, n, dims, SEALED_BLOCK_OPEN_X1 );
+
+                    expect( both.length ).toBeLessThanOrEqual( SEALED_BLOCK_MAX_SEAMS );
+                    expect( both.at( -1 ) ).toBe( plain.at( -1 ) );
+                    expect( near( both, frontStart ) && near( both, p ) ).toBe( true );
+                    expect( near( left, frontStart ) ).toBe( true );
+                    expect( near( right, p ) ).toBe( true );
+                    for ( const u of both ) {
+                        expect( u - frontStart ).not.toBeCloseTo( 0 );
+                        expect( Math.abs( u - p ) ).toBeGreaterThan( SEALED_BLOCK_SEAM_WIDTH );
+                    }
+                }
+            }
+        }
+    } );
+
+    it( 'adds nothing for an end that touches the rail or a neighbour', () => {
+        const dims = { w: 38, h: 8, d: 4 };
+        for ( let seed = 0; seed < 50; seed++ ) {
+            expect( sealedBlockSeams( seed, 2, dims, 0 ) ).toEqual( sealedBlockSeams( seed, 2, dims ) );
         }
     } );
 

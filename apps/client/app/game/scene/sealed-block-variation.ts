@@ -62,7 +62,13 @@ function offCorner( u: number, corners: number[] ): number {
     return u;
 }
 
-export function sealedBlockSeams( seed: number, count: number, dims: BlockDims ): number[] {
+export const SEALED_BLOCK_OPEN_X0 = 1;
+export const SEALED_BLOCK_OPEN_X1 = 2;
+export const SEALED_BLOCK_END_TOUCH = 0.05;
+
+const SEALED_BLOCK_END_MERGE = SEALED_BLOCK_SEAM_WIDTH * 4;
+
+export function sealedBlockSeams( seed: number, count: number, dims: BlockDims, open = 0 ): number[] {
     const [ a, b ] = sealedBlockInset( dims );
     const perimeter = 4 * ( a + b );
     const frontStart = 4 * b + 2 * a;
@@ -73,5 +79,10 @@ export function sealedBlockSeams( seed: number, count: number, dims: BlockDims )
         offCorner( ( ( i + 0.15 + 0.7 * hash01( seed, i + 1 ) ) / ( n - 1 ) ) * frontStart, corners ),
     );
     const front = offCorner( frontStart + ( 0.15 + 0.7 * hash01( seed, 0 ) ) * 2 * a, corners );
-    return [ ...rest, front ];
+    const ends: number[] = [];
+    if ( open & SEALED_BLOCK_OPEN_X0 ) ends.push( frontStart + SEALED_BLOCK_CORNER_KEEPOUT );
+    if ( open & SEALED_BLOCK_OPEN_X1 ) ends.push( perimeter - SEALED_BLOCK_CORNER_KEEPOUT );
+    const added = ends.filter( ( u ) => Math.abs( u - front ) > SEALED_BLOCK_END_MERGE );
+    const kept = rest.slice( 0, Math.max( 0, SEALED_BLOCK_MAX_SEAMS - 1 - added.length ) );
+    return [ ...kept, ...added, front ];
 }

@@ -1,11 +1,14 @@
-import { type Block, SEG_LEN, type Segment, type Track } from '@slur/shared';
+import { type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from '@slur/shared';
 import * as THREE from 'three';
 import { blockWorld } from '../../block-state';
 import { boltCloseness, noteBroken, noteStanding } from '../block-breaks';
 import { fractureOrient, shareCells } from '../fractured-block-geometry';
 import type { BlockDims } from '../sealed-block-geometry';
 import {
+    SEALED_BLOCK_END_TOUCH,
     SEALED_BLOCK_MAX_SEAMS,
+    SEALED_BLOCK_OPEN_X0,
+    SEALED_BLOCK_OPEN_X1,
     sealedBlockSeamCount,
     sealedBlockSeams,
     sealedBlockSeed,
@@ -16,27 +19,35 @@ import type { BlockCapacity, Emit, FracturedAttributes, SealedAttributes, Sealed
 import { _m, BLOCK_LIMIT, FRACTURED_LIMIT } from './track-blocks.constants';
 import { variations } from './track-blocks.state';
 
-export function variationFor( x: number, z: number, dims: BlockDims ): SealedVariation {
+export function variationFor( x: number, z: number, dims: BlockDims, open = 0 ): SealedVariation {
     const seed = sealedBlockSeed( x, z );
     const key =
         seed ^
         Math.imul( Math.round( dims.w * 16 ), 0x9e37_79b1 ) ^
-        Math.imul( Math.round( dims.d * 16 ), 0x85eb_ca6b );
+        Math.imul( Math.round( dims.d * 16 ), 0x85eb_ca6b ) ^
+        Math.imul( open + 1, 0x632b_e5ab );
     const cached = variations.get( key );
     if ( cached ) return cached;
 
-    const count = sealedBlockSeamCount( seed );
+    const seams = sealedBlockSeams( seed, sealedBlockSeamCount( seed ), dims, open );
     const made = {
-        seams: sealedBlockSeams( seed, count, dims ),
-        count,
+        seams,
+        count: seams.length,
         wear: sealedBlockWearSeed( seed ),
     };
     variations.set( key, made );
     return made;
 }
 
-export function writeVariation( attrs: SealedAttributes, i: number, x: number, z: number, dims: BlockDims ): void {
-    const v = variationFor( x, z, dims );
+export function writeVariation(
+    attrs: SealedAttributes,
+    i: number,
+    x: number,
+    z: number,
+    dims: BlockDims,
+    open = 0,
+): void {
+    const v = variationFor( x, z, dims, open );
     const seams = attrs.seams.array as Float32Array;
     for ( let s = 0; s < SEALED_BLOCK_MAX_SEAMS; s++ ) seams[ i * SEALED_BLOCK_MAX_SEAMS + s ] = v.seams[ s ] ?? 0;
     const variation = attrs.variation.array as Float32Array;
@@ -44,14 +55,31 @@ export function writeVariation( attrs: SealedAttributes, i: number, x: number, z
     variation[ i * 2 + 1 ] = v.wear;
 }
 
-export function emitSealed( e: Emit, b: Block ): void {
+function endCovered( b: Block, x: number, blocks: readonly Block[] ): boolean {
+    if ( Math.abs( x ) >= HALF_WIDTH - SEALED_BLOCK_END_TOUCH ) return true;
+    for ( const o of blocks ) {
+        if ( o === b || blockWorld.broken.has( o.id ) ) continue;
+        if ( o.z0 >= b.z1 || o.z1 <= b.z0 || o.y0 >= b.y1 || o.y1 <= b.y0 ) continue;
+        if ( x >= o.x0 - SEALED_BLOCK_END_TOUCH && x <= o.x1 + SEALED_BLOCK_END_TOUCH ) return true;
+    }
+    return false;
+}
+
+export function openEnds( b: Block, blocks: readonly Block[] ): number {
+    let open = 0;
+    if ( ! endCovered( b, b.x0, blocks ) ) open |= SEALED_BLOCK_OPEN_X0;
+    if ( ! endCovered( b, b.x1, blocks ) ) open |= SEALED_BLOCK_OPEN_X1;
+    return open;
+}
+
+export function emitSealed( e: Emit, b: Block, open = 0 ): void {
     const h = Math.max( 0.05, b.y1 - b.y0 );
     const dims = { w: b.x1 - b.x0, h, d: b.z1 - b.z0 };
     const cx = ( b.x0 + b.x1 ) / 2;
     const cz = ( b.z0 + b.z1 ) / 2;
     const next = put( e.sealed, e.si, e.capacity.sealed, cx, b.y0 + h / 2, cz, dims.w, h, dims.d );
     if ( next === e.si ) return;
-    writeVariation( e.attrs, e.si, cx, cz, dims );
+    writeVariation( e.attrs, e.si, cx, cz, dims, open );
     e.si = next;
 }
 
@@ -72,7 +100,7 @@ export function emitSegment( e: Emit, seg: Segment ): void {
         if ( blockWorld.broken.has( b.id ) ) {
             if ( fractured ) noteBroken( b, e.ship );
         } else if ( fractured ) emitFractured( e, b );
-        else emitSealed( e, b );
+        else emitSealed( e, b, openEnds( b, seg.blocks ) );
     }
 }
 

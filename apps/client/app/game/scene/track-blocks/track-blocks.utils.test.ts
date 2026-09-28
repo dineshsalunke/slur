@@ -1,8 +1,10 @@
-import { type Block, SEG_LEN, type Segment, type Track } from '@slur/shared';
-import { describe, expect, it } from 'vitest';
+import { type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from '@slur/shared';
+import { afterEach, describe, expect, it } from 'vitest';
+import { clearBlockState, confirmBreak } from '../../block-state';
+import { SEALED_BLOCK_OPEN_X0, SEALED_BLOCK_OPEN_X1 } from '../sealed-block-variation';
 import { AHEAD, BACK } from '../track-instancing';
 import { BLOCK_LIMIT, FRACTURED_LIMIT } from './track-blocks.constants';
-import { blockCapacity } from './track-blocks.utils';
+import { blockCapacity, openEnds } from './track-blocks.utils';
 
 function denseTrack( length: number, perSegment: ( i: number ) => number ): Track {
     const segments = Array.from( { length }, ( _, i ): Segment => {
@@ -76,5 +78,37 @@ describe( 'blockCapacity', () => {
     it( 'keeps the default limits for a sparse track', () => {
         const cap = blockCapacity( denseTrack( 300, () => 1 ) );
         expect( cap ).toEqual( { sealed: BLOCK_LIMIT, fractured: FRACTURED_LIMIT } );
+    } );
+} );
+
+function wall( id: number, x0: number, x1: number, z0 = 0, z1 = 4 ): Block {
+    return { id, kind: 'sealed', x0, x1, y0: 0, y1: 6, z0, z1 } as Block;
+}
+
+describe( 'openEnds', () => {
+    afterEach( () => clearBlockState() );
+
+    it( 'opens only the end that faces the gap on a wall run from the rail', () => {
+        const b = wall( 1, -HALF_WIDTH, -10 );
+        expect( openEnds( b, [ b ] ) ).toBe( SEALED_BLOCK_OPEN_X1 );
+    } );
+
+    it( 'opens both ends of a free-standing block', () => {
+        const b = wall( 1, -8, 8 );
+        expect( openEnds( b, [ b ] ) ).toBe( SEALED_BLOCK_OPEN_X0 | SEALED_BLOCK_OPEN_X1 );
+    } );
+
+    it( 'closes an end butted by a neighbour and reopens it when the neighbour breaks', () => {
+        const b = wall( 1, -8, 8 );
+        const n = wall( 2, 8, 14 );
+        expect( openEnds( b, [ b, n ] ) ).toBe( SEALED_BLOCK_OPEN_X0 );
+        confirmBreak( n.id );
+        expect( openEnds( b, [ b, n ] ) ).toBe( SEALED_BLOCK_OPEN_X0 | SEALED_BLOCK_OPEN_X1 );
+    } );
+
+    it( 'ignores a block that shares an x edge but not the z span', () => {
+        const b = wall( 1, -8, 8 );
+        const n = wall( 2, 8, 14, 10, 14 );
+        expect( openEnds( b, [ b, n ] ) ).toBe( SEALED_BLOCK_OPEN_X0 | SEALED_BLOCK_OPEN_X1 );
     } );
 } );
