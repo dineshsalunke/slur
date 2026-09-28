@@ -112,6 +112,13 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
      Keychain only if readable, never write compose). Must import workertwo's guard/IP helper, lands run-room/index first.
      On plan → relay to owner.
    - Queued: #341 stalled race exit (owner "seriously missing"), #342 kick + name/chat filter.
+   - UPDATE (seam 4b): #339 PLAN RELAYED TO OWNER, awaiting approval: MAX_ROOMS 12, ≤3 live rooms/IP + ≤10 creates/10 min,
+     maxMessagesPerSecond 60, maxPayload 2 KiB (re-measure in a browser first), gap B name typeof check (run-sim.ts),
+     gap C onUncaughtException (crash kills every room today), deploy.sh (preflight, refuse unpushed, git archive, Keychain
+     /metrics). On approval → tell workerone BUILD; after its run-room/index commit → release both to workertwo.
+     workertwo pushed fcd917b (client-ip.ts, matchmake-guard.ts, failed-join-limit.ts, room-code.ts, room-codes.ts);
+     building client + docs; also owns gap A (chatHistory 1 reply/2 s in chat-log.ts). workerone adds the single
+     installMatchmakeGuard([new FailedJoinLimit(), …]) line in index.ts; never edits matchmake-guard.ts.
 00000000. (superseded) RESUME HERE (2026-09-28 night). HARDENING QUEUE (owner approved all; stay anonymous):
    #337 metrics pushed 59a4599 — awaits OWNER deploy; do NOT deploy while #338 edits are in the tree (deploy.sh builds
    the working tree). #338 chat: workertwo BUILDING (holds chat files, run-room.ts, lobby-overlay, matchmaking).
