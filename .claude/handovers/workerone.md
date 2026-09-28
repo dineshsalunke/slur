@@ -27,7 +27,7 @@ procedural sky and the Tuning folder removed.
 
 ## Held files
 
-- `docs/RFC-349-ARCHITECTURE.md`. #352 files released.
+- none. IDLE (supervisor, 2026-09-28). Re-claim `docs/RFC-349-ARCHITECTURE.md` before folding §8 answers.
 
 ## Next
 
