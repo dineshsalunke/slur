@@ -14,4 +14,13 @@ export function coverFit( map: THREE.Texture, viewAspect: number ): void {
 
     map.repeat.set( repeatX, repeatY );
     map.offset.set( ( 1 - repeatX ) / 2, ( 1 - repeatY ) / 2 );
+    map.updateMatrix();
+}
+
+export function backdropUniforms( map: THREE.Texture ): Record< string, THREE.IUniform > {
+    return {
+        t2D: { value: map },
+        uvTransform: { value: map.matrix },
+        backgroundIntensity: { value: 1 },
+    };
 }
