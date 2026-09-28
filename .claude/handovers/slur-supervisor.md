@@ -96,7 +96,13 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-000000. RESUME HERE (2026-09-28 ~14:30, seam 3 at ~150k).
+0000000. RESUME HERE (2026-09-28 evening). #336 DEPLOY DONE dc2af77 (closed): LIVE at https://slur.kurmah.studio.
+   Droplet `slur` 168.144.186.50 (blr1, $6 s-1vcpu-1gb, 1 GB swap), root + ~/.ssh/kurmah_ed25519, compose /opt/slur,
+   own Traefik /opt/traefik (do-setup's; leave alone). Redeploy = OWNER runs `! ./scripts/deploy.sh` (auto-mode denies
+   workers a production deploy; never route it to another session). Verified live: healthz/matchmake 200, wss race,
+   /test-level → 404. Docker Desktop stopped. do-setup asked to commit kurmah-netbird-infra.md + MEMORY.md.
+   Both workers idle, no files. ECS spike/RFC still awaits owner go.
+000000. (seam 3, superseded) RESUME HERE (2026-09-28 ~14:30, seam 3 at ~150k).
    DONE (closed): #331 fb878e1 pickups 5u longest side, hover 3.2, pool 4.0 (handover 368063c) · #334 bcad382
    side hit scrapes keep 0.90 vz, no stun, grazeDepth 1.0, contact kind {kind,dir} (handover aeb5ff1) · #335 f664fee
    tug halved. Owner /test-level checks pending for all three. Both workers IDLE, no files. Dev stack is MY
