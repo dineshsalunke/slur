@@ -59,6 +59,12 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 3. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
 4. Ask the owner the open questions above that are still unanswered.
 
+## Late notes (seam 5)
+
+- workerone found workerthree's uncommitted P2 renders quality=low as a BLACK canvas (post gate removes the only
+  renderer; priority useFrames disable R3F auto-render). workerthree owns the fix; P2 must not land black.
+- workerone #345 claim + hull-look.ts (phase 2): track metal #7b7f86, HULL_BASE_COLOR #4a4d52 kept, 'Hull.baseColor' dial.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
