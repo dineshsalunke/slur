@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { COLOR_COUNT, RACE_GRACE_SECONDS, START_STAGGER_U } from '../constants.js';
+import { COLOR_COUNT, RACE_GRACE_SECONDS, STALL_SECONDS, START_STAGGER_U } from '../constants.js';
+import { SHIP_CLASSES } from '../ship-classes.js';
 import {
     computeStandings,
     isColorId,
+    isStalled,
+    noteProgress,
     PHASE,
+    raceCapSeconds,
+    raceEndsAt,
     raceShouldEnd,
     resetPlayerForRace,
     type StandingInput,
@@ -81,9 +86,46 @@ test( 'raceShouldEnd: leader grace window governs the tail', () => {
     );
 } );
 
-test( 'raceShouldEnd: a finisher-less race has no time cap', () => {
-    assert.equal( raceShouldEnd( { elapsed: 60, finishDeadline: 0, racerCount: 2, finishedCount: 0 } ), false );
-    assert.equal( raceShouldEnd( { elapsed: 3600, finishDeadline: 0, racerCount: 2, finishedCount: 0 } ), false );
+test( 'raceShouldEnd: a finisher-less race runs until the cap', () => {
+    const base = { finishDeadline: 0, racerCount: 2, finishedCount: 0, raceCap: 286 };
+    assert.equal( raceShouldEnd( { ...base, elapsed: 285 } ), false );
+    assert.equal( raceShouldEnd( { ...base, elapsed: 286 } ), true );
+} );
+
+test( 'raceShouldEnd: stalled racers count as done', () => {
+    const base = { elapsed: 40, finishDeadline: 0, racerCount: 3 };
+    assert.equal( raceShouldEnd( { ...base, finishedCount: 1, stalledCount: 1 } ), false );
+    assert.equal( raceShouldEnd( { ...base, finishedCount: 1, stalledCount: 2 } ), true );
+    assert.equal( raceShouldEnd( { ...base, finishedCount: 0, stalledCount: 3 } ), true );
+} );
+
+test( 'raceCapSeconds: three clean runs of the slowest class', () => {
+    const slowest = Math.min( ...Object.values( SHIP_CLASSES ).map( ( c ) => c.tuning.maxCruise ) );
+    assert.equal( raceCapSeconds( 8000 ), ( 3 * 8000 ) / slowest );
+    assert.ok( raceCapSeconds( 8000 ) > 8000 / slowest + RACE_GRACE_SECONDS );
+} );
+
+test( 'raceEndsAt: the earlier of grace deadline and cap', () => {
+    assert.equal( raceEndsAt( 0, 286 ), 286 );
+    assert.equal( raceEndsAt( 110, 286 ), 110 );
+    assert.equal( raceEndsAt( 300, 286 ), 286 );
+} );
+
+test( 'noteProgress: only a new best z moves the progress clock', () => {
+    const p = { z: 10, bestZ: 10, progressAt: 0 };
+    noteProgress( p, 5 );
+    assert.equal( p.progressAt, 0 );
+    p.z = 12;
+    noteProgress( p, 6 );
+    assert.deepEqual( [ p.bestZ, p.progressAt ], [ 12, 6 ] );
+    p.z = 0;
+    noteProgress( p, 7 );
+    assert.deepEqual( [ p.bestZ, p.progressAt ], [ 12, 6 ] );
+} );
+
+test( 'isStalled: true after STALL_SECONDS without progress', () => {
+    assert.equal( isStalled( 6 + STALL_SECONDS - 0.01, 6 ), false );
+    assert.equal( isStalled( 6 + STALL_SECONDS, 6 ), true );
 } );
 
 test( 'raceShouldEnd: grace is 45 s after the first finisher', () => {
@@ -133,8 +175,11 @@ test( 'resetPlayerForRace: zeroes transient state, staggers x by seat, re-anchor
         strafeHeld: 1,
         kickLeft: 2.5,
         kicking: true,
+        bestZ: 4000,
+        progressAt: 70,
     };
     resetPlayerForRace( dirty, 3 );
+    assert.deepEqual( [ dirty.bestZ, dirty.progressAt ], [ 0, 0 ] );
     assert.equal( dirty.x, 2 * START_STAGGER_U );
     assert.equal( dirty.lastSafeX, 2 * START_STAGGER_U );
     assert.deepEqual(

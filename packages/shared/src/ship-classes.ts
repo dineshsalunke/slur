@@ -159,6 +159,8 @@ export const ALL_CLASS_TUNINGS: FlightTuning[] = Object.values( SHIP_CLASSES ).m
 
 export const FASTEST_CRUISE = Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.maxCruise ) );
 
+export const SLOWEST_CRUISE = Math.min( ...ALL_CLASS_TUNINGS.map( ( t ) => t.maxCruise ) );
+
 const contractFailures = rosterContractFailures( Object.values( SHIP_CLASSES ) );
 if ( contractFailures.length > 0 )
     throw new Error( `ship roster breaks the GDD §0 track contract:\n  ${ contractFailures.join( '\n  ' ) }` );

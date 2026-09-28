@@ -1,10 +1,12 @@
-import { COLOR_COUNT, START_STAGGER_U } from '../constants.js';
+import { COLOR_COUNT, RACE_CAP_FACTOR, STALL_SECONDS, START_STAGGER_U } from '../constants.js';
+import { SLOWEST_CRUISE } from '../ship-classes.js';
 import { copySimShip, type SimShip, spawnShip } from '../sim/types.js';
 
 export const PHASE = { lobby: 0, countdown: 1, racing: 2, finished: 3 } as const;
 
 export const START_MESSAGE = 'start';
 export const RESTART_MESSAGE = 'restart';
+export const END_RACE_MESSAGE = 'endRace';
 export const SET_COLOR_MESSAGE = 'setColor';
 
 export function isColorId( n: unknown ): n is number {
@@ -20,7 +22,13 @@ export interface RunMetadata {
     phase: number;
 }
 
-type RacerState = SimShip & { finishTime: number };
+export interface RaceProgress {
+    z: number;
+    bestZ: number;
+    progressAt: number;
+}
+
+type RacerState = SimShip & RaceProgress & { finishTime: number };
 
 export function startGridX( seat: number ): number {
     if ( seat === 0 ) return 0;
@@ -31,6 +39,30 @@ export function startGridX( seat: number ): number {
 export function resetPlayerForRace( p: RacerState, seat: number ): void {
     copySimShip( p, spawnShip( startGridX( seat ), 0 ) );
     p.finishTime = 0;
+    p.bestZ = p.z;
+    p.progressAt = 0;
+}
+
+export function noteProgress( p: RaceProgress, elapsed: number ): void {
+    if ( p.z <= p.bestZ ) return;
+    p.bestZ = p.z;
+    p.progressAt = elapsed;
+}
+
+export function stalledFor( elapsed: number, progressAt: number ): number {
+    return Math.max( 0, elapsed - progressAt );
+}
+
+export function isStalled( elapsed: number, progressAt: number ): boolean {
+    return stalledFor( elapsed, progressAt ) >= STALL_SECONDS;
+}
+
+export function raceCapSeconds( finishZ: number ): number {
+    return ( RACE_CAP_FACTOR * finishZ ) / SLOWEST_CRUISE;
+}
+
+export function raceEndsAt( finishDeadline: number, raceCap: number ): number {
+    return finishDeadline > 0 ? Math.min( finishDeadline, raceCap ) : raceCap;
 }
 
 export interface StandingInput {
@@ -64,10 +96,13 @@ export interface RaceEndInput {
     finishDeadline: number;
     racerCount: number;
     finishedCount: number;
+    stalledCount?: number;
+    raceCap?: number;
 }
 
 export function raceShouldEnd( i: RaceEndInput ): boolean {
     if ( i.racerCount === 0 ) return true;
-    if ( i.finishedCount >= i.racerCount ) return true;
+    if ( i.finishedCount + ( i.stalledCount ?? 0 ) >= i.racerCount ) return true;
+    if ( i.raceCap !== undefined && i.elapsed >= i.raceCap ) return true;
     return i.finishDeadline > 0 && i.elapsed >= i.finishDeadline;
 }
