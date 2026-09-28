@@ -36,7 +36,18 @@ section. They send me their sections; I merge them and keep one voice.
 
 ## Held files
 
-- Claim pending: `docs/RFC-349-ARCHITECTURE.md` (new).
+- `docs/RFC-349-ARCHITECTURE.md` (new) — CLEARED by the supervisor. Only I write it.
+
+## Agreed with workerthree (render section)
+
+- Their section "R. Render & frame schedule": R1 map of every useFrame/addEffect · R2 schedule as-is vs
+  named phases (input → net/predict → sim-sync → visual systems → pre-render → render → after-render; one
+  priority constants file) · R3 render pipeline, who owns gl.render · R4 quality tiers as a system · R5 perf
+  hooks · R6 problems + ≥5 options + stages. Their measurements: 46 useFrame sites (39 at prio 0, 7 explicit),
+  6 addEffect users.
+- I own the data model (entity/trait/tag vs singleton). They own the tick order, including where the koota
+  visual systems run. They send a scratchpad path or text; I merge and rank all problems together.
+- workertwo: not yet contacted.
 
 ## Next
 
