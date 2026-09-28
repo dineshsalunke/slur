@@ -136,3 +136,4 @@ One line per memory; each memory lives in its own file here.
 - [kurmah DO infra](kurmah-netbird-infra.md) — droplets `netbird` (NetBird only) + `slur` (Traefik, /opt/slur); `--context kurmah`; key ~/.ssh/kurmah_ed25519
 - [Quit Docker Desktop via its CLI](quit-docker-desktop-via-cli.md) — osascript quit leaves the backend; use `docker desktop stop`
 - [Time hot loops in Chrome, not tsx](time-hot-loops-in-chrome-not-tsx.md) — node+tsx read a loop 15x slow; time in page with CDP CPU throttle
+- [Raycast luma probe per surface](raycast-luma-probe-per-surface.md) — grid raycast + screenshot pixel per face/distance; metal-1 F0 0.07 is why the track is dark (#345)
