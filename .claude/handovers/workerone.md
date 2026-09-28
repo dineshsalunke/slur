@@ -23,7 +23,7 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Held files
 
-- `apps/server/src/{metrics.ts, metrics.test.ts, log.ts, http.ts, rooms/run-room.ts}` until #337 closes.
+- None. Released to slur-supervisor on 2026-09-28; workertwo holds `rooms/run-room.ts` for #338. Do not edit the #337 files. Verify and close only.
 
 ## Next
 
