@@ -1,7 +1,9 @@
+import { Fragment } from 'react';
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
 import type { Route } from './+types/root';
 import './app.css';
+import { DevStatsMount } from './dev/dev-stats-mount';
 import { StillBackdrop } from './ui/still-backdrop';
 
 export function Layout( { children }: { children: React.ReactNode } ) {
@@ -33,7 +35,12 @@ export function HydrateFallback() {
 }
 
 export default function App() {
-    return <Outlet />;
+    return (
+        <Fragment>
+            <Outlet />
+            <DevStatsMount />
+        </Fragment>
+    );
 }
 
 export function ErrorBoundary( { error }: Route.ErrorBoundaryProps ) {
