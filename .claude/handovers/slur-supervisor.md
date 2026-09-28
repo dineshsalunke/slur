@@ -119,6 +119,9 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
      workertwo pushed fcd917b (client-ip.ts, matchmake-guard.ts, failed-join-limit.ts, room-code.ts, room-codes.ts);
      building client + docs; also owns gap A (chatHistory 1 reply/2 s in chat-log.ts). workerone adds the single
      installMatchmakeGuard([new FailedJoinLimit(), …]) line in index.ts; never edits matchmake-guard.ts.
+     SEAM 4f: OWNER APPROVED #339 → workerone resumed BUILDING (holds run-room.ts, index.ts, run-sim.ts join(),
+     limits/create-quota, attach-room-to-world.ts chunking, deploy.sh; ADR-026). On its SHA → release run-sim.ts +
+     run-room.ts to workertwo for #341. #341 owner answer still pending (A+B vs A+B+C; 30 s / 3×).
      SEAM 4e: #341 PLAN RELAYED (workertwo handover 9219acb): A stall 30 s no new best z → counts done (warn 20 s),
      B cap 3 × finishZ / 84 (286 s on 8,000u; ≤546 s phrase) — NOTE reverses #301 "no time cap"; C host End race
      (optional). Owner Qs: A+B or A+B+C; 30 s/factor 3. run-sim.ts/run-room.ts after #339 commits.
