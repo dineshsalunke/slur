@@ -13,11 +13,12 @@ export const BOLT_SHEATH_INTENSITY = 0.9;
 
 export const PICKUP_GLYPH_INTENSITY = 3;
 export const PICKUP_CORE_INTENSITY = 4.5;
-export const PICKUP_HOVER = 2.4;
+export const PICKUP_SIZE = 5;
+export const PICKUP_HOVER = 3.2;
 export const PICKUP_BOB = 0.22;
 export const PICKUP_BOB_HZ = 0.55;
 export const PICKUP_SPIN = 1.4;
-export const PICKUP_POOL_RADIUS = 3.2;
+export const PICKUP_POOL_RADIUS = 4;
 export const PICKUP_POOL_INTENSITY = 0.55;
 
 const HALF_W = 0.7;

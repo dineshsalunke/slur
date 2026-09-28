@@ -2,8 +2,9 @@ import { useFrame } from '@react-three/fiber';
 import type { Anchor } from '@slur/shared';
 import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
+import { PICKUP_SIZE } from '../combat-look';
 import { PICKUP_REVEAL_S } from '../pickup-pose';
-import { advanceLife, buildPool, markUploaded, writeInstance } from './pickup-instances.utils';
+import { advanceLife, buildPool, fitPickup, markUploaded, writeInstance } from './pickup-instances.utils';
 
 export interface PickupPart {
     geometry: THREE.BufferGeometry;
@@ -25,7 +26,7 @@ export function PickupInstances( {
     isTaken: ( id: string ) => boolean;
     buildBody: () => PickupPart[];
 } ) {
-    const body = useMemo( buildBody, [ buildBody ] );
+    const body = useMemo( () => fitPickup( buildBody(), PICKUP_SIZE ), [ buildBody ] );
     const pool = useMemo( buildPool, [] );
     const life = useMemo(
         () => ( {

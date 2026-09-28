@@ -13,6 +13,25 @@ export function buildPool(): PickupPart {
     };
 }
 
+export function fitPickup( parts: PickupPart[], size: number ): PickupPart[] {
+    const geometries = new Set( parts.map( ( p ) => p.geometry ) );
+    const box = new THREE.Box3();
+    for ( const g of geometries ) {
+        g.computeBoundingBox();
+        if ( g.boundingBox ) box.union( g.boundingBox );
+    }
+    const extent = box.getSize( new THREE.Vector3() );
+    const longest = Math.max( extent.x, extent.y, extent.z );
+    if ( longest <= 0 ) return parts;
+    const k = size / longest;
+    for ( const g of geometries ) {
+        g.scale( k, k, k );
+        g.computeBoundingBox();
+        g.computeBoundingSphere();
+    }
+    return parts;
+}
+
 export function advanceLife( life: PickupLife, i: number, taken: boolean, delta: number ): boolean {
     const gone = taken ? 1 : 0;
     if ( gone !== life.gone[ i ] ) {
