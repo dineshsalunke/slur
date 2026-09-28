@@ -1588,3 +1588,35 @@ The owner asked for a simpler scene. The procedural nebula (#215) baked a sky cu
 - The marigold band that the baked env gave to blocks, monoliths and ships is gone.
 - The 1k default costs 1.4 MB. A pasted high-tier link costs about 6 MB.
 - Details and departures: `ART_MATERIALS.md` §7 item 22.
+
+## ADR-031 — Fake deck reflections: additive streaks under every glowing element
+
+**Date:** 2026-09-29 · **Status:** Accepted (owner approved approach A+B+C for #354, 2026-09-28) · **Issue:** #354 · **Built in:** `3c576aa`, `668df76`, `f0562e7`
+
+### Context
+
+The golden reference (`docs/art-direction/golden-reference/cruise-lighting.png`) looks good mainly because the glossy deck reflects every glowing thing. Our deck cannot. In three.js an emissive surface is not a light and is not in the environment map. `ART_MATERIALS.md` §7 measured the rail array's share of the deck highlight at *"0% rail array"*. Perf on low-end devices is the top problem, so the fix must cost almost nothing on every tier.
+
+### Options
+
+The owner rejected an emissive-only mirror pass, near-camera area lights, a planar reflector and SSR on cost. The owner chose fake streaks: **A** a rail sheen patched into the deck shader, **B** instanced streak quads for block seams, **C** the same quads for pickups and exhausts.
+
+### Decision
+
+1. **Rail sheen (A).** The deck material adds a marigold band near `±HALF_WIDTH` to `totalEmissiveRadiance` (`deck-reflection/rail-sheen.ts`, through `chainShaderPatch`). No draw call.
+2. **Streak quads (B, C).** One shared `ShaderMaterial` (`deck-reflection/deck-reflection.ts`). Each emitter is one quad on the deck plane, `y + 0.015`. The quad points from the emitter base toward the camera. Its length is the mirror image of the emitter's height (`s = d·h / (eye + h)`), times `Reflect.stretch`, capped at `Reflect.length`. Blending is additive, `depthWrite` is off, and the output goes through tone mapping.
+   - Block seams: one quad per seam slot, reading the sealed blocks' own `instanceMatrix` and seam attributes. Faces turned away from the camera draw nothing.
+   - Pickups: one quad per pickup anchor, a round spot at the pickup's mirror point. A taken pickup draws nothing.
+   - Exhausts: share `ExhaustField`'s instance buffers. A ship with no floor under it draws nothing.
+3. **Look.** Brightness falls with distance (`fadeNear` 40 → `fadeFar` 220), rises at grazing angles and follows the deck roughness map, so worn plates break the streak. Colour is the marigold accent.
+4. **No stencil in v1** (owner). A streak can lie over a hole in the deck. The rate is measured below.
+5. **Dials:** `Reflect.*` in the dev panel. Defaults: strength 1, stretch 1.5, length 36, width 0.6, rail 1, block 0.6, pickup 1.5, exhaust 0.3.
+
+### Consequences
+
+- **Cost.** Draw calls: low 46 → 49, high 123 → 129 (the rear view draws the streaks again). GPU time, DPR 1, 1728×1080, GPU-synced median: low 3.20 → 3.40 ms. High, three runs each alone on the GPU: best 8.5 ms on, 9.7 ms off, 9.7 ms without the rail patch. The runs are bimodal (8–10 ms or 14–16 ms), so the high-tier cost is below the noise.
+- **Streaks over holes.** Measured on `/test-level` tracks, 8 seeds, a chase camera every 2u on 3 lanes (181,140 frames), by a CPU copy of the streak vertex maths against `Track.segmentAtZ` floors:
+  - Block-seam streaks: 0.12% touch a hole at all, 0.05% have more than a quarter of their light over a hole. The generator puts no block in the segment after a hole.
+  - Pickup spots: 5.9% have more than a quarter of their light over a hole. The spot sits at the mirror point, far in front of the pickup, so a hole between the camera and the pickup catches it. One or more such spots show in 7.8% of frames. On screen it reads as a short marigold line across the gap below the pickup.
+- **Known limit.** The left rim sheen is washed out where the HDRI's white sky lights the deck. Open with the owner.
+- Details and departures: `ART_MATERIALS.md` §7 item 23.

@@ -474,6 +474,7 @@ Every element in the package, and what it is made of. No row reads "shared with 
 | Seeker in flight | **M1** graphite + **M7** rear core (item 19) | gameplay — sized for rear-view resolution |
 | Bolt tracer, boost thrust, shield envelope | **M7** only — no shell | gameplay |
 | Engines / thrust | **M7** | gameplay |
+| Deck reflections — rail sheen, seam, pickup and exhaust streaks | not a surface — additive **M7** accent on the M1 deck, tone-mapped (item 23) | follows its source, always below it |
 | Ship hulls | **M1** graphite, scratch and blotch maps box-projected (item 19) | gameplay — engines |
 | HUD / UI | 2D; graphite and marigold — *deferred*, §6 | n/a |
 
@@ -1143,6 +1144,26 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     **Departures.** Item 21 said *"`KeyLight` is one `DirectionalLight`, colour `#cfd8e6`."* It is
     removed. `docs/ADD.md` said *"The `Environment` band cylinder gives blocks, monoliths and ships
     their marigold."* The band is removed. None in `docs/art-direction/`.
+
+23. **Fake deck reflections under every glowing element — 2026-09-29 (#354, ADR-031).** Owner's
+    request, from `golden-reference/cruise-lighting.png`.
+    - **What draws them.** The rail sheen is a band in the deck shader. Block seams, pickups and
+      exhausts each draw one additive quad on the deck, pointed at the camera. The quad's length is
+      the mirror image of the emitter's height.
+    - **Material rules.** The colour is the marigold accent. Output is tone-mapped, so it follows the
+      exposure dials. The deck roughness map scales it (`Reflect.roughMix`), so worn plates break the
+      streak. It fades with distance (40 → 220u) and gets brighter at grazing angles.
+    - **Tier.** A reflection is always dimmer than its source. It never uses the `#FFE0A0` hot core.
+    - **Holes.** There is no stencil. 5.9% of pickup spots put more than a quarter of their light over
+      a hole in the deck. Block streaks almost never do (0.05%). Numbers in ADR-031.
+    - **Left rim.** The sheen does not show on the left rim where the HDRI's white sky lights the
+      deck. Open with the owner.
+
+    **Departures.** The "Reflection and illumination" paragraph in §1 M1 said *"The deck reflecting
+    the marigold boundary strip is a material effect, controlled by roughness, and it is real."* The
+    deck showed none of it: §7 measured the rail array's share at 0%. The reflection is now an overlay
+    that roughness only scales. Roughness alone still does not create it. None in
+    `docs/art-direction/`.
 
 ## 8. Review log
 
