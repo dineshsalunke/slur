@@ -54,13 +54,7 @@ export function updateDeckBreakup( uniforms: DeckBreakupUniforms, map: THREE.Tex
 
 const f = ( n: number ) => n.toFixed( 5 );
 
-export const BLOTCH_WEAR_GLSL = /* glsl */ `
-uniform float uBlotchDark;
-uniform float uBlotchBright;
-uniform float uWearValueSpan;
-uniform float uWearRoughSpan;
-uniform float uWearMetalSlope;
-
+export const DECK_HASH_GLSL = /* glsl */ `
 float deckHash( vec2 c, float seed ) {
 	uvec2 q = uvec2( ivec2( c ) + 1048576 );
 	uint h = q.x * 73856093u ^ q.y * 19349663u ^ uint( seed ) * 83492791u;
@@ -68,7 +62,29 @@ float deckHash( vec2 c, float seed ) {
 	h = ( h ^ ( h >> 12u ) ) * 0x297a2d39u;
 	return float( h >> 8u ) / 16777216.0;
 }
+`;
 
+export const DECK_TILE_GLSL = /* glsl */ `
+vec2 deckTileUv( vec2 uv, out vec2 flip ) {
+	vec2 plates = vec2( ${ f( COLS ) }, ${ f( ROWS ) } );
+	vec2 g = uv * plates;
+	vec2 cell = floor( g );
+	vec2 local = g - cell;
+	float pick = floor( deckHash( cell, 11.0 ) * plates.x );
+	vec2 m = step( 0.5, vec2( deckHash( cell, 12.0 ), deckHash( cell, 13.0 ) ) );
+	flip = 1.0 - 2.0 * m;
+	local = mix( local, 1.0 - local, m );
+	return ( vec2( pick, mod( cell.y, plates.y ) ) + local ) / plates;
+}
+`;
+
+export const BLOTCH_WEAR_GLSL = /* glsl */ `
+uniform float uBlotchDark;
+uniform float uBlotchBright;
+uniform float uWearValueSpan;
+uniform float uWearRoughSpan;
+uniform float uWearMetalSlope;
+${ DECK_HASH_GLSL }
 float deckNoise( vec2 p, float seed ) {
 	vec2 i = floor( p );
 	vec2 t = p - i;
@@ -108,17 +124,7 @@ float blotchWear( float shade ) {
 const FRAG_HEAD = /* glsl */ `
 uniform vec2 uDeckWorldPerUv;
 ${ BLOTCH_WEAR_GLSL }
-vec2 deckTileUv( vec2 uv, out vec2 flip ) {
-	vec2 plates = vec2( ${ f( COLS ) }, ${ f( ROWS ) } );
-	vec2 g = uv * plates;
-	vec2 cell = floor( g );
-	vec2 local = g - cell;
-	float pick = floor( deckHash( cell, 11.0 ) * plates.x );
-	vec2 m = step( 0.5, vec2( deckHash( cell, 12.0 ), deckHash( cell, 13.0 ) ) );
-	flip = 1.0 - 2.0 * m;
-	local = mix( local, 1.0 - local, m );
-	return ( vec2( pick, mod( cell.y, plates.y ) ) + local ) / plates;
-}
+${ DECK_TILE_GLSL }
 `;
 
 function swap( src: string, from: string, to: string ): string {

@@ -46,6 +46,21 @@ export const NUMBER_TUNABLES = {
     'Rail.railEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
     'Rail.rimEmissive': { value: 2, min: 0, max: 30, step: 0.05, rebuild: false },
 
+    'Reflect.strength': { value: 1, min: 0, max: 4, step: 0.01, rebuild: false },
+    'Reflect.stretch': { value: 1, min: 0, max: 4, step: 0.01, rebuild: false },
+    'Reflect.length': { value: 14, min: 0, max: 80, step: 0.5, rebuild: false },
+    'Reflect.width': { value: 0.35, min: 0.02, max: 3, step: 0.01, rebuild: false },
+    'Reflect.falloff': { value: 1.5, min: 0.2, max: 8, step: 0.05, rebuild: false },
+    'Reflect.fadeNear': { value: 40, min: 0, max: 400, step: 1, rebuild: false },
+    'Reflect.fadeFar': { value: 220, min: 10, max: 420, step: 1, rebuild: false },
+    'Reflect.grazing': { value: 2, min: 0, max: 8, step: 0.05, rebuild: false },
+    'Reflect.roughMix': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Reflect.railSpread': { value: 4, min: 0.5, max: 20, step: 0.1, rebuild: false },
+    'Reflect.rail': { value: 0.15, min: 0, max: 2, step: 0.01, rebuild: false },
+    'Reflect.block': { value: 0.08, min: 0, max: 1, step: 0.005, rebuild: false },
+    'Reflect.pickup': { value: 0.6, min: 0, max: 4, step: 0.01, rebuild: false },
+    'Reflect.exhaust': { value: 0.05, min: 0, max: 1, step: 0.005, rebuild: false },
+
     'Monolith.seamEmissive': { value: 2, min: 0, max: 10, step: 0.05, rebuild: false },
 
     'Block.seamEmissive': { value: 6, min: 0, max: 20, step: 0.05, rebuild: false },

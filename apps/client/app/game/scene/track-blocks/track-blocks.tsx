@@ -9,6 +9,7 @@ import { useTrack } from '../../track-context/use-track';
 import { endFrame, type ShipProbe } from '../block-breaks';
 import { BlockBurst } from '../block-burst/block-burst';
 import { BlockDebris } from '../block-debris/block-debris';
+import { BlockReflections } from '../block-reflections/block-reflections';
 import { blotchWearUniforms, updateBlotchWear } from '../deck-breakup';
 import { applyDeckFinish, deckTextureSpan } from '../deck-finish';
 import { fracturedBlockGeometry } from '../fractured-block-geometry';
@@ -185,6 +186,7 @@ export function TrackBlocks() {
                     } }
                 />
             </instancedMesh>
+            <BlockReflections source={ blockRef } attrs={ attrs } />
             <BlockDebris uniforms={ fractureUniforms } />
             <BlockBurst />
         </Fragment>

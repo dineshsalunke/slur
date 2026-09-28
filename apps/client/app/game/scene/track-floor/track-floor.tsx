@@ -5,6 +5,9 @@ import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { useTrack } from '../../track-context/use-track';
 import { deckBreakupUniforms, patchDeckBreakup, updateDeckBreakup } from '../deck-breakup';
 import { applyDeckFinish } from '../deck-finish';
+import { updateReflection } from '../deck-reflection/deck-reflection';
+import { reflection } from '../deck-reflection/deck-reflection.state';
+import { patchRailSheen, updateRailSheen } from '../deck-reflection/rail-sheen';
 import { floorSurface, graphiteSurface } from '../track-materials';
 import { patchWallBreakup } from '../wall-breakup';
 import { FLOOR_SIDE_GROUP, FLOOR_TOP_GROUP } from './track-floor.constants';
@@ -29,6 +32,7 @@ export function TrackFloor() {
             deckRef.current = mat;
             if ( ! mat ) return;
             patchDeckBreakup( mat, breakup );
+            patchRailSheen( mat, reflection );
         },
         [ breakup ],
     );
@@ -46,7 +50,11 @@ export function TrackFloor() {
 
     useFrame( () => {
         updateDeckBreakup( breakup, deck.map );
-        if ( deckRef.current ) applyDeckFinish( deckRef.current );
+        if ( deckRef.current ) {
+            applyDeckFinish( deckRef.current );
+            updateReflection( reflection, deckRef.current );
+            updateRailSheen( reflection );
+        }
         if ( sideRef.current ) applyDeckFinish( sideRef.current );
     } );
 
