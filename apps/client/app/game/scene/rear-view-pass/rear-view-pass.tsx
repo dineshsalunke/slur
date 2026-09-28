@@ -9,6 +9,7 @@ import { updateRearCamera } from '../rear-view-camera';
 import { REAR_ASPECT, REAR_PANEL_HEIGHT, REAR_PANEL_WIDTH } from '../rear-view-frame';
 import { RearViewPanel } from '../rear-view-panel/rear-view-panel';
 import { rearViewSurface } from '../rear-view-surface';
+import { toneMode } from '../tone-mapping';
 import { HUD_PRIORITY, PASS_PRIORITY, REAR_FAR, REAR_NEAR, REAR_SAMPLES } from './rear-view-pass.constants';
 
 export function RearViewPass() {
@@ -27,7 +28,7 @@ export function RearViewPass() {
     useFrame( ( state ) => {
         if ( ! updateRearCamera( camera, world ) ) return;
         const uniforms = surface.uniforms;
-        uniforms.uExposure.value = state.gl.toneMappingExposure;
+        uniforms.uToneMode.value = toneMode();
         uniforms.uGain.value = num( 'RearView.gain' );
         uniforms.uFeatherX.value = num( 'RearView.featherX' );
         uniforms.uFeatherY.value = num( 'RearView.featherY' );

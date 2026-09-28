@@ -1,5 +1,6 @@
 import { syncAccent } from '../../game/scene/accent';
 import { hdriLink, showHdri } from '../../game/scene/hdri/hdri.state';
+import { TONE_MODE_OPTIONS } from '../../game/scene/tone-mapping';
 import { col, num, setCol, setNum } from '../tuning';
 import { type ColorPath, NUMBER_TUNABLES, type NumberPath } from '../tuning-schema';
 
@@ -41,12 +42,21 @@ export function copyAccent(): void {
     void navigator.clipboard?.writeText( value );
 }
 
-export function hdriLinkControl( report: ( status: string ) => void ) {
+export function hdriLinkControl() {
     return {
         value: hdriLink(),
         onChange: ( value: string ) => {
-            void showHdri( value ).then( report );
+            void showHdri( value );
         },
+        transient: true as const,
+    };
+}
+
+export function toneModeControl() {
+    return {
+        value: num( 'ToneMapping.mode' ),
+        options: TONE_MODE_OPTIONS,
+        onChange: ( value: number ) => setNum( 'ToneMapping.mode', value ),
         transient: true as const,
     };
 }

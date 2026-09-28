@@ -1,5 +1,12 @@
 import { button, useControls } from 'leva';
-import { accentControl, colorControl, copyAccent, hdriLinkControl, numberControl } from './tuning-panel.utils';
+import {
+    accentControl,
+    colorControl,
+    copyAccent,
+    hdriLinkControl,
+    numberControl,
+    toneModeControl,
+} from './tuning-panel.utils';
 
 export function TuningPanel() {
     useControls( 'Accent', {
@@ -13,12 +20,16 @@ export function TuningPanel() {
         device: { value: String( devicePixelRatio ), editable: false },
     } );
 
-    const [ , setEnvironment ] = useControls( 'Environment', () => ( {
-        hdri: hdriLinkControl( ( status ) => setEnvironment( { status } ) ),
-        status: { value: '', editable: false },
+    useControls( 'Tone mapping', {
+        mode: toneModeControl(),
+        exposure: numberControl( 'ToneMapping.exposure' ),
+    } );
+
+    useControls( 'Environment', {
+        hdri: hdriLinkControl(),
         intensity: numberControl( 'Environment.intensity' ),
         rotation: numberControl( 'Environment.rotation' ),
-    } ) );
+    } );
 
     useControls( 'Bloom', {
         intensity: numberControl( 'Bloom.intensity' ),

@@ -22,6 +22,9 @@ export const NUMBER_TUNABLES = {
     'Render.dpr': { value: 0, min: 0, max: DEVICE_DPR, step: 0.25, rebuild: false },
     'Render.msaa': { value: -1, min: -1, max: 4, step: 1, rebuild: false },
 
+    'ToneMapping.mode': { value: 7, min: 0, max: 7, step: 1, rebuild: false },
+    'ToneMapping.exposure': { value: 1, min: 0, max: 4, step: 0.01, rebuild: false },
+
     'Environment.intensity': { value: 1.2, min: 0, max: 20, step: 0.05, rebuild: false },
     'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
 

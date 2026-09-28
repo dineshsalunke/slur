@@ -10,33 +10,26 @@ void main() {
 `;
 
 const fragmentShader = /* glsl */ `
+#ifndef TONE_MAPPING
+#include <tonemapping_pars_fragment>
+#endif
+
 uniform sampler2D uMap;
-uniform float uExposure;
+uniform int uToneMode;
 uniform float uGain;
 uniform float uFeatherX;
 uniform float uFeatherY;
 
 varying vec2 vUv;
 
-vec3 neutralToneMap( vec3 color ) {
-    const float startCompression = 0.8 - 0.04;
-    const float desaturation = 0.15;
-
-    color *= uExposure;
-
-    float x = min( color.r, min( color.g, color.b ) );
-    float offset = x < 0.08 ? x - 6.25 * x * x : 0.04;
-    color -= offset;
-
-    float peak = max( color.r, max( color.g, color.b ) );
-    if ( peak < startCompression ) return color;
-
-    float d = 1.0 - startCompression;
-    float newPeak = 1.0 - d * d / ( peak + d - startCompression );
-    color *= newPeak / peak;
-
-    float g = 1.0 - 1.0 / ( desaturation * ( peak - newPeak ) + 1.0 );
-    return mix( color, vec3( newPeak ), g );
+vec3 toneMap( vec3 color ) {
+    if ( uToneMode == ${ THREE.LinearToneMapping } ) return LinearToneMapping( color );
+    if ( uToneMode == ${ THREE.ReinhardToneMapping } ) return ReinhardToneMapping( color );
+    if ( uToneMode == ${ THREE.CineonToneMapping } ) return CineonToneMapping( color );
+    if ( uToneMode == ${ THREE.ACESFilmicToneMapping } ) return ACESFilmicToneMapping( color );
+    if ( uToneMode == ${ THREE.AgXToneMapping } ) return AgXToneMapping( color );
+    if ( uToneMode == ${ THREE.NeutralToneMapping } ) return NeutralToneMapping( color );
+    return color;
 }
 
 float edgeMask( vec2 uv ) {
@@ -47,7 +40,7 @@ float edgeMask( vec2 uv ) {
 
 void main() {
     vec3 color = texture2D( uMap, vec2( 1.0 - vUv.x, vUv.y ) ).rgb;
-    gl_FragColor = vec4( neutralToneMap( max( color, 0.0 ) ), 1.0 );
+    gl_FragColor = vec4( toneMap( max( color, 0.0 ) ), 1.0 );
     #include <colorspace_fragment>
     gl_FragColor.rgb *= uGain;
     gl_FragColor.a = edgeMask( vUv );
@@ -57,7 +50,7 @@ void main() {
 export interface RearViewUniforms {
     [ uniform: string ]: THREE.IUniform;
     uMap: THREE.IUniform< THREE.Texture >;
-    uExposure: THREE.IUniform< number >;
+    uToneMode: THREE.IUniform< number >;
     uGain: THREE.IUniform< number >;
     uFeatherX: THREE.IUniform< number >;
     uFeatherY: THREE.IUniform< number >;
@@ -71,7 +64,7 @@ export function rearViewSurface( map: THREE.Texture ): RearViewSurface {
     return {
         uniforms: {
             uMap: { value: map },
-            uExposure: { value: 1 },
+            uToneMode: { value: THREE.NeutralToneMapping },
             uGain: { value: 1 },
             uFeatherX: { value: 0.22 },
             uFeatherY: { value: 0.18 },
