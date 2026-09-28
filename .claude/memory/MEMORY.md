@@ -139,4 +139,5 @@ One line per memory; each memory lives in its own file here.
 - [Raycast luma probe per surface](raycast-luma-probe-per-surface.md) — grid raycast + screenshot pixel per face/distance; metal-1 F0 0.07 is why the track is dark (#345)
 - [useFrame order is subscribe time](useframe-order-is-subscribe-time.md) — equal priority runs in mount-time order; late mounts go last, JSX order proves nothing
 - [Removing the composer blacks the canvas](removing-the-composer-blacks-the-canvas.md) — priority > 0 useFrame kills auto-render; PlainRender at priority 1
+- [leva onChange fires on mount](leva-onchange-fires-on-mount.md) — initial:true call covers startup sync; compare hex case-insensitively
 - [Schema fields cap at 64](schema-fields-cap-at-64.md) — Metadata.ts:73 throws; PlayerState 39/64; defineTypes order = wire order
