@@ -96,7 +96,23 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-00000000. RESUME HERE (2026-09-28 night). HARDENING QUEUE (owner approved all; stay anonymous):
+000000000. RESUME HERE (2026-09-28 late night, seam 4 at ~155k). OWNER DEPLOYS ONCE after all hardening lands
+   (`! docker desktop start && ./scripts/deploy.sh`); then #337 (workerone) + #338 (workertwo 282428f) + #340 verify
+   prod and close. Nobody deploys but the owner.
+   - #343 infra DONE (do-setup, closed; memory 44d62f0): root prohibit-password same key, host key unchanged, port 22;
+     Traefik per-IP 200/s burst 1000 + in-flight 400; /metrics basic auth, cred in owner Keychain service `slur-metrics`;
+     /healthz public. RULE: deploy.sh must NEVER write /opt/slur/docker-compose.yml (holds limits + auth; backup
+     docker-compose.yml.bak-pre343).
+   - workertwo (w2Z:p3, cleared+resumed this seam): #340 OWNER APPROVED (5 chars, alphabet 23456789BCDFGHJKMNPQRSTVWXYZ,
+     code = roomId, private by default, ≤1 public room = quick play, failed-join 10/IP/min, global ceiling OFF, keep
+     LobbyRoom live count). BUILDING new files + client + docs. OWNS client-ip.ts + matchmake-guard.ts (single
+     invokeMethod wrapper) — commit early, relay SHA to workerone. run-room.ts/index.ts: WAIT for #339 commit.
+   - workerone (w2Z:p2): #339 PLAN pending (room caps from measured CPU/room, maxMessagesPerSecond, input validation,
+     payload 2–3× measured, deploy.sh from git archive HEAD + SSH preflight BatchMode + env overrides + /metrics via
+     Keychain only if readable, never write compose). Must import workertwo's guard/IP helper, lands run-room/index first.
+     On plan → relay to owner.
+   - Queued: #341 stalled race exit (owner "seriously missing"), #342 kick + name/chat filter.
+00000000. (superseded) RESUME HERE (2026-09-28 night). HARDENING QUEUE (owner approved all; stay anonymous):
    #337 metrics pushed 59a4599 — awaits OWNER deploy; do NOT deploy while #338 edits are in the tree (deploy.sh builds
    the working tree). #338 chat: workertwo BUILDING (holds chat files, run-room.ts, lobby-overlay, matchmaking).
    Owner: "confirm both workers done first" → then workerone #339 (room caps from measured CPU/room, maxMessagesPerSecond,
