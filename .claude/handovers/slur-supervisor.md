@@ -88,6 +88,12 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   Tree clean + pushed: DEPLOY READY (#337–#347). Owner checks: iPhone 12 pad race + Home Screen launch; Windows
   Chrome fullscreen; /test-level R = previous, V = mirror, lighting dials, Seeker.flyY, Graphics row.
 
+- OWNER DIRECTION (2026-09-28 late): biggest problems = perf on low-end devices + bad lighting. Also wants code
+  organisation/architecture (focus look + dev) IN PARALLEL, and Blur-style controls for keyboard + gamepad only.
+  Filed #348 Blur controls → workertwo PLAN FIRST · #349 architecture RFC → workerone RFC ONLY · #344 next perf
+  step (race profile per tier, cheaper still sky, .glb models) → workerthree PLAN FIRST. Lighting: await owner
+  check of #345 (8c94537) on /test-level before the next lighting lane.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
