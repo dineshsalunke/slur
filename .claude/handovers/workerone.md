@@ -47,7 +47,12 @@ section. They send me their sections; I merge them and keep one voice.
   6 addEffect users.
 - I own the data model (entity/trait/tag vs singleton). They own the tick order, including where the koota
   visual systems run. They send a scratchpad path or text; I merge and rank all problems together.
-- workertwo: not yet contacted.
+- workertwo (section "Net, input, client state, room config"), agreed: 1 map (net path, input sources in
+  current-input.ts, 20 *.state.ts files + blockWorld in game/block-state.ts + pickup-state.ts + 3 event
+  queues, config sources) · 2 problems (unranked) · 3 options ≥5 each for state home, event queues and room
+  config (3 tiers, locked at GO) · 4 stages + files · 5 server koota maxWorlds 16 (WORLD_ID_BITS 4, verified
+  by workertwo: koota dist/chunk-ZWIGMIL4.js:34,74). They map; I own the ECS target model; their options
+  point at it. They send a scratchpad path or text.
 
 ## Next
 
