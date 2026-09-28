@@ -96,7 +96,27 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
 
 ## Next
 
-00000. RESUME HERE (2026-09-27 late, after supervisor /clear). #333 DONE 69edb82 (closed; relayed with brief;
+000000. RESUME HERE (2026-09-28 ~14:30, seam 3 at ~150k).
+   DONE (closed): #331 fb878e1 pickups 5u longest side, hover 3.2, pool 4.0 (handover 368063c) · #334 bcad382
+   side hit scrapes keep 0.90 vz, no stun, grazeDepth 1.0, contact kind {kind,dir} (handover aeb5ff1) · #335 f664fee
+   tug halved. Owner /test-level checks pending for all three. Both workers IDLE, no files. Dev stack is MY
+   background task: client PID 96155 :5173, server PID 96154 :2567 (dies with this session; check lsof after /clear).
+   ARCH DISCUSSION (owner, no decision yet): ECS drift (only ships/bolts/seekers/mines are entities; blockWorld,
+   pickup-state, *-events queues, 14 *.state.ts are singletons; state as values not tags; 44 useFrame, no schedule).
+   Gameplay constants should be server-owned room config sent to client (3 tiers: rules / track gen / look).
+   Server ECS: koota 0.6.6 runs in Node (verified), world traits work, trait holds PlayerState by ref, BUT max 16
+   live worlds/process (WORLD_ID_BITS 4). Offered spike + RFC to workerone — owner has NOT said go.
+   DEPLOY (owner 2026-09-28): domain slur.kurmah.studio; keep dev routes hidden in prod; SLUR_TRACK_GEN=phrase;
+   image delivery: unregistry `docker pussh` preferred (README verified v0.4.3), else GHCR/DOCR. Plan: one container,
+   Node serves SPA + Colyseus same origin; client endpoint from location (wss); /healthz; SIGTERM; multi-stage
+   Dockerfile w/ LFS guard; compose with Traefik labels. Mac is arm64 → build --platform linux/amd64.
+   do-setup (peer session, uds:/tmp/cc-socks/99729.sock) facts: only droplet is `netbird` (doctl --context kurmah,
+   blr1, 1 vCPU/2 GB, Ubuntu 24.04, Docker 29.8.1, root@134.209.152.230 key ~/.ssh/kurmah_ed25519). Traefik v3.6
+   is NetBird-owned (/opt/netbird/docker-compose.yml), network netbird_netbird, entrypoints web/websecure, resolver
+   letsencrypt (TLS-ALPN), timeouts 0. DNS on Cloudflare (do-setup holds the token). ASKED OWNER: separate slur
+   droplet (recommended) vs share netbird. On answer → file deploy issue → workerone verifies (Colyseus+express
+   attach, pnpm 11 deploy, docker pussh w/ containerd store) then builds; do-setup does droplet/DNS/Traefik.
+00000. (seam 2b, superseded) RESUME HERE (2026-09-27 late, after supervisor /clear). #333 DONE 69edb82 (closed; relayed with brief;
    owner Q: pass ripple from hit point as follow-up?). workerone seamed at 182k (61419b8), cleared + resumed at 0%
    → #331 PLAN RELAYED to owner (longest side = 5u, uniform fit at build, hover 2.4→3.2, pool 3.2→4.0, grabR stays;
    client-only files: combat-look.ts, pickup-instances/*). Awaiting owner (a) longest side vs spin circle (b) hover/pool.
