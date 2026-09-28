@@ -142,3 +142,4 @@ One line per memory; each memory lives in its own file here.
 - [leva onChange fires on mount](leva-onchange-fires-on-mount.md) — initial:true call covers startup sync; compare hex case-insensitively
 - [Schema fields cap at 64](schema-fields-cap-at-64.md) — Metadata.ts:73 throws; PlayerState 39/64; defineTypes order = wire order
 - [Share instance buffers via onBeforeRender](share-instance-buffers-via-onbeforerender.md) — second InstancedMesh reuses instanceMatrix; sync count there; dispose={null}
+- [Scene env intensity overrides material](scene-env-intensity-overrides-material.md) — envMap null → per-material envMapIntensity dead; only Environment.intensity reaches the shader
