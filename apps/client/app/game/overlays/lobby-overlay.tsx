@@ -6,6 +6,7 @@ import { CopyLink } from './copy-link';
 import { LeaveButton } from './leave-button';
 import { LobbyChat } from './lobby-chat/lobby-chat';
 import { LobbyShipPicker } from './lobby-ship-picker/lobby-ship-picker';
+import { RoomCode } from './room-code/room-code';
 import { RoomTitle } from './room-title';
 import { Roster } from './roster/roster';
 import { SpecTag } from './spec-tag';
@@ -25,6 +26,7 @@ export function LobbyOverlay( { room }: { room: RunRoomLike } ) {
 
                 <div className="mt-auto flex flex-col gap-5 px-5 pb-6 sm:flex-row sm:items-end sm:justify-between sm:px-10">
                     <RoomTitle room={ room }>
+                        <RoomCode code={ room.roomId } />
                         <CopyLink />
                     </RoomTitle>
                     <LobbyChat room={ room } className="w-full sm:w-[22rem] sm:flex-none" />

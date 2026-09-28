@@ -2,7 +2,9 @@ import os from 'node:os';
 import { LobbyRoom, Server } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import { ROOM_NAME } from '@slur/shared';
+import { FailedJoinLimit } from './failed-join-limit.js';
 import { mountHttp } from './http.js';
+import { installMatchmakeGuard } from './matchmake-guard.js';
 import { RunRoom } from './rooms/run-room.js';
 
 const port = Number( process.env.PORT || 2567 );
@@ -26,6 +28,7 @@ const gameServer = new Server( {
 
 gameServer.define( ROOM_NAME, RunRoom ).enableRealtimeListing();
 gameServer.define( 'lobby', LobbyRoom );
+installMatchmakeGuard( [ new FailedJoinLimit() ] );
 
 gameServer
     .listen( port, host )

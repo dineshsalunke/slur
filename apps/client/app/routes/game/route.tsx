@@ -1,3 +1,4 @@
+import { normalizeRoomCode } from '@slur/shared';
 import { redirect } from 'react-router';
 import { GameShell } from '../../game/game-shell';
 import { joinByLink, waitForDescriptor } from '../../net/matchmaking';
@@ -10,9 +11,12 @@ export function meta() {
 }
 
 export async function clientLoader( { params }: Route.ClientLoaderArgs ) {
+    const code = normalizeRoomCode( params.roomId );
+    if ( ! code ) throw redirect( '/?run=closed' );
+    if ( code !== params.roomId ) throw redirect( `/game/${ code }` );
     const name = localStorage.getItem( NAME_KEY )?.trim() || 'Racer';
     try {
-        const room = await joinByLink( params.roomId, name );
+        const room = await joinByLink( code, name );
         const descriptor = await waitForDescriptor( room );
         return { room, descriptor };
     } catch {

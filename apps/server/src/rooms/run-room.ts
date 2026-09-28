@@ -1,4 +1,4 @@
-import { type Client, Room } from '@colyseus/core';
+import { type Client, Room, ServerError } from '@colyseus/core';
 import {
     CHAT_HISTORY_MESSAGE,
     CHAT_LINE_MESSAGE,
@@ -7,11 +7,14 @@ import {
     DROP_POWERUP_MESSAGE,
     INPUT_MESSAGE,
     type InputMessage,
+    isPublicCreate,
     isTrackGen,
     PHASE,
     type PowerSlotMessage,
+    PUBLIC_ROOM_TAKEN_CODE,
     procgenDescriptor,
     RESTART_MESSAGE,
+    type RunCreateOptions,
     type RunMetadata,
     RunSim,
     type RunState,
@@ -22,6 +25,7 @@ import {
 } from '@slur/shared';
 import { logEvent, phaseLogger } from '../log.js';
 import { ChatLog } from './chat-log.js';
+import { roomCodes } from './room-codes.js';
 
 const RECONNECT_SECONDS = 20;
 
@@ -32,7 +36,14 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
     readonly chat = new ChatLog();
 
-    onCreate(): void {
+    onCreate( options?: RunCreateOptions ): void {
+        const listed = isPublicCreate( options );
+        if ( listed && roomCodes.publicRoom() !== null ) {
+            throw new ServerError( PUBLIC_ROOM_TAKEN_CODE, 'Quick play is full' );
+        }
+        this.roomId = roomCodes.claim();
+        if ( listed ) roomCodes.claimPublic( this.roomId );
+        else void this.setPrivate( true );
         const envGen = process.env.SLUR_TRACK_GEN;
         const gen = isTrackGen( envGen ) ? envGen : DEFAULT_TRACK_GEN;
         const descriptor = procgenDescriptor( ( Math.random() * 0xffffffff ) >>> 0, gen );
@@ -60,7 +71,10 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             this.sim.dropPower( client.sessionId, msg ),
         );
         this.onMessage( CHAT_SEND_MESSAGE, ( client, text ) => this.postChat( client, text ) );
-        this.onMessage( CHAT_HISTORY_MESSAGE, ( client ) => client.send( CHAT_HISTORY_MESSAGE, this.chat.history() ) );
+        this.onMessage( CHAT_HISTORY_MESSAGE, ( client ) => {
+            const lines = this.chat.historyFor( client.sessionId, Date.now() );
+            if ( lines ) client.send( CHAT_HISTORY_MESSAGE, lines );
+        } );
 
         this.setSimulationInterval( ( deltaMs ) => this.sim.advance( deltaMs / 1000 ) );
     }
@@ -93,6 +107,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     }
 
     onDispose(): void {
+        roomCodes.release( this.roomId );
         logEvent( 'room.dispose', { room: this.roomId } );
     }
 

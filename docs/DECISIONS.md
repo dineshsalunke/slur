@@ -1409,7 +1409,7 @@ The #256 kick set the lateral speed to at least `strafeKick`, and `strafeAccel` 
 
 ## ADR-025 — Private rooms by default, one public room
 
-**Date:** 2026-09-28 · **Status:** Accepted (owner approved #340, 2026-09-28) · **Supersedes:** the live room list on `/` · **Issue:** #340 · **Built in:** `fcd917b`, `ad95630`, `6b89660` (server wiring after #339)
+**Date:** 2026-09-28 · **Status:** Accepted (owner approved #340, 2026-09-28) · **Supersedes:** the live room list on `/` · **Issue:** #340 · **Built in:** `fcd917b`, `ad95630`, `6b89660`, plus the RunRoom wiring commit
 
 ### Context
 
