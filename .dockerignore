@@ -1,0 +1,17 @@
+.git
+**/node_modules
+**/dist
+**/test-dist
+**/build
+**/.react-router
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+**/.DS_Store
+.claude
+docs
+conventions
+tracks
+slur.png
+apps/client/.songs
+apps/client/.impeccable

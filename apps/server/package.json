@@ -19,6 +19,7 @@
     "devDependencies": {
         "@colyseus/sdk": "catalog:",
         "@colyseus/testing": "^0.17.11",
+        "@types/express": "^5.0.6",
         "@types/node": "catalog:",
         "tsx": "^4.23.9",
         "typescript": "catalog:"
