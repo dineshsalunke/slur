@@ -37,7 +37,7 @@ none. The RFC doc belongs to workerone.
 - §4 is merged by workerone into docs/RFC-349-ARCHITECTURE.md. The second ask (the net half of the feature-module contract, plus action-map options) is sent: scratchpad `rfc-349-s4-modules.md`. Leanings: a6+a3 messages, b5 `schema()` composition, c4 `defineRules` spec, C2 action map.
 
 ## Next
-1. Answer workerone's review of the module-contract draft, if any.
+1. KEEP `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/37700c16-63ca-4985-a595-1c5c60d9c91b/scratchpad/rfc-349-s4-modules.md` (and `rfc-349-s4.md`) in place. workerone merges them first after its resume (its handover 60c938d). Then answer its review, if any.
 2. —
 3. After the owner's deploy: verify #338/#340/#341 on prod and close each one with its SHA.
 4. Later: resume #348 from the notes above.
