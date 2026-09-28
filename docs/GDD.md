@@ -126,7 +126,7 @@ Host a room ──► players join & pick ship/colour ──► host hits GO ─
 
 - **Host-authoritative session, server-authoritative sim.** The host owns GO / Play-Again; the server owns positions, hits, standings, and the phase machine (lobby → countdown → racing → finished).
 - **Round-based (Race):** the field **locks at GO**. Everyone in the room at that instant races together; **late joiners spectate** the pack (chase-cam, cycle any racer) until the round ends, then join the next one.
-- **Join a room anytime**, pick ship + colour in the lobby; **once the host starts, picks lock.** The room is chosen from a **live room list** (host name · player count · phase), not a typed code.
+- **Join a room anytime**, pick ship + colour in the lobby; **once the host starts, picks lock.** **Rooms are private by default (#340).** A player joins a private room with its **5-character code** or its link (`/game/<CODE>`). The code shows in the room link. **Quick play** puts the player in the one public room, and the server makes that room when nobody has it. The home screen shows only that room's player count and phase. It shows no list of rooms.
 - **Lobby chat (#338).** Players can chat on the lobby screen only. The server relays each line as a room message, not as state. It trims the line, caps it at 140 characters and allows 5 lines per 5 seconds per player. It stamps the sender's call sign. A player who joins during the lobby gets the last 30 lines.
 
 ## 4. Game modes

@@ -1406,3 +1406,31 @@ The #256 kick set the lateral speed to at least `strafeKick`, and `strafeAccel` 
 - **Phrase pacing moved.** The pacing lead (`leadDistance`) comes from pilot cross times, so the phrase digests were re-frozen in `b6e3372` (owner decision). The weave and groove digests did not change. The lead no longer rises with the lateral offset: an 8u offset needs more lead than a 12u offset, so a 16u lane has a longer pitch than a 20u lane. The re-measured lead, pitch, posts and length are in ADR-023, *Re-measured after #305* (`8d3abdb`).
 - The track contract did not change. `TRACK_CONTRACT` has no kick term, and `rosterContractFailures` passes.
 - The step is ship state (`kickLeft`, `kicking`, `strafeHeld`) and syncs for prediction and replay.
+
+## ADR-025 — Private rooms by default, one public room
+
+**Date:** 2026-09-28 · **Status:** Accepted (owner approved #340, 2026-09-28) · **Supersedes:** the live room list on `/` · **Issue:** #340 · **Built in:** `fcd917b`, `ad95630`, `6b89660` (server wiring after #339)
+
+### Context
+
+The home screen listed every live room. On a hosted server, any stranger could see a room and join it. The game is for friends who send each other a link.
+
+### Options
+
+- **A. Keep the list, add a password.** Every host must set and share two things.
+- **B. Private rooms with a short code.** A room is hidden. The code is the room id, so the link and the code are the same thing.
+- **C. B plus one public room.** A player without friends online can still race.
+
+### Decision
+
+1. **C.** A new room is private. The server hides it from `LobbyRoom` with `setPrivate(true)`.
+2. **The code is the room id.** It has 5 characters from `ROOM_CODE_ALPHABET` (`23456789BCDFGHJKMNPQRSTVWXYZ`: no vowels, no 0/1/O/I/L). That gives 28⁵ ≈ 17.2 M codes. `normalizeRoomCode` trims and upper-cases what the player types.
+3. **One public room.** Quick play sends `joinOrCreate({ public: true })`. When a public room exists and a second public create arrives, `onCreate` throws 409, and the client says *"Quick play is full. Create a private room."*
+4. **Wrong-code limit.** `FailedJoinLimit` allows 10 failed joins per IP per 60 s, then answers 429. There is no global ceiling (owner decision).
+5. **`LobbyRoom` stays.** It now carries only the public room, for the live count and phase beside Quick play.
+
+### Consequences
+
+- `joinById` ignores the private flag, so a code and a link both join. `joinOrCreate` skips private and locked rooms. Verified in `@colyseus/core` 0.17.47.
+- A bad-shape code fails on the client and never reaches the server.
+- Error codes reach the SDK as `MatchMakeError.code`: 522 = no room (the message holds `locked` when the room is full), 429 = too many wrong codes, 409 = public slot taken.

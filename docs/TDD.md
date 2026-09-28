@@ -50,7 +50,7 @@ the catalog, never a version copied into prose.
 
 ```
 React Router (SPA) — apps/client/app/routes.ts
-  ├─ /                 Landing: live room list, host-or-join, over the ambient Grid-Void scene
+  ├─ /                 Landing: create a private room, quick play, or join by code, over the ambient Grid-Void scene
   ├─ /test-level       Fixed flyable level for art work (no server)
   └─ /game/:roomId     The room — lobby · countdown · race · results, as phase-overlays over one Canvas
 ```
@@ -155,9 +155,12 @@ PlayerState (implements SimShip → the server runs the shared simulate() on the
 ```
 
 Keep state **minimal** — sync only what clients can't derive. Effects/particles are client-local.
-(Anti-pattern: syncing render state. See `conventions/colyseus.md`.) **Room list = the built-in Colyseus
-`LobbyRoom`** (`define('lobby', LobbyRoom)` + `RunRoom…enableRealtimeListing()` — REQUIRED, the updateLobby
-hooks live inside it); `{ hostName, phase }` rides along as non-schema `setMetadata`. No custom HTTP route.
+(Anti-pattern: syncing render state. See `conventions/colyseus.md`.) **Quick-play status = the built-in
+Colyseus `LobbyRoom`** (`define('lobby', LobbyRoom)` + `RunRoom…enableRealtimeListing()` — REQUIRED, the
+updateLobby hooks live inside it); `{ hostName, phase }` rides along as non-schema `setMetadata`. No custom
+HTTP route. **Room ids are 5-character codes (#340, ADR-025).** `RunRoom.onCreate` sets `this.roomId` from
+the `roomCodes` registry. A private room calls `setPrivate(true)`, so `LobbyRoom` lists only the one public
+room. `joinById` ignores the private flag, so a code or a link still joins.
 
 ## 6. Server systems (per fixed tick — PHASE-GATED, `race/director.ts`)
 
