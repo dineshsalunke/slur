@@ -4,6 +4,7 @@ Agent: workertwo · Lane: #349 architecture RFC — my section: net / input / cl
 #349: write the RFC section on net, input, client state singletons (*.state.ts, *-events queues, pickup-state, blockWorld) and server-owned room config (#70, #23). workerone leads and owns the doc. RFC only, no source edits.
 
 ## Done
+- 16275c6 #350: open wall-block ends get a front-face seam. Shipped and closed. Owner verifies on /test-level.
 - 7c34699 #347 and ff4d722 #346: shipped and closed.
 - #341 9b0c726, #338 282428f, #340 cf922f8: landed. They stay OPEN until the owner's final deploy.
 
@@ -12,6 +13,9 @@ Agent: workertwo · Lane: #349 architecture RFC — my section: net / input / cl
 - Measured: 3 event queues: game/scene/hit-events.ts, mine-shock-events.ts, tug-events.ts.
 - Measured: koota 0.6.6 has `WORLD_ID_BITS = 4` → `maxWorlds: 2 ** WORLD_ID_BITS` = 16 (node_modules/.pnpm/koota@0.6.6…/dist/chunk-ZWIGMIL4.js:34,74).
 - Measured: input sources are keyboardInput, touchInput and gamepadInput, merged in game/input/current-input.ts. Power keys go through power-select.ts handlePowerKey.
+
+- #350 measured: phrase gen seeds 1–10, open ends with a seam ≤1u from the corner 9/4337 before, 4337/4337 after.
+- Measured: headless /test-level on the live stack renders at spawn, but the main view goes black after any CDP write to ship z, with or without #350. The rear mirror still renders. Cause not debugged; suspect peers live HMR reflection edits [inferred]. Told supervisor.
 
 ## #348 notes (paused) — Blur controls
 - Today, keyboard (keyboard.ts, power-select.ts): W/↑ throttle · S/↓ brake · A/D or ←/→ strafe · Space jump · E fire forward · F fire back · Q next power · R previous power · 1/2/3 select slot · X drop · M mute.
