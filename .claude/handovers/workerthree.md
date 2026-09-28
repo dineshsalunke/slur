@@ -1,35 +1,33 @@
-Agent: workerthree · Lane: #344 perf on phones + low-end laptops · Updated: 2026-09-28 (seam after P2)
+Agent: workerthree · Lane: #299 Seeker.flyY dial + #311 gap-deck widths · Updated: 2026-09-28 21:45
 
 ## Goal
-The menu must be usable on an iPhone 12/15 and an OEM Windows laptop. Stable 60 fps on iPhone 15, and ≥30 fps on an integrated-GPU laptop in a race. The owner approved P1 (a–f) and P2 (quality tier in the race + menu picker).
+Two small bugs. #299: the /test-level Seeker.flyY dial must change the sim. #311: gap-deck blocks must get continuous widths, not 4/8/12u.
 
 ## Done
-- 5ecbc6c P1: quality tier module, non-blocking lobby join, lazy 3D landing, smaller bakes on low/medium.
-- 286c8ef P2: the tier profile gains dprCap, msaa, post, skyMotion, rocks and rearView. A `QualityGate` leaf gates RockField, SceneEffects (world + landing; the fallback is `PlainRender` at priority 1) and RearViewPass. `renderDpr()` uses the manual Render.dpr if it is > 0, else min(device, tier cap). Render.dpr defaults to 0 (auto). Auto MSAA runs on high only. Sky uTime is frozen on low. `QualityStepDown` (drei PerformanceMonitor) runs in GameShell only. It steps an auto tier down one step per decline, in memory. The menu strip has an Auto/Low/Med/High picker.
+- ea2552b #299: `tunedSimConfig` gains a `seekerFlyY` getter. Closed.
+- 1236573 #311: `gapBlockCandidate` carves the deck with `carveRun` and keeps one chunk. `BLOCK_MAX_LANES` removed. New width test. Weave digest rows updated. Closed.
+- #344 (earlier lane): 5ecbc6c + 286c8ef. It stays open until the owner signs off on devices.
 
 ## State
-- Headless on :5173, /test-level?quality=X. Phone 390x844@3: canvas width is 390 px (low), 585 (medium), 780 (high). Low has 7 three scenes vs 36/46 and 96 meshes vs 107. No page errors.
-- The low tier was a black canvas before PlainRender (found by workerone). After the fix, the 800x450 screenshots on low and high both show the scene.
-- Step-down, hosted room, phone @3, auto, CPU throttle 25x: DPR 2 → 1.5 at 4 s → 1 at 8 s, then it stays at 1.
-- Picker: Low saves `slur:quality=low` and removes the landing canvas at once. Auto clears the key.
-- Headless frame times were vsync-bound (16.7 ms). This is not a perf reading. Devices [unmeasured].
-- Client tests 627/627. Typecheck and lint pass.
+- #299: headless /test-level, dial default / 5.5 / 1 → seeker.y 2.5 / 5.5 / 1 at spawn.
+- #311 widths, 12 weave seeds: before 297 blocks, 3 widths. After 286 blocks, 283 distinct widths, 4–20u. Min corridor 8.00u both.
+- Avoid pilot, 10 seeds × 5 classes: 17 deaths before, 18 after. 1 death at a gap-block segment in both cases, and it is the same one.
+- Shared tests 573/573. Typecheck and lint pass on the touched files.
+- The :2567 server restarted at 21:28:18, 1 s after the dist write. Hosted rooms have the new gap blocks.
 
 ## Uncommitted
 none
 
 ## Held files
-None. All P2 files are released with 286c8ef.
+None.
 
 ## Next
-1. The owner deploys and tests on devices (`?quality=low|medium|high`, `?nocanvas`, the picker). The laptop reports its chrome://gpu GL_RENDERER line.
-2. After the owner signs off: `gh issue close 344 -c "<5ecbc6c + 286c8ef>"`.
-3. A separate item, not built here: race network lag India→blr1 (prediction/reconciliation). 4 failed wss reconnects were seen once on prod.
+1. The owner checks #299 and #311 on /test-level.
+2. #344: after the owner signs off on devices, `gh issue close 344 -c "5ecbc6c + 286c8ef"`.
 
 ## Open questions
-- skyMotion only freezes time. The sky shader still runs per pixel, so the GPU saving is small [inferred]. A cheaper still sky needs a branch in nebula-shaders. Is it worth it?
-- compileAsync before the first landing frame (the env map is set in useFrame). Is a design needed?
-- glb + meshopt conversion of the ship models: owner decision, through the supervisor.
+- `docs/GDD.md:84` still says blocks are *"1–3 lanes wide"*. That has been stale since fbd1165, and gap blocks now match the walls. It is not my file. Who updates it?
+- #344 questions from the last seam are still open: a still sky branch, compileAsync, glb + meshopt.
 
 ## Lessons → memory
-.claude/memory/removing-the-composer-blacks-the-canvas.md
+none
