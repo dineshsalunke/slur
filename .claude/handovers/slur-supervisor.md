@@ -84,6 +84,10 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - #347 DONE 7c34699 (closed). #346: owner picked KeyR = previous, dev mirror toggle KeyR → KeyV
   (rear-view-toggle.ts added to workertwo's claim).
 
+- #346 DONE ff4d722 (closed). workertwo cleared + resumed idle. ALL THREE WORKERS IDLE, no files held.
+  Tree clean + pushed: DEPLOY READY (#337–#347). Owner checks: iPhone 12 pad race + Home Screen launch; Windows
+  Chrome fullscreen; /test-level R = previous, V = mirror, lighting dials, Seeker.flyY, Graphics row.
+
 ## Uncommitted
 
 None of mine. In the tree: workerthree's #344 P2 files (+ game-shell.tsx), MEMORY.md (workerone's line + a peer's line).
