@@ -24,6 +24,7 @@ export * from './pacing/route-graph.js';
 export * from './pacing/score.js';
 export * from './pacing/viable.js';
 export * from './race/director.js';
+export * from './room-code.js';
 export * from './run/combat.js';
 export * from './run/input-queue.js';
 export * from './run/racer.js';
