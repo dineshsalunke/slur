@@ -119,6 +119,10 @@ Reply to a worker's cross-session message with SendMessage to its `from=` socket
      workertwo pushed fcd917b (client-ip.ts, matchmake-guard.ts, failed-join-limit.ts, room-code.ts, room-codes.ts);
      building client + docs; also owns gap A (chatHistory 1 reply/2 s in chat-log.ts). workerone adds the single
      installMatchmakeGuard([new FailedJoinLimit(), …]) line in index.ts; never edits matchmake-guard.ts.
+     SEAM 4g: #341 OWNER APPROVED A+B+C (30 s / 3×) → workertwo building shared+client; run-sim/run-room after #339 SHA.
+     NEW #344 PERF (owner): lags "like crazy" on phones incl. iPhone 15, and an OEM Windows laptop "not working". Filed;
+     NOT assigned — asked owner: pause #341 so workertwo diagnoses first, or start another worker; also asked browser,
+     "not working" = lag or fails to load/black screen.
      SEAM 4f: OWNER APPROVED #339 → workerone resumed BUILDING (holds run-room.ts, index.ts, run-sim.ts join(),
      limits/create-quota, attach-room-to-world.ts chunking, deploy.sh; ADR-026). On its SHA → release run-sim.ts +
      run-room.ts to workertwo for #341. #341 owner answer still pending (A+B vs A+B+C; 30 s / 3×).
