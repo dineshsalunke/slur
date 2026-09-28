@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
-export type ConnectionStatus = 'live' | 'reconnecting' | 'lost';
+export type ConnectionStatus = 'live' | 'reconnecting' | 'lost' | 'kicked';
 
 let status: ConnectionStatus = 'live';
 const listeners = new Set< () => void >();

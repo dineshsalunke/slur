@@ -1509,3 +1509,32 @@ Since #301 a race ends only when every racer finishes, 45 s after the first fini
 - `RunState` appends `raceCap` (float32, synced). `RunSim` sets it once from the track. The client reads the cap from state and does not compute it.
 - `RunSimOptions.raceLimits` (default true). When it is false, `raceCap` is 0, and the stall rule and the cap do not apply. `/test-level` sets it to false, because the owner idles there.
 - `spawnAt` resets `bestZ` and `progressAt`. A teleport does not count as a stall or as progress.
+
+## ADR-028 — Host kick with a browser-token block; server-side word filter
+
+**Date:** 2026-09-28 · **Status:** Accepted (owner approved D1 = C, D2 = B, D3 = A for #342, 2026-09-28) · **Issue:** #342 · **Built in:** the #342 commit
+
+### Context
+
+Rooms are public on the web (ADR-025, ADR-026). A host had no way to remove a player, and chat and call signs had no word filter. Players are anonymous: each connection has its own `sessionId`.
+
+### Options
+
+- **Rejoin block (D1).** A: no block. B: IP block for the room's life; it blocks a whole office behind one NAT address. **C: a random token per browser, blocked for the room's life.** D: C with a 10-minute expiry. E: a room lock.
+- **Kick phases (D2).** A: lobby only. **B: lobby, countdown and results.** C: every phase.
+- **Word list (D3).** **A: `obscenity` npm.** B: `bad-words` npm. C: the LDNOOBW list with our own normaliser. D: a hand-written list. E: no filter.
+
+### Decision
+
+1. **Kick.** The host sends `KICK_MESSAGE` with the target `sessionId`. The server accepts it only from the host, never for the host itself, and only in `KICK_PHASES` (lobby, countdown, finished). It sends `KICKED_MESSAGE` to the target, then closes it with `CloseCode.CONSENTED` (4000).
+2. **Why 4000.** `@colyseus/core` 0.17.47 `Room.mjs:1043` reads *`const method = code === CloseCode.CONSENTED || client.state === ClientState.RECONNECTING ? this.onLeave : this.onDrop || this.onLeave;`*. Any other code goes to our `onDrop`, which holds a reconnection seat for 20 s. The kicked player would come back on their own.
+3. **Rejoin block (C).** The client keeps a random 128-bit token in `localStorage` (`slur.joinToken.v1`) and sends it in every join. It uses `crypto.getRandomValues`, because a LAN host on plain HTTP has no `crypto.randomUUID`. `RunRoom.onAuth` refuses a kicked token with `KICKED_CODE` (403). The SDK wraps it as `MatchMakeError` 403 (`@colyseus/sdk` 0.17.43 `Client.mjs:238`), so the menu and a link join both say *"The host removed you from that run."* A private window or cleared site data gets past the block. That is accepted: a kick is not a ban.
+4. **Chat purge.** A kick deletes the kicked player's lines from the history, then broadcasts `CHAT_HISTORY_MESSAGE`. The client replaces its whole list with the history, so the lines go on every screen.
+5. **Word filter (A).** `obscenity` 0.4.6 (MIT, no dependencies). It runs only on the server (`apps/server/src/moderation/profanity.ts`), so the client bundle does not grow. It uses `englishDataset` (119 patterns and 66 whitelist terms, measured) with `englishRecommendedTransformers` (leet, confusables, repeated letters). `GAME_WORDS` (`slur`, `cockpit`, `cockpits`) adds to the whitelist. The dataset flagged "cockpit" before that.
+6. **Chat masks, names fall back.** The server masks a chat match with `*`, and the line still posts. A call sign with a match becomes 'Racer'. Names and chat lose `\p{Cc}` and `\p{Cf}` first, so a zero-width character cannot split a word.
+
+### Consequences
+
+- The kick button is on the lobby roster only, because the roster renders only in the lobby. The server accepts a kick in the countdown and on the results screen too.
+- Known gaps, measured: spaced letters ("f u c k") pass, and "Dick Grayson" is masked. Stripping `\p{Cf}` splits emoji ZWJ sequences into their parts.
+- Verified with two node clients on the dev server: a bad name joins as "Racer", "gg you sh1t" posts as "gg you ****", the kicked guest gets a 4000 close, its rejoin gets 403, and a new token joins.

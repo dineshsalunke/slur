@@ -1,13 +1,22 @@
 import { MatchMakeError } from '@colyseus/sdk';
 import {
     CREATE_LIMIT_CODE,
+    KICKED_CODE,
     PUBLIC_ROOM_TAKEN_CODE,
     ROOM_NOT_FOUND_CODE,
     SERVER_FULL_CODE,
     TOO_MANY_WRONG_CODES_CODE,
 } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
-import { CREATE_LIMIT, NO_SERVER, QUICK_PLAY_FULL, RUN_FULL, SERVER_FULL, TOO_MANY_WRONG_CODES } from './menu-form';
+import {
+    CREATE_LIMIT,
+    NO_SERVER,
+    QUICK_PLAY_FULL,
+    REMOVED,
+    RUN_FULL,
+    SERVER_FULL,
+    TOO_MANY_WRONG_CODES,
+} from './menu-form';
 import { menuErrorFor, menuIntent } from './menu-form.utils';
 
 describe( 'menuIntent (#340)', () => {
@@ -44,6 +53,10 @@ describe( 'menuErrorFor (#340)', () => {
         expect( menuErrorFor( 'create', '', new MatchMakeError( 'full', SERVER_FULL_CODE ) ) ).toBe( SERVER_FULL );
         expect( menuErrorFor( 'quick', '', new MatchMakeError( 'full', SERVER_FULL_CODE ) ) ).toBe( SERVER_FULL );
         expect( menuErrorFor( 'create', '', new MatchMakeError( 'cap', CREATE_LIMIT_CODE ) ) ).toBe( CREATE_LIMIT );
+    } );
+
+    it( 'tells a kicked player the host removed them (#342)', () => {
+        expect( menuErrorFor( 'join', 'K7QXM', new MatchMakeError( 'removed', KICKED_CODE ) ) ).toBe( REMOVED );
     } );
 
     it( 'blames the connection for anything else', () => {

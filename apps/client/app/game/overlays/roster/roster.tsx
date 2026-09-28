@@ -2,6 +2,7 @@ import { isShipId, SHIPS } from '@slur/shared';
 import type { RunRoomLike } from '../../../net/run-room-like';
 import { playerBg } from '../../colors';
 import { useHostId, useRunPlayers } from '../../net/run-view-store';
+import { KickButton } from './kick-button/kick-button';
 import { TAG } from './roster.constants';
 
 export function Roster( { room, className = '' }: { room: RunRoomLike; className?: string } ) {
@@ -31,6 +32,9 @@ export function Roster( { room, className = '' }: { room: RunRoomLike; className
                         <span className="text-[12px] uppercase tracking-[0.16em] text-readout-dim">
                             { isShipId( p.shipId ) ? SHIPS[ p.shipId ].name : p.shipId }
                         </span>
+                        { room.sessionId === hostId && ! self && (
+                            <KickButton room={ room } targetId={ p.id } name={ p.name || 'Racer' } />
+                        ) }
                     </li>
                 );
             } ) }

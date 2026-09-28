@@ -10,6 +10,7 @@ export const SERVER_FULL_CODE = 503;
 export interface RunCreateOptions {
     name?: string;
     public?: boolean;
+    token?: string;
 }
 
 const ROOM_CODE_SHAPE = new RegExp( `^[${ ROOM_CODE_ALPHABET }]{${ ROOM_CODE_LENGTH }}$` );

@@ -1,4 +1,5 @@
-import { normalizeRoomCode } from '@slur/shared';
+import { MatchMakeError } from '@colyseus/sdk';
+import { KICKED_CODE, normalizeRoomCode } from '@slur/shared';
 import { redirect } from 'react-router';
 import { GameShell } from '../../game/game-shell';
 import { joinByLink, waitForDescriptor } from '../../net/matchmaking';
@@ -19,8 +20,9 @@ export async function clientLoader( { params }: Route.ClientLoaderArgs ) {
         const room = await joinByLink( code, name );
         const descriptor = await waitForDescriptor( room );
         return { room, descriptor };
-    } catch {
-        throw redirect( '/?run=closed' );
+    } catch ( error ) {
+        const removed = error instanceof MatchMakeError && error.code === KICKED_CODE;
+        throw redirect( removed ? '/?run=removed' : '/?run=closed' );
     }
 }
 

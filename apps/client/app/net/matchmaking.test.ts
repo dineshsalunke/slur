@@ -1,5 +1,5 @@
 import type { Room } from '@colyseus/sdk';
-import { ROOM_NAME, type RunState } from '@slur/shared';
+import { KICKED_MESSAGE, ROOM_NAME, type RunState } from '@slur/shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectionStatus } from './connection-status';
 import { createPrivate, joinByLink, joinLobby, joinRoom, leaveRoom, quickPlay, waitForDescriptor } from './matchmaking';
@@ -63,9 +63,11 @@ function fakeRoom( roomId: string ) {
     const leave = signal< [ number ] >();
     const drop = signal< [ number ] >();
     const reconnect = signal< [] >();
+    const messages = new Map< string, () => void >();
     const room = {
         roomId,
         send: vi.fn(),
+        onMessage: ( type: string, callback: () => void ) => messages.set( type, callback ),
         leave: vi.fn( () => {
             leave.fire( 4000 );
             return Promise.resolve( 4000 );
@@ -78,6 +80,10 @@ function fakeRoom( roomId: string ) {
         room,
         typed: room as unknown as Room< RunState >,
         serverLeaves: (): void => leave.fire( 4003 ),
+        kicked: (): void => {
+            messages.get( KICKED_MESSAGE )?.();
+            leave.fire( 4000 );
+        },
         drops: (): void => drop.fire( 1006 ),
         reconnects: (): void => reconnect.fire(),
     };
@@ -156,14 +162,18 @@ describe( 'room lifetime (#271)', () => {
     it( 'createPrivate creates a room without the public flag (#340)', async () => {
         client.create.mockResolvedValueOnce( fakeRoom( 'K7QXM' ).typed );
         await createPrivate( 'p' );
-        expect( client.create ).toHaveBeenCalledWith( ROOM_NAME, { name: 'p' } );
+        expect( client.create ).toHaveBeenCalledWith( ROOM_NAME, { name: 'p', token: expect.any( String ) } );
     } );
 
     it( 'quickPlay joins or creates the one public room (#340)', async () => {
         const run = fakeRoom( 'K7QXM' );
         client.joinOrCreate.mockResolvedValueOnce( run.typed );
         await quickPlay( 'p' );
-        expect( client.joinOrCreate ).toHaveBeenCalledWith( ROOM_NAME, { name: 'p', public: true } );
+        expect( client.joinOrCreate ).toHaveBeenCalledWith( ROOM_NAME, {
+            name: 'p',
+            public: true,
+            token: expect.any( String ),
+        } );
         expect( session.room ).toBe( run.typed );
     } );
 
@@ -204,6 +214,22 @@ describe( 'room lifetime (#271)', () => {
         await expect( joinByLink( 'a', 'p' ) ).resolves.toBe( fresh.typed );
         expect( client.joinById ).toHaveBeenCalledTimes( 2 );
         expect( connectionStatus() ).toBe( 'live' );
+    } );
+
+    it( 'a kick reports kicked, not lost, and every join sends the same browser token (#342)', async () => {
+        const run = fakeRoom( 'a' );
+        client.joinById.mockResolvedValueOnce( run.typed );
+        await joinRoom( 'a', 'p' );
+
+        run.kicked();
+
+        expect( session.room ).toBeNull();
+        expect( connectionStatus() ).toBe( 'kicked' );
+        client.create.mockResolvedValueOnce( fakeRoom( 'b' ).typed );
+        await createPrivate( 'p' );
+        const joinToken = client.joinById.mock.calls[ 0 ]?.[ 1 ]?.token;
+        expect( joinToken ).toMatch( /^[0-9a-f]{32}$/ );
+        expect( client.create.mock.calls.at( -1 )?.[ 1 ]?.token ).toBe( joinToken );
     } );
 
     it( 'leaves a room whose join finishes after the player already left', async () => {

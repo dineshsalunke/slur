@@ -1,6 +1,7 @@
 import {
     type AuthContext,
     type Client,
+    CloseCode,
     Room,
     type RoomException,
     type RoomMethodName,
@@ -17,6 +18,11 @@ import {
     type InputMessage,
     isPublicCreate,
     isTrackGen,
+    joinToken,
+    KICK_MESSAGE,
+    KICK_PHASES,
+    KICKED_CODE,
+    KICKED_MESSAGE,
     PHASE,
     type PowerSlotMessage,
     PUBLIC_ROOM_TAKEN_CODE,
@@ -36,6 +42,7 @@ import { clientIp } from '../client-ip.js';
 import { createQuota } from '../create-quota.js';
 import { MAX_MESSAGES_PER_SECOND, SEAT_RESERVATION_SECONDS } from '../limits.js';
 import { logEvent, phaseLogger } from '../log.js';
+import { cleanName } from '../moderation/profanity.js';
 import { ChatLog } from './chat-log.js';
 import { roomCodes } from './room-codes.js';
 
@@ -49,6 +56,8 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     sim!: RunSim;
 
     readonly chat = new ChatLog();
+    private readonly tokens = new Map< string, string >();
+    private readonly kicked = new Set< string >();
 
     onCreate( options?: RunCreateOptions ): void {
         if ( createQuota.full() ) throw new ServerError( SERVER_FULL_CODE, 'The server is full' );
@@ -87,6 +96,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.onMessage< PowerSlotMessage >( DROP_POWERUP_MESSAGE, ( client, msg ) =>
             this.sim.dropPower( client.sessionId, msg ),
         );
+        this.onMessage( KICK_MESSAGE, ( client, targetId ) => this.kick( client, targetId ) );
         this.onMessage( CHAT_SEND_MESSAGE, ( client, text ) => this.postChat( client, text ) );
         this.onMessage( CHAT_HISTORY_MESSAGE, ( client ) => {
             const lines = this.chat.historyFor( client.sessionId, Date.now() );
@@ -96,13 +106,18 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
         this.setSimulationInterval( ( deltaMs ) => this.sim.advance( deltaMs / 1000 ) );
     }
 
-    onAuth( _client: Client, _options: unknown, context: AuthContext ): boolean {
+    onAuth( _client: Client, options: unknown, context: AuthContext ): boolean {
+        const token = joinToken( options );
+        if ( token && this.kicked.has( token ) )
+            throw new ServerError( KICKED_CODE, 'The host removed you from this run' );
         createQuota.owned( this.roomId, clientIp( context ), Date.now() );
         return true;
     }
 
     onJoin( client: Client, options?: { name?: unknown } ): void {
-        this.sim.join( client.sessionId, options?.name );
+        const token = joinToken( options );
+        if ( token ) this.tokens.set( client.sessionId, token );
+        this.sim.join( client.sessionId, cleanName( options?.name ) );
         logEvent( 'client.join', { room: this.roomId, session: client.sessionId, players: this.state.players.size } );
     }
 
@@ -114,6 +129,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
             this.sim.reconnect( client.sessionId );
         } catch {
             this.sim.leave( client.sessionId );
+            this.tokens.delete( client.sessionId );
         }
     }
 
@@ -125,6 +141,7 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
     onLeave( client: Client ): void {
         this.sim.leave( client.sessionId );
         this.chat.forget( client.sessionId );
+        this.tokens.delete( client.sessionId );
         logEvent( 'client.leave', { room: this.roomId, session: client.sessionId, players: this.state.players.size } );
     }
 
@@ -136,6 +153,20 @@ export class RunRoom extends Room< { state: RunState; metadata: RunMetadata } > 
 
     onUncaughtException( error: RoomException, method: RoomMethodName ): void {
         logEvent( 'room.error', { room: this.roomId, method, error: JSON.stringify( error.message ) } );
+    }
+
+    private kick( host: Client, targetId: unknown ): void {
+        if ( host.sessionId !== this.state.hostId || typeof targetId !== 'string' || targetId === host.sessionId )
+            return;
+        if ( ! KICK_PHASES.includes( this.state.phase ) ) return;
+        const target = this.clients.getById( targetId );
+        if ( ! target ) return;
+        const token = this.tokens.get( targetId );
+        if ( token ) this.kicked.add( token );
+        if ( this.chat.purge( targetId ) ) this.broadcast( CHAT_HISTORY_MESSAGE, this.chat.history() );
+        target.send( KICKED_MESSAGE );
+        target.leave( CloseCode.CONSENTED );
+        logEvent( 'client.kick', { room: this.roomId, session: targetId } );
     }
 
     private postChat( client: Client, text: unknown ): void {

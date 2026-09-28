@@ -1,6 +1,7 @@
 import type { Room } from '@colyseus/sdk';
 import {
     descriptorReady,
+    KICKED_MESSAGE,
     ROOM_NAME,
     type RunCreateOptions,
     type RunState,
@@ -12,7 +13,8 @@ import { attachLobbyStore } from '../lobby/lobby-store';
 import { currentShip } from '../ship/ship-choice';
 import { attachChatStore } from './chat-store';
 import { getClient } from './client';
-import { setConnectionStatus } from './connection-status';
+import { connectionStatus, setConnectionStatus } from './connection-status';
+import { browserJoinToken } from './join-token';
 import { session } from './session';
 
 const LOBBY_ROOM = 'lobby';
@@ -24,10 +26,13 @@ function watchRoom( room: Room< RunState > ): void {
     room.onReconnect( () => {
         if ( session.room === room ) setConnectionStatus( 'live' );
     } );
+    room.onMessage( KICKED_MESSAGE, () => {
+        if ( session.room === room ) setConnectionStatus( 'kicked' );
+    } );
     room.onLeave( () => {
         if ( session.room !== room ) return;
         session.room = null;
-        setConnectionStatus( 'lost' );
+        if ( connectionStatus() !== 'kicked' ) setConnectionStatus( 'lost' );
     } );
 }
 
@@ -56,17 +61,18 @@ async function enter( joining: Promise< Room< RunState > > ): Promise< Room< Run
 }
 
 export function quickPlay( name: string ): Promise< Room< RunState > > {
-    const options: RunCreateOptions = { name, public: true };
+    const options: RunCreateOptions = { name, public: true, token: browserJoinToken() };
     return enter( getClient().joinOrCreate< RunState >( ROOM_NAME, options ) );
 }
 
 export function createPrivate( name: string ): Promise< Room< RunState > > {
-    const options: RunCreateOptions = { name };
+    const options: RunCreateOptions = { name, token: browserJoinToken() };
     return enter( getClient().create< RunState >( ROOM_NAME, options ) );
 }
 
 export function joinRoom( roomId: string, name: string ): Promise< Room< RunState > > {
-    return enter( getClient().joinById< RunState >( roomId, { name } ) );
+    const options: RunCreateOptions = { name, token: browserJoinToken() };
+    return enter( getClient().joinById< RunState >( roomId, options ) );
 }
 
 let linkJoin: { roomId: string; room: Promise< Room< RunState > > } | null = null;

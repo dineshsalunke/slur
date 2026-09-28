@@ -15,11 +15,13 @@ export function ConnectionNotice() {
             </div>
         );
     }
-    if ( status !== 'lost' ) return null;
+    if ( status !== 'lost' && status !== 'kicked' ) return null;
     return (
         <div className="pointer-events-auto fixed inset-0 z-40 grid place-items-center bg-void/55">
             <HudPanel accent="magenta" className="px-3.5 py-3 text-center">
-                <p className="my-4">Connection to the run was lost.</p>
+                <p className="my-4">
+                    { status === 'kicked' ? 'The host removed you from this run.' : 'Connection to the run was lost.' }
+                </p>
                 <div className="flex justify-center">
                     <HudButton variant="go" onClick={ () => navigate( '/' ) }>
                         Back to menu

@@ -68,3 +68,20 @@ test( 'chat log: forget clears the history throttle', () => {
     log.forget( 'a' );
     assert.ok( log.historyFor( 'a', 1 ) );
 } );
+
+test( 'chat log: a profane word is masked, the line still posts', () => {
+    const log = new ChatLog();
+    assert.equal( log.post( ann, 'gg you bitch', 0 )?.text, 'gg you *****' );
+} );
+
+test( 'chat log: purge drops the sender lines and says whether any went', () => {
+    const log = new ChatLog();
+    log.post( ann, 'mine', 0 );
+    log.post( bob, 'yours', 0 );
+    assert.equal( log.purge( 'a' ), true );
+    assert.deepEqual(
+        log.history().map( ( l ) => l.text ),
+        [ 'yours' ],
+    );
+    assert.equal( log.purge( 'a' ), false );
+} );

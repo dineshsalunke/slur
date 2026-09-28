@@ -1,4 +1,5 @@
 import { CHAT_HISTORY_LINES, type ChatLine, cleanChatText } from '@slur/shared';
+import { cleanChat } from '../moderation/profanity.js';
 
 export const CHAT_BURST = 5;
 export const CHAT_WINDOW_MS = 5000;
@@ -17,7 +18,7 @@ export class ChatLog {
     private nextId = 1;
 
     post( sender: ChatSender, raw: unknown, nowMs: number ): ChatLine | null {
-        const text = cleanChatText( raw );
+        const text = cleanChat( cleanChatText( raw ) );
         if ( ! text ) return null;
         const recent = ( this.sent.get( sender.id ) ?? [] ).filter( ( t ) => nowMs - t < CHAT_WINDOW_MS );
         this.sent.set( sender.id, recent );
@@ -42,5 +43,13 @@ export class ChatLog {
     forget( senderId: string ): void {
         this.sent.delete( senderId );
         this.historySent.delete( senderId );
+    }
+
+    purge( senderId: string ): boolean {
+        this.forget( senderId );
+        const kept = this.lines.filter( ( l ) => l.from !== senderId );
+        if ( kept.length === this.lines.length ) return false;
+        this.lines = kept;
+        return true;
     }
 }

@@ -14,7 +14,8 @@
         "@colyseus/core": "^0.17.47",
         "@colyseus/ws-transport": "^0.17.13",
         "@slur/shared": "workspace:*",
-        "express": "^5.2.1"
+        "express": "^5.2.1",
+        "obscenity": "^0.4.6"
     },
     "devDependencies": {
         "@colyseus/sdk": "catalog:",

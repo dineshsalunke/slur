@@ -6,7 +6,7 @@ import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { NAME_KEY } from './home/call-sign-field/call-sign-field.constants';
 import { LandingScene } from './home/landing-scene/landing-scene';
-import { BAD_CODE, NO_CODE, RUN_CLOSED } from './home/menu-form';
+import { BAD_CODE, NO_CODE, REMOVED, RUN_CLOSED } from './home/menu-form';
 import { menuErrorFor, menuIntent } from './home/menu-form.utils';
 import { MenuStrip } from './home/menu-strip/menu-strip';
 
@@ -20,8 +20,9 @@ export function meta( _args: Route.MetaArgs ) {
 export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
     leaveRoom();
     await joinLobby();
-    const closed = new URL( request.url ).searchParams.get( 'run' ) === 'closed';
-    return { savedName: localStorage.getItem( NAME_KEY ) ?? '', notice: closed ? RUN_CLOSED : null };
+    const run = new URL( request.url ).searchParams.get( 'run' );
+    const notice = run === 'closed' ? RUN_CLOSED : run === 'removed' ? REMOVED : null;
+    return { savedName: localStorage.getItem( NAME_KEY ) ?? '', notice };
 }
 
 export async function clientAction( { request }: Route.ClientActionArgs ) {

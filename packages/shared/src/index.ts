@@ -12,6 +12,7 @@ export * from './combat/shield.js';
 export * from './combat/tug.js';
 export * from './combat/tug-constants.js';
 export * from './constants.js';
+export * from './moderation.js';
 export * from './pacing/analyze.js';
 export * from './pacing/arms.js';
 export * from './pacing/demand.js';
