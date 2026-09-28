@@ -2,6 +2,7 @@ import type { Entity } from 'koota';
 import type * as THREE from 'three';
 import { col, num } from '../../../dev/tuning';
 import { Net, Render } from '../../ecs/traits';
+import { followAccent } from '../accent';
 import { exhaustDrive } from '../exhaust-drive';
 import { exhaustPorts } from '../exhaust-ports';
 import type { Palette } from './exhaust-field';
@@ -13,7 +14,7 @@ export function syncPalette( material: THREE.ShaderMaterial, applied: Palette ):
         ( material.uniforms.uHot.value as THREE.Color ).set( hot );
         applied.hot = hot;
     }
-    const cool = col( 'Exhaust.cool' );
+    const cool = followAccent( col( 'Exhaust.cool' ) );
     if ( cool !== applied.cool ) {
         ( material.uniforms.uCool.value as THREE.Color ).set( cool );
         applied.cool = cool;

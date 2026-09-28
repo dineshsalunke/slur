@@ -63,7 +63,10 @@ export function MonolithGroup( {
             applyDeckFinish( body );
         }
         const seam = seamRef.current;
-        if ( seam ) seam.emissiveIntensity = num( 'Monolith.seamEmissive' );
+        if ( seam ) {
+            seam.emissive.copy( shape.seam.emissive );
+            seam.emissiveIntensity = num( 'Monolith.seamEmissive' );
+        }
     } );
 
     return (

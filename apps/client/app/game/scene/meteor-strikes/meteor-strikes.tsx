@@ -9,7 +9,7 @@ import { useTrack } from '../../track-context/use-track';
 import { asteroidGeometry } from '../asteroid-geometry';
 import { trackGround } from '../debris-ground';
 import type { DebrisGround } from '../debris-physics';
-import { meteorTrailGeometry } from '../meteor-assets';
+import { meteorTrailGeometry, repaintTrail } from '../meteor-assets';
 import { _c, FLIGHTS, HEAD_DETAIL, HEAD_SEED, LIGHT_DISTANCE } from './meteor-strikes.constants';
 import { advance, commit, draw, flash, hide, makeDirector, schedule } from './meteor-strikes.utils';
 
@@ -79,6 +79,7 @@ export function MeteorStrikes( { material }: { material: THREE.Material } ) {
     useFrame( ( state ) => {
         const { heads, trails, glows } = meshes.current;
         if ( ! heads || ! trails || ! glows ) return;
+        repaintTrail( trail );
         const m = meshes.current as ReadyMeshes;
         const now = state.clock.elapsedTime;
         const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );

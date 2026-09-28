@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ACCENT_ANCHOR } from '../accent';
+import { accent } from '../accent';
 import type { ShardSpec } from '../vfx-shard-pool';
 
 export const SPEC: ShardSpec = {
@@ -19,4 +19,4 @@ export const _o = new THREE.Object3D();
 export const _c = new THREE.Color();
 export const LOCAL_CORE = new THREE.Color( '#FFFBE7' );
 export const REMOTE_CORE = new THREE.Color( '#FFB52E' );
-export const MARIGOLD = new THREE.Color( ACCENT_ANCHOR );
+export const MARIGOLD = accent();

@@ -1,4 +1,8 @@
+import * as THREE from 'three';
+import { BOLT_HOT } from '../combat-look';
 import { MARIGOLD_REFERENCE_INTENSITY } from '../track-materials';
+
+export const CORE_EMISSIVE = new THREE.Color( BOLT_HOT );
 
 export const BAND_WIDTH = 4;
 export const BAND_PROUD = 0.4;

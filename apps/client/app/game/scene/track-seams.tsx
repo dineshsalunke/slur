@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { num } from '../../dev/tuning';
 import { useTrack } from '../track-context/use-track';
+import { accent } from './accent';
 import { buildSeamGeometry, buildSeamInserts } from './seam-inserts';
 import { segmentCount } from './track-floor/track-floor.utils';
 import { SEAM_SURFACE } from './track-materials';
@@ -14,7 +15,11 @@ export function TrackSeams() {
         () => buildSeamGeometry( buildSeamInserts( track, segmentCount( track ), HALF_WIDTH ) ),
         [ track ],
     );
-    const material = useMemo( () => new THREE.MeshStandardMaterial( SEAM_SURFACE ), [] );
+    const material = useMemo( () => {
+        const m = new THREE.MeshStandardMaterial( SEAM_SURFACE );
+        m.emissive = accent();
+        return m;
+    }, [] );
 
     // GPU buffers outlive React's tree: a geometry replaced by a new track must be released by hand.
     useEffect( () => () => geo.dispose(), [ geo ] );

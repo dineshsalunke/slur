@@ -1,7 +1,7 @@
 import { mulberry32 } from '@slur/shared';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { ACCENT_ANCHOR } from './accent';
+import { accent, accentVersion } from './accent';
 import { FRACTURE_CORE_HEX } from './fractured-block-shader';
 
 const TRAIL_SIDES = 14;
@@ -21,33 +21,52 @@ const EMBER_STEPS = 9;
 const CRACK_DEPTH = 2;
 
 const CORE = new THREE.Color( FRACTURE_CORE_HEX );
-const TAIL = new THREE.Color( ACCENT_ANCHOR );
+const _trail = new THREE.Color();
 
-function trailLayer( radius: number, gain: number ): THREE.BufferGeometry {
+interface TrailPaint {
+    mix: number[];
+    glow: number[];
+    painted: number;
+}
+
+function trailLayer( radius: number, gain: number, paint: TrailPaint ): THREE.BufferGeometry {
     const g = new THREE.CylinderGeometry( 0, radius, 1, TRAIL_SIDES, TRAIL_RINGS, true );
     g.translate( 0, 0.5, 0 );
     g.deleteAttribute( 'uv' );
     const pos = g.getAttribute( 'position' );
-    const colors = new Float32Array( pos.count * 3 );
-    const c = new THREE.Color();
     for ( let i = 0; i < pos.count; i++ ) {
         const t = pos.getY( i );
-        const k = gain * ( 1 - t ) ** TRAIL_FALLOFF;
-        c.copy( CORE )
-            .lerp( TAIL, t ** TRAIL_HUE_BIAS )
-            .multiplyScalar( k );
-        colors.set( [ c.r, c.g, c.b ], i * 3 );
+        paint.mix.push( t ** TRAIL_HUE_BIAS );
+        paint.glow.push( gain * ( 1 - t ) ** TRAIL_FALLOFF );
     }
-    g.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+    g.setAttribute( 'color', new THREE.Float32BufferAttribute( new Float32Array( pos.count * 3 ), 3 ) );
     return g;
 }
 
+function paintTrail( geometry: THREE.BufferGeometry, paint: TrailPaint ): void {
+    const color = geometry.getAttribute( 'color' );
+    for ( let i = 0; i < paint.mix.length; i++ ) {
+        _trail.copy( CORE ).lerp( accent(), paint.mix[ i ] ).multiplyScalar( paint.glow[ i ] );
+        color.setXYZ( i, _trail.r, _trail.g, _trail.b );
+    }
+    color.needsUpdate = true;
+    paint.painted = accentVersion();
+}
+
 export function meteorTrailGeometry(): THREE.BufferGeometry {
-    const layers = TRAIL_LAYERS.map( ( l ) => trailLayer( l.radius, l.gain ) );
+    const paint: TrailPaint = { mix: [], glow: [], painted: -1 };
+    const layers = TRAIL_LAYERS.map( ( l ) => trailLayer( l.radius, l.gain, paint ) );
     const merged = mergeGeometries( layers );
     for ( const l of layers ) l.dispose();
     if ( ! merged ) throw new Error( 'meteor trail: layers did not merge' );
+    merged.userData.trailPaint = paint;
+    paintTrail( merged, paint );
     return merged;
+}
+
+export function repaintTrail( geometry: THREE.BufferGeometry ): void {
+    const paint = geometry.userData.trailPaint as TrailPaint;
+    if ( paint.painted !== accentVersion() ) paintTrail( geometry, paint );
 }
 
 function scorchCanvas( paint: ( ctx: CanvasRenderingContext2D, rand: () => number ) => void, seed: number ) {

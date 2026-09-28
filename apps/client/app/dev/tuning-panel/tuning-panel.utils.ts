@@ -1,3 +1,4 @@
+import { syncAccent } from '../../game/scene/accent';
 import { SKY_BAKE_KEYS, SKY_LIVE_KEYS, SKY_LOOK_KEYS, type SkyKey } from '../../game/scene/nebula-presets';
 import { col, num, setCol, setNum } from '../tuning';
 import { type ColorPath, NUMBER_TUNABLES, type NumberPath } from '../tuning-schema';
@@ -20,6 +21,24 @@ export function colorControl( path: ColorPath ) {
         onChange: ( value: string ) => setCol( path, value ),
         transient: true as const,
     };
+}
+
+export function accentControl() {
+    return {
+        value: col( 'Accent.color' ),
+        onChange: ( value: string ) => {
+            setCol( 'Accent.color', value );
+            syncAccent();
+            document.documentElement.style.setProperty( '--color-marigold', value );
+        },
+        transient: true as const,
+    };
+}
+
+export function copyAccent(): void {
+    const value = col( 'Accent.color' );
+    console.log( value );
+    void navigator.clipboard?.writeText( value );
 }
 
 export function skyControls() {

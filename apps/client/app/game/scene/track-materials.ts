@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
-import { ACCENT_ANCHOR } from './accent';
 import { METAL_METALNESS, METAL_ROUGHNESS } from './metal';
 import {
     deckSurfaceParams,
@@ -64,16 +63,13 @@ export function graphiteShellMaterial(): THREE.MeshStandardMaterial {
 }
 
 export const MARIGOLD_REFERENCE_INTENSITY = 2.0;
-export const MARIGOLD_EMISSIVE = ACCENT_ANCHOR;
 
 export const BOUNDARY_SURFACE = {
-    emissive: MARIGOLD_EMISSIVE,
     emissiveIntensity: MARIGOLD_REFERENCE_INTENSITY,
     color: '#15171a',
 } as const;
 
 export const SEAM_SURFACE = {
-    emissive: MARIGOLD_EMISSIVE,
     emissiveIntensity: MARIGOLD_REFERENCE_INTENSITY,
     color: '#15171a',
     polygonOffset: true,

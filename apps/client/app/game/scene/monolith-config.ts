@@ -1,4 +1,5 @@
-import { ACCENT_ANCHOR } from './accent';
+import type * as THREE from 'three';
+import { accent } from './accent';
 
 export type SeamFace = 'inner' | 'outer';
 
@@ -10,7 +11,7 @@ export interface MonolithSeamConfig {
     width: number;
     proud: number;
     color: string;
-    emissive: string;
+    emissive: THREE.Color;
     intensity: number;
 }
 
@@ -36,7 +37,7 @@ export const EDGE_SEAM: MonolithSeamConfig = {
     width: 0.5,
     proud: 0.5,
     color: '#0b0d0f',
-    emissive: ACCENT_ANCHOR,
+    emissive: accent(),
     intensity: 2,
 };
 

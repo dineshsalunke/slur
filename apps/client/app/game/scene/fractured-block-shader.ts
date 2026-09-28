@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { accentDerived } from './accent';
+import { accent } from './accent';
 import { TEX_SPAN_X } from './track-texture';
 
 export const FRACTURE_CORE_HEX = '#FFE0A0';
@@ -17,13 +17,9 @@ export interface FracturedBlockUniforms {
     uFractureGap: { value: number };
 }
 
-const GLOW_BASE = accentDerived( ( base, out ) => {
-    out.copy( base );
-} );
-
 export function fracturedBlockUniforms(): FracturedBlockUniforms {
     return {
-        uFractureColor: { value: GLOW_BASE },
+        uFractureColor: { value: accent() },
         uFractureCore: { value: new THREE.Color( FRACTURE_CORE_HEX ) },
         uFractureIntensity: { value: 1 },
         uFractureCoreDepth: { value: 1 },

@@ -1,11 +1,10 @@
 import { Fragment, useMemo } from 'react';
 import { useTrack } from '../../track-context/use-track';
-import { ACCENT_ANCHOR } from '../accent';
-import { BOLT_HOT } from '../combat-look';
+import { accent } from '../accent';
 import { FinishOutline } from '../finish-outline/finish-outline';
 import { GATE_FRAME, outlineStrips } from '../monolith-frame';
 import { MonolithFrames } from '../monolith-frames/monolith-frames';
-import { BAND_PROUD, BAND_WIDTH, CORE_PROUD, CORE_WIDTH, GLOW_INTENSITY } from './finish-gate.constants';
+import { BAND_PROUD, BAND_WIDTH, CORE_EMISSIVE, CORE_PROUD, CORE_WIDTH, GLOW_INTENSITY } from './finish-gate.constants';
 import { finishTiles } from './finish-gate.utils';
 
 export function FinishGate() {
@@ -17,9 +16,9 @@ export function FinishGate() {
     return (
         <Fragment>
             <MonolithFrames frame={ GATE_FRAME } placements={ gate } />
-            <FinishOutline strips={ band } emissive={ ACCENT_ANCHOR } intensity={ GLOW_INTENSITY } />
-            <FinishOutline strips={ core } emissive={ BOLT_HOT } intensity={ GLOW_INTENSITY } />
-            <FinishOutline strips={ tiles } emissive={ ACCENT_ANCHOR } intensity={ GLOW_INTENSITY } />
+            <FinishOutline strips={ band } emissive={ accent() } intensity={ GLOW_INTENSITY } />
+            <FinishOutline strips={ core } emissive={ CORE_EMISSIVE } intensity={ GLOW_INTENSITY } />
+            <FinishOutline strips={ tiles } emissive={ accent() } intensity={ GLOW_INTENSITY } />
         </Fragment>
     );
 }

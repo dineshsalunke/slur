@@ -2,9 +2,14 @@ import { button, useControls } from 'leva';
 import { DEEP_SPACE_PRESET, NEBULA_PRESET } from '../../game/scene/nebula-presets';
 import { copyDefaults } from '../tuning-export';
 import { forget } from '../tuning-persist';
-import { colorControl, numberControl, skyControls } from './tuning-panel.utils';
+import { accentControl, colorControl, copyAccent, numberControl, skyControls } from './tuning-panel.utils';
 
 export function TuningPanel() {
+    useControls( 'Accent', {
+        color: accentControl(),
+        'copy colour': button( copyAccent ),
+    } );
+
     useControls( 'Render', {
         dpr: numberControl( 'Render.dpr' ),
         msaa: numberControl( 'Render.msaa' ),

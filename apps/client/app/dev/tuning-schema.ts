@@ -1,5 +1,5 @@
 import { DEFAULT_SIM_CONFIG } from '@slur/shared';
-import { ACCENT_ANCHOR } from '../game/scene/accent';
+import { ACCENT_ANCHOR } from '../game/scene/accent.constants';
 import { ROCK_ALBEDO } from '../game/scene/asteroid-surface';
 import { HULL_BASE_COLOR, METAL_BASE_COLOR, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
 import { NEBULA_PRESET } from '../game/scene/nebula-presets';
@@ -235,6 +235,7 @@ export const NUMBER_TUNABLES = {
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
+    'Accent.color': { value: ACCENT_ANCHOR, rebuild: false },
     'Env.fillColor': { value: '#8d96a3', rebuild: false },
     'Env.groundColor': { value: '#343639', rebuild: false },
     'Env.bandColor': { value: ACCENT_ANCHOR, rebuild: false },

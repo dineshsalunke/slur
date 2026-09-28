@@ -97,12 +97,12 @@ export function buildCordMesh( track: Track ): THREE.InstancedMesh {
     const geo = new THREE.CylinderGeometry( CORD_RADIUS, CORD_RADIUS, 1, CORD_SEGMENTS );
     const mat = new THREE.MeshStandardMaterial( {
         color: '#000000',
-        emissive: accent(),
         emissiveIntensity: CORD_INTENSITY,
         polygonOffset: true,
         polygonOffsetFactor: CORD_DEPTH_BIAS,
         polygonOffsetUnits: CORD_DEPTH_BIAS,
     } );
+    mat.emissive = accent();
     const mesh = new THREE.InstancedMesh( geo, mat, Math.max( 1, cords.length ) );
     mesh.count = cords.length;
     mesh.frustumCulled = false;

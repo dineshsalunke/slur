@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { useTrack } from '../../track-context/use-track';
+import { accent } from '../accent';
 import { segmentCount } from '../track-floor/track-floor.utils';
 import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from '../track-materials';
 import { trackRails } from '../track-rails.state';
@@ -14,10 +15,9 @@ export function TrackRail() {
     const geo = useMemo( () => buildRailGeometry( trackRails( track, segmentCount( track ) ).runs ), [ track ] );
     const rebuild = useRebuildToken();
     const materials = useMemo( () => {
-        return [
-            new THREE.MeshStandardMaterial( railBodySurface() ),
-            new THREE.MeshStandardMaterial( BOUNDARY_SURFACE ),
-        ];
+        const strip = new THREE.MeshStandardMaterial( BOUNDARY_SURFACE );
+        strip.emissive = accent();
+        return [ new THREE.MeshStandardMaterial( railBodySurface() ), strip ];
     }, [ rebuild ] );
 
     // GPU buffers outlive React's tree: a geometry replaced by a new track must be released by hand.

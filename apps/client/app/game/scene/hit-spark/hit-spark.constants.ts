@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ACCENT_ANCHOR } from '../accent';
+import { accent } from '../accent';
 import type { ShardSpec } from '../vfx-shard-pool';
 
 export const SPEC: ShardSpec = {
@@ -21,4 +21,4 @@ export const _c = new THREE.Color();
 export const _dir = new THREE.Vector3();
 export const FORWARD = new THREE.Vector3( 0, 0, 1 );
 export const ENERGY_CORE = new THREE.Color( '#FFFBE7' );
-export const SPARK = new THREE.Color( ACCENT_ANCHOR );
+export const SPARK = accent();

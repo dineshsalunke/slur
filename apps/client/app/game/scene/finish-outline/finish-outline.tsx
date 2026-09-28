@@ -9,7 +9,7 @@ export function FinishOutline( {
     intensity,
 }: {
     strips: readonly MonolithTransform[];
-    emissive: string;
+    emissive: THREE.Color;
     intensity: number;
 } ) {
     const fillStrips = useCallback(
@@ -29,6 +29,13 @@ export function FinishOutline( {
         [ strips ],
     );
 
+    const shareEmissive = useCallback(
+        ( material: THREE.MeshStandardMaterial | null ) => {
+            if ( material ) material.emissive = emissive;
+        },
+        [ emissive ],
+    );
+
     return (
         <instancedMesh
             key={ `outline-${ strips.length }` }
@@ -36,7 +43,7 @@ export function FinishOutline( {
             geometry={ STRIP_GEOMETRY }
             args={ [ undefined, undefined, strips.length ] }
         >
-            <meshStandardMaterial color="#0b0d0f" emissive={ emissive } emissiveIntensity={ intensity } fog={ false } />
+            <meshStandardMaterial ref={ shareEmissive } color="#0b0d0f" emissiveIntensity={ intensity } fog={ false } />
         </instancedMesh>
     );
 }

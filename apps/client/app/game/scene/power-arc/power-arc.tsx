@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { useWorld } from 'koota/react';
 import { useCallback, useMemo } from 'react';
 import type * as THREE from 'three';
+import { repaintGlyphs } from './glyph-atlas';
 import { ARC_LAYER, ARC_ORDER, INSTANCES } from './power-arc.constants';
 import { createArcFrame, stepArc } from './power-arc.state';
 import { buildArcLook, disposeArcLook } from './power-arc.utils';
@@ -25,7 +26,10 @@ export function PowerArc() {
         [ frame, look ],
     );
 
-    useFrame( ( state, delta ) => stepArc( frame, look, world, state.camera, delta ) );
+    useFrame( ( state, delta ) => {
+        repaintGlyphs( look.texture );
+        stepArc( frame, look, world, state.camera, delta );
+    } );
 
     return (
         <instancedMesh

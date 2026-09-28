@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { accentDerived } from './accent';
+import { accent } from './accent';
 import { SEALED_BLOCK_BEVEL, SEALED_BLOCK_UNIT_BEVEL } from './sealed-block-geometry';
 import {
     SEALED_BLOCK_SEAM_WIDTH,
@@ -22,15 +22,11 @@ export interface SealedBlockUniforms {
     uSealedTexSpan: { value: number };
 }
 
-const SEAM_BASE = accentDerived( ( base, out ) => {
-    out.copy( base );
-} );
-
 export function sealedBlockUniforms(): SealedBlockUniforms {
     return {
         uSealedBevel: { value: SEALED_BLOCK_BEVEL },
         uSealedSeamWidth: { value: SEALED_BLOCK_SEAM_WIDTH },
-        uSealedSeamColor: { value: SEAM_BASE },
+        uSealedSeamColor: { value: accent() },
         uSealedSeamIntensity: { value: MARIGOLD_REFERENCE_INTENSITY },
         uSealedWear: {
             value: new THREE.Vector4(
