@@ -1,53 +1,61 @@
-Agent: workerone · Lane: #345 scene lighting (SHIPPED, owner check pending) · #337/#339 open until deploy · Updated: 2026-09-28
+Agent: workerone · Lane: #349 architecture RFC (LEAD, just started) · #345 shipped, owner check pending · #337/#339 open until deploy · Updated: 2026-09-28
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#345: the track reads evenly bright at every distance and facing on every tier. Space stays dark.
-Owner approved option 6.
+#349 "Architecture RFC: code organisation, ECS drift, server-owned game config". RFC ONLY, no source
+edits. Supervisor says it is THE priority now. I LEAD and own the doc. workertwo writes the
+net/input/state/server-config section. workerthree writes the render/useFrame-schedule/quality-tier
+section. They send me their sections; I merge them and keep one voice.
 
 ## Done
 
-- `8c94537` #345 option 6: `Metal.baseColor` #7b7f86 (F0 ≈ 0.2, metalness 1). New `Hull.baseColor`
-  #4a4d52 keeps hulls unchanged. New `game/scene/key-light/key-light.tsx` (world-fixed DirectionalLight
-  #cfd8e6 ×2 from (10,30,−20), no shadows, `KeyLight.*` dials + panel group). Docs: ART_MATERIALS rev. 9
-  §7 item 21, ADR-029, ADD lights list. Pushed. Comment on #345, left open for the owner.
-- `7022faf` memory index line (raycast luma probe).
-- Found #344 P2's black canvas on quality=low (post gate + priority-0.25 useFrames). workerthree fixed it in `286c8ef`.
-- Earlier: #339 `fda4814` `e8bb786` `8fc2486`, #337 `59a4599` (pushed, not deployed). #342 `eaeb301`.
+- #349: read the issue (`gh issue view 349`) and `conventions/ecs.md` (TL;DR rules 1–6 and the systems-loop
+  section). Sent slur-supervisor a claim for NEW `docs/RFC-349-ARCHITECTURE.md`. No answer yet.
+- `8c94537` #345 option 6 (track metal #7b7f86, `Hull.baseColor` #4a4d52, KeyLight, docs rev. 9 / ADR-029).
+  Commented on #345 and left it open for the owner. Owner brief sent to the supervisor.
+- `7022faf` memory index line. Earlier: #339 `fda4814` `e8bb786` `8fc2486`, #337 `59a4599` (not deployed).
 
 ## State
 
-- Luma medians at spawn on /test-level, old → new. High: deck <30u 15.2→43.5, 30–80u 27.4→50.0,
-  80–160u 34.4→58.0, block fronts 14.5→36.2, frame 23.2→36.9.
-- Low: deck 15.2→42.3, 25.2→47.2, 30.4→53.4. Block fronts 5.9→30.8.
-- Draws: +0 (124 high, 47 low). GPU, uncapped 1600×900: high 9.5 ms both; low old 3.0–5.6, new 4.6–5.8 (noise).
-- Hull-bright option (`Hull.baseColor` #7b7f86): hull luma near 50→83. Screenshot `high-hullbright.png`.
-- Typecheck, lint and 627 client tests pass.
-- Probe + shots: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/c84f5797-672f-4083-a451-e043b6bd4666/scratchpad/light/`
-  (`probe.mjs` gained `UNCAP=1`). Before/after shots: `high-old-old.png`, `high-new-new.png`, `low-*`.
+- Issue #349 asks for: a measured current map (koota entities vs module singletons, useFrame count and
+  order, where constants live), problems ranked by cost to dev speed and to look/perf work, ≥5 options
+  per mechanism (NN-13), a staged migration that never blocks feature work, and the files each stage touches.
+- Issue inputs, all [unmeasured] by me: only ships/bolts/seekers/mines are koota entities; blockWorld,
+  pickup-state, the *-events queues and ~14 *.state.ts singletons hold the rest; ~44 useFrame callbacks
+  with no schedule; server koota is capped at 16 worlds per process (WORLD_ID_BITS 4). Gameplay constants
+  should become server-owned room config in 3 tiers: rules / track gen / look (relates to #70, #23).
+- Measured by me in #345: three useFrames run at priority 0.25 (`AFTER_RENDER_SYNC` in engine-light,
+  exhaust-field, boost-streaks). Any priority > 0 turns off R3F auto-render
+  (`@react-three/fiber` events-*.esm.js:1117). PlainRender (priority 1) or the composer renders.
 
 ## Uncommitted
 
-- none of mine. Other workers' changes in the tree: packages/shared/*, routes/test-level/tuned-sim-config.ts.
+- none.
 
 ## Held files
 
-- none (the #345 claims are released on commit).
+- Claim pending: `docs/RFC-349-ARCHITECTURE.md` (new).
 
 ## Next
 
-1. Owner checks #345 on /test-level. Hull choice: keep dark (default) or set `Hull.baseColor` #7b7f86.
-   Close #345 with the SHA after the owner signs off.
-2. After the owner deploys: prod /metrics in a race, then close #337 and #339.
+1. Get the supervisor's answer on the doc path.
+2. SendMessage workertwo and workerthree with a section outline and agree on it. Draft outline:
+   §1 Current map (measured) · §2 Problems ranked · §3 Entities and state (mine: ECS drift, singletons,
+   tags vs values) · §4 Net/input/state + server-owned config tiers (workertwo) · §5 Render, useFrame
+   schedule, quality tiers (workerthree) · §6 Code organisation and constants (mine) · §7 Staged migration
+   + files per stage (mine, merging theirs) · §8 Open questions. Each mechanism: ≥5 options, weighed.
+3. Measure my part: `grep -rn "useFrame(" apps/client/app`, list `*.state.ts`, `world.spawn`/traits in
+   `game/ecs`, and module-level `let`/`Map` singletons. Verify WORLD_ID_BITS in node_modules/koota.
+4. Write the doc, merge the sections, send the supervisor a summary to relay.
+5. #345: close after the owner signs off. After deploy: prod /metrics, then close #337/#339.
 
 ## Open questions
 
-- Owner: hulls dark (#4a4d52, current) or bright (#7b7f86)?
+- Owner (#345): hulls dark (#4a4d52, current) or bright (#7b7f86)?
 - Kick button on the results rows (#342 follow-up)? Still with the owner.
 
 ## Lessons → memory
 
-- none this seam. The vsync-capped meter (16.7 ms for all variants) is already handled by the
-  perf-analysis scripts, which uncap.
+- none this seam.
