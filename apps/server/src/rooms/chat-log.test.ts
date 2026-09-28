@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CHAT_HISTORY_LINES } from '@slur/shared';
-import { CHAT_BURST, CHAT_WINDOW_MS, ChatLog } from './chat-log.js';
+import { CHAT_BURST, CHAT_HISTORY_INTERVAL_MS, CHAT_WINDOW_MS, ChatLog } from './chat-log.js';
 
 const ann = { id: 'a', name: 'Ann', colorId: 3 };
 const bob = { id: 'b', name: 'Bob', colorId: 5 };
@@ -51,4 +51,20 @@ test( 'chat log: forget clears the sender budget', () => {
     for ( let i = 0; i < CHAT_BURST; i++ ) log.post( ann, 'x', 0 );
     log.forget( 'a' );
     assert.ok( log.post( ann, 'fresh', 1 ) );
+} );
+
+test( 'chat log: historyFor answers once per CHAT_HISTORY_INTERVAL_MS per client', () => {
+    const log = new ChatLog();
+    const line = log.post( ann, 'hi', 0 );
+    assert.deepEqual( log.historyFor( 'a', 0 ), [ line ] );
+    assert.equal( log.historyFor( 'a', CHAT_HISTORY_INTERVAL_MS - 1 ), null );
+    assert.deepEqual( log.historyFor( 'b', 1 ), [ line ], 'the limit is per client' );
+    assert.deepEqual( log.historyFor( 'a', CHAT_HISTORY_INTERVAL_MS ), [ line ] );
+} );
+
+test( 'chat log: forget clears the history throttle', () => {
+    const log = new ChatLog();
+    log.historyFor( 'a', 0 );
+    log.forget( 'a' );
+    assert.ok( log.historyFor( 'a', 1 ) );
 } );

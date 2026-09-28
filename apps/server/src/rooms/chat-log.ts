@@ -2,6 +2,7 @@ import { CHAT_HISTORY_LINES, type ChatLine, cleanChatText } from '@slur/shared';
 
 export const CHAT_BURST = 5;
 export const CHAT_WINDOW_MS = 5000;
+export const CHAT_HISTORY_INTERVAL_MS = 2000;
 
 export interface ChatSender {
     id: string;
@@ -12,6 +13,7 @@ export interface ChatSender {
 export class ChatLog {
     private lines: ChatLine[] = [];
     private readonly sent = new Map< string, number[] >();
+    private readonly historySent = new Map< string, number >();
     private nextId = 1;
 
     post( sender: ChatSender, raw: unknown, nowMs: number ): ChatLine | null {
@@ -30,7 +32,15 @@ export class ChatLog {
         return this.lines;
     }
 
+    historyFor( senderId: string, nowMs: number ): readonly ChatLine[] | null {
+        const last = this.historySent.get( senderId );
+        if ( last !== undefined && nowMs - last < CHAT_HISTORY_INTERVAL_MS ) return null;
+        this.historySent.set( senderId, nowMs );
+        return this.lines;
+    }
+
     forget( senderId: string ): void {
         this.sent.delete( senderId );
+        this.historySent.delete( senderId );
     }
 }
