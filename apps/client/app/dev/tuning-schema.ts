@@ -26,7 +26,7 @@ export const NUMBER_TUNABLES = {
     'ToneMapping.exposure': { value: 1, min: 0, max: 4, step: 0.01, rebuild: false },
 
     'Environment.intensity': { value: 1.2, min: 0, max: 20, step: 0.05, rebuild: false },
-    'Environment.rotation': { value: 0, min: 0, max: 360, step: 1, rebuild: false },
+    'Environment.rotation': { value: 180, min: 0, max: 360, step: 1, rebuild: false },
     'Environment.bandIntensity': { value: 1.5, min: 0, max: 20, step: 0.05, rebuild: false },
     'Environment.bandHeight': { value: 6, min: 0.5, max: 60, step: 0.5, rebuild: false },
 
@@ -55,6 +55,7 @@ export const NUMBER_TUNABLES = {
     'Reflect.fadeFar': { value: 220, min: 10, max: 420, step: 1, rebuild: false },
     'Reflect.grazing': { value: 2, min: 0, max: 8, step: 0.05, rebuild: false },
     'Reflect.roughMix': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
+    'Reflect.blur': { value: 0.01, min: 0, max: 0.05, step: 0.0005, rebuild: false },
     'Reflect.railSpread': { value: 4, min: 0.5, max: 20, step: 0.1, rebuild: false },
     'Reflect.rail': { value: 1, min: 0, max: 2, step: 0.01, rebuild: false },
     'Reflect.block': { value: 0.6, min: 0, max: 1, step: 0.005, rebuild: false },
@@ -213,7 +214,7 @@ export const COLOR_TUNABLES = {
     'Shadow.color': { value: '#01040a', rebuild: false },
     'Exhaust.hot': { value: '#fff1dc', rebuild: false },
     'Exhaust.cool': { value: ACCENT_ANCHOR, rebuild: false },
-    'EngineLight.color': { value: '#ff9a3c', rebuild: false },
+    'EngineLight.color': { value: ACCENT_ANCHOR, rebuild: false },
 } as const satisfies Record< string, ColorTunable >;
 
 export type NumberPath = keyof typeof NUMBER_TUNABLES;

@@ -56,6 +56,7 @@ export function updateReflection( u: ReflectionUniforms, deck: THREE.MeshStandar
     u.uReflFadeFar.value = Math.max( num( 'Reflect.fadeFar' ), num( 'Reflect.fadeNear' ) + 1 );
     u.uReflGrazing.value = num( 'Reflect.grazing' );
     u.uReflRoughMix.value = num( 'Reflect.roughMix' );
+    u.uReflBlur.value = num( 'Reflect.blur' );
     u.uReflRoughness.value = deck.roughness;
     u.uReflClean.value = num( 'Deck.roughness' );
     u.uReflRoughMap.value = deck.roughnessMap;

@@ -64,6 +64,10 @@ export function TuningPanel() {
         seamEmissive: numberControl( 'Deck.seamEmissive' ),
     } );
 
+    useControls( 'Reflect', {
+        blur: numberControl( 'Reflect.blur' ),
+    } );
+
     useControls( 'Rail', {
         metalness: numberControl( 'Rail.metalness' ),
         roughness: numberControl( 'Rail.roughness' ),

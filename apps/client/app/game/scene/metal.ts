@@ -1,4 +1,4 @@
-export const METAL_BASE_COLOR = '#7b7f86';
+export const METAL_BASE_COLOR = '#595c62';
 export const HULL_BASE_COLOR = '#4a4d52';
 export const METAL_METALNESS = 1;
 export const METAL_ROUGHNESS = 0.4;
