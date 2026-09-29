@@ -55,8 +55,8 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #385 F1 client half | BUILDING (cleared + resumed 2026-09-29 after 1a5415c7) | net/attach-room-to-world.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
-| workertwo | w2Z:p3 | S20 dial-sync (issue to be filed by it) | ASSIGNED; claim list pending | — |
-| workerthree | w2Z:p5 | #384 S18 | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
+| workertwo | w2Z:p3 | #388 S20 dial-sync | BUILDING (claim cleared) | dev/tuning.ts; game/scene/{track-seams.tsx, track-rail/track-rail.tsx, track-rim/track-rim.tsx, track-floor/track-floor.tsx, monolith-group/monolith-group.tsx, track-view.tsx, game-environment.tsx (1 mount line)}; NEW game/scene/dial-sync/*. Leaf schedule now; move to route schedules after F1 |
+| workerthree | w2Z:p5 | #384 S18, then #386 gap fix (owner approved; new reveal file; key off first frame; follow-up issue) | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
