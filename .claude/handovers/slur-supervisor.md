@@ -40,7 +40,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S14 frame-phase constants | #378 | landed db2552d |
 | S15 camera/Sim readers after NetLoop | #379 | landed dbaf3b2 (lag 1.96 u → 0) |
 | S0 conventions | #382 | IN PROGRESS workerone (claim cleared 2026-09-29) |
-| S16 scheduler | #381 | IN PROGRESS workerthree (claim cleared 2026-09-29) |
+| S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
 
 ## Workers
 
@@ -48,7 +48,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #382 S0 conventions | BUILDING | conventions/ecs.md, conventions/features.md (new), conventions/README.md, .claude/rules/features.md (new), .claude/rules/ecs-koota.md, CLAUDE.md |
 | workertwo | w2Z:p3 | — (cleared to 0% after #376) | IDLE, cleared | — |
-| workerthree | w2Z:p5 | #381 S16 scheduler | BUILDING | apps/client/app/: game/frame/{schedule.ts, schedule.test.ts, frame-timing.state.ts, frame-schedule/*, phase-runner/*, frame-phase.constants.ts}, game/net-loop/*, routes/beat-deck/deck-loop/*, routes/home/landing-rig/*, dev/frame-meter.ts, dev/frame-tap.tsx |
+| workerthree | w2Z:p5 | — (#381 done, handover bd5d3a59) | IDLE | — |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
@@ -66,9 +66,9 @@ None.
 
 ## Next
 
-1. Wait for #382 (workerone) and #381 (workerthree) to land; mark each Landed <sha> in RFC §7.
-2. Stages next: S4 tags and S5 world traits need S0; S8, S17–S21 need S16; S11 needs a quiet game/scene/
-   window. workertwo is idle: offer S11 or wait for S0/S16.
+1. Wait for #382 (workerone) to land; mark it Landed <sha> in RFC §7.
+2. S16 landed, so S8, S17, S18, S20, S21 are free now (S21 measures §8 Q10 first; S19 also needs Q9).
+   S4/S5 wait for S0. workertwo and workerthree are idle: owner to choose which stages to hand out.
 3. After S0 + S16 → F1 engine skeleton → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
 
 ## Lessons → memory
