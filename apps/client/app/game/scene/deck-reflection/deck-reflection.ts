@@ -18,7 +18,11 @@ export interface ReflectionUniforms {
     uReflRoughness: { value: number };
     uReflClean: { value: number };
     uReflBlur: { value: number };
+    uReflWarp: { value: number };
+    uReflGrime: { value: number };
     uReflRoughMap: { value: THREE.Texture | null };
+    uReflNormalMap: { value: THREE.Texture | null };
+    uReflAlbedoMap: { value: THREE.Texture | null };
     uReflWorldPerUv: { value: THREE.Vector2 };
 }
 
@@ -41,7 +45,11 @@ export function reflectionUniforms(): ReflectionUniforms {
         uReflRoughness: { value: 1 },
         uReflClean: { value: 0.5 },
         uReflBlur: { value: 0.01 },
+        uReflWarp: { value: 0 },
+        uReflGrime: { value: 0 },
         uReflRoughMap: { value: null },
+        uReflNormalMap: { value: null },
+        uReflAlbedoMap: { value: null },
         uReflWorldPerUv: { value: new THREE.Vector2( TEX_SPAN_X, TEX_SPAN_Z ) },
     };
 }
@@ -57,9 +65,13 @@ export function updateReflection( u: ReflectionUniforms, deck: THREE.MeshStandar
     u.uReflGrazing.value = num( 'Reflect.grazing' );
     u.uReflRoughMix.value = num( 'Reflect.roughMix' );
     u.uReflBlur.value = num( 'Reflect.blur' );
+    u.uReflWarp.value = num( 'Reflect.warp' ) * deck.normalScale.x;
+    u.uReflGrime.value = num( 'Reflect.grime' );
     u.uReflRoughness.value = deck.roughness;
     u.uReflClean.value = num( 'Deck.roughness' );
     u.uReflRoughMap.value = deck.roughnessMap;
+    u.uReflNormalMap.value = deck.normalMap;
+    u.uReflAlbedoMap.value = deck.map;
     const repeat = Math.max( deck.map?.repeat.x ?? 1, 1e-3 );
     u.uReflWorldPerUv.value.set( TEX_SPAN_X / repeat, TEX_SPAN_Z / repeat );
 }
@@ -70,12 +82,14 @@ uniform float uReflLength;
 uniform float uReflWidth;
 uniform float uReflClean;
 uniform float uReflBlur;
-varying vec2 vReflQuad;
+varying vec2 vReflAxis;
+varying vec2 vReflSide;
 varying vec3 vReflWorld;
+varying float vReflV;
 varying float vReflPower;
 varying float vReflPoint;
 varying float vReflCenter;
-varying float vReflSoft;
+varying float vReflSigma0;
 struct ReflEmitter {
 	vec3 base;
 	float h0;
@@ -130,12 +144,14 @@ void main() {
 	vec3 world = vec3( base.x, base.y + 0.015, base.z )
 		+ vec3( dir.x, 0.0, dir.y ) * along
 		+ vec3( side.x, 0.0, side.y ) * ( 0.5 * width * position.x );
-	vReflQuad = position.xy;
+	vReflAxis = vec2( along, 0.5 * width * position.x );
+	vReflSide = side;
 	vReflWorld = world;
+	vReflV = position.y;
 	vReflPower = e.power;
 	vReflPoint = point;
 	vReflCenter = ( s0 - start ) / ( end - start );
-	vReflSoft = mix( sqrt( sigma0 / sigma ), 1.0, point );
+	vReflSigma0 = sigma0;
 	gl_Position = projectionMatrix * viewMatrix * vec4( world, 1.0 );
 }
 `;
@@ -144,6 +160,7 @@ const STREAK_FRAGMENT = /* glsl */ `
 uniform vec3 uReflColor;
 uniform float uReflStrength;
 uniform float uReflGain;
+uniform float uReflWidth;
 uniform float uReflFalloff;
 uniform float uReflFadeNear;
 uniform float uReflFadeFar;
@@ -151,37 +168,55 @@ uniform float uReflGrazing;
 uniform float uReflRoughMix;
 uniform float uReflRoughness;
 uniform float uReflClean;
+uniform float uReflBlur;
+uniform float uReflWarp;
+uniform float uReflGrime;
 uniform sampler2D uReflRoughMap;
+uniform sampler2D uReflNormalMap;
+uniform sampler2D uReflAlbedoMap;
 uniform vec2 uReflWorldPerUv;
-varying vec2 vReflQuad;
+varying vec2 vReflAxis;
+varying vec2 vReflSide;
 varying vec3 vReflWorld;
+varying float vReflV;
 varying float vReflPower;
 varying float vReflPoint;
 varying float vReflCenter;
-varying float vReflSoft;
+varying float vReflSigma0;
 ${ DECK_HASH_GLSL }
 ${ DECK_TILE_GLSL }
 void main() {
-	float qx = clamp( vReflQuad.x, - 1.0, 1.0 );
+	vec2 mapUv = vReflWorld.xz / uReflWorldPerUv;
+	vec2 flip;
+	vec2 tileUv = deckTileUv( mapUv, flip );
+	vec2 du = dFdx( mapUv );
+	vec2 dv = dFdy( mapUv );
+	float rough = textureGrad( uReflRoughMap, tileUv, du, dv ).g * uReflRoughness;
+	vec2 bump = ( textureGrad( uReflNormalMap, tileUv, du, dv ).xy * 2.0 - 1.0 ) * flip;
+	vec3 albedo = textureGrad( uReflAlbedoMap, tileUv, du, dv ).rgb;
+	vec3 albedoMean = textureLod( uReflAlbedoMap, vec2( 0.5 ), 16.0 ).rgb;
+	vec3 luma = vec3( 0.2126, 0.7152, 0.0722 );
+	float along = max( vReflAxis.x, 0.0 );
+	float sigma = vReflSigma0 + uReflBlur * ( 0.5 + mix( uReflClean, rough, uReflRoughMix ) ) * along;
+	float width = mix( 6.0 * sigma, uReflWidth * ( 0.5 + uReflClean ), vReflPoint );
+	float lateral = vReflAxis.y - uReflWarp * along * dot( bump, vReflSide );
+	float qx = clamp( lateral / max( 0.5 * width, 1e-4 ), - 1.0, 1.0 );
 	float across = 1.0 - qx * qx;
-	float v = clamp( vReflQuad.y, 0.0, 1.0 );
+	float v = clamp( vReflV, 0.0, 1.0 );
 	float line = pow( 1.0 - v, uReflFalloff ) * smoothstep( 0.0, 0.08, v );
 	float k = ( v - vReflCenter ) * 3.5;
 	float spot = exp( - k * k );
 	float gx = 3.0 * qx;
-	float soft = exp( - 0.5 * gx * gx ) * vReflSoft;
+	float soft = exp( - 0.5 * gx * gx ) * sqrt( vReflSigma0 / sigma );
 	float profile = mix( line * soft, spot * across * across, vReflPoint );
 	vec3 toCam = cameraPosition - vReflWorld;
 	float dist = length( toCam );
 	float graze = pow( clamp( 1.0 - toCam.y / dist, 0.0, 1.0 ), uReflGrazing );
 	float fade = 1.0 - smoothstep( uReflFadeNear, uReflFadeFar, dist );
-	vec2 mapUv = vReflWorld.xz / uReflWorldPerUv;
-	vec2 flip;
-	vec2 tileUv = deckTileUv( mapUv, flip );
-	float rough = textureGrad( uReflRoughMap, tileUv, dFdx( mapUv ), dFdy( mapUv ) ).g * uReflRoughness;
 	float gloss = clamp( ( 1.0 - rough ) / max( 1.0 - uReflClean, 0.05 ), 0.0, 2.0 );
 	float plate = mix( 1.0, gloss, uReflRoughMix );
-	float glow = max( uReflStrength * uReflGain * vReflPower * profile * graze * fade * plate, 0.0 );
+	float grime = mix( 1.0, clamp( dot( albedo, luma ) / max( dot( albedoMean, luma ), 1e-4 ), 0.0, 1.5 ), uReflGrime );
+	float glow = max( uReflStrength * uReflGain * vReflPower * profile * graze * fade * plate * grime, 0.0 );
 	gl_FragColor = vec4( uReflColor * glow, 1.0 );
 	#include <tonemapping_fragment>
 	#include <colorspace_fragment>

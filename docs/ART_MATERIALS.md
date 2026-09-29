@@ -1158,6 +1158,10 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     - **Seam streaks.** A seam streak starts as wide as the seam and blurs with distance. The blur
       rate follows `Deck.roughness`. A seam hidden in a butt joint draws nothing. A streak stops at
       the next block.
+    - **In line with the seam (#365).** A streak runs straight down from its seam at every
+      distance. It frays over the deck's dents and brushed lines (`Reflect.warp` 0.3). It spreads
+      wider and dimmer on rough plates. Grime and plate grooves break it (`Reflect.grime` 0.8).
+      Numbers in ADR-031.
     - **Holes.** There is no stencil. Each pickup spot is clipped to the clear deck under the pickup,
       so no spot lies over a hole (0.00%). Block streaks rarely do (0.35%). Numbers in ADR-031.
     - **Left rim.** The sheen does not show on the left rim where the HDRI's white sky lights the

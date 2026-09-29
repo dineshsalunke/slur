@@ -56,6 +56,8 @@ export const NUMBER_TUNABLES = {
     'Reflect.grazing': { value: 2, min: 0, max: 8, step: 0.05, rebuild: false },
     'Reflect.roughMix': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
     'Reflect.blur': { value: 0.01, min: 0, max: 0.05, step: 0.0005, rebuild: false },
+    'Reflect.warp': { value: 0.3, min: 0, max: 0.5, step: 0.005, rebuild: false },
+    'Reflect.grime': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
     'Reflect.railSpread': { value: 4, min: 0.5, max: 20, step: 0.1, rebuild: false },
     'Reflect.rail': { value: 1, min: 0, max: 2, step: 0.01, rebuild: false },
     'Reflect.block': { value: 0.6, min: 0, max: 1, step: 0.005, rebuild: false },

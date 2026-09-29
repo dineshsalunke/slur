@@ -66,6 +66,8 @@ export function TuningPanel() {
 
     useControls( 'Reflect', {
         blur: numberControl( 'Reflect.blur' ),
+        warp: numberControl( 'Reflect.warp' ),
+        grime: numberControl( 'Reflect.grime' ),
     } );
 
     useControls( 'Rail', {
