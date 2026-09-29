@@ -15,6 +15,7 @@ describe( 'keyboardControls', () => {
             Cycle: [ '↑' ],
             Drop: [ 'L Ctrl' ],
             Mute: [ 'M' ],
+            Mirror: [ 'V' ],
         } );
     } );
 

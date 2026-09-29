@@ -9,6 +9,7 @@ import {
     THROTTLE_KEY,
 } from '../../../game/input/keyboard';
 import { dropKeyFor, FIRE_BACK_KEY, fireKeyFor, NEXT_SLOT_KEY } from '../../../game/input/power-select';
+import { REAR_VIEW_KEY } from '../../../game/input/rear-view-toggle';
 import type { Hint } from '../../../ui/key-hint';
 
 export function keyboardControls( mac: boolean ): Hint[] {
@@ -23,5 +24,6 @@ export function keyboardControls( mac: boolean ): Hint[] {
         hint( [ NEXT_SLOT_KEY ], 'Cycle' ),
         hint( [ dropKeyFor( mac ) ], 'Drop' ),
         hint( [ MUTE_KEY ], 'Mute' ),
+        hint( [ REAR_VIEW_KEY ], 'Mirror' ),
     ];
 }

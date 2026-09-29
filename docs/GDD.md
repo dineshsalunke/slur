@@ -645,10 +645,11 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 | Fire back | Right Shift | Fires the selected slot backward |
 | Drop power-up | Left Ctrl or X | Empties the selected slot. The power is gone |
 | Mute | M | Someone always needs to mute fast |
+| Rear-view mirror | V | Shows or hides the mirror (#367). The choice is kept after a reload |
 | Leave run | Esc | No pause; leaving drops you to spectate/menu |
 
 - **Blur layout (#358).** The keys follow the Blur (2010) PC default layout (Blur PC Manual p.2). SLUR adds
-  Jump (Space) and Mute (M), which Blur does not have. Blur's handbrake key (↓) brakes. Blur's pause,
+  Jump (Space), Mute (M) and Mirror (V), which Blur does not have. Blur's handbrake key (↓) brakes. Blur's pause,
   camera, mini-map and look-back keys are not bound. S and X also work but are not shown. W, E, F and R are not
   bound (#363, #366): with Ctrl held for fire or drop, Ctrl + W closes the browser tab, Ctrl + R reloads the page,
   and Ctrl + E and Ctrl + F move the focus out of the game, which releases every held key.
@@ -658,8 +659,8 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 - **Touch (#346, phones).** The left half of the screen holds a floating stick. Its base appears where the
   thumb lands. Touch = thrust. Slide left or right = strafe, digital, with hysteresis: it presses at 45% of
   the radius and releases at 25%, so a jittering thumb cannot re-fire the strafe kick. Pull down past 50% =
-  brake. A d-pad sits bottom-right. The centre is Jump (tap / hold / double). Up = fire forward (E). Down =
-  fire back (F). Left / right = previous / next power-up (R / ↑). A thumb that slides onto another arm
+  brake. A d-pad sits bottom-right. The centre is Jump (tap / hold / double). Up = fire forward (Right Ctrl). Down =
+  fire back (Right Shift). Left / right = previous / next power-up (no key / ↑). A thumb that slides onto another arm
   fires that arm once.
 - **Aiming (design intent — NOT built).** Offensive power-ups should **auto-lock the nearest target in a
   forward cone** — combat is disruption, not precision, so no aim skill-wall. **As built the Bolt is dumb
