@@ -29,6 +29,7 @@ export interface SealedVariation {
 export interface SealedAttributes {
     seams: THREE.InstancedBufferAttribute;
     variation: THREE.InstancedBufferAttribute;
+    clear: THREE.InstancedBufferAttribute;
 }
 
 export interface FracturedAttributes {
@@ -148,6 +149,7 @@ export function TrackBlocks() {
         cracked.instanceMatrix.needsUpdate = true;
         attrs.seams.needsUpdate = true;
         attrs.variation.needsUpdate = true;
+        attrs.clear.needsUpdate = true;
         fractured.cracked.block.needsUpdate = true;
         fractured.cracked.glow.needsUpdate = true;
     } );

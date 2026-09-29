@@ -17,6 +17,7 @@ export interface ReflectionUniforms {
     uReflRoughMix: { value: number };
     uReflRoughness: { value: number };
     uReflClean: { value: number };
+    uReflBlur: { value: number };
     uReflRoughMap: { value: THREE.Texture | null };
     uReflWorldPerUv: { value: THREE.Vector2 };
 }
@@ -39,6 +40,7 @@ export function reflectionUniforms(): ReflectionUniforms {
         uReflRoughMix: { value: 0.8 },
         uReflRoughness: { value: 1 },
         uReflClean: { value: 0.5 },
+        uReflBlur: { value: 0.01 },
         uReflRoughMap: { value: null },
         uReflWorldPerUv: { value: new THREE.Vector2( TEX_SPAN_X, TEX_SPAN_Z ) },
     };
@@ -66,55 +68,73 @@ uniform float uReflStretch;
 uniform float uReflLength;
 uniform float uReflWidth;
 uniform float uReflClean;
+uniform float uReflBlur;
 varying vec2 vReflQuad;
 varying vec3 vReflWorld;
 varying float vReflPower;
 varying float vReflPoint;
 varying float vReflCenter;
-`;
-
-const STREAK_VERTEX_BODY = /* glsl */ `
-void main() {
+varying float vReflSoft;
+struct ReflEmitter {
 	vec3 base;
 	float h0;
 	float h1;
 	float power;
 	float point;
-	vec4 clear;
-	if ( ! reflEmitter( base, h0, h1, power, point, clear ) || power <= 0.0 ) {
+	float core;
+	float reach;
+};
+vec2 reflDir( vec3 base ) {
+	vec2 toCam = cameraPosition.xz - base.xz;
+	return toCam / max( length( toCam ), 1e-3 );
+}
+float reflBoxReach( vec4 box, vec3 base ) {
+	vec2 dir = reflDir( base );
+	vec2 exit = mix( base.xz - box.xz, box.yw - base.xz, step( 0.0, dir ) ) / max( abs( dir ), vec2( 1e-4 ) );
+	return min( exit.x, exit.y );
+}
+float reflFaceReach( vec2 normal, float free, vec3 base ) {
+	return free / max( dot( reflDir( base ), normal ), 1e-3 );
+}
+`;
+
+const STREAK_VERTEX_BODY = /* glsl */ `
+void main() {
+	ReflEmitter e;
+	if ( ! reflEmitter( e ) || e.power <= 0.0 ) {
 		gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );
 		return;
 	}
+	vec3 base = e.base;
+	float point = e.point;
 	vec2 toCam = cameraPosition.xz - base.xz;
 	float d = max( length( toCam ), 1e-3 );
 	vec2 dir = toCam / d;
 	vec2 side = vec2( dir.y, - dir.x );
 	float eye = max( cameraPosition.y - base.y, 0.05 );
-	float s0 = d * h0 / ( eye + h0 );
-	float s1 = d * h1 / ( eye + h1 );
+	float s0 = d * e.h0 / ( eye + e.h0 );
+	float s1 = d * e.h1 / ( eye + e.h1 );
 	float w = uReflWidth * ( 0.5 + uReflClean );
 	float spread = clamp( s0 * 0.6 * uReflStretch, w, 0.5 * uReflLength );
 	float start = mix( - 0.5 * w, s0 - spread, point );
-	vec2 lo = clear.xz - base.xz;
-	vec2 hi = clear.yw - base.xz;
-	vec2 inv = 1.0 / max( abs( dir ), vec2( 1e-4 ) );
-	vec2 exit = mix( - lo, hi, step( 0.0, dir ) ) * inv;
-	float reach = min( exit.x, exit.y );
-	float end = min( min( mix( min( s1 * uReflStretch, uReflLength ), s0 + spread, point ), d - 0.3 ), reach );
+	float end = min( min( mix( min( s1 * uReflStretch, uReflLength ), s0 + spread, point ), d - 0.3 ), e.reach );
 	if ( end <= start ) {
 		gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );
 		return;
 	}
 	float along = mix( start, end, position.y );
-	float width = w * mix( 1.0 + 1.5 * position.y, 1.0, point );
+	float sigma0 = max( 0.5 * e.core, 1e-3 );
+	float sigma = sigma0 + uReflBlur * ( 0.5 + uReflClean ) * max( along, 0.0 );
+	float width = mix( 6.0 * sigma, w, point );
 	vec3 world = vec3( base.x, base.y + 0.015, base.z )
 		+ vec3( dir.x, 0.0, dir.y ) * along
 		+ vec3( side.x, 0.0, side.y ) * ( 0.5 * width * position.x );
 	vReflQuad = position.xy;
 	vReflWorld = world;
-	vReflPower = power;
+	vReflPower = e.power;
 	vReflPoint = point;
 	vReflCenter = ( s0 - start ) / ( end - start );
+	vReflSoft = mix( sqrt( sigma0 / sigma ), 1.0, point );
 	gl_Position = projectionMatrix * viewMatrix * vec4( world, 1.0 );
 }
 `;
@@ -137,6 +157,7 @@ varying vec3 vReflWorld;
 varying float vReflPower;
 varying float vReflPoint;
 varying float vReflCenter;
+varying float vReflSoft;
 ${ DECK_HASH_GLSL }
 ${ DECK_TILE_GLSL }
 void main() {
@@ -146,7 +167,9 @@ void main() {
 	float line = pow( 1.0 - v, uReflFalloff ) * smoothstep( 0.0, 0.08, v );
 	float k = ( v - vReflCenter ) * 3.5;
 	float spot = exp( - k * k );
-	float profile = mix( line, spot, vReflPoint ) * across * across;
+	float gx = 3.0 * qx;
+	float soft = exp( - 0.5 * gx * gx ) * vReflSoft;
+	float profile = mix( line * soft, spot * across * across, vReflPoint );
 	vec3 toCam = cameraPosition - vReflWorld;
 	float dist = length( toCam );
 	float graze = pow( clamp( 1.0 - toCam.y / dist, 0.0, 1.0 ), uReflGrazing );

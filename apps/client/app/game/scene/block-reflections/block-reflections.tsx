@@ -5,7 +5,7 @@ import { num } from '../../../dev/tuning';
 import { streakMaterial, streakQuads } from '../deck-reflection/deck-reflection';
 import { reflection } from '../deck-reflection/deck-reflection.state';
 import { SEALED_BLOCK_BEVEL } from '../sealed-block-geometry';
-import { SEALED_BLOCK_MAX_SEAMS } from '../sealed-block-variation';
+import { SEALED_BLOCK_MAX_SEAMS, SEALED_BLOCK_SEAM_WIDTH } from '../sealed-block-variation';
 import type { SealedAttributes } from '../track-blocks/track-blocks';
 import { BLOCK_EMITTER } from './block-reflections.constants';
 
@@ -21,10 +21,15 @@ export function BlockReflections( {
         const g = streakQuads( SEALED_BLOCK_MAX_SEAMS );
         g.setAttribute( 'aSealedSeams', attrs.seams );
         g.setAttribute( 'aSealedVariation', attrs.variation );
+        g.setAttribute( 'aSealedClear', attrs.clear );
         return g;
     }, [ attrs ] );
     const material = useMemo(
-        () => streakMaterial( reflection, BLOCK_EMITTER, { uBevel: { value: SEALED_BLOCK_BEVEL } } ),
+        () =>
+            streakMaterial( reflection, BLOCK_EMITTER, {
+                uBevel: { value: SEALED_BLOCK_BEVEL },
+                uSeamCore: { value: SEALED_BLOCK_SEAM_WIDTH },
+            } ),
         [],
     );
     const attach = useCallback(

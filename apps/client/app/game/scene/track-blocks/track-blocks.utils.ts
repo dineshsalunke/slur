@@ -2,6 +2,7 @@ import { type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from '@slur
 import * as THREE from 'three';
 import { blockWorld } from '../../block-state';
 import { boltCloseness, noteBroken, noteStanding } from '../block-breaks';
+import { writeSeamClear } from '../block-reflections/block-reflections.utils';
 import { fractureOrient, shareCells } from '../fractured-block-geometry';
 import type { BlockDims } from '../sealed-block-geometry';
 import {
@@ -17,7 +18,7 @@ import {
 import { AHEAD, BACK, put } from '../track-instancing';
 import type { BlockCapacity, Emit, FracturedAttributes, SealedAttributes, SealedVariation } from './track-blocks';
 import { _m, BLOCK_LIMIT, FRACTURED_LIMIT } from './track-blocks.constants';
-import { variations } from './track-blocks.state';
+import { variations, windowSegs } from './track-blocks.state';
 
 export function variationFor( x: number, z: number, dims: BlockDims, open = 0 ): SealedVariation {
     const seed = sealedBlockSeed( x, z );
@@ -46,13 +47,14 @@ export function writeVariation(
     z: number,
     dims: BlockDims,
     open = 0,
-): void {
+): SealedVariation {
     const v = variationFor( x, z, dims, open );
     const seams = attrs.seams.array as Float32Array;
     for ( let s = 0; s < SEALED_BLOCK_MAX_SEAMS; s++ ) seams[ i * SEALED_BLOCK_MAX_SEAMS + s ] = v.seams[ s ] ?? 0;
     const variation = attrs.variation.array as Float32Array;
     variation[ i * 2 ] = v.count;
     variation[ i * 2 + 1 ] = v.wear;
+    return v;
 }
 
 function endCovered( b: Block, x: number, blocks: readonly Block[] ): boolean {
@@ -72,14 +74,22 @@ export function openEnds( b: Block, blocks: readonly Block[] ): number {
     return open;
 }
 
-export function emitSealed( e: Emit, b: Block, open = 0 ): void {
+export function emitSealed(
+    e: Emit,
+    b: Block,
+    open: number,
+    before: Segment | undefined,
+    seg: Segment,
+    after: Segment | undefined,
+): void {
     const h = Math.max( 0.05, b.y1 - b.y0 );
     const dims = { w: b.x1 - b.x0, h, d: b.z1 - b.z0 };
     const cx = ( b.x0 + b.x1 ) / 2;
     const cz = ( b.z0 + b.z1 ) / 2;
     const next = put( e.sealed, e.si, e.capacity.sealed, cx, b.y0 + h / 2, cz, dims.w, h, dims.d );
     if ( next === e.si ) return;
-    writeVariation( e.attrs, e.si, cx, cz, dims, open );
+    const v = writeVariation( e.attrs, e.si, cx, cz, dims, open );
+    writeSeamClear( e.attrs.clear, e.si, b, v.seams, before, seg, after );
     e.si = next;
 }
 
@@ -94,13 +104,13 @@ export function emitFractured( e: Emit, b: Block ): void {
     e.fi++;
 }
 
-export function emitSegment( e: Emit, seg: Segment ): void {
+export function emitSegment( e: Emit, seg: Segment, prev?: Segment, next?: Segment ): void {
     for ( const b of seg.blocks ) {
         const fractured = b.kind === 'fractured';
         if ( blockWorld.broken.has( b.id ) ) {
             if ( fractured ) noteBroken( b, e.ship );
         } else if ( fractured ) emitFractured( e, b );
-        else emitSealed( e, b, openEnds( b, seg.blocks ) );
+        else emitSealed( e, b, openEnds( b, seg.blocks ), prev, seg, next );
     }
 }
 
@@ -108,8 +118,15 @@ export function emitWindow( e: Emit, track: Track, z: number ): void {
     const i0 = Math.max( 0, Math.floor( ( z - BACK ) / SEG_LEN ) );
     const i1 = Math.floor( ( z + AHEAD ) / SEG_LEN );
     const here = Math.max( i0, Math.floor( z / SEG_LEN ) );
-    for ( let i = here; i <= i1; i++ ) emitSegment( e, track.segmentAt( i ) );
-    for ( let i = i0; i < here; i++ ) emitSegment( e, track.segmentAt( i ) );
+    const lo = Math.max( 0, i0 - 1 );
+    windowSegs.length = 0;
+    for ( let i = lo; i <= i1 + 1; i++ ) windowSegs.push( track.segmentAt( i ) );
+    for ( let i = here; i <= i1; i++ ) emitAt( e, i - lo );
+    for ( let i = i0; i < here; i++ ) emitAt( e, i - lo );
+}
+
+function emitAt( e: Emit, k: number ): void {
+    emitSegment( e, windowSegs[ k ], windowSegs[ k - 1 ], windowSegs[ k + 1 ] );
 }
 
 export function blockCapacity( track: Track ): BlockCapacity {
@@ -147,6 +164,10 @@ export function sealedAttributes( capacity: number ): SealedAttributes {
             SEALED_BLOCK_MAX_SEAMS,
         ),
         variation: new THREE.InstancedBufferAttribute( new Float32Array( capacity * 2 ), 2 ),
+        clear: new THREE.InstancedBufferAttribute(
+            new Float32Array( capacity * SEALED_BLOCK_MAX_SEAMS ),
+            SEALED_BLOCK_MAX_SEAMS,
+        ),
     };
 }
 

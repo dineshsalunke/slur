@@ -7,13 +7,9 @@ export const PICKUP_DECK_TOLERANCE = 0.05;
 export const PICKUP_EMITTER = /* glsl */ `
 uniform float uPickupHover;
 
-bool reflEmitter( out vec3 base, out float h0, out float h1, out float power, out float point, out vec4 clear ) {
-	base = instanceMatrix[ 3 ].xyz;
-	h0 = uPickupHover;
-	h1 = uPickupHover;
-	power = instanceMatrix[ 0 ].x;
-	point = 1.0;
-	clear = instanceMatrix[ 1 ];
-	return power > 0.0;
+bool reflEmitter( out ReflEmitter e ) {
+	vec3 base = instanceMatrix[ 3 ].xyz;
+	e = ReflEmitter( base, uPickupHover, uPickupHover, instanceMatrix[ 0 ].x, 1.0, 0.0, reflBoxReach( instanceMatrix[ 1 ], base ) );
+	return e.power > 0.0;
 }
 `;
