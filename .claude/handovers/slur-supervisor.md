@@ -53,9 +53,10 @@ tuning-panel.tsx).
 
 ## Next
 
-1. workerone #365 SHA → relay its /test-level brief → send workerthree (58651.sock) "DECISIONS clear, ADR-032".
-2. workerthree #368 SHA → relay its /test-level brief → I update the CLAUDE.md controls line to the new layout
-   (Q/A, Ctrl, Shift, V all gone; B mirror), commit + push by pathspec.
+1. DONE: #365 3f6f791 closed (workerone IDLE, no files; brief relayed). #368 code d65ada3 pushed; workerthree
+   told "DECISIONS clear" for ADR-032 AND to explain the test-count drop (#367 98 files/668 → #368 73/495)
+   before closing #368. CLAUDE.md controls line updated to #368 layout (this seam).
+2. Await workerthree: ADR-032 SHA + test-count answer → relay to owner.
 3. Owner answers → forward.
 4. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
 
