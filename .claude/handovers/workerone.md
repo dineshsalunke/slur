@@ -1,73 +1,65 @@
-Agent: workerone · Lane: #354 fake deck reflections (owner-approved A+B+C) · Updated: 2026-09-29 (part 2a taps)
+Agent: workerone · Lane: #354 fake deck reflections (part 2b next) · Updated: 2026-09-29 (seam, context warning)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#354: warm additive streaks on the deck under rails, block seams, pickups and exhausts, like
-`docs/art-direction/golden-reference/cruise-lighting.png` (LOOK only). Every tier, near-zero cost.
-Then, as a SEPARATE commit with its own measurement: stronger deck Wear maps + deck anisotropy.
-
-Owner answers (2026-09-29): fix pickup spots over holes (DONE); accept the left-rim sheen under
-the white sky light (no change); adopt workerthree's albedo defaults in part 2
-(Environment.rotation 180 + Metal.baseColor #595c62).
+#354: warm additive streaks on the deck (done), then part 2 as SEPARATE commits: 2a Wear ranges
+(done: owner keeps the base values), 2b deck anisotropy.
 
 ## Done
 
 - `3c576aa` `668df76` `f0562e7` part 1; `a249221` ADR-031 + ART_MATERIALS item 23.
-- `59aa760` pickup spots clipped to a per-pickup clear deck box (x0,x1,z0,z1 in instance matrix
-  column 1). A z-only run missed lengthwise cracks (seed 1, x −4…4).
-- `6cb1f36` + `7cb7e05` block seam streaks (owner feedback via supervisor): Gaussian cross-profile
-  from half the seam width, blur grows with distance (`uReflBlur` 0.01 × (0.5 + Deck.roughness)),
-  peak × sqrt(σ0/σ); per-seam free deck distance along the face normal (0 in a butt joint), written
-  per frame in `emitWindow` from neighbour segments (`windowSegs`). Emitters fill a `ReflEmitter`
-  struct. `7cb7e05` adds the new utils file that `6cb1f36` missed (untracked).
-- `bb86b64` ADR-031 + ART_MATERIALS item 23 updated for the three commits above; left rim marked
-  accepted.
+- `59aa760` pickup clear box; `6cb1f36` + `7cb7e05` seam blur + clearance.
+- `bb86b64` ADR-031/item 23 updated for the three commits above; left rim marked accepted.
+- `e80f54f` part 2a verdict recorded: the owner keeps Wear at 0.3/0.25/0.7/1. No code change.
+- `0bb4b5b` #359 (quick lane, CLOSED): EngineLight.back is measured from the rearmost exhaust port.
+  Nozzle hue high 16.1° → 31.3°, low 24.5° → 35.6°. The deck pool behind the ship is ~3u further
+  back and brighter (luma high 86.5 → 94.6).
 
 ## State
 
-- Gap-lip [measured, 8 seeds 20260921,1–7, 180,480 frames]: pickup >¼ over a hole 7.06% → 0.00%;
-  on-deck spot light kept 99.44%. Block streaks >¼ over a hole 0.35% (unchanged; not in scope).
-- Butt joints [measured, seed 20260921]: 314 of 429 sealed blocks meet end to end. Mirrored-camera
-  cull = camera cull for vertical faces [inferred, maths]; the joint was the cause.
-- Taps [measured, scratchpad `153f7ede…/shots`]: `before-*` / `after2-*` at ship (−2, 596) and
-  (0, 1020): stray streaks gone, streaks now seam-width and soften with distance. `gap-before` /
-  `gap-on`: pickup tick over the gap gone. The owner's exact screenshot view was not reproduced.
-- Clearance CPU [measured, node]: 0.011 ms/frame mean, 0.17 ms worst. GPU perf not re-run.
-- Client vitest 656/656, typecheck + `pnpm lint` clean.
-- Part 2a Wear sweep [measured, taps at (−2,596) and (0,1020), albedo defaults on]: scratchpad
-  `dce8336e…/scratchpad/shots/{base,w1,w2,w3}-*.png`; `wear.mjs` (SETS, VIEWS), `regstat.mjs`.
-  base = 0.3/0.25/0.7/1; w1 = valueSpan 0.2, roughSpan 0.4, metalMin 0.5; w2 = 0.15/0.5/0.35;
-  w3 = 0.1/0.6/0.2. Left-deck patch at (−2,596): mean luma 35.9→37.8→40.1→42.8, sd 9.2→9.7→10.0→10.3.
-  Block patch mean 27→32→37→41. The dials also drive blocks; w3 is heavy on near block faces.
-- Scripts in scratchpad `153f7ede…/scratchpad`: `gaplip.mjs` (SEEDS, NOCAP), `jshot.mjs` (VIEWS,
-  NAME, TUNING), `joints.mjs`, `cleartime.mjs`, `perf.mjs`, `gapshot.mjs`.
+- Wear sweep taps [measured]: scratchpad `dce8336e…/scratchpad/shots/{base,w1,w2,w3}-*.png`.
+- #359 taps [measured]: scratchpad `dce8336e…/scratchpad/noz/{low,high}-{def,noLight,fixed,…}.png`,
+  crops `noz-crop*.png`, `noz-fixed.png`. Scripts: `nozzle.mjs` (SETS, TIERS, BLACK, ROUGH),
+  `hue.mjs <png> '[x0,y0,x1,y1]'`, `crop.mjs`, `wear.mjs`, `regstat.mjs`.
+- Older scripts in scratchpad `153f7ede…/scratchpad` (gaplip, jshot, joints, perf).
+- Client vitest for engine-light 2/2; client typecheck + biome + comment ratchet clean on 0bb4b5b.
+- Block-streak verdict (length/blur): not received yet [unmeasured].
+- No headless Chrome left running.
 
 ## Uncommitted
 
-- none.
+- none (this handover and the new memory are committed with it).
 
 ## Held files
 
 - `deck-reflection/*`, `block-reflections/*`, `pickup-reflections/*`, `exhaust-reflections/*`,
   `track-floor/track-floor.tsx`, `track-blocks/*`, `pickup-field.tsx`, `exhaust-field/*`,
-  `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`.
-- `track-texture.ts` + `track-materials.ts`: cleared for part 2, not edited yet.
+  `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`, `track-texture.ts`,
+  `track-materials.ts`.
+- `engine-light/*` (#359, done; release).
 - `dev/tuning-schema.ts` + `dev/tuning-panel/tuning-panel.tsx`: ON LOAN to workerthree (#356).
 
 ## Next
 
-1. Wait for owner verdict on the block-streak taps. Possible dials: `uReflBlur` (no schema dial yet
-   — add `Reflect.blur` when tuning-schema.ts is back), streak length via `Reflect.falloff`.
-2. Part 2a: owner picks a Wear set (w2 suggested); commit the defaults when tuning-schema.ts is back; part 2b: deck anisotropy (MeshPhysicalMaterial,
-   extras at 0). Adopt Environment.rotation 180 + Metal.baseColor #595c62 when the schema is back.
-3. Close #354 with SHAs after part 2.
+1. Part 2b: deck anisotropy in `track-materials.ts`. Use MeshPhysicalMaterial with the extras at 0
+   (three 0.185.1: Standard and Physical share the 'physical' program, WebGLPrograms.js:36-37;
+   anisotropy compiles only when > 0, :140). Check that `#define PHYSICAL` is a no-op at metalness 1.
+   Check that chainShaderPatch, deck-breakup and rail-sheen still apply. Measure the low tier.
+   Dials `Deck.anisotropy` + `Deck.anisotropyRotation` need tuning-schema.ts; preview first with a
+   route rewrite (`nozzle.mjs` shows the pattern; register the route AFTER the favicon step).
+2. When tuning-schema.ts is back: Environment.rotation 180 + Metal.baseColor #595c62 defaults
+   (owner-approved), and a `Reflect.blur` dial for `uReflBlur`.
+3. Apply the block-streak verdict if it asks for changes.
+4. Close #354 with SHAs after part 2b.
 
 ## Open questions
 
-- Owner: are the new block streaks right (length, blur rate)?
+- Owner: are the block seam streaks right (length, blur rate)?
+- Owner: the EngineLight.color `#ff9a3c` pool on the deck now shows more after #359. Keep it, or use
+  the accent?
 
 ## Lessons → memory
 
-- `.claude/memory/commit-pathspec-skips-untracked.md`.
+- `.claude/memory/point-light-at-an-emitter-shifts-its-hue.md`.

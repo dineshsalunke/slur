@@ -146,3 +146,4 @@ One line per memory; each memory lives in its own file here.
 - [Deck glare is the HDRI lobe](deck-glare-is-the-hdri-lobe.md) — near-white deck = env reflection at rotation 0; rotate 180 before touching albedo
 - [Pathspec commit skips untracked](commit-pathspec-skips-untracked.md) — `git commit -- dir` leaves new files out; `git add --` them first
 - [Scribd needs headless Chrome](scribd-needs-headless-chrome.md) — WebFetch/curl hit a bot wall; Playwright + system Chrome reads it
+- [A point light at an emitter shifts its hue](point-light-at-an-emitter-shifts-its-hue.md) — light 0.41u from nozzles turned marigold red; zero each light, anchor to ports
