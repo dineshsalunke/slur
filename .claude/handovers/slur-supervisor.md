@@ -45,7 +45,8 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S0 conventions | #382 | landed c1233064 (conventions/features.md; Q5–Q7 written as open) |
 | S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
 | S8 input on sim tick | #383 | landed 8681e05 (30 sends/s, 2 inputs each; reconcile 0/198 before and after; hidden tab no worse) |
-| S18 render system | #384 | ASSIGNED workerthree; first lands #386 (landing canvas dies ~2 s after load: useTexture suspense escapes the Canvas; fix = Suspense in landing-scene.tsx) |
+| S18 render system | #384 | IN PROGRESS workerthree. Landing baseline: 45 draws/frame, 5.1 ms median |
+| #386 landing canvas | #386 | landed 04684954, closed; NOT PUSHED (workerthree's push denied by classifier; owner to push; dev ahead of origin). fallback={null} → ~1 s clear-colour gap before the 3D scene; StillBackdrop hand-off needs a new reveal file (owner to decide) |
 | S17 addEffect → phases | #387 | ASSIGNED workertwo |
 | F1 engine skeleton | #385 | ASSIGNED workerone; waits on attach-room-to-world.ts; stays out of world-scene/landing-scene |
 
