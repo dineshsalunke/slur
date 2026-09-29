@@ -5,7 +5,7 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 ## Goal
 
 Make the nozzles and their deck reflection read as the marigold accent (#F5B024, 40°). Remove the
-EngineLight (owner decision, removal pre-approved). The rest of the plan waits for owner approval.
+EngineLight (owner decision). OWNER APPROVED option 2 + the EngineLight removal in one commit set (2026-09-29, via supervisor). Option 4 (hue-preserving tone map) stays parked.
 
 ## Done
 
@@ -43,14 +43,13 @@ cruising, KeyP frozen). Hue is the mean of each brightness band in a crop.
 
 ## Held files
 
-- none until the plan is approved.
+- Cleared by supervisor, not yet written: engine-light/ (delete, 4 files), world-scene.tsx, routes/home/landing-scene/landing-scene.tsx, dev/tuning-schema.ts, dev/tuning-panel/tuning-panel.tsx, ship-model/ship-model.utils.ts, ship-materials.ts (+ test), docs/RFC-349-ARCHITECTURE.md, docs/DECISIONS.md, docs/ART_MATERIALS.md. `.claude/memory/` is ON HOLD until the supervisor merge lands.
 
 ## Next
 
-1. Wait for the owner's decision on the plan sent to slur-supervisor.
-2. Build: remove the EngineLight, override the two nozzle materials from `accent()` in `collectSurfaces`, and
+1. APPROVED, build now (start at HEAD, after workerthree d6cb3f6/28da8f8): remove the EngineLight, override the two nozzle materials from `accent()` in `collectSurfaces`, and
    change the engine idle and cruise defaults.
-3. Re-measure x5 on the real code, then brief the owner on /test-level.
+2. Tests + typecheck + lint, commit by pathspec. Re-measure x5 on the real code, then send the supervisor the SHAs, test counts and what to look at on /test-level. Close #369 with the SHA.
 
 ## Open questions
 
