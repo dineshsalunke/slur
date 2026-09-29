@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: 827c397a-120c-4055-877b-f51d367f7a9b
-  modified: 2026-09-25T03:35:25.029Z
+  modified: 2026-09-29T10:40:30.214Z
 ---
 
 The Bash tool's shell in this checkout is not always the same. On 2026-09-24 it ran **fish**: a bash
@@ -21,3 +21,6 @@ environment line said fish: a fish `for …; end` loop failed with `(eval):1: pa
 zsh both accept it. Plain one-line commands are fine in either shell. To sample a pixel without Python,
 use `sips -c 40 40 --cropOffset y x`, then `sips -s format bmp`, then read the first pixel with `od` at
 the offset stored in bytes 10–13 (the bytes are BGRA).
+
+`bash -c` is macOS `/bin/bash` 3.2: no `mapfile` or `readarray` (2026-09-29). To commit a list of paths,
+use `git add --pathspec-from-file=<f>` and `git commit --pathspec-from-file=<f>`.

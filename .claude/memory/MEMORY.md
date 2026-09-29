@@ -17,10 +17,11 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Backlog is split two ways](backlog-split.md) — global parking lot vs project roadmap
 
 ## Shell, tools & machine
-- [Bash tool shell varies](bash-tool-runs-fish.md) — fish or zsh; use `&&` and `bash -c`
+- [Bash tool shell varies](bash-tool-runs-fish.md) — fish or zsh; `bash -c` is 3.2, no mapfile
 - [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — BSD pkill hit the owner's apps
 - [Bulk move without git mv](bulk-move-without-git-mv.md) — scripted `git mv` denied; node fs
 - [ast-grep footguns](ast-grep-footguns.md) — trailing comma, dropped `;`, type patterns need context
+- [Bulk AST edits via ast-grep JSON](bulk-ast-edits-via-ast-grep-json.md) — TS 7 has no JS API; splice ranges
 - [Lint footguns](lint-footguns.md) — Biome class sort + stdin; ls-lint sub-exts; useEffect ratchet
 - [Typegen runs in production mode](typegen-runs-in-production-mode.md) — dev-gated routes lose `+types`
 - [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — `tsc -b --force`
