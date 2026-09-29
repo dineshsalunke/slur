@@ -32,9 +32,9 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #369 nozzle hue option 2 + EngineLight removal (cleared + resumed at 674cd48) | BUILDING | engine-light/ (delete), world-scene.tsx, landing-scene.tsx, tuning-schema.ts, tuning-panel.tsx, ship-model.utils.ts, ship-materials(.test).ts, docs/RFC-349-ARCHITECTURE.md (also fix lines 370/852 → memory lint-footguns), docs/DECISIONS.md, docs/ART_MATERIALS.md |
-| workertwo | w2Z:p3 | rear-view mirror GPU cost, MEASURE ONLY (owner approved) | waiting for other headless Chrome to exit, then ON/OFF runs | — |
-| workerthree | w2Z:p5 | — (#370 chevrons closed 57f2bfe) | IDLE | — |
+| workerone | w2Z:p2 | — (#369 shipped 4c66045 + e5b1e6d; OPEN for owner sign-off) | IDLE | — |
+| workertwo | w2Z:p3 | — (mirror cost measured, handover cdadd1f; context likely >15%: clear before next lane) | IDLE | — |
+| workerthree | w2Z:p5 | REMOVE rear-view mirror entirely (owner, 2026-09-29): render, panel, B key, pad/touch, slur.rearView, quality flag, dials, tests, ADR bullet, GDD + CLAUDE.md controls line, delete memory rear-view-panel-looks-like-geometry | BRIEFED, claim list pending | — (awaiting claim) |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
@@ -59,8 +59,9 @@ None of mine. The tree shows workerone's in-progress #369 edits.
 
 ## Next
 
-1. workerone reports #369 SHAs → relay the /test-level check to owner (flat marigold nozzles, no deck pool).
-2. workertwo reports mirror cost → relay with numbers.
+1. workerthree sends the mirror-removal claim list → check it against the tree (no one else holds files) → clear.
+2. Relay #369 owner answers (flatter nozzle OK? streak after reset tuning?) to workerone; it closes #369.
+   Mirror cost (relayed): ON +0.55–0.8 ms, 129 vs 74 draws; owner chose REMOVE.
 3. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
 
 ## Lessons → memory
