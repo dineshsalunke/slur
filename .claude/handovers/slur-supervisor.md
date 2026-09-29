@@ -63,7 +63,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 
 1. RFC-349 §8: Q7 ANSWERED (54ff79b7): a3 with hand-written StandardSchemaV1 objects, no library (owner
    worried about wire lag; validation is server-side after decode, 0 bytes). workerone told; folds into
-   features.md. Still open: Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
+   features.md. Q9 ANSWERED: reload-only (S19 unblocked after S18). Was: Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
 2. Owner to try pad Start in a real lobby (#375).
 3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
    perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;

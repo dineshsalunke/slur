@@ -886,7 +886,7 @@ Frame schedule, render and quality stages (§5, workerthree):
 | S16 | **Landed f33da9f0 (#381).** Scheduler (O1). Split `NetLoop`/`DeckLoop`/`LandingRig` into `simulate` + `sync` systems. Dev order print and per-system timing (§5.5). | new `game/frame/schedule.ts`; `game/net-loop/*`, `routes/beat-deck/deck-loop/*`, `routes/home/landing-rig/*`, `dev/frame-meter.ts` | S14 |
 | S17 | **Landed a3ee47ad (#387).** `input.gamepad` in all 3 schedules; `net.host-tick` through optional `RunRoomLike.hostTick`; 5 HUD writers drained by `net.hud` (cleanup) from `game/hud/hud-writers/hud-writers.state.ts`. `dev/frame-meter.ts` still uses `addEffect` (out of scope). Move gamepad, loopback tick and HUD DOM writers from `addEffect` into `input` / `simulate` / `cleanup`. | `game/input/gamepad.ts`, `net/loopback-room/loopback-room.ts`, 4 HUD files | S16 |
 | S18 | **In progress (#384, workerthree).** Render system (P2) with the post-effect slot list. | `game/scene/scene-effects/*`, `plain-render/*`, `world-scene.tsx`, `landing-scene.tsx` | S16 |
-| S19 | Quality hooks (Q2). Remove `QualityGate` remounts. Rebuild build-time knobs on a tier change. Step-down in the shared shell. | `quality/*`, `game-environment.tsx`, `rear-view.tsx`, `nebula-baker.ts`, `track-texture.ts`, `nebula-noise-volume.ts`, `game/game-shell.tsx` | S18, §8 Q9 |
+| S19 | Quality hooks (Q2). Remove `QualityGate` remounts. Build-time knobs (sky cube, track textures) are `reload-only` (Q9); the UI says so. Step-down in the shared shell. | `quality/*`, `game-environment.tsx`, `rear-view.tsx`, `nebula-baker.ts`, `track-texture.ts`, `nebula-noise-volume.ts`, `game/game-shell.tsx` | S18 |
 | S20 | One dial-sync system (`react` phase) that writes only on a tuning change. | the 6 dial-sync files, `dev/tuning.ts` | S16 |
 | S21 | Hoist koota queries with `createQuery` (`koota/dist/index.d.ts:28`). Measure the gain first (§8 Q10). | the ~25 query sites | S16 |
 
@@ -917,5 +917,6 @@ waits for S0.
    ordering for views, and one render system (P2) with a fixed list of post-effect slots. It also makes
    quality a service with per-feature hooks (Q2). **Answered 2026-09-29: yes.**
 9. Owner: may a tier change rebuild the sky cube and track textures mid-race (one hitch), or should those
-   knobs be `reload-only` (§5.4)?
+   knobs be `reload-only` (§5.4)? **Answered 2026-09-29: reload-only.** The sky cube and track textures
+   keep their build-time values until the page reloads, and the quality UI says so. No mid-race rebuild.
 10. Measure before S21: does `createQuery` remove the per-call copy in koota 0.6.6, or only the hash lookup?
