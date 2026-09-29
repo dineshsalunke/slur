@@ -104,14 +104,13 @@ uniform float uRockSpeed;
 uniform float uRockCycle;
 const float TRAVEL_REFERENCE_SIZE = 12.0;
 const float TRAVEL_MASS_FLOOR = 0.3;
-const float TRAVEL_FADE = 0.06;
+const float TAU = 6.28318530718;
 varying vec3 vRockPos;
 varying vec3 vRockNormal;
 varying vec3 vRockAxX;
 varying vec3 vRockAxY;
 varying vec3 vRockAxZ;
 varying float vRockDepth;
-varying float vRockFade;
 varying float vRockHeat;
 
 mat3 rockRotation( vec3 a, float angle ) {
@@ -154,16 +153,14 @@ transformed = rockSpin * transformed;
 const VERT_DEPTH = `
 vec4 mvPosition = instanceMatrix * vec4( transformed, 1.0 );
 #ifdef ROCK_LOOSE
-vRockFade = 1.0;
 vRockHeat = aRockHeat;
 #else
 float rockMass = clamp( TRAVEL_REFERENCE_SIZE / length( instanceMatrix[ 0 ].xyz ), TRAVEL_MASS_FLOOR, 1.0 );
 vec2 rockOut = normalize( instanceMatrix[ 3 ].xy + vec2( 1e-3, 0.0 ) );
 float rockSide = aRockSpin.x >= 0.0 ? 1.0 : -1.0;
 vec3 rockVel = normalize( vec3( -rockOut.y * rockSide, rockOut.x * rockSide, aRockSpin.z * 0.9 ) ) * uRockSpeed * rockMass;
-float rockU = fract( uRockTime / uRockCycle + fract( aRockSpin.w * 57.0 + aRockSpin.y * 13.0 ) );
-mvPosition.xyz += rockVel * ( rockU - 0.5 ) * uRockCycle;
-vRockFade = smoothstep( 0.0, TRAVEL_FADE, rockU ) * smoothstep( 1.0, 1.0 - TRAVEL_FADE, rockU );
+float rockPhase = TAU * ( uRockTime / uRockCycle + fract( aRockSpin.w * 57.0 + aRockSpin.y * 13.0 ) );
+mvPosition.xyz += rockVel * sin( rockPhase ) * uRockCycle / TAU;
 vRockHeat = 0.0;
 #endif
 mvPosition = modelViewMatrix * mvPosition;
@@ -187,14 +184,13 @@ varying vec3 vRockAxX;
 varying vec3 vRockAxY;
 varying vec3 vRockAxZ;
 varying float vRockDepth;
-varying float vRockFade;
 varying float vRockHeat;
 `;
 
 const FRAG_SAMPLE = `
 #include <clipping_planes_fragment>
 float rockDither = fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) );
-if ( smoothstep( uRockFar, uRockFar * 0.8, vRockDepth ) * vRockFade < rockDither ) discard;
+if ( smoothstep( uRockFar, uRockFar * 0.8, vRockDepth ) < rockDither ) discard;
 vec3 rockN = normalize( vRockNormal );
 vec3 rockW = pow( abs( rockN ), vec3( 4.0 ) );
 rockW /= dot( rockW, vec3( 1.0 ) );

@@ -173,8 +173,8 @@ export const NUMBER_TUNABLES = {
     'Rock.normalScale': { value: 2.5, min: 0, max: 3, step: 0.05, rebuild: false },
     'Rock.roughness': { value: 1, min: 0.1, max: 1.5, step: 0.01, rebuild: false },
     'Rock.detail': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
-    'Rock.spin': { value: 3.35, min: 0, max: 6, step: 0.05, rebuild: false },
-    'Rock.speed': { value: 16, min: 0, max: 60, step: 0.5, rebuild: false },
+    'Rock.spin': { value: 0.5, min: 0, max: 6, step: 0.05, rebuild: false },
+    'Rock.speed': { value: 0.6, min: 0, max: 60, step: 0.1, rebuild: false },
     'Rock.cycle': { value: 36, min: 10, max: 200, step: 1, rebuild: false },
     'Rock.heat': { value: 3, min: 0, max: 20, step: 0.1, rebuild: false },
 
