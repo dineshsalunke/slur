@@ -24,6 +24,10 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - #358 Blur keys: Q throttle, A/↓ brake, ←/→ strafe, LShift/RCtrl fire fwd, RShift fire back, ↑ next slot,
   LCtrl+X drop (HUD shows X on Mac); W/S/E/F/X/R kept as silent extras; Space/M/1-3/Esc unchanged.
 
+- #359 done 0bb4b5b; OWNER: engine deck pool → marigold accent (EngineLight.color default in tuning-schema.ts;
+  sent to workerone, waits for the file back from workerthree). Wear=base recorded e80f54f.
+- #358 done 93df4d2. Open: remove hidden W (Windows Ctrl+W closes tab)?
+
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
