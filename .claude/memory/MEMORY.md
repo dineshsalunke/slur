@@ -64,6 +64,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Stage enemy fire on /test-level](stage-enemy-fire-on-test-level.md) — fire, flip ownerId, pin per rAF
 - [Node bots](node-bots.md) — node @colyseus/sdk second racer; one event loop per busy bot
 - [Scratch servers](scratch-servers.md) — `__finish` seeds racers; 30-segment short course
+- [Simulate a hidden tab over CDP](simulate-a-hidden-tab-over-cdp.md) — headless stays visible; hold rAF
 - [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s
 - [SDK buffers sends while dropped](sdk-buffers-sends-while-dropped.md) — flushed on reconnect
 - [Unmounted fetcher drops its redirect](unmounted-fetcher-drops-its-redirect.md) — store on non-redirect path
