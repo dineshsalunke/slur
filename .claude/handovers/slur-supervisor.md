@@ -50,9 +50,9 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #364 DONE 254d267 (closed): owner look = defaults (Metal+Hull #232324, env rot 210, intensity 1, Neutral 1) on home/lobby/test-level | IDLE | — |
+| workerone | w2Z:p2 | #364 DONE 254d267. NOW: seam-streak slant + fake look (owner imgs 22/23), INVESTIGATE + PLAN only, build after owner OK | INVESTIGATING | — (claims pending) |
 | workertwo | w2Z:p3 | #360 done; ~12% context — clear before next lane | IDLE | — |
-| workerthree | w2Z:p5 | #362 d47a026 + #363 056e436 done; waits on R/F/E answer | IDLE | — |
+| workerthree | w2Z:p5 | Remove hidden R/F/E (owner approved; report other Ctrl risks) | BUILDING | — (claims pending) |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
