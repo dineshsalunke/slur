@@ -34,7 +34,7 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - #356 DONE 9c2ce73 (Environment.bandColor/bandIntensity 1.5/bandHeight 6°; rebake ~0.6 ms per dial change).
   workerthree IDLE, no held files. tuning-schema.ts + tuning-panel.tsx now back with workerone (engine pool
   marigold queued). Owner may want stronger band intensity. #360 DONE cd742d0 (closed); workertwo IDLE, no held files.
-- #361 home-screen controls panel → workerone, CLEAR: input/keyboard.ts, input/power-select.ts, new
+- #361 DONE 0ca2c3b (closed), brief relayed. workerone now on EngineLight.color → marigold. Was CLEAR: input/keyboard.ts, input/power-select.ts, new
   input/key-label.ts(+test), power-rack.utils.ts, audio/game-audio/game-audio.tsx + new .constants.ts,
   routes/home.tsx, new routes/home/controls-panel/*.
 - #354 part 2b anisotropy: OWNER CHOICE PENDING (a) drop [rec] / (b) dials default 0 / (c) 0.15 along z.
