@@ -45,7 +45,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S0 conventions | #382 | landed c1233064 (conventions/features.md; Q5–Q7 written as open) |
 | S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
 | S8 input on sim tick | #383 | landed 8681e05 (30 sends/s, 2 inputs each; reconcile 0/198 before and after; hidden tab no worse) |
-| S18 render system | #384 | ASSIGNED workerthree |
+| S18 render system | #384 | ASSIGNED workerthree; first lands #386 (landing canvas dies ~2 s after load: useTexture suspense escapes the Canvas; fix = Suspense in landing-scene.tsx) |
 | F1 engine skeleton | #385 | ASSIGNED workerone; waits on attach-room-to-world.ts; stays out of world-scene/landing-scene |
 
 ## Workers
@@ -53,7 +53,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #385 F1 | BUILDING (claim cleared; bridge + net-loop.constants released to it after S8) | net/attach-room-to-world.ts, game/net-loop/net-loop.constants.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
-| workertwo | w2Z:p3 | — (#383 done) | IDLE; asked to commit handover + report % | — |
+| workertwo | w2Z:p3 | — (#383 done, handover 33065bb) | IDLE, cleared to 0% | — |
 | workerthree | w2Z:p5 | #384 S18 | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
 | do-setup | w2Z:p4 | infra | idle | — |
 
