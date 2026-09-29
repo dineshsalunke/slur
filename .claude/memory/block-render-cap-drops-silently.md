@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: bc84f310-6260-4659-8ea3-f86ec90cc664
-  modified: 2026-09-27T08:19:56.757Z
+  modified: 2026-09-29T04:11:44.109Z
 ---
 
 `put()` (`game/scene/track-instancing.ts`) returns without writing once the instance index reaches the
@@ -24,5 +24,5 @@ generated track". The first repro on `?gen=phrase` showed nothing.
 mesh has `aSealedSeams`. The fractured mesh has capacity ≥ 160: debris meshes also carry `aBlock`/`aFractureGlow`
 but have capacity 12. To test a dense level without writing `tracks/`, stub `/__tracks/<id>` with Playwright
 `page.route` (driver `verify318.mjs`, workerone #318 scratchpad). Related:
-[[blocks-are-the-only-streamed-geometry]], [[instanced-meshes-hide-scene-bugs]],
-[[webglrenderer-render-is-an-instance-method]], [[preview-a-constant-by-route-rewrite]].
+[[blocks-are-the-only-streamed-geometry]], [[instanced-mesh-footguns]],
+[[grab-the-scene]], [[preview-a-constant-by-route-rewrite]].

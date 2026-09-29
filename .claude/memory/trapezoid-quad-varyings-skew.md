@@ -22,4 +22,4 @@ covers more screen.
 and `dot(world - base, dir)`. Rebuild the width in the fragment shader. Perspective-correct
 interpolation makes them exact. Measure it by rendering streaks on and off and taking the per-row
 centroid against the projected axis. The driver is `probe4.mjs` in the #365 scratchpad. Related:
-[[three-devtools-hook-gives-the-scene]], [[preview-a-constant-by-route-rewrite]].
+[[grab-the-scene]], [[preview-a-constant-by-route-rewrite]].

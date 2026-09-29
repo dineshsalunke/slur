@@ -23,6 +23,6 @@ than that, so the traits URL can be missing, or only a stale `?t=` copy can be t
 stage a power, write the room's server state: [[place-the-ship-over-cdp]],
 [[stage-a-mine-on-test-level]]. Use the ECS only to read predicted/render state.
 
-**How to apply:** same exact-URL rule as [[drive-the-live-module-not-a-reload]] and
-[[cdp-import-of-tuning-hits-an-hmr-orphan]]. Use headless Chrome ([[headless-chrome-for-frame-taps]])
+**How to apply:** same exact-URL rule as [[tuning-over-cdp]] and
+[[tuning-over-cdp]]. Use headless Chrome ([[headless-game-tabs-starve-the-gpu]])
 and kill it after.

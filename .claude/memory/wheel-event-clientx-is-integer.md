@@ -17,4 +17,4 @@ world point under the *fractional* position sees a drift of `frac × (1/scaleBef
 **How to apply:** round the probe point to whole CSS pixels (`Math.round(box.x + …) - box.x`) before
 any cursor-anchored check. React `onWheel` is passive, so a Ctrl+wheel zoom needs a native
 `addEventListener('wheel', …, { passive: false })` to `preventDefault` the page zoom. Related:
-[[drive-the-live-module-not-a-reload]].
+[[tuning-over-cdp]].

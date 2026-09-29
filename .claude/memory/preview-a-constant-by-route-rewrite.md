@@ -18,5 +18,5 @@ Each launch has a clean profile, so `tuning-schema` defaults can be rewritten to
 
 **How to apply:** launch a fresh browser for each variant. Log which paths were rewritten, and read one
 computed colour back to prove that the rewrite applied. The driver is `marigold-variants.mjs` in the #302
-scratchpad. Related: [[playwright-from-npx-cache-needs-system-chrome]],
-[[tune-headless-captures-via-own-localstorage]].
+scratchpad. Related: [[headless-game-tabs-starve-the-gpu]],
+[[tuning-over-cdp]].

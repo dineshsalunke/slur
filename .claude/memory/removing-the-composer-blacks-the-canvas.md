@@ -20,4 +20,4 @@ My headless check counted scenes and DPR and never looked at pixels, so it misse
 `gl.render(scene, camera)` at priority 1 (`QualityGate fallback`). Check any render-path change with
 a screenshot, not only object counts. The composer also sets `gl.toneMapping = NoToneMapping` while it
 is mounted and restores it on unmount. Without it, the CANVAS_GL NeutralToneMapping applies. Related:
-[[three-devtools-hook-gives-the-scene]].
+[[grab-the-scene]].

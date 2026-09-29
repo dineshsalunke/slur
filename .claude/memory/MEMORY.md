@@ -1,154 +1,129 @@
 # Project memory — slur
 
-One line per memory; each memory lives in its own file here.
+One line per memory, grouped by topic. Keep each hook under ~70 characters.
 
-- [Worktrees are for concurrency](worktrees-are-for-concurrency.md) — only when work collides, never as ceremony
-- [Project memory lives in the repo](project-memory-in-repo.md) — `.claude/memory/`, git-tracked, via `autoMemoryDirectory`
-- [Backlog is split two ways](backlog-split.md) — global = parking lot, project file = SLUR roadmap
-- [Instanced meshes hide scene bugs](instanced-meshes-hide-scene-bugs.md) — a traversal skipping `InstancedMesh` proves nothing; audit instance matrices
-- [Leave the browser tab open](leave-the-browser-tab-open.md) — closing it closes the window; reuse the `/test-level` tab
-- [Extension FPS readings are worthless](browser-extension-throttles-fps.md) — driven tab is backgrounded, rAF throttled; CPU-per-frame still valid
-- [The tunables store is shared](shared-tunables-storage.md) — one `localStorage` per ORIGIN; another port sidesteps it
-- [One git index per checkout](shared-checkout-shares-one-git-index.md) — `git add` is not session-local; commit by explicit pathspec
-- [Blocks are the only streamed geometry](blocks-are-the-only-streamed-geometry.md) — rest is built once; suspect `BACK` when blocks vanish off-chase
-- [Claim the lane before the first write](claim-the-lane-before-the-first-write.md) — two sessions took one handover item; one lost untracked files
-- [Headless Chrome for frame taps](headless-chrome-for-frame-taps.md) — separate headless Chrome + curl `/__frame-tap`; never screenshot the extension tab
-- [Eyeballing a tap lies about brightness](eyeballing-a-tap-lies-about-brightness.md) — deck rgb(28) looks mid-grey; composite a grey ramp
-- [Freeze the sim to A/B a light](freeze-the-sim-to-ab-a-light.md) — KeyP holds the camera; freeze at SPAWN, a timed flight drifts
-- [Probe by feature, not by pixel](probe-by-feature-not-by-pixel.md) — find the surface by its own emissive; bright deck line is the rim cord
-- [Deck material on blocks and monoliths](deck-material-on-blocks-and-monoliths.md) — one material; separation is form only; criteria 2–3 unrun
-- [Drive the live module, do not reload](drive-the-live-module-not-a-reload.md) — import the page's module over CDP, `setNum`; camera stays put
-- [Freeze does not stop asteroid drift](freeze-does-not-stop-asteroid-drift.md) — two-tap diffs are contaminated; force an alien colour, scan one tap
-- [CDP import of tuning hits an HMR orphan](cdp-import-of-tuning-hits-an-hmr-orphan.md) — setNum/setCol reach a second module instance; pin uniforms
-- [Frame tap may answer from another tab](frame-tap-may-answer-from-another-tab.md) — screenshot the tab you drive over CDP instead
-- [Pane percent is of 1M](pane-percent-is-of-one-million.md) — 15% = the 150k warning; clear before assigning past 10%
-- [Supervisor clears workers via herdr](supervisor-clears-workers-via-herdr.md) — `herdr agent prompt <pane> "/clear"` then resume; "stalled" = success
-- [Rear-view panel looks like geometry](rear-view-panel-looks-like-geometry.md) — top-centre translucent slab in a tap is the mirror
-- [Headless game tabs starve the GPU](headless-game-tabs-starve-the-gpu.md) — one extra tab doubles frame time; DPR 1, mute, kill after
-- [koota universe reaches the page world](koota-universe-reaches-the-page-world.md) — `universe.worlds` reads client ECS; writes overwritten since #288
-- [Measure a homing rule on procgen](measure-a-homing-rule-on-procgen.md) — 30 seeds + avoiding bot + per-phase death log beat unit tests
-- [Fog hides emissive past 420u](fog-hides-emissive-past-420u.md) — linear fog 40–420u; far signals need `fog:false`; camera far 1000u
-- [Instanced ref fill needs a geometry prop](instanced-ref-callback-needs-geometry-prop.md) — JSX geometry child attaches after the ref callback
-- [procgen segmentAt is uncached](procgen-segmentat-is-uncached.md) — rebuilds per call; memoise in brute-force tests (26.8 s → 0.26 s)
-- [Place the ship over CDP](place-the-ship-over-cdp.md) — loaderData room → write `room.sim.state` x/z while unfrozen
-- [Step the R3F clock for timed taps](step-the-r3f-clock-for-timed-taps.md) — frameloop 'never' + `advance(t)`; import the page's `?t=` URLs
-- [@deprecated breaks reflection decoding](deprecated-breaks-reflection-decoding.md) — shifts later field indexes; keep dead fields plain
-- [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + gap-aware bot; no time cap since #301, a wedged bot never ends
-- [Thin emissive needs pixel coverage](thin-emissive-needs-pixel-coverage.md) — bloom follows lit area; an edge-on 0.25u strip barely blooms
-- [Check the CDP port is yours](check-the-cdp-port-is-yours.md) — a taken port fails silently; you steer another agent's tab
-- [Count draw calls without repo edits](count-draw-calls-without-repo-edits.md) — CDP-inject a WebGL + rAF wrapper; ms is JS only
-- [Owner may waive issue filing](owner-may-waive-issue-filing.md) — "no issue, go ahead" means build without one
-- [MSAA edge samples extrapolate varyings](msaa-edge-samples-extrapolate-varyings.md) — `pow` on a negative base → NaN → black bloom; clamp, and square as x*x
-- [Narrow headless captures need a CDP viewport](narrow-headless-captures-need-cdp-viewport.md) — `--window-size` crops; use `setDeviceMetricsOverride`
-- [A sweep that hits its bound fakes a reading](a-sweep-that-hits-its-bound-fakes-a-reading.md) — clipped window; test no-input first
-- [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — composer multisampling 0; <1 px strips vanish; verify dials applied
-- [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — export missing from dist: `tsc -b --force`, grep dist first
-- [Biome class sort glues arbitrary classes](biome-class-sort-glues-arbitrary-property.md) — put a `${ className }` interpolation first
-- [Two-client check needs two Chromes](two-client-check-needs-two-chromes.md) — headless renders only the front tab; one Chrome per client
-- [Leave guard blocks CDP navigate](leave-guard-blocks-cdp-navigate.md) — beforeunload on /game hangs evals; fresh tab per run
-- [Merge PRs in a detached worktree](merge-prs-in-a-detached-worktree.md) — staged index blocks `git merge`; `push HEAD:dev`, never ff here
-- [Seed a finished room with a scratch server](seed-a-finished-room-with-a-scratch-server.md) — RunRoom subclass, `__finish` seeds racers; define `lobby`
-- [Share a vi.mock through a dynamic import](share-a-vi-mock-through-a-dynamic-import.md) — `vi.mock(p, async () => (await import(h)).sdkMock)`
-- [Short-course scratch server](short-course-scratch-server.md) — 30-segment thin course reaches the finish; bot wedges on the full track
-- [Moving a useEffect trips the comment ratchet](moving-a-useeffect-trips-the-comment-ratchet.md) — move it into a new `use-*.ts` file
-- [A/B an old sim from git in scratch](ab-an-old-sim-from-git-in-scratch.md) — `git show` old step.ts, imports → dist, strip-types it
-- [Escape-sweep pilot must stop](escape-sweep-pilot-must-stop.md) — PD strafe overshoots and fakes traps; √-profile pilot, every door
-- [Fork choices can conflict](fork-choices-can-conflict.md) — a split is not a dominator; bar softly, read `choice` off the path
-- [Pacing grid ignores ship length](pacing-grid-ignores-ship-length.md) — grow blocks by halfW/halfL per class; confirm in simulate()
-- [Test your lane against HEAD](test-your-lane-against-head.md) — shared tree compiles peers' uncommitted files; use a scratch copy
-- [React dev tracks walk typed-array props](react-dev-tracks-walk-typed-array-props.md) — big prop on ~12 components cost 5.8 s; use context
-- [SVG polylines raster per tile](svg-polyline-raster-per-tile.md) — a long polyline replays per tile; chunk it
-- [Rate clamp is not flyability](rate-clamp-is-not-flyability.md) — paths ignore strafeAccel; fly them with a sim pilot (#246)
-- [Touch test over CDP](touch-test-over-cdp.md) — emulation matches `pointer: coarse`; sample the server ship ≥300 ms after a tap
-- [Easiest route moves early](easiest-route-moves-early.md) — referencePath moves least, earliest; pin the path at each note
-- [Fractured blocks rarely have a clear lane](fractured-blocks-rarely-have-a-clear-lane.md) — post-hoc demotion costs ~76%; reserve at placement
-- [ast-grep trailing comma matches nothing](ast-grep-trailing-comma-matches-nothing.md) — array-element pattern + comma = ERROR node; use Edit
-- [Bash tool shell varies](bash-tool-runs-fish.md) — fish or zsh per session; use `&&` and `bash -c`
-- [Song tracks are a throwaway experiment](song-tracks-are-a-throwaway-experiment.md) — #253 tooling is disposable; keep it isolated
-- [Engine light swamps an emissive A/B](engine-light-swamps-emissive-ab.md) — zero EngineLight + Exhaust.glow to see engine-core bloom
-- [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — BSD pkill SIGTERMed the owner's apps; record your PIDs
-- [Believer is on a triplet grid](believer-is-on-a-triplet-grid.md) — test onsets on beat thirds too; kick lands +15 ms late
-- [Delay the perception, not the loop](delay-the-perception-not-the-loop.md) — input-delayed bang-bang strafe limit-cycles
-- [Score pilot must not lead the note](score-pilot-must-not-lead-the-note.md) — steer to span.line at ship.z; takeoffs by forward sim
-- [Peer edit orphans a live check](peer-edit-orphans-a-live-check.md) — impossible reading may be a peer's HMR; compare mtimes
-- [Song map runs at freighter speed](song-map-runs-at-freighter-speed.md) — zPerSecond 124; other classes end 23–98 s behind
-- [Open islands can wedge a ship](open-islands-can-wedge-a-ship.md) — thin post + rail corner traps a late ship forever
-- [Drive /beat-deck headless](drive-beat-deck-headless.md) — setFileInputFiles + dispatchKeyEvent; `data-phase` says saved
-- [Song keeps tempo, not a rhythm game](song-keeps-tempo-not-a-rhythm-game.md) — audio never re-seeks; falling behind is expected
-- [Fractional-strafe pilots trip strafe kick](fractional-strafe-pilots-trip-strafe-kick.md) — use kick-aware `strafeToward` (pacing/pockets.ts)
-- [Tune headless captures via their own localStorage](tune-headless-captures-via-own-localstorage.md) — write slur.tuning.v1, reload
-- [Fixtures must be width-relative](fixtures-must-be-width-relative.md) — write `HALF_WIDTH - n`, never a literal ±32
-- [One stack, dev only](one-stack-dev-only.md) — OWNER RULE: no worktrees or second stacks; measure on :5173/:2567
-- [Cavity channel is dead](cavity-channel-is-dead.md) — packed R reaches no shader; darken the albedo map instead
-- [Threshold noise makes worm pits](threshold-noise-makes-worm-pits.md) — round pits need Worley distance, not thresholded noise
-- [Aim tests need a clear approach](aim-tests-need-a-clear-approach.md) — butting blocks flake it; seed Math.random, run the whole file
-- [Queued message can sit unread](queued-message-can-sit-unread.md) — idle worker may ignore SendMessage; prompt via herdr
-- [ast-grep drops semicolons](ast-grep-drops-semicolons.md) — include `;` in pattern and rewrite; grep after -U
-- [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — `'fighter'` falls back to freighter; use `SHIP_CLASSES.<c>.tuning`
-- [Round lobes read as spots](round-lobes-read-as-spots.md) — use angle-random strokes + fBm masks, not radial blotches
-- [Fake performance.now for timed taps](fake-performance-now-for-timed-taps.md) — advance(t) skips performance.now VFX; step both clocks
-- [Hook onBeforeRender to grab the scene](webglrenderer-render-is-an-instance-method.md) — render is per-instance; wrap Object3D.prototype.onBeforeRender
-- [Worker closes its issue](worker-closes-its-issue.md) — OWNER RULE: the fixer runs `gh issue close` with the SHA
-- [Node bot as second racer](node-bot-as-second-racer.md) — headless Chrome + node @colyseus/sdk client; assert on data
-- [Decode audio in headless Chrome](decode-audio-in-headless-chrome.md) — decodeAudioData over CDP gives true length + peak
-- [Typegen runs in production mode](typegen-runs-in-production-mode.md) — dev-gated routes lose `+types`; typecheck sets NODE_ENV
-- [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s; seats via node lobby client
-- [Biome stdin skips Grit plugins](biome-stdin-skips-grit-plugins.md) — probe with a temp file under the override includes
-- [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook; new actualStartTime AND flags&1
-- [Live HMR sees half-applied edits](live-hmr-sees-half-applied-edits.md) — providers first, consumers leaf-first, old prop last
-- [ls-lint skips unlisted sub-extensions](ls-lint-skips-unlisted-sub-extensions.md) — `.constants.ts` needs its own rule; GritQL adds rules
-- [Server rounds floats each tick](fround-makes-float-asserts-fail.md) — assert `Math.fround(CONST)`; new floats go in SIM_FLOAT_KEYS
-- [R3F disposes only the object](r3f-disposes-only-the-object.md) — prop geometry/materials leak; free in a ref-callback cleanup
-- [Time a post effect without repo edits](time-a-post-effect-without-repo-edits.md) — wrap EffectComposer.render over CDP
-- [koota readEach tuple is exact](koota-readeach-tuple-is-exact.md) — hoisted callback needs `[ A, B, ...unknown[] ]`
-- [Node bots share one event loop](node-bots-share-one-event-loop.md) — one busy-wait stalls every client; spawn it separately
-- [Bulk move without git mv](bulk-move-without-git-mv.md) — scripted `git mv` is denied; rename via node fs
-- [frameloop never screenshots black](frameloop-never-screenshots-black.md) — read the canvas with toDataURL in the advance() task
-- [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — server `slots[0] = 3` + KeyE; NoToneMapping, `toneMapped` no-op
-- [Measure a post effect by region change](measure-a-post-effect-by-region-change.md) — % px changed per region vs off + noise
-- [Playwright from the npx cache](playwright-from-npx-cache-needs-system-chrome.md) — playwright-core + executablePath = system Chrome
-- [Owner tests on /test-level](owner-tests-on-test-level.md) — OWNER RULE: brief and verify every change on /test-level
-- [ast-grep type patterns need context](ast-grep-type-patterns-need-context.md) — `--selector generic_type`; no-match exits non-zero
-- [Shared tests need an in-package outDir](shared-tests-need-in-package-outdir.md) — scratch outDir gives fake failures; `pnpm test`
-- [Short bolts skip the patch](short-bolts-skip-the-patch.md) — a hit within ~45 u fits one 50 ms patch; client sees only HIT
-- [Avoid pilot dithers at a centred post](avoid-pilot-dithers-at-a-centred-post.md) — 0 deaths + no finish = equal escapes flipping
-- [Preview a constant by route rewrite](preview-a-constant-by-route-rewrite.md) — Playwright page.route rewrites source in headless
-- [Band width is the weave speed dial](band-width-is-the-weave-speed-dial.md) — ≤16u walled band lifts long ships; grace 45 s (#301)
-- [Doors cannot force a 1-cell step](doors-cannot-force-a-one-cell-step.md) — use one-sided pins and full-width holes
-- [Zoom the chase camera over CDP](zoom-the-chase-camera-over-cdp.md) — pin fov with a defineProperty getter; pick camera by aspect
-- [Avoid pilot sidestep needs a dense check](avoid-pilot-sidestep-needs-dense-check.md) — at vz≈0 the slice check tests only the endpoint
-- [Obstacle spacing from ship physics](obstacle-spacing-from-ship-physics.md) — OWNER RULE: pitch from reaction + cross + settle + hull; never fixed
-- [Wheel clientX is an integer](wheel-event-clientx-is-integer.md) — probe zoom at whole pixels; React onWheel is passive
-- [Unmounted fetcher drops its redirect](unmounted-fetcher-drops-its-redirect.md) — touch the store only on the non-redirect path
-- [Summarise issues when asking the owner](summarise-issues-when-asking-the-owner.md) — OWNER RULE: title + one line, never a bare #n
-- [Phrase length is per seed](phrase-length-is-per-seed.md) — use phraseSegments(seed) since afcc66c, never a literal 600
-- [Chained shader patches need a material guard](chained-shader-patches-need-a-material-guard.md) — ref re-attach re-wraps onBeforeCompile; use chainShaderPatch
-- [Block render cap drops silently](block-render-cap-drops-silently.md) — put() drops past its limit; blocks sized per track since 4b17a2e; stub /__tracks via page.route
-- [three devtools hook gives the scene](three-devtools-hook-gives-the-scene.md) — init-script EventTarget on __THREE_DEVTOOLS__ collects every Scene; bisect with no StoreExpose edit
-- [SDK buffers sends while dropped](sdk-buffers-sends-while-dropped.md) — room.send during a drop is flushed on reconnect; no auto-reconnect < 5 s after join
-- [Raycast instanced mesh: clear bounds](raycast-instanced-mesh-clear-bounds.md) — boundingSphere cached at count 0 makes every ray miss; null it first
-- [Step the loopback room by hand](step-the-loopback-room-by-hand.md) — advance(s) starves the loopback sim; room.step + room.send + ?start=
-- [Procgen seed 0 reads as unset](procgen-seed-zero-reads-as-unset.md) — schema treats seed 0 as no descriptor; seeds must be ≥ 1
-- [Sim ship y is 0 on the deck](sim-ship-y-is-zero-on-deck.md) — hover 0.35–1.25 is client-only; shared height tests need a ride offset (#325 portalRideY)
-- [Weave pilot must use the run-up](weave-pilot-must-use-the-run-up.md) — flat weave face since #327; aim at the lane from z0 − weaveRunUp
-- [Test-level dials miss the predictor](test-level-dials-miss-the-predictor.md) — tunedSimConfig is server-only; dial only fields simulate() never reads
-- [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — holding strafe into a wall hits it each tick; charge fresh contacts only
-- [kurmah DO infra](kurmah-netbird-infra.md) — droplets `netbird` (NetBird only) + `slur` (Traefik, /opt/slur); `--context kurmah`; key ~/.ssh/kurmah_ed25519
-- [Quit Docker Desktop via its CLI](quit-docker-desktop-via-cli.md) — osascript quit leaves the backend; use `docker desktop stop`
-- [Time hot loops in Chrome, not tsx](time-hot-loops-in-chrome-not-tsx.md) — node+tsx read a loop 15x slow; time in page with CDP CPU throttle
-- [Raycast luma probe per surface](raycast-luma-probe-per-surface.md) — grid raycast + screenshot pixel per face/distance; metal-1 F0 0.07 is why the track is dark (#345)
-- [useFrame order is subscribe time](useframe-order-is-subscribe-time.md) — equal priority runs in mount-time order; late mounts go last, JSX order proves nothing
-- [Removing the composer blacks the canvas](removing-the-composer-blacks-the-canvas.md) — priority > 0 useFrame kills auto-render; PlainRender at priority 1
-- [leva onChange fires on mount](leva-onchange-fires-on-mount.md) — initial:true call covers startup sync; compare hex case-insensitively
-- [Schema fields cap at 64](schema-fields-cap-at-64.md) — Metadata.ts:73 throws; PlayerState 39/64; defineTypes order = wire order
-- [Share instance buffers via onBeforeRender](share-instance-buffers-via-onbeforerender.md) — second InstancedMesh reuses instanceMatrix; sync count there; dispose={null}
-- [Scene env intensity overrides material](scene-env-intensity-overrides-material.md) — envMap null → per-material envMapIntensity dead; only Environment.intensity reaches the shader
-- [Deck glare is the HDRI lobe](deck-glare-is-the-hdri-lobe.md) — near-white deck = env reflection at rotation 0; rotate 180 before touching albedo
-- [Pathspec commit skips untracked](commit-pathspec-skips-untracked.md) — `git commit -- dir` leaves new files out; `git add --` them first
-- [Scribd needs headless Chrome](scribd-needs-headless-chrome.md) — WebFetch/curl hit a bot wall; Playwright + system Chrome reads it
-- [A point light at an emitter shifts its hue](point-light-at-an-emitter-shifts-its-hue.md) — light 0.41u from nozzles turned marigold red; zero each light, anchor to ports
-- [Anisotropy stretches the HDRI, not emissives](aniso-stretches-the-hdri-not-emissives.md) — along-z 0.5 = white planet wash; Physical at 0 = Standard
-- [gl.finish does not sync on headless Metal](gl-finish-does-not-sync-headless-metal.md) — bracket GPU timings with a 1-px readPixels; finish read 0.1 ms vs real 0.6
-- [Trapezoid quad varyings skew](trapezoid-quad-varyings-skew.md) — ±1 corner varyings bend on a widening quad; pass world-affine offsets
-- [Measure an HDRI offline in node](measure-an-hdri-offline-in-node.md) — HDRLoader parses in node; per-face irradiance + band share, no browser
-- [herdr send-keys does not submit](herdr-send-keys-does-not-submit.md) — typed-but-unsent prompt: use `herdr agent prompt`, not send-keys Enter
+## Owner rules & team process
+- [One stack, dev only](one-stack-dev-only.md) — no worktrees or second stacks; :5173/:2567
+- [Owner tests on /test-level](owner-tests-on-test-level.md) — brief and verify every change there
+- [Worker closes its issue](worker-closes-its-issue.md) — fixer runs `gh issue close` with the SHA
+- [Owner may waive issue filing](owner-may-waive-issue-filing.md) — "no issue, go ahead" = build without
+- [Summarise issues when asking](summarise-issues-when-asking-the-owner.md) — title + one line, never bare #n
+- [Obstacle spacing from ship physics](obstacle-spacing-from-ship-physics.md) — pitch = reaction+cross+settle+hull
+- [Claim the lane before the first write](claim-the-lane-before-the-first-write.md) — unclaimed item lost files
+- [Shared tree footguns](shared-tree-footguns.md) — one index; pathspec skips untracked; peers' HMR
+- [Merge PRs in a detached worktree](merge-prs-in-a-detached-worktree.md) — `push HEAD:dev`; needs owner OK now
+- [Supervisor drives workers via herdr](supervisor-clears-workers-via-herdr.md) — clear/resume; % of 1M; prompt, not keys
+- [Project memory lives in the repo](project-memory-in-repo.md) — `.claude/memory/` via autoMemoryDirectory
+- [Backlog is split two ways](backlog-split.md) — global parking lot vs project roadmap
+
+## Shell, tools & machine
+- [Bash tool shell varies](bash-tool-runs-fish.md) — fish or zsh; use `&&` and `bash -c`
+- [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — BSD pkill hit the owner's apps
+- [Bulk move without git mv](bulk-move-without-git-mv.md) — scripted `git mv` denied; node fs
+- [ast-grep footguns](ast-grep-footguns.md) — trailing comma, dropped `;`, type patterns need context
+- [Lint footguns](lint-footguns.md) — Biome class sort + stdin; ls-lint sub-exts; useEffect ratchet
+- [Typegen runs in production mode](typegen-runs-in-production-mode.md) — dev-gated routes lose `+types`
+- [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — `tsc -b --force`
+- [Shared tests need an in-package outDir](shared-tests-need-in-package-outdir.md) — use `pnpm test`
+- [Share a vi.mock through a dynamic import](share-a-vi-mock-through-a-dynamic-import.md) — `await import(h)`
+- [Aim tests need a clear approach](aim-tests-need-a-clear-approach.md) — seed Math.random; whole file
+- [Fixtures must be width-relative](fixtures-must-be-width-relative.md) — `HALF_WIDTH - n`, no literal ±32
+- [Time hot loops in Chrome, not tsx](time-hot-loops-in-chrome-not-tsx.md) — tsx reads 15x slow
+- [Scribd needs headless Chrome](scribd-needs-headless-chrome.md) — Playwright + system Chrome
+- [Quit Docker Desktop via its CLI](quit-docker-desktop-via-cli.md) — `docker desktop stop`
+- [kurmah DO infra](kurmah-netbird-infra.md) — droplets `netbird` + `slur` (/opt/slur); kurmah_ed25519
+
+## Headless Chrome & CDP driving
+- [Headless Chrome practice](headless-game-tabs-starve-the-gpu.md) — DPR 1, mute, kill; frame taps; viewport; 2 Chromes
+- [Extension tab](extension-tab.md) — never close it; its FPS readings are throttled
+- [Check the CDP port is yours](check-the-cdp-port-is-yours.md) — taken port fails silently
+- [Leave guard blocks CDP navigate](leave-guard-blocks-cdp-navigate.md) — beforeunload; fresh tab per run
+- [Frame tap may answer from another tab](frame-tap-may-answer-from-another-tab.md) — screenshot your tab
+- [Tuning over CDP](tuning-over-cdp.md) — live module setNum; HMR orphan; per-origin localStorage
+- [Preview a constant by route rewrite](preview-a-constant-by-route-rewrite.md) — Playwright page.route
+- [Live HMR sees half-applied edits](live-hmr-sees-half-applied-edits.md) — providers first, leaf-first
+- [Timed taps](timed-taps.md) — frameloop never + advance(t); fake performance.now; toDataURL
+- [Freeze the sim](freeze-the-sim.md) — KeyP at SPAWN; asteroids still drift
+- [Zoom the chase camera over CDP](zoom-the-chase-camera-over-cdp.md) — defineProperty fov getter
+- [Wheel clientX is an integer](wheel-event-clientx-is-integer.md) — whole pixels; onWheel passive
+- [Touch test over CDP](touch-test-over-cdp.md) — `pointer: coarse`; sample ≥300 ms after tap
+- [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook
+- [Grab the scene](grab-the-scene.md) — three devtools hook; wrap Object3D onBeforeRender
+- [koota universe reaches the page world](koota-universe-reaches-the-page-world.md) — reads ok; writes lost
+- [Decode audio in headless Chrome](decode-audio-in-headless-chrome.md) — decodeAudioData over CDP
+- [Drive /beat-deck headless](drive-beat-deck-headless.md) — setFileInputFiles; `data-phase`
+
+## Rooms, bots & netcode testing
+- [Drive a hosted room over CDP](drive-a-hosted-room-over-cdp.md) — session.room + gap-aware bot
+- [Place the ship over CDP](place-the-ship-over-cdp.md) — write `room.sim.state` x/z unfrozen
+- [Step the loopback room by hand](step-the-loopback-room-by-hand.md) — room.step + send + ?start=
+- [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — server `slots[0] = 3` + KeyE
+- [Node bots](node-bots.md) — node @colyseus/sdk second racer; one event loop per busy bot
+- [Scratch servers](scratch-servers.md) — `__finish` seeds racers; 30-segment short course
+- [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s
+- [SDK buffers sends while dropped](sdk-buffers-sends-while-dropped.md) — flushed on reconnect
+- [Unmounted fetcher drops its redirect](unmounted-fetcher-drops-its-redirect.md) — store on non-redirect path
+- [Server rounds floats each tick](fround-makes-float-asserts-fail.md) — assert `Math.fround`; SIM_FLOAT_KEYS
+- [@deprecated breaks reflection decoding](deprecated-breaks-reflection-decoding.md) — keep dead fields plain
+- [Schema fields cap at 64](schema-fields-cap-at-64.md) — PlayerState 39/64; order = wire order
+- [Short bolts skip the patch](short-bolts-skip-the-patch.md) — hit within ~45 u: client sees only HIT
+
+## Sim, track & pilots
+- [Sim ship y is 0 on the deck](sim-ship-y-is-zero-on-deck.md) — hover is client-only
+- [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — use `SHIP_CLASSES.<c>.tuning`
+- [Test-level dials miss the predictor](test-level-dials-miss-the-predictor.md) — tunedSimConfig server-only
+- [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — charge fresh contacts only
+- [Procgen seed 0 reads as unset](procgen-seed-zero-reads-as-unset.md) — seeds ≥ 1
+- [procgen segmentAt is uncached](procgen-segmentat-is-uncached.md) — memoise in brute-force tests
+- [Phrase length is per seed](phrase-length-is-per-seed.md) — phraseSegments(seed), not 600
+- [Pacing grid ignores ship length](pacing-grid-ignores-ship-length.md) — grow blocks by halfW/halfL
+- [Band width is the weave speed dial](band-width-is-the-weave-speed-dial.md) — ≤16u band lifts long ships
+- [Doors cannot force a 1-cell step](doors-cannot-force-a-one-cell-step.md) — one-sided pins, full holes
+- [Fork choices can conflict](fork-choices-can-conflict.md) — bar softly; read `choice` off the path
+- [Fractured blocks rarely have a clear lane](fractured-blocks-rarely-have-a-clear-lane.md) — reserve early
+- [Open islands can wedge a ship](open-islands-can-wedge-a-ship.md) — thin post + rail corner
+- [Easiest route moves early](easiest-route-moves-early.md) — pin the path at each note
+- [Rate clamp is not flyability](rate-clamp-is-not-flyability.md) — fly paths with a sim pilot
+- [Measure a homing rule on procgen](measure-a-homing-rule-on-procgen.md) — 30 seeds + avoiding bot
+- [Sim pilot footguns](sim-pilot-footguns.md) — √-stop, dithers, dense check, run-up, kick, delay, lead
+- [A sweep that hits its bound fakes a reading](a-sweep-that-hits-its-bound-fakes-a-reading.md) — test no-input
+- [Song tracks (#253, throwaway)](song-tracks.md) — keeps tempo; freighter speed; triplet grid
+
+## Rendering & React
+- [useFrame order is subscribe time](useframe-order-is-subscribe-time.md) — mount order, not JSX order
+- [Removing the composer blacks the canvas](removing-the-composer-blacks-the-canvas.md) — PlainRender prio 1
+- [R3F disposes only the object](r3f-disposes-only-the-object.md) — free prop geometry in ref cleanup
+- [InstancedMesh footguns](instanced-mesh-footguns.md) — geometry prop; shared buffers; bounds; audit
+- [Blocks are the only streamed geometry](blocks-are-the-only-streamed-geometry.md) — suspect `BACK`
+- [Block render cap drops silently](block-render-cap-drops-silently.md) — put() drops past its limit
+- [Chained shader patches need a guard](chained-shader-patches-need-a-material-guard.md) — chainShaderPatch
+- [Trapezoid quad varyings skew](trapezoid-quad-varyings-skew.md) — pass world-affine offsets
+- [MSAA edge samples extrapolate varyings](msaa-edge-samples-extrapolate-varyings.md) — clamp; x*x not pow
+- [Sub-pixel geometry drops out without AA](sub-pixel-geometry-drops-out-without-aa.md) — <1 px vanishes
+- [React dev tracks walk typed-array props](react-dev-tracks-walk-typed-array-props.md) — use context
+- [SVG polylines raster per tile](svg-polyline-raster-per-tile.md) — chunk long polylines
+- [koota readEach tuple is exact](koota-readeach-tuple-is-exact.md) — `[ A, B, ...unknown[] ]`
+- [leva onChange fires on mount](leva-onchange-fires-on-mount.md) — compare hex case-insensitively
+- [Rear-view panel looks like geometry](rear-view-panel-looks-like-geometry.md) — top-centre slab = mirror
+
+## Look, light & materials
+- [Scene env intensity overrides material](scene-env-intensity-overrides-material.md) — only Environment.intensity
+- [Deck glare is the HDRI lobe](deck-glare-is-the-hdri-lobe.md) — rotate env before touching albedo
+- [Anisotropy stretches the HDRI, not emissives](aniso-stretches-the-hdri-not-emissives.md) — white wash
+- [Measure an HDRI offline in node](measure-an-hdri-offline-in-node.md) — HDRLoader in node
+- [Raycast luma probe per surface](raycast-luma-probe-per-surface.md) — metal F0 0.07 darkens the track
+- [Deck material on blocks and monoliths](deck-material-on-blocks-and-monoliths.md) — separation by form
+- [Fog hides emissive past 420u](fog-hides-emissive-past-420u.md) — far signals need `fog:false`
+- [Thin emissive needs pixel coverage](thin-emissive-needs-pixel-coverage.md) — edge-on strip barely blooms
+- [A point light at an emitter shifts its hue](point-light-at-an-emitter-shifts-its-hue.md) — turned red
+- [Engine light swamps an emissive A/B](engine-light-swamps-emissive-ab.md) — zero it (being removed)
+- [Cavity channel is dead](cavity-channel-is-dead.md) — darken the albedo map instead
+- [Threshold noise makes worm pits](threshold-noise-makes-worm-pits.md) — use Worley distance
+- [Round lobes read as spots](round-lobes-read-as-spots.md) — angle-random strokes + fBm
+
+## Measuring pixels & perf
+- [GPU timing without repo edits](gpu-timing-without-repo-edits.md) — draw calls; composer.render; readPixels sync
+- [Measure a post effect by region change](measure-a-post-effect-by-region-change.md) — % px per region
+- [Eyeballing a tap lies about brightness](eyeballing-a-tap-lies-about-brightness.md) — grey ramp
+- [Probe by feature, not by pixel](probe-by-feature-not-by-pixel.md) — find surface by its emissive
+- [A/B an old sim from git in scratch](ab-an-old-sim-from-git-in-scratch.md) — `git show` step.ts

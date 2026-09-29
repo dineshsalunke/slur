@@ -9,4 +9,4 @@ The pacing `PathSolver` limits lateral speed per row but has no velocity state, 
 
 **Why:** a clamp test passed on all five seeds while the owner could see the route was impossible.
 
-**How to apply:** prove flyability by flying the path with the sim's strafe model (an accel-limited pilot), not by checking |dx| per row. Also remember the `/pacing` strip draws x ~9× denser than z at default zoom, so steep-looking lines need the numbers before a verdict. Related: [[escape-sweep-pilot-must-stop]].
+**How to apply:** prove flyability by flying the path with the sim's strafe model (an accel-limited pilot), not by checking |dx| per row. Also remember the `/pacing` strip draws x ~9× denser than z at default zoom, so steep-looking lines need the numbers before a verdict. Related: [[sim-pilot-footguns]].

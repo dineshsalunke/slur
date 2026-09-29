@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 4df80f84-a1ec-4920-93a2-fbc002227c3f
-  modified: 2026-09-26T08:19:46.629Z
+  modified: 2026-09-29T04:11:59.941Z
 ---
 
 Before driving a headless Chrome over CDP, pick a port nobody holds (`lsof -nP -iTCP:<port> -sTCP:LISTEN`
@@ -26,5 +26,5 @@ Chrome for ~25 s: it opened a tab, hosted `/game/iGzcBHiR6` and pressed GO. `lso
 empty for both families. After launch, match `/json/version` to your own PID. A driver must address its
 page target by id, not "first page", and print the URL and room with every reading.
 Related:
-[[headless-chrome-for-frame-taps]], [[count-draw-calls-without-repo-edits]],
+[[headless-game-tabs-starve-the-gpu]], [[gpu-timing-without-repo-edits]],
 [[frame-tap-may-answer-from-another-tab]].

@@ -19,4 +19,4 @@ the tab still on `/`.
 targets with `/json/close/<id>`, which closes without the prompt. The other fix is
 `Page.handleJavaScriptDialog`. For audio checks, wrap `AudioBufferSourceNode.prototype.start/stop`
 through `Page.addScriptToEvaluateOnNewDocument`, and tell samples apart by `buffer.duration`. Related:
-[[drive-a-hosted-room-over-cdp]], [[two-client-check-needs-two-chromes]].
+[[drive-a-hosted-room-over-cdp]], [[headless-game-tabs-starve-the-gpu]].

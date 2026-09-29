@@ -22,7 +22,7 @@ Anything that widens the footprint cures it: width 0.75, proud 1.0, or `polygonO
 depth step is ~0.008u, far under the 0.25u a proud seam stands out.
 
 **How to apply:**
-- Measure with a stepped clock at ~1u per frame ([[step-the-r3f-clock-for-timed-taps]]) and look for
+- Measure with a stepped clock at ~1u per frame ([[timed-taps]]) and look for
   whole-feature drops in lockstep with 1 px of lateral travel.
 - **Prove the dial applied before believing a null.** Read the value back from the live mesh after
   setting it. Two whole dial sweeps came back bit-identical to baseline: in **zsh**, `for a in "x y z";

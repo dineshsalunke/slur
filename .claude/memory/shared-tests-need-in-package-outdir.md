@@ -16,4 +16,4 @@ import-cycle regression.
 **Why:** Node resolves bare specifiers by walking up from the importing file, and the scratchpad is outside the repo.
 
 **How to apply:** Run `pnpm test` in `packages/shared` (outDir `test-dist`, inside the package). A scratch outDir
-is fine only for a pure module test. Read the first error before you suspect your change. See [[test-your-lane-against-head]].
+is fine only for a pure module test. Read the first error before you suspect your change. See [[shared-tree-footguns]].

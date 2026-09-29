@@ -9,7 +9,7 @@ metadata:
 ---
 
 On `/test-level` the sim is a `LoopbackRoom` driven by R3F `addEffect`, which reads its timestamp as
-**milliseconds**. [[step-the-r3f-clock-for-timed-taps]] passes `advance(t)` in **seconds**, so the sim steps
+**milliseconds**. [[timed-taps]] passes `advance(t)` in **seconds**, so the sim steps
 ~1/1000 of the wanted time. Measured 2026-09-27 (#326, #328):
 
 - **Step both:** `step = dt => { room.send('input', {inputs:[{seq: ++seq, throttle: 1, brake: 0, strafe: 0, jump: false}]}); T.fake += dt*1000; T.t += dt; room.step(dt); fiber.advance(T.t, true); }`.
@@ -30,4 +30,4 @@ On `/test-level` the sim is a `LoopbackRoom` driven by R3F `addEffect`, which re
 **How to apply:** use this recipe for any timed tap of a power on /test-level. First block is z 480 on
 the default phrase seed. With a 240-frame full-throttle run-up (~119 u/s), `?start=-25.25,95` gives a
 146u anchor gap and `-25.25,190` a 53u gap. Script: `pull-tap.mjs` in the #328 session scratchpad.
-Related: [[stage-a-mine-on-test-level]], [[frameloop-never-screenshots-black]].
+Related: [[stage-a-mine-on-test-level]], [[timed-taps]].

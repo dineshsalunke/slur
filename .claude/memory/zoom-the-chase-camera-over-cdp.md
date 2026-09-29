@@ -22,4 +22,4 @@ To take a telephoto close-up with no repo edit (verified 2026-09-27, #303):
 
 Place the ship 9–14u short of the prop and off to one side ([[place-the-ship-over-cdp]]), then use
 fov 10–28. An extra rAF loop doubles the frame count in a draw-call hook, so filter out zero-draw frames
-([[count-draw-calls-without-repo-edits]]). The driver is in the #303 scratch folder as `portal-check.mjs`.
+([[gpu-timing-without-repo-edits]]). The driver is in the #303 scratch folder as `portal-check.mjs`.

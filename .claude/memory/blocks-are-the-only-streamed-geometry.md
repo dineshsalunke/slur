@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 01501cc0-c2f6-49d2-bcff-a133962a31ce
-  modified: 2026-09-22T17:43:30.289Z
+  modified: 2026-09-29T04:11:47.691Z
 ---
 
 `TrackBlocks` is the **only** scene component that streams. It rebuilds its instances every frame from
@@ -22,4 +22,4 @@ blocks are broken" when nothing about the blocks is broken. Raised 80 → 240 fo
 (2026-09-22); measured worst case 71 instances against a `BLOCK_LIMIT` of 160, so there is headroom.
 
 **How to apply:** before debugging "X is missing from view Y", check whether X is streamed. If it is
-the blocks, suspect `BACK` first. Related: [[instanced-meshes-hide-scene-bugs]].
+the blocks, suspect `BACK` first. Related: [[instanced-mesh-footguns]].

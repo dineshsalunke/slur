@@ -9,7 +9,7 @@ metadata:
 ---
 
 To measure how bright each surface renders, do not pick probe rectangles by eye. In a Playwright
-headless page ([[playwright-from-npx-cache-needs-system-chrome]]), capture the main camera through an
+headless page ([[headless-game-tabs-starve-the-gpu]]), capture the main camera through an
 `onBeforeRender` wrapper (aspect = innerWidth/innerHeight, fov > 50), then raycast a pixel grid (step 8)
 against every visible mesh that has `metalness`. Label each hit by mesh, face normal (top/front/side)
 and distance bin, and read that pixel's luma from `page.screenshot()` decoded into a 2D canvas. Add
@@ -29,4 +29,4 @@ brighter base colour does help.
   mapped materials.
 - The camera capture failed on `quality=low`, so check the filter there first.
 - The driver is in the #345 scratch folder: `light/probe.mjs`. Related:
-  [[eyeballing-a-tap-lies-about-brightness]], [[raycast-instanced-mesh-clear-bounds]].
+  [[eyeballing-a-tap-lies-about-brightness]], [[instanced-mesh-footguns]].

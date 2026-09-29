@@ -19,4 +19,4 @@ proved it. Raising intensity cannot fix this. `fog: false` on the glow material 
 **How to apply:** before judging "does X read from far away", check the distance against 420u and
 1000u. For a gameplay signal that must read far, put `fog={ false }` on its emissive material only. A
 floor decal at a 4u eye height is a few pixels tall at any distance and never reads from far away.
-Related: [[headless-chrome-for-frame-taps]], [[freeze-does-not-stop-asteroid-drift]].
+Related: [[headless-game-tabs-starve-the-gpu]], [[freeze-the-sim]].

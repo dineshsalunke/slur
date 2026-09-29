@@ -23,4 +23,4 @@ on the next run and y 2.18 at +300 ms. The first reading was server-state lag, n
 **How to apply:** sample at +300 ms or later before calling an input dropped. A ship steered hard left
 from the start line stops at x ≈ 26.4 and z ≈ 120. Test brake while thrust is held (vz 25 → 16 in 0.3 s),
 not after that stop. Driver script pattern: [[drive-a-hosted-room-over-cdp]],
-[[narrow-headless-captures-need-cdp-viewport]], [[check-the-cdp-port-is-yours]].
+[[headless-game-tabs-starve-the-gpu]], [[check-the-cdp-port-is-yours]].

@@ -17,4 +17,4 @@ isolated.
 **How to apply:** time boot work inside headless Chrome. Fetch the module source, stub its imports, and
 inject it with `addScriptTag`. Scale with `Emulation.setCPUThrottlingRate` (4x, 6x). For the whole boot,
 use a CDP `Profiler` on the prod bundle and map minified names by line and column. Related:
-[[headless-game-tabs-starve-the-gpu]], [[count-draw-calls-without-repo-edits]].
+[[headless-game-tabs-starve-the-gpu]], [[gpu-timing-without-repo-edits]].

@@ -34,7 +34,7 @@ Applies to **every** `.tsx` in the client, not just R3F components.
    A component with any sibling file lives in a folder named after it —
    `game/scene/ship-model/{ship-model.tsx, ship-model.constants.ts, …}`. No `index.ts`: imports name the
    file (`./ship-model/ship-model`). Types and interfaces may stay in the `.tsx`. A `lazy()` component
-   binding may stay. A shared-by-reference geometry (`instanced-ref-callback-needs-geometry-prop`) is a
+   binding may stay. A shared-by-reference geometry (memory `instanced-mesh-footguns`) is a
    constant and moves too; a module is still a singleton, so moving it changes no behaviour.
    - **Exception — React Router route modules** (`root.tsx`, `routes/home.tsx`, `routes/*/route.tsx`): the
      framework mandates multiple exports in one module (default component + `Layout` / `ErrorBoundary` /

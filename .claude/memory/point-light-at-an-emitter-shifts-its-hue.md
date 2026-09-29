@@ -17,6 +17,6 @@ marigold light colour moved it only to 22°. Only distance fixed it. Fix `0bb4b5
 `exhaustPorts` (rearmost port z), not the ship centre.
 
 **How to apply:** bisect by zeroing each source over `slur.tuning.v1` (see
-[[tune-headless-captures-via-own-localstorage]]). Measure the mean hue of saturated pixels in a crop, not
+[[tuning-over-cdp]]). Measure the mean hue of saturated pixels in a crop, not
 by eye. Anchor any light near geometry to the model's own data, never a fixed offset from the centre;
 hull `halfL` runs from 0.59 to 3.0.

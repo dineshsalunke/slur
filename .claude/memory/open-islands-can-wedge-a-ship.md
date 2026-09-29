@@ -19,5 +19,5 @@ strafes free. An island leaves a gap beside it, and that gap can be a dead end.
 **How to apply:** after any change that thins or breaks up blocks, scan the human runs for DNFs with a static
 final z and a high bump count. The fix in `open.ts` widens the near gate post back across the previous
 line's calm tube (`CALM_TUBE_HALF + |before − edge|`). The general rule: no island may leave a pocket that is
-narrower than the ship and closed at the front. Related: [[escape-sweep-pilot-must-stop]],
+narrower than the ship and closed at the front. Related: [[sim-pilot-footguns]],
 [[measure-a-homing-rule-on-procgen]].

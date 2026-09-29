@@ -20,4 +20,4 @@ to anticipate the next step". After the physics-derived spacing went live: "now 
 
 **How to apply:** any generator that places obstacles a ship must dodge in sequence. Difficulty comes from
 narrower lanes and longer runs, not from spacing below reaction time. See
-[[fractional-strafe-pilots-trip-strafe-kick]], [[rate-clamp-is-not-flyability]].
+[[sim-pilot-footguns]], [[rate-clamp-is-not-flyability]].

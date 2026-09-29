@@ -22,4 +22,4 @@ To live-check the client's drop and lost paths (#271, 2026-09-26) without restar
   through its panel, not by "last button named Leave".
 
 The #271 driver lived in a session scratchpad and is gone; rebuild it from this note. Related: [[drive-a-hosted-room-over-cdp]],
-[[leave-guard-blocks-cdp-navigate]], [[node-bot-as-second-racer]].
+[[leave-guard-blocks-cdp-navigate]], [[node-bots]].

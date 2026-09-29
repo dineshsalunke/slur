@@ -25,4 +25,4 @@ The owner approved the worktree for this.
   side and keeps the other side's clean hunks. That is not a regex edit.
 - For a stacked PR, number any doc items in merge order. #228, #230 and #237 all wrote "§7 item 16".
 - When done: `git worktree remove --force`, and delete the fetched `refs/remotes/pr/*` refs.
-- Related: [[shared-checkout-shares-one-git-index]], [[worktrees-are-for-concurrency]].
+- Related: [[shared-tree-footguns]], [[one-stack-dev-only]].

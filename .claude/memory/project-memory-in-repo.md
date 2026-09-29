@@ -18,4 +18,4 @@ committed `settings.json` that would break on any other clone path.
 
 **How to apply:** a fresh worktree has no `settings.local.json` (it is gitignored) and would write
 memories to the default store instead — copy it across when creating one, as the CLAUDE.md worktree
-bootstrap shows. See [[worktrees-are-for-concurrency]].
+bootstrap shows. See [[one-stack-dev-only]].

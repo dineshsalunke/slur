@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 7aa100d3-c5f2-4a6c-9ef2-f3ff1d699435
-  modified: 2026-09-23T03:49:56.121Z
+  modified: 2026-09-29T04:12:20.122Z
 ---
 
 Looking at a `/test-level` frame tap and judging a surface's value is unreliable by a factor of
@@ -22,4 +22,4 @@ node and [[no-python-for-tooling]] rules out the obvious one. To sanity-check a 
 ramp into the real frame with `ffmpeg -vf "drawbox=...:color=0x404040@1:t=fill"` and compare in
 place. `drawbox` with `t=3` also marks a probe rectangle, which is the only safe way to confirm a
 sample region sits on the surface you think it does — a face identified by eye is often the
-neighbouring one. Related: [[headless-chrome-for-frame-taps]].
+neighbouring one. Related: [[headless-game-tabs-starve-the-gpu]].

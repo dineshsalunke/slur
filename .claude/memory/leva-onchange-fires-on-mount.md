@@ -14,4 +14,4 @@ of a restored value — no separate init hook is needed (the #351 accent dial re
 `--color-marigold`). It also means `onChange` runs with leva's normalised value (hex may come back in a
 different case), so compare colours case-insensitively.
 
-Only on /test-level, where the tuning panel mounts. See [[shared-tunables-storage]].
+Only on /test-level, where the tuning panel mounts. See [[tuning-over-cdp]].

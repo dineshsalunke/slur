@@ -32,6 +32,6 @@ node from `packages/shared/dist/index.js` with `testLevelDescriptor(gen)` in
 `routes/test-level/test-level-canvas/test-level-canvas.utils.ts`. The 2026-09-23 note "first
 fractured block is id 3392 at z 1064" predates later track changes [unmeasured since].
 
-**Why:** flying into a chosen spot by input is not repeatable ([[freeze-the-sim-to-ab-a-light]]).
+**Why:** flying into a chosen spot by input is not repeatable ([[freeze-the-sim]]).
 The old hooks (koota `Sim`/`Prev` writes, `localCombat`) are gone: the server state now wins every
 patch. Related: [[stage-a-mine-on-test-level]], [[koota-universe-reaches-the-page-world]].

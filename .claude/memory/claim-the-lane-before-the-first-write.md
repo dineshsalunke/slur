@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 81ae689d-08ce-419c-97c6-5939adec7fbc
-  modified: 2026-09-22T20:14:02.028Z
+  modified: 2026-09-29T04:12:03.259Z
 ---
 
 A handover's **Left undone** list is read by every session that opens it, so two agents
@@ -15,9 +15,9 @@ two untracked files of this session's and destroyed them, with no git object to 
 
 **Why:** untracked files have no history. A concurrent write is unrecoverable in a way a
 committed one never is, and the checkout shares one tree
-([[shared-checkout-shares-one-git-index]]).
+([[shared-tree-footguns]]).
 
 **How to apply:** before writing the first file for a handover item, say out loud — to the
 owner, or by `SendMessage` to any peer session — which item you are taking. Then commit
 early, so a collision costs a merge instead of a rewrite. A worktree is not the fix here
-([[worktrees-are-for-concurrency]]); the work did not collide in the tree, the *claim* did.
+([[one-stack-dev-only]]); the work did not collide in the tree, the *claim* did.

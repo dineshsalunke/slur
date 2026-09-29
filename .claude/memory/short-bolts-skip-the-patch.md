@@ -16,4 +16,4 @@ HIT message arrives.
 Server-side tests read `room.state` directly and do not show this.
 **How to apply:** a test that asserts a decoded projectile must place the target ≥ ~60 u away. A client
 effect that needs the bolt entity for a close hit must key off the HIT message, not the projectile.
-Related: [[node-bot-as-second-racer]].
+Related: [[node-bots]].

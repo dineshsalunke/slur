@@ -18,4 +18,4 @@ judged. Tracing it cost a detour through git status and the canvas children.
 
 **How to apply:** ignore the top-centre panel when you judge monolith, gate or arch geometry in a tap.
 If a lintel really is in question, look at the band below the panel, or hide the panel before the
-tap. See [[headless-chrome-for-frame-taps]].
+tap. See [[headless-game-tabs-starve-the-gpu]].

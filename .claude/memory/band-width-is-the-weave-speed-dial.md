@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: cc8dd5e7-8b2e-49bd-a9e5-0add0e72490f
-  modified: 2026-09-26T18:20:19.765Z
+  modified: 2026-09-29T04:11:38.240Z
 ---
 
 Measured 2026-09-26 (#300 RFC, HEAD 8d7d798), `simulate()` avoid pilot, seeds 1–10:
@@ -24,4 +24,4 @@ Neither is true.
 **How to apply:** size track length from `L / top`, add a mistake budget (bump 1–2.3 s, death 1.5–2.6 s).
 To make a phrase cost speed, narrow the walled band. Check any length change against the 45 s grace: class spread grows with length.
 Full tables: `.claude/phases/2026-09-26-unified-generator-rfc.md` §1. Related: [[measure-a-homing-rule-on-procgen]],
-[[song-map-runs-at-freighter-speed]].
+[[song-tracks]].

@@ -10,9 +10,9 @@ metadata:
 
 `POST /__frame-tap` is answered by **whichever page responds**, not necessarily the one you are
 driving. Other sessions keep their own `/test-level` tab open on :5173, and the owner keeps one too
-(see [[leave-the-browser-tab-open]]). So a tap can capture a page that never saw your changes.
+(see [[extension-tab]]). So a tap can capture a page that never saw your changes.
 
-**Why:** combined with [[cdp-import-of-tuning-hits-an-hmr-orphan]] this gives two independent ways to
+**Why:** combined with [[tuning-over-cdp]] this gives two independent ways to
 measure the wrong thing at once, and neither announces itself — the tap returns `ok: true` and a
 plausible PNG.
 

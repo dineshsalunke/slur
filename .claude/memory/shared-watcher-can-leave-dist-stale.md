@@ -23,4 +23,4 @@ as the source. The gates passed, but the browser ran a 3 s countdown that the so
 
 **How to apply:** before a live check of a shared change, `grep` a changed line in `dist/`. After you add a shared export, `grep` it in `dist/index.js`. If it is missing, run
 `pnpm exec tsc -b --force` in `packages/shared`. Do not kill the other session's watcher. Related:
-[[shared-checkout-shares-one-git-index]].
+[[shared-tree-footguns]].

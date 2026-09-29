@@ -30,4 +30,4 @@ without the method below.
   the feature's gains to 0 through `slur.tuning.v1`; if the frame comes back, it is that shader.
 - Do not add a scene-wide NaN scrub unless a second source appears. Supervisor ruling, 2026-09-24.
 
-Related: [[sub-pixel-geometry-drops-out-without-aa]], [[drive-the-live-module-not-a-reload]].
+Related: [[sub-pixel-geometry-drops-out-without-aa]], [[tuning-over-cdp]].

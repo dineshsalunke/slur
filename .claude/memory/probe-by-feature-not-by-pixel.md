@@ -22,7 +22,7 @@ Derive scale from the feature, not from a remembered number: the rail strip is `
 where the feature runs near-parallel to the scanline — a 36px "strip" on one row was a rail seen
 edge-on.
 
-**Why:** camera drift between runs is real ([[freeze-the-sim-to-ab-a-light]]), and a fixed probe
+**Why:** camera drift between runs is real ([[freeze-the-sim]]), and a fixed probe
 silently follows it onto the neighbouring surface. Worse, the surface you assume is often the wrong
 one: the bright marigold line on the deck near the chase camera is the **gap-rim cord**
 (`Rail.rimEmissive`), not the rail — `Rail.railEmissive` 0 leaves it untouched. Three runs were

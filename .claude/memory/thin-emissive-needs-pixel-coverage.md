@@ -19,6 +19,6 @@ to white and stayed 1 px.
 **Why:** "no bloom" looks like a threshold or tone-mapping bug. Here it was geometry.
 
 **How to apply:** for "X doesn't bloom", first run an `ab=1` frame tap
-([[headless-chrome-for-frame-taps]]). Then print pixel values across the element in both PNGs. Count the core
+([[headless-game-tabs-starve-the-gpu]]). Then print pixel values across the element in both PNGs. Count the core
 width before you tune intensity. Zero the element's emissive to confirm which line is which. Related:
 [[probe-by-feature-not-by-pixel]].

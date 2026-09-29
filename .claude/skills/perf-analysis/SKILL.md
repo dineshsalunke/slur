@@ -103,6 +103,6 @@ M3 Pro, 3456×2160, GPU-synced medians while driving on `/test-level`: 10.0 ms w
 - **Soft cap 200.** A change that crosses it must justify the extra calls in its PR body.
 - **Hard cap 300.** Do not cross it. It leaves room for mobile GPUs and a full race on screen.
 - **Baseline:** 127 on `/test-level`, for both groove at 420 segments and phrase at 600 (#300, ADR-023).
-- Measure with the CDP WebGL wrapper (memory `count-draw-calls-without-repo-edits`), during a race with
+- Measure with the CDP WebGL wrapper (memory `gpu-timing-without-repo-edits`), during a race with
   pickups and VFX on screen, not on an empty deck.
 - Draw calls are not the current bottleneck. §6 shows most frame time is per-pixel work (post chain, sky).

@@ -16,4 +16,4 @@ koota 0.6.6 `readEach( cb )` passes `state` typed as the full tuple of queried t
 (`node_modules/koota/dist/chunk-*.js`, `readEach(callback)`). Hoisting the callback removes one closure a frame,
 not all allocation. Keep the per-frame values in a scratch object or in closure `let`s inside a `useMemo`.
 
-Related: [[ast-grep-drops-semicolons]].
+Related: [[ast-grep-footguns]].

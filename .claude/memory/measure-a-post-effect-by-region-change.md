@@ -19,4 +19,4 @@ the ship.
 EffectPass (`blur.defines.set(...)`, `setChanged()`, `pass.recompile()`). Capture an off frame, a
 second off frame (noise floor), and each variant. Report % of pixels changed by more than 8 luma per
 region (sky, deck centre, deck edge). Driver: the #269 fix session's scratch `blur-ab.mjs`. Related:
-[[time-a-post-effect-without-repo-edits]], [[freeze-does-not-stop-asteroid-drift]].
+[[gpu-timing-without-repo-edits]], [[freeze-the-sim]].

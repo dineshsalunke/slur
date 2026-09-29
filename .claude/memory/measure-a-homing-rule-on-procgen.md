@@ -15,7 +15,7 @@ its x error from the target's path. Do this before you report a rate.
 **Why:** the #219 breadcrumb seeker looked right in unit tests. It measured 30–97% blocked. The per-phase
 log showed two collision artifacts that no hand-made test would catch. First, the zero-width launch LOS
 let a 2u body clip corners. Second, a swept block test used the new x over the whole z-sweep. After both
-fixes, blocked fell to about 1%. Related: [[instanced-meshes-hide-scene-bugs]].
+fixes, blocked fell to about 1%. Related: [[instanced-mesh-footguns]].
 
 **How to apply:** import from `packages/shared/dist` in a scratchpad `.mjs` (run `pnpm -F @slur/shared
 build` first). Skip runs where the bot crashes and report how many. Mutation-check a new behaviour test on
