@@ -15,7 +15,7 @@ import { createMoveEdges, stepMoveEdges } from '../movement-edges';
 import { musicForPhase } from '../music-for-phase';
 import { ensureListener } from '../positional';
 import { playSfx, preloadAudio } from '../sfx-map';
-import { tuning } from './game-audio.state';
+import { tuning } from './game-audio.scratch';
 
 export function GameAudio() {
     const room = useRoom();
