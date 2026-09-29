@@ -28,6 +28,7 @@ import { NetHud } from './net-hud';
 import { NetLoop } from './net-loop/net-loop';
 import { PhaseGate } from './phase-gate/phase-gate';
 import { ON_TRACK_PHASES } from './phase-gate/phase-gate.constants';
+import { QualityStepDown } from './quality-step-down/quality-step-down';
 import { CANVAS_GL } from './scene/canvas-gl';
 import { MineField } from './scene/mine-field';
 import { MineShock } from './scene/mine-shock/mine-shock';
@@ -90,6 +91,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             </PhaseGate>
                             <GameAudio />
                             <RemoteEngineAudio />
+                            <QualityStepDown />
                             { children }
                         </WorldScene>
                     </Canvas>
