@@ -32,7 +32,7 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   message "ready for tuning-schema") · workerone (EngineLight.color → marigold, + 2b if (b)). One at a time,
   immediate pathspec commit, then hand to next.
 - tuning-schema.ts: workertwo done cd742d0 → NOW with workerthree (GO sent) → then workerone (engine pool
-  marigold). #360 after-capture running.
+  marigold). #360 DONE cd742d0 (closed); workertwo IDLE, no held files.
 - #361 home-screen controls panel → workerone, CLEAR: input/keyboard.ts, input/power-select.ts, new
   input/key-label.ts(+test), power-rack.utils.ts, audio/game-audio/game-audio.tsx + new .constants.ts,
   routes/home.tsx, new routes/home/controls-panel/*.
