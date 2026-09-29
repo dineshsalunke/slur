@@ -2,6 +2,7 @@ import { FEATURE_SYSTEMS } from '../../engine/active-features';
 import { scheduleSystems } from '../frame/schedule';
 import { writeHud } from '../hud/hud-writers/hud-writers.state';
 import { GAMEPAD_SYSTEM } from '../input/gamepad';
+import { DIAL_SYNC_SYSTEM } from '../scene/dial-sync/dial-sync.constants';
 import {
     type NetFrame,
     netCamera,
@@ -17,6 +18,7 @@ import {
 
 export const NET_SCHEDULE = scheduleSystems< NetFrame >( 'net', [
     GAMEPAD_SYSTEM,
+    DIAL_SYNC_SYSTEM,
     { id: 'net.host-tick', phase: 'simulate', before: [ 'net.flight' ], run: netHostTick },
     { id: 'net.flight', phase: 'simulate', run: netFlight },
     { id: 'net.send-input', phase: 'simulate', after: [ 'net.flight' ], run: netSendInput },

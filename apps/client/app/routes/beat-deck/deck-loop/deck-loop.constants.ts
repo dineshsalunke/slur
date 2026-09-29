@@ -1,5 +1,6 @@
 import { scheduleSystems } from '../../../game/frame/schedule';
 import { GAMEPAD_SYSTEM } from '../../../game/input/gamepad';
+import { DIAL_SYNC_SYSTEM } from '../../../game/scene/dial-sync/dial-sync.constants';
 import {
     type DeckFrame,
     deckCamera,
@@ -13,6 +14,7 @@ import {
 
 export const DECK_SCHEDULE = scheduleSystems< DeckFrame >( 'deck', [
     GAMEPAD_SYSTEM,
+    DIAL_SYNC_SYSTEM,
     { id: 'deck.ship-choice', phase: 'simulate', run: deckShipChoice },
     { id: 'deck.restart', phase: 'simulate', after: [ 'deck.ship-choice' ], run: deckRestart },
     { id: 'deck.flight', phase: 'simulate', after: [ 'deck.restart' ], run: deckFlight },
