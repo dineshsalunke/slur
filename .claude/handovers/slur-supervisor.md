@@ -1,14 +1,12 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-09-29 (seam 14)
+Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-29 (seam 15)
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. Clear and resume steps: memory `supervisor-clears-workers-via-herdr.md`.
-Standing approval to clear workers at a seam. Read the context bar with `grep -oE "│ [█░]* [0-9]*%"`; loop reads
-until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session message with SendMessage to its
-`from=` socket (workerone = uds:/tmp/cc-socks/1146.sock, workertwo = uds:/tmp/cc-socks/1219.sock,
-workerthree = uds:/tmp/cc-socks/58651.sock).
-Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
+Standing approval to clear workers at a seam. Read the context bar with `grep -oE "░+ [0-9]+%"`; re-read
+until 0%. Reply to a worker's cross-session message with SendMessage to its name (workerone, workertwo,
+workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 ## Standing owner decisions
 
@@ -20,53 +18,60 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 - Prod: https://slur.kurmah.studio. do-setup owns infra.
 - Look (#364 254d267): HDRI cyclorama_hard_light 1k, Environment.rotation 210, intensity 1, Metal + Hull
   baseColor #232324, Neutral tone mapping exposure 1. Home, lobby and race all read one tuning.
-- Env band (d6cb3f6): colour = Accent.color (bandColor dial removed), bandHeight 10, bandIntensity 2.
-- FINAL KEY LAYOUT (#368, ADR-032): ↑/↓ throttle/brake, ←/→ strafe, Space jump, E fire fwd, D fire back,
-  S/F prev/next slot, X drop, B mirror, M mute, Esc. Lobby ship picker ←/→ only (A/D removed 28da8f8).
-- Rocks: Rock.spin default 0 (32852a5, #360).
-- #369 nozzle hue: owner APPROVED option 2 (accent override on Marigold_emission + Engine_core, base black;
-  engineIdle/Cruise 0.35/0.6) + EngineLight removal in one commit set. Option 4 (hue-preserving tone map)
-  parked; owner has not answered on it.
+- Env band (d6cb3f6): colour = Accent.color, bandHeight 10, bandIntensity 2.
+- KEY LAYOUT (#368, ADR-032; mirror removed #371): ↑/↓ throttle/brake, ←/→ strafe, Space jump, E fire fwd,
+  D fire back, S/F prev/next slot, X drop, M mute, Esc. Pad Start = action 'start' (#375).
+- RFC-349 (`docs/RFC-349-ARCHITECTURE.md`): owner said YES to §8 Q1 (feature modules + tug pilot), Q2 (D1
+  registry now, D3 later), Q3 (O1 order), Q8 (frame plan: 9 phases, P2 render owner, quality service).
+  Each stage gets its own issue. Supervisor marks stage status in RFC §7 (workers do not edit the RFC).
+- Supervisor calls the owner accepted without objection: S2 pad Start → 7th action 'start'; M no longer
+  mutes while typing/with modifiers; S3 all 6 event queues drop OLDEST on overflow.
+
+## RFC-349 stages
+
+| Stage | Issue | State |
+|---|---|---|
+| S1 one client config | #374 | landed 41c9a41 (no live rubber-band check) |
+| S2 input action map | #375 | landed cf8f95e (pad Start only unit-tested — owner asked to try once) |
+| S3 event-queue helper | #376 | landed f3382cb |
+| S10 .scratch.ts | #377 | landed 7a267ec + 564c84b |
+| S10b constants scratch | #380 | landed a9f7b83 |
+| S14 frame-phase constants | #378 | landed db2552d |
+| S15 camera/Sim readers after NetLoop | #379 | landed dbaf3b2 (lag 1.96 u → 0) |
+| S16 scheduler | #381 | ASSIGNED workerthree (prompted after /clear; claim not yet received) |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | — (#369 shipped 4c66045 + e5b1e6d; OPEN for owner sign-off) | IDLE | — |
-| workertwo | w2Z:p3 | #372 seeker lock warning: OWNER APPROVED bottom-edge red LOCK chevron (DOM addEffect, slides by dx, 1→3 BARS by time-to-impact, solid + vignette on committed, ×2, top edge for back-fired) + /test-level "Incoming seeker" button | BUILDING | overlays/seeker-warning/*, overlays/overlays.tsx, test-level/pickup-grants/pickup-grants.utils(+test).ts, docs/GDD.md §5.3 (shared with workerthree #371 — sequence commits); app.css only after asking |
-| workerthree | w2Z:p5 | — (#371 mirror removed 46d794f, closed; ADR-034; CLAUDE.md + perf-analysis skill mirror lines fixed by supervisor). CLEARED to 0% at seam 24619fd, not resumed: on next lane prompt "You are workerthree. Resume from .claude/handovers/workerthree.md…" + brief | IDLE | — |
+| workerone | w2Z:p2 | — (cleared to 0% after #380) | IDLE, cleared | — |
+| workertwo | w2Z:p3 | — (cleared to 0% after #376) | IDLE, cleared | — |
+| workerthree | w2Z:p5 | #381 S16 scheduler | STARTING | none yet — expect claim: new game/frame/schedule.ts, net-loop/*, deck-loop/*, landing-rig/*, dev/frame-meter.ts, frame-phase.constants.ts |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
 
-1. Env band: done per owner spec; nothing open.
-2. #369: owner to press "reset tuning" and re-check the near-camera orange streak (workerone could not reproduce).
-3. Hue-preserving tone map follow-up (option 4)?
-4. Older: 60 fps cap for heating / M1 Retina → medium; #344 perf run window; deploy (safe when pushed);
-   power-slot leak (resetSlot() never called); #349 RFC §8 Q1–Q10; .glb models, kick on results rows, #14
-   reconnection Q1/Q2, #312/#313, #16, #342 gaps.
-
-## Done this seam
-
-- MEMORY.md compacted b189813: 154 lines / 20.8 KB → 129 / 11.6 KB; 55 memories merged into 16 topic files;
-  worktrees-are-for-concurrency deleted (contradicted by owner rule). Workers told to re-read MEMORY.md.
-- #370 boost chevrons back face mirrored — workerthree 57f2bfe, closed.
-- workerthree d6cb3f6 (env band) + 28da8f8 (picker A/D).
+1. RFC-349 §8: Q4 (state rule C + room config B2, four tiers) — BLOCKS S0 (conventions) and so F1.
+   Q5 (#70: room config combat only, or ship tuning too), Q6 (dev dials in hosted rooms?), Q7 (valibot/zod
+   for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
+2. Owner to try pad Start in a real lobby (#375).
+3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
+   perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;
+   #312/#313; #16; #342 gaps.
 
 ## Uncommitted
 
-None of mine. The tree shows workerone's in-progress #369 edits.
+None.
 
 ## Next
 
-1. Mirror removal claim CLEARED (12 rear-view files deleted; net-canvas, quality.constants, tuning-schema RearView.*,
-   controls-panel.utils(+test), GDD/TDD/ADD/DECISIONS ADR-034, memory). workerthree will NOT edit CLAUDE.md:199
-   ("**B** mirror") or .claude/skills/perf-analysis/SKILL.md:59,89 → SUPERVISOR edits those after it lands
-   (owner's removal request covers them).
-2. Relay #369 owner answers (flatter nozzle OK? streak after reset tuning?) to workerone; it closes #369.
-   Mirror cost (relayed): ON +0.55–0.8 ms, 129 vs 74 draws; owner chose REMOVE.
-3. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
+1. Receive workerthree's #381 claim; clear it (no other lane active).
+2. Explain Q4 to the owner if asked (§6.1 rule C, §4.3 B, §6.2); on yes → file S0 issue (conventions/ecs.md,
+   new conventions/features.md, .claude/rules/*, CLAUDE.md) and assign to workerone (RFC lead).
+3. Stages free now (no owner gate): S4 tags and S5 world traits need S0; S8, S17–S21 need S16; S11 needs a
+   quiet game/scene/ window. Idle workers: offer S11 or wait for S0/S16.
+4. After S0 + S16 → F1 engine skeleton → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
 
 ## Lessons → memory
 
-`.claude/memory/supervisor-clears-workers-via-herdr.md` (now also holds herdr send-keys, queued messages, pane %).
+none this seam (herdr clear/resume steps already in `supervisor-clears-workers-via-herdr.md`).
