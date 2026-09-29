@@ -46,6 +46,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
 | S8 input on sim tick | #383 | landed 8681e05 (30 sends/s, 2 inputs each; reconcile 0/198 before and after; hidden tab no worse) |
 | S18 render system | #384 | ASSIGNED workerthree; first lands #386 (landing canvas dies ~2 s after load: useTexture suspense escapes the Canvas; fix = Suspense in landing-scene.tsx) |
+| S17 addEffect → phases | #387 | ASSIGNED workertwo |
 | F1 engine skeleton | #385 | ASSIGNED workerone; waits on attach-room-to-world.ts; stays out of world-scene/landing-scene |
 
 ## Workers
@@ -53,7 +54,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #385 F1 | BUILDING (claim cleared; bridge + net-loop.constants released to it after S8) | net/attach-room-to-world.ts, game/net-loop/net-loop.constants.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
-| workertwo | w2Z:p3 | — (#383 done, handover 33065bb) | IDLE, cleared to 0% | — |
+| workertwo | w2Z:p3 | #387 S17 | STARTING (0%, prompted) | claim pending — expect gamepad.ts, loopback-room.ts, 5 HUD files; must ask before net-loop.constants.ts / net-canvas.tsx (F1) |
 | workerthree | w2Z:p5 | #384 S18 | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
 | do-setup | w2Z:p4 | infra | idle | — |
 
@@ -71,8 +72,8 @@ None.
 
 ## Next
 
-1. Wait for F1 (#385, workerone) and S18 (#384, workerthree). workertwo idle: owner to pick its next
-   stage (S17 / S20 / S21 free; S4/S5 after F1).
+1. Wait for F1 (#385, workerone), S18 + #386 (workerthree), S17 claim (#387, workertwo). Still free:
+   S20, S21 (Q10 first); S4/S5 after F1.
 2. Still free, unassigned: S17, S20, S21 (Q10 first); S4/S5 after F1 (both touch the bridge). S19 needs Q9.
 3. F1 → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
 4. features.md §5 cites game/frame/schedule.ts `buildSchedule`; if it is renamed, update §5.
