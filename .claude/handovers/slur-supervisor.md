@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-29 (seam 15)
+Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-29 (seam 16)
 
 ## Goal
 
@@ -22,7 +22,8 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 - KEY LAYOUT (#368, ADR-032; mirror removed #371): ↑/↓ throttle/brake, ←/→ strafe, Space jump, E fire fwd,
   D fire back, S/F prev/next slot, X drop, M mute, Esc. Pad Start = action 'start' (#375).
 - RFC-349 (`docs/RFC-349-ARCHITECTURE.md`): owner said YES to §8 Q1 (feature modules + tug pilot), Q2 (D1
-  registry now, D3 later), Q3 (O1 order), Q8 (frame plan: 9 phases, P2 render owner, quality service).
+  registry now, D3 later), Q3 (O1 order), Q4 (rule C, room config B2, four tiers — d15076e), Q8 (frame
+  plan: 9 phases, P2 render owner, quality service).
   Each stage gets its own issue. Supervisor marks stage status in RFC §7 (workers do not edit the RFC).
 - Supervisor calls the owner accepted without objection: S2 pad Start → 7th action 'start'; M no longer
   mutes while typing/with modifiers; S3 all 6 event queues drop OLDEST on overflow.
@@ -38,21 +39,21 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S10b constants scratch | #380 | landed a9f7b83 |
 | S14 frame-phase constants | #378 | landed db2552d |
 | S15 camera/Sim readers after NetLoop | #379 | landed dbaf3b2 (lag 1.96 u → 0) |
-| S16 scheduler | #381 | ASSIGNED workerthree (prompted after /clear; claim not yet received) |
+| S0 conventions | #382 | IN PROGRESS workerone (claim cleared 2026-09-29) |
+| S16 scheduler | #381 | IN PROGRESS workerthree (claim cleared 2026-09-29) |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | — (cleared to 0% after #380) | IDLE, cleared | — |
+| workerone | w2Z:p2 | #382 S0 conventions | BUILDING | conventions/ecs.md, conventions/features.md (new), conventions/README.md, .claude/rules/features.md (new), .claude/rules/ecs-koota.md, CLAUDE.md |
 | workertwo | w2Z:p3 | — (cleared to 0% after #376) | IDLE, cleared | — |
-| workerthree | w2Z:p5 | #381 S16 scheduler | STARTING | none yet — expect claim: new game/frame/schedule.ts, net-loop/*, deck-loop/*, landing-rig/*, dev/frame-meter.ts, frame-phase.constants.ts |
+| workerthree | w2Z:p5 | #381 S16 scheduler | BUILDING | apps/client/app/: game/frame/{schedule.ts, schedule.test.ts, frame-timing.state.ts, frame-schedule/*, phase-runner/*, frame-phase.constants.ts}, game/net-loop/*, routes/beat-deck/deck-loop/*, routes/home/landing-rig/*, dev/frame-meter.ts, dev/frame-tap.tsx |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
 
-1. RFC-349 §8: Q4 (state rule C + room config B2, four tiers) — BLOCKS S0 (conventions) and so F1.
-   Q5 (#70: room config combat only, or ship tuning too), Q6 (dev dials in hosted rooms?), Q7 (valibot/zod
+1. RFC-349 §8: Q5 (#70: room config combat only, or ship tuning too), Q6 (dev dials in hosted rooms?), Q7 (valibot/zod
    for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
 2. Owner to try pad Start in a real lobby (#375).
 3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
@@ -65,12 +66,10 @@ None.
 
 ## Next
 
-1. Receive workerthree's #381 claim; clear it (no other lane active).
-2. Explain Q4 to the owner if asked (§6.1 rule C, §4.3 B, §6.2); on yes → file S0 issue (conventions/ecs.md,
-   new conventions/features.md, .claude/rules/*, CLAUDE.md) and assign to workerone (RFC lead).
-3. Stages free now (no owner gate): S4 tags and S5 world traits need S0; S8, S17–S21 need S16; S11 needs a
-   quiet game/scene/ window. Idle workers: offer S11 or wait for S0/S16.
-4. After S0 + S16 → F1 engine skeleton → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
+1. Wait for #382 (workerone) and #381 (workerthree) to land; mark each Landed <sha> in RFC §7.
+2. Stages next: S4 tags and S5 world traits need S0; S8, S17–S21 need S16; S11 needs a quiet game/scene/
+   window. workertwo is idle: offer S11 or wait for S0/S16.
+3. After S0 + S16 → F1 engine skeleton → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
 
 ## Lessons → memory
 
