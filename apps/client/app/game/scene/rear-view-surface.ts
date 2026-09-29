@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { toneMode } from './tone-mapping';
 
 const vertexShader = /* glsl */ `
 varying vec2 vUv;
@@ -64,7 +65,7 @@ export function rearViewSurface( map: THREE.Texture ): RearViewSurface {
     return {
         uniforms: {
             uMap: { value: map },
-            uToneMode: { value: THREE.NeutralToneMapping },
+            uToneMode: { value: toneMode() },
             uGain: { value: 1 },
             uFeatherX: { value: 0.22 },
             uFeatherY: { value: 0.18 },

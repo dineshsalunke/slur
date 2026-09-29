@@ -258,7 +258,9 @@ PMREM-filters it. The HDRI lights the scene and is not drawn. The default is
 `public/textures/hdri/cyclorama_hard_light_1k.hdr` (CC0, 1.4 MB, since #362). On `/test-level`, the `Environment`
 folder has an `hdri` text field: paste `https://polyhaven.com/a/<slug>`, a bare slug or a `.hdr` URL.
 The slug resolves through `api.polyhaven.com/files/<slug>` at the tier's resolution (1k low and
-medium, 2k high). `Environment.rotation` turns it and `Environment.intensity` scales it. ADR-030.
+medium, 2k high). `Environment.rotation` turns it (default 210°) and `Environment.intensity` scales it
+(default 1). Tone mapping is Neutral at exposure 1. The home, lobby and race canvases read the same
+dials. ADR-030, ADR-031.
 
 **The rails do not light the scene.** The rail light and the directional fill were removed in #310
 (owner, 2026-09-27: they had no visible effect). The rail light was an analytic line light patched

@@ -25,8 +25,8 @@ export const NUMBER_TUNABLES = {
     'ToneMapping.mode': { value: 7, min: 0, max: 7, step: 1, rebuild: false },
     'ToneMapping.exposure': { value: 1, min: 0, max: 4, step: 0.01, rebuild: false },
 
-    'Environment.intensity': { value: 1.2, min: 0, max: 20, step: 0.05, rebuild: false },
-    'Environment.rotation': { value: 180, min: 0, max: 360, step: 1, rebuild: false },
+    'Environment.intensity': { value: 1, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Environment.rotation': { value: 210, min: 0, max: 360, step: 1, rebuild: false },
     'Environment.bandIntensity': { value: 1.5, min: 0, max: 20, step: 0.05, rebuild: false },
     'Environment.bandHeight': { value: 6, min: 0.5, max: 60, step: 0.5, rebuild: false },
 

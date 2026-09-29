@@ -1,8 +1,8 @@
 import type { RootState } from '@react-three/fiber';
-import * as THREE from 'three';
+import { toneMode } from './tone-mapping';
 
 export const CANVAS_GL = {
-    toneMapping: THREE.NeutralToneMapping,
+    toneMapping: toneMode(),
     antialias: false,
     alpha: false,
     powerPreference: 'high-performance',

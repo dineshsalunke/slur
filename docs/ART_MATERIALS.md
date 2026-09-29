@@ -1171,7 +1171,22 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     that roughness only scales. Roughness alone still does not create it. None in
     `docs/art-direction/`.
 
+24. **The owner's `/test-level` look is the default — 2026-09-29 (#364).** The owner tuned these on
+    `/test-level`. They are now the defaults on every canvas: home, lobby, race and `/test-level`.
+    - **`Metal.baseColor` is `#232324`** (was `#595c62`). At metalness 1 this gives F0 ≈ 0.017. The
+      HDRI reflection and the roughness map now carry the track's look.
+    - **`Hull.baseColor` is `#232324`** (was `#4a4d52`). Hulls and track share one value again.
+    - **`Environment.rotation` is 210** (was 180). **`Environment.intensity` is 1** (was 1.2).
+    - **Tone mapping** stays Neutral at exposure 1.
+    - Luma is not re-measured.
+
+    **Departures.** Item 21 said *"`Hull.baseColor` is `#4a4d52`. Ship hulls keep the old value."*
+    Hulls now take the track value. None in `docs/art-direction/`.
+
 ## 8. Review log
+
+**Revision 10 → 11, deck reflections and the owner's look (2026-09-29).** No family table changes. §7
+gains items 23 and 24.
 
 **Revision 9 → 10, image backdrop and HDRI (2026-09-28).** No family table changes. §7 gains item 22.
 Item 21's key light is removed.
