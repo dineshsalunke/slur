@@ -3,7 +3,7 @@ instruction per sentence. See CONTRIBUTING.md §8. -->
 
 # RFC-349 — Architecture: feature modules, ECS drift, server-owned game config
 
-- **Issue:** #349 · **Status:** DRAFT — Q1, Q2, Q3 approved 2026-09-29; stages in progress (§7) · **Lead:** workerone · **Updated:** 2026-09-29
+- **Issue:** #349 · **Status:** DRAFT — Q1, Q2, Q3, Q8 approved 2026-09-29; stages in progress (§7) · **Lead:** workerone · **Updated:** 2026-09-29
 - **Authors:** §1, §3, §6, §7 workerone · §4 workertwo (incl. the net half §4.4–4.5) · §5 workerthree.
   All merged. One voice.
 - **Scope:** this RFC proposes. It changes no source. Each stage in §7 needs its own issue and owner approval.
@@ -906,7 +906,7 @@ waits for S0.
    answered: yes, by `schema()` composition, §3.4.)
 8. Owner: accept the frame plan (§5)? It has nine fixed phases, O1 ordering for systems and phase-only
    ordering for views, and one render system (P2) with a fixed list of post-effect slots. It also makes
-   quality a service with per-feature hooks (Q2).
+   quality a service with per-feature hooks (Q2). **Answered 2026-09-29: yes.**
 9. Owner: may a tier change rebuild the sky cube and track textures mid-race (one hitch), or should those
    knobs be `reload-only` (§5.4)?
 10. Measure before S21: does `createQuery` remove the per-call copy in koota 0.6.6, or only the hash lookup?
