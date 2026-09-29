@@ -23,7 +23,8 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
   D fire back, S/F prev/next slot, X drop, M mute, Esc. Pad Start = action 'start' (#375).
 - RFC-349 (`docs/RFC-349-ARCHITECTURE.md`): owner said YES to §8 Q1 (feature modules + tug pilot), Q2 (D1
   registry now, D3 later), Q3 (O1 order), Q4 (rule C, room config B2, four tiers — d15076e), Q8 (frame
-  plan: 9 phases, P2 render owner, quality service).
+  plan: 9 phases, P2 render owner, quality service), Q5 = A: room config covers combat and world rules
+  only; ship tuning stays fixed data (f090e82; commented on #70).
   Each stage gets its own issue. Supervisor marks stage status in RFC §7 (workers do not edit the RFC).
 - Supervisor calls the owner accepted without objection: S2 pad Start → 7th action 'start'; M no longer
   mutes while typing/with modifiers; S3 all 6 event queues drop OLDEST on overflow.
@@ -41,20 +42,22 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S15 camera/Sim readers after NetLoop | #379 | landed dbaf3b2 (lag 1.96 u → 0) |
 | S0 conventions | #382 | landed c1233064 (conventions/features.md; Q5–Q7 written as open) |
 | S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
+| S8 input on sim tick | #383 | ASSIGNED workertwo; lands first (frees attach-room-to-world.ts for F1) |
+| S18 render system | #384 | ASSIGNED workerthree |
+| F1 engine skeleton | #385 | ASSIGNED workerone; waits on attach-room-to-world.ts; stays out of world-scene/landing-scene |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | — (#382 done) | IDLE | — |
-| workertwo | w2Z:p3 | — (cleared to 0% after #376) | IDLE, cleared | — |
-| workerthree | w2Z:p5 | — (#381 done, handover bd5d3a59) | IDLE | — |
+| workerone | w2Z:p2 | #385 F1 | STARTING (cleared to 0%, prompted) | claim pending |
+| workertwo | w2Z:p3 | #383 S8 | STARTING (0%, prompted) | claim pending |
+| workerthree | w2Z:p5 | #384 S18 | STARTING (cleared to 0%, prompted) | claim pending |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
 
-1. RFC-349 §8: Q5 (#70: room config combat only, or ship tuning too), Q6 (dev dials in hosted rooms?), Q7 (valibot/zod
-   for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
+1. RFC-349 §8: Q6 (dev dials in hosted rooms?), Q7 (valibot/zod for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
 2. Owner to try pad Start in a real lobby (#375).
 3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
    perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;
@@ -66,11 +69,11 @@ None.
 
 ## Next
 
-1. S0 + S16 landed. Free now: F1 engine skeleton, S4 tags, S5 world traits, S8, S17, S18, S20, S21
-   (S21 measures §8 Q10 first; S19 needs Q9). All three workers idle. Proposed to owner: workerone → F1
-   (RFC lead), workertwo → S8, workerthree → S18. Awaiting owner OK.
-2. F1 → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
-3. features.md §5 cites game/frame/schedule.ts `buildSchedule`; if it is renamed, update §5.
+1. Receive three claims; check against each other. F1 must not claim net/attach-room-to-world.ts until S8
+   lands (then tell workerone it is released), nor world-scene.tsx / landing-scene.tsx (S18).
+2. Still free, unassigned: S17, S20, S21 (Q10 first); S4/S5 after F1 (both touch the bridge). S19 needs Q9.
+3. F1 → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
+4. features.md §5 cites game/frame/schedule.ts `buildSchedule`; if it is renamed, update §5.
 
 ## Lessons → memory
 
