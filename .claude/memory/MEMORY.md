@@ -151,3 +151,4 @@ One line per memory; each memory lives in its own file here.
 - [gl.finish does not sync on headless Metal](gl-finish-does-not-sync-headless-metal.md) — bracket GPU timings with a 1-px readPixels; finish read 0.1 ms vs real 0.6
 - [Trapezoid quad varyings skew](trapezoid-quad-varyings-skew.md) — ±1 corner varyings bend on a widening quad; pass world-affine offsets
 - [Measure an HDRI offline in node](measure-an-hdri-offline-in-node.md) — HDRLoader parses in node; per-face irradiance + band share, no browser
+- [herdr send-keys does not submit](herdr-send-keys-does-not-submit.md) — typed-but-unsent prompt: use `herdr agent prompt`, not send-keys Enter
