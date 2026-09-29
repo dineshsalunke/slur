@@ -33,7 +33,9 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   immediate pathspec commit, then hand to next.
 - tuning-schema.ts: workertwo done cd742d0 → NOW with workerthree (GO sent) → then workerone (engine pool
   marigold). #360 after-capture running.
-- #361 home-screen controls panel → workerone (cleared, briefed; claim list pending).
+- #361 home-screen controls panel → workerone, CLEAR: input/keyboard.ts, input/power-select.ts, new
+  input/key-label.ts(+test), power-rack.utils.ts, audio/game-audio/game-audio.tsx + new .constants.ts,
+  routes/home.tsx, new routes/home/controls-panel/*.
 - #354 part 2b anisotropy: OWNER CHOICE PENDING (a) drop [rec] / (b) dials default 0 / (c) 0.15 along z.
   workerone idle until answer or tuning-schema.ts returns.
 
