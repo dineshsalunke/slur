@@ -255,7 +255,7 @@ removed: its baker, noise volume, planets, probe and star field. `scene/scene-ba
 image, so it does not turn with the camera; the asteroids carry all parallax. `scene/hdri/hdri.state.ts`
 loads a Poly Haven HDRI with three's `HDRLoader` and sets it as `scene.environment`. The renderer
 PMREM-filters it. The HDRI lights the scene and is not drawn. The default is
-`public/textures/hdri/kloppenheim_02_puresky_1k.hdr` (CC0, 1.4 MB). On `/test-level`, the `Environment`
+`public/textures/hdri/cyclorama_hard_light_1k.hdr` (CC0, 1.4 MB, since #362). On `/test-level`, the `Environment`
 folder has an `hdri` text field: paste `https://polyhaven.com/a/<slug>`, a bare slug or a `.hdr` URL.
 The slug resolves through `api.polyhaven.com/files/<slug>` at the tier's resolution (1k low and
 medium, 2k high). `Environment.rotation` turns it and `Environment.intensity` scales it. ADR-030.

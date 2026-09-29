@@ -1,4 +1,4 @@
-export const HDRI_DEFAULT_URL = '/textures/hdri/kloppenheim_02_puresky_1k.hdr';
+export const HDRI_DEFAULT_URL = '/textures/hdri/cyclorama_hard_light_1k.hdr';
 
 export const HDRI_FILES_API = 'https://api.polyhaven.com/files/';
 

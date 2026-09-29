@@ -1133,7 +1133,8 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     - **Background** is `nebula-backdrop.jpg`, cover-fitted to the screen. It is a flat image, not a
       sky, so it does not turn with the camera.
     - **Environment** is a Poly Haven HDRI, loaded from a link in the dev panel. The default is
-      `kloppenheim_02_puresky` at 1k. It lights the scene and is not drawn.
+      `cyclorama_hard_light` at 1k (#362; was `kloppenheim_02_puresky`). It lights the scene and is
+      not drawn.
     - **`KeyLight` and `NearFill` are removed**, with their dials. Item 21's key light no longer exists.
     - **Rocks** lose their probed key term. The HDRI lights them through `Rock.envMapIntensity`
       (was `Sky.environment`, same default 1.85).

@@ -1576,7 +1576,7 @@ The owner asked for a simpler scene. The procedural nebula (#215) baked a sky cu
 ### Decision
 
 1. **Background:** `public/textures/nebula-backdrop.jpg` (1672×941, restored from before #215) is `scene.background`. It is cover-fitted to the viewport. It does not turn with the camera.
-2. **Lighting:** a Poly Haven HDRI is `scene.environment` only. It is not the background. The default is `public/textures/hdri/kloppenheim_02_puresky_1k.hdr` (CC0), self-hosted so production does not depend on Poly Haven.
+2. **Lighting:** a Poly Haven HDRI is `scene.environment` only. It is not the background. The default is `public/textures/hdri/cyclorama_hard_light_1k.hdr` (CC0; replaced `kloppenheim_02_puresky` in #362 by owner choice), self-hosted so production does not depend on Poly Haven.
 3. **Dev panel:** the `Environment` folder has an `hdri` text field. A pasted `https://polyhaven.com/a/<slug>` link, a bare slug or a direct `.hdr` URL loads live. The link resolves through `https://api.polyhaven.com/files/<slug>` to `.hdri[res].hdr.url` on `dl.polyhaven.org`. Both hosts send `access-control-allow-origin: *` (verified 2026-09-28), so there is no proxy. `Environment.rotation` turns the HDRI.
 4. **Resolution by tier:** low 1k, medium 1k, high 2k (`QualityProfile.hdriRes`). No 4k: the file is about 20 MB and PMREM uses 256 px faces.
 5. **Loader:** three's `HDRLoader` in a module singleton (`game/scene/hdri/hdri.state.ts`). Not `RGBELoader` (deprecated since r180), and not drei `useEnvironment` (it uses the three-stdlib loader and suspends the scene on each swap). The renderer PMREM-converts the equirect texture itself.
