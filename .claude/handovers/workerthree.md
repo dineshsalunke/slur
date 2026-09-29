@@ -1,30 +1,30 @@
-Agent: workerthree · Lane: #366 hidden R/E/F keys + #367 V mirror toggle (both CLOSED) · Updated: 2026-09-29
+Agent: workerthree · Lane: #368 final keyboard layout · Updated: 2026-09-29
 
 ## Goal
-Remove the Ctrl-shortcut-prone hidden power keys; ship the V rear-view toggle to players.
+Replace the #358 Blur layout with the owner's final layout: ↑/↓ drive, ←/→ strafe, Space jump, E/D fire, S/F slot, X drop, B mirror.
 
 ## Done
-- 9981493 (#366): R/E/F unbound. Pad B→R Shift, X/RB→R Ctrl; touch d-pad up→R Ctrl, down→R Shift, left→synthetic 'PreviousSlot'. GDD controls note. Closed.
-- 2cf7326 (#367): toggle moved dev/ → game/input/rear-view-toggle.ts, DEV gate dropped, guards kept, persists in localStorage `slur.rearView`, 'Mirror V' in home controls panel, GDD table row + touch note fixed (stale E/F/R). Closed.
+- d65ada3 (#368): code, tests, home controls panel, HUD power hint, GDD §8. Pushed to origin/dev.
 
 ## State
-- Client vitest 98 files / 668 tests pass; typecheck clean; pnpm lint 0 errors (9 warnings, none in my files).
-- Not verified in a browser [unmeasured].
-- Hidden-key report sent to supervisor: S safe; Ctrl+X harmless; Ctrl+1..3 switch tabs (shown keys, not changed, owner to decide); Mac Ctrl+Space / Ctrl+↑ [inferred].
+- Client vitest app/game + app/routes/home: 73 files / 495 tests pass; typecheck clean; pnpm lint 0 errors (9 warnings, none mine).
+- Headless /test-level (:5173): ↑ throttle 1, ↓ brake 1, ← strafe 1; Q and A do nothing; F→slot 1→2, S→1; ↑ and 3 do not change the slot; B toggles the mirror, V does not. Home panel reads "↑ Throttle ↓ Brake ← → Strafe Space Jump E Fire D Fire back S F Slot X Drop M Mute B Mirror".
+- E/D/X fire and drop with a full rack: unit tests only; not driven in a browser [unmeasured].
+- Ship picker A/D kept (supervisor ruled; lobby only).
 
 ## Uncommitted
-none (`.claude/memory/MEMORY.md` + `trapezoid-quad-varyings-skew.md` are another agent's, not mine)
+none. ADR-032 draft is in my session scratchpad only (adr-032.md). It is restated in Next.
 
 ## Held files
-none
+- docs/DECISIONS.md: claimed. Waiting for the supervisor's "DECISIONS clear".
 
 ## Next
-1. Idle. Owner verifies #366/#367 on /test-level.
+1. On "DECISIONS clear": append ADR-032 to docs/DECISIONS.md. It supersedes the #358 layout (GDD §8), is built in d65ada3, and covers: the one layout, the removed keys, no modifiers, no preventDefault (html/body overflow-hidden), gamepad/touch keep their buttons, the picker keeps A/D.
+2. Commit, push, run `gh issue close 368` with the SHAs, and brief the owner on /test-level.
 
 ## Open questions
-- Owner (via supervisor): CLAUDE.md controls line should add V mirror — supervisor owns that edit.
-- Owner: Ctrl+1..3 tab switch risk.
-- Owner (#362): bandIntensity / Environment.intensity dials.
+- Owner: keep A/D in the lobby ship picker? (kept for now)
+- Supervisor: CLAUDE.md controls line still shows the old keys (supervisor edit).
 
 ## Lessons → memory
 none
