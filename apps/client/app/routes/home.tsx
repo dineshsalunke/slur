@@ -8,6 +8,7 @@ import { homeScreenHintDue } from '../ui/home-screen-hint/home-screen-hint.utils
 import { Scrim } from '../ui/scrim';
 import type { Route } from './+types/home';
 import { NAME_KEY } from './home/call-sign-field/call-sign-field.constants';
+import { ControlsPanel } from './home/controls-panel/controls-panel';
 import { LandingBackdrop } from './home/landing-backdrop/landing-backdrop';
 import { BAD_CODE, NO_CODE, REMOVED, RUN_CLOSED } from './home/menu-form';
 import { menuErrorFor, menuIntent } from './home/menu-form.utils';
@@ -66,7 +67,7 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                     </div>
                 </header>
 
-                <div className="mt-auto flex flex-col gap-6 px-5 pb-6 pt-10 sm:px-10 sm:pb-7">
+                <div className="mt-auto flex flex-col gap-6 px-5 pb-6 pt-10 sm:px-10 sm:pb-7 md:flex-row md:items-end md:justify-between">
                     <section aria-labelledby="pitch">
                         <h2
                             id="pitch"
@@ -78,6 +79,7 @@ export default function Home( { loaderData }: Route.ComponentProps ) {
                             Create a room and send your crew the code, or drop into quick play.
                         </p>
                     </section>
+                    <ControlsPanel />
                 </div>
 
                 <MenuStrip savedName={ loaderData.savedName } />

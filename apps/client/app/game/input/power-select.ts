@@ -7,10 +7,24 @@ const SLOT_KEYS = [ 'Digit1', 'Digit2', 'Digit3' ];
 export const NEXT_SLOT_KEY = 'ArrowUp';
 export const PREVIOUS_SLOT_KEY = 'KeyR';
 
-const FIRE_FORWARD_KEYS = [ 'ControlRight', 'ShiftLeft', 'KeyE' ];
-const FIRE_BACK_KEYS = [ 'ShiftRight', 'KeyF' ];
-const DROP_KEYS = [ 'ControlLeft', 'KeyX' ];
-const CHORD_KEYS = new Set( [ 'ControlRight', 'ControlLeft', 'ShiftLeft', 'ShiftRight', NEXT_SLOT_KEY ] );
+export const FIRE_KEY = 'ControlRight';
+export const MAC_FIRE_KEY = 'ShiftLeft';
+export const FIRE_BACK_KEY = 'ShiftRight';
+export const DROP_KEY = 'ControlLeft';
+export const MAC_DROP_KEY = 'KeyX';
+
+const FIRE_FORWARD_KEYS = [ FIRE_KEY, MAC_FIRE_KEY, 'KeyE' ];
+const FIRE_BACK_KEYS = [ FIRE_BACK_KEY, 'KeyF' ];
+const DROP_KEYS = [ DROP_KEY, MAC_DROP_KEY ];
+const CHORD_KEYS = new Set( [ FIRE_KEY, DROP_KEY, MAC_FIRE_KEY, FIRE_BACK_KEY, NEXT_SLOT_KEY ] );
+
+export function fireKeyFor( mac: boolean ): string {
+    return mac ? MAC_FIRE_KEY : FIRE_KEY;
+}
+
+export function dropKeyFor( mac: boolean ): string {
+    return mac ? MAC_DROP_KEY : DROP_KEY;
+}
 
 const listeners = new Set< () => void >();
 

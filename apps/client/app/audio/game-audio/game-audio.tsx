@@ -14,6 +14,7 @@ import { createMoveEdges, stepMoveEdges } from '../movement-edges';
 import { musicForPhase } from '../music-for-phase';
 import { ensureListener } from '../positional';
 import { playSfx, preloadAudio } from '../sfx-map';
+import { MUTE_KEY } from './game-audio.constants';
 import { tuning } from './game-audio.state';
 
 export function GameAudio() {
@@ -37,7 +38,7 @@ export function GameAudio() {
     // Syncs with the browser keyboard: M toggles the audio engine's mute.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
-            if ( e.code === 'KeyM' && ! e.repeat ) setMuted( ! isMuted() );
+            if ( e.code === MUTE_KEY && ! e.repeat ) setMuted( ! isMuted() );
         };
         addEventListener( 'keydown', onKey );
         return () => removeEventListener( 'keydown', onKey );

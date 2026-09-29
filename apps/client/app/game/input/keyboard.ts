@@ -2,9 +2,16 @@ import { emptyInput } from '@slur/shared';
 import { typingTarget } from '../../dev/typing-target';
 import { latchJump } from './jump-latch';
 
-const THROTTLE_KEYS = [ 'KeyQ', 'KeyW' ];
-const BRAKE_KEYS = [ 'KeyA', 'KeyS', 'ArrowDown' ];
-const DRIVE_KEYS = new Set( [ ...THROTTLE_KEYS, ...BRAKE_KEYS, 'ArrowLeft', 'ArrowRight', 'Space' ] );
+export const THROTTLE_KEY = 'KeyQ';
+export const BRAKE_KEY = 'KeyA';
+export const BRAKE_ARROW_KEY = 'ArrowDown';
+export const STRAFE_LEFT_KEY = 'ArrowLeft';
+export const STRAFE_RIGHT_KEY = 'ArrowRight';
+export const JUMP_KEY = 'Space';
+
+const THROTTLE_KEYS = [ THROTTLE_KEY, 'KeyW' ];
+const BRAKE_KEYS = [ BRAKE_KEY, 'KeyS', BRAKE_ARROW_KEY ];
+const DRIVE_KEYS = new Set( [ ...THROTTLE_KEYS, ...BRAKE_KEYS, STRAFE_LEFT_KEY, STRAFE_RIGHT_KEY, JUMP_KEY ] );
 
 const input = emptyInput();
 const down = new Set< string >();
@@ -15,14 +22,14 @@ export const keyboardInput: Readonly< typeof input > = input;
 function recompute(): void {
     input.throttle = has( THROTTLE_KEYS ) ? 1 : 0;
     input.brake = has( BRAKE_KEYS ) ? 1 : 0;
-    input.strafe = ( down.has( 'ArrowLeft' ) ? 1 : 0 ) - ( down.has( 'ArrowRight' ) ? 1 : 0 );
-    input.jump = down.has( 'Space' );
+    input.strafe = ( down.has( STRAFE_LEFT_KEY ) ? 1 : 0 ) - ( down.has( STRAFE_RIGHT_KEY ) ? 1 : 0 );
+    input.jump = down.has( JUMP_KEY );
 }
 
 export function attachKeyboard(): () => void {
     const on = ( e: KeyboardEvent ) => {
         if ( e.ctrlKey && DRIVE_KEYS.has( e.code ) && ! typingTarget( e.target ) ) e.preventDefault();
-        if ( e.code === 'Space' && ! down.has( 'Space' ) ) latchJump();
+        if ( e.code === JUMP_KEY && ! down.has( JUMP_KEY ) ) latchJump();
         down.add( e.code );
         recompute();
     };
