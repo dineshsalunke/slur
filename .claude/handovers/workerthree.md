@@ -1,30 +1,30 @@
-Agent: workerthree · Lane: #363 remove hidden W throttle key (CLOSED) · Updated: 2026-09-29
+Agent: workerthree · Lane: #366 hidden R/E/F keys + #367 V mirror toggle (both CLOSED) · Updated: 2026-09-29
 
 ## Goal
-Remove the silent W throttle key: with Ctrl held (fire/drop), W auto-repeat sends Ctrl+W and the tab closes on Windows/Linux Chrome.
+Remove the Ctrl-shortcut-prone hidden power keys; ship the V rear-view toggle to players.
 
 ## Done
-- 056e436: keyboard.ts throttle reads KeyQ only; GDD.md controls note; lobby-chat.test.tsx holds KeyQ. Pushed. #363 closed with the SHA.
-- d47a026 (#362): cyclorama_hard_light default HDRI. 400c7ea handover.
+- 9981493 (#366): R/E/F unbound. Pad B→R Shift, X/RB→R Ctrl; touch d-pad up→R Ctrl, down→R Shift, left→synthetic 'PreviousSlot'. GDD controls note. Closed.
+- 2cf7326 (#367): toggle moved dev/ → game/input/rear-view-toggle.ts, DEV gate dropped, guards kept, persists in localStorage `slur.rearView`, 'Mirror V' in home controls panel, GDD table row + touch note fixed (stale E/F/R). Closed.
 
 ## State
-- Client vitest 97 files / 665 tests pass. Biome clean on touched files (one warning elsewhere: track-texture.ts line count).
-- No KeyW left in apps/client/app.
-- Chrome cannot cancel Ctrl+W from a page [recalled, not tested].
-- R/F/E risk: under Ctrl, handlePowerKey returns early without preventDefault → Ctrl+R reloads, Ctrl+F/Ctrl+E steal focus [read from source, not tested in a browser]. Owner deciding via supervisor.
+- Client vitest 98 files / 668 tests pass; typecheck clean; pnpm lint 0 errors (9 warnings, none in my files).
+- Not verified in a browser [unmeasured].
+- Hidden-key report sent to supervisor: S safe; Ctrl+X harmless; Ctrl+1..3 switch tabs (shown keys, not changed, owner to decide); Mac Ctrl+Space / Ctrl+↑ [inferred].
 
 ## Uncommitted
-none
+none (`.claude/memory/MEMORY.md` + `trapezoid-quad-varyings-skew.md` are another agent's, not mine)
 
 ## Held files
 none
 
 ## Next
-1. Idle. Wait for the owner's answer on R/F/E and the #362 band/intensity dials.
+1. Idle. Owner verifies #366/#367 on /test-level.
 
 ## Open questions
-- Owner: R/F/E under Ctrl — remove them, or preventDefault them under Ctrl?
-- Owner (#362): keep bandIntensity 1.5 or raise to 5–7; lower Environment.intensity?
+- Owner (via supervisor): CLAUDE.md controls line should add V mirror — supervisor owns that edit.
+- Owner: Ctrl+1..3 tab switch risk.
+- Owner (#362): bandIntensity / Environment.intensity dials.
 
 ## Lessons → memory
 none
