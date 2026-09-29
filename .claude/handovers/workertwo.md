@@ -1,4 +1,4 @@
-Agent: workertwo · Lane: RFC-349 S19 quality hooks (#391) — BUILT, committed locally, NOT pushed; step-down move waits on net-canvas.tsx · Updated: 2026-09-29 17:45
+Agent: workertwo · Lane: RFC-349 S19 quality hooks (#391) — PUSHED (origin/dev 7c9a1e0b); IDLE until the supervisor hands over net-canvas.tsx for the step-down move · Updated: 2026-09-29 17:55
 
 ## Goal
 S19 (#391): remove the `QualityGate` remount (rocks), add a `quality.sync` react-phase hook system, make surfaceRes/hdriRes reload-only with a picker note, and move QualityStepDown into NetCanvas.
@@ -22,9 +22,9 @@ none of mine.
 quality/*, game/scene/game-environment.tsx, game/scene/track-texture.ts, game/scene/hdri/hdri.state.ts, routes/home/quality-picker/*, game/game-shell.tsx, the 3 schedule constants — release all except game-shell.tsx once the step-down move lands.
 
 ## Next
-1. Wait for the supervisor to hand over game/net-canvas.tsx (workerone F2). Then: in net-canvas.tsx add `import { QualityStepDown } from './quality-step-down/quality-step-down';` and render `<QualityStepDown />` inside `<WorldScene>` next to `{ children }` (line ~93); in game-shell.tsx drop the import and pass no children. Or the supervisor has workerone add that line.
-2. Push dev (with supervisor OK), then `gh issue close 391 -c "<what shipped + SHAs>"`.
-3. RFC row S19 text (sent to supervisor, which owns the RFC edit).
+1. Idle. The supervisor hands over game/net-canvas.tsx when workerone's F2 cuts there are done.
+2. Then make both halves in ONE commit: in net-canvas.tsx add `import { QualityStepDown } from './quality-step-down/quality-step-down';` and render `<QualityStepDown />` inside `<WorldScene>` next to `{ children }` (line ~93); in game-shell.tsx drop the import and pass no children.
+3. Then run `gh issue close 391 -c "<what shipped + SHAs>"`. The RFC row is already marked landed, with the step-down pending (7c9a1e0b).
 
 ## Open questions
 - Owner (from #373): incoming-bolt button on /test-level? phone tick/seeker overlap fix?
