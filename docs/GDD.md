@@ -636,31 +636,28 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 
 | Action | Key | Notes |
 |--------|-----|-------|
-| Throttle / accelerate | Q | Hold to speed up toward cruise max |
-| Brake / slow | A or ↓ | Hold to decelerate (no reverse) |
+| Throttle / accelerate | ↑ | Hold to speed up toward cruise max |
+| Brake / slow | ↓ | Hold to decelerate (no reverse) |
 | Strafe left/right | ← / → | Lateral, **not turning**; smooth analog (lanes fallback) |
 | Jump | Space | Tap = small hop · hold = higher · double-tap = double jump |
-| Select power slot | ↑ · 1 / 2 / 3 | ↑ cycles to the next full slot. 1–3 select a slot. An emptied slot advances to the next full one |
-| Use power-up | Right Ctrl or Left Shift | Fires the selected slot forward (incl. **Boost**, now a pickup — LMB is not bound) |
-| Fire back | Right Shift | Fires the selected slot backward |
-| Drop power-up | Left Ctrl or X | Empties the selected slot. The power is gone |
+| Select power slot | S / F | S goes to the previous full slot, F to the next. An emptied slot advances to the next full one |
+| Use power-up | E | Fires the selected slot forward (incl. **Boost**, now a pickup — LMB is not bound) |
+| Fire back | D | Fires the selected slot backward |
+| Drop power-up | X | Empties the selected slot. The power is gone |
 | Mute | M | Someone always needs to mute fast |
-| Rear-view mirror | V | Shows or hides the mirror (#367). The choice is kept after a reload |
+| Rear-view mirror | B | Shows or hides the mirror (#367). The choice is kept after a reload |
 | Leave run | Esc | No pause; leaving drops you to spectate/menu |
 
-- **Blur layout (#358).** The keys follow the Blur (2010) PC default layout (Blur PC Manual p.2). SLUR adds
-  Jump (Space), Mute (M) and Mirror (V), which Blur does not have. Blur's handbrake key (↓) brakes. Blur's pause,
-  camera, mini-map and look-back keys are not bound. S and X also work but are not shown. W, E, F and R are not
-  bound (#363, #366): with Ctrl held for fire or drop, Ctrl + W closes the browser tab, Ctrl + R reloads the page,
-  and Ctrl + E and Ctrl + F move the focus out of the game, which releases every held key.
-- **Mac keyboards.** A MacBook has no Right Ctrl, so Left Shift fires. macOS takes Ctrl + arrow keys for
-  Spaces, so the Mac HUD shows X for drop.
+- **One layout (#368, ADR-032).** The right hand drives on the arrow keys. The left hand holds the power keys
+  E, D, S, F and X. No key is a modifier, and there is no second key for an action and no Mac variant. A key
+  pressed with Ctrl, Cmd or Alt does nothing in the game, so the browser shortcut runs. The lobby ship picker
+  still steps on A / D and ← / →. It works in the lobby only.
 
 - **Touch (#346, phones).** The left half of the screen holds a floating stick. Its base appears where the
   thumb lands. Touch = thrust. Slide left or right = strafe, digital, with hysteresis: it presses at 45% of
   the radius and releases at 25%, so a jittering thumb cannot re-fire the strafe kick. Pull down past 50% =
-  brake. A d-pad sits bottom-right. The centre is Jump (tap / hold / double). Up = fire forward (Right Ctrl). Down =
-  fire back (Right Shift). Left / right = previous / next power-up (no key / ↑). A thumb that slides onto another arm
+  brake. A d-pad sits bottom-right. The centre is Jump (tap / hold / double). Up = fire forward (E). Down =
+  fire back (D). Left / right = previous / next power-up (S / F). A thumb that slides onto another arm
   fires that arm once.
 - **Aiming (design intent — NOT built).** Offensive power-ups should **auto-lock the nearest target in a
   forward cone** — combat is disruption, not precision, so no aim skill-wall. **As built the Bolt is dumb

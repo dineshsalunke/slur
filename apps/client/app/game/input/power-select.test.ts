@@ -1,13 +1,6 @@
 import { HeldPower } from '@slur/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-    handlePowerKey,
-    type PowerActions,
-    PREVIOUS_SLOT_KEY,
-    resetSlot,
-    selectedSlot,
-    settleSlot,
-} from './power-select';
+import { handlePowerKey, type PowerActions, resetSlot, selectedSlot, settleSlot } from './power-select';
 
 const { none, bolt, seeker } = HeldPower;
 
@@ -44,68 +37,70 @@ function actions( rack: number[] ) {
 describe( 'power slot selection', () => {
     beforeEach( resetSlot );
 
-    it( '1/2/3 select a slot, Right Ctrl fires it and X drops it', () => {
-        const { act, fired, dropped } = actions( [ bolt, seeker, bolt ] );
-        handlePowerKey( key( 'Digit2' ), act );
-        expect( selectedSlot() ).toBe( 1 );
-        handlePowerKey( key( 'ControlRight', { ctrlKey: true } ), act );
-        handlePowerKey( key( 'Digit3' ), act );
+    it( 'E fires forward, D fires back and X drops the selected slot (#368)', () => {
+        const { act, fired, dirs, dropped } = actions( [ bolt, seeker, bolt ] );
+        handlePowerKey( key( 'KeyE' ), act );
+        handlePowerKey( key( 'KeyD' ), act );
         handlePowerKey( key( 'KeyX' ), act );
-        expect( fired ).toEqual( [ 1 ] );
-        expect( dropped ).toEqual( [ 2 ] );
+        expect( fired ).toEqual( [ 0, 0 ] );
+        expect( dirs ).toEqual( [ 1, -1 ] );
+        expect( dropped ).toEqual( [ 0 ] );
     } );
 
-    it( 'E, F and R do nothing, so Ctrl never turns them into browser shortcuts (#366)', () => {
-        const { act, fired, ticks } = actions( [ bolt, seeker, bolt ] );
-        for ( const code of [ 'KeyE', 'KeyF', 'KeyR' ] ) handlePowerKey( key( code ), act );
+    it( 'no old key does anything (#368)', () => {
+        const { act, fired, dropped, ticks } = actions( [ bolt, seeker, bolt ] );
+        for ( const code of [
+            'ControlRight',
+            'ControlLeft',
+            'ShiftLeft',
+            'ShiftRight',
+            'ArrowUp',
+            'Digit2',
+            'Digit3',
+            'KeyR',
+        ] ) {
+            handlePowerKey( key( code ), act );
+        }
         expect( fired ).toEqual( [] );
+        expect( dropped ).toEqual( [] );
         expect( ticks ).toEqual( [] );
         expect( selectedSlot() ).toBe( 0 );
     } );
 
-    it( 'Blur keys: Right Ctrl and Left Shift fire forward, Right Shift fires back, Left Ctrl drops', () => {
-        const { act, fired, dirs, dropped } = actions( [ bolt, seeker, bolt ] );
-        handlePowerKey( key( 'ControlRight', { ctrlKey: true } ), act );
-        handlePowerKey( key( 'ShiftLeft', { shiftKey: true } ), act );
-        handlePowerKey( key( 'ShiftRight', { shiftKey: true } ), act );
-        handlePowerKey( key( 'ControlLeft', { ctrlKey: true } ), act );
-        expect( fired ).toEqual( [ 0, 0, 0 ] );
-        expect( dirs ).toEqual( [ 1, 1, -1 ] );
-        expect( dropped ).toEqual( [ 0 ] );
-    } );
-
-    it( 'Up cycles while Shift is held, but Ctrl or Shift with a letter is ignored', () => {
-        const { act, fired } = actions( [ bolt, seeker, none ] );
-        handlePowerKey( key( 'ArrowUp', { shiftKey: true } ), act );
-        expect( selectedSlot() ).toBe( 1 );
-        handlePowerKey( key( 'KeyR', { ctrlKey: true } ), act );
-        handlePowerKey( key( 'KeyE', { shiftKey: true } ), act );
-        expect( selectedSlot() ).toBe( 1 );
+    it( 'Ctrl, Meta and Alt leave the key to the browser; Shift does not block it', () => {
+        const { act, fired } = actions( [ bolt, seeker, bolt ] );
+        handlePowerKey( key( 'KeyE', { ctrlKey: true } ), act );
+        handlePowerKey( key( 'KeyE', { metaKey: true } ), act );
+        handlePowerKey( key( 'KeyE', { altKey: true } ), act );
+        handlePowerKey( key( 'KeyF', { ctrlKey: true } ), act );
         expect( fired ).toEqual( [] );
+        expect( selectedSlot() ).toBe( 0 );
+        handlePowerKey( key( 'KeyE', { shiftKey: true } ), act );
+        expect( fired ).toEqual( [ 0 ] );
     } );
 
-    it( 'Up cycles to the next full slot and wraps', () => {
+    it( 'F cycles to the next full slot and wraps', () => {
         const { act } = actions( [ bolt, none, seeker ] );
-        handlePowerKey( key( 'ArrowUp' ), act );
+        handlePowerKey( key( 'KeyF' ), act );
         expect( selectedSlot() ).toBe( 2 );
-        handlePowerKey( key( 'ArrowUp' ), act );
+        handlePowerKey( key( 'KeyF' ), act );
         expect( selectedSlot() ).toBe( 0 );
     } );
 
-    it( 'the previous-slot code cycles to the previous full slot and wraps (#346)', () => {
+    it( 'S cycles to the previous full slot and wraps', () => {
         const { act } = actions( [ bolt, seeker, none ] );
-        handlePowerKey( key( PREVIOUS_SLOT_KEY ), act );
+        handlePowerKey( key( 'KeyS' ), act );
         expect( selectedSlot() ).toBe( 1 );
-        handlePowerKey( key( PREVIOUS_SLOT_KEY ), act );
+        handlePowerKey( key( 'KeyS' ), act );
         expect( selectedSlot() ).toBe( 0 );
         const empty = actions( [ none, none, none ] );
-        handlePowerKey( key( PREVIOUS_SLOT_KEY ), empty.act );
+        handlePowerKey( key( 'KeyS' ), empty.act );
         expect( selectedSlot() ).toBe( 2 );
     } );
 
-    it( 'Up on an empty rack still steps the selection', () => {
+    it( 'F on an empty rack still steps the selection', () => {
         const { act } = actions( [ none, none, none ] );
-        handlePowerKey( key( 'ArrowUp' ), act );
+        handlePowerKey( key( 'KeyF' ), act );
         expect( selectedSlot() ).toBe( 1 );
     } );
 
@@ -123,20 +118,20 @@ describe( 'power slot selection', () => {
         expect( selectedSlot() ).toBe( 0 );
     } );
 
-    it( 'ticks on each Up or digit that changes the selection, never on fire, drop or a same-slot digit', () => {
+    it( 'ticks on each S or F that changes the selection, never on fire or drop', () => {
         const { act, ticks } = actions( [ bolt, seeker, bolt ] );
-        handlePowerKey( key( 'Digit1' ), act );
-        handlePowerKey( key( 'ArrowUp' ), act );
-        handlePowerKey( key( 'Digit3' ), act );
-        handlePowerKey( key( 'ControlRight', { ctrlKey: true } ), act );
+        handlePowerKey( key( 'KeyF' ), act );
+        handlePowerKey( key( 'KeyF' ), act );
+        handlePowerKey( key( 'KeyS' ), act );
+        handlePowerKey( key( 'KeyE' ), act );
         handlePowerKey( key( 'KeyX' ), act );
-        expect( ticks ).toEqual( [ 1, 2 ] );
+        expect( ticks ).toEqual( [ 1, 2, 1 ] );
     } );
 
-    it( 'modified and repeated keys are ignored', () => {
+    it( 'repeated keys are ignored', () => {
         const { act, fired } = actions( [ bolt, bolt, bolt ] );
-        handlePowerKey( key( 'Digit2', { shiftKey: true } ), act );
-        handlePowerKey( key( 'ControlRight', { ctrlKey: true, repeat: true } ), act );
+        handlePowerKey( key( 'KeyF', { repeat: true } ), act );
+        handlePowerKey( key( 'KeyE', { repeat: true } ), act );
         expect( selectedSlot() ).toBe( 0 );
         expect( fired ).toEqual( [] );
     } );

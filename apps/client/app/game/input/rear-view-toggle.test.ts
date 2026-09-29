@@ -8,13 +8,13 @@ async function fresh() {
 }
 
 function press( init: KeyboardEventInit = {} ): void {
-    document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'KeyV', bubbles: true, ...init } ) );
+    document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'KeyB', bubbles: true, ...init } ) );
 }
 
-describe( 'rear-view toggle (#367)', () => {
+describe( 'rear-view toggle (#367, #368)', () => {
     beforeEach( () => localStorage.clear() );
 
-    it( 'shows the mirror by default and V toggles it', async () => {
+    it( 'shows the mirror by default and B toggles it', async () => {
         const { rearViewShown } = await fresh();
         expect( rearViewShown() ).toBe( true );
         press();
@@ -31,14 +31,14 @@ describe( 'rear-view toggle (#367)', () => {
         press( { altKey: true } );
         const field = document.createElement( 'input' );
         document.body.append( field );
-        field.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'KeyV', bubbles: true } ) );
+        field.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'KeyB', bubbles: true } ) );
         field.remove();
         expect( rearViewShown() ).toBe( true );
     } );
 
     it( 'remembers a hidden mirror across a reload', async () => {
         const first = await fresh();
-        first.handleRearViewKey( new KeyboardEvent( 'keydown', { code: 'KeyV' } ) );
+        first.handleRearViewKey( new KeyboardEvent( 'keydown', { code: 'KeyB' } ) );
         expect( localStorage.getItem( first.REAR_VIEW_STORE_KEY ) ).toBe( 'off' );
         const reloaded = await fresh();
         expect( reloaded.rearViewShown() ).toBe( false );

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { typingTarget } from '../../dev/typing-target';
 
-export const REAR_VIEW_KEY = 'KeyV';
+export const REAR_VIEW_KEY = 'KeyB';
 export const REAR_VIEW_STORE_KEY = 'slur.rearView';
 
 const listeners = new Set< () => void >();

@@ -1,4 +1,3 @@
-import { macKeyboard } from '../../../game/input/key-label';
 import { KeyHint } from '../../../ui/key-hint';
 import { TOUCH_CONTROLS } from './controls-panel.constants';
 import { keyboardControls } from './controls-panel.utils';
@@ -13,7 +12,7 @@ export function ControlsPanel() {
                 Controls
             </h2>
             <KeyHint
-                hints={ keyboardControls( macKeyboard() ) }
+                hints={ keyboardControls() }
                 className="grid grid-cols-2 gap-x-5 gap-y-2 md:grid-cols-1 pointer-coarse:hidden"
             />
             <KeyHint hints={ TOUCH_CONTROLS } className="hidden gap-y-2 pointer-coarse:grid" />
