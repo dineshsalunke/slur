@@ -1,4 +1,4 @@
-import { DEFAULT_SIM_CONFIG, froundSimShip, simulate, type Track, tuningForShip } from '@slur/shared';
+import { froundSimShip, simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import type { Predictor } from '../../net/prediction';
 import { blockWorld } from '../block-state';
@@ -7,6 +7,7 @@ import { noteLocalHops } from '../local-hop';
 import { localRole } from '../spectator';
 import { bankTuning, driveAttitude } from './attitude';
 import { sparkIfBounced } from './bounce-spark';
+import { runConfig } from './run-config';
 import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim, type Snapshot } from './traits';
 
 export function freezeLocalPrev( world: World ): void {
@@ -40,13 +41,14 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
     if ( q.length === 0 ) return;
     const input = { ...currentInput() };
     predictor.record( input );
+    const config = runConfig( world );
     q.updateEach( ( [ s, prev, net ] ) => {
         prev.x = s.x;
         prev.y = s.y;
         prev.z = s.z;
         const tuning = tuningForShip( net.shipId );
         const hopsBefore = s.portalHops;
-        const contact = simulate( s, input, dt, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+        const contact = simulate( s, input, dt, tuning, track, config, blockWorld );
         froundSimShip( s );
         if ( s.portalHops !== hopsBefore ) {
             noteLocalHops( hopsBefore, s.portalHops, prev, s, blockWorld.portals.values() );

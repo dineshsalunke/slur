@@ -1,6 +1,7 @@
 import {
     BOUNCE_MESSAGE,
     type BounceMessage,
+    DEFAULT_SIM_CONFIG,
     HIT_MESSAGE,
     type HitMessage,
     INPUT_MESSAGE,
@@ -13,6 +14,7 @@ import {
     type ProjectileState,
     type SeekerState,
     SHIELD_POP_MESSAGE,
+    type SimConfig,
     type Track,
     TUG_MESSAGE,
 } from '@slur/shared';
@@ -20,6 +22,7 @@ import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
 import { blockWorld, clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import { sparkAt } from '../game/ecs/bounce-spark';
+import { holdRunConfig, runConfig } from '../game/ecs/run-config';
 import {
     Attitude,
     Held,
@@ -58,13 +61,13 @@ function mirrorNet( ent: Entity, sessionId: string, shipId: string, colorId: num
     if ( cur && ( cur.shipId !== shipId || cur.colorId !== colorId ) ) ent.set( Net, { sessionId, shipId, colorId } );
 }
 
-function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, track: Track ): void {
+function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, track: Track, config: SimConfig ): void {
     localRole.spectating = p.spectating;
     const s = ent.get( Sim );
     if ( ! s ) return;
     const hops = s.portalHops;
     const from = { x: s.x, y: s.y, z: s.z };
-    predictor.reconcile( s, p, track );
+    predictor.reconcile( s, p, track, config );
     if ( s.portalHops === hops ) return;
     noteLocalHops( hops, s.portalHops, from, s, blockWorld.portals.values() );
     ent.set( Prev, { x: s.x, y: s.y, z: s.z } );
@@ -135,6 +138,7 @@ export function attachRoomToWorld(
     predictor: Predictor,
     trackRef: RefObject< Track >,
 ): () => void {
+    const releaseConfig = holdRunConfig( world, room.simConfig ?? DEFAULT_SIM_CONFIG );
     const $ = stateCallbacks( room );
     const byId = new Map< string, Entity >();
     const projById = new Map< string, Entity >();
@@ -165,7 +169,7 @@ export function attachRoomToWorld(
             const ent = byId.get( sid );
             if ( ! ent ) return;
             mirrorNet( ent, sid, p.shipId, p.colorId );
-            if ( isLocal ) reconcileLocal( ent, p, predictor, trackRef.current );
+            if ( isLocal ) reconcileLocal( ent, p, predictor, trackRef.current, runConfig( world ) );
             else pushRemote( ent, p );
         } );
         const offShield = $( p ).listen( 'shielded', ( on ) => mirrorShield( byId.get( sid ), on ) );
@@ -296,6 +300,7 @@ export function attachRoomToWorld(
 
     return () => {
         clearInterval( timer );
+        releaseConfig();
         offPhase();
         offAdd();
         offRemove();

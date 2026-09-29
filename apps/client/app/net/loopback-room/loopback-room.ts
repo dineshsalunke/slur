@@ -1,6 +1,7 @@
 import { Decoder, Encoder } from '@colyseus/schema';
 import { addEffect } from '@react-three/fiber';
 import {
+    DEFAULT_SIM_CONFIG,
     DROP_POWERUP_MESSAGE,
     END_RACE_MESSAGE,
     INPUT_MESSAGE,
@@ -12,6 +13,7 @@ import {
     RunState,
     SET_CLASS_MESSAGE,
     SET_COLOR_MESSAGE,
+    type SimConfig,
     START_MESSAGE,
     type TrackDescriptor,
     USE_POWERUP_MESSAGE,
@@ -34,6 +36,7 @@ export class LoopbackRoom implements RunRoomLike {
     readonly roomId = LOOPBACK_ROOM_ID;
     readonly sessionId = LOOPBACK_SESSION_ID;
     readonly sim: RunSim;
+    readonly simConfig: SimConfig;
     readonly serializer: { readonly decoder: Decoder< RunState > };
 
     private readonly encoder: Encoder< RunState >;
@@ -44,6 +47,7 @@ export class LoopbackRoom implements RunRoomLike {
     private sincePatch = 0;
 
     constructor( descriptor: TrackDescriptor, { name, ...options }: LoopbackOptions = {} ) {
+        this.simConfig = options.config ?? DEFAULT_SIM_CONFIG;
         this.sim = new RunSim(
             descriptor,
             {
@@ -53,7 +57,7 @@ export class LoopbackRoom implements RunRoomLike {
                     for ( const listener of this.tickListeners ) listener();
                 },
             },
-            options,
+            { ...options, config: this.simConfig },
         );
         const id = this.sessionId;
         this.commands = {

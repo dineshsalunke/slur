@@ -50,7 +50,7 @@ describe( 'createPredictor', () => {
         const server = spawnShip();
         const sim = spawnShip();
         const snapshot = snapshotOf( server, 0, 'challenger' );
-        predictor.reconcile( sim, snapshot, track );
+        predictor.reconcile( sim, snapshot, track, DEFAULT_SIM_CONFIG );
         const { lastProcessedInput: _ack, shipId: _id, ...ship } = snapshot;
         expect( sim ).toEqual( ship );
     } );
@@ -73,7 +73,7 @@ describe( 'createPredictor', () => {
         predictor.drainUnsent();
 
         const sim = spawnShip();
-        predictor.reconcile( sim, snapshot, track );
+        predictor.reconcile( sim, snapshot, track, DEFAULT_SIM_CONFIG );
         expect( sim ).toEqual( server );
     } );
 } );

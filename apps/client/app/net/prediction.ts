@@ -1,9 +1,9 @@
 import {
     copySimShip,
-    DEFAULT_SIM_CONFIG,
     FIXED_DT,
     froundSimShip,
     type PlayerInput,
+    type SimConfig,
     type SimShip,
     simulate,
     type Track,
@@ -22,7 +22,12 @@ export const copyShip = copySimShip;
 export interface Predictor {
     record( input: PlayerInput ): void;
     drainUnsent(): PlayerInput[];
-    reconcile( sim: SimShip, snapshot: SimShip & { lastProcessedInput: number; shipId: string }, track: Track ): void;
+    reconcile(
+        sim: SimShip,
+        snapshot: SimShip & { lastProcessedInput: number; shipId: string },
+        track: Track,
+        config: SimConfig,
+    ): void;
     reset(): void;
 }
 
@@ -42,14 +47,14 @@ export function createPredictor(): Predictor {
             }
             return out;
         },
-        reconcile( sim, snapshot, track ) {
+        reconcile( sim, snapshot, track, config ) {
             copyShip( sim, snapshot );
             const tuning = tuningForShip( snapshot.shipId );
             const ack = snapshot.lastProcessedInput;
             while ( pending.length > 0 && pending[ 0 ].seq <= ack ) pending.shift();
             restoreConfirmed();
             for ( const p of pending ) {
-                simulate( sim, p.input, FIXED_DT, tuning, track, DEFAULT_SIM_CONFIG, blockWorld );
+                simulate( sim, p.input, FIXED_DT, tuning, track, config, blockWorld );
                 froundSimShip( sim );
             }
         },

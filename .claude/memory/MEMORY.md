@@ -73,7 +73,6 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 ## Sim, track & pilots
 - [Sim ship y is 0 on the deck](sim-ship-y-is-zero-on-deck.md) — hover is client-only
 - [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — use `SHIP_CLASSES.<c>.tuning`
-- [Test-level dials miss the predictor](test-level-dials-miss-the-predictor.md) — tunedSimConfig server-only
 - [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — charge fresh contacts only
 - [Procgen seed 0 reads as unset](procgen-seed-zero-reads-as-unset.md) — seeds ≥ 1
 - [procgen segmentAt is uncached](procgen-segmentat-is-uncached.md) — memoise in brute-force tests
