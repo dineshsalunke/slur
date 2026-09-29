@@ -50,7 +50,7 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #354/#359 DONE cb21183 (#354 closed). Cleared at seam, resumed 0% | IDLE | — |
+| workerone | w2Z:p2 | #364 DONE 254d267 (closed): owner look = defaults (Metal+Hull #232324, env rot 210, intensity 1, Neutral 1) on home/lobby/test-level | IDLE | — |
 | workertwo | w2Z:p3 | #360 done; ~12% context — clear before next lane | IDLE | — |
 | workerthree | w2Z:p5 | #362 d47a026 + #363 056e436 done; waits on R/F/E answer | IDLE | — |
 | do-setup | w2Z:p4 | infra | idle | — |
