@@ -31,8 +31,8 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   spin 3.35→0.5). tuning-schema.ts QUEUE: workerthree (loan, unedited) · workertwo (Rock.* defaults, will
   message "ready for tuning-schema") · workerone (EngineLight.color → marigold, + 2b if (b)). One at a time,
   immediate pathspec commit, then hand to next.
-- tuning-schema.ts NOW with workertwo (2 Rock values, commit + SHA); workerthree told HOLD; then back to
-  workerthree, then workerone.
+- tuning-schema.ts: workertwo done cd742d0 → NOW with workerthree (GO sent) → then workerone (engine pool
+  marigold). #360 after-capture running.
 - #361 home-screen controls panel → workerone (cleared, briefed; claim list pending).
 - #354 part 2b anisotropy: OWNER CHOICE PENDING (a) drop [rec] / (b) dials default 0 / (c) 0.15 along z.
   workerone idle until answer or tuning-schema.ts returns.
