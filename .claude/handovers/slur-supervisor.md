@@ -46,8 +46,8 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
 | S8 input on sim tick | #383 | landed 8681e05 (30 sends/s, 2 inputs each; reconcile 0/198 before and after; hidden tab no worse) |
 | S18 render system | #384 | IN PROGRESS workerthree. Landing baseline: 45 draws/frame, 5.1 ms median |
-| #386 landing canvas | #386 | landed 04684954, closed; NOT PUSHED (workerthree's push denied by classifier; owner to push; dev ahead of origin). fallback={null} → ~1 s clear-colour gap before the 3D scene; StillBackdrop hand-off needs a new reveal file (owner to decide) |
-| S17 addEffect → phases | #387 | ASSIGNED workertwo |
+| #386 landing canvas | #386 | landed 04684954, closed; pushed with workertwo's fb60a05f. fallback={null} → ~1 s clear-colour gap before the 3D scene; StillBackdrop hand-off needs a new reveal file (owner to decide) |
+| S17 addEffect → phases | #387 | landed a3ee47ad, closed, pushed (HUD speed now this-frame 151/151) |
 | F1 engine skeleton | #385 | ASSIGNED workerone; waits on attach-room-to-world.ts; stays out of world-scene/landing-scene |
 
 ## Workers
@@ -55,15 +55,15 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #385 F1 | BUILDING, past 150k: seams after the shared-half commit (wire bytes identical; 4 shared tests red at last report) → then /clear + resume for the client half | net/attach-room-to-world.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
-| workertwo | w2Z:p3 | #387 S17 | BUILDING (claim cleared; RFC edit refused) | apps/client/app/: game/input/gamepad.ts, net/loopback-room/loopback-room.ts, net/run-room-like.ts, 5 HUD files, new game/hud/hud-writers/*, game/net-loop/net-loop.utils.ts, routes/home/landing-rig/landing-schedule.constants.ts, routes/beat-deck/deck-loop/deck-loop.constants.ts. + game/net-loop/net-loop.constants.ts (released by workerone, untouched; hand BACK to workerone when S17 commits it) |
+| workertwo | w2Z:p3 | none (S17 done) | IDLE, cleared + resumed 2026-09-29; awaiting a lane | — (net-loop.constants.ts returned to workerone) |
 | workerthree | w2Z:p5 | #384 S18 | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
 
-1. RFC-349 §8: Q7 EXPLAINED 2026-09-29, awaiting answer (recommended a3 + valibot; a2 fallback). Correct
-   RFC §8 Q7 wording either way: today commands are hand-validated (isShipId, sanitizeInput), not
-   "unvalidated". Q7 (valibot/zod for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
+1. RFC-349 §8: Q7 ANSWERED (54ff79b7): a3 with hand-written StandardSchemaV1 objects, no library (owner
+   worried about wire lag; validation is server-side after decode, 0 bytes). workerone told; folds into
+   features.md. Still open: Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
 2. Owner to try pad Start in a real lobby (#375).
 3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
    perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;
