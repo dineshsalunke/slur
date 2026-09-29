@@ -68,7 +68,7 @@ describe( 'Lobby chat', () => {
         const windowKeys = vi.fn();
         addEventListener( 'keydown', windowKeys );
 
-        for ( const code of [ 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'KeyE', 'KeyM', 'Backquote', 'Enter' ] ) {
+        for ( const code of [ 'KeyQ', 'KeyA', 'KeyS', 'KeyD', 'Space', 'KeyE', 'KeyM', 'Backquote', 'Enter' ] ) {
             await key( field, 'keydown', code );
         }
         removeEventListener( 'keydown', windowKeys );
@@ -83,12 +83,12 @@ describe( 'Lobby chat', () => {
 
     it( 'lets a keyup from the chat field release a key held before focus', async () => {
         const host = await mountOverlays();
-        await key( document.body, 'keydown', 'KeyW' );
+        await key( document.body, 'keydown', 'KeyQ' );
         expect( keyboardInput.throttle ).toBe( 1 );
 
         const field = chatField( host );
         field.focus();
-        await key( field, 'keyup', 'KeyW' );
+        await key( field, 'keyup', 'KeyQ' );
         expect( keyboardInput.throttle ).toBe( 0 );
     } );
 

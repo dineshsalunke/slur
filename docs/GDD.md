@@ -649,7 +649,8 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 
 - **Blur layout (#358).** The keys follow the Blur (2010) PC default layout (Blur PC Manual p.2). SLUR adds
   Jump (Space) and Mute (M), which Blur does not have. Blur's handbrake key (↓) brakes. Blur's pause,
-  camera, mini-map and look-back keys are not bound. W / S, E, F, X and R also work but are not shown.
+  camera, mini-map and look-back keys are not bound. S, E, F, X and R also work but are not shown. W does not throttle
+  (#363): with Ctrl held for fire or drop, W sends Ctrl + W, which closes the browser tab.
 - **Mac keyboards.** A MacBook has no Right Ctrl, so Left Shift fires. macOS takes Ctrl + arrow keys for
   Spaces, so the Mac HUD shows X for drop.
 
