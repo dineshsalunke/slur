@@ -56,7 +56,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #385 F1 client half | BUILDING (cleared + resumed 2026-09-29 after 1a5415c7) | net/attach-room-to-world.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
 | workertwo | w2Z:p3 | #388 S20 dial-sync | BUILDING (claim cleared) | dev/tuning.ts; game/scene/{track-seams.tsx, track-rail/track-rail.tsx, track-rim/track-rim.tsx, track-floor/track-floor.tsx, monolith-group/monolith-group.tsx, track-view.tsx, game-environment.tsx (1 mount line)}; NEW game/scene/dial-sync/*. Leaf schedule now; move to route schedules after F1 |
-| workerthree | w2Z:p5 | #386 gap fix next (owner approved; new reveal file; key off first frame; files follow-up issue, then claims) | AT SEAM e1c15534 → clear + resume | — (S18 files released) |
+| workerthree | w2Z:p5 | #389 landing gap (follow-up to #386) | BUILDING (claim cleared; cleared + resumed after e1c15534) | routes/home/{landing-backdrop/*, landing-scene/landing-scene.tsx, NEW landing-reveal/*} |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
