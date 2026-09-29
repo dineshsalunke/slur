@@ -10,6 +10,12 @@ const colors = Object.fromEntries(
     Object.entries( COLOR_TUNABLES ).map( ( [ path, spec ] ) => [ path, restore( path, spec.value ) ] ),
 ) as Record< ColorPath, string >;
 
+let version = 0;
+
+export function tuningVersion(): number {
+    return version;
+}
+
 export function num( path: NumberPath ): number {
     return numbers[ path ];
 }
@@ -20,12 +26,14 @@ export function col( path: ColorPath ): string {
 
 export function setNum( path: NumberPath, value: number ): void {
     numbers[ path ] = value;
+    version++;
     remember( path, value, NUMBER_TUNABLES[ path ].value );
     if ( NUMBER_TUNABLES[ path ].rebuild ) bumpRebuild();
 }
 
 export function setCol( path: ColorPath, value: string ): void {
     colors[ path ] = value;
+    version++;
     remember( path, value, COLOR_TUNABLES[ path ].value );
     if ( COLOR_TUNABLES[ path ].rebuild ) bumpRebuild();
 }

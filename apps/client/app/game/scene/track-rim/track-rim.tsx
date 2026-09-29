@@ -1,8 +1,8 @@
-import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useTrack } from '../../track-context/use-track';
+import { registerDialSync } from '../dial-sync/dial-sync.state';
 import { buildCordMesh } from './track-rim.utils';
 
 export interface Cord {
@@ -22,9 +22,13 @@ export function TrackRim() {
     const track = useTrack();
     const mesh = useMemo( () => buildCordMesh( track ), [ track ] );
 
-    useFrame( () => {
-        ( mesh.material as THREE.MeshStandardMaterial ).emissiveIntensity = num( 'Rail.rimEmissive' );
-    } );
+    const syncDials = useCallback(
+        () =>
+            registerDialSync( () => {
+                ( mesh.material as THREE.MeshStandardMaterial ).emissiveIntensity = num( 'Rail.rimEmissive' );
+            } ),
+        [ mesh ],
+    );
 
     // GPU buffers outlive React's tree: a mesh replaced by a track change must be released by hand.
     useEffect(
@@ -36,5 +40,5 @@ export function TrackRim() {
         [ mesh ],
     );
 
-    return <primitive object={ mesh } />;
+    return <primitive ref={ syncDials } object={ mesh } />;
 }

@@ -1,10 +1,10 @@
-import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { useTrack } from '../../track-context/use-track';
 import { accent } from '../accent';
+import { registerDialSync } from '../dial-sync/dial-sync.state';
 import { segmentCount } from '../track-floor/track-floor.utils';
 import { BOUNDARY_SURFACE, cleanToMapRoughness, railBodySurface } from '../track-materials';
 import { trackRails } from '../track-rails.state';
@@ -31,14 +31,18 @@ export function TrackRail() {
         [ materials ],
     );
 
-    useFrame( () => {
-        const [ metal, strip ] = materials;
-        const scale = num( 'Rail.normalScale' );
-        metal.metalness = num( 'Rail.metalness' );
-        metal.roughness = cleanToMapRoughness( num( 'Rail.roughness' ) );
-        metal.normalScale.set( scale, scale );
-        strip.emissiveIntensity = num( 'Rail.railEmissive' );
-    } );
+    const syncDials = useCallback(
+        () =>
+            registerDialSync( () => {
+                const [ metal, strip ] = materials;
+                const scale = num( 'Rail.normalScale' );
+                metal.metalness = num( 'Rail.metalness' );
+                metal.roughness = cleanToMapRoughness( num( 'Rail.roughness' ) );
+                metal.normalScale.set( scale, scale );
+                strip.emissiveIntensity = num( 'Rail.railEmissive' );
+            } ),
+        [ materials ],
+    );
 
-    return <mesh geometry={ geo } material={ materials } />;
+    return <mesh ref={ syncDials } geometry={ geo } material={ materials } />;
 }

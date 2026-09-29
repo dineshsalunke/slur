@@ -1,10 +1,10 @@
-import { useFrame } from '@react-three/fiber';
-import { Fragment, useCallback, useMemo, useRef } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { blotchWearUniforms, updateBlotchWear } from '../deck-breakup';
 import { applyDeckFinish } from '../deck-finish';
+import { registerDialSync } from '../dial-sync/dial-sync.state';
 import type { MonolithShapeConfig } from '../monolith-config';
 import { type MonolithSize, monolithGeometry, patchWallSpan } from '../monolith-geometry';
 import { bodySpan, type MonolithTransform, shapeProfile } from '../monolith-transforms';
@@ -26,19 +26,31 @@ export function MonolithGroup( {
     const surface = useMemo( graphiteSurface, [ rebuild ] );
     const span = useMemo( () => ( { value: 1 } ), [] );
     const breakup = useMemo( blotchWearUniforms, [] );
-
-    const bodyRef = useRef< THREE.MeshStandardMaterial | null >( null );
-    const seamRef = useRef< THREE.MeshStandardMaterial | null >( null );
     const size: MonolithSize = [ shape.width, bodySpan( shape ), shape.depth ];
 
     const attachBody = useCallback(
         ( mat: THREE.MeshStandardMaterial | null ) => {
-            bodyRef.current = mat;
             if ( ! mat ) return;
+            span.value = bodySpan( shape );
             patchWallSpan( mat, span );
             patchWallBreakup( mat, breakup );
+            return registerDialSync( () => {
+                updateBlotchWear( breakup );
+                applyDeckFinish( mat );
+            } );
         },
-        [ span, breakup ],
+        [ span, breakup, shape, surface ],
+    );
+
+    const attachSeam = useCallback(
+        ( mat: THREE.MeshStandardMaterial | null ) => {
+            if ( ! mat ) return;
+            return registerDialSync( () => {
+                mat.emissive.copy( shape.seam.emissive );
+                mat.emissiveIntensity = num( 'Monolith.seamEmissive' );
+            } );
+        },
+        [ shape ],
     );
 
     const fillBodies = useCallback(
@@ -54,20 +66,6 @@ export function MonolithGroup( {
         },
         [ seams ],
     );
-
-    useFrame( () => {
-        const body = bodyRef.current;
-        if ( body ) {
-            span.value = size[ 1 ];
-            updateBlotchWear( breakup );
-            applyDeckFinish( body );
-        }
-        const seam = seamRef.current;
-        if ( seam ) {
-            seam.emissive.copy( shape.seam.emissive );
-            seam.emissiveIntensity = num( 'Monolith.seamEmissive' );
-        }
-    } );
 
     return (
         <Fragment>
@@ -87,7 +85,7 @@ export function MonolithGroup( {
                     args={ [ undefined, undefined, seams.length ] }
                 >
                     <meshStandardMaterial
-                        ref={ seamRef }
+                        ref={ attachSeam }
                         color={ shape.seam.color }
                         emissive={ shape.seam.emissive }
                         emissiveIntensity={ shape.seam.intensity }
