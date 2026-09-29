@@ -888,7 +888,7 @@ Frame schedule, render and quality stages (§5, workerthree):
 | S18 | **Landed ea385b6b (#384).** PlainRender and QualityGate(post) removed; SceneEffects runs `render.post` (view) and `render.frame` (render); post slots beforeBloom · bloom · afterBloom · beforeToneMap. Test-level 74 draws, median 6.3 → 5.9 ms; landing 45 draws, 5.5–6.3 → 5.0 ms, bit-identical. Render system (P2) with the post-effect slot list. | `game/scene/scene-effects/*`, `plain-render/*`, `world-scene.tsx`, `landing-scene.tsx` | S16 |
 | S19 | **Landed 393e7480 + a50cd135 (#391).** QualityStepDown now mounts in NetCanvas (shared with /test-level). QualityGate removed; QualityLatch mounts rocks once and toggles visibility through a `quality.sync` react-phase hook (Q2). surfaceRes/hdriRes read the load-time profile; the picker says "Reload to apply" (Q9). high→low→high: 74/49/74 draws, 0 new objects (was 11). Actual files: quality/*, game-environment.tsx, track-texture.ts, hdri/hdri.state.ts, routes/home/quality-picker/*, the 3 schedule constants, game-shell.tsx, net-canvas.tsx. rear-view.tsx, nebula-baker.ts and nebula-noise-volume.ts no longer read quality. Quality hooks (Q2). Remove `QualityGate` remounts. Build-time knobs (sky cube, track textures) are `reload-only` (Q9); the UI says so. Step-down in the shared shell. | `quality/*`, `game-environment.tsx`, `rear-view.tsx`, `nebula-baker.ts`, `track-texture.ts`, `nebula-noise-volume.ts`, `game/game-shell.tsx` | S18 |
 | S20 | **Landed 9b5f38f2 (#388).** `scene.dial-sync` (react) runs registered apply functions only when `tuningVersion()` changes; 5 sites register from ref callbacks (KeyLight is gone). Idle /test-level: material writes 29 → 7 per frame. Leaf schedule in `TrackView` until it joins the route schedules. One dial-sync system (`react` phase) that writes only on a tuning change. | the 6 dial-sync files, `dev/tuning.ts` | S16 |
-| S21 | Hoist koota queries with `createQuery` (`koota/dist/index.d.ts:28`). Measure the gain first (§8 Q10). | the ~25 query sites | S16 |
+| S21 | **Deferred (Q10: ≤ 15 µs/frame).** Hoist koota queries with `createQuery` (`koota/dist/index.d.ts:28`). Measure the gain first (§8 Q10). | the ~25 query sites | S16 |
 
 Order: S1, S2, S3, S10 and S14 can start now. S16 (scheduler) unblocks F1, S8, S9 and S17–S21. F1 also
 waits for S0.
@@ -920,3 +920,7 @@ waits for S0.
    knobs be `reload-only` (§5.4)? **Answered 2026-09-29: reload-only.** The sky cube and track textures
    keep their build-time values until the page reloads, and the quality UI says so. No mid-race rebuild.
 10. Measure before S21: does `createQuery` remove the per-call copy in koota 0.6.6, or only the hash lookup?
+   **Measured 2026-09-29 (workertwo): only the hash lookup.** Both paths run `runQuery`, which still
+   slices `dense` and allocates the result. Hoisting saves ~105 ns per plain call and ~430 ns per call with
+   `Not()`. For 34 client sites that is ≤ 15 µs per frame. S21 is deferred: hoist a per-frame modifier
+   query only when a lane is already in that file.

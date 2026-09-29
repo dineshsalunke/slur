@@ -58,7 +58,7 @@ paint). All pushed; dev = origin except workers' in-flight work.
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #390 F2 tug pilot | BUILDING (cleared + resumed after b5247df6) | tug files → features/tug/ (shared + client); registries; engine slots; central cuts: step.ts, types.ts, run-sim.ts, combat.ts, power-bag.ts, index.ts, player-fields.ts, sim-config.ts (import only), NEW sim/status.ts, attach-room-to-world.ts, net-canvas.tsx (back from workertwo), pickup-field.tsx, seeker-pickups/*, glyph-atlas.ts, bind-room-audio.ts; listed tests; features.md §3 |
-| workertwo | w2Z:p3 | perf-skill KeyW → ArrowUp fix + Q10 koota createQuery measurement (read-only) | BUILDING (claim cleared) | .claude/skills/perf-analysis/{scripts/perf.mjs, scripts/tune.mjs, SKILL.md} |
+| workertwo | w2Z:p3 | none (perf skill fixed e5f71a16: ArrowUp moves 29.7 u; Q10 done → S21 deferred) | IDLE, needs a lane; context high → clear before next lane | — |
 | workerthree | w2Z:p5 | none (#389 done: gap 0.93–1.03 s → 0 frames; told to close #389) | IDLE. Its amend ran on my f2859165, then it undid it with reset --soft; history verified intact and pushed | — |
 | do-setup | w2Z:p4 | infra | idle | — |
 
@@ -78,7 +78,8 @@ None of mine.
 
 ## Next
 
-1. workertwo claim (perf.mjs + Q10) → clear it. Then Q10 result into RFC §8.
+1. workertwo and workerthree both IDLE. Pick lanes that avoid F2 files (ask the owner, or pull non-F2
+   bugs from the issue list). S21 deferred (Q10 recorded in RFC §8).
 2. workerthree: once unblocked, get the #389 gap ms; mark it in this file. Its next lane: free (candidates:
    S6 prep reading, or a non-F2 bug from the issue list — ask the owner).
 3. F2: workerone proves D1 (2 SDK clients, no decode errors), commits, reports §3.8 → relay to owner as F3.
