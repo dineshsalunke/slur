@@ -1,15 +1,17 @@
-Agent: workerthree · Lane: boost pickup back-face chevrons (#370) · Updated: 2026-09-29
+Agent: workerthree · Lane: remove the rear-view mirror (#371) · Updated: 2026-09-29
 
 ## Goal
-The glow chevrons on the back face of the boost pickup point the same way as the shell.
+Remove the rear-view mirror entirely (owner). B left unbound.
 
 ## Done
-- 57f2bfe (#370): onBothFaces flips the back glyph and core with rotateX(PI) instead of rotateY(PI). New test: on each face of the shell, glyph and core, the tip (|y|<0.05) is at a larger x than the arm ends (|y|>0.6).
+- 57f2bfe (#370, CLOSED): boost pickup back-face glow uses rotateX(PI).
+- 2875973: memory back-face-flip-mirrors-a-glyph.md.
+- 46d794f (#371): 11 mirror files deleted (pass, FBO, panel, camera, frame, surface, B toggle + tests). `<RearView />` out of net-canvas. `rearView` quality flag and `RearView.*` dials deleted. Controls panel Mirror row removed. ADR-034 + ADR-032 item 6, GDD controls table, GDD §HUD arc line, TDD camera note. Memory: rear-view-panel-looks-like-geometry.md deleted, zoom-the-chase-camera-over-cdp.md updated.
 
 ## State
-- Before the fix the test failed on the back face: glyph tip x −0.368 vs arm ends +0.368 (exact mirror). Shell passed on both faces.
-- After the fix: boost-look.test 6/6, scene folder 45 files / 333 tests pass; tsc clean; biome clean on both files.
-- Capture: an offline SVG projection of the real geometry (no GPU tab). Before = back glow forms an X across the shell; after = glow on the shell arms on both faces. Files are in the session scratchpad `cap/`.
+- `pnpm typecheck` clean. Client vitest 95 files / 663 tests pass. `pnpm lint` 0 errors (9 warnings, pre-existing).
+- KeyB is bound nowhere (grep): only key-label.test and lobby-chat.test (chat isolation) mention it.
+- Dev server :5173 serves net-canvas.tsx 200 with no rear-view reference.
 - Live /test-level look [unmeasured].
 
 ## Uncommitted
@@ -19,10 +21,11 @@ none
 none
 
 ## Next
-1. Idle. Owner checks /test-level: fly past a boost pickup and look back at it (B, mirror). The glow chevrons on the far face follow the dark shell arms. They no longer cross them.
+1. Idle. Owner checks /test-level: no mirror panel at the top centre, and B does nothing.
+2. Supervisor edits CLAUDE.md line 199 ("**B** mirror") and perf-analysis SKILL.md lines 59 and 89.
 
 ## Open questions
 none
 
 ## Lessons → memory
-none (memory writes on hold during the supervisor's merge)
+none new (stale mirror memory deleted, zoom memory updated in 46d794f)
