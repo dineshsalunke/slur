@@ -1,18 +1,16 @@
-Agent: workerthree · Lane: remove the rear-view mirror (#371) · Updated: 2026-09-29
+Agent: workerthree · Lane: RFC-349 S14 frame-phase constants (#378) · Updated: 2026-09-29 16:00
 
 ## Goal
-Remove the rear-view mirror entirely (owner). B left unbound.
+One frame-phase constants file. Every `useFrame` priority comes from it. No behaviour change.
 
 ## Done
-- 57f2bfe (#370, CLOSED): boost pickup back-face glow uses rotateX(PI).
-- 2875973: memory back-face-flip-mirrors-a-glyph.md.
-- 46d794f (#371): 11 mirror files deleted (pass, FBO, panel, camera, frame, surface, B toggle + tests). `<RearView />` out of net-canvas. `rearView` quality flag and `RearView.*` dials deleted. Controls panel Mirror row removed. ADR-034 + ADR-032 item 6, GDD controls table, GDD §HUD arc line, TDD camera note. Memory: rear-view-panel-looks-like-geometry.md deleted, zoom-the-chase-camera-over-cdp.md updated.
+- db2552d (#378): new `apps/client/app/game/frame/frame-phase.constants.ts` — `FRAME_PHASE { base: 0, afterSync: 0.25, render: 1 }`. Replaced `AFTER_RENDER_SYNC` x2 (exhaust-field, boost-streaks), `PLAIN_RENDER_PRIORITY` (file deleted), frame-tap literal `0`. `EffectComposer` now passes `renderPriority={ FRAME_PHASE.render }` (its default is 1, read in node_modules/@react-three/postprocessing/dist/index.js: `renderPriority:n=1`).
 
 ## State
-- `pnpm typecheck` clean. Client vitest 95 files / 663 tests pass. `pnpm lint` 0 errors (9 warnings, pre-existing).
-- KeyB is bound nowhere (grep): only key-label.test and lobby-chat.test (chat isolation) mention it.
-- Dev server :5173 serves net-canvas.tsx 200 with no rear-view reference.
-- Live /test-level look [unmeasured].
+- `PASS_PRIORITY`, `HUD_PRIORITY`, `-1` named in the RFC no longer exist in source (grep).
+- ast-grep `useFrame($CB, $P)` found only the 4 priority sites above. All other `useFrame` calls use the implicit default 0.
+- `pnpm typecheck` clean. Client vitest 97 files / 678 tests pass. `pnpm lint` 0 errors, 9 warnings (pre-existing, other files).
+- Live frame order [unmeasured]. Values are identical, so the order cannot change [inferred].
 
 ## Uncommitted
 none
@@ -21,11 +19,10 @@ none
 none
 
 ## Next
-1. Idle. Owner checks /test-level: no mirror panel at the top centre, and B does nothing.
-2. Supervisor edits CLAUDE.md line 199 ("**B** mirror") and perf-analysis SKILL.md lines 59 and 89.
+1. Idle. Wait for the supervisor.
 
 ## Open questions
 none
 
 ## Lessons → memory
-none new (stale mirror memory deleted, zoom memory updated in 46d794f)
+none
