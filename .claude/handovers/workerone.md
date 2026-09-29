@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #354 fake deck reflections (owner-approved A+B+C) · Updated: 2026-09-29 00:40
+Agent: workerone · Lane: #354 fake deck reflections (owner-approved A+B+C) · Updated: 2026-09-29 08:10
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -8,31 +8,34 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 `docs/art-direction/golden-reference/cruise-lighting.png` (LOOK only). Every tier, near-zero cost.
 Then, as a SEPARATE commit with its own measurement: stronger deck Wear maps + deck anisotropy.
 
-Owner decisions (via supervisor): approach A+B+C approved. v1 has NO stencil: measure and report
-how often a streak floats over a gap lip. Exhausts are IN v1. Do not touch canvas-gl.ts or
-scene-effects.
+Owner answers (2026-09-29): fix pickup spots over holes (DONE); accept the left-rim sheen under
+the white sky light (no change); adopt workerthree's albedo defaults in part 2
+(Environment.rotation 180 + Metal.baseColor #595c62).
 
 ## Done
 
-- `3c576aa` part 1: rail sheen (deck patch) + block-seam streaks.
-- `668df76` FIX: NaN from `pow` of a negative base blacked the main view.
-- `f0562e7` pickups + exhausts + tuned defaults.
-- `a249221` ADR-031 in `docs/DECISIONS.md` + `ART_MATERIALS.md` §2 row and §7 item 23. Pushed.
+- `3c576aa` `668df76` `f0562e7` part 1; `a249221` ADR-031 + ART_MATERIALS item 23.
+- `59aa760` pickup spots clipped to a per-pickup clear deck box (x0,x1,z0,z1 in instance matrix
+  column 1). A z-only run missed lengthwise cracks (seed 1, x −4…4).
+- `6cb1f36` + `7cb7e05` block seam streaks (owner feedback via supervisor): Gaussian cross-profile
+  from half the seam width, blur grows with distance (`uReflBlur` 0.01 × (0.5 + Deck.roughness)),
+  peak × sqrt(σ0/σ); per-seam free deck distance along the face normal (0 in a butt joint), written
+  per frame in `emitWindow` from neighbour segments (`windowSegs`). Emitters fill a `ReflEmitter`
+  struct. `7cb7e05` adds the new utils file that `6cb1f36` missed (untracked).
 
 ## State
 
-- High-tier perf rerun [measured 2026-09-29, 3 reps, no other headless Chrome]: best on 8.5 /
-  off 9.7 / no rail 9.7 ms; runs bimodal 8–10 or 14–16 ms. The old +1.7 ms was noise. Draws 129 vs 123.
-- Gap-lip count [measured, CPU copy of the streak vertex maths vs `segmentAtZ` floors, 8 test-level
-  seeds, camera every 2u on 3 lanes, 181,140 frames]: block streaks 0.12% touch a hole, 0.05% >¼ of
-  light over a hole (generator puts no block in the segment after a hole). Pickup spots 5.9% >¼ over
-  a hole; 7.8% of frames show one. Cause: the spot sits at the mirror point, far toward the camera,
-  so a hole between camera and pickup catches it.
-- On screen [measured, seed 20260921, ship x 0 z 1346, pickup (-7.7, 1450), hole z 1380–1400]: a
-  short marigold line crosses the gap band below the pickup; gone with `Reflect.pickup` 0.
-- Scripts in scratchpad `eb2b4de9…/scratchpad`: `perf.mjs` (Q, REPS env), `gaplip.mjs` (SEEDS env),
-  `gapshot.mjs`, `diff.mjs`. First /test-level load after a peer commit can take > 60 s (Vite
-  re-optimise); the waitForFunction timed out once, rerun passed.
+- Gap-lip [measured, 8 seeds 20260921,1–7, 180,480 frames]: pickup >¼ over a hole 7.06% → 0.00%;
+  on-deck spot light kept 99.44%. Block streaks >¼ over a hole 0.35% (unchanged; not in scope).
+- Butt joints [measured, seed 20260921]: 314 of 429 sealed blocks meet end to end. Mirrored-camera
+  cull = camera cull for vertical faces [inferred, maths]; the joint was the cause.
+- Taps [measured, scratchpad `153f7ede…/shots`]: `before-*` / `after2-*` at ship (−2, 596) and
+  (0, 1020): stray streaks gone, streaks now seam-width and soften with distance. `gap-before` /
+  `gap-on`: pickup tick over the gap gone. The owner's exact screenshot view was not reproduced.
+- Clearance CPU [measured, node]: 0.011 ms/frame mean, 0.17 ms worst. GPU perf not re-run.
+- Client vitest 656/656, typecheck + `pnpm lint` clean.
+- Scripts in scratchpad `153f7ede…/scratchpad`: `gaplip.mjs` (SEEDS, NOCAP), `jshot.mjs` (VIEWS,
+  NAME, TUNING), `joints.mjs`, `cleartime.mjs`, `perf.mjs`, `gapshot.mjs`.
 
 ## Uncommitted
 
@@ -41,33 +44,24 @@ scene-effects.
 ## Held files
 
 - `deck-reflection/*`, `block-reflections/*`, `pickup-reflections/*`, `exhaust-reflections/*`,
-  `track-floor/track-floor.tsx`, `track-blocks/track-blocks.tsx`, `pickup-field.tsx`,
-  `exhaust-field/*`, `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`.
-- `dev/tuning-schema.ts` + `dev/tuning-panel/tuning-panel.tsx`: ON LOAN to workerthree (#356). Do not
-  edit until the supervisor says workerthree committed.
-- `track-texture.ts` (Wear) and `track-materials.ts` (anisotropy): CLEARED by the supervisor for part 2
-  (2026-09-29). Nothing edited yet.
-- Both owner questions below are with the owner (supervisor confirmed).
+  `track-floor/track-floor.tsx`, `track-blocks/*`, `pickup-field.tsx`, `exhaust-field/*`,
+  `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`.
+- `track-texture.ts` + `track-materials.ts`: cleared for part 2, not edited yet.
+- `dev/tuning-schema.ts` + `dev/tuning-panel/tuning-panel.tsx`: ON LOAN to workerthree (#356).
 
 ## Next
 
-1. Part 2a: explore wider Wear ranges (`Wear.valueSpan` 0.3, `Wear.roughSpan` 0.25, `Wear.metalMin`
-   0.7) through `slur.tuning.v1` in headless taps — no file edits. Pick values, before/after taps.
-2. When tuning-schema.ts is back: commit new Wear defaults (separate commit, with the taps).
-3. Part 2b: deck anisotropy via MeshPhysicalMaterial with extras at 0 (three 0.185.1: Standard and
-   Physical share the 'physical' program; anisotropy compiles only when > 0). Check `#define
-   PHYSICAL` is a no-op at metalness 1. Measure low tier. Dials Deck.anisotropy +
-   Deck.anisotropyRotation. Check chainShaderPatch / deck-breakup / rail-sheen still work.
+1. Wait for owner verdict on the block-streak taps. Possible dials: `uReflBlur` (no schema dial yet
+   — add `Reflect.blur` when tuning-schema.ts is back), streak length via `Reflect.falloff`.
+2. Update ADR-031 in `docs/DECISIONS.md` with the clear box, seam clearance and blur profile.
+3. Part 2a: Wear ranges via `slur.tuning.v1` taps; part 2b: deck anisotropy (MeshPhysicalMaterial,
+   extras at 0). Adopt Environment.rotation 180 + Metal.baseColor #595c62 when the schema is back.
 4. Close #354 with SHAs after part 2.
 
 ## Open questions
 
-- Left rim sheen is invisible under the white sky light on the deck. Accept, or raise rail gain?
-  (owner, via supervisor)
-- Pickup spots over holes (5.9%): accept, or fix? Cheap fix: per-pickup CPU "clear run" distance
-  back to the nearest hole, packed in the instance matrix; the shader caps the spot's distance from
-  the pickup to it. No stencil. (owner, via supervisor)
+- Owner: are the new block streaks right (length, blur rate)?
 
 ## Lessons → memory
 
-- none this seam.
+- `.claude/memory/commit-pathspec-skips-untracked.md`.
