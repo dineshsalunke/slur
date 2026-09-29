@@ -62,6 +62,8 @@ tuning-panel.tsx).
    ~40°). workerone cleared + briefed: measure hue per element (emissive, exhaust reflection, EngineLight, bloom,
    Neutral tone map, dark deck, HDRI), name the orange puller, 5-option plan + claims → relay to owner, build
    after OK. workertwo/workerthree IDLE.
+   OWNER: REMOVE EngineLight entirely (approved; sent to workerone — delete light, dials, panel, docs; measure
+   hue without it as the new baseline).
 3. Owner answers → forward.
 4. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
 
