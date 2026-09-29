@@ -1,21 +1,25 @@
-Agent: workertwo · Lane: none — S19 #391 DONE and closed · Updated: 2026-09-29 18:05
+Agent: workertwo · Lane: perf-skill key fix (done) + RFC-349 §8 Q10 measurement (done) · Updated: 2026-09-29 18:40
 
 ## Goal
 Idle; waiting for the next lane from slur-supervisor.
 
 ## Done
-- a50cd135 #391: QualityStepDown moved into NetCanvas (/test-level now steps down); game-shell passes no children. Pushed; #391 closed with both SHAs.
-- 393e7480 #391 S19: quality.sync hooks, QualityLatch (no rocks remount), surfaceRes/hdriRes reload-only + picker note. high→low→high 74/49/74 draws, 0 new InstancedMesh objects (was 11).
-- Earlier: 80b9e8ef + 9b5f38f2 #388 S20, a3ee47ad S17, 8681e05 S8, f3382cb S3, cf8f95e S2.
+- e5f71a16: perf-analysis perf.mjs/tune.mjs/SKILL.md drive with ArrowUp (throttle since #368). /test-level 1.5 s hold: KeyW dz 0 u, ArrowUp dz 29.7 u.
+- Q10 answered (no source edits; scratchpad q10/bench.js bundled with esbuild, run in headless Chrome, median of 9, ns per world.query call):
+  - (A,B): inline 257–334, hoisted createQuery 155–226 → saves ~105 ns/call, flat in N (hash + Map lookup only).
+  - (A,Not(C)): inline 575–644, hoisted 147–207 → saves ~430 ns/call (Not() modifier alloc + hash).
+  - Hoisted still grows ~0.27 ns/entity (0→256: 155→226): `runQuery` still does `query.entities.dense.slice()` + `createQueryResult` on both paths (koota dist chunk-ZWIGMIL4.js:2085, :2764-2798). createQuery removes the hash only, not the copy.
+- a50cd135 + 393e7480 #391 S19 (closed). Earlier: 80b9e8ef + 9b5f38f2 #388, a3ee47ad S17, 8681e05 S8, f3382cb S3, cf8f95e S2.
 
 ## State
-- Owner /test-level check of S19 not done [unmeasured]: tier switch mid-race → no hitch; "Reload to apply" on the home picker.
+- Bench footgun: an esbuild IIFE bundle of koota needs `--banner:js='"use strict";'` — sloppy mode boxes `this` in koota's Number.prototype.add and addTrait throws "reading 'add'".
+- Owner /test-level check of S19 not done [unmeasured].
 
 ## Uncommitted
 none.
 
 ## Held files
-none (all released to the supervisor, net-canvas.tsx back to workerone).
+none.
 
 ## Next
 1. Wait for the supervisor's next lane.
@@ -24,4 +28,4 @@ none (all released to the supervisor, net-canvas.tsx back to workerone).
 - Owner (from #373): incoming-bolt button on /test-level? phone tick/seeker overlap fix?
 
 ## Lessons → memory
-- none.
+- none (strict-mode footgun is bench-only; recorded here).
