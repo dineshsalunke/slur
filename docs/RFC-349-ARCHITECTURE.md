@@ -862,7 +862,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S1 | **Landed 41c9a41 (#374).** One config source on the client. The predictor and client systems read the room's config. Fixes `/test-level` mispredicts. | `net/prediction.ts`, `game/ecs/systems.ts`, `game/ecs/net-systems.ts`, `routes/beat-deck/deck-flight.ts`, `routes/test-level/test-level-room.ts`, `net/run-room-like.ts` | — |
 | S2 | **Landed cf8f95e (#375).** Input action map (`fireForward`, `fireBack`, `next`, `previous`, `drop`, `mute`). Delete `synthKey`. Base for #348. | `game/input/power-select.ts`, `gamepad.ts`, `synth-key.ts`, `touch-dpad.constants.ts`, `game/net-canvas.tsx`, `audio/game-audio/game-audio.tsx` | — |
 | S3 | **Landed f3382cb (#376).** Event-queue helper (A1). Move the 6 queues onto it. One overflow rule. | `hit-events.ts`, `mine-shock-events.ts`, `tug-events.ts`, `block-burst/*`, `meteor-chunks/*`, `meteor-scorch/*`, new helper | — |
-| **F1** | **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, feature systems fed to the S16 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, S16 |
+| **F1** | **In progress (#385, workerone).** **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, feature systems fed to the S16 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, S16 |
 | **F2** | **Pilot: move tug into two feature folders.** Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
 | F3 | Owner go / no-go on the F2 numbers. | — | F2 |
 | F4… | One feature per stage: bolt, seeker, mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F3 |
@@ -870,7 +870,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |
 | S7 | Generic bridge helper `mirrorCollection( schemaMap, spawn, patch )` replaces the 8 maps. | `net/attach-room-to-world.ts` | S4 |
-| S8 | Input send on the sim tick: a `simulate`-phase system flushes after `predictor.record`. Delete the `setInterval`. | `net/attach-room-to-world.ts`, `game/ecs/net-systems.ts` | S16 |
+| S8 | **In progress (#383, workertwo).** Input send on the sim tick: a `simulate`-phase system flushes after `predictor.record`. Delete the `setInterval`. | `net/attach-room-to-world.ts`, `game/ecs/net-systems.ts` | S16 |
 | S9 | Event queues move to A3 (world-trait rings, declared per feature). Cursors reset in `cleanup`. | S3 helper and its consumers | S3, S5, F1, S16 |
 | S10 | **Landed 7a267ec + 564c84b (#377); follow-up #380 landed a9f7b83.** Rename scratch-only `.state.ts` files (e.g. `tug-line.state.ts` → `.scratch.ts`) with an ls-lint rule. | `tug-line.state.ts` and importers, `.ls-lint.yml` | — |
 | S11 | Group the world that no feature owns in `game/scene/` (`track/`, `ships/`, `sky/`, `post/`), one per commit. | `game/scene/**` | a window with no held `game/scene/` files |
@@ -885,7 +885,7 @@ Frame schedule, render and quality stages (§5, workerthree):
 | S15 | **Landed dbaf3b2 (#379).** Fix hazards 1–2: camera and `Sim` readers take `PHASE.view` (after `sync`). | `sky-follow.tsx`, `near-fill/*`, `asteroid-band/*`, `meteor-scorch/*`, `meteor-chunks/*`, `block-debris/*`, `track-blocks/*`, `meteor-strikes/*`, ship views | S14 |
 | S16 | **Landed f33da9f0 (#381).** Scheduler (O1). Split `NetLoop`/`DeckLoop`/`LandingRig` into `simulate` + `sync` systems. Dev order print and per-system timing (§5.5). | new `game/frame/schedule.ts`; `game/net-loop/*`, `routes/beat-deck/deck-loop/*`, `routes/home/landing-rig/*`, `dev/frame-meter.ts` | S14 |
 | S17 | Move gamepad, loopback tick and HUD DOM writers from `addEffect` into `input` / `simulate` / `cleanup`. | `game/input/gamepad.ts`, `net/loopback-room/loopback-room.ts`, 4 HUD files | S16 |
-| S18 | Render system (P2) with the post-effect slot list. | `game/scene/scene-effects/*`, `plain-render/*`, `world-scene.tsx`, `landing-scene.tsx` | S16 |
+| S18 | **In progress (#384, workerthree).** Render system (P2) with the post-effect slot list. | `game/scene/scene-effects/*`, `plain-render/*`, `world-scene.tsx`, `landing-scene.tsx` | S16 |
 | S19 | Quality hooks (Q2). Remove `QualityGate` remounts. Rebuild build-time knobs on a tier change. Step-down in the shared shell. | `quality/*`, `game-environment.tsx`, `rear-view.tsx`, `nebula-baker.ts`, `track-texture.ts`, `nebula-noise-volume.ts`, `game/game-shell.tsx` | S18, §8 Q9 |
 | S20 | One dial-sync system (`react` phase) that writes only on a tuning change. | the 6 dial-sync files, `dev/tuning.ts` | S16 |
 | S21 | Hoist koota queries with `createQuery` (`koota/dist/index.d.ts:28`). Measure the gain first (§8 Q10). | the ~25 query sites | S16 |
@@ -899,7 +899,9 @@ waits for S0.
 2. Owner: accept D1 now, D3 later (§3.6)? It means one registry line per feature per end until codegen. **Answered 2026-09-29: yes.**
 3. Owner: accept O1 ordering (§3.5)? **Answered 2026-09-29: yes.**
 4. Owner: accept rule C (§6.1) and room config B2 with the four tiers (§4.3 B, §6.2)? **Answered 2026-09-29: yes.**
-5. Owner (#70 ADR): does room config cover combat only, or ship tuning too?
+5. Owner (#70 ADR): does room config cover combat only, or ship tuning too? **Answered 2026-09-29: combat
+   and world rules only (A).** Ship tuning stays fixed data. A later extension adds keys to the same map and
+   gates lobby writes on `rosterContractFailures()`.
 6. May dev dials override Rules values in a hosted room, or only on `/test-level`?
 7. Owner: approve a direct Standard Schema dependency (valibot or zod) for validated commands (a3, §4.5)?
    Without it, commands use a2 and stay unvalidated. (The former Q7, schema without a central edit, is

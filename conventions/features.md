@@ -261,13 +261,14 @@ repeat a Rules min/max in `dev/tuning-schema.ts`.
 - A late joiner gets the config from state, with no extra message.
 - The client holds the merged config in the `RunConfig` world trait. Every `simulate()` call reads it.
 - Track gen extends `TrackDescriptorState` under the same lock.
+- **Scope (Q5, owner 2026-09-29): combat and world rules only.** Ship tuning (`SHIP_CLASSES`) stays fixed
+  data (NN-6) and is never a B2 key. Adding it later is additive: new keys in the same map, and the server
+  runs `rosterContractFailures()` on the merged table before it accepts a lobby write.
 
 ## 8. Open questions — not decided
 
 Do not decide these in code. Ask the owner through the supervisor.
 
-- **Q5 (#70 ADR): scope of room config.** Does it cover combat only, or ship tuning (`SHIP_CLASSES`) too?
-  Until the ADR, build the B2 mechanism so either scope fits. Do not move ship tuning into it.
 - **Q6: dev dials in a hosted room.** May a dev dial override a Rules value in a hosted room, or only on
   `/test-level`? Until answered, Rules dials act on `/test-level` (loopback) only.
 - **Q7: validator dependency.** Client → server commands use the 0.17 `messages` table with `validate()`
