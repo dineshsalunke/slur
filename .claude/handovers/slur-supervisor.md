@@ -24,7 +24,9 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 - RFC-349 (`docs/RFC-349-ARCHITECTURE.md`): owner said YES to §8 Q1 (feature modules + tug pilot), Q2 (D1
   registry now, D3 later), Q3 (O1 order), Q4 (rule C, room config B2, four tiers — d15076e), Q8 (frame
   plan: 9 phases, P2 render owner, quality service), Q5 = A: room config covers combat and world rules
-  only; ship tuning stays fixed data (f090e82; commented on #70).
+  only; ship tuning stays fixed data (f090e82; commented on #70). Q6 = B: dev-build host dials write the
+  B2 map in the lobby only, locked at GO; server accepts only in dev mode; built in S6 (RFC committed,
+  #70 commented; workerone folds it into features.md with F1).
   Each stage gets its own issue. Supervisor marks stage status in RFC §7 (workers do not edit the RFC).
 - Supervisor calls the owner accepted without objection: S2 pad Start → 7th action 'start'; M no longer
   mutes while typing/with modifiers; S3 all 6 event queues drop OLDEST on overflow.
@@ -57,7 +59,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 
 ## Open owner questions
 
-1. RFC-349 §8: Q6 (dev dials in hosted rooms?), Q7 (valibot/zod for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
+1. RFC-349 §8: Q7 (valibot/zod for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
 2. Owner to try pad Start in a real lobby (#375).
 3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
    perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;
