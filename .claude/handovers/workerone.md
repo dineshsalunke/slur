@@ -1,60 +1,52 @@
-Agent: workerone · Lane: #354 fake deck reflections (part 2b awaiting owner) · Updated: 2026-09-29
+Agent: workerone · Lane: #361 home controls panel (done) → EngineLight marigold (#359 follow-up) · Updated: 2026-09-29
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#354: warm additive streaks on the deck (done), part 2a Wear (done, no change), part 2b deck anisotropy
-(measured, owner decision pending). Queued: EngineLight pool → marigold (#359 follow-up).
+#361 done. Next: EngineLight.color default → marigold accent (owner). #354 part 2b waits on the owner.
 
 ## Done
 
-- `3c576aa` `668df76` `f0562e7` part 1; `a249221` ADR-031 + ART_MATERIALS item 23.
-- `59aa760` pickup clear box; `6cb1f36` + `7cb7e05` seam blur + clearance; `bb86b64` docs.
-- `e80f54f` part 2a verdict: Wear stays 0.3/0.25/0.7/1.
+- `0ca2c3b` #361 (CLOSED): Controls panel on `/`. Labels come from the input constants through
+  `game/input/key-label.ts`. `powerHint()` uses the same source and prints the same text.
+- #354 earlier: `3c576aa` `668df76` `f0562e7` `a249221` `59aa760` `6cb1f36` `7cb7e05` `bb86b64` `e80f54f`.
 - `0bb4b5b` #359 (CLOSED): EngineLight.back measured from the rearmost exhaust port.
 
 ## State
 
-- 2b [measured]: deck as MeshPhysicalMaterial at anisotropy 0 = Standard (luma 51.0/50.8, 44.8/44.9).
-  Deck UV: tangent +x, bitangent +z (track-geometry.ts uvFor 'deck'). Along x: ~no change at 0.5/0.9.
-  Along z (rotation π/2): the planet HDRI lobe smears toward the camera, luma +15 at 0.5 and +32 at 0.9.
-  At 0.15–0.3 the only visible effect is a larger engine pool. Emissives are not reflected.
-- 2b cost [measured, uncapped vsync, 1728×1080]: low 5.0 → 5.1 ms; high 8.35 → 9.1 ms medians, noisy.
-- Scripts in scratchpad `19862e93…/scratchpad`: `aniso.mjs` (SETS = material props applied live via
-  the __THREE_DEVTOOLS__ hook), `stat.mjs` (region luma + gradients), `cost.mjs` (readPixels-synced
-  median, A/B in one page, `--disable-gpu-vsync --disable-frame-rate-limit`). Taps in `old/` and `shots/`.
-- 2b question sent to the supervisor with options (a) drop [recommended], (b) dials at 0, (c) 0.15 along z.
+- #361 [measured, Playwright 1440/1024/390/390-touch/844×390-touch]: the menu strip y is the same as
+  before at every size except 390 fine-pointer (+60 px, the page scrolls). Panel hidden at ≤480 px tall.
+- #354 2b [measured]: along-z anisotropy smears the planet HDRI lobe (+15 luma at 0.5, +32 at 0.9).
+  Along x there is ~no change. Options sent: (a) drop [recommended], (b) dials at 0, (c) 0.15 along z.
+- Scripts: `shot.mjs` (home viewports) in scratchpad `8c6b5276…`; the 2b scripts are in `19862e93…`.
 - No headless Chrome running.
 
 ## Uncommitted
 
-- none. The Physical swap in track-floor.tsx was reverted.
+- none.
 
 ## Held files
 
-- `deck-reflection/*`, `block-reflections/*`, `pickup-reflections/*`, `exhaust-reflections/*`,
-  `track-floor/track-floor.tsx`, `track-blocks/*`, `pickup-field.tsx`, `exhaust-field/*`,
-  `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`, `track-texture.ts`,
-  `track-materials.ts`, `engine-light/*`.
-- `dev/tuning-schema.ts` + `dev/tuning-panel/tuning-panel.tsx`: ON LOAN to workerthree (#356).
+- `dev/tuning-schema.ts` + `dev/tuning-panel/tuning-panel.tsx` (back from workerthree, 9c2ce73).
+- `engine-light/*`, `deck-reflection/*`, `block-reflections/*`, `pickup-reflections/*`,
+  `exhaust-reflections/*`, `track-floor/track-floor.tsx`, `track-blocks/*`, `pickup-field.tsx`,
+  `exhaust-field/*`, `deck-breakup.ts`, `docs/DECISIONS.md`, `docs/ART_MATERIALS.md`,
+  `track-texture.ts`, `track-materials.ts`.
 
 ## Next
 
-1. Apply the owner's 2b answer. For (b)/(c): track-floor.tsx deck → `meshPhysicalMaterial` (3 lines:
-   deckRef type, attachDeck param type, JSX tag); anisotropy + anisotropyRotation from `floorSurface()`.
-   Record the result in ADR-031.
-2. When tuning-schema.ts is back: EngineLight.color default → marigold accent (owner, 2026-09-29), then
-   re-measure nozzle hue (`nozzle.mjs`/`hue.mjs` in scratchpad `dce8336e…`), cite 0bb4b5b on #359.
-   Also Environment.rotation 180 + Metal.baseColor #595c62 defaults, and a `Reflect.blur` dial.
-3. Apply the block-streak verdict if it asks for changes.
+1. EngineLight.color default → marigold accent in tuning-schema.ts. Re-measure the nozzle hue with
+   `nozzle.mjs`/`hue.mjs` (scratchpad `dce8336e…`). Cite 0bb4b5b on #359.
+2. Also: Environment.rotation 180 + Metal.baseColor #595c62 defaults, and a `Reflect.blur` dial.
+3. Apply the owner's 2b answer (see the previous handover version for the 3-line Physical swap).
 4. Close #354 with SHAs.
 
 ## Open questions
 
-- Owner: 2b option (a)/(b)/(c)?
+- Owner: #354 2b option (a)/(b)/(c)?
 - Owner: are the block seam streaks right (length, blur rate)?
 
 ## Lessons → memory
 
-- `.claude/memory/aniso-stretches-the-hdri-not-emissives.md`.
+- none this seam.
