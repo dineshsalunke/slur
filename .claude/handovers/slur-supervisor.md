@@ -27,6 +27,9 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - #359 done 0bb4b5b; OWNER: engine deck pool → marigold accent (EngineLight.color default in tuning-schema.ts;
   sent to workerone, waits for the file back from workerthree). Wear=base recorded e80f54f.
 - #358 done 93df4d2. Open: remove hidden W (Windows Ctrl+W closes tab)?
+- #360 asteroids: drift very subtle + never disappear → workertwo (cleared, briefed; claim list pending).
+- #354 part 2b anisotropy: OWNER CHOICE PENDING (a) drop [rec] / (b) dials default 0 / (c) 0.15 along z.
+  workerone idle until answer or tuning-schema.ts returns.
 
 ## Workers
 
