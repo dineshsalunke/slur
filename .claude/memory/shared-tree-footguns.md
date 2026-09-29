@@ -108,3 +108,16 @@ singleton does not survive a re-evaluation of its imports. Same family as [[tuni
 page imports and compare with the capture time before you debug. Rerun in a fresh tab. Headless
 node checks (import the .ts directly under node 24) are immune, so use them for the verdict and
 keep the browser for spot checks.
+
+### Amend and push act on everyone's commits
+
+In the shared tree, HEAD is often another worker's commit, so `git commit --amend` rewrites a peer's
+commit. And `git push` carries every local commit on `dev`, not only yours: on 2026-09-29 workertwo's
+push shipped workerthree's #389 and workerone's F1, and a worker whose own push was denied saw its work
+go out anyway.
+
+**Why:** one HEAD, one branch, several committers. A commit made seconds earlier may already be buried
+under a peer's commit or already pushed.
+
+**How to apply:** never amend; make a new commit by path. Before a push, run
+`git log --oneline origin/dev..dev` and push only when every listed commit has green gates.
