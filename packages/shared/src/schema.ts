@@ -1,65 +1,17 @@
-import { ArraySchema, MapSchema, Schema, type } from '@colyseus/schema';
-import { emptySlots } from './combat/combat-step.js';
+import { MapSchema, Schema, type SchemaType, schema, type } from '@colyseus/schema';
 import type { MineState } from './combat/mine.js';
 import type { PortalState } from './combat/portal.js';
 import type { ProjectileState } from './combat/projectiles.js';
 import type { SeekerState } from './combat/seeker.js';
-import { DEFAULT_SHIP } from './ship-classes.js';
+import { PLAYER_FIELDS } from './player-fields.js';
 import { FULL_DENSITY, isTrackGen, type TrackGen } from './sim/space.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
-import type { SimShip } from './sim/types.js';
 
 export const ROOM_NAME = 'run';
 
-export class PlayerState extends Schema implements SimShip {
-    @type( 'float32' ) x = 0;
-    @type( 'float32' ) y = 0;
-    @type( 'float32' ) z = 0;
-    @type( 'float32' ) vx = 0;
-    @type( 'float32' ) vy = 0;
-    @type( 'float32' ) vz = 0;
+export const PlayerState = schema( PLAYER_FIELDS, 'PlayerState' );
 
-    @type( 'boolean' ) grounded = true;
-    @type( 'uint8' ) jumpsUsed = 0;
-    @type( 'boolean' ) jumpHeld = false;
-    @type( 'float32' ) coyoteTimer = 0;
-    @type( 'float32' ) bufferTimer = 0;
-
-    @type( 'uint32' ) lastProcessedInput = 0;
-    @type( 'boolean' ) connected = true;
-
-    @type( 'boolean' ) dead = false;
-    @type( 'float32' ) respawnTimer = 0;
-    @type( 'float32' ) invulnTimer = 0;
-    @type( 'float32' ) lastSafeX = 0;
-    @type( 'float32' ) lastSafeZ = 0;
-    @type( 'boolean' ) finished = false;
-    @type( 'float32' ) finishTime = 0;
-
-    @type( 'string' ) shipId = DEFAULT_SHIP;
-
-    @type( 'string' ) name = '';
-    @type( 'uint8' ) colorId = 0;
-    @type( 'boolean' ) spectating = false;
-
-    @type( 'float32' ) stunTimer = 0;
-    @type( 'uint8' ) heldPower = 0;
-    @type( [ 'uint8' ] ) slots = new ArraySchema< number >( ...emptySlots() );
-    @type( 'float32' ) boostTimer = 0;
-    @type( 'boolean' ) shielded = false;
-    shieldTimer = 0;
-    @type( 'float32' ) tugTimer = 0;
-    @type( 'float32' ) slowTimer = 0;
-    @type( 'float32' ) towTimer = 0;
-    @type( 'float32' ) tugAnchorZ = 0;
-    @type( 'uint8' ) portalHops = 0;
-    @type( 'int8' ) strafeHeld = 0;
-    @type( 'float32' ) kickLeft = 0;
-    @type( 'boolean' ) kicking = false;
-    @type( 'float32' ) glideTimer = 0;
-    @type( 'float32' ) progressAt = 0;
-    bestZ = 0;
-}
+export type PlayerState = SchemaType< typeof PlayerState >;
 
 export class Projectile extends Schema implements ProjectileState {
     @type( 'float32' ) x = 0;

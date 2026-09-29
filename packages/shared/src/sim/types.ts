@@ -1,37 +1,9 @@
 import type { PortalState } from '../combat/portal.js';
+import { SIM_FLOAT_KEYS, SIM_SHIP_KEYS, type SimShipFields } from '../player-fields.js';
 
-export interface SimShip {
-    x: number;
-    y: number;
-    z: number;
-    vx: number;
-    vy: number;
-    vz: number;
-    grounded: boolean;
-    jumpsUsed: number;
-    jumpHeld: boolean;
-    coyoteTimer: number;
-    bufferTimer: number;
+export { SIM_FLOAT_KEYS, SIM_SHIP_KEYS };
 
-    dead: boolean;
-    respawnTimer: number;
-    lastSafeX: number;
-    lastSafeZ: number;
-    finished: boolean;
-
-    stunTimer: number;
-    boostTimer: number;
-    glideTimer: number;
-    tugTimer: number;
-    slowTimer: number;
-    towTimer: number;
-    tugAnchorZ: number;
-    portalHops: number;
-
-    strafeHeld: number;
-    kickLeft: number;
-    kicking: boolean;
-}
+export type SimShip = SimShipFields;
 
 export function spawnShip( x = 0, z = 0 ): SimShip {
     return {
@@ -74,42 +46,6 @@ export function createSimWorld(): SimWorld {
     return { broken: new Set(), portals: new Map() };
 }
 
-function keyTuple< T >() {
-    return < U extends readonly ( keyof T )[] >(
-        ...keys: [ keyof T ] extends [ U[ number ] ] ? U : readonly [ 'MISSING key →', Exclude< keyof T, U[ number ] > ]
-    ): U => keys as unknown as U;
-}
-
-export const SIM_SHIP_KEYS = keyTuple< SimShip >()(
-    'x',
-    'y',
-    'z',
-    'vx',
-    'vy',
-    'vz',
-    'grounded',
-    'jumpsUsed',
-    'jumpHeld',
-    'coyoteTimer',
-    'bufferTimer',
-    'dead',
-    'respawnTimer',
-    'lastSafeX',
-    'lastSafeZ',
-    'finished',
-    'stunTimer',
-    'boostTimer',
-    'glideTimer',
-    'tugTimer',
-    'slowTimer',
-    'towTimer',
-    'tugAnchorZ',
-    'portalHops',
-    'strafeHeld',
-    'kickLeft',
-    'kicking',
-);
-
 function assignKey< K extends keyof SimShip >( dst: SimShip, src: SimShip, k: K ): void {
     dst[ k ] = src[ k ];
 }
@@ -117,30 +53,6 @@ function assignKey< K extends keyof SimShip >( dst: SimShip, src: SimShip, k: K 
 export function copySimShip( dst: SimShip, src: SimShip ): void {
     for ( const k of SIM_SHIP_KEYS ) assignKey( dst, src, k );
 }
-
-type NumberKey = { [ K in keyof SimShip ]: SimShip[ K ] extends number ? K : never }[ keyof SimShip ];
-
-export const SIM_FLOAT_KEYS = [
-    'x',
-    'y',
-    'z',
-    'vx',
-    'vy',
-    'vz',
-    'coyoteTimer',
-    'bufferTimer',
-    'respawnTimer',
-    'lastSafeX',
-    'lastSafeZ',
-    'stunTimer',
-    'boostTimer',
-    'glideTimer',
-    'tugTimer',
-    'slowTimer',
-    'towTimer',
-    'tugAnchorZ',
-    'kickLeft',
-] as const satisfies readonly NumberKey[];
 
 export function froundSimShip( ship: SimShip ): void {
     for ( const k of SIM_FLOAT_KEYS ) ship[ k ] = Math.fround( ship[ k ] );

@@ -1,5 +1,6 @@
 import { hopThroughPortal } from '../combat/portal.js';
 import { type FlightTuning, STRAFE_PRESS } from '../constants.js';
+import { featureCap, featureThrust, tickFeatures } from '../features/sim-hooks.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
@@ -419,9 +420,10 @@ export function simulate(
     }
 
     const control = towedInput( s, s.stunTimer > 0 ? NEUTRAL_INPUT : input, cfg );
-    const push = boostThrust( s, input, t, cfg ) + tugThrust( s, input, t, cfg );
-    const cap = tugCap( s, t, boostCap( s, t, cfg ), cfg );
+    const push = boostThrust( s, input, t, cfg ) + tugThrust( s, input, t, cfg ) + featureThrust( s, input, t, cfg );
+    const cap = featureCap( s, t, tugCap( s, t, boostCap( s, t, cfg ), cfg ), cfg );
     tickStatus( s, t, dt, cfg );
+    tickFeatures( s, t, dt, cfg );
 
     applyLongitudinal( s, control, t, dt, cap, push );
     applyStrafe( s, control, t, dt );

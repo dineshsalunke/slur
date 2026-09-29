@@ -1,8 +1,10 @@
-import { canFire, dropPower, isSlot } from '../combat/combat-step.js';
+import { canFire, dropPower, isSlot, powerIn } from '../combat/combat-step.js';
 import { HeldPower, POWER_SLOTS, type PowerSlotMessage } from '../combat/constants.js';
 import { type Pickup, pickupsOf } from '../combat/pickups.js';
 import { dropShield } from '../combat/shield.js';
 import { COLOR_COUNT, COUNTDOWN_SECONDS, FIXED_DT, RACE_GRACE_SECONDS } from '../constants.js';
+import type { RunContext } from '../features/define-sim-feature.js';
+import { openRunFeatures } from '../features/sim-hooks.js';
 import {
     isColorId,
     isStalled,
@@ -65,6 +67,8 @@ export class RunSim {
     private readonly portalTaps = new Map< string, PortalTap >();
     private readonly tugThrows: TugThrow[] = [];
     private readonly config: SimConfig;
+    private readonly features = openRunFeatures();
+    private readonly featureCtx: RunContext;
     private nextProjectileId = 0;
     private readonly countdownSeconds: number;
 
@@ -84,6 +88,13 @@ export class RunSim {
             blocks: { ...createSimWorld(), portals: this.state.portals },
         };
         this.pickups = pickupsOf( this.track );
+        this.featureCtx = {
+            state: this.state,
+            track: this.track,
+            broken: this.world.blocks.broken,
+            config: this.config,
+            broadcast: this.hooks.broadcast,
+        };
         this.refreshMetadata();
     }
 
@@ -121,6 +132,7 @@ export class RunSim {
                     },
                     dt,
                 );
+                this.features.tick( this.featureCtx, dt );
                 for ( const p of this.state.players.values() ) froundSimShip( p );
                 break;
         }
@@ -232,6 +244,7 @@ export class RunSim {
         this.world.blocks.broken.clear();
         this.pickupRespawn.clear();
         this.tugThrows.length = 0;
+        this.features.reset();
         this.nextProjectileId = 0;
         this.state.players.forEach( ( p ) => {
             for ( let i = 0; i < POWER_SLOTS; i++ ) p.slots[ i ] = HeldPower.none;
@@ -272,6 +285,8 @@ export class RunSim {
         this.portalTaps.delete( sessionId );
         if ( tap && isDoubleTap( tap, intent, this.config ) && throwPortalFar( ctx, player, sessionId, tap ) ) return;
         if ( ! canFire( player, intent.slot ) ) return;
+        const kind = powerIn( player, intent.slot );
+        if ( this.features.use( this.featureCtx, player, sessionId, intent.slot, intent.dir, kind ) ) return;
         const end = firePower( ctx, String( this.nextProjectileId++ ), player, sessionId, intent.slot, intent.dir );
         if ( end ) this.portalTaps.set( sessionId, { slot: intent.slot, dir: intent.dir, seq: intent.seq, end } );
     }
