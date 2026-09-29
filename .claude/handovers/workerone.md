@@ -1,4 +1,4 @@
-Agent: workerone · Lane: #354 fake deck reflections (owner-approved A+B+C) · Updated: 2026-09-29 08:10
+Agent: workerone · Lane: #354 fake deck reflections (owner-approved A+B+C) · Updated: 2026-09-29 (ADR update)
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -22,6 +22,8 @@ the white sky light (no change); adopt workerthree's albedo defaults in part 2
   peak × sqrt(σ0/σ); per-seam free deck distance along the face normal (0 in a butt joint), written
   per frame in `emitWindow` from neighbour segments (`windowSegs`). Emitters fill a `ReflEmitter`
   struct. `7cb7e05` adds the new utils file that `6cb1f36` missed (untracked).
+- `bb86b64` ADR-031 + ART_MATERIALS item 23 updated for the three commits above; left rim marked
+  accepted.
 
 ## State
 
@@ -53,10 +55,9 @@ the white sky light (no change); adopt workerthree's albedo defaults in part 2
 
 1. Wait for owner verdict on the block-streak taps. Possible dials: `uReflBlur` (no schema dial yet
    — add `Reflect.blur` when tuning-schema.ts is back), streak length via `Reflect.falloff`.
-2. Update ADR-031 in `docs/DECISIONS.md` with the clear box, seam clearance and blur profile.
-3. Part 2a: Wear ranges via `slur.tuning.v1` taps; part 2b: deck anisotropy (MeshPhysicalMaterial,
+2. Part 2a: Wear ranges via `slur.tuning.v1` taps; part 2b: deck anisotropy (MeshPhysicalMaterial,
    extras at 0). Adopt Environment.rotation 180 + Metal.baseColor #595c62 when the schema is back.
-4. Close #354 with SHAs after part 2.
+3. Close #354 with SHAs after part 2.
 
 ## Open questions
 
