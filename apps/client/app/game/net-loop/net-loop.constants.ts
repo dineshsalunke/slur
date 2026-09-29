@@ -8,10 +8,12 @@ import {
     netHover,
     netRemoteInterp,
     netRenderInterp,
+    netSendInput,
 } from './net-loop.utils';
 
 export const NET_SCHEDULE = scheduleSystems< NetFrame >( 'net', [
     { id: 'net.flight', phase: 'simulate', run: netFlight },
+    { id: 'net.send-input', phase: 'simulate', after: [ 'net.flight' ], run: netSendInput },
     { id: 'net.render-interp', phase: 'sync', run: netRenderInterp },
     { id: 'net.remote-interp', phase: 'sync', run: netRemoteInterp },
     { id: 'net.hover', phase: 'sync', after: [ 'net.render-interp', 'net.remote-interp' ], run: netHover },

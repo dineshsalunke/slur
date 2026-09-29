@@ -2,6 +2,8 @@ import { MAX_QUEUED_INPUTS, type PlayerInput } from '@slur/shared';
 
 export const INPUT_CHUNK = 20;
 
+export const INPUT_SEND_TICKS = 2;
+
 export function inputChunks( inputs: readonly PlayerInput[] ): PlayerInput[][] {
     const kept = inputs.slice( -MAX_QUEUED_INPUTS );
     const chunks: PlayerInput[][] = [];

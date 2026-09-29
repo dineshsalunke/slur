@@ -1,8 +1,9 @@
 import type { RootState } from '@react-three/fiber';
-import { createFixedStep, FIXED_DT, PHASE, type Track } from '@slur/shared';
+import { createFixedStep, FIXED_DT, INPUT_MESSAGE, PHASE, type Track } from '@slur/shared';
 import type { World } from 'koota';
 import type { PerspectiveCamera } from 'three';
 import { simFreeze } from '../../dev/sim-freeze';
+import { INPUT_SEND_TICKS, inputChunks } from '../../net/input-chunks';
 import type { Predictor } from '../../net/prediction';
 import type { RunRoomLike } from '../../net/run-room-like';
 import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from '../camera/chase';
@@ -21,6 +22,7 @@ export interface NetFrame {
     advance: ( elapsedSeconds: number, step: ( dt: number ) => void ) => number;
     step: ( dt: number ) => void;
     racing: boolean;
+    unsentTicks: number;
     phase: number;
     alpha: number;
     cut: boolean;
@@ -34,9 +36,12 @@ export function createNetFrame( world: World, track: Track, predictor: Predictor
         room,
         advance: createFixedStep( FIXED_DT ),
         step: ( dt ) => {
-            if ( frame.racing ) netFlightSystem( world, dt, predictor, track );
+            if ( ! frame.racing ) return;
+            netFlightSystem( world, dt, predictor, track );
+            frame.unsentTicks++;
         },
         racing: false,
+        unsentTicks: 0,
         phase: PHASE.lobby,
         alpha: 0,
         cut: false,
@@ -50,6 +55,12 @@ export function netFlight( f: NetFrame, _state: RootState, delta: number ): void
     f.racing = f.phase === PHASE.racing && ! localRole.spectating;
     f.alpha = f.advance( delta, f.step );
     if ( ! f.racing ) freezeLocalPrev( f.world );
+}
+
+export function netSendInput( f: NetFrame ): void {
+    if ( f.unsentTicks < INPUT_SEND_TICKS ) return;
+    f.unsentTicks = 0;
+    for ( const inputs of inputChunks( f.predictor.drainUnsent() ) ) f.room.send( INPUT_MESSAGE, { inputs } );
 }
 
 export function netRenderInterp( f: NetFrame, _state: RootState, delta: number ): void {
