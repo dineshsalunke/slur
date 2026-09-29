@@ -33,7 +33,7 @@ import {
     STALE_S,
     UNLATCHED_S,
 } from './tug-line.constants';
-import { _a, _b, _c, _dir, _from, _hook, _o, _offset, _pull, _side, _start, _to, _up } from './tug-line.state';
+import { _a, _b, _c, _dir, _from, _hook, _o, _offset, _pull, _side, _start, _to, _up } from './tug-line.scratch';
 
 export interface RopeView {
     cam: THREE.Vector3;

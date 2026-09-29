@@ -9,7 +9,8 @@ import { cleanToMapRoughness } from '../track-materials';
 import { graphiteSurfaceParams, surfaceMaps } from '../track-texture';
 import type { DissolveUniforms, ShipSurfaces } from './ship-model';
 import { DISSOLVE_DISCARD, DISSOLVE_EDGE, DISSOLVE_FRAG_HEAD, HULL_PROJECTION } from './ship-model.constants';
-import { glow, hullTexSpan } from './ship-model.state';
+import { glow } from './ship-model.scratch';
+import { hullTexSpan } from './ship-model.state';
 
 export function patchDissolve( mat: THREE.Material, uniforms: DissolveUniforms, hull: boolean ): void {
     if ( mat.userData.dissolvePatched ) return;

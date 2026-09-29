@@ -6,6 +6,7 @@ ls:
     .constants.ts: kebab-case
     .utils.ts: kebab-case
     .state.ts: kebab-case
+    .scratch.ts: kebab-case
   apps/server/src:
     .dir: kebab-case
     .ts: kebab-case

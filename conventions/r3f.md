@@ -26,9 +26,10 @@ Applies to **every** `.tsx` in the client, not just R3F components.
 
    | What | File |
    |------|------|
-   | Constants, scratch THREE objects (`_o`, `_v`), shared geometries and materials | `<name>.constants.ts` |
+   | Constants, shared geometries and materials | `<name>.constants.ts` |
    | Pure helper functions | `<name>.utils.ts` |
-   | Mutable module state (pools, queues, caches) and the functions that drive it | `<name>.state.ts` |
+   | Mutable module state that outlives a frame (pools, queues, caches) and the functions that drive it | `<name>.state.ts` |
+   | Scratch objects overwritten before each use (`_o`, `_v`, per-frame out-params) | `<name>.scratch.ts` |
    | A hook | `use-*.ts`, one per file |
 
    A component with any sibling file lives in a folder named after it —
@@ -41,7 +42,7 @@ Applies to **every** `.tsx` in the client, not just R3F components.
      `loader` / `action` / `meta` / `links` / `handle`). Those stay; other constants and helpers move.
    - **Enforced** at warn by `biome-plugins/component-module-scope.grit` (a `biome.json` override on
      `apps/client/app/**/*.tsx`, tests and `mount-overlays.tsx` excluded). ls-lint checks the sub-extension
-     names only because `.ls-lint.yml` lists `.constants.ts` / `.utils.ts` / `.state.ts` explicitly — an
+     names only because `.ls-lint.yml` lists `.constants.ts` / `.utils.ts` / `.state.ts` / `.scratch.ts` explicitly — an
      unlisted sub-extension is not checked at all.
 3. **Componentize by subscription boundary — push every subscription DOWN to its leaf.** Split a component
    wherever a distinct data subscription lives — a koota `useQuery`, a Colyseus `.listen`, a React Router

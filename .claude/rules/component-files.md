@@ -4,6 +4,7 @@ paths:
   - "apps/client/app/**/*.constants.ts"
   - "apps/client/app/**/*.utils.ts"
   - "apps/client/app/**/*.state.ts"
+  - "apps/client/app/**/*.scratch.ts"
 ---
 
 # Component file layout (issue #283)
@@ -13,9 +14,12 @@ Full rule: `conventions/r3f.md` § "House React style", item 2.
 - A `.tsx` holds its one component and nothing else at module level: no `const`/`let`, no helper
   function, no class, no scratch object.
 - Move each module-level item to a colocated file named after the component:
-  - constants, scratch THREE objects, shared geometries and materials → `<name>.constants.ts`
+  - constants, shared geometries and materials → `<name>.constants.ts`
   - pure helpers → `<name>.utils.ts`
-  - mutable module state (pools, queues, caches) and the functions that drive it → `<name>.state.ts`
+  - mutable module state that outlives a frame (pools, queues, caches) and the functions that drive
+    it → `<name>.state.ts`
+  - scratch objects overwritten before each use (`_o`, `_v`, per-frame out-params) →
+    `<name>.scratch.ts`
   - a hook → `use-*.ts`, one per file
 - A component with any sibling file lives in `<name>/`. No `index.ts`; import the file by name.
 - Types and interfaces may stay in the `.tsx`. A `lazy()` component binding may stay.

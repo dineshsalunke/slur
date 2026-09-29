@@ -12,7 +12,7 @@ import { passByEdge } from '../movement-edges';
 import { detachPositional, ensureListener } from '../positional';
 import { ENGINE_LOOP, playSfx } from '../sfx-map';
 import { SMOOTH_S, VZ_TAU_S } from './remote-engine-audio.constants';
-import { mine, params, theirs } from './remote-engine-audio.state';
+import { mine, params, theirs } from './remote-engine-audio.scratch';
 import { type Emitter, syncEmitters } from './remote-engine-audio.utils';
 
 export function RemoteEngineAudio() {
