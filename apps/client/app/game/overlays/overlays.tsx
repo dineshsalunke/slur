@@ -19,7 +19,6 @@ import { LobbyOverlay } from './lobby-overlay';
 import { ResultsOverlay } from './results-overlay';
 import { RotateHint } from './rotate-hint';
 import { SpectatorGate } from './spectator-gate';
-import { ThreatHud } from './threat-hud/threat-hud';
 
 export function Overlays() {
     const room = useRoom();
@@ -45,7 +44,6 @@ export function Overlays() {
             </PhaseGate>
             <PhaseGate phases={ RACING_PHASES }>
                 <SpectatorGate room={ room } />
-                <ThreatHud room={ room } />
             </PhaseGate>
             <PhaseGate phases={ FINISHED_PHASES }>
                 <ResultsOverlay room={ room } />

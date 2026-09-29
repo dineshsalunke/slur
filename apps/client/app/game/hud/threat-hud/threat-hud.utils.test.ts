@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { THREAT_Z, VIGNETTE_FALLOFF, VIGNETTE_MAX, VIGNETTE_RAMP_Z } from './threat-hud/threat-hud.constants';
-import { threatTick, vignetteOpacity } from './threat-hud/threat-hud.utils';
+import { THREAT_Z, VIGNETTE_FALLOFF, VIGNETTE_MAX, VIGNETTE_RAMP_Z } from './threat-hud.constants';
+import { threatTick, vignetteOpacity } from './threat-hud.utils';
 
 describe( 'vignetteOpacity', () => {
     it( 'is 0 when there is no threat (bestDz = +Infinity)', () => {
