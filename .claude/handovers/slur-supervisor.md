@@ -52,7 +52,7 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #364 DONE 254d267. NOW: seam-streak slant + fake look (owner imgs 22/23), INVESTIGATE + PLAN only, build after owner OK | INVESTIGATING | — (claims pending) |
 | workertwo | w2Z:p3 | #360 done; ~12% context — clear before next lane | IDLE | — |
-| workerthree | w2Z:p5 | #366 R/E/F removed 9981493 + #367 V mirror 2cf7326, both closed | IDLE | — |
+| workerthree | w2Z:p5 | FINAL KEY LAYOUT (owner): ↑/↓ throttle/brake, ←/→ strafe, Space jump, E fire fwd, D fire back, S/F prev/next slot, X drop, B mirror (was V), M, Esc. ALL old keys removed, no Mac split. Pad+touch remapped. New ADR supersedes #358. DECISIONS.md loan after workerone #365. I update CLAUDE.md line after it lands | BUILDING | — (claims pending) |
 
 Open owner Qs (new): add "V mirror" to CLAUDE.md controls line (mine)? · Ctrl+1..3 switch tabs: (a) leave [lean] / (b) drop digit slot keys · mirror-off FPS: offered workertwo perf-analysis A/B.
 | do-setup | w2Z:p4 | infra | idle | — |
