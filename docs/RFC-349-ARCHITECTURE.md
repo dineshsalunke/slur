@@ -874,7 +874,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S9 | Event queues move to A3 (world-trait rings, declared per feature). Cursors reset in `cleanup`. | S3 helper and its consumers | S3, S5, F1, S16 |
 | S10 | **Landed 7a267ec + 564c84b (#377); follow-up #380 landed a9f7b83.** Rename scratch-only `.state.ts` files (e.g. `tug-line.state.ts` → `.scratch.ts`) with an ls-lint rule. | `tug-line.state.ts` and importers, `.ls-lint.yml` | — |
 | S11 | Group the world that no feature owns in `game/scene/` (`track/`, `ships/`, `sky/`, `post/`), one per commit. | `game/scene/**` | a window with no held `game/scene/` files |
-| S12 | Messages: server → client events through `ctx.broadcast` (a6); client → server commands through the 0.17 `messages` table with `validate()` (a3). | `apps/server/src/rooms/run-room.ts`, `run/combat.ts`, `net/attach-room-to-world.ts`, the 8 files with `*_MESSAGE` constants | F1, validator approval (§8 Q7) |
+| S12 | Messages: server → client events through `ctx.broadcast` (a6); client → server commands through the 0.17 `messages` table with `validate()` (a3). | `apps/server/src/rooms/run-room.ts`, `run/combat.ts`, `net/attach-room-to-world.ts`, the 8 files with `*_MESSAGE` constants | F1 (Q7: hand-written Standard Schema objects, no library) |
 | S13 | Action edges in `PlayerInput` (C3). Drop `USE_POWERUP_MESSAGE`. | `schema.ts` input, `net/prediction.ts`, `run/combat.ts`, `game/net-canvas.tsx` | S2, S8, netcode ADR |
 
 Frame schedule, render and quality stages (§5, workerthree):
@@ -884,7 +884,7 @@ Frame schedule, render and quality stages (§5, workerthree):
 | S14 | **Landed db2552d (#378).** One phase constants file (O8). Replace `AFTER_RENDER_SYNC` ×2, `PASS_PRIORITY`, `HUD_PRIORITY`, `PLAIN_RENDER_PRIORITY`, `−1`. No behaviour change. | new `game/frame/frame-phase.constants.ts`; `exhaust-field/*`, `boost-streaks/*`, `rear-view-pass/*`, `plain-render/*`, `nebula-sky.tsx` | — |
 | S15 | **Landed dbaf3b2 (#379).** Fix hazards 1–2: camera and `Sim` readers take `PHASE.view` (after `sync`). | `sky-follow.tsx`, `near-fill/*`, `asteroid-band/*`, `meteor-scorch/*`, `meteor-chunks/*`, `block-debris/*`, `track-blocks/*`, `meteor-strikes/*`, ship views | S14 |
 | S16 | **Landed f33da9f0 (#381).** Scheduler (O1). Split `NetLoop`/`DeckLoop`/`LandingRig` into `simulate` + `sync` systems. Dev order print and per-system timing (§5.5). | new `game/frame/schedule.ts`; `game/net-loop/*`, `routes/beat-deck/deck-loop/*`, `routes/home/landing-rig/*`, `dev/frame-meter.ts` | S14 |
-| S17 | **In progress (#387, workertwo).** Move gamepad, loopback tick and HUD DOM writers from `addEffect` into `input` / `simulate` / `cleanup`. | `game/input/gamepad.ts`, `net/loopback-room/loopback-room.ts`, 4 HUD files | S16 |
+| S17 | **Landed a3ee47ad (#387).** `input.gamepad` in all 3 schedules; `net.host-tick` through optional `RunRoomLike.hostTick`; 5 HUD writers drained by `net.hud` (cleanup) from `game/hud/hud-writers/hud-writers.state.ts`. `dev/frame-meter.ts` still uses `addEffect` (out of scope). Move gamepad, loopback tick and HUD DOM writers from `addEffect` into `input` / `simulate` / `cleanup`. | `game/input/gamepad.ts`, `net/loopback-room/loopback-room.ts`, 4 HUD files | S16 |
 | S18 | **In progress (#384, workerthree).** Render system (P2) with the post-effect slot list. | `game/scene/scene-effects/*`, `plain-render/*`, `world-scene.tsx`, `landing-scene.tsx` | S16 |
 | S19 | Quality hooks (Q2). Remove `QualityGate` remounts. Rebuild build-time knobs on a tier change. Step-down in the shared shell. | `quality/*`, `game-environment.tsx`, `rear-view.tsx`, `nebula-baker.ts`, `track-texture.ts`, `nebula-noise-volume.ts`, `game/game-shell.tsx` | S18, §8 Q9 |
 | S20 | One dial-sync system (`react` phase) that writes only on a tuning change. | the 6 dial-sync files, `dev/tuning.ts` | S16 |
@@ -907,7 +907,11 @@ waits for S0.
    lock at GO for every racer. The server accepts these writes only when it runs in dev mode, so a
    production room rejects them. Built in S6. A production host panel (#70 Slice 3) is a separate design.
 7. Owner: approve a direct Standard Schema dependency (valibot or zod) for validated commands (a3, §4.5)?
-   Without it, commands use a2 and stay unvalidated. (The former Q7, schema without a central edit, is
+   **Answered 2026-09-29: a3, no validator library.** `validate()` (`Room.d.ts:51`) takes any
+   `StandardSchemaV1`, which is a plain object `{ '~standard': { version: 1, vendor, validate } }`. Each
+   command writes that object by hand around the existing checks (`isShipId`, `sanitizeInputs`). It adds no
+   dependency and no wire bytes: validation runs on the server after decode. (Before this, commands were
+   hand-validated in their handlers, not unvalidated. The former Q7, schema without a central edit, is
    answered: yes, by `schema()` composition, §3.4.)
 8. Owner: accept the frame plan (§5)? It has nine fixed phases, O1 ordering for systems and phase-only
    ordering for views, and one render system (P2) with a fixed list of post-effect slots. It also makes
