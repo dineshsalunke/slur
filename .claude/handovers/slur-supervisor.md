@@ -48,13 +48,14 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S18 render system | #384 | landed ea385b6b, closed; NOT PUSHED (workerthree push denied; owner decides). S19 now unblocked |
 | #386 landing canvas | #386 | landed 04684954, closed; pushed with workertwo's fb60a05f. fallback={null} → ~1 s clear-colour gap before the 3D scene; StillBackdrop hand-off needs a new reveal file (owner to decide) |
 | S17 addEffect → phases | #387 | landed a3ee47ad, closed, pushed (HUD speed now this-frame 151/151) |
-| F1 engine skeleton | #385 | sim half landed 1a5415c7 (wire bytes identical; shared 578/578). workerone cleared + resumed for client half (engine/*, FeatureViews, bridge, NET_SCHEDULE, features.md Q6+Q7) |
+| F1 engine skeleton | #385 | landed 1a5415c7 + f912f7ab; NOT PUSHED; workerone closes #385 after push. features.md §8 now empty (Q6, Q7 folded) |
+| F2 tug pilot | (workerone files) | ASSIGNED workerone; claim pending. Must avoid dev/tuning.ts + track scene files (workertwo) and home route (workerthree) |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #385 F1 client half | BUILDING (cleared + resumed 2026-09-29 after 1a5415c7) | net/attach-room-to-world.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
+| workerone | w2Z:p2 | F2 tug pilot | ASSIGNED; claim pending | — (F1 claims all released) |
 | workertwo | w2Z:p3 | #388 S20 dial-sync | BUILDING (claim cleared) | dev/tuning.ts; game/scene/{track-seams.tsx, track-rail/track-rail.tsx, track-rim/track-rim.tsx, track-floor/track-floor.tsx, monolith-group/monolith-group.tsx, track-view.tsx, game-environment.tsx (1 mount line)}; NEW game/scene/dial-sync/*. Leaf schedule now; move to route schedules after F1 |
 | workerthree | w2Z:p5 | #389 landing gap (follow-up to #386) | BUILDING (claim cleared; cleared + resumed after e1c15534) | routes/home/{landing-backdrop/*, landing-scene/landing-scene.tsx, NEW landing-reveal/*} |
 | do-setup | w2Z:p4 | infra | idle | — |
