@@ -7,12 +7,10 @@ import { world } from '../../../game/ecs/world';
 import { CANVAS_GL } from '../../../game/scene/canvas-gl';
 import { ExhaustField } from '../../../game/scene/exhaust-field/exhaust-field';
 import { GameEnvironment } from '../../../game/scene/game-environment';
-import { PlainRender } from '../../../game/scene/plain-render/plain-render';
 import { SceneEffects } from '../../../game/scene/scene-effects/scene-effects';
 import { SceneEnvironment } from '../../../game/scene/scene-environment';
 import { TrackView } from '../../../game/scene/track-view';
 import { TrackContext } from '../../../game/track-context/track-context.constants';
-import { QualityGate } from '../../../quality/quality-gate/quality-gate';
 import { LandingRig } from '../landing-rig/landing-rig';
 import { LandingShip } from '../landing-ship/landing-ship';
 import { LOOP_MARGIN, track } from './landing-scene.constants';
@@ -38,9 +36,7 @@ export function LandingScene() {
                             <ExhaustField />
                             <TrackView />
                             <LandingShip />
-                            <QualityGate feature="post" fallback={ <PlainRender /> }>
-                                <SceneEffects />
-                            </QualityGate>
+                            <SceneEffects />
                         </TrackContext>
                     </Suspense>
                 </Canvas>
