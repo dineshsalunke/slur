@@ -51,14 +51,14 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | F1 engine skeleton | #385 | landed 1a5415c7 + f912f7ab; pushed (by workertwo's push); workerone to close #385. features.md §8 now empty (Q6, Q7 folded) |
 | S20 dial-sync | #388 | landed 9b5f38f2, closed, pushed. Material writes 29 → 7/frame |
 | S19 quality hooks | (workertwo files) | ASSIGNED workertwo after the dial-sync schedule move |
-| F2 tug pilot | (workerone files) | ASSIGNED workerone; claim pending. Must avoid dev/tuning.ts + track scene files (workertwo) and home route (workerthree) |
+| F2 tug pilot | #390 | BUILDING workerone (claim cleared). Owner: D1=B (tug fields to spread, wire order changes once; 2-client SDK proof required), D2=a (rules keys wait for S6), D3=keep HeldPower.tug central. Expected central count ~19 → 7. #385 closed |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | F2 tug pilot | ASSIGNED; claim pending | — (F1 claims all released) |
-| workertwo | w2Z:p3 | DIAL_SYNC → route schedules, then S19 quality hooks (Q9 reload-only) | ASSIGNED; claim pending (S20 landed 9b5f38f2) | — |
+| workerone | w2Z:p2 | #390 F2 tug pilot | BUILDING | tug files (shared combat/run/sim tug*, client tug-events/tug-line/tug-pickups) → features/tug/; registries; engine slots; central cuts: step.ts, types.ts, run-sim.ts, combat.ts, power-bag.ts, index.ts, player-fields.ts, attach-room-to-world.ts, net-canvas.tsx, pickup-field.tsx, seeker-pickups/*, glyph-atlas.ts, bind-room-audio.ts; listed tests; features.md §3 |
+| workertwo | w2Z:p3 | part 1 DIAL_SYNC → route schedules; part 2 S19 #391 | BUILDING (claim cleared except net-canvas.tsx = workerone; hand over at workerone seam) | 3 schedule constants (net-loop, landing-schedule, deck-loop), game/scene/dial-sync/*, track-view.tsx; quality/* (quality-gate → quality-latch, new quality-sync), game-environment.tsx (swap only), track-texture.ts, hdri/hdri.state.ts, routes/home/quality-picker/*, game/game-shell.tsx |
 | workerthree | w2Z:p5 | #389 landing gap (follow-up to #386) | BUILDING (claim cleared; cleared + resumed after e1c15534) | routes/home/{landing-backdrop/*, landing-scene/landing-scene.tsx, NEW landing-reveal/*} |
 | do-setup | w2Z:p4 | infra | idle | — |
 
