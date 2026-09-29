@@ -21,7 +21,7 @@ does not sync either. What works:
 - **Warm-up load first.** The first page load after the browser launches pays shader compilation for
   every material variant it meets while driving, and was always the slowest toggle in the run.
 - **Best of two page loads per toggle**, baseline first and last, so drift inside the run is visible.
-- **Drive.** Hold `W` for 1.5 s before measuring. A parked ship shows an empty deck.
+- **Drive.** Hold `ArrowUp` (the throttle since #368) for 1.5 s before measuring. A parked ship shows an empty deck.
 
 `scripts/perf.mjs` does all of this. It needs the dev server up and a handle on the R3F store.
 
@@ -66,7 +66,7 @@ TUNE='{"NearFill.intensity":80}' node --import <tsx loader> tune.mjs name 2500
 ```
 
 The loader is `node_modules/.pnpm/tsx@*/node_modules/tsx/dist/loader.mjs` in the worktree. The second
-argument is how long to hold `W` before the shot; `0` parks the ship. `S` is the output folder.
+argument is how long to hold `ArrowUp` before the shot; `0` parks the ship. `S` is the output folder.
 
 ## 4. Reading the numbers
 

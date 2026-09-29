@@ -42,7 +42,7 @@ await page.addStyleTag( {
 } );
 await page.mouse.click( +w / 2, +h / 2 );
 if ( +hold > 0 ) {
-    await page.keyboard.down( 'KeyW' );
+    await page.keyboard.down( 'ArrowUp' );
     await page.waitForTimeout( +hold );
 }
 const fps = await page.evaluate(
@@ -59,6 +59,6 @@ const fps = await page.evaluate(
         } ),
 );
 await page.screenshot( { path: `${ process.env.S }/${ out }.png` } );
-if ( +hold > 0 ) await page.keyboard.up( 'KeyW' );
+if ( +hold > 0 ) await page.keyboard.up( 'ArrowUp' );
 console.log( JSON.stringify( { fps: Math.round( fps ), logs: logs.slice( 0, 15 ) } ) );
 await browser.close();

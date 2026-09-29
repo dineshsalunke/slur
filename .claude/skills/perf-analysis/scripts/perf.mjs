@@ -27,7 +27,7 @@ async function fresh() {
     await page.goto( url, { waitUntil: 'networkidle' } );
     await page.waitForTimeout( 3500 );
     await page.mouse.click( w / 2, h / 2 );
-    await page.keyboard.down( 'KeyW' );
+    await page.keyboard.down( 'ArrowUp' );
     await page.waitForTimeout( 1500 );
 }
 
