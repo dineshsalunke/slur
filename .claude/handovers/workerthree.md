@@ -29,4 +29,4 @@ routes/home/landing-backdrop/*, routes/home/landing-reveal/*, routes/home/landin
 - Push of ea385b6b and 6acf1345: the owner decides.
 
 ## Lessons → memory
-none. The probe footgun (a rAF sampler registered first credits draws to the next frame) is recorded in the commit body. It is not durable enough for a memory.
+none. The probe footgun: a rAF sampler registered before R3F's loop credits a frame's draws to the next sample. Stamp a frame id on each event instead.
