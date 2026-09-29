@@ -40,7 +40,7 @@ function onBothFaces( shapes: THREE.Shape[] ): THREE.BufferGeometry {
     const front = new THREE.ShapeGeometry( shapes ).toNonIndexed();
     front.translate( 0, 0, FACE_Z + 0.012 );
     const back = new THREE.ShapeGeometry( shapes ).toNonIndexed();
-    back.rotateY( Math.PI );
+    back.rotateX( Math.PI );
     back.translate( 0, 0, -FACE_Z - 0.012 );
     const merged = mergeGeometries( [ front, back ] );
     front.dispose();
