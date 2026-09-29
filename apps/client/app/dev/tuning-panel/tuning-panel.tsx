@@ -29,6 +29,9 @@ export function TuningPanel() {
         hdri: hdriLinkControl(),
         intensity: numberControl( 'Environment.intensity' ),
         rotation: numberControl( 'Environment.rotation' ),
+        bandColor: colorControl( 'Environment.bandColor' ),
+        bandIntensity: numberControl( 'Environment.bandIntensity' ),
+        bandHeight: numberControl( 'Environment.bandHeight' ),
     } );
 
     useControls( 'Bloom', {
