@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: d6ebc3ab-36ec-4063-9ee5-e104e67ccc37
-  modified: 2026-09-25T04:06:30.110Z
+  modified: 2026-09-29T02:50:12.146Z
 ---
 
 To capture tuning variants (lights, colours, chase camera) on the owner's live stack, do not call
@@ -19,5 +19,7 @@ owner's browser. A fresh page load has no HMR module instance, so the orphan pro
 [[cdp-import-of-tuning-hits-an-hmr-orphan]] cannot occur. Used for #258 (5 variants on one Chrome, 2026-09-25).
 
 **How to apply:** use one Chrome and reload per variant. Add `Page.addScriptToEvaluateOnNewDocument` for a
-draw-call hook ([[count-draw-calls-without-repo-edits]]). Kill Chrome by PID afterwards
+draw-call hook ([[count-draw-calls-without-repo-edits]]). After you change a default in the
+schema, update `from` in your script too. A stale `from` drops the variant with no error, and the A/B
+reads identical (#359, 2026-09-29: pool hue 37.1 = 37.1 until `from` was fixed). Kill Chrome by PID afterwards
 ([[kill-by-pid-never-pkill]]). See also [[shared-tunables-storage]].
