@@ -59,7 +59,10 @@ None of mine. The tree shows workerone's in-progress #369 edits.
 
 ## Next
 
-1. workerthree sends the mirror-removal claim list → check it against the tree (no one else holds files) → clear.
+1. Mirror removal claim CLEARED (12 rear-view files deleted; net-canvas, quality.constants, tuning-schema RearView.*,
+   controls-panel.utils(+test), GDD/TDD/ADD/DECISIONS ADR-034, memory). workerthree will NOT edit CLAUDE.md:199
+   ("**B** mirror") or .claude/skills/perf-analysis/SKILL.md:59,89 → SUPERVISOR edits those after it lands
+   (owner's removal request covers them).
 2. Relay #369 owner answers (flatter nozzle OK? streak after reset tuning?) to workerone; it closes #369.
    Mirror cost (relayed): ON +0.55–0.8 ms, 129 vs 74 draws; owner chose REMOVE.
 3. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
