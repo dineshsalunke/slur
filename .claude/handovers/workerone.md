@@ -1,27 +1,26 @@
-Agent: workerone · Lane: RFC-349 S1 (#374) done → next #377 (S10) · Updated: 2026-09-29 16:00
+Agent: workerone · Lane: RFC-349 S10 (#377) done → idle, #380 later · Updated: 2026-09-29 17:30
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#374: one client config source. Done and closed. Next: #377 (RFC-349 S10, `.scratch.ts` rename).
+#377: scratch-only module objects live in `<name>.scratch.ts`. Done and closed. Next lane: supervisor assigns.
 
 ## Done
 
 - 4c66045 + e5b1e6d — #369 nozzles in accent, EngineLight removed. #369 open for owner sign-off.
-- 41c9a41 — #374: koota world trait `RunConfig` (`game/ecs/run-config.ts`, `holdRunConfig`/`runConfig`).
-  attachRoomToWorld holds `room.simConfig ?? DEFAULT`. Predictor reconcile takes `config`.
-  netFlightSystem + deckFlightSystem read `runConfig(world)`. `RunRoomLike.simConfig?` added;
-  LoopbackRoom exposes it. Dead `localFlightSystem` removed. Memory
-  test-level-dials-miss-the-predictor deleted (no longer true). Issue closed.
+- 41c9a41 — #374 one client config source (`RunConfig` world trait). Closed.
+- 7a267ec — #377: renamed tug-line and remote-engine-audio `.state.ts` → `.scratch.ts`. Split ship-model
+  `glow` into `ship-model.scratch.ts`; `hullTexSpan` uniform stays in `.state.ts`. Added `.scratch.ts` to
+  `.ls-lint.yml`, CLAUDE.md NN-9, `.claude/rules/component-files.md`, `conventions/r3f.md` and the grit message.
+- 564c84b — #377: renamed game-audio `.state.ts` → `.scratch.ts` after #375 landed. Pushed. #377 closed.
 
 ## State
 
-- run-config tests 4/4 and prediction + loopback tests pass (9/9 together).
-- Full typecheck/vitest failures at 41c9a41 were only in workertwo's #375 in-flight files
-  (power-select exports, actions.test, controls-panel.utils.test). None in my files.
-- Live /test-level rubber-band check after a Tug.* dial change: [unmeasured].
-- Hosted rooms still simulate DEFAULT_SIM_CONFIG on both ends (config sync is RFC §5 B2, later).
+- ls-lint passes. Biome and the comment ratchet pass on the touched files.
+- Client typecheck at 564c84b: the only errors are `FRAME_PHASE` in workerthree's uncommitted S15 `.tsx`
+  files (power-arc, ship-model, ship-shadow, track-blocks, tug-line). None in my files.
+- The other 15 `.state.ts` files hold state that outlives a frame. Checked each one this session.
 
 ## Uncommitted
 
@@ -29,13 +28,14 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Held files
 
-- none. #374 claim released. #377 NOT yet claimed.
+- none. #377 claim released.
 
 ## Next
 
-1. Read #377 and RFC-349 §7 S10. Send the supervisor a separate file claim, then wait for "clear".
-2. Build, test, commit by pathspec, `gh issue close 377` with the SHA.
-3. Supervisor marks the RFC §7 stage status. Do not edit docs/RFC-349-ARCHITECTURE.md.
+1. #380 (phase B): 21 `.constants.ts` files export scratch objects (`export const _o = …`), plus the
+   `track-blocks.state.ts` `windowSegs` split. Start only when S15 #379 and S3 #376 release their files.
+   Send the supervisor a separate claim first.
+2. Otherwise wait for the supervisor to assign a lane.
 
 ## Open questions
 
@@ -43,4 +43,5 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Lessons → memory
 
-- none new this seam (deleted the stale test-level-dials-miss-the-predictor).
+- none new this seam. The only lesson was that `git commit -- <path>` skips a new untracked file.
+  Memory `shared-tree-footguns` already records it.
