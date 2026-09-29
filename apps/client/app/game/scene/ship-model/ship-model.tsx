@@ -4,6 +4,7 @@ import type { Entity } from 'koota';
 import { useCallback, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { rebuildToken } from '../../../dev/tuning-rebuild';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { accent } from '../accent';
 import { guardLfsPointer } from '../gltf-lfs-guard';
 import { applyHullLook } from '../hull-look';
@@ -76,7 +77,7 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
         const step = delta / DISSOLVE_DURATION;
         if ( u.value < target ) u.value = Math.min( target, u.value + step );
         else if ( u.value > target ) u.value = Math.max( target, u.value - step );
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <Clone

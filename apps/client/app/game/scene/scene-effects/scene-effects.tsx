@@ -46,7 +46,7 @@ export function SceneEffects() {
         if ( mode !== undefined ) tone.mode = mode;
         const samples = msaaSamples( state.gl.getPixelRatio() );
         if ( composer.current && composer.current.multisampling !== samples ) composer.current.multisampling = samples;
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <EffectComposer ref={ composer } multisampling={ 0 } renderPriority={ FRAME_PHASE.render }>

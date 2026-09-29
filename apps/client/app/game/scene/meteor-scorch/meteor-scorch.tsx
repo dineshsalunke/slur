@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { Fragment, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { emberTexture, sootTexture } from '../meteor-assets';
 import { BACK } from '../track-instancing';
 import { _c, _o, LIMIT } from './meteor-scorch.constants';
@@ -64,7 +65,7 @@ export function MeteorScorch() {
         soot.instanceMatrix.needsUpdate = true;
         ember.instanceMatrix.needsUpdate = true;
         if ( ember.instanceColor ) ember.instanceColor.needsUpdate = true;
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <Fragment>

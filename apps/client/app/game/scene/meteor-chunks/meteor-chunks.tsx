@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { blockWorld } from '../../block-state';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
 import { asteroidGeometry } from '../asteroid-geometry';
 import { trackGround } from '../debris-ground';
@@ -87,7 +88,7 @@ export function MeteorChunks( { material }: { material: THREE.Material } ) {
         mesh.count = top;
         mesh.instanceMatrix.needsUpdate = true;
         heat.needsUpdate = true;
-    } );
+    }, FRAME_PHASE.view );
 
     return <instancedMesh ref={ meshRef } args={ [ geometry, material, LIMIT ] } count={ 0 } frustumCulled={ false } />;
 }

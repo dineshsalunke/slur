@@ -5,6 +5,7 @@ import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { LocalPlayer, Sim } from '../../ecs/traits';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
 import { endFrame, type ShipProbe } from '../block-breaks';
 import { BlockBurst } from '../block-burst/block-burst';
@@ -152,7 +153,7 @@ export function TrackBlocks() {
         attrs.clear.needsUpdate = true;
         fractured.cracked.block.needsUpdate = true;
         fractured.cracked.glow.needsUpdate = true;
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <Fragment>

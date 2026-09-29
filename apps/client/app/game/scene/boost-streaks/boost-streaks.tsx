@@ -43,7 +43,7 @@ export function BoostStreaks() {
         mesh.count = i;
         mesh.instanceMatrix.needsUpdate = true;
         levels.needsUpdate = true;
-    }, FRAME_PHASE.afterSync );
+    }, FRAME_PHASE.view );
 
     return (
         <instancedMesh

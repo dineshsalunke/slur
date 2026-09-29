@@ -58,7 +58,7 @@ export function ExhaustField() {
         mesh.instanceMatrix.needsUpdate = true;
         drive.needsUpdate = true;
         deckY.needsUpdate = true;
-    }, FRAME_PHASE.afterSync );
+    }, FRAME_PHASE.view );
 
     return (
         <Fragment>

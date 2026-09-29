@@ -5,6 +5,7 @@ import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { col, num } from '../../../dev/tuning';
 import { Render } from '../../ecs/traits';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
 import { isDead } from '../ship-dead';
 import { FRAGMENT, VERTEX } from './ship-shadow.constants';
@@ -57,7 +58,7 @@ export function ShipShadow( { entity, shipId }: { entity: Entity; shipId: string
         }
         uniforms.uOpacity.value = num( 'Shadow.opacity' ) * falloff * falloff;
         uniforms.uSoftness.value = Math.max( 0.3, num( 'Shadow.softness' ) / ( 1 + height * num( 'Shadow.blur' ) ) );
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <mesh ref={ meshRef } rotation={ [ -Math.PI / 2, 0, 0 ] }>

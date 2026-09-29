@@ -3,6 +3,7 @@ import type { TugEvent } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { drainTugs } from '../tug-events';
 import { INSTANCES_PER_TETHER, MAX } from './tug-line.constants';
 import { applyTug, placeTether, type RopeView, readView, tetherDone } from './tug-line.utils';
@@ -48,7 +49,7 @@ export function TugLine() {
         mesh.count = n;
         mesh.instanceMatrix.needsUpdate = true;
         if ( mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <instancedMesh

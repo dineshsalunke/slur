@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { blockWorld } from '../../block-state';
 import { LocalPlayer, Sim } from '../../ecs/traits';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
 import { asteroidGeometry } from '../asteroid-geometry';
 import { trackGround } from '../debris-ground';
@@ -99,7 +100,7 @@ export function MeteorStrikes( { material }: { material: THREE.Material } ) {
         commit( trails, top );
         commit( glows, top );
         if ( lightRef.current ) flash( lightRef.current, director, now );
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <Fragment>

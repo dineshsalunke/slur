@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useRebuildToken } from '../../../dev/use-rebuild-token';
 import { blockWorld } from '../../block-state';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
 import { type BreakEvent, drainBreaks, drainMends } from '../block-breaks';
 import { trackGround } from '../debris-ground';
@@ -76,7 +77,7 @@ export function BlockDebris( { uniforms }: { uniforms: FracturedBlockUniforms } 
             mesh.count = live ? SLOTS : 0;
             mesh.instanceMatrix.needsUpdate = true;
         }
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <group ref={ release }>

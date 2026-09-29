@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { Fragment, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { type AsteroidBand as Band, bandAhead } from '../asteroid-config';
 import { type AsteroidPlacement, forEachAsteroid } from '../asteroid-field';
 import { asteroidGeometry } from '../asteroid-geometry';
@@ -74,7 +75,7 @@ export function AsteroidBand( { band, material }: { band: Band; material: THREE.
             spin.addUpdateRange( 0, count * 4 );
             spin.needsUpdate = true;
         }
-    } );
+    }, FRAME_PHASE.view );
 
     return (
         <Fragment>
