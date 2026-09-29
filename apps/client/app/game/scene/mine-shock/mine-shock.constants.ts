@@ -1,5 +1,4 @@
 import { DEFAULT_PORTAL_CONFIG, DEFAULT_SIM_CONFIG } from '@slur/shared';
-import * as THREE from 'three';
 import type { ShockKind } from '../mine-shock-events';
 import type { ShockLook } from './mine-shock';
 
@@ -17,6 +16,3 @@ export const LOOKS: Record< ShockKind, ShockLook > = {
     portalIn: { reach: DEFAULT_PORTAL_CONFIG.portalR * 1.8, life: 0.35, bright: 6, collapse: true, ...GATE },
     portalOut: { reach: DEFAULT_PORTAL_CONFIG.portalR * 2.4, life: 0.5, bright: 6, collapse: false, ...GATE },
 };
-
-export const _o = new THREE.Object3D();
-export const _c = new THREE.Color();

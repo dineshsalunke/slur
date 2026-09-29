@@ -3,7 +3,8 @@ import type * as THREE from 'three';
 import { LocalPlayer, Render } from '../../ecs/traits';
 import { isDead } from '../ship-dead';
 import { type Shard, type ShardPool, spawnBurst } from '../vfx-shard-pool';
-import { _c, _o, BRIGHT, LOCAL_CORE, MARIGOLD, REMOTE_CORE, SIZE } from './explosion-field.constants';
+import { BRIGHT, LOCAL_CORE, MARIGOLD, REMOTE_CORE, SIZE } from './explosion-field.constants';
+import { _c, _o } from './explosion-field.scratch';
 
 export function detectDeaths( world: World, pool: ShardPool, wasDead: Map< number, boolean > ): void {
     for ( const e of world.query( Render ) ) {

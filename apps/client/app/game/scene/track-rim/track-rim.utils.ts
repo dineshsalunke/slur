@@ -5,18 +5,8 @@ import { segmentCount } from '../track-floor/track-floor.utils';
 import { isOuterEdge } from '../track-geometry';
 import { type SpanEdges, spanEdges } from '../track-openings';
 import type { Cord, Run } from './track-rim';
-import {
-    _m,
-    _pos,
-    _q,
-    _scale,
-    ALONG_X,
-    ALONG_Z,
-    CORD_DEPTH_BIAS,
-    CORD_INTENSITY,
-    CORD_RADIUS,
-    CORD_SEGMENTS,
-} from './track-rim.constants';
+import { ALONG_X, ALONG_Z, CORD_DEPTH_BIAS, CORD_INTENSITY, CORD_RADIUS, CORD_SEGMENTS } from './track-rim.constants';
+import { _m, _pos, _q, _scale } from './track-rim.scratch';
 
 export function floorAt( track: Track, x: number, z: number, y: number ): boolean {
     const seg = track.segmentAtZ( z );

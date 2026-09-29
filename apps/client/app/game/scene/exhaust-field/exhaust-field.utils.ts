@@ -8,7 +8,8 @@ import { exhaustDrive } from '../exhaust-drive';
 import { exhaustPorts } from '../exhaust-ports';
 import { floorBelow } from '../ship-shadow/ship-shadow.utils';
 import type { Palette } from './exhaust-field';
-import { _instance, _port, _ship, MAX_PLUMES, NO_FLOOR, SPREAD_AT_IDLE } from './exhaust-field.constants';
+import { MAX_PLUMES, NO_FLOOR, SPREAD_AT_IDLE } from './exhaust-field.constants';
+import { _instance, _port, _ship } from './exhaust-field.scratch';
 
 export function syncPalette( material: THREE.ShaderMaterial, applied: Palette ): void {
     const hot = col( 'Exhaust.hot' );

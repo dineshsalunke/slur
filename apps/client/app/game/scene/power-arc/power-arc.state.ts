@@ -4,10 +4,6 @@ import type * as THREE from 'three';
 import { Held, Hover, LocalPlayer, Net, Render, Sim } from '../../ecs/traits';
 import { selectedSlot } from '../../input/power-select';
 import {
-    _anchor,
-    _from,
-    _o,
-    _to,
     ARC_LAYER,
     FLASH_LIFT,
     FLASH_S,
@@ -17,6 +13,7 @@ import {
     PULSE_S,
     SELECTED_SCALE,
 } from './power-arc.constants';
+import { _anchor, _from, _o, _to } from './power-arc.scratch';
 import { type ArcLook, arcAnchor, easeOut, pulseScale, slotLook, slotPoint, takePickup } from './power-arc.utils';
 
 export interface ArcFrame {

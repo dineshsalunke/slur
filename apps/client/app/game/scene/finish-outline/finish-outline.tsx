@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import type * as THREE from 'three';
 import type { MonolithTransform } from '../monolith-transforms';
-import { STRIP_GEOMETRY, scratch } from './finish-outline.constants';
+import { STRIP_GEOMETRY } from './finish-outline.constants';
+import { scratch } from './finish-outline.scratch';
 
 export function FinishOutline( {
     strips,

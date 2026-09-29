@@ -15,8 +15,6 @@ export const SPEC: ShardSpec = {
 export const SIZE = 0.16;
 export const BRIGHT = 2.6;
 
-export const _o = new THREE.Object3D();
-export const _c = new THREE.Color();
 export const LOCAL_CORE = new THREE.Color( '#FFFBE7' );
 export const REMOTE_CORE = new THREE.Color( '#FFB52E' );
 export const MARIGOLD = accent();

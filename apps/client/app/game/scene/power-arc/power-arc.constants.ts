@@ -1,5 +1,4 @@
 import { POWER_SLOTS } from '@slur/shared';
-import * as THREE from 'three';
 
 export const CELLS = 9;
 export const CELL_PX = 128;
@@ -59,8 +58,3 @@ void main() {
     #include <colorspace_fragment>
 }
 `;
-
-export const _o = new THREE.Object3D();
-export const _anchor = new THREE.Vector3();
-export const _from = new THREE.Vector3();
-export const _to = new THREE.Vector3();

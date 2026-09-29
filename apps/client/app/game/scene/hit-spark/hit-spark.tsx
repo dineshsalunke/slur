@@ -3,7 +3,8 @@ import { useCallback, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { drainHits, type HitEvent } from '../hit-events';
 import { advanceShards, initShardMesh, makeShardPool, spawnBurst } from '../vfx-shard-pool';
-import { _o, SPEC } from './hit-spark.constants';
+import { SPEC } from './hit-spark.constants';
+import { _o } from './hit-spark.scratch';
 import { placeStreak } from './hit-spark.utils';
 
 export function HitSpark() {

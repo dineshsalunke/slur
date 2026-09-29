@@ -11,7 +11,8 @@ import {
 import { buildSeekerBody } from '../seeker-pickups/seeker-pickups.utils';
 import { type SeekerTrailRing, TRAIL_POINTS, trailIndex } from '../seeker-trail';
 import type { Frame } from './seeker-bodies';
-import { _c, _dir, _o, FORWARD, HOT, MAX_SEGMENTS } from './seeker-bodies.constants';
+import { FORWARD, HOT, MAX_SEGMENTS } from './seeker-bodies.constants';
+import { _c, _dir, _o } from './seeker-bodies.scratch';
 
 export function buildLook() {
     return {

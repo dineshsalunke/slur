@@ -4,7 +4,8 @@ import type * as THREE from 'three';
 import { advanceEmbers, type EmberPool, MAX_EMBERS, makeEmberPool, shedEmbers } from '../bolt-embers';
 import { MAX_SEEKERS, SEEKER_EMBER_SPAN } from '../seeker-look';
 import { advanceSeekerTrail, type SeekerTrailRing } from '../seeker-trail';
-import { _black, _dir, _o, FORWARD, MAX_SEGMENTS } from './seeker-bodies.constants';
+import { _black, FORWARD, MAX_SEGMENTS } from './seeker-bodies.constants';
+import { _dir, _o } from './seeker-bodies.scratch';
 import { buildLook, writeTrail } from './seeker-bodies.utils';
 
 export type SeekerSink = ( x: number, y: number, z: number, trail: SeekerTrailRing ) => void;

@@ -24,16 +24,7 @@ import {
 import { pushHit } from '../hit-events';
 import type { Debris, Slot } from './block-debris';
 import {
-    _away,
-    _centre,
-    _half,
-    _m,
-    _offset,
     _one,
-    _point,
-    _shrink,
-    _size,
-    _tick,
     _zero,
     BOLT_SHAKE,
     BOLT_SHAKE_REACH,
@@ -48,6 +39,7 @@ import {
     THUD_SHAKE,
     THUD_SLAM,
 } from './block-debris.constants';
+import { _away, _centre, _half, _m, _offset, _point, _shrink, _size, _tick } from './block-debris.scratch';
 
 export function buildDebris(): Debris {
     const cells = fractureCells();

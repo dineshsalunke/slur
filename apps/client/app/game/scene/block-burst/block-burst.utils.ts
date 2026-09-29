@@ -2,7 +2,8 @@ import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { accent } from '../accent';
 import type { Burst } from './block-burst';
-import { _c, _o, CORE } from './block-burst.constants';
+import { CORE } from './block-burst.constants';
+import { _c, _o } from './block-burst.scratch';
 import { pending } from './block-burst.state';
 
 export function queueBurst( x: number, y: number, z: number, size: number ): void {

@@ -10,6 +10,4 @@ export const FLASH_SHARE = 0.7;
 export const FLICKER = 0.12;
 export const EMBER_END = 1;
 
-export const _o = new THREE.Object3D();
-export const _c = new THREE.Color();
 export const CORE = new THREE.Color( FRACTURE_CORE_HEX );

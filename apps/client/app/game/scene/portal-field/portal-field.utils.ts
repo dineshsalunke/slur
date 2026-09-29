@@ -6,8 +6,6 @@ import { boxPart, mergeParts, ringGeometry, ringSleeveGeometry } from '../portal
 import { graphiteSurface } from '../track-materials';
 import { buildMembraneMaterial, membraneGeometry } from './membrane-material';
 import {
-    _c,
-    _o,
     GATE_RING,
     GATE_SLEEVE,
     GATE_Y,
@@ -28,6 +26,7 @@ import {
     PORTAL_PULSE_DEPTH,
     PORTAL_PULSE_HZ,
 } from './portal-field.constants';
+import { _c, _o } from './portal-field.scratch';
 
 export type PortalEndSink = ( x: number, y: number, z: number, live: boolean, marks: number ) => void;
 

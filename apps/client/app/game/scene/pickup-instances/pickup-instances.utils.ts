@@ -4,7 +4,8 @@ import { PICKUP_BOB, PICKUP_BOB_HZ, PICKUP_HOVER, PICKUP_POOL_RADIUS, PICKUP_SPI
 import { buildPickupPoolMaterial } from '../pickup-pool-material';
 import { pickupPose } from '../pickup-pose';
 import type { PickupLife, PickupPart } from './pickup-instances';
-import { _o, _pool, _pose, TAU } from './pickup-instances.constants';
+import { TAU } from './pickup-instances.constants';
+import { _o, _pool, _pose } from './pickup-instances.scratch';
 
 export function buildPool(): PickupPart {
     return {

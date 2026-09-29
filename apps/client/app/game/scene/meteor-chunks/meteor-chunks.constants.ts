@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { makeTick } from '../debris-tick';
 
 export const LIMIT = 96;
 export const QUEUE = 8;
@@ -13,6 +12,4 @@ export const CHUNK_DETAIL = 3;
 export const BASE_COUNT = 9;
 export const COUNT_PER_SIZE = 2.2;
 
-export const _m = new THREE.Matrix4();
 export const _zero = new THREE.Matrix4().makeScale( 0, 0, 0 );
-export const _tick = makeTick();

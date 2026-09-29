@@ -1,6 +1,6 @@
 import type * as THREE from 'three';
 import type { MonolithTransform } from '../monolith-transforms';
-import { scratch } from './monolith-group.constants';
+import { scratch } from './monolith-group.scratch';
 
 export function fill( mesh: THREE.InstancedMesh, transforms: readonly MonolithTransform[] ): void {
     for ( let i = 0; i < transforms.length; i++ ) {

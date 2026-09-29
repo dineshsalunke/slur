@@ -5,7 +5,8 @@ import { accent } from '../accent';
 import { commitInstances } from '../instanced-commit';
 import { MAX_MINES, MINE_CORE_INTENSITY, MINE_DECAL_INTENSITY, mineGlow } from '../mine-look';
 import type { BodyPose } from '../mine-throw';
-import { _c, _o, HOT } from './mine-bodies.constants';
+import { HOT } from './mine-bodies.constants';
+import { _c, _o } from './mine-bodies.scratch';
 import { buildLook, phaseOf, place } from './mine-bodies.utils';
 
 export type MineSink = ( x: number, y: number, z: number, armed: boolean, pose: BodyPose ) => void;

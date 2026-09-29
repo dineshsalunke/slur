@@ -1,5 +1,5 @@
 import type { ProjSnapshot } from '../../ecs/traits';
-import { _pos } from './projectile-field.constants';
+import { _pos } from './projectile-field.scratch';
 
 export function sampleAt( buffer: ProjSnapshot[], renderTime: number ): ProjSnapshot | null {
     if ( buffer.length === 0 ) return null;

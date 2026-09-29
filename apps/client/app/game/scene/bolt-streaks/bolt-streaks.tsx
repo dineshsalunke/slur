@@ -5,7 +5,8 @@ import type * as THREE from 'three';
 import { noteBolt } from '../block-breaks';
 import { advanceEmbers, type EmberPool, MAX_EMBERS, makeEmberPool, shedEmbers } from '../bolt-embers';
 import { BOLT_STREAK_LENGTH, MAX_BOLTS } from '../combat-look';
-import { _black, _o } from './bolt-streaks.constants';
+import { _black } from './bolt-streaks.constants';
+import { _o } from './bolt-streaks.scratch';
 import { buildLook } from './bolt-streaks.utils';
 
 export type BoltSink = ( x: number, y: number, z: number, traveled: number, dir: number, pitch?: number ) => void;

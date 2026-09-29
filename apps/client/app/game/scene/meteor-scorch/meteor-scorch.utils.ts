@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { accent } from '../accent';
 import type { Mark } from './meteor-scorch';
-import { _c, _o, CORE, EMBER_END, FLASH, FLASH_SHARE, FLICKER, LIFT, LIMIT, SPREAD } from './meteor-scorch.constants';
+import { CORE, EMBER_END, FLASH, FLASH_SHARE, FLICKER, LIFT, LIMIT, SPREAD } from './meteor-scorch.constants';
+import { _c, _o } from './meteor-scorch.scratch';
 import { pending } from './meteor-scorch.state';
 
 export function queueScorch( x: number, y: number, z: number, size: number, turn: number ): void {

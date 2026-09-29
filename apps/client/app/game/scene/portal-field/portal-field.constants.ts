@@ -1,5 +1,4 @@
 import { DEFAULT_PORTAL_CONFIG } from '@slur/shared';
-import * as THREE from 'three';
 import type { RingSpec, SleeveSpec } from '../portal-ring';
 import type { MembraneShape } from './membrane-material';
 
@@ -33,6 +32,3 @@ export const MARK_DEPTH = LUG_DEPTH + 0.04;
 export const MARK_GAP = 0.3;
 export const MARK_OFFSETS: readonly ( readonly number[] )[] = [ [ 0 ], [ -MARK_GAP / 2, MARK_GAP / 2 ] ];
 export const MAX_PORTAL_MARKS = MAX_PORTAL_ENDS * 2;
-
-export const _o = new THREE.Object3D();
-export const _c = new THREE.Color();

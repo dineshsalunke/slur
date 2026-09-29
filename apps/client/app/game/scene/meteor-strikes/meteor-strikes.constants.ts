@@ -25,10 +25,4 @@ export const SPARK_BURSTS = 3;
 
 export const UP = new THREE.Vector3( 0, 1, 0 );
 export const CORE = new THREE.Color( FRACTURE_CORE_HEX );
-export const _p = new THREE.Vector3();
-export const _dir = new THREE.Vector3();
-export const _q = new THREE.Quaternion();
-export const _s = new THREE.Vector3();
-export const _m = new THREE.Matrix4();
-export const _c = new THREE.Color();
 export const _zero = new THREE.Matrix4().makeScale( 0, 0, 0 );

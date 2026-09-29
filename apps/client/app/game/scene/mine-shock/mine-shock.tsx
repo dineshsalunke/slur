@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
 import { accent } from '../accent';
 import { drainMineShocks, type MineShock as Shock } from '../mine-shock-events';
-import { _c, _o, MAX, UPRIGHT } from './mine-shock.constants';
+import { MAX, UPRIGHT } from './mine-shock.constants';
+import { _c, _o } from './mine-shock.scratch';
 import { buildLook, spawn, spread } from './mine-shock.utils';
 
 export interface ShockLook {

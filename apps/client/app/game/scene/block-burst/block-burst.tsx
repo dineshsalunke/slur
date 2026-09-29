@@ -1,7 +1,8 @@
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { _c, GEOMETRY, SLOTS } from './block-burst.constants';
+import { GEOMETRY, SLOTS } from './block-burst.constants';
+import { _c } from './block-burst.scratch';
 import { pending } from './block-burst.state';
 import { draw } from './block-burst.utils';
 

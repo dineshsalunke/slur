@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { mineBodyMaterial } from '../mine-body-material';
 import { MAX_MINES, mineBodyGeometry, mineCoreGeometry, mineDecalGeometry } from '../mine-look';
-import { _o, MIN_SCALE } from './mine-bodies.constants';
+import { MIN_SCALE } from './mine-bodies.constants';
+import { _o } from './mine-bodies.scratch';
 
 export function glowMaterial(): THREE.MeshBasicMaterial {
     return new THREE.MeshBasicMaterial( {

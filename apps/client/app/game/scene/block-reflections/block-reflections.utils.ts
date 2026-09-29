@@ -3,7 +3,8 @@ import type * as THREE from 'three';
 import { blockWorld } from '../../block-state';
 import { SEALED_BLOCK_BEVEL } from '../sealed-block-geometry';
 import { SEALED_BLOCK_MAX_SEAMS } from '../sealed-block-variation';
-import { _foot, SEAM_CLEAR_REACH, SEAM_CONTACT, SEAM_LOW } from './block-reflections.constants';
+import { SEAM_CLEAR_REACH, SEAM_CONTACT, SEAM_LOW } from './block-reflections.constants';
+import { _foot } from './block-reflections.scratch';
 
 export interface SeamFoot {
     x: number;

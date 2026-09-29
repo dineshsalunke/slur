@@ -10,12 +10,6 @@ import { STRIKE_SPACING, type Strike, strikeAt, strikeWindow } from '../meteor-s
 import { queueScorch } from '../meteor-scorch/meteor-scorch.utils';
 import type { Director, Flight, ReadyMeshes } from './meteor-strikes';
 import {
-    _c,
-    _dir,
-    _m,
-    _p,
-    _q,
-    _s,
     _zero,
     BURST_SIZE,
     COLLAPSE,
@@ -38,6 +32,7 @@ import {
     TRAIL_WIDTH,
     UP,
 } from './meteor-strikes.constants';
+import { _c, _dir, _m, _p, _q, _s } from './meteor-strikes.scratch';
 
 export function makeFlight(): Flight {
     return {

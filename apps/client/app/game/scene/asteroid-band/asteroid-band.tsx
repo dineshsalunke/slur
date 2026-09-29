@@ -6,7 +6,7 @@ import { type AsteroidBand as Band, bandAhead } from '../asteroid-config';
 import { type AsteroidPlacement, forEachAsteroid } from '../asteroid-field';
 import { asteroidGeometry } from '../asteroid-geometry';
 import { AHEAD, BACK } from '../track-instancing';
-import { _o } from './asteroid-band.constants';
+import { _o } from './asteroid-band.scratch';
 import { writeSpin } from './asteroid-band.utils';
 
 export function AsteroidBand( { band, material }: { band: Band; material: THREE.Material } ) {

@@ -11,7 +11,8 @@ import { asteroidGeometry } from '../asteroid-geometry';
 import { trackGround } from '../debris-ground';
 import type { DebrisGround } from '../debris-physics';
 import { meteorTrailGeometry, repaintTrail } from '../meteor-assets';
-import { _c, FLIGHTS, HEAD_DETAIL, HEAD_SEED, LIGHT_DISTANCE } from './meteor-strikes.constants';
+import { FLIGHTS, HEAD_DETAIL, HEAD_SEED, LIGHT_DISTANCE } from './meteor-strikes.constants';
+import { _c } from './meteor-strikes.scratch';
 import { advance, commit, draw, flash, hide, makeDirector, schedule } from './meteor-strikes.utils';
 
 export interface Flight {

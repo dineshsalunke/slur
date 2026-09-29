@@ -45,5 +45,3 @@ export const SEAM_CLEAR_REACH = 1000;
 export const SEAM_CONTACT = 0.05;
 
 export const SEAM_LOW = 0.5;
-
-export const _foot = { x: 0, z: 0, nx: 0, nz: 0 };

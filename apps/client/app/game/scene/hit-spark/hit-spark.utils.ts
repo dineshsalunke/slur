@@ -1,6 +1,7 @@
 import type * as THREE from 'three';
 import type { Shard } from '../vfx-shard-pool';
-import { _c, _dir, _o, BRIGHT, ENERGY_CORE, FORWARD, SPARK, STREAK_S, WIDTH } from './hit-spark.constants';
+import { BRIGHT, ENERGY_CORE, FORWARD, SPARK, STREAK_S, WIDTH } from './hit-spark.constants';
+import { _c, _dir, _o } from './hit-spark.scratch';
 
 export function placeStreak( mesh: THREE.InstancedMesh, i: number, p: Shard, f: number ): void {
     _dir.set( p.vx, p.vy, p.vz );

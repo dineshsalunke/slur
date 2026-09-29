@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { makeTick } from '../debris-tick';
 
 export const SLOTS = 12;
 export const LIFE = 14;
@@ -14,14 +13,5 @@ export const THUD_SLAM = 16;
 export const THUD_SHAKE = 0.05;
 export const THUD_REACH = 30;
 
-export const _m = new THREE.Matrix4();
 export const _zero = new THREE.Matrix4().makeScale( 0, 0, 0 );
 export const _one = new THREE.Vector3( 1, 1, 1 );
-export const _size = new THREE.Vector3();
-export const _centre = new THREE.Vector3();
-export const _offset = new THREE.Vector3();
-export const _half = new THREE.Vector3();
-export const _shrink = new THREE.Vector3();
-export const _point = new THREE.Vector3();
-export const _away = new THREE.Vector3();
-export const _tick = makeTick();

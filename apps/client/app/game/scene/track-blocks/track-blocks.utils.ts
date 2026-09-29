@@ -17,8 +17,9 @@ import {
 } from '../sealed-block-variation';
 import { AHEAD, BACK, put } from '../track-instancing';
 import type { BlockCapacity, Emit, FracturedAttributes, SealedAttributes, SealedVariation } from './track-blocks';
-import { _m, BLOCK_LIMIT, FRACTURED_LIMIT } from './track-blocks.constants';
-import { variations, windowSegs } from './track-blocks.state';
+import { BLOCK_LIMIT, FRACTURED_LIMIT } from './track-blocks.constants';
+import { _m, windowSegs } from './track-blocks.scratch';
+import { variations } from './track-blocks.state';
 
 export function variationFor( x: number, z: number, dims: BlockDims, open = 0 ): SealedVariation {
     const seed = sealedBlockSeed( x, z );

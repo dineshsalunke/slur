@@ -3,7 +3,8 @@ import type { Entity } from 'koota';
 import type * as THREE from 'three';
 import { Interp, Net, Render, Sim } from '../../ecs/traits';
 import { BOOST_STREAK_LENGTH, BOOST_STREAK_LIFT, BOOST_STREAK_SPREAD, BOOST_STREAK_WIDTH } from '../boost-look';
-import { _identity, _instance, _local, _offset, _scale, _ship, PER_SHIP, SIDES } from './boost-streaks.constants';
+import { _identity, PER_SHIP, SIDES } from './boost-streaks.constants';
+import { _instance, _local, _offset, _scale, _ship } from './boost-streaks.scratch';
 
 export function boostTimerOf( entity: Entity ): number {
     const sim = entity.get( Sim );

@@ -10,17 +10,8 @@ import { trackGround } from '../debris-ground';
 import { type DebrisBody, makeBody } from '../debris-physics';
 import { beginTick, moveBody, sparkOnLanding } from '../debris-tick';
 import { rockHull } from '../meteor-assets';
-import {
-    _m,
-    _tick,
-    _zero,
-    CHUNK_DETAIL,
-    CHUNK_SEED,
-    HEAT_SHARE,
-    LIFE,
-    LIMIT,
-    SPARK_SLAM,
-} from './meteor-chunks.constants';
+import { _zero, CHUNK_DETAIL, CHUNK_SEED, HEAT_SHARE, LIFE, LIMIT, SPARK_SLAM } from './meteor-chunks.constants';
+import { _m, _tick } from './meteor-chunks.scratch';
 import { spawnPending } from './meteor-chunks.utils';
 
 export interface ChunkBurst {
