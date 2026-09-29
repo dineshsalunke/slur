@@ -651,7 +651,7 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 - **One layout (#368, ADR-032).** The right hand drives on the arrow keys. The left hand holds the power keys
   E, D, S, F and X. No key is a modifier, and there is no second key for an action and no Mac variant. A key
   pressed with Ctrl, Cmd or Alt does nothing in the game, so the browser shortcut runs. The lobby ship picker
-  still steps on A / D and ← / →. It works in the lobby only.
+  steps on ← / → only.
 
 - **Touch (#346, phones).** The left half of the screen holds a floating stick. Its base appears where the
   thumb lands. Touch = thrust. Slide left or right = strafe, digital, with hysteresis: it presses at 45% of

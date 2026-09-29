@@ -6,7 +6,7 @@ import { ShipStepper } from '../../../ship/ship-stepper/ship-stepper';
 import { stepShip } from './lobby-ship-picker.utils';
 
 export function LobbyShipPicker( { room }: { room: RunRoomLike } ) {
-    // Syncs with the browser keyboard: A/D and the arrow keys cycle the ship, and Enter starts the run for the host.
+    // Syncs with the browser keyboard: the arrow keys cycle the ship, and Enter starts the run for the host.
     useEffect( () => {
         const onKey = ( e: KeyboardEvent ) => {
             if ( room.state.phase !== PHASE.lobby ) return;

@@ -145,7 +145,7 @@ describe( 'Lobby overlay subscription boundary', () => {
         expect( counts.Roster ).toBe( 0 );
     } );
 
-    it( 'cycles the ship on D, re-rendering SpecTag but not Roster, and sends the new ship', async () => {
+    it( 'cycles the ship on →, re-rendering SpecTag but not Roster, and sends the new ship', async () => {
         bus.state.phase = PHASE.lobby;
         await mountOverlays();
         counts.SpecTag = 0;
@@ -153,6 +153,11 @@ describe( 'Lobby overlay subscription boundary', () => {
 
         await act( async () => {
             document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'KeyD', bubbles: true } ) );
+        } );
+        expect( send ).not.toHaveBeenCalledWith( SET_CLASS_MESSAGE, expect.anything() );
+
+        await act( async () => {
+            document.body.dispatchEvent( new KeyboardEvent( 'keydown', { code: 'ArrowRight', bubbles: true } ) );
         } );
 
         expect( counts.SpecTag ).toBeGreaterThan( 0 );

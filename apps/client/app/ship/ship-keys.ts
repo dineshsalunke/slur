@@ -1,4 +1,4 @@
-const KEY_DIR: Record< string, -1 | 1 > = { KeyA: -1, ArrowLeft: -1, KeyD: 1, ArrowRight: 1 };
+const KEY_DIR: Record< string, -1 | 1 > = { ArrowLeft: -1, ArrowRight: 1 };
 
 function typing( target: EventTarget | null ): boolean {
     return (

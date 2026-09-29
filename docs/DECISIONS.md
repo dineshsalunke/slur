@@ -1661,7 +1661,7 @@ The #358 layout copied the Blur (2010) PC keys: Q throttle, A or ↓ brake, Righ
 2. **No other key works.** Q, A, S as brake, both Ctrl keys, both Shift keys, V and 1–3 are removed. `fireKeyFor`, `dropKeyFor`, `MAC_*` and `macKeyboard` are deleted.
 3. **No modifiers.** A power key pressed with Ctrl, Cmd or Alt does nothing in the game, so the browser shortcut runs. This is the rule M and the mirror key already used. `keyboard.ts` no longer calls `preventDefault`. No key is held with Ctrl, and `html` and `body` are `overflow-hidden` (`root.tsx`), so ↑, ↓ and Space cannot scroll the page.
 4. **Gamepad and touch keep their buttons.** They send the new codes. S is a real previous-slot key now, so the touch d-pad's left arm sends S instead of the synthetic `PreviousSlot` code.
-5. **The lobby ship picker keeps A / D and ← / →.** It works only in the lobby phase, where no power fires. The owner can overrule this.
+5. **The lobby ship picker steps on ← / → only.** A / D were removed too (owner, 2026-09-29).
 
 ### Consequences
 
