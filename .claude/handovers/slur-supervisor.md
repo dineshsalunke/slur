@@ -45,10 +45,12 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S0 conventions | #382 | landed c1233064 (conventions/features.md; Q5–Q7 written as open) |
 | S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
 | S8 input on sim tick | #383 | landed 8681e05 (30 sends/s, 2 inputs each; reconcile 0/198 before and after; hidden tab no worse) |
-| S18 render system | #384 | landed ea385b6b, closed; NOT PUSHED (workerthree push denied; owner decides). S19 now unblocked |
+| S18 render system | #384 | landed ea385b6b, closed; pushed (by workertwo's push). S19 now unblocked |
 | #386 landing canvas | #386 | landed 04684954, closed; pushed with workertwo's fb60a05f. fallback={null} → ~1 s clear-colour gap before the 3D scene; StillBackdrop hand-off needs a new reveal file (owner to decide) |
 | S17 addEffect → phases | #387 | landed a3ee47ad, closed, pushed (HUD speed now this-frame 151/151) |
-| F1 engine skeleton | #385 | landed 1a5415c7 + f912f7ab; NOT PUSHED; workerone closes #385 after push. features.md §8 now empty (Q6, Q7 folded) |
+| F1 engine skeleton | #385 | landed 1a5415c7 + f912f7ab; pushed (by workertwo's push); workerone to close #385. features.md §8 now empty (Q6, Q7 folded) |
+| S20 dial-sync | #388 | landed 9b5f38f2, closed, pushed. Material writes 29 → 7/frame |
+| S19 quality hooks | (workertwo files) | ASSIGNED workertwo after the dial-sync schedule move |
 | F2 tug pilot | (workerone files) | ASSIGNED workerone; claim pending. Must avoid dev/tuning.ts + track scene files (workertwo) and home route (workerthree) |
 
 ## Workers
@@ -56,7 +58,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | F2 tug pilot | ASSIGNED; claim pending | — (F1 claims all released) |
-| workertwo | w2Z:p3 | #388 S20 dial-sync | BUILDING (claim cleared) | dev/tuning.ts; game/scene/{track-seams.tsx, track-rail/track-rail.tsx, track-rim/track-rim.tsx, track-floor/track-floor.tsx, monolith-group/monolith-group.tsx, track-view.tsx, game-environment.tsx (1 mount line)}; NEW game/scene/dial-sync/*. Leaf schedule now; move to route schedules after F1 |
+| workertwo | w2Z:p3 | DIAL_SYNC → route schedules, then S19 quality hooks (Q9 reload-only) | ASSIGNED; claim pending (S20 landed 9b5f38f2) | — |
 | workerthree | w2Z:p5 | #389 landing gap (follow-up to #386) | BUILDING (claim cleared; cleared + resumed after e1c15534) | routes/home/{landing-backdrop/*, landing-scene/landing-scene.tsx, NEW landing-reveal/*} |
 | do-setup | w2Z:p4 | infra | idle | — |
 
