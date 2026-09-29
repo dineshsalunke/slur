@@ -47,6 +47,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Zoom the chase camera over CDP](zoom-the-chase-camera-over-cdp.md) — defineProperty fov getter
 - [Wheel clientX is an integer](wheel-event-clientx-is-integer.md) — whole pixels; onWheel passive
 - [Touch test over CDP](touch-test-over-cdp.md) — `pointer: coarse`; sample ≥300 ms after tap
+- [Test-level skips Overlays](test-level-skips-overlays.md) — in-race HUD goes in NetHud
 - [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook
 - [Grab the scene](grab-the-scene.md) — three devtools hook; wrap Object3D onBeforeRender
 - [koota universe reaches the page world](koota-universe-reaches-the-page-world.md) — reads ok; writes lost
