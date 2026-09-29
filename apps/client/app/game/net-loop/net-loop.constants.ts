@@ -1,3 +1,4 @@
+import { FEATURE_SYSTEMS } from '../../engine/active-features';
 import { scheduleSystems } from '../frame/schedule';
 import { writeHud } from '../hud/hud-writers/hud-writers.state';
 import { GAMEPAD_SYSTEM } from '../input/gamepad';
@@ -31,4 +32,5 @@ export const NET_SCHEDULE = scheduleSystems< NetFrame >( 'net', [
         run: netCamera,
     },
     { id: 'net.hud', phase: 'cleanup', run: writeHud },
+    ...FEATURE_SYSTEMS,
 ] );

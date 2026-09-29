@@ -88,6 +88,12 @@ export const tugClient = defineClientFeature( {
 
 Every slot is optional. A feature fills only the slots it needs.
 
+**As built (F1, #385).** The sim half has `id`, `power`, `fields.player`, `ship`, `run` and `messages`
+(`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`, `systems`,
+`views.scene` and `net` (`apps/client/app/engine/define-client-feature.ts`). The other slots in the table
+(`rules`, `traits`, `views.pickups`, `hud`, `audio`, `dials`) come with their first consumer. Do not add a
+slot that has no engine consumer.
+
 | Slot | Engine consumer (one loop over the registry) |
 |---|---|
 | `ship.thrust` / `ship.cap` / `ship.tick` | `step()` sums `thrust`, folds `cap`, calls `tick`, in sorted feature order |
@@ -121,6 +127,14 @@ Every slot is optional. A feature fills only the slots it needs.
   buffer per event type with a read cursor per consumer (RFC S9); a feature declares the types it emits.
 - Enforcement target (E1): a Biome GritQL plugin fails an import into `features/<a>/` from `features/<b>/`
   unless the path ends in `.feature` or `.client`.
+
+### Commands (Q7, owner 2026-09-29, answer a3, RFC `54ff79b7`)
+
+- Client → server commands use the 0.17 `messages` table with `validate()`.
+- Each schema is a hand-written synchronous StandardSchemaV1 object:
+  `{ '~standard': { version: 1, vendor: 'slur', validate( v ) } }`. It wraps the existing checks.
+- No validator library. Do not add valibot or zod.
+- This is S12 work, not F1.
 
 ## 4. Schema fields: `schema()` composition
 
@@ -264,16 +278,15 @@ repeat a Rules min/max in `dev/tuning-schema.ts`.
 - **Scope (Q5, owner 2026-09-29): combat and world rules only.** Ship tuning (`SHIP_CLASSES`) stays fixed
   data (NN-6) and is never a B2 key. Adding it later is additive: new keys in the same map, and the server
   runs `rosterContractFailures()` on the merged table before it accepts a lobby write.
+- **Dev dials in a hosted room (Q6, owner 2026-09-29, answer B).** In a dev build, the host's Rules dials
+  write the room's B2 override map in the lobby only. Values lock at GO for every racer. The server accepts
+  these writes only when it runs in dev mode, so a production room rejects them. Built in S6.
 
 ## 8. Open questions — not decided
 
 Do not decide these in code. Ask the owner through the supervisor.
 
-- **Q6: dev dials in a hosted room.** May a dev dial override a Rules value in a hosted room, or only on
-  `/test-level`? Until answered, Rules dials act on `/test-level` (loopback) only.
-- **Q7: validator dependency.** Client → server commands use the 0.17 `messages` table with `validate()`
-  (a3) only after the owner approves valibot or zod. Until then, commands use a registry loop over
-  `room.onMessage` (a2), namespaced by feature id.
+- None. Q5, Q6 and Q7 are answered and folded in (§3 "Commands" and §7).
 
 ## 9. Anti-patterns
 

@@ -13,6 +13,7 @@ import { RemoteEngineAudio } from '../audio/remote-engine-audio/remote-engine-au
 import { playSfx } from '../audio/sfx-map';
 import { renderDpr } from '../dev/render-scale.utils';
 import { TuningPanelMount } from '../dev/tuning-panel-mount';
+import { FeatureViews } from '../engine/feature-views/feature-views';
 import { attachRoomToWorld } from '../net/attach-room-to-world';
 import { createPredictor } from '../net/prediction';
 import { useRoom } from '../net/room-context/use-room';
@@ -83,6 +84,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <MineShock />
                             <TugLine />
                             <PortalField />
+                            <FeatureViews slot="scene" />
                             <PhaseGate phases={ ON_TRACK_PHASES }>
                                 <NetPowerArc />
                             </PhaseGate>

@@ -33,5 +33,6 @@ Full rule: `conventions/features.md`. Owner-approved 2026-09-29.
   B2 `overrides` map. One `defineRules` spec per feature gives defaults, clamp, key check and dial.
 - **B2 room config:** `preset` string + sparse `overrides` float32 map keyed `<feature>.<rule>`. The
   server rejects unknown keys, clamps, merges the `Math.fround`-ed value and rejects writes after lobby.
-- **Open, do not decide:** Q5 (room config scope: combat only or ship tuning too) and Q6 (dev dials in
-  hosted rooms). Ask the owner through the supervisor.
+- **Answered:** Q5 (B2 covers combat and world rules only), Q6 (dev dials write B2 overrides in the
+  lobby of a dev-mode server only) and Q7 (commands use the `messages` table with hand-written
+  StandardSchemaV1 validators, no library; S12).

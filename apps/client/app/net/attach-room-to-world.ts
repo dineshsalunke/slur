@@ -19,6 +19,8 @@ import {
 } from '@slur/shared';
 import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
+import { ACTIVE_FEATURES } from '../engine/active-features';
+import { bindFeatureMessages } from '../engine/bind-feature-messages';
 import { blockWorld, clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import { sparkAt } from '../game/ecs/bounce-spark';
 import { holdRunConfig, runConfig } from '../game/ecs/run-config';
@@ -135,6 +137,7 @@ export function attachRoomToWorld(
     trackRef: RefObject< Track >,
 ): () => void {
     const releaseConfig = holdRunConfig( world, room.simConfig ?? DEFAULT_SIM_CONFIG );
+    const offFeatures = bindFeatureMessages( room, ACTIVE_FEATURES );
     const $ = stateCallbacks( room );
     const byId = new Map< string, Entity >();
     const projById = new Map< string, Entity >();
@@ -291,6 +294,7 @@ export function attachRoomToWorld(
 
     return () => {
         releaseConfig();
+        offFeatures();
         offPhase();
         offAdd();
         offRemove();
