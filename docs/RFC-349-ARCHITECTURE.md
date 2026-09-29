@@ -902,7 +902,10 @@ waits for S0.
 5. Owner (#70 ADR): does room config cover combat only, or ship tuning too? **Answered 2026-09-29: combat
    and world rules only (A).** Ship tuning stays fixed data. A later extension adds keys to the same map and
    gates lobby writes on `rosterContractFailures()`.
-6. May dev dials override Rules values in a hosted room, or only on `/test-level`?
+6. May dev dials override Rules values in a hosted room, or only on `/test-level`? **Answered 2026-09-29:
+   B.** In a dev build, the host's Rules dials write the room's B2 override map in the lobby only; values
+   lock at GO for every racer. The server accepts these writes only when it runs in dev mode, so a
+   production room rejects them. Built in S6. A production host panel (#70 Slice 3) is a separate design.
 7. Owner: approve a direct Standard Schema dependency (valibot or zod) for validated commands (a3, §4.5)?
    Without it, commands use a2 and stay unvalidated. (The former Q7, schema without a central edit, is
    answered: yes, by `schema()` composition, §3.4.)
