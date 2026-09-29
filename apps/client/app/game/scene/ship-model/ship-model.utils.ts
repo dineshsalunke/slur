@@ -1,9 +1,10 @@
 import type { Entity } from 'koota';
 import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
+import { accent } from '../accent';
 import { exhaustDrive } from '../exhaust-drive';
 import { METAL_METALNESS, METAL_ROUGHNESS } from '../metal';
-import { engineIntensity, engineMaterial } from '../ship-materials';
+import { engineIntensity, engineMaterial, nozzleMaterial, tintNozzle } from '../ship-materials';
 import { cleanToMapRoughness } from '../track-materials';
 import { graphiteSurfaceParams, surfaceMaps } from '../track-texture';
 import type { DissolveUniforms, ShipSurfaces } from './ship-model';
@@ -69,6 +70,8 @@ export function collectSurfaces( grp: THREE.Group, uniforms: DissolveUniforms ):
             found.all.push( mat );
             const hull = hullMaterial( mat );
             if ( hull ) found.hulls.push( hull );
+            const nozzle = nozzleMaterial( mat );
+            if ( nozzle ) tintNozzle( nozzle, accent() );
             const engine = engineMaterial( mat );
             if ( engine ) found.engines.push( engine );
             patchDissolve( mat, uniforms, hull !== null );

@@ -367,7 +367,7 @@ check keeps it fresh. That reaches "add a folder, edit nothing".
 
 | | Option | Notes |
 |---|---|---|
-| **E1** | **Biome GritQL plugin: an import into `features/<a>/` from `features/<b>/` must end in `.feature` or `.client`** | Biome plugins already run in `pnpm lint` (issue #283). Probe with a temp file under the override includes (memory `biome-stdin-skips-grit-plugins.md`). |
+| **E1** | **Biome GritQL plugin: an import into `features/<a>/` from `features/<b>/` must end in `.feature` or `.client`** | Biome plugins already run in `pnpm lint` (issue #283). Probe with a temp file under the override includes (memory `lint-footguns.md`). |
 | E2 | TypeScript project references per feature | strong, but many `tsconfig` files |
 | E3 | pnpm package per feature with `exports` | as D6 — too heavy |
 | E4 | Review rule only | no enforcement |
@@ -588,7 +588,7 @@ its priority band.
 |---|---|
 | −1 | `game/scene/nebula-sky.tsx:11` (sky bake + uniforms) |
 | 0 | 39 sites, one of them explicit (`dev/frame-tap.tsx:9`) |
-| 0.25 `AFTER_RENDER_SYNC` | `engine-light.tsx:15`, `exhaust-field.tsx:40`, `boost-streaks.tsx:33`. The constant is defined 3 times: `engine-light.constants.ts:1`, `exhaust-field.constants.ts:7`, `boost-streaks.constants.ts:6` |
+| 0.25 `AFTER_RENDER_SYNC` | `exhaust-field.tsx:40`, `boost-streaks.tsx:33`. The constant is defined 2 times: `exhaust-field.constants.ts:7`, `boost-streaks.constants.ts:6`. (`engine-light` was removed in #369.) |
 | 0.5 `PASS_PRIORITY` | `rear-view-pass.tsx:27`, a full scene render into an FBO (`:34–37`) |
 | 1 | `plain-render.tsx:5` **or** the `EffectComposer` internal pass (`@react-three/postprocessing` default `renderPriority = 1`) |
 | 2 `HUD_PRIORITY` | drei `<Hud>` for the rear panel (`rear-view-pass.tsx:41`) |
@@ -849,7 +849,7 @@ more components moves to its subsystem's `look/` module. Dials read their defaul
 - Engine: `apps/client/app/engine/` (scheduler, registry, `FeatureViews`, bridge, run reset).
 - The world that no feature owns stays under `game/scene/`, grouped as `track/`, `ships/`, `sky/`, `post/`.
 - ls-lint needs rules for the new sub-extensions `.feature.ts` and `.client.ts` (memory
-  `ls-lint-skips-unlisted-sub-extensions.md`). Moves use node `fs` (memory `bulk-move-without-git-mv.md`).
+  `lint-footguns.md`). Moves use node `fs` (memory `bulk-move-without-git-mv.md`).
   Import fixes use `ast-grep` or ts-morph (NN-15).
 
 ## 7. Staged migration
@@ -881,7 +881,7 @@ Frame schedule, render and quality stages (§5, workerthree):
 
 | Stage | Change | Files | Needs |
 |---|---|---|---|
-| S14 | One phase constants file (O8). Replace `AFTER_RENDER_SYNC` ×3, `PASS_PRIORITY`, `HUD_PRIORITY`, `PLAIN_RENDER_PRIORITY`, `−1`. No behaviour change. | new `game/frame/frame-phase.constants.ts`; `engine-light/*`, `exhaust-field/*`, `boost-streaks/*`, `rear-view-pass/*`, `plain-render/*`, `nebula-sky.tsx` | — |
+| S14 | One phase constants file (O8). Replace `AFTER_RENDER_SYNC` ×2, `PASS_PRIORITY`, `HUD_PRIORITY`, `PLAIN_RENDER_PRIORITY`, `−1`. No behaviour change. | new `game/frame/frame-phase.constants.ts`; `exhaust-field/*`, `boost-streaks/*`, `rear-view-pass/*`, `plain-render/*`, `nebula-sky.tsx` | — |
 | S15 | Fix hazards 1–2: camera and `Sim` readers take `PHASE.view` (after `sync`). | `sky-follow.tsx`, `near-fill/*`, `asteroid-band/*`, `meteor-scorch/*`, `meteor-chunks/*`, `block-debris/*`, `track-blocks/*`, `meteor-strikes/*`, ship views | S14 |
 | S16 | Scheduler (O1). Split `NetLoop`/`DeckLoop`/`LandingRig` into `simulate` + `sync` systems. Dev order print and per-system timing (§5.5). | new `game/frame/schedule.ts`; `game/net-loop/*`, `routes/beat-deck/deck-loop/*`, `routes/home/landing-rig/*`, `dev/frame-meter.ts` | S14 |
 | S17 | Move gamepad, loopback tick and HUD DOM writers from `addEffect` into `input` / `simulate` / `cleanup`. | `game/input/gamepad.ts`, `net/loopback-room/loopback-room.ts`, 4 HUD files | S16 |

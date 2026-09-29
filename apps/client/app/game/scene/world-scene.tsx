@@ -2,7 +2,6 @@ import { Fragment, type ReactNode } from 'react';
 import { RenderScale } from '../../dev/render-scale';
 import { QualityGate } from '../../quality/quality-gate/quality-gate';
 import { BoostStreaks } from './boost-streaks/boost-streaks';
-import { EngineLight } from './engine-light/engine-light';
 import { ExhaustField } from './exhaust-field/exhaust-field';
 import { ExplosionField } from './explosion-field/explosion-field';
 import { FinishGate } from './finish-gate/finish-gate';
@@ -20,7 +19,6 @@ export function WorldScene( { children }: { children?: ReactNode } ) {
             <GameEnvironment />
             <SceneEnvironment />
             <RenderScale />
-            <EngineLight />
             <ExplosionField />
             <ExhaustField />
             <BoostStreaks />

@@ -1668,3 +1668,24 @@ The #358 layout copied the Blur (2010) PC keys: Q throttle, A or ↓ brake, Righ
 - The right hand drives and the left hand holds every power key. One layout works on every keyboard, so the controls panel and HUD have one label set.
 - The #363/#366 hazard is gone: Ctrl is never held, so no game key becomes a browser shortcut.
 - Players who learned Q/A or V must relearn them. The home controls panel and the HUD power hint show the new keys.
+
+## ADR-033 — The nozzles glow in the accent; the engine light is removed
+
+### Context
+
+The owner said the ship nozzles read peach, not marigold (#369). The nozzle is two GLB materials. `Marigold_emission` is authored at hue 34°, not the 40° accent. `Engine_core` has a peach base colour and an emissive intensity up to 2.2 × 1.7. After Neutral tone mapping the brightest nozzle pixels read 29.8°, saturation 0.53. The `EngineLight` point light behind the ship added more orange.
+
+### Decision
+
+1. `collectSurfaces` (`ship-model.utils.ts`) sets the emissive of `Engine_core` and `Marigold_emission` to `accent()` and their base colour to black.
+2. `Ship.engineIdle` is 0.35 (was 1). `Ship.engineCruise` is 0.6 (was 2.2).
+3. The `EngineLight` component and the `EngineLight.*` dials are deleted (owner, 2026-09-29).
+4. Parked: a hue-preserving tone map (option 4 in #369).
+
+### Consequences
+
+- Measured before the change with the same values: nozzle bands 38.0 / 40.0 / 40.5°, no pixel over 240.
+- The nozzle is flatter and less white-hot.
+- The scene lights are the HDRI and the VFX point lights. ADR-030 listed the engine light too.
+- A saved `Ship.engine*` value in `slur.tuning.v1` is dropped, because the default it was saved against changed.
+- Details: `ART_MATERIALS.md` §7 item 25.

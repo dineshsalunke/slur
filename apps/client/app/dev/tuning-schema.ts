@@ -169,11 +169,6 @@ export const NUMBER_TUNABLES = {
     'Portal.membraneGlow': { value: 1.2, min: 0, max: 8, step: 0.05, rebuild: false },
     'Portal.membraneFlow': { value: 0.6, min: 0, max: 4, step: 0.05, rebuild: false },
 
-    'EngineLight.intensity': { value: 18, min: 0, max: 200, step: 0.5, rebuild: false },
-    'EngineLight.distance': { value: 14, min: 1, max: 80, step: 0.5, rebuild: false },
-    'EngineLight.back': { value: 3.4, min: 0, max: 14, step: 0.1, rebuild: false },
-    'EngineLight.lift': { value: 0.5, min: -2, max: 6, step: 0.05, rebuild: false },
-
     'Rock.textureScale': { value: 1.15, min: 0.2, max: 4, step: 0.05, rebuild: false },
     'Rock.normalScale': { value: 2.5, min: 0, max: 3, step: 0.05, rebuild: false },
     'Rock.roughness': { value: 1, min: 0.1, max: 1.5, step: 0.01, rebuild: false },
@@ -197,8 +192,8 @@ export const NUMBER_TUNABLES = {
 
     'Shake.strength': { value: 1, min: 0, max: 3, step: 0.05, rebuild: false },
 
-    'Ship.engineIdle': { value: 1, min: 0, max: 20, step: 0.05, rebuild: false },
-    'Ship.engineCruise': { value: 2.2, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Ship.engineIdle': { value: 0.35, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Ship.engineCruise': { value: 0.6, min: 0, max: 20, step: 0.05, rebuild: false },
 
     'Bank.roll': { value: 0.5, min: 0, max: 1.2, step: 0.01, rebuild: false },
     'Bank.yaw': { value: 0.12, min: 0, max: 0.6, step: 0.01, rebuild: false },
@@ -215,7 +210,6 @@ export const COLOR_TUNABLES = {
     'Shadow.color': { value: '#01040a', rebuild: false },
     'Exhaust.hot': { value: '#fff1dc', rebuild: false },
     'Exhaust.cool': { value: ACCENT_ANCHOR, rebuild: false },
-    'EngineLight.color': { value: ACCENT_ANCHOR, rebuild: false },
 } as const satisfies Record< string, ColorTunable >;
 
 export type NumberPath = keyof typeof NUMBER_TUNABLES;

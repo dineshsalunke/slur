@@ -165,14 +165,6 @@ export function TuningPanel() {
         blur: numberControl( 'Boost.blur' ),
     } );
 
-    useControls( 'Engine light', {
-        intensity: numberControl( 'EngineLight.intensity' ),
-        distance: numberControl( 'EngineLight.distance' ),
-        back: numberControl( 'EngineLight.back' ),
-        lift: numberControl( 'EngineLight.lift' ),
-        color: colorControl( 'EngineLight.color' ),
-    } );
-
     useControls( 'Rock', {
         color: colorControl( 'Rock.color' ),
         textureScale: numberControl( 'Rock.textureScale' ),

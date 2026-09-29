@@ -18,6 +18,9 @@
 > human gate and then frozen here. Colour anchors are the package's own (`handoff/HANDOVER.md` §4);
 > the ranges and finishes around them are not.
 >
+> **Revision 12** — 2026-09-29. **The nozzles glow in the accent, and the engine light is removed.**
+> Owner's call (#369). Details: §7 item 25.
+>
 > **Revision 10** — 2026-09-28. **An image backdrop and a Poly Haven HDRI replace the procedural sky.**
 > Owner's call (#352). The key light and the near fill are removed. The scene lights are the HDRI and the
 > engine and VFX point lights. Details: §7 item 22.
@@ -1187,7 +1190,29 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     **Departures.** Item 21 said *"`Hull.baseColor` is `#4a4d52`. Ship hulls keep the old value."*
     Hulls now take the track value. None in `docs/art-direction/`.
 
+25. **Nozzles in the accent, no engine light — 2026-09-29 (#369, ADR-033).** The owner said the
+    nozzles read peach, not marigold.
+    - **Cause.** Two GLB materials make the nozzle. `Marigold_emission` (face plates) is authored at
+      linear (0.913, 0.323, 0.018), which is about `#F59A24`, hue 34°. `Engine_core` (grille bars) has a
+      peach base colour (1, 0.665, 0.258). Neutral tone mapping moved the brightest pixels to 29.8°,
+      saturation 0.53.
+    - **Fix.** `collectSurfaces` sets the emissive of both materials to the accent and the base colour to
+      black (`tintNozzle`). `Ship.engineIdle` is 0.35 (was 1). `Ship.engineCruise` is 0.6 (was 2.2).
+    - **Engine light removed.** The `EngineLight` point light and its five `EngineLight.*` dials are
+      deleted. The scene lights are the HDRI and the VFX point lights.
+    - **Measured before the change** (headless `/test-level`, high tier, light at 0, with the same
+      values applied by a route rewrite): nozzle brightness bands 38.0 / 40.0 / 40.5°, and no pixel
+      over 240. The accent is 40°.
+    - The nozzle is flatter and less white-hot than before. The exhaust plume and its deck
+      reflection do not change.
+
+    **Departures.** Item 22 said *"The scene lights are the HDRI and the engine and VFX point
+    lights."* The engine light is gone. The GLB authors `Marigold_emission` at 34°; the engine
+    overrides it. None in `docs/art-direction/`.
+
 ## 8. Review log
+
+**Revision 11 → 12, nozzles in the accent (2026-09-29).** No family table changes. §7 gains item 25.
 
 **Revision 10 → 11, deck reflections and the owner's look (2026-09-29).** No family table changes. §7
 gains items 23 and 24.

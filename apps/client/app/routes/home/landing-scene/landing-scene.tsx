@@ -4,7 +4,6 @@ import { RenderScale } from '../../../dev/render-scale';
 import { renderDpr } from '../../../dev/render-scale.utils';
 import { world } from '../../../game/ecs/world';
 import { CANVAS_GL } from '../../../game/scene/canvas-gl';
-import { EngineLight } from '../../../game/scene/engine-light/engine-light';
 import { ExhaustField } from '../../../game/scene/exhaust-field/exhaust-field';
 import { GameEnvironment } from '../../../game/scene/game-environment';
 import { PlainRender } from '../../../game/scene/plain-render/plain-render';
@@ -34,7 +33,6 @@ export function LandingScene() {
                         <GameEnvironment />
                         <SceneEnvironment />
                         <RenderScale />
-                        <EngineLight />
                         <ExhaustField />
                         <TrackView />
                         <LandingShip />
