@@ -196,7 +196,7 @@ From the repo root:
   `/game/:roomId` path materializes + renders + `simulate()`s the real track, and a host can **start solo**
   (no min-player gate on `startRace()`) → GO → race. Controls (Blur layout, #358): **Q/A**
   throttle-brake, **←/→** strafe, **Space** jump (tap/hold/double), **Right Ctrl/Left Shift** fire,
-  **Right Shift** fire back, **↑** cycle power-up, **Left Ctrl/X** drop, **M** mute. Tune flight via `DEFAULT_JUMP` +
+  **Right Shift** fire back, **↑** cycle power-up, **Left Ctrl/X** drop, **M** mute, **V** mirror. Tune flight via `DEFAULT_JUMP` +
   `DEFAULT_TUNING` in `packages/shared/src/constants.ts`; tune the track via the ADR-006 arrangement-envelope
   + slalom/flick constants.
 - **pnpm gates:** `allowBuilds: [esbuild, msgpackr-extract]` and a `minimumReleaseAgeExclude` list in
