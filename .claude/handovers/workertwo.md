@@ -1,35 +1,33 @@
-Agent: workertwo · Lane: seeker lock warning HUD (#372) — DONE, closed · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29
+Agent: workertwo · Lane: bolt ThreatHud → NetHud (#373) — DONE · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29
 
 ## Goal
-Warn the player when a homing seeker is locked on them, now that the rear-view mirror is gone (#371).
+Show the bolt ThreatHud on /test-level by mounting it in NetHud instead of Overlays.
 
 ## Done
-- 85af607 #372 seeker lock warning (pushed to dev; issue closed with the SHA).
-  - `game/hud/seeker-warning/*`: red `▲△△ LOCK` row, bars by time to impact, blink, dx slide, commit vignette, ×N, top edge for back-fired seekers.
-  - Mounted in `game/net-hud.tsx`, not in overlays (/test-level never mounts Overlays).
-  - `/test-level` Leva Pickups → "incoming seeker" (500u behind, locked on me).
-  - GDD §5.3 paragraph.
-- Earlier: mirror GPU cost measured (cdadd1f).
+- 65bcef2 #373: `game/overlays/threat-hud/*` → `game/hud/threat-hud/*` (test beside it, as `threat-hud.utils.test.ts`); mounted in `game/net-hud.tsx` after SeekerWarning; removed from `overlays.tsx`.
+- 85af607 #372 seeker lock warning (earlier lane).
 
 ## State
-- 674/674 client tests; typecheck clean; lint 0 errors (9 old file-length warnings).
-- Headless /test-level at 1600×900: bars 1→2→3, blink toggles, vignette 0.42 on commit, clears after the hit. Screenshot: the row sits under the slot arc, above the FPS line.
-- 844×390 phone (touch emulated): row at x 371–474, y ~319–335. It clears the stick (ends ~x 150).
-- The bolt ThreatHud does not show on /test-level (it lives in Overlays) [verified by code read].
+- 674/674 client tests; typecheck clean; lint 0 errors (9 old warnings).
+- NetHud mounts once (`net-canvas.tsx:96`), so there is one tick element, not two. Headless on both viewports: 1 tick element, `◀ ⚠`, opacity 1.
+- 1600×900: tick y 64–80; seeker row bottom y 747–774, top (back-fired) y 126–153; slot arc ~y 645–690. No overlap.
+- 844×390 touch: tick x 403–441 y 64–80; back-fired seeker row x 371–474 y 55–71 → OVERLAP. It already existed on /game (both were mounted there before). I did not fix it, because a move commit changes no behaviour.
+- No way to fire a bolt at the player on /test-level (no second racer; own bolts ignored). Not added; the supervisor is asking the owner.
 
 ## Uncommitted
 none.
 
 ## Held files
-none (released at 85af607).
+none after the report (claim: overlays.tsx, net-hud.tsx, hud/threat-hud/*).
 
 ## Next
-1. Report to the supervisor. Wait for the next lane.
+1. Wait for the owner: (a) "incoming bolt" Leva button? (b) fix the phone overlap?
 2. After the owner's deploy: verify #338/#340/#341 on prod.
 3. Later: resume #348.
 
 ## Open questions
-- Owner: should the bolt ThreatHud also move to NetHud so it shows on /test-level?
+- Owner: add an "incoming bolt" button to /test-level Pickups (sibling of incoming seeker)?
+- Owner: phone overlap of the bolt tick and a back-fired seeker row. Option: move the tick below the ahead row on short screens.
 
 ## Lessons → memory
-test-level-skips-overlays.md (new).
+stage-enemy-fire-on-test-level.md (new); test-level-skips-overlays.md (updated).

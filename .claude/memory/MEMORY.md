@@ -59,6 +59,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Place the ship over CDP](place-the-ship-over-cdp.md) — write `room.sim.state` x/z unfrozen
 - [Step the loopback room by hand](step-the-loopback-room-by-hand.md) — room.step + send + ?start=
 - [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — server `slots[0] = 3` + KeyE
+- [Stage enemy fire on /test-level](stage-enemy-fire-on-test-level.md) — fire, flip ownerId, pin per rAF
 - [Node bots](node-bots.md) — node @colyseus/sdk second racer; one event loop per busy bot
 - [Scratch servers](scratch-servers.md) — `__finish` seeds racers; 30-segment short course
 - [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s
