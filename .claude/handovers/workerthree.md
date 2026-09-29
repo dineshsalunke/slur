@@ -1,30 +1,28 @@
-Agent: workerthree · Lane: #368 final keyboard layout (CLOSED) · Updated: 2026-09-29
+Agent: workerthree · Lane: env band → accent + picker A/D removal (no issue, owner ask) · Updated: 2026-09-29
 
 ## Goal
-Replace the #358 Blur layout with the owner's final layout: ↑/↓ drive, ←/→ strafe, Space jump, E/D fire, S/F slot, X drop, B mirror.
+Band colour follows Accent.color, bandHeight 10, bandIntensity 2. Remove A/D from the lobby ship picker.
 
 ## Done
-- d65ada3 (#368): code, tests, home controls panel, HUD power hint, GDD §8.
-- 68d58ad (#368): ADR-032 in docs/DECISIONS.md, supersedes the #358 layout.
-- #368 closed with both SHAs.
+- d65ada3, 68d58ad (#368, CLOSED): final keyboard layout + ADR-032.
+- d6cb3f6: Environment.bandColor dial removed; env-band.state reads Accent.color; bandHeight 6 → 10, bandIntensity 1.5 → 2.
+- 28da8f8: ship-keys ←/→ only; overlays.test asserts D does nothing and → cycles; GDD §8 + ADR-032 item 5 amended.
 
 ## State
-- Full client vitest: 98 files / 665 tests pass. That is 3 fewer than #367's 668, all from d65ada3, all intended: key-label modifier-label test, controls-panel Mac-swap test, and power-select's 4 old-key tests merged into 3.
-- Typecheck clean. pnpm lint: 0 errors.
-- Headless /test-level (:5173): ↑/↓/← drive; Q and A do nothing; F/S step the slot; ↑ and 3 do not; B toggles the mirror, V does not.
-- E/D/X fire and drop with a full rack: unit tests only; not driven in a browser [unmeasured].
+- Full client vitest 98 files / 665 tests pass; typecheck clean; lint 0 errors.
+- Band look in a browser [unmeasured]. Stored band values fall back to the new defaults (tuning-persist.ts:23 from-check) [read, not run].
 
 ## Uncommitted
 none
 
 ## Held files
-none (docs/DECISIONS.md released)
+none
 
 ## Next
-1. Idle. Owner feel-tests the layout on /test-level.
+1. Idle. Owner checks /test-level: the band is thicker (10) and brighter (2), and its hue follows Accent.color.
 
 ## Open questions
-- Owner: keep A/D in the lobby ship picker? (kept; supervisor's ruling, noted in GDD §8 + ADR-032)
+none
 
 ## Lessons → memory
-none
+none (supervisor is merging memory files; not written)
