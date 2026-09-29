@@ -1,30 +1,27 @@
-Agent: workerone · Lane: RFC-349 S10b (#380) done → idle · Updated: 2026-09-29 19:00
+Agent: workerone · Lane: RFC-349 S0 (#382) done → idle · Updated: 2026-09-29
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#380: no `.constants.ts` exports a per-frame scratch object. Done and closed. Next lane: the supervisor
-assigns it.
+#382: write the RFC-349 module contract (§3), rule C (§6.1), the four constant tiers (§6.2) and the B2
+room-config shape (§4.3 B) into the conventions. No code.
 
 ## Done
 
-- 4c66045 + e5b1e6d — #369 nozzles in accent, EngineLight removed. #369 open for owner sign-off.
-- 41c9a41 — #374 one client config source (`RunConfig` world trait). Closed.
-- 7a267ec + 564c84b — #377 `.scratch.ts` suffix + tug-line/remote-engine-audio/game-audio renames,
-  ship-model `glow` split. Closed.
-- a9f7b83 — #380: 23 scene folders. Scratch exports moved from `<name>.constants.ts` to a new
-  `<name>.scratch.ts`: the 21 listed folders plus finish-outline and monolith-group (each exported
-  `scratch`). `_pool` and `_tick` moved too. track-blocks `windowSegs` moved from `.state.ts` to
-  `track-blocks.scratch.ts`. Closed.
+- (this commit) — new `conventions/features.md`; rule C section + declared-order note in
+  `conventions/ecs.md`; new `.claude/rules/features.md`; rule C bullets in `.claude/rules/ecs-koota.md`
+  (paths now include `features/` and `engine/`); index row in `conventions/README.md`; golden-rule row
+  in `CLAUDE.md`. Q5, Q6 and Q7 written as open (`features.md` §8).
 
 ## State
 
-- At a9f7b83: `pnpm typecheck` passes, `pnpm lint` passes (9 warnings, all in files I did not touch:
-  track-texture.ts, attach-room-to-world.ts, run-room.test.ts), `pnpm test` passes (shared 573,
-  server 99, client 686).
-- Still in `.constants.ts` by decision: `_zero`, `_one`, `_black`, `_identity` and the UPPERCASE
-  colours/vectors. No code writes to them (grep this session).
+- `pnpm lint` passes (9 warnings, none in touched files).
+- Verified this session: `@colyseus/schema` 4.0.30 `schema()` at `build/annotations.d.ts:108`, guard
+  `index > 64` at `src/Metadata.ts:73`; koota 0.6.6 exports `Not`, `World.add/get/set/has`,
+  `useTrait`/`useTraitEffect` accept a `World`.
+- `features.md` §5 cites `game/frame/schedule.ts` (`buildSchedule`), which is S16 work in progress
+  (uncommitted at the time of writing, held by workerthree). If S16 renames it, update §5.
 
 ## Uncommitted
 
@@ -32,7 +29,7 @@ assigns it.
 
 ## Held files
 
-- none. #380 claim released.
+- none. #382 claim released.
 
 ## Next
 
@@ -40,12 +37,8 @@ assigns it.
 
 ## Open questions
 
-- Owner (#369): is the flatter nozzle OK? Does the near-camera streak still read orange after "reset tuning"?
-- Answered: the `_zero`/`_one`/`_black`/`_identity` → UPPERCASE rename is "not now". The supervisor will
-  revisit it when features move into modules.
+- none new. Q5, Q6 (and Q7) stay open for the owner.
 
 ## Lessons → memory
 
-- New: `.claude/memory/bulk-ast-edits-via-ast-grep-json.md` (TS 7 has no JS compiler API; use ast-grep
-  JSON ranges and a node splice).
-- Updated: `bash-tool-runs-fish.md` (`bash -c` is 3.2, no `mapfile`; use `--pathspec-from-file`).
+- none.

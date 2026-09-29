@@ -9,6 +9,7 @@
 4. **Add/remove components only through the library API** (`addComponent`/`entity.add`). Mutating `entity.foo = x` directly skips query re-indexing → the entity silently vanishes from systems.
 5. **Colyseus is the source of truth; the local ECS is a *projection*.** Keep a `Map<networkId, entity>`. On snapshot: reconcile (spawn/despawn/patch). Split components into **networked** (overwritten by server) vs **local-only** (interpolation buffers, VFX, input prediction) so reconciliation never clobbers client state.
 6. **Recommendation: koota (pmndrs) for greenfield on this stack; miniplex if you want dead-simple plain-object entities and value stability over active development.** Reasoning below.
+7. **Project rule C (RFC-349, owner-approved 2026-09-29).** A thing in the race is an entity. A state of that thing is a tag. Run-wide state is a world trait. A service is a module singleton. One run reset clears per-run state. Systems declare their phase and order; they are never called from a hand-ordered `useFrame` list. See "Where state lives" below and `conventions/features.md`.
 
 ## Library Choice (miniplex vs koota vs bitECS — recommendation + why)
 
@@ -180,6 +181,8 @@ const movementSystem2 = (dt: number) => {
 }
 ```
 
+**In this project the order is declared, not written as a call list.** The generic sample above hand-orders one `useFrame`. SLUR does not. Each system registers `{ id, phase, before?, after?, run }` with the frame scheduler (`game/frame/schedule.ts`, `buildSchedule`). The scheduler sorts once at boot: phase, then `before`/`after`, then `id`. A cycle or an unknown id throws at boot. Phases, in order: `input` → `simulate` → `sync` → `react` → `view` → `prerender` → `render` → `overlay` → `cleanup` (`game/frame/frame-phase.constants.ts`). Views keep their own `useFrame( cb, FRAME_PHASE.view )`. Full rule: `conventions/features.md` §5.
+
 **Fixed timestep for anything networked/physical.** Interpolation and server reconciliation need determinism; accumulate `dt` and step simulation at a fixed rate (e.g. 60 Hz), render at display rate.
 
 **React to entering/leaving a query** for init/teardown instead of polling:
@@ -224,6 +227,35 @@ const movementSystem2 = (dt: number) => {
 ## For This Project (ECS ↔ R3F bridge, ECS ↔ Colyseus reconciliation)
 
 **The three-layer flow: `Colyseus room state → local ECS → R3F render`. Data flows one way per frame; input flows back up as intents to the server.**
+
+### Where state lives (rule C)
+
+Owner-approved 2026-09-29 (RFC-349 §6.1). APIs verified 2026-09-29 in koota 0.6.6: `trait()` with no schema is a tag; `Not` is exported from `koota`; `World.add / get / set / has` take a trait (`dist/types-*.d.ts:449–455`); `useTrait( target: Entity | World, … )` and `useTraitEffect( target: Entity | World, … )` (`dist/react.d.ts:26,28`).
+
+| Kind | Home | Example |
+|---|---|---|
+| A thing with a position or a lifetime in the race | entity | ship, projectile, seeker, mine, pickup, hazard |
+| A state of that thing | tag on the entity | `Dead`, `Stunned`, `Shielded`, `Boosting`, `Spectating`, `Taken` |
+| Game state for the whole run | world trait | `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot`, `RunConfig` |
+| A service with its own lifetime | module singleton (NN-8) | Colyseus room, audio engine, input devices, dev tools, quality store |
+| Scratch objects and VFX pools for one component | that component's `.scratch.ts` / `.state.ts` | not state |
+
+```ts
+export const Dead = trait();
+export const Phase = trait( () => ( { value: 'lobby' as RunPhase } ) );
+
+world.query( Sim, Render, Not( Dead ) );
+world.add( Phase );
+world.set( Phase, { value: 'racing' } );
+const phase = useTrait( world, Phase );
+```
+
+- **Never branch on a value to find a state** (`sim.dead`, `stunTimer > 0`, `localRole.spectating`). Query the tag. The bridge adds and removes tags when the server state changes.
+- **Never keep run-wide race state in a module `let`, a bare object or a hand-rolled store.** Use a world trait.
+- **One run reset.** On run end or room leave, one function removes every per-run world trait, destroys the run's entities, then calls each feature's `run.reset`. A new per-run value is not done until the run reset clears it.
+- **Events carry an entity reference, not a session-id string.**
+- **The server has no koota.** It runs the plain shared `simulate()` on `RunSim`. Only the client half of a feature holds traits and systems.
+- Lobby, chat, connection status and ship choice sit outside the race loop. They stay module stores.
 
 ### ECS → R3F bridge (no per-frame re-renders)
 

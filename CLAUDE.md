@@ -50,7 +50,7 @@ version pins, anti-patterns, footguns. They exist so we **don't re-derive the st
 
 The hard rules of each are mirrored as **path-scoped rules in `.claude/rules/`**, which load automatically
 when a matching file is read. The file below is the research behind them: **read the one you need before
-non-trivial work in its subsystem** — never bulk-load all seven.
+non-trivial work in its subsystem** — never bulk-load all eight.
 
 | Touching… | Read first |
 |-----------|-----------|
@@ -58,6 +58,7 @@ non-trivial work in its subsystem** — never bulk-load all seven.
 | Client routing / app shell | `conventions/react-router.md` |
 | Rendering / VFX / bloom | `conventions/r3f.md` |
 | Entities / systems / sim | `conventions/ecs.md` |
+| Feature modules / state placement / config tiers | `conventions/features.md` |
 | Networking / prediction | `conventions/netcode.md` |
 | Repo / builds / packages | `conventions/monorepo.md` |
 | 2D UI styling (HUD/lobby/landing) | `conventions/tailwind.md` |
