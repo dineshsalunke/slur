@@ -11,12 +11,14 @@ import { SceneEffects } from '../../../game/scene/scene-effects/scene-effects';
 import { SceneEnvironment } from '../../../game/scene/scene-environment';
 import { TrackView } from '../../../game/scene/track-view';
 import { TrackContext } from '../../../game/track-context/track-context.constants';
+import { LandingReveal } from '../landing-reveal/landing-reveal';
+import type { Reveal } from '../landing-reveal/landing-reveal.utils';
 import { LandingRig } from '../landing-rig/landing-rig';
 import { LandingShip } from '../landing-ship/landing-ship';
 import { LOOP_MARGIN, track } from './landing-scene.constants';
 import { prepareLanding } from './prepare-landing';
 
-export function LandingScene() {
+export function LandingScene( { reveal }: { reveal: Reveal } ) {
     return (
         <WorldProvider world={ world }>
             <div className="fixed inset-0 z-0">
@@ -37,6 +39,7 @@ export function LandingScene() {
                             <TrackView />
                             <LandingShip />
                             <SceneEffects />
+                            <LandingReveal reveal={ reveal } />
                         </TrackContext>
                     </Suspense>
                 </Canvas>
