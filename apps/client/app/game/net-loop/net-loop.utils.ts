@@ -1,11 +1,80 @@
-import { PHASE } from '@slur/shared';
+import type { RootState } from '@react-three/fiber';
+import { createFixedStep, FIXED_DT, PHASE, type Track } from '@slur/shared';
 import type { World } from 'koota';
 import type { PerspectiveCamera } from 'three';
+import { simFreeze } from '../../dev/sim-freeze';
+import type { Predictor } from '../../net/prediction';
 import type { RunRoomLike } from '../../net/run-room-like';
 import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from '../camera/chase';
+import { hoverSystem } from '../ecs/hover';
+import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from '../ecs/net-systems';
+import { syncRenderSystem } from '../ecs/systems';
 import { finishReset, showFinishFade, stepFinishReset } from '../finish/finish-reset';
 import { CUT_DT, finishWatch, localFinished, pickWatchTarget, resetFinishWatch } from '../finish/finish-watch';
-import { localRole, resetSpectatorTarget, resolveSpectatorTarget } from '../spectator';
+import { localRole, resetSpectatorTarget, resolveSpectatorTarget, runPhase } from '../spectator';
+
+export interface NetFrame {
+    world: World;
+    track: Track;
+    predictor: Predictor;
+    room: RunRoomLike;
+    advance: ( elapsedSeconds: number, step: ( dt: number ) => void ) => number;
+    step: ( dt: number ) => void;
+    racing: boolean;
+    phase: number;
+    alpha: number;
+    cut: boolean;
+}
+
+export function createNetFrame( world: World, track: Track, predictor: Predictor, room: RunRoomLike ): NetFrame {
+    const frame: NetFrame = {
+        world,
+        track,
+        predictor,
+        room,
+        advance: createFixedStep( FIXED_DT ),
+        step: ( dt ) => {
+            if ( frame.racing ) netFlightSystem( world, dt, predictor, track );
+        },
+        racing: false,
+        phase: PHASE.lobby,
+        alpha: 0,
+        cut: false,
+    };
+    return frame;
+}
+
+export function netFlight( f: NetFrame, _state: RootState, delta: number ): void {
+    f.phase = runPhase.value;
+    if ( simFreeze.on ) return;
+    f.racing = f.phase === PHASE.racing && ! localRole.spectating;
+    f.alpha = f.advance( delta, f.step );
+    if ( ! f.racing ) freezeLocalPrev( f.world );
+}
+
+export function netRenderInterp( f: NetFrame, _state: RootState, delta: number ): void {
+    if ( ! simFreeze.on ) syncRenderSystem( f.world, f.alpha, delta );
+}
+
+export function netRemoteInterp( f: NetFrame, _state: RootState, delta: number ): void {
+    if ( ! simFreeze.on ) remoteInterpSystem( f.world, delta );
+}
+
+export function netHover( f: NetFrame, _state: RootState, delta: number ): void {
+    if ( ! simFreeze.on ) hoverSystem( f.world, delta );
+}
+
+export function netDeathVfx( f: NetFrame ): void {
+    if ( ! simFreeze.on ) localDeathVfxSystem( f.world );
+}
+
+export function netFinishCurtain( f: NetFrame, _state: RootState, delta: number ): void {
+    f.cut = simFreeze.on ? false : stepFinishCurtain( f.world, f.phase, delta );
+}
+
+export function netCamera( f: NetFrame, state: RootState, delta: number ): void {
+    updateNetCamera( state.camera as PerspectiveCamera, f.world, delta, f.room, f.phase, f.cut );
+}
 
 export function stepFinishCurtain( world: World, phase: number, delta: number ): boolean {
     if ( phase === PHASE.lobby || phase === PHASE.countdown ) resetFinishWatch( finishWatch );

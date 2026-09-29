@@ -1,5 +1,11 @@
 export const FRAME_PHASE = {
-    base: 0,
+    input: -3,
+    simulate: -2,
+    sync: -1,
+    react: 0,
     view: 0.25,
+    prerender: 0.5,
     render: 1,
+    overlay: 2,
+    cleanup: 3,
 } as const;

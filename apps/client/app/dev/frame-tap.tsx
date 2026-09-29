@@ -7,7 +7,7 @@ export function FrameTap() {
     const store = useStore();
     const log = useRef< DeltaLog >( { first: 0, last: 0, frames: 0 } );
 
-    useFrame( ( _state, delta ) => recordDelta( log.current, delta ), FRAME_PHASE.base );
+    useFrame( ( _state, delta ) => recordDelta( log.current, delta ), FRAME_PHASE.cleanup );
 
     // Syncs with Vite's HMR channel: answers frame-tap capture requests from the dev server.
     useEffect( () => {
