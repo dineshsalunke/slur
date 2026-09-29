@@ -1,23 +1,24 @@
-Agent: workertwo · Lane: none (idle) · #358 DONE · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29
+Agent: workertwo · Lane: #360 asteroids drift + vanish — DONE · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29
 
 ## Goal
-#358: keyboard controls follow the Blur (2010) PC default layout. Done.
+#360: asteroid movement very subtle; asteroids never disappear. Done.
 
 ## Done
-- 93df4d2 #358: Q throttle · A/↓ brake · ←/→ strafe · Right Ctrl or Left Shift fire · Right Shift fire back · ↑ cycle · Left Ctrl or X drop. Space jump and M mute kept. W/S/E/F/X/R stay as silent extras. The HUD hint is per platform (power-rack.utils.ts). GDD §8 and CLAUDE.md are updated. Pushed, issue closed.
-- f0469bd: #358 research handover + scribd memory.
-- Earlier: d4f12ae #357, 16275c6 #350, 7c34699 #347, ff4d722 #346. #341 9b0c726, #338 282428f, #340 cf922f8 stay OPEN until the owner's final deploy.
+- cd742d0 #360: band-rock travel in asteroid-surface.ts changed from a sawtooth (wrap + dither fade each 36 s cycle) to a bounded sine sway, no fade; vRockFade varying removed. Rock.speed 16 → 0.6, Rock.spin 3.35 → 0.5 (tuning-schema.ts). Meteor/loose rocks untouched. Pushed, issue closed.
+- Earlier: 93df4d2 #358, f0469bd, d4f12ae #357, 16275c6 #350, 7c34699 #347, ff4d722 #346. #341 9b0c726, #338 282428f, #340 cf922f8 stay OPEN until the owner's final deploy.
 
 ## State
-- Measured, headless /test-level on the owner's :5173: Q held 1.5 s → vz 43.5; A held 1 s → vz 0; ← held 0.4 s → x +16.1; staged [bolt, seeker, mine] then ↑ + Left Shift → slot 1 fired; Right Shift → slot 2 fired; Left Ctrl → slot 0 dropped. HUD reads "L Shift Fire · R Shift Back · ↑ Cycle · X Drop" on the Mac UA and "R Ctrl Fire · R Shift Back · ↑ Cycle · L Ctrl Drop" on a Windows UA.
-- pnpm typecheck clean; client vitest 658/658; lint: no new warnings on the touched files.
-- Known risk [unverified]: on Windows, Ctrl+W (close tab) cannot be blocked by a page. W is a silent throttle extra, so W then Left Ctrl in the wrong order could close the tab. Blur players use Q.
+- Measured, headless /test-level on :5173, frozen at spawn (KeyP), % sky pixels changing per second: before ~8%; after ~2%; Rock.speed 0 + spin 0 floor 0.01%. Before: at t=20 s rocks were mid-dither-fade and one large rock was gone. After: t0 vs t10 look identical by eye, no rock lost.
+- Two after-runs hit a full-frame black/reload mid-run; inferred to be HMR from a peer's uncommitted scene-environment.tsx / env-band edits.
+- Streaming window (BACK 240, AHEAD 900), instance limits (≤ ~70 used of 112–176), frustumCulled=false: checked in source, not a cause.
+- biome clean on both files; client vitest app/game/scene 330/330. Full typecheck not run [unmeasured].
+- Driver: scratchpad drift.mjs (session scratch, not kept).
 
 ## Uncommitted
 none.
 
 ## Held files
-none. The #358 claim is released.
+none. asteroid-surface.ts released; tuning-schema.ts returned to the supervisor after cd742d0.
 
 ## Next
 1. Idle. Wait for the supervisor's next lane.
@@ -25,7 +26,7 @@ none. The #358 claim is released.
 3. Later: resume #348 (gamepad side of Blur controls). Blur Xbox 360 notes: RT accelerate · LT brake · stick/d-pad steer · A fire · B handbrake · X/LB toggle power-up · Y drop · RB camera (third-party guide, https://www.scribd.com/document/667374813/blur-manual). Fire-back on console is UNVERIFIED.
 
 ## Open questions
-none.
+- Owner: is 0.6 u/s sway + 0.5 spin subtle enough? Both are live dials (Rock.speed, Rock.spin) on /test-level; 0 stops the motion.
 
 ## Lessons → memory
-scribd-needs-headless-chrome.md (written at the research seam, f0469bd).
+freeze-does-not-stop-asteroid-drift.md updated (drift is now small; zero the dials for a clean diff).

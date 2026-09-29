@@ -5,8 +5,13 @@ metadata:
   node_type: memory
   type: project
   originSessionId: c4aee720-5af9-46db-8e98-cf73d0c20042
-  modified: 2026-09-23T09:15:24.334Z
+  modified: 2026-09-29T02:34:40.985Z
 ---
+
+**Update 2026-09-29 (#360, cd742d0):** drift is now a small sine sway (Rock.speed 0.6, spin 0.5), but
+it still changes ~2% of sky pixels per second when frozen. For a clean diff, override the page's
+localStorage `slur.tuning.v1` with Rock.speed 0 and Rock.spin 0 (entries `{value, from}`, `from` = the
+schema default); that floor is 0.01%/s.
 
 `KeyP` (`apps/client/app/dev/sim-freeze.ts`) holds the sim and the camera, but the asteroid field
 keeps drifting. A two-tap A/B diff on `/test-level` therefore changes across the **full frame bbox**
