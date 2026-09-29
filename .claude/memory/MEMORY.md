@@ -149,3 +149,4 @@ One line per memory; each memory lives in its own file here.
 - [A point light at an emitter shifts its hue](point-light-at-an-emitter-shifts-its-hue.md) — light 0.41u from nozzles turned marigold red; zero each light, anchor to ports
 - [Anisotropy stretches the HDRI, not emissives](aniso-stretches-the-hdri-not-emissives.md) — along-z 0.5 = white planet wash; Physical at 0 = Standard
 - [gl.finish does not sync on headless Metal](gl-finish-does-not-sync-headless-metal.md) — bracket GPU timings with a 1-px readPixels; finish read 0.1 ms vs real 0.6
+- [Measure an HDRI offline in node](measure-an-hdri-offline-in-node.md) — HDRLoader parses in node; per-face irradiance + band share, no browser

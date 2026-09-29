@@ -1,30 +1,31 @@
-Agent: workerthree · Lane: #356 marigold env band (CLOSED) · Updated: 2026-09-29
+Agent: workerthree · Lane: #362 default HDRI → cyclorama_hard_light (CLOSED) · Updated: 2026-09-29
 
 ## Goal
-Bring back the warm env band from before #352 in the HDRI-based PMREM env. Dials: colour, intensity, height. Every tier.
+Make Poly Haven `cyclorama_hard_light` (1k, CC0) the default lighting HDRI, replacing kloppenheim_02_puresky.
 
 ## Done
-- 9c2ce73: env-band/env-band.state.ts + .constants.ts, scene-environment.tsx wires it; 3 dials in tuning-schema.ts + panel. Pushed. #356 closed with the SHA.
+- d47a026: cyclorama_hard_light_1k.hdr self-hosted; HDRI_DEFAULT_URL; kloppenheim file deleted; ADD.md, DECISIONS.md ADR-030 item 2, ART_MATERIALS.md item 22. Pushed. #362 closed with the SHA.
+- Earlier: 9c2ce73 (#356 marigold env band).
 
 ## State
-- Mechanism: fullscreen pass HDRI + additive band → HalfFloat equirect RT; `needsPMREMUpdate` on change only. bandIntensity 0 (or unset) → raw HDRI.
-- Cost, headless Metal DPR 1, readPixels-synced: PMREM low 0.5–0.7 ms, high 0.6–0.7 ms; band pass 0.2–0.5 ms; 0 extra draws on unchanged frames; first compile ~90 ms.
-- Both tiers load the 1k default HDRI (the default URL ignores hdriRes).
-- Look at defaults 1.5 / 6°: monoliths and deck go marigold-warm; the effect is subtle on rough faces [seen, not measured].
-- Known leak: when the HDRI size changes, the old RT is disposed but its PMREM target is not (WebGLEnvironments adds no dispose listener for RT textures). This happens only when the size changes [inferred from source].
-- Scratch: /private/tmp/claude-501/-Users-apple-Projects-personal-slur/71083242-33b1-4d25-ab6b-f4744745c01d/scratchpad (band.mjs, band-sync.mjs, b-*.png).
+- Dev server serves the new file: 200, 1,409,707 B. HDRI vitest 7/7 pass.
+- Offline node stats (band defaults 1.5 / 6°): key peak az 36° el 24° (old sun az 36° el 17°) → rotation 0 still fits.
+- Mean radiance 0.774 vs 0.311 old. Up-face irradiance 2.74 vs 0.99; down-face 2.08 vs 0.25.
+- Band share of vertical-face irradiance 4–9% (was 7–26%); of total env energy 4.9% (was 11.3%).
+- bandIntensity ≈ 5–7 would restore the old share [computed, not seen on screen].
+- On-screen look [unmeasured]: owner verifies on /test-level.
 
 ## Uncommitted
 none
 
 ## Held files
-none (schema + panel loan released at 9c2ce73)
+none
 
 ## Next
-1. Idle. Wait for the supervisor or the owner's /test-level verdict on the defaults.
+1. Idle. Wait for the owner's /test-level verdict: keep bandIntensity 1.5 or raise it (5–7).
 
 ## Open questions
-- Owner: is 1.5 / 6° strong enough? The band is subtle on the rough monolith faces.
+- Owner: the new map is ~2.5× brighter overall. Lower Environment.intensity (1.2)? Raise bandIntensity?
 
 ## Lessons → memory
-.claude/memory/gl-finish-does-not-sync-headless-metal.md
+.claude/memory/measure-an-hdri-offline-in-node.md
