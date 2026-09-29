@@ -48,6 +48,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Zoom the chase camera over CDP](zoom-the-chase-camera-over-cdp.md) — defineProperty fov getter
 - [Wheel clientX is an integer](wheel-event-clientx-is-integer.md) — whole pixels; onWheel passive
 - [Touch test over CDP](touch-test-over-cdp.md) — `pointer: coarse`; sample ≥300 ms after tap
+- [Fake a gamepad over CDP](fake-a-gamepad-over-cdp.md) — stub getGamepads; plain connect Event; rAF frame ids
 - [Test-level skips Overlays](test-level-skips-overlays.md) — in-race HUD goes in NetHud
 - [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook
 - [Measure frame order over CDP](measure-frame-order-over-cdp.md) — wrap R3F subscribers; camera lag
