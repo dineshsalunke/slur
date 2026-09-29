@@ -38,8 +38,11 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - #361 DONE 0ca2c3b (closed), brief relayed. workerone now on EngineLight.color → marigold. Was CLEAR: input/keyboard.ts, input/power-select.ts, new
   input/key-label.ts(+test), power-rack.utils.ts, audio/game-audio/game-audio.tsx + new .constants.ts,
   routes/home.tsx, new routes/home/controls-panel/*.
-- #354 part 2b anisotropy: OWNER CHOICE PENDING (a) drop [rec] / (b) dials default 0 / (c) 0.15 along z.
-  workerone idle until answer or tuning-schema.ts returns.
+- #354 part 2b anisotropy: OWNER CHOSE (a) DROP. workerone BUILDING: EngineLight marigold → fold albedo
+  defaults + Reflect.blur → close #354. Told to re-check rotation 180 on the new HDRI.
+- Hidden W throttle: OWNER: remove. workerthree BUILDING (claims pending).
+- #362 DONE/closed. New HDRI ~2.5x brighter; band share falls 7–26% → 4–9%. Owner to test bandIntensity
+  5–7 and Environment.intensity on /test-level, report dial values → workerthree folds defaults.
 
 ## Workers
 
