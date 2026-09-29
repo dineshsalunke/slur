@@ -16,7 +16,8 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 - OWNER RULE: never ask about an issue by number alone (title + one line).
 - ONLY THE OWNER DEPLOYS: `! docker desktop start && ./scripts/deploy.sh` (refuses dirty tree / unpushed HEAD).
 - Prod: https://slur.kurmah.studio. do-setup owns infra.
-- #352: background = nebula-backdrop.jpg; HDRI lights only; default 1k kloppenheim_02_puresky.
+- #352: background = nebula-backdrop.jpg; HDRI lights only; default 1k cyclorama_hard_light (#362 d47a026,
+  owner picked it on /test-level; workerthree measuring band/rotation on it, then closes #362).
 - #355 (a) done · #357 A done · #356 marigold band: yes.
 - #354: fix pickup-over-hole (done 59aa760); left-rim sheen ACCEPTED; albedo defaults ADOPT
   (Environment.rotation 180 + Metal.baseColor #595c62, in part 2); Wear: KEEP BASE values (owner liked base
