@@ -1,4 +1,4 @@
-Agent: workerone · Lane: none (#361, #354, #359 follow-up all done) · Updated: 2026-09-29
+Agent: workerone · Lane: none (#364 done) · Updated: 2026-09-29
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -8,17 +8,22 @@ Lane clear. Waiting for a new assignment.
 
 ## Done
 
-- `0ca2c3b` #361 (CLOSED): Controls panel on `/`, labels from input constants via `key-label.ts`.
-- `cb21183` EngineLight.color → marigold accent; Environment.rotation 180; Metal.baseColor #595c62;
-  `Reflect.blur` dial (panel folder "Reflect"); ADR-031 records 2b anisotropy dropped.
-- #354 (CLOSED) with all SHAs. #359 commented with cb21183 + hue numbers.
+- `254d267` #364 (CLOSED): Metal.baseColor + Hull.baseColor `#232324`, Environment.rotation 210,
+  Environment.intensity 1. Tone mapping unchanged (Neutral 7, exposure 1). `CANVAS_GL.toneMapping` and
+  the rear-view `uToneMode` start value now read `toneMode()`. Docs: ADR-031 bullet, ART_MATERIALS §7
+  item 24 + review log 10 → 11, ADD §3 environment paragraph.
 
 ## State
 
-- [measured] Under cyclorama_hard_light: deck luma 122.5 → 78.6 and whole frame 103 → 67 with the
-  new albedo defaults (view -2,596). Engine pool hue 31.2° (old #ff9a3c) → 37.1° (marigold).
-- Scripts in scratchpad `8c6b5276…`: `rot.mjs` (localStorage variants; `FROM` env for defaults),
-  `stat.mjs`, `shot.mjs` (home viewports). No headless Chrome running.
+- [measured] Headless Playwright on :5173. Home, lobby (`/game/<code>`) and `/test-level` all read
+  scene.environmentRotation 210° and environmentIntensity 1. Hull material `#232324`@metalness 1 on
+  home (first run only; the ship loads late) and `/test-level`. Rear-view uToneMode 7.
+- [measured] No hull material in the lobby scene. [inferred] Ships are not drawn before GO.
+- [unmeasured] The composer ToneMappingEffect mode. Its code path reads toneMode() each frame, and
+  this lane did not change it.
+- Track metal materials show colour `#ffffff`. The base colour is baked into the track texture
+  (`track-texture.ts:828` reads `col('Metal.baseColor')`).
+- Script: scratchpad `7b025e36…/look2.mjs`. No headless Chrome running.
 
 ## Uncommitted
 
@@ -26,8 +31,7 @@ Lane clear. Waiting for a new assignment.
 
 ## Held files
 
-- none. Release: tuning-schema.ts, tuning-panel.tsx, metal.ts, deck-reflection/*, engine-light/*,
-  the #354 reflection files, DECISIONS.md, ART_MATERIALS.md.
+- none. Released all #364 claims.
 
 ## Next
 
@@ -35,9 +39,9 @@ Lane clear. Waiting for a new assignment.
 
 ## Open questions
 
-- Owner: are the block seam streaks right (length, blur rate)? `Reflect.blur` is now dialable.
-- Owner: does the scene read too dark after 103 → 67? The dial is Environment.intensity.
+- Owner: `#232324` gives F0 ≈ 0.017 at metalness 1, so the track now reads almost only the HDRI
+  reflection. Luma was not re-measured.
 
 ## Lessons → memory
 
-- Updated `.claude/memory/tune-headless-captures-via-own-localstorage.md` (a stale `from` drops the variant with no error).
+- none.
