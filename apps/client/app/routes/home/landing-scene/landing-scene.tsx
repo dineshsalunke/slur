@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { WorldProvider } from 'koota/react';
+import { Suspense } from 'react';
 import { RenderScale } from '../../../dev/render-scale';
 import { renderDpr } from '../../../dev/render-scale.utils';
 import { world } from '../../../game/ecs/world';
@@ -28,18 +29,20 @@ export function LandingScene() {
                     aria-hidden="true"
                     camera={ { fov: 75, near: 1, far: 1000, position: [ 0, 5, -13 ] } }
                 >
-                    <TrackContext value={ track }>
-                        <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
-                        <GameEnvironment />
-                        <SceneEnvironment />
-                        <RenderScale />
-                        <ExhaustField />
-                        <TrackView />
-                        <LandingShip />
-                        <QualityGate feature="post" fallback={ <PlainRender /> }>
-                            <SceneEffects />
-                        </QualityGate>
-                    </TrackContext>
+                    <Suspense fallback={ null }>
+                        <TrackContext value={ track }>
+                            <LandingRig loopZ={ track.finishZ - LOOP_MARGIN } />
+                            <GameEnvironment />
+                            <SceneEnvironment />
+                            <RenderScale />
+                            <ExhaustField />
+                            <TrackView />
+                            <LandingShip />
+                            <QualityGate feature="post" fallback={ <PlainRender /> }>
+                                <SceneEffects />
+                            </QualityGate>
+                        </TrackContext>
+                    </Suspense>
                 </Canvas>
             </div>
         </WorldProvider>
