@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-29 (seam 16)
+Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-29 (seam 17 — context warning at ~153k)
 
 ## Goal
 
@@ -60,7 +60,9 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 
 ## Open owner questions
 
-1. RFC-349 §8: Q7 (valibot/zod for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
+1. RFC-349 §8: Q7 EXPLAINED 2026-09-29, awaiting answer (recommended a3 + valibot; a2 fallback). Correct
+   RFC §8 Q7 wording either way: today commands are hand-validated (isShipId, sanitizeInput), not
+   "unvalidated". Q7 (valibot/zod for commands), Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
 2. Owner to try pad Start in a real lobby (#375).
 3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
    perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;
