@@ -1161,6 +1161,8 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       so no spot lies over a hole (0.00%). Block streaks rarely do (0.35%). Numbers in ADR-031.
     - **Left rim.** The sheen does not show on the left rim where the HDRI's white sky lights the
       deck. The owner accepted this (2026-09-29).
+    - **Wear.** Stronger `Wear.*` ranges were tried to break the streaks more. The owner kept the
+      current values (valueSpan 0.3, roughSpan 0.25, metalMin 0.7). Taps in ADR-031.
 
     **Departures.** The "Reflection and illumination" paragraph in §1 M1 said *"The deck reflecting
     the marigold boundary strip is a material effect, controlled by roughness, and it is real."* The

@@ -1625,5 +1625,6 @@ The owner rejected an emissive-only mirror pass, near-camera area lights, a plan
 - **Butt joints.** On seed 20260921, 314 of 429 sealed blocks meet another block end to end. Before `6cb1f36`, their hidden seams drew streaks. Culling against a mirrored camera gives the same result as the camera test for vertical faces [inferred, maths], so only the clearance removes them.
 - **Clearance cost.** 0.011 ms/frame mean, 0.17 ms worst, in node over the full track. GPU time was not measured again after `6cb1f36`.
 - **Left rim.** The rim sheen is washed out where the HDRI's white sky lights the deck. The owner accepted this (2026-09-29). No change.
+- **Deck wear (part 2a).** Wider `Wear.*` ranges were tapped at two views: valueSpan 0.3 → 0.1, roughSpan 0.25 → 0.6, metalMin 0.7 → 0.2. The wear shows more and breaks the streaks more. The larger measured change is brightness: the deck patch mean luma goes 35.9 → 42.8, the spread only 9.2 → 10.3. The same dials drive the block walls. The owner kept the current values (2026-09-29). No change.
 - **Open.** The owner judges the seam streak length and blur rate from taps. `uReflBlur` has no dev-panel dial yet.
 - Details and departures: `ART_MATERIALS.md` §7 item 23.
