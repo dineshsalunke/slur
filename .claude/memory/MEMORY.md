@@ -75,6 +75,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Short bolts skip the patch](short-bolts-skip-the-patch.md) — hit within ~45 u: client sees only HIT
 
 ## Sim, track & pilots
+- [Feature registry import cycle](feature-registry-import-cycle.md) — sim half imports leaves only; TDZ
 - [Sim ship y is 0 on the deck](sim-ship-y-is-zero-on-deck.md) — hover is client-only
 - [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — use `SHIP_CLASSES.<c>.tuning`
 - [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — charge fresh contacts only

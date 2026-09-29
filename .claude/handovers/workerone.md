@@ -1,4 +1,4 @@
-Agent: workerone · Lane: RFC-349 F2 tug pilot (#390) — answers in, baselines taken, build not started · Updated: 2026-09-29
+Agent: workerone · Lane: RFC-349 F2 tug pilot (#390) — sim half built + green, UNCOMMITTED; client half not started · Updated: 2026-09-29
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -7,113 +7,106 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 #390: move tug into `packages/shared/src/features/tug/` + `apps/client/app/features/tug/`, cut its lines
 from central files, measure per RFC §3.8. Tug pull must feel the same. F3 = owner go/no-go on the numbers.
 
+## Owner answers (2026-09-29) — unchanged
+
+- **D1 = B.** The 4 fields move into tug's `fields.player` (DONE, uncommitted). Wire order changed on purpose.
+  **Proof is required before commit:** 2 real SDK-joined clients (memory `node-bots.md`,
+  `deprecated-breaks-reflection-decoding.md`), zero `field not defined` / `definition mismatch` logs, tug
+  pull works end to end. The commit body must say the order changed on purpose.
+- **D2 = a.** 20 SimConfig keys, 8 dials, 8 getters stay until S6. **D3 = keep central** (`HeldPower.tug`,
+  grant entry).
+- Add to `conventions/features.md` §4: wire order is not append-only across F-stages; client decodes by
+  reflection; both ends deploy together. Reword §4 rules 1–3.
+
 ## Done
 
-- F1 #385 closed (1a5415c7 + f912f7ab, both on origin/dev).
-- Filed #390. Claim CLEARED by the supervisor. No overlap with workertwo #388 or workerthree #389.
-- Baselines taken on the unchanged tree (HEAD c99945c4). See State.
+- F1 #385 closed (1a5415c7 + f912f7ab).
+- Claims: original set CLEARED; `sim-config.ts` (import line) + new `sim/status.ts` CLEARED 2026-09-29.
+- **net-canvas.tsx RELEASED to workertwo** (I had not edited it). Re-claim it from the supervisor after
+  workertwo commits its QualityStepDown lines, then make the tug cut on top.
+- Sim half built (uncommitted, see below).
 
-## Owner answers (2026-09-29, via the supervisor)
+## State (measured this session)
 
-- **D1 = B.** Move the 4 fields (`tugTimer`, `slowTimer`, `towTimer`, `tugAnchorZ`, now at
-  `player-fields.ts:47–50`, indexes 33–36) into tug's `fields.player` spread. The wire order changes once.
-  Update the golden test in `player-fields.test.ts`. The commit body says the order changed on purpose.
-  **The proof is required before commit:** 2 real SDK-joined clients (memory `node-bots.md`,
-  `deprecated-breaks-reflection-decoding.md`; `room.state` tests are blind), zero `field not defined` /
-  `definition mismatch` logs, and tug pull works end to end.
-- **D2 = a.** The 20 tug SimConfig keys (`sim-config.ts`), 8 dials (`dev/tuning-schema.ts:122–129`) and
-  8 getters (`routes/test-level/tuned-sim-config.ts`) stay until S6.
-- **D3 = keep central.** `HeldPower.tug = 8` (`combat/constants.ts:39`) and the grant entry
-  (`routes/test-level/pickup-grants/pickup-grants.constants.ts:10`) stay.
-- Add to `conventions/features.md` §4: wire order is not append-only across F-stages. The client decodes
-  by reflection, and both ends must deploy together. Rules 1–3 of §4 need rewording to match.
-- Keep `stepTugThrows` in the same in-tick order (inside `stepCombat`, `run/combat.ts:104`, after
-  `stepMines`, before `stepPortals`) unless the determinism tests prove the order does not matter.
+- Shared `pnpm test`: **578/578 pass**. Server `pnpm typecheck` clean, `pnpm test` **99/99 pass**
+  (incl. `room-tug.test.ts`). Shared `tsc -b` clean. Client typecheck/test/lint NOT run yet.
+- New `PlayerState` wire order: 39 fields; tug fields at **35–38** (after `progressAt`). Golden test
+  updated (`player-fields.test.ts`).
+- Every shared dist entry loads alone with no TDZ error (index, step, schema, registry, player-fields,
+  types, power-bag, combat-step, run-sim, tug.feature, run-features, sim-config).
+- `bagCounts()` unchanged: bolt 4, seeker 3, mine 3, boost 3, shield 3, portal 2, tug 2.
+- Baselines (before the change, HEAD c99945c4): frame **8.30 ms best (9.20/9.00/8.30), draws 74**;
+  `simulate()` **idle 2.36–2.39 µs, tug-active 2.36–2.41 µs**. Driver copied to this session's
+  scratchpad: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/577d58ec-4a20-4ffa-b324-3926e925bdda/scratchpad/f2-perf.mjs`
+  (`MODE=frame|step`, `REPS`). If `/private/tmp` is cleared, recover from the older scratchpad path in
+  the previous handover version.
 
-## State
+## Design decisions taken this session (put them in the PR/commit body and RFC §3.8)
 
-- Baseline /test-level frame (GPU-synced readPixels median, DPR 1, 1728×1080, `?quality=high`, ArrowUp
-  held, warm-up + 3 loads): **9.20, 9.00, 8.30 ms, best 8.30; draws 74**. The ship drove to z≈265.
-- Baseline `simulate()` per tick in Chrome, 4× CDP CPU throttle, real `room.sim.track`, executioner,
-  20000 ticks × 5, median: **idle 2.36–2.39 µs, tug-active 2.36–2.41 µs** (3 loads).
-- Driver: `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/26f15f50-2b08-477f-a34a-597637b468fc/scratchpad/f2-perf.mjs`
-  (`MODE=frame|step`, `REPS`). Rerun it after the change, back to back. The step loop sets `s.tugTimer`
-  directly, so it survives the move. It imports `@slur/shared` from the page's `/@fs/.../dist/index.js`.
-  Copy it to the new session's scratchpad if `/private/tmp` is cleared.
-- Footprint (`rg -il tug`, tests excluded): 35 files. §1.8 target: 19 central → ≤ 2 registry lines.
-  Expected after F2 with D2/D3: sim-config.ts, tuning-schema.ts, tuned-sim-config.ts, combat/constants.ts,
-  pickup-grants.constants.ts + the 2 registries. That is 7, not ≤ 2. Report it plainly.
-- workertwo added `DIAL_SYNC_SYSTEM` to `net-loop.constants.ts`. That file is not in my claim.
+1. **Import-cycle rule.** The registry is read at module-eval time by `player-fields.ts` (schema) and
+   `sim-hooks.ts` (step). A sim half that value-imports heavy core (`combat-step` → `mine` → `step`;
+   `run/combat` → `schema`) closes a cycle and throws `Cannot access 'SIM_FEATURES' before
+   initialization` on some entry orders (measured). So the sim half value-imports **leaf modules only**;
+   engine services come in via `RunContext`.
+2. `RunContext.shieldAbsorbs( v, at )` added (bound in `run-sim.ts` to `shieldAbsorbs(…, broadcast)`).
+3. `run.use` now returns **boolean = fired**; the engine calls `spendPower` on `true`. `openRunFeatures`
+   moved to new `features/run-features.ts` (imports `combat-step`; only `run-sim` uses it).
+4. New sim slots: `ship.input` (fold, applied to the post-stun input; `towedInput`), `ship.clear`
+   (`clearTugStatus`; called after core `clearStatus` in `markDead`/`respawn`), `power.bagWeight( cfg )`
+   (power-bag appends feature weights after portal, and to the cache key). `PowerSpec.kind` is `HeldPower`.
+5. `tugFeature` is annotated `SimFeature< typeof TUG_FIELDS >` — inference made a type cycle
+   (`PLAYER_FIELDS` → `SimShip` → hook params).
+6. Core stun/boost/glide status → new `sim/status.ts` (not exported from index; nobody outside used it).
+7. `index.ts` exports only `features/tug/tug.feature.js` (re-exports `TUG_MESSAGE`, `TugEvent`,
+   `TugOutcome`) + `features/run-features.js`. `pullEase`, `catapult`, etc. are no longer public.
+8. `spawnShip` spreads `FEATURE_SHIP_DEFAULTS` (new in `player-fields.ts`, built from feature sim fields).
+9. Float order kept: thrust `boost + (0 + tug)`, cap `featureCap( boostCap )`, tick core → tug. Same as before.
 
-## Plan (decided; build in this order)
+## Uncommitted (all mine, sim half — commit only after the D1 proof)
 
-Sim half (`packages/shared/src/features/tug/`):
-1. Move `combat/tug.ts`, `combat/tug-constants.ts`, `run/tug-run.ts`, `sim/tug-status.ts` and their 3
-   tests (`git mv` is denied when scripted: memory `bulk-move-without-git-mv.md`). Fix imports.
-2. Split `tickStatus`/`clearStatus`: stun, boost and glide stay core in `step.ts` (or a core status file);
-   the tug, slow and tow parts become tug `ship.tick` and a new `ship.clear` hook.
-3. New sim slots: `ship.input` (towedInput; applied before thrust, after the stun NEUTRAL swap at
-   step.ts:422), `ship.clear`, `power.bagWeight` as `( cfg ) => number` (power-bag.ts:30,92 read
-   `cfg.tugRatio`; the bag cache key must still include it).
-4. `tug.feature.ts`: `fields.player` (the 4 fields, same specs), `ship` hooks, `run` hooks (open → throws
-   array; `use` → fireTug; `tick` → stepTugThrows; `reset` → clear), `messages: [ TUG_MESSAGE ]`,
-   `power: { kind: HeldPower.tug, … }`. The run hooks need `pickups`/`shieldAbsorbs` from FireContext:
-   check `RunContext` covers what `fireTug`/`stepTugThrows` read, and extend it if not.
-5. Order: `stepTugThrows` must stay between `stepMines` and `stepPortals`. Either add a run-hook phase
-   there, or show determinism tests hold with `features.tick` where it is (run-sim.ts:135).
-6. Remove tug lines from step.ts, sim/types.ts (spawnShip lists the fields: take defaults from
-   PLAYER_FIELDS or the feature), run-sim.ts, run/combat.ts, power-bag.ts, player-fields.ts, index.ts.
-   Register in `features/registry.ts`. Keep `@slur/shared` exporting what the client and server still
-   import (TUG_MESSAGE, TugEvent, …) via the feature contract or a tug export line.
+- New: `packages/shared/src/features/tug/{tug.ts,tug-constants.ts,tug-run.ts,tug-status.ts,tug.feature.ts,tug.test.ts,tug-run.test.ts,tug-status.test.ts}`,
+  `packages/shared/src/features/run-features.ts`, `packages/shared/src/sim/status.ts`.
+- Deleted (moved): `combat/tug.ts`, `combat/tug.test.ts`, `combat/tug-constants.ts`, `run/tug-run.ts`,
+  `run/tug-run.test.ts`, `sim/tug-status.ts`, `sim/tug-status.test.ts`. Untracked new files need
+  `git add <exact paths>` first (pathspec commit skips untracked — memory `shared-tree-footguns.md`).
+- Modified: `features/define-sim-feature.ts`, `features/sim-hooks.ts`, `features/registry.ts`,
+  `player-fields.ts`, `player-fields.test.ts`, `sim/types.ts`, `sim/step.ts`, `sim-config.ts`, `index.ts`,
+  `run/combat.ts`, `run/run-sim.ts`, `run/portal-run.test.ts`, `combat/power-bag.ts`,
+  `apps/server/src/rooms/room-mine-fizzle.test.ts`.
+- The owner's running `pnpm dev` already serves these edits (shared tsc-watch).
 
-Client half (`apps/client/app/features/tug/`):
-7. Move `game/scene/tug-events.ts`, `tug-line/*`, `tug-pickups/*`. `tug.client.ts`: `sim`, `net`
-   (pushTug + the audio handler from `audio/bind-room-audio.ts:184`), `views.scene` (TugLine),
-   `views.pickups` (TugPickups; new slot consumed in `pickup-field.tsx` + `seeker-pickups.utils.ts`
-   layout by power kind), `hud.glyph` (`glyph-atlas.ts:103`), `audio`.
-8. Remove the hand mounts: `net-canvas.tsx` `<TugLine />`, `attach-room-to-world.ts` TUG_MESSAGE,
-   `pickup-field.tsx`, `seeker-pickups.tsx` `tugs` field.
+## Held files
 
-Proof and gates:
-9. `pnpm typecheck`, `pnpm test`, `pnpm lint`. The golden test updated on purpose.
-10. The D1 proof (2 SDK clients, zero decode errors, tug pull works). A new unit test shuffles the registry
-    and gets the same schedule.
-11. Fly /test-level headless: fire tug (`room.send('usePowerUp', { slot: 0, dir: 1 })`, memory
-    `step-the-loopback-room-by-hand.md`, `stage-*`), and compare the pull to before.
-12. Rerun `f2-perf.mjs`. Report §3.8: central count, wire, step µs, frame ms, determinism, order test.
-13. Docs: RFC §3.8 numbers + §7 F2 row, `conventions/features.md` §3 slots + §4 wire note.
-14. Commit by pathspec. Comment the SHAs and §3.8 numbers on #390. Close it only after the owner's push.
-    F3 (go/no-go) is a separate stage.
-
-## Uncommitted
-
-- none.
-
-## Held files (claim cleared)
-
-- Shared: `combat/tug.ts`, `combat/tug-constants.ts`, `run/tug-run.ts`, `sim/tug-status.ts` (+ 3 tests),
-  new `features/tug/*`, `features/registry.ts`, `features/define-sim-feature.ts`, `features/sim-hooks.ts`,
-  `sim/step.ts`, `sim/types.ts`, `run/run-sim.ts`, `run/combat.ts`, `combat/power-bag.ts`, `index.ts`,
-  `player-fields.ts` (+ test).
-- Client: `game/scene/tug-events.ts`, `game/scene/tug-line/*`, `game/scene/tug-pickups/*`, new
-  `features/tug/*`, `features/client-features.ts`, `engine/*`, `net/attach-room-to-world.ts`,
-  `game/net-canvas.tsx`, `game/scene/pickup-field.tsx`, `game/scene/seeker-pickups/*`,
-  `game/scene/power-arc/glyph-atlas.ts`, `audio/bind-room-audio.ts`.
-- Tests (import paths only): server `room-tug.test.ts`, `room-mine-fizzle.test.ts`. Shared `combat.test`,
-  `power-bag.test`, `director.test`, `portal-run.test`, `seeker-pickups.test`. Client
-  `pickup-instances.test`, `seeker-pickups.test`, `pickup-grants.utils.test`.
-- Docs: `docs/RFC-349-ARCHITECTURE.md` §3.8/§7, `conventions/features.md`.
+- As in the previous handover, minus `apps/client/app/game/net-canvas.tsx` (released to workertwo).
 
 ## Next
 
-1. Plan step 1.
+1. **Order check (plan step 5).** `stepTugThrows` used to run inside `stepCombat` after `stepMines`,
+   before `stepPortals`/`stepPickups`/`mirrorBreaks`. It now runs in `features.tick` after `stepCombat`
+   (`run-sim.ts` fixedStep). Inferred order-independent (latch mutates vz/timers/shield; portals and
+   pickups do not read those) — **prove it**: add a test, or add a combat-phase run hook. Note broadcast
+   order within a tick changes (tug messages now after pickup/portal messages).
+2. Add `features/registry.test.ts`: imports `./registry.js` FIRST (catches the TDZ cycle — node:test runs
+   each file in its own process), and a shuffled registry gives the same sorted order/schedule.
+3. Client half (plan steps 7–8): move `game/scene/tug-events.ts`, `tug-line/*`, `tug-pickups/*` into
+   `apps/client/app/features/tug/`; `tug.client.ts` with `sim`, `net` (pushTug + audio `playTugEvent` from
+   `audio/bind-room-audio.ts:36,184`), `views.scene` (TugLine), new `views.pickups` slot (consumed in
+   `pickup-field.tsx` + `seeker-pickups.utils.ts` layout by power kind), `hud.glyph` (`glyph-atlas.ts:103`).
+   Remove hand mounts: `attach-room-to-world.ts:262` TUG_MESSAGE, `pickup-field.tsx:29`,
+   `seeker-pickups.tsx:12` `tugs`, and (after re-claim) `net-canvas.tsx:39,85`. Update
+   `active-features.test.ts` (expects `ACTIVE_FEATURES` empty).
+4. `pnpm typecheck`, `pnpm test`, `pnpm lint` from the root.
+5. D1 proof (2 SDK clients, zero decode errors, pull works). Fly /test-level headless and fire the tug.
+6. Rerun `f2-perf.mjs` back to back. Report §3.8 (central count 7 not ≤ 2 — say it plainly; wire; step
+   µs; frame ms; determinism; order test).
+7. Docs: RFC §3.8 + §7 F2 row; `conventions/features.md` §3 slots (input, clear, bagWeight(cfg), use →
+   boolean, RunContext.shieldAbsorbs, leaf-import rule) + §4 wire note.
+8. Commit by pathspec; comment SHAs + numbers on #390; close only after the owner's push.
 
 ## Open questions
 
-- none. D1–D3 answered.
+- none for the owner. Supervisor: re-grant `net-canvas.tsx` after workertwo commits.
 
 ## Lessons → memory
 
-- `.claude/skills/perf-analysis/scripts/perf.mjs` still holds `KeyW`, but throttle is `ArrowUp` since #368.
-  A run with `KeyW` measures a parked ship. Recorded here only. The skill file is a fix for its owner, not
-  a memory.
+- `.claude/memory/feature-registry-import-cycle.md` (written this seam).
