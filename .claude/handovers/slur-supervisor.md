@@ -45,7 +45,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S0 conventions | #382 | landed c1233064 (conventions/features.md; Q5–Q7 written as open) |
 | S16 scheduler | #381 | landed f33da9f0 (0 % stale camera readers measured; owner try-it pending) |
 | S8 input on sim tick | #383 | landed 8681e05 (30 sends/s, 2 inputs each; reconcile 0/198 before and after; hidden tab no worse) |
-| S18 render system | #384 | IN PROGRESS workerthree. Landing baseline: 45 draws/frame, 5.1 ms median |
+| S18 render system | #384 | landed ea385b6b, closed; NOT PUSHED (workerthree push denied; owner decides). S19 now unblocked |
 | #386 landing canvas | #386 | landed 04684954, closed; pushed with workertwo's fb60a05f. fallback={null} → ~1 s clear-colour gap before the 3D scene; StillBackdrop hand-off needs a new reveal file (owner to decide) |
 | S17 addEffect → phases | #387 | landed a3ee47ad, closed, pushed (HUD speed now this-frame 151/151) |
 | F1 engine skeleton | #385 | sim half landed 1a5415c7 (wire bytes identical; shared 578/578). workerone cleared + resumed for client half (engine/*, FeatureViews, bridge, NET_SCHEDULE, features.md Q6+Q7) |
@@ -56,7 +56,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #385 F1 client half | BUILDING (cleared + resumed 2026-09-29 after 1a5415c7) | net/attach-room-to-world.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
 | workertwo | w2Z:p3 | #388 S20 dial-sync | BUILDING (claim cleared) | dev/tuning.ts; game/scene/{track-seams.tsx, track-rail/track-rail.tsx, track-rim/track-rim.tsx, track-floor/track-floor.tsx, monolith-group/monolith-group.tsx, track-view.tsx, game-environment.tsx (1 mount line)}; NEW game/scene/dial-sync/*. Leaf schedule now; move to route schedules after F1 |
-| workerthree | w2Z:p5 | #384 S18, then #386 gap fix (owner approved; new reveal file; key off first frame; follow-up issue) | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
+| workerthree | w2Z:p5 | #386 gap fix next (owner approved; new reveal file; key off first frame; files follow-up issue, then claims) | AT SEAM e1c15534 → clear + resume | — (S18 files released) |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
