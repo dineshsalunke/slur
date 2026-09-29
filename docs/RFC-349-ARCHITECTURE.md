@@ -3,7 +3,7 @@ instruction per sentence. See CONTRIBUTING.md §8. -->
 
 # RFC-349 — Architecture: feature modules, ECS drift, server-owned game config
 
-- **Issue:** #349 · **Status:** DRAFT (not approved) · **Lead:** workerone · **Updated:** 2026-09-28
+- **Issue:** #349 · **Status:** DRAFT — Q1 approved 2026-09-29; stages in progress (§7) · **Lead:** workerone · **Updated:** 2026-09-29
 - **Authors:** §1, §3, §6, §7 workerone · §4 workertwo (incl. the net half §4.4–4.5) · §5 workerthree.
   All merged. One voice.
 - **Scope:** this RFC proposes. It changes no source. Each stage in §7 needs its own issue and owner approval.
@@ -859,7 +859,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | Stage | Change | Files | Needs |
 |---|---|---|---|
 | S0 | Write the module contract (§3), rule C (§6.1) and the tiers (§6.2) into the conventions. No code. | `conventions/ecs.md`, new `conventions/features.md`, `.claude/rules/*`, `CLAUDE.md` | owner approval |
-| S1 | One config source on the client. The predictor and client systems read the room's config. Fixes `/test-level` mispredicts. | `net/prediction.ts`, `game/ecs/systems.ts`, `game/ecs/net-systems.ts`, `routes/beat-deck/deck-flight.ts`, `routes/test-level/test-level-room.ts`, `net/run-room-like.ts` | — |
+| S1 | **Landed 41c9a41 (#374).** One config source on the client. The predictor and client systems read the room's config. Fixes `/test-level` mispredicts. | `net/prediction.ts`, `game/ecs/systems.ts`, `game/ecs/net-systems.ts`, `routes/beat-deck/deck-flight.ts`, `routes/test-level/test-level-room.ts`, `net/run-room-like.ts` | — |
 | S2 | Input action map (`fireForward`, `fireBack`, `next`, `previous`, `drop`, `mute`). Delete `synthKey`. Base for #348. | `game/input/power-select.ts`, `gamepad.ts`, `synth-key.ts`, `touch-dpad.constants.ts`, `game/net-canvas.tsx`, `audio/game-audio/game-audio.tsx` | — |
 | S3 | Event-queue helper (A1). Move the 6 queues onto it. One overflow rule. | `hit-events.ts`, `mine-shock-events.ts`, `tug-events.ts`, `block-burst/*`, `meteor-chunks/*`, `meteor-scorch/*`, new helper | — |
 | **F1** | **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, feature systems fed to the S16 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, S16 |
@@ -881,7 +881,7 @@ Frame schedule, render and quality stages (§5, workerthree):
 
 | Stage | Change | Files | Needs |
 |---|---|---|---|
-| S14 | One phase constants file (O8). Replace `AFTER_RENDER_SYNC` ×2, `PASS_PRIORITY`, `HUD_PRIORITY`, `PLAIN_RENDER_PRIORITY`, `−1`. No behaviour change. | new `game/frame/frame-phase.constants.ts`; `exhaust-field/*`, `boost-streaks/*`, `rear-view-pass/*`, `plain-render/*`, `nebula-sky.tsx` | — |
+| S14 | **Landed db2552d (#378).** One phase constants file (O8). Replace `AFTER_RENDER_SYNC` ×2, `PASS_PRIORITY`, `HUD_PRIORITY`, `PLAIN_RENDER_PRIORITY`, `−1`. No behaviour change. | new `game/frame/frame-phase.constants.ts`; `exhaust-field/*`, `boost-streaks/*`, `rear-view-pass/*`, `plain-render/*`, `nebula-sky.tsx` | — |
 | S15 | Fix hazards 1–2: camera and `Sim` readers take `PHASE.view` (after `sync`). | `sky-follow.tsx`, `near-fill/*`, `asteroid-band/*`, `meteor-scorch/*`, `meteor-chunks/*`, `block-debris/*`, `track-blocks/*`, `meteor-strikes/*`, ship views | S14 |
 | S16 | Scheduler (O1). Split `NetLoop`/`DeckLoop`/`LandingRig` into `simulate` + `sync` systems. Dev order print and per-system timing (§5.5). | new `game/frame/schedule.ts`; `game/net-loop/*`, `routes/beat-deck/deck-loop/*`, `routes/home/landing-rig/*`, `dev/frame-meter.ts` | S14 |
 | S17 | Move gamepad, loopback tick and HUD DOM writers from `addEffect` into `input` / `simulate` / `cleanup`. | `game/input/gamepad.ts`, `net/loopback-room/loopback-room.ts`, 4 HUD files | S16 |
@@ -895,7 +895,7 @@ waits for S0.
 
 ## 8. Open questions
 
-1. Owner: accept feature modules with the two-half split (§3.2) and the tug pilot (§3.8)?
+1. Owner: accept feature modules with the two-half split (§3.2) and the tug pilot (§3.8)? **Answered 2026-09-29: yes.**
 2. Owner: accept D1 now, D3 later (§3.6)? It means one registry line per feature per end until codegen.
 3. Owner: accept O1 ordering (§3.5)?
 4. Owner: accept rule C (§6.1) and room config B2 with the four tiers (§4.3 B, §6.2)?
