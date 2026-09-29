@@ -27,8 +27,8 @@ export const NUMBER_TUNABLES = {
 
     'Environment.intensity': { value: 1, min: 0, max: 20, step: 0.05, rebuild: false },
     'Environment.rotation': { value: 210, min: 0, max: 360, step: 1, rebuild: false },
-    'Environment.bandIntensity': { value: 1.5, min: 0, max: 20, step: 0.05, rebuild: false },
-    'Environment.bandHeight': { value: 6, min: 0.5, max: 60, step: 0.5, rebuild: false },
+    'Environment.bandIntensity': { value: 2, min: 0, max: 20, step: 0.05, rebuild: false },
+    'Environment.bandHeight': { value: 10, min: 0.5, max: 60, step: 0.5, rebuild: false },
 
     'Bloom.intensity': { value: 1.2, min: 0, max: 5, step: 0.05, rebuild: false },
     'Bloom.threshold': { value: 0.6, min: 0, max: 2, step: 0.01, rebuild: false },
@@ -209,7 +209,6 @@ export const NUMBER_TUNABLES = {
 
 export const COLOR_TUNABLES = {
     'Accent.color': { value: ACCENT_ANCHOR, rebuild: false },
-    'Environment.bandColor': { value: ACCENT_ANCHOR, rebuild: false },
     'Rock.color': { value: ROCK_ALBEDO, rebuild: false },
     'Metal.baseColor': { value: METAL_BASE_COLOR, rebuild: true },
     'Hull.baseColor': { value: HULL_BASE_COLOR, rebuild: false },

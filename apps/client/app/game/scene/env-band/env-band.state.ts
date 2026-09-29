@@ -49,7 +49,7 @@ export function bandedEnvironment( renderer: THREE.WebGLRenderer, source: THREE.
 
     const image = source.image as { width: number; height: number };
     const target = targetFor( image.width, image.height );
-    const color = col( 'Environment.bandColor' );
+    const color = col( 'Accent.color' );
     const height = num( 'Environment.bandHeight' );
     if ( band.source === source && band.color === color && band.intensity === intensity && band.height === height ) {
         return target.texture;
