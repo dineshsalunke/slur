@@ -1634,3 +1634,37 @@ The owner rejected an emissive-only mirror pass, near-camera area lights, a plan
 - **Owner's look (#364).** The owner's `/test-level` values are now the defaults: `Metal.baseColor` and `Hull.baseColor` `#232324`, `Environment.rotation` 210, `Environment.intensity` 1 (was 1.2). Tone mapping stays Neutral at exposure 1. Home, lobby and race read the same tuning module, so all canvases match. Luma is not re-measured.
 - **Open.** The owner judges the seam streak length and blur rate from taps. `uReflBlur` has no dev-panel dial yet.
 - Details and departures: `ART_MATERIALS.md` §7 item 23.
+
+## ADR-032 — One keyboard layout: arrows drive, E/D/S/F/X for powers, B for the mirror
+
+**Date:** 2026-09-29 · **Status:** Accepted (owner decision, 2026-09-29) · **Issue:** #368 · **Built in:** `d65ada3` · **Supersedes:** the #358 Blur layout (GDD §8)
+
+### Context
+
+The #358 layout copied the Blur (2010) PC keys: Q throttle, A or ↓ brake, Right Ctrl or Left Shift fire, Right Shift fire back, Left Ctrl or X drop, ↑ and 1–3 for slots, V mirror. It needed a Mac variant, because a MacBook has no Right Ctrl. It also held Ctrl down during a race, which turned letter keys into browser shortcuts. #363 and #366 unbound W, E, F and R because Ctrl + W closed the tab, Ctrl + R reloaded, and Ctrl + E and Ctrl + F took the focus. `keyboard.ts` blocked Ctrl + a drive key. `power-select.ts` let Ctrl or Shift pass only on a list of chord keys.
+
+### Decision
+
+1. **One layout, no variants.**
+
+   | Action | Key |
+   |--------|-----|
+   | Throttle · brake | ↑ · ↓ |
+   | Strafe | ← / → |
+   | Jump | Space (tap / hold / double) |
+   | Fire forward · fire back | E · D |
+   | Previous · next power slot | S · F |
+   | Drop | X |
+   | Rear-view mirror | B (kept after a reload, #367) |
+   | Mute · leave | M · Esc |
+
+2. **No other key works.** Q, A, S as brake, both Ctrl keys, both Shift keys, V and 1–3 are removed. `fireKeyFor`, `dropKeyFor`, `MAC_*` and `macKeyboard` are deleted.
+3. **No modifiers.** A power key pressed with Ctrl, Cmd or Alt does nothing in the game, so the browser shortcut runs. This is the rule M and the mirror key already used. `keyboard.ts` no longer calls `preventDefault`. No key is held with Ctrl, and `html` and `body` are `overflow-hidden` (`root.tsx`), so ↑, ↓ and Space cannot scroll the page.
+4. **Gamepad and touch keep their buttons.** They send the new codes. S is a real previous-slot key now, so the touch d-pad's left arm sends S instead of the synthetic `PreviousSlot` code.
+5. **The lobby ship picker keeps A / D and ← / →.** It works only in the lobby phase, where no power fires. The owner can overrule this.
+
+### Consequences
+
+- The right hand drives and the left hand holds every power key. One layout works on every keyboard, so the controls panel and HUD have one label set.
+- The #363/#366 hazard is gone: Ctrl is never held, so no game key becomes a browser shortcut.
+- Players who learned Q/A or V must relearn them. The home controls panel and the HUD power hint show the new keys.
