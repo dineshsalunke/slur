@@ -1,5 +1,4 @@
 import { Decoder, Encoder } from '@colyseus/schema';
-import { addEffect } from '@react-three/fiber';
 import {
     DEFAULT_SIM_CONFIG,
     DROP_POWERUP_MESSAGE,
@@ -45,6 +44,7 @@ export class LoopbackRoom implements RunRoomLike {
     private readonly outbox: [ string, unknown ][] = [];
     private readonly commands: Record< string, Handler >;
     private sincePatch = 0;
+    private pausedWhile: ( () => boolean ) | null = null;
 
     constructor( descriptor: TrackDescriptor, { name, ...options }: LoopbackOptions = {} ) {
         this.simConfig = options.config ?? DEFAULT_SIM_CONFIG;
@@ -108,12 +108,15 @@ export class LoopbackRoom implements RunRoomLike {
     }
 
     run( paused: () => boolean = () => false ): () => void {
-        let last = -1;
-        return addEffect( ( timestamp ) => {
-            const seconds = last < 0 ? 0 : Math.min( ( timestamp - last ) / 1000, LOOPBACK_MAX_FRAME_SECONDS );
-            last = timestamp;
-            if ( ! paused() ) this.step( seconds );
-        } );
+        this.pausedWhile = paused;
+        return () => {
+            if ( this.pausedWhile === paused ) this.pausedWhile = null;
+        };
+    }
+
+    hostTick( seconds: number ): void {
+        if ( this.pausedWhile === null || this.pausedWhile() ) return;
+        this.step( Math.min( seconds, LOOPBACK_MAX_FRAME_SECONDS ) );
     }
 
     private deliver(): void {

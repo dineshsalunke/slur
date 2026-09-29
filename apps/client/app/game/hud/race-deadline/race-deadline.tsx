@@ -1,15 +1,15 @@
-import { addEffect } from '@react-three/fiber';
 import { PHASE } from '@slur/shared';
 import { useEffect, useRef } from 'react';
 import type { RunRoomLike } from '../../../net/run-room-like';
+import { addHudWriter } from '../hud-writers/hud-writers.state';
 import { deadlineText } from './race-deadline.utils';
 
 export function RaceDeadline( { room }: { room: RunRoomLike } ) {
     const textRef = useRef< HTMLParagraphElement >( null );
 
-    // Brackets an R3F render-loop subscription to this mount: each frame writes the race-end countdown.
+    // Syncs with the frame scheduler: the cleanup phase writes the race-end countdown.
     useEffect( () => {
-        return addEffect( () => {
+        return addHudWriter( 'hud.race-deadline', () => {
             const el = textRef.current;
             if ( ! el ) return;
             const s = room.state;

@@ -38,6 +38,27 @@ describe( 'LoopbackRoom', () => {
         expect( ticks ).toBe( 2 );
     } );
 
+    it( 'host-ticks only while run and not paused', () => {
+        const room = new LoopbackRoom( procgenDescriptor( 1, DEFAULT_TRACK_GEN ) );
+        let ticks = 0;
+        room.onTick( () => ticks++ );
+        room.hostTick( FIXED_DT * 3 );
+        expect( ticks ).toBe( 0 );
+
+        let paused = true;
+        const stop = room.run( () => paused );
+        room.hostTick( FIXED_DT * 3 );
+        expect( ticks ).toBe( 0 );
+
+        paused = false;
+        room.hostTick( FIXED_DT * 2.5 );
+        expect( ticks ).toBe( 2 );
+
+        stop();
+        room.hostTick( FIXED_DT * 3 );
+        expect( ticks ).toBe( 2 );
+    } );
+
     it( 'starts, fires a bolt and delivers the decoded projectile and the hit', () => {
         const room = new LoopbackRoom( procgenDescriptor( 1, DEFAULT_TRACK_GEN ) );
         room.sim.join( 'target' );

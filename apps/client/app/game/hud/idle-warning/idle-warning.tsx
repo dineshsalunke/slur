@@ -1,15 +1,15 @@
-import { addEffect } from '@react-three/fiber';
 import { PHASE, stalledFor } from '@slur/shared';
 import { useEffect, useRef } from 'react';
 import type { RunRoomLike } from '../../../net/run-room-like';
+import { addHudWriter } from '../hud-writers/hud-writers.state';
 import { idleText } from './idle-warning.utils';
 
 export function IdleWarning( { room }: { room: RunRoomLike } ) {
     const textRef = useRef< HTMLParagraphElement >( null );
 
-    // Brackets an R3F render-loop subscription to this mount: each frame writes the idle countdown.
+    // Syncs with the frame scheduler: the cleanup phase writes the idle countdown.
     useEffect( () => {
-        return addEffect( () => {
+        return addHudWriter( 'hud.idle-warning', () => {
             const el = textRef.current;
             if ( ! el ) return;
             const s = room.state;

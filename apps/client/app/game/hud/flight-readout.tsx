@@ -1,8 +1,8 @@
-import { addEffect } from '@react-three/fiber';
 import { useWorld } from 'koota/react';
 import { useEffect, useRef } from 'react';
 import { LocalPlayer, Sim } from '../ecs/traits';
 import { useTrack } from '../track-context/use-track';
+import { addHudWriter } from './hud-writers/hud-writers.state';
 import { clockText, progressText, rankText, speedText } from './readout-format';
 
 export interface Standing {
@@ -18,9 +18,9 @@ export function FlightReadout( { standing, clock }: { standing: () => Standing; 
     const progressRef = useRef< HTMLSpanElement >( null );
     const clockRef = useRef< HTMLSpanElement >( null );
 
-    // Brackets an R3F render-loop subscription to this mount: each frame writes the rank, progress and clock.
+    // Syncs with the frame scheduler: the cleanup phase writes the speed, rank, progress and clock.
     useEffect( () => {
-        return addEffect( () => {
+        return addHudWriter( 'hud.flight-readout', () => {
             const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
             if ( ! sim ) return;
             const { rank, field } = standing();

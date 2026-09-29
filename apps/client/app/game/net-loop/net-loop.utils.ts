@@ -49,6 +49,10 @@ export function createNetFrame( world: World, track: Track, predictor: Predictor
     return frame;
 }
 
+export function netHostTick( f: NetFrame, _state: RootState, delta: number ): void {
+    f.room.hostTick?.( delta );
+}
+
 export function netFlight( f: NetFrame, _state: RootState, delta: number ): void {
     f.phase = runPhase.value;
     if ( simFreeze.on ) return;

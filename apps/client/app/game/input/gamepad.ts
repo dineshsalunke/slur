@@ -1,4 +1,3 @@
-import { addEffect } from '@react-three/fiber';
 import { emptyInput, type PlayerInput } from '@slur/shared';
 import { type Action, press } from './actions';
 import { BINDINGS } from './bindings';
@@ -46,7 +45,7 @@ export function padEdges( pad: PadLike, was: boolean[], emit: ( edge: PadEdge ) 
 
 const input = emptyInput();
 const history = new Map< number, boolean[] >();
-let stop: ( () => void ) | null = null;
+let polling = false;
 
 export const gamepadInput: Readonly< PlayerInput > = input;
 
@@ -62,7 +61,8 @@ function emit( edge: PadEdge ): void {
     else press( edge );
 }
 
-function poll(): void {
+export function pollGamepads(): void {
+    if ( ! polling ) return;
     clear();
     for ( const pad of navigator.getGamepads() ) {
         if ( ! pad?.connected ) continue;
@@ -76,15 +76,16 @@ function poll(): void {
     }
 }
 
+export const GAMEPAD_SYSTEM = { id: 'input.gamepad', phase: 'input', run: pollGamepads } as const;
+
 function connected(): void {
-    stop ??= addEffect( poll );
+    polling = true;
 }
 
 function disconnected( e: GamepadEvent ): void {
     history.delete( e.gamepad.index );
     if ( navigator.getGamepads().some( ( p ) => p?.connected ) ) return;
-    stop?.();
-    stop = null;
+    polling = false;
     clear();
 }
 

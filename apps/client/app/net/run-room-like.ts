@@ -9,4 +9,5 @@ export interface RunRoomLike {
     readonly simConfig?: SimConfig;
     send( type: string, payload?: unknown ): void;
     onMessage< Payload >( type: string, callback: ( payload: Payload ) => void ): () => void;
+    hostTick?( seconds: number ): void;
 }

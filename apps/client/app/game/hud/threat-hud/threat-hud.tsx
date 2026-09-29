@@ -1,6 +1,6 @@
-import { addEffect } from '@react-three/fiber';
 import { Fragment, useEffect, useRef } from 'react';
 import type { RunRoomLike } from '../../../net/run-room-like';
+import { addHudWriter } from '../hud-writers/hud-writers.state';
 import { THREAT_X, THREAT_Z } from './threat-hud.constants';
 import { threatTick, vignetteOpacity } from './threat-hud.utils';
 
@@ -8,9 +8,9 @@ export function ThreatHud( { room }: { room: RunRoomLike } ) {
     const tickRef = useRef< HTMLDivElement >( null );
     const vignetteRef = useRef< HTMLDivElement >( null );
 
-    // Brackets an R3F render-loop subscription to this mount: each frame writes the threat tick and vignette.
+    // Syncs with the frame scheduler: the cleanup phase writes the threat tick and vignette.
     useEffect( () => {
-        return addEffect( () => {
+        return addHudWriter( 'hud.threat', () => {
             const tickEl = tickRef.current;
             const vignetteEl = vignetteRef.current;
             if ( ! tickEl || ! vignetteEl ) return;

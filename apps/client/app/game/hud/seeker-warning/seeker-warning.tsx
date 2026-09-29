@@ -1,6 +1,6 @@
-import { addEffect } from '@react-three/fiber';
 import { Fragment, useEffect, useRef } from 'react';
 import type { RunRoomLike } from '../../../net/run-room-like';
+import { addHudWriter } from '../hud-writers/hud-writers.state';
 import { COMMIT_VIGNETTE } from './seeker-warning.constants';
 import { lockShift, lockText, lockVisible, makeLock, nearestLock } from './seeker-warning.utils';
 
@@ -9,9 +9,9 @@ export function SeekerWarning( { room }: { room: RunRoomLike } ) {
     const vignetteRef = useRef< HTMLDivElement >( null );
     const lockRef = useRef( makeLock() );
 
-    // Brackets an R3F render-loop subscription to this mount: each frame writes the seeker lock chevron.
+    // Syncs with the frame scheduler: the cleanup phase writes the seeker lock chevron.
     useEffect( () => {
-        return addEffect( ( timestamp ) => {
+        return addHudWriter( 'hud.seeker-warning', ( timestamp ) => {
             const chevronEl = chevronRef.current;
             const vignetteEl = vignetteRef.current;
             if ( ! chevronEl || ! vignetteEl ) return;

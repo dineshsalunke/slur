@@ -1,4 +1,5 @@
 import { scheduleSystems } from '../../../game/frame/schedule';
+import { GAMEPAD_SYSTEM } from '../../../game/input/gamepad';
 import {
     type DeckFrame,
     deckCamera,
@@ -11,6 +12,7 @@ import {
 } from './deck-loop.utils';
 
 export const DECK_SCHEDULE = scheduleSystems< DeckFrame >( 'deck', [
+    GAMEPAD_SYSTEM,
     { id: 'deck.ship-choice', phase: 'simulate', run: deckShipChoice },
     { id: 'deck.restart', phase: 'simulate', after: [ 'deck.ship-choice' ], run: deckRestart },
     { id: 'deck.flight', phase: 'simulate', after: [ 'deck.restart' ], run: deckFlight },
