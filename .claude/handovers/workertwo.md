@@ -1,32 +1,32 @@
-Agent: workertwo · Lane: RFC-349 S17 (#387) — DONE, closed · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29 17:30
+Agent: workertwo · Lane: RFC-349 S20 (#388) — DONE, closed · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29 17:45
 
 ## Goal
-RFC-349 S17: move the gamepad, the loopback tick and the 5 HUD DOM writers off `addEffect` into scheduler phases.
+RFC-349 S20: one `react`-phase dial-sync system that writes materials only when tuning changes.
 
 ## Done
-- a3ee47ad #387 S17: `GAMEPAD_SYSTEM` (`input.gamepad`, phase input) in net, landing and deck schedules; `net.host-tick` (simulate, before `net.flight`) calls optional `RunRoomLike.hostTick`; `LoopbackRoom.run(paused)` only arms the room now; `net.hud` (cleanup) drains `game/hud/hud-writers/hud-writers.state.ts`. NN-13 weighing (7 options) in the commit body.
-- Earlier: 8681e05 #383 S8, f3382cb #376 S3, cf8f95e #375 S2, 65bcef2 #373.
+- 9b5f38f2 #388 S20: `tuningVersion()` in `dev/tuning.ts`; `game/scene/dial-sync/` registry + `scene.dial-sync` system in its own leaf schedule, mounted once in `TrackView`. 5 sites (TrackSeams, TrackRail, TrackRim, TrackFloor, MonolithGroup) register from React 19 ref callbacks. KeyLight no longer exists. NN-13 weighing (7 options) in the commit body.
+- Earlier: a3ee47ad #387 S17, 8681e05 #383 S8, f3382cb #376 S3, cf8f95e #375 S2, 65bcef2 #373.
 
 ## State
-- /test-level on :5173/:2567, before → after: pad A → local jump 0 → 0 frames (12/12); → loopback server 4 → 4 frames (12/12); HUD speed text last frame 149/149 → this frame 151/151.
-- Dev order print correct on /, /beat-deck, /test-level; no page errors.
-- Client 696/696 tests; typecheck clean; biome + comment ratchet clean on touched files.
-- `dev/frame-meter.ts` still uses `addEffect` (out of scope).
-- Supervisor marks the RFC S17 row (status line sent).
+- /test-level?quality=high headless idle: material writes/frame 29 → 7; num() reads/frame 700 → ~390 (399, 377).
+- The 7 writes left come from TrackBlocks + BlockDebris `applyDeckFinish` [inferred from source].
+- Live: seam dial shows within 2 frames; after a Deck.plate rebuild, 10 materials hold the finished roughness and 0 hold the raw value.
+- Client 705/705 tests; typecheck clean; biome + comment ratchet clean.
 
 ## Uncommitted
 none.
 
 ## Held files
-none. net-loop.constants.ts released back to workerone.
+none.
 
 ## Next
-1. Wait for the supervisor's next lane.
-2. Pending owner answers from #373: incoming-bolt button on /test-level? phone tick/seeker overlap fix?
-3. After the owner's deploy: verify #338/#340/#341 on prod. Later: resume #348 (Blur controls).
+1. After F1 (workerone) commits: move `DIAL_SYNC_SYSTEM` into the net, landing and deck schedules, delete `DialSync` + `DIAL_SYNC_SCHEDULE`, and ask workerone for the one line in `net-loop.constants.ts`.
+2. Wait for the supervisor's next lane.
+3. Pending owner answers from #373: incoming-bolt button on /test-level? phone tick/seeker overlap fix?
+4. After the owner's deploy: verify #338/#340/#341 on prod. Later: resume #348 (Blur controls).
 
 ## Open questions
 - Owner: the two #373 follow-ups above.
 
 ## Lessons → memory
-- `.claude/memory/fake-a-gamepad-over-cdp.md`.
+- none (the method is already in grab-the-scene + headless practice memories).
