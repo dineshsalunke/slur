@@ -48,14 +48,14 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S18 render system | #384 | IN PROGRESS workerthree. Landing baseline: 45 draws/frame, 5.1 ms median |
 | #386 landing canvas | #386 | landed 04684954, closed; pushed with workertwo's fb60a05f. fallback={null} → ~1 s clear-colour gap before the 3D scene; StillBackdrop hand-off needs a new reveal file (owner to decide) |
 | S17 addEffect → phases | #387 | landed a3ee47ad, closed, pushed (HUD speed now this-frame 151/151) |
-| F1 engine skeleton | #385 | ASSIGNED workerone; waits on attach-room-to-world.ts; stays out of world-scene/landing-scene |
+| F1 engine skeleton | #385 | sim half landed 1a5415c7 (wire bytes identical; shared 578/578). workerone cleared + resumed for client half (engine/*, FeatureViews, bridge, NET_SCHEDULE, features.md Q6+Q7) |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #385 F1 | BUILDING, past 150k: seams after the shared-half commit (wire bytes identical; 4 shared tests red at last report) → then /clear + resume for the client half | net/attach-room-to-world.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
-| workertwo | w2Z:p3 | none (S17 done) | IDLE, cleared + resumed 2026-09-29; awaiting a lane | — (net-loop.constants.ts returned to workerone) |
+| workerone | w2Z:p2 | #385 F1 client half | BUILDING (cleared + resumed 2026-09-29 after 1a5415c7) | net/attach-room-to-world.ts, conventions/features.md (also folds in Q6), | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
+| workertwo | w2Z:p3 | S20 dial-sync (issue to be filed by it) | ASSIGNED; claim list pending | — |
 | workerthree | w2Z:p5 | #384 S18 | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
 | do-setup | w2Z:p4 | infra | idle | — |
 
