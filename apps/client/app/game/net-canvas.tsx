@@ -19,9 +19,10 @@ import { useRoom } from '../net/room-context/use-room';
 import { Held, LocalPlayer } from './ecs/traits';
 import { world } from './ecs/world';
 import { FinishFade } from './finish/finish-fade';
+import { onAction } from './input/actions';
 import { lastInputSeq } from './input/current-input';
 import { attachKeyboard } from './input/keyboard';
-import { handlePowerKey } from './input/power-select';
+import { runPowerAction } from './input/power-select';
 import { NetHud } from './net-hud';
 import { NetLoop } from './net-loop/net-loop';
 import { PhaseGate } from './phase-gate/phase-gate';
@@ -49,7 +50,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
     // Syncs with the browser keyboard: window keydown and keyup drive the local input.
     useEffect( attachKeyboard, [] );
 
-    // Syncs with the browser keyboard: the power-up keys send fire and drop messages to the Colyseus room.
+    // Syncs the input action map with the Colyseus room: power actions send fire and drop messages.
     useEffect( () => {
         const actions = {
             rack: () => world.queryFirst( LocalPlayer, Held )?.get( Held )?.slots ?? [],
@@ -58,9 +59,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
             drop: ( slot: number ) => room.send( DROP_POWERUP_MESSAGE, { slot } ),
             tick: () => playSfx( 'uiNav' ),
         };
-        const onKey = ( e: KeyboardEvent ) => handlePowerKey( e, actions );
-        addEventListener( 'keydown', onKey );
-        return () => removeEventListener( 'keydown', onKey );
+        return onAction( ( action ) => runPowerAction( action, actions ) );
     }, [ room ] );
 
     // Syncs the Colyseus room into the koota world: schema callbacks feed the entities and the predictor.

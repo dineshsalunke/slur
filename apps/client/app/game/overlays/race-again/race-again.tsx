@@ -5,6 +5,7 @@ import { isBareEnter } from '../../../ship/ship-keys';
 import { Button } from '../../../ui/button';
 import { Chevron } from '../../../ui/chevron';
 import { KeyHint } from '../../../ui/key-hint';
+import { onAction } from '../../input/actions';
 import { useHostId, useRunPlayers } from '../../net/run-view-store';
 import { HOST_HINTS } from './race-again.constants';
 
@@ -14,15 +15,24 @@ export function RaceAgain( { room }: { room: RunRoomLike } ) {
     const isHost = room.sessionId === hostId;
     const host = players.find( ( p ) => p.id === hostId );
 
-    // Syncs with the browser keyboard: a bare Enter restarts the run for the host.
+    // Syncs with the browser keyboard and the input action map: a bare Enter or start restarts the run for the host.
     useEffect( () => {
-        const onKey = ( e: KeyboardEvent ) => {
-            if ( room.state.phase !== PHASE.finished ) return;
-            if ( ! isBareEnter( e ) ) return;
-            if ( room.state.hostId === room.sessionId ) room.send( RESTART_MESSAGE );
+        const restart = () => {
+            if ( room.state.phase === PHASE.finished && room.state.hostId === room.sessionId ) {
+                room.send( RESTART_MESSAGE );
+            }
         };
+        const onKey = ( e: KeyboardEvent ) => {
+            if ( isBareEnter( e ) ) restart();
+        };
+        const offAction = onAction( ( action ) => {
+            if ( action === 'start' ) restart();
+        } );
         addEventListener( 'keydown', onKey );
-        return () => removeEventListener( 'keydown', onKey );
+        return () => {
+            offAction();
+            removeEventListener( 'keydown', onKey );
+        };
     }, [ room ] );
 
     return isHost ? (

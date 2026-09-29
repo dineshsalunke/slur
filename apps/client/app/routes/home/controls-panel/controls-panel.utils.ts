@@ -1,7 +1,6 @@
-import { MUTE_KEY } from '../../../audio/game-audio/game-audio.constants';
+import { keyOf } from '../../../game/input/bindings';
 import { keyLabel } from '../../../game/input/key-label';
 import { BRAKE_KEY, JUMP_KEY, STRAFE_LEFT_KEY, STRAFE_RIGHT_KEY, THROTTLE_KEY } from '../../../game/input/keyboard';
-import { DROP_KEY, FIRE_BACK_KEY, FIRE_KEY, NEXT_SLOT_KEY, PREVIOUS_SLOT_KEY } from '../../../game/input/power-select';
 import type { Hint } from '../../../ui/key-hint';
 
 export function keyboardControls(): Hint[] {
@@ -11,10 +10,10 @@ export function keyboardControls(): Hint[] {
         hint( [ BRAKE_KEY ], 'Brake' ),
         hint( [ STRAFE_LEFT_KEY, STRAFE_RIGHT_KEY ], 'Strafe' ),
         hint( [ JUMP_KEY ], 'Jump' ),
-        hint( [ FIRE_KEY ], 'Fire' ),
-        hint( [ FIRE_BACK_KEY ], 'Fire back' ),
-        hint( [ PREVIOUS_SLOT_KEY, NEXT_SLOT_KEY ], 'Slot' ),
-        hint( [ DROP_KEY ], 'Drop' ),
-        hint( [ MUTE_KEY ], 'Mute' ),
+        hint( [ keyOf( 'fireForward' ) ], 'Fire' ),
+        hint( [ keyOf( 'fireBack' ) ], 'Fire back' ),
+        hint( [ keyOf( 'previous' ), keyOf( 'next' ) ], 'Slot' ),
+        hint( [ keyOf( 'drop' ) ], 'Drop' ),
+        hint( [ keyOf( 'mute' ) ], 'Mute' ),
     ];
 }

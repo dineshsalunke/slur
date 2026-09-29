@@ -1,11 +1,11 @@
+import { keyOf } from '../../input/bindings';
 import { keyLabel } from '../../input/key-label';
-import { DROP_KEY, FIRE_BACK_KEY, FIRE_KEY, NEXT_SLOT_KEY, PREVIOUS_SLOT_KEY } from '../../input/power-select';
 
 export function powerHint(): string {
     return [
-        `${ keyLabel( FIRE_KEY ) } Fire`,
-        `${ keyLabel( FIRE_BACK_KEY ) } Back`,
-        `${ keyLabel( PREVIOUS_SLOT_KEY ) }/${ keyLabel( NEXT_SLOT_KEY ) } Slot`,
-        `${ keyLabel( DROP_KEY ) } Drop`,
+        `${ keyLabel( keyOf( 'fireForward' ) ) } Fire`,
+        `${ keyLabel( keyOf( 'fireBack' ) ) } Back`,
+        `${ keyLabel( keyOf( 'previous' ) ) }/${ keyLabel( keyOf( 'next' ) ) } Slot`,
+        `${ keyLabel( keyOf( 'drop' ) ) } Drop`,
     ].join( ' · ' );
 }

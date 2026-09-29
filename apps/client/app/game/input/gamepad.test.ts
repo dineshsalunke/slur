@@ -58,17 +58,17 @@ describe( 'readPad', () => {
 describe( 'padEdges', () => {
     it( 'emits each discrete action once per press', () => {
         const was: boolean[] = [];
-        expect( edges( pad( { down: { 2: 1, 9: 1, 0: 1 } } ), was ) ).toEqual( [ JUMP_EDGE, 'KeyE', 'Enter' ] );
+        expect( edges( pad( { down: { 2: 1, 9: 1, 0: 1 } } ), was ) ).toEqual( [ JUMP_EDGE, 'fireForward', 'start' ] );
         expect( edges( pad( { down: { 2: 1, 9: 1, 0: 1 } } ), was ) ).toEqual( [] );
         expect( edges( pad(), was ) ).toEqual( [] );
-        expect( edges( pad( { down: { 2: 1 } } ), was ) ).toEqual( [ 'KeyE' ] );
+        expect( edges( pad( { down: { 2: 1 } } ), was ) ).toEqual( [ 'fireForward' ] );
     } );
 
     it( 'maps B to fire back', () => {
-        expect( edges( pad( { down: { 1: 1 } } ), [] ) ).toEqual( [ 'KeyD' ] );
+        expect( edges( pad( { down: { 1: 1 } } ), [] ) ).toEqual( [ 'fireBack' ] );
     } );
 
     it( 'maps cycle and mute', () => {
-        expect( edges( pad( { down: { 3: 1, 8: 1 } } ), [] ) ).toEqual( [ 'KeyF', 'KeyM' ] );
+        expect( edges( pad( { down: { 3: 1, 8: 1 } } ), [] ) ).toEqual( [ 'next', 'mute' ] );
     } );
 } );

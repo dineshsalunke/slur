@@ -3,15 +3,19 @@ import { useEffect } from 'react';
 import type { RunRoomLike } from '../../../net/run-room-like';
 import { isBareEnter, stepOf } from '../../../ship/ship-keys';
 import { ShipStepper } from '../../../ship/ship-stepper/ship-stepper';
+import { onAction } from '../../input/actions';
 import { stepShip } from './lobby-ship-picker.utils';
 
 export function LobbyShipPicker( { room }: { room: RunRoomLike } ) {
-    // Syncs with the browser keyboard: the arrow keys cycle the ship, and Enter starts the run for the host.
+    // Syncs with the browser keyboard and the input action map: arrows cycle the ship; Enter or start runs GO for the host.
     useEffect( () => {
+        const start = () => {
+            if ( room.state.phase === PHASE.lobby && room.state.hostId === room.sessionId ) room.send( START_MESSAGE );
+        };
         const onKey = ( e: KeyboardEvent ) => {
             if ( room.state.phase !== PHASE.lobby ) return;
             if ( isBareEnter( e ) ) {
-                if ( room.state.hostId === room.sessionId ) room.send( START_MESSAGE );
+                start();
                 return;
             }
             const dir = stepOf( e );
@@ -19,8 +23,14 @@ export function LobbyShipPicker( { room }: { room: RunRoomLike } ) {
             e.preventDefault();
             stepShip( room, dir );
         };
+        const offAction = onAction( ( action ) => {
+            if ( action === 'start' ) start();
+        } );
         addEventListener( 'keydown', onKey );
-        return () => removeEventListener( 'keydown', onKey );
+        return () => {
+            offAction();
+            removeEventListener( 'keydown', onKey );
+        };
     }, [ room ] );
 
     return (

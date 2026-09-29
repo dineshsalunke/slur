@@ -1,8 +1,8 @@
 import { addEffect } from '@react-three/fiber';
 import { emptyInput, type PlayerInput } from '@slur/shared';
+import { type Action, press } from './actions';
+import { BINDINGS } from './bindings';
 import { latchJump } from './jump-latch';
-import { FIRE_BACK_KEY, FIRE_KEY, NEXT_SLOT_KEY } from './power-select';
-import { synthKey } from './synth-key';
 
 export const STICK_DEADZONE = 0.2;
 
@@ -14,16 +14,7 @@ const DPAD_RIGHT = 15;
 
 export const JUMP_EDGE = 'jump';
 
-export const PAD_KEYS: readonly ( readonly [ number, string ] )[] = [
-    [ A, JUMP_EDGE ],
-    [ 1, FIRE_BACK_KEY ],
-    [ 2, FIRE_KEY ],
-    [ 5, FIRE_KEY ],
-    [ 3, NEXT_SLOT_KEY ],
-    [ 4, NEXT_SLOT_KEY ],
-    [ 8, 'KeyM' ],
-    [ 9, 'Enter' ],
-];
+export type PadEdge = Action | typeof JUMP_EDGE;
 
 export type PadLike = Pick< Gamepad, 'axes' | 'buttons' >;
 
@@ -45,9 +36,10 @@ export function readPad( pad: PadLike, out: PlayerInput ): void {
     out.jump = out.jump || pressed( pad, A );
 }
 
-export function padEdges( pad: PadLike, was: boolean[], emit: ( code: string ) => void ): void {
-    for ( const [ button, code ] of PAD_KEYS ) {
-        if ( pressed( pad, button ) && ! was[ button ] ) emit( code );
+export function padEdges( pad: PadLike, was: boolean[], emit: ( edge: PadEdge ) => void ): void {
+    if ( pressed( pad, A ) && ! was[ A ] ) emit( JUMP_EDGE );
+    for ( const [ button, action ] of BINDINGS.pad ) {
+        if ( pressed( pad, button ) && ! was[ button ] ) emit( action );
     }
     for ( let i = 0; i < pad.buttons.length; i++ ) was[ i ] = pressed( pad, i );
 }
@@ -65,9 +57,9 @@ function clear(): void {
     input.jump = false;
 }
 
-function emit( code: string ): void {
-    if ( code === JUMP_EDGE ) latchJump();
-    else synthKey( code );
+function emit( edge: PadEdge ): void {
+    if ( edge === JUMP_EDGE ) latchJump();
+    else press( edge );
 }
 
 function poll(): void {

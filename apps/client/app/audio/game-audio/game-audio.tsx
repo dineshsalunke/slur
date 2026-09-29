@@ -3,6 +3,7 @@ import { classOfShip } from '@slur/shared';
 import { useWorld } from 'koota/react';
 import { useEffect, useRef } from 'react';
 import { LocalPlayer, Net, Sim } from '../../game/ecs/traits';
+import { onAction } from '../../game/input/actions';
 import { gamepadInput } from '../../game/input/gamepad';
 import { keyboardInput } from '../../game/input/keyboard';
 import { touchInput } from '../../game/input/touch-state';
@@ -14,7 +15,6 @@ import { createMoveEdges, stepMoveEdges } from '../movement-edges';
 import { musicForPhase } from '../music-for-phase';
 import { ensureListener } from '../positional';
 import { playSfx, preloadAudio } from '../sfx-map';
-import { MUTE_KEY } from './game-audio.constants';
 import { tuning } from './game-audio.state';
 
 export function GameAudio() {
@@ -35,14 +35,14 @@ export function GameAudio() {
         };
     }, [ room, camera ] );
 
-    // Syncs with the browser keyboard: M toggles the audio engine's mute.
-    useEffect( () => {
-        const onKey = ( e: KeyboardEvent ) => {
-            if ( e.code === MUTE_KEY && ! e.repeat ) setMuted( ! isMuted() );
-        };
-        addEventListener( 'keydown', onKey );
-        return () => removeEventListener( 'keydown', onKey );
-    }, [] );
+    // Syncs the input action map with the audio engine: the mute action toggles mute.
+    useEffect(
+        () =>
+            onAction( ( action ) => {
+                if ( action === 'mute' ) setMuted( ! isMuted() );
+            } ),
+        [],
+    );
 
     useFrame( () => {
         world.query( Sim, Net, LocalPlayer ).readEach( ( [ s, net ] ) => {

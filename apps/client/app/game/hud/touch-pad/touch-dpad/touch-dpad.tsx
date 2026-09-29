@@ -1,8 +1,9 @@
 import type { PointerEvent } from 'react';
-import { synthKey } from '../../../input/synth-key';
+import { press } from '../../../input/actions';
+import { BINDINGS } from '../../../input/bindings';
 import { pressJump, releasePointer } from '../../../input/touch-state';
 import { noMenu } from '../touch-pad.utils';
-import { ARM, ARM_KEYS } from './touch-dpad.constants';
+import { ARM } from './touch-dpad.constants';
 import { dpadHeld } from './touch-dpad.state';
 import { type DpadZone, dpadZone } from './touch-dpad.utils';
 
@@ -30,7 +31,7 @@ export function TouchDpad() {
         if ( ! zone ) return;
         dpadHeld.set( e.pointerId, zone );
         if ( zone === 'jump' ) pressJump( e.pointerId );
-        else synthKey( ARM_KEYS[ zone ] );
+        else press( BINDINGS.touch[ zone ] );
         light( pad, zone, true );
     };
     const down = ( e: PointerEvent< HTMLDivElement > ) => {

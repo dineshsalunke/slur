@@ -1,12 +1,6 @@
 import { type FireDir, HeldPower, POWER_SLOTS } from '@slur/shared';
 import { useSyncExternalStore } from 'react';
-import { typingTarget } from '../../dev/typing-target';
-
-export const FIRE_KEY = 'KeyE';
-export const FIRE_BACK_KEY = 'KeyD';
-export const PREVIOUS_SLOT_KEY = 'KeyS';
-export const NEXT_SLOT_KEY = 'KeyF';
-export const DROP_KEY = 'KeyX';
+import type { Action } from './actions';
 
 const listeners = new Set< () => void >();
 
@@ -63,13 +57,12 @@ export interface PowerActions {
     tick(): void;
 }
 
-export function handlePowerKey( e: KeyboardEvent, act: PowerActions ): void {
-    if ( e.repeat || e.metaKey || e.ctrlKey || e.altKey || typingTarget( e.target ) ) return;
+export function runPowerAction( action: Action, act: PowerActions ): void {
     const before = selected;
-    if ( e.code === NEXT_SLOT_KEY ) cycle( act.rack(), 1 );
-    else if ( e.code === PREVIOUS_SLOT_KEY ) cycle( act.rack(), -1 );
-    else if ( e.code === FIRE_KEY ) act.fire( selected, 1 );
-    else if ( e.code === FIRE_BACK_KEY ) act.fire( selected, -1 );
-    else if ( e.code === DROP_KEY ) act.drop( selected );
+    if ( action === 'next' ) cycle( act.rack(), 1 );
+    else if ( action === 'previous' ) cycle( act.rack(), -1 );
+    else if ( action === 'fireForward' ) act.fire( selected, 1 );
+    else if ( action === 'fireBack' ) act.fire( selected, -1 );
+    else if ( action === 'drop' ) act.drop( selected );
     if ( selected !== before ) act.tick();
 }
