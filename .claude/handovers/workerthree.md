@@ -1,16 +1,16 @@
-Agent: workerthree · Lane: env band → accent + picker A/D removal (no issue, owner ask) · Updated: 2026-09-29
+Agent: workerthree · Lane: boost pickup back-face chevrons (#370) · Updated: 2026-09-29
 
 ## Goal
-Band colour follows Accent.color, bandHeight 10, bandIntensity 2. Remove A/D from the lobby ship picker.
+The glow chevrons on the back face of the boost pickup point the same way as the shell.
 
 ## Done
-- d65ada3, 68d58ad (#368, CLOSED): final keyboard layout + ADR-032.
-- d6cb3f6: Environment.bandColor dial removed; env-band.state reads Accent.color; bandHeight 6 → 10, bandIntensity 1.5 → 2.
-- 28da8f8: ship-keys ←/→ only; overlays.test asserts D does nothing and → cycles; GDD §8 + ADR-032 item 5 amended.
+- 57f2bfe (#370): onBothFaces flips the back glyph and core with rotateX(PI) instead of rotateY(PI). New test: on each face of the shell, glyph and core, the tip (|y|<0.05) is at a larger x than the arm ends (|y|>0.6).
 
 ## State
-- Full client vitest 98 files / 665 tests pass; typecheck clean; lint 0 errors.
-- Band look in a browser [unmeasured]. Stored band values fall back to the new defaults (tuning-persist.ts:23 from-check) [read, not run].
+- Before the fix the test failed on the back face: glyph tip x −0.368 vs arm ends +0.368 (exact mirror). Shell passed on both faces.
+- After the fix: boost-look.test 6/6, scene folder 45 files / 333 tests pass; tsc clean; biome clean on both files.
+- Capture: an offline SVG projection of the real geometry (no GPU tab). Before = back glow forms an X across the shell; after = glow on the shell arms on both faces. Files are in the session scratchpad `cap/`.
+- Live /test-level look [unmeasured].
 
 ## Uncommitted
 none
@@ -19,10 +19,10 @@ none
 none
 
 ## Next
-1. Idle. Owner checks /test-level: the band is thicker (10) and brighter (2), and its hue follows Accent.color.
+1. Idle. Owner checks /test-level: fly past a boost pickup and look back at it (B, mirror). The glow chevrons on the far face follow the dark shell arms. They no longer cross them.
 
 ## Open questions
 none
 
 ## Lessons → memory
-none (supervisor is merging memory files; not written)
+none (memory writes on hold during the supervisor's merge)
