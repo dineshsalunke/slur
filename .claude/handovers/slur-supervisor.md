@@ -58,13 +58,13 @@ paint). All pushed; dev = origin except workers' in-flight work.
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #390 F2 tug pilot | BUILDING (cleared + resumed after b5247df6) | tug files → features/tug/ (shared + client); registries; engine slots; central cuts: step.ts, types.ts, run-sim.ts, combat.ts, power-bag.ts, index.ts, player-fields.ts, sim-config.ts (import only), NEW sim/status.ts, attach-room-to-world.ts, net-canvas.tsx (back from workertwo), pickup-field.tsx, seeker-pickups/*, glyph-atlas.ts, bind-room-audio.ts; listed tests; features.md §3 |
-| workertwo | w2Z:p3 | perf.mjs KeyW → ArrowUp fix + Q10 koota createQuery measurement | ASSIGNED; claim pending | — |
-| workerthree | w2Z:p5 | #389 done | Pane BLOCKED on a `git commit --amend` prompt (would rewrite a peer's commit). Owner must press 2 (No). Then it commits its handover by path and reports the #389 gap ms | its handover (dirty) |
+| workertwo | w2Z:p3 | perf-skill KeyW → ArrowUp fix + Q10 koota createQuery measurement (read-only) | BUILDING (claim cleared) | .claude/skills/perf-analysis/{scripts/perf.mjs, scripts/tune.mjs, SKILL.md} |
+| workerthree | w2Z:p5 | none (#389 done: gap 0.93–1.03 s → 0 frames; told to close #389) | IDLE. Its amend ran on my f2859165, then it undid it with reset --soft; history verified intact and pushed | — |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner items
 
-1. Press 2 (No) on workerthree's amend prompt (pane w2Z:p5).
+1. Assign workerthree a next lane (idle).
 2. Owner checks: S19 on /test-level (mid-race tier switch: no hitch; home picker "Reload to apply");
    S20 dials (Deck/Rail/Monolith seamEmissive, Deck roughness then plate); #389 home page (no blank flash);
    S17 HUD speed; #375 pad Start in a real lobby.
