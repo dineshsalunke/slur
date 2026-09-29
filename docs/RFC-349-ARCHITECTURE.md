@@ -858,7 +858,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 
 | Stage | Change | Files | Needs |
 |---|---|---|---|
-| S0 | Write the module contract (§3), rule C (§6.1) and the tiers (§6.2) into the conventions. No code. | `conventions/ecs.md`, new `conventions/features.md`, `.claude/rules/*`, `CLAUDE.md` | owner approval |
+| S0 | Write the module contract (§3), rule C (§6.1) and the tiers (§6.2) into the conventions. No code. | `conventions/ecs.md`, new `conventions/features.md`, `.claude/rules/*`, `CLAUDE.md` | owner approval (given 2026-09-29, Q4); issue #382 |
 | S1 | **Landed 41c9a41 (#374).** One config source on the client. The predictor and client systems read the room's config. Fixes `/test-level` mispredicts. | `net/prediction.ts`, `game/ecs/systems.ts`, `game/ecs/net-systems.ts`, `routes/beat-deck/deck-flight.ts`, `routes/test-level/test-level-room.ts`, `net/run-room-like.ts` | — |
 | S2 | **Landed cf8f95e (#375).** Input action map (`fireForward`, `fireBack`, `next`, `previous`, `drop`, `mute`). Delete `synthKey`. Base for #348. | `game/input/power-select.ts`, `gamepad.ts`, `synth-key.ts`, `touch-dpad.constants.ts`, `game/net-canvas.tsx`, `audio/game-audio/game-audio.tsx` | — |
 | S3 | **Landed f3382cb (#376).** Event-queue helper (A1). Move the 6 queues onto it. One overflow rule. | `hit-events.ts`, `mine-shock-events.ts`, `tug-events.ts`, `block-burst/*`, `meteor-chunks/*`, `meteor-scorch/*`, new helper | — |
@@ -898,7 +898,7 @@ waits for S0.
 1. Owner: accept feature modules with the two-half split (§3.2) and the tug pilot (§3.8)? **Answered 2026-09-29: yes.**
 2. Owner: accept D1 now, D3 later (§3.6)? It means one registry line per feature per end until codegen. **Answered 2026-09-29: yes.**
 3. Owner: accept O1 ordering (§3.5)? **Answered 2026-09-29: yes.**
-4. Owner: accept rule C (§6.1) and room config B2 with the four tiers (§4.3 B, §6.2)?
+4. Owner: accept rule C (§6.1) and room config B2 with the four tiers (§4.3 B, §6.2)? **Answered 2026-09-29: yes.**
 5. Owner (#70 ADR): does room config cover combat only, or ship tuning too?
 6. May dev dials override Rules values in a hosted room, or only on `/test-level`?
 7. Owner: approve a direct Standard Schema dependency (valibot or zod) for validated commands (a3, §4.5)?
