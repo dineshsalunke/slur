@@ -9,3 +9,6 @@ export const GRANTABLE_POWERS = [
     [ 'portal', HeldPower.portal ],
     [ 'tug', HeldPower.tug ],
 ] as const;
+
+export const INCOMING_SEEKER_BEHIND = 500;
+export const INCOMING_SEEKER_OWNER = 'dev-seeker';

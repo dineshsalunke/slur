@@ -243,6 +243,15 @@ back. The gamepad uses **B** for back, and the touch d-pad uses its **down** arm
 back seeker locks onto the nearest rival behind, launches at 0 u/s and ramps to top speed toward −z.
 The owner still has to confirm F as the back key.
 
+**Seeker lock warning (#372, built).** The game has no rear-view mirror (#371), so the HUD tells you when a
+seeker is locked on you. A red chevron row shows at the bottom edge while the seeker is behind you. It
+shows at the top edge when a back-fired seeker comes from ahead. It reads `▲△△ LOCK`. Bars fill as the
+time to impact drops: 1 bar at more than 3 s, 2 bars at 1.5–3 s, 3 bars under 1.5 s. The row blinks faster
+as it fills. It moves left or right toward the side the seeker is on, so you know which way to strafe.
+When the seeker commits to its strike (the last 0.35 s), the row stops blinking and the red edge
+vignette shows. `×2` shows when two seekers are locked on you. On `/test-level`, the Leva **Pickups**
+folder has an **incoming seeker** button. It launches a seeker 500u behind you, locked on you.
+
 **Placement and mix (#265, built).** Pickups are 120–180u apart, spread across the deck up to ±40u,
 and always on a clear lane. Every run of 20 pickups deals 4 Bolts, 3 Seekers, 3 Mines, 3 Boosts, 3
 Shields, 2 Portals and 2 Tug lines in a shuffled order (#290). No power comes up 3 times in a row. Details: `docs/DECISIONS.md` ADR-002 amendment.

@@ -1,7 +1,8 @@
 import { DEFAULT_TRACK_GEN, FIXED_DT, HeldPower, procgenDescriptor, START_MESSAGE } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { LoopbackRoom } from '../../../net/loopback-room/loopback-room';
-import { firstEmptySlot, grantPower } from './pickup-grants.utils';
+import { INCOMING_SEEKER_BEHIND } from './pickup-grants.constants';
+import { firstEmptySlot, grantPower, incomingSeeker } from './pickup-grants.utils';
 
 function racingRoom(): LoopbackRoom {
     const room = new LoopbackRoom( procgenDescriptor( 1, DEFAULT_TRACK_GEN ), { countdownSeconds: 0 } );
@@ -36,5 +37,18 @@ describe( 'grantPower', () => {
             HeldPower.tug,
             HeldPower.portal,
         ] );
+    } );
+} );
+
+describe( 'incomingSeeker', () => {
+    it( 'launches a seeker behind the player, locked on the player', () => {
+        const room = racingRoom();
+        const self = room.sim.state.players.get( room.sessionId );
+        expect( incomingSeeker( room ) ).toBe( true );
+        const [ seeker ] = [ ...room.sim.state.seekers.values() ];
+        expect( seeker?.targetId ).toBe( room.sessionId );
+        expect( seeker?.z ).toBeLessThan( ( self?.z ?? 0 ) - INCOMING_SEEKER_BEHIND + 10 );
+        room.step( 0.2 );
+        expect( [ ...room.state.seekers.values() ].map( ( s ) => s.targetId ) ).toEqual( [ room.sessionId ] );
     } );
 } );
