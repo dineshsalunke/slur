@@ -1154,10 +1154,13 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
       exposure dials. The deck roughness map scales it (`Reflect.roughMix`), so worn plates break the
       streak. It fades with distance (40 → 220u) and gets brighter at grazing angles.
     - **Tier.** A reflection is always dimmer than its source. It never uses the `#FFE0A0` hot core.
-    - **Holes.** There is no stencil. 5.9% of pickup spots put more than a quarter of their light over
-      a hole in the deck. Block streaks almost never do (0.05%). Numbers in ADR-031.
+    - **Seam streaks.** A seam streak starts as wide as the seam and blurs with distance. The blur
+      rate follows `Deck.roughness`. A seam hidden in a butt joint draws nothing. A streak stops at
+      the next block.
+    - **Holes.** There is no stencil. Each pickup spot is clipped to the clear deck under the pickup,
+      so no spot lies over a hole (0.00%). Block streaks rarely do (0.35%). Numbers in ADR-031.
     - **Left rim.** The sheen does not show on the left rim where the HDRI's white sky lights the
-      deck. Open with the owner.
+      deck. The owner accepted this (2026-09-29).
 
     **Departures.** The "Reflection and illumination" paragraph in §1 M1 said *"The deck reflecting
     the marigold boundary strip is a material effect, controlled by roughness, and it is real."* The
