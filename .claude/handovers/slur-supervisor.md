@@ -29,7 +29,7 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #359 nozzles red-orange → marigold (quick, FIRST), then #354 part 2b anisotropy + fold albedo defaults (needs tuning-schema.ts back) + record Wear=base in ADR-031 | BUILDING | deck-reflection/*, block-/pickup-/exhaust-reflections/*, track-floor.tsx, track-blocks.tsx, pickup-field.tsx, exhaust-field/*, deck-breakup.ts, DECISIONS, ART_MATERIALS, track-texture.ts, track-materials.ts; tuning-schema.ts + tuning-panel.tsx ON LOAN to workerthree |
-| workertwo | w2Z:p3 | #358 Blur keyboard controls, owner answers sent, CLEAR | BUILDING | game/input/keyboard.ts, power-select.ts(+test), gamepad.ts(+test), hud/power-rack/power-rack.tsx + new power-rack.utils.ts, routes/beat-deck/deck-status/deck-status.constants.ts, net-canvas.tsx (one comment), docs/GDD.md §8, CLAUDE.md controls line |
+| workertwo | w2Z:p3 | #358 DONE 93df4d2 (closed), brief relayed. Flagged: Windows Ctrl+W closes tab (W hidden throttle) — owner question | IDLE | — |
 | workerthree | w2Z:p5 | #356 marigold env band (GPU composite HDRI+band → PMREM on change) | BUILDING | scene-environment.tsx, env-band/*, tuning-schema.ts + tuning-panel.tsx (loan, additive Environment.band*) |
 | do-setup | w2Z:p4 | infra | idle | — |
 
