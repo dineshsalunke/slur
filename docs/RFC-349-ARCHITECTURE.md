@@ -3,7 +3,7 @@ instruction per sentence. See CONTRIBUTING.md §8. -->
 
 # RFC-349 — Architecture: feature modules, ECS drift, server-owned game config
 
-- **Issue:** #349 · **Status:** DRAFT — Q1 approved 2026-09-29; stages in progress (§7) · **Lead:** workerone · **Updated:** 2026-09-29
+- **Issue:** #349 · **Status:** DRAFT — Q1, Q2 approved 2026-09-29; stages in progress (§7) · **Lead:** workerone · **Updated:** 2026-09-29
 - **Authors:** §1, §3, §6, §7 workerone · §4 workertwo (incl. the net half §4.4–4.5) · §5 workerthree.
   All merged. One voice.
 - **Scope:** this RFC proposes. It changes no source. Each stage in §7 needs its own issue and owner approval.
@@ -896,7 +896,7 @@ waits for S0.
 ## 8. Open questions
 
 1. Owner: accept feature modules with the two-half split (§3.2) and the tug pilot (§3.8)? **Answered 2026-09-29: yes.**
-2. Owner: accept D1 now, D3 later (§3.6)? It means one registry line per feature per end until codegen.
+2. Owner: accept D1 now, D3 later (§3.6)? It means one registry line per feature per end until codegen. **Answered 2026-09-29: yes.**
 3. Owner: accept O1 ordering (§3.5)?
 4. Owner: accept rule C (§6.1) and room config B2 with the four tiers (§4.3 B, §6.2)?
 5. Owner (#70 ADR): does room config cover combat only, or ship tuning too?
