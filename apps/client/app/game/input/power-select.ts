@@ -4,8 +4,13 @@ import { typingTarget } from '../../dev/typing-target';
 
 const SLOT_KEYS = [ 'Digit1', 'Digit2', 'Digit3' ];
 
-export const NEXT_SLOT_KEY = 'KeyQ';
+export const NEXT_SLOT_KEY = 'ArrowUp';
 export const PREVIOUS_SLOT_KEY = 'KeyR';
+
+const FIRE_FORWARD_KEYS = [ 'ControlRight', 'ShiftLeft', 'KeyE' ];
+const FIRE_BACK_KEYS = [ 'ShiftRight', 'KeyF' ];
+const DROP_KEYS = [ 'ControlLeft', 'KeyX' ];
+const CHORD_KEYS = new Set( [ 'ControlRight', 'ControlLeft', 'ShiftLeft', 'ShiftRight', NEXT_SLOT_KEY ] );
 
 const listeners = new Set< () => void >();
 
@@ -63,14 +68,15 @@ export interface PowerActions {
 }
 
 export function handlePowerKey( e: KeyboardEvent, act: PowerActions ): void {
-    if ( e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || typingTarget( e.target ) ) return;
+    if ( e.repeat || e.metaKey || e.altKey || typingTarget( e.target ) ) return;
+    if ( ( e.ctrlKey || e.shiftKey ) && ! CHORD_KEYS.has( e.code ) ) return;
     const before = selected;
     const digit = SLOT_KEYS.indexOf( e.code );
     if ( digit >= 0 ) select( digit );
     else if ( e.code === NEXT_SLOT_KEY ) cycle( act.rack(), 1 );
     else if ( e.code === PREVIOUS_SLOT_KEY ) cycle( act.rack(), -1 );
-    else if ( e.code === 'KeyE' ) act.fire( selected, 1 );
-    else if ( e.code === 'KeyF' ) act.fire( selected, -1 );
-    else if ( e.code === 'KeyX' ) act.drop( selected );
+    else if ( FIRE_FORWARD_KEYS.includes( e.code ) ) act.fire( selected, 1 );
+    else if ( FIRE_BACK_KEYS.includes( e.code ) ) act.fire( selected, -1 );
+    else if ( DROP_KEYS.includes( e.code ) ) act.drop( selected );
     if ( selected !== before ) act.tick();
 }

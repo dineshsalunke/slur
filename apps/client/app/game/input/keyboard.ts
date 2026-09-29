@@ -1,21 +1,27 @@
 import { emptyInput } from '@slur/shared';
+import { typingTarget } from '../../dev/typing-target';
 import { latchJump } from './jump-latch';
+
+const THROTTLE_KEYS = [ 'KeyQ', 'KeyW' ];
+const BRAKE_KEYS = [ 'KeyA', 'KeyS', 'ArrowDown' ];
+const DRIVE_KEYS = new Set( [ ...THROTTLE_KEYS, ...BRAKE_KEYS, 'ArrowLeft', 'ArrowRight', 'Space' ] );
 
 const input = emptyInput();
 const down = new Set< string >();
-const has = ( ...codes: string[] ) => codes.some( ( c ) => down.has( c ) );
+const has = ( codes: readonly string[] ) => codes.some( ( c ) => down.has( c ) );
 
 export const keyboardInput: Readonly< typeof input > = input;
 
 function recompute(): void {
-    input.throttle = has( 'KeyW', 'ArrowUp' ) ? 1 : 0;
-    input.brake = has( 'KeyS', 'ArrowDown' ) ? 1 : 0;
-    input.strafe = ( has( 'KeyA', 'ArrowLeft' ) ? 1 : 0 ) - ( has( 'KeyD', 'ArrowRight' ) ? 1 : 0 );
-    input.jump = has( 'Space' );
+    input.throttle = has( THROTTLE_KEYS ) ? 1 : 0;
+    input.brake = has( BRAKE_KEYS ) ? 1 : 0;
+    input.strafe = ( down.has( 'ArrowLeft' ) ? 1 : 0 ) - ( down.has( 'ArrowRight' ) ? 1 : 0 );
+    input.jump = down.has( 'Space' );
 }
 
 export function attachKeyboard(): () => void {
     const on = ( e: KeyboardEvent ) => {
+        if ( e.ctrlKey && DRIVE_KEYS.has( e.code ) && ! typingTarget( e.target ) ) e.preventDefault();
         if ( e.code === 'Space' && ! down.has( 'Space' ) ) latchJump();
         down.add( e.code );
         recompute();

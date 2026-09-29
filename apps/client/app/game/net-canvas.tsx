@@ -50,7 +50,7 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
     // Syncs with the browser keyboard: window keydown and keyup drive the local input.
     useEffect( attachKeyboard, [] );
 
-    // Syncs with the browser keyboard: 1-3, Q, E and X send fire and drop messages to the Colyseus room.
+    // Syncs with the browser keyboard: the power-up keys send fire and drop messages to the Colyseus room.
     useEffect( () => {
         const actions = {
             rack: () => world.queryFirst( LocalPlayer, Held )?.get( Held )?.slots ?? [],

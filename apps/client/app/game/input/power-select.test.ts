@@ -57,11 +57,32 @@ describe( 'power slot selection', () => {
         expect( dirs ).toEqual( [ 1, -1 ] );
     } );
 
-    it( 'Q cycles to the next full slot and wraps', () => {
+    it( 'Blur keys: Right Ctrl and Left Shift fire forward, Right Shift fires back, Left Ctrl drops', () => {
+        const { act, fired, dirs, dropped } = actions( [ bolt, seeker, bolt ] );
+        handlePowerKey( key( 'ControlRight', { ctrlKey: true } ), act );
+        handlePowerKey( key( 'ShiftLeft', { shiftKey: true } ), act );
+        handlePowerKey( key( 'ShiftRight', { shiftKey: true } ), act );
+        handlePowerKey( key( 'ControlLeft', { ctrlKey: true } ), act );
+        expect( fired ).toEqual( [ 0, 0, 0 ] );
+        expect( dirs ).toEqual( [ 1, 1, -1 ] );
+        expect( dropped ).toEqual( [ 0 ] );
+    } );
+
+    it( 'Up cycles while Shift is held, but Ctrl or Shift with a letter is ignored', () => {
+        const { act, fired } = actions( [ bolt, seeker, none ] );
+        handlePowerKey( key( 'ArrowUp', { shiftKey: true } ), act );
+        expect( selectedSlot() ).toBe( 1 );
+        handlePowerKey( key( 'KeyR', { ctrlKey: true } ), act );
+        handlePowerKey( key( 'KeyE', { shiftKey: true } ), act );
+        expect( selectedSlot() ).toBe( 1 );
+        expect( fired ).toEqual( [] );
+    } );
+
+    it( 'Up cycles to the next full slot and wraps', () => {
         const { act } = actions( [ bolt, none, seeker ] );
-        handlePowerKey( key( 'KeyQ' ), act );
+        handlePowerKey( key( 'ArrowUp' ), act );
         expect( selectedSlot() ).toBe( 2 );
-        handlePowerKey( key( 'KeyQ' ), act );
+        handlePowerKey( key( 'ArrowUp' ), act );
         expect( selectedSlot() ).toBe( 0 );
     } );
 
@@ -76,9 +97,9 @@ describe( 'power slot selection', () => {
         expect( selectedSlot() ).toBe( 2 );
     } );
 
-    it( 'Q on an empty rack still steps the selection', () => {
+    it( 'Up on an empty rack still steps the selection', () => {
         const { act } = actions( [ none, none, none ] );
-        handlePowerKey( key( 'KeyQ' ), act );
+        handlePowerKey( key( 'ArrowUp' ), act );
         expect( selectedSlot() ).toBe( 1 );
     } );
 
@@ -96,10 +117,10 @@ describe( 'power slot selection', () => {
         expect( selectedSlot() ).toBe( 0 );
     } );
 
-    it( 'ticks on each Q or digit that changes the selection, never on fire, drop or a same-slot digit', () => {
+    it( 'ticks on each Up or digit that changes the selection, never on fire, drop or a same-slot digit', () => {
         const { act, ticks } = actions( [ bolt, seeker, bolt ] );
         handlePowerKey( key( 'Digit1' ), act );
-        handlePowerKey( key( 'KeyQ' ), act );
+        handlePowerKey( key( 'ArrowUp' ), act );
         handlePowerKey( key( 'Digit3' ), act );
         handlePowerKey( key( 'KeyE' ), act );
         handlePowerKey( key( 'KeyX' ), act );

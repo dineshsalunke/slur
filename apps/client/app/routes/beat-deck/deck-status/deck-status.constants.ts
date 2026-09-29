@@ -3,7 +3,7 @@ export const HINT = {
     loading: 'Decoding the song…',
     ready: 'Enter: start the song and the take.',
     starting: 'Starting…',
-    recording: 'Recording. A/D strafe · Space jump · Esc stop.',
+    recording: 'Recording. ←/→ strafe · Space jump · Esc stop.',
     saving: 'Saving the take…',
     saved: 'Saved. Enter: record another take.',
     error: 'Something failed. Pick a song or press Enter to retry.',

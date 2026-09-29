@@ -636,21 +636,28 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 
 | Action | Key | Notes |
 |--------|-----|-------|
-| Throttle / accelerate | W or ↑ | Hold to speed up toward cruise max |
-| Brake / slow | S or ↓ | Hold to decelerate (no reverse) |
-| Strafe left/right | A / D or ← / → | Lateral, **not turning**; smooth analog (lanes fallback) |
+| Throttle / accelerate | Q | Hold to speed up toward cruise max |
+| Brake / slow | A or ↓ | Hold to decelerate (no reverse) |
+| Strafe left/right | ← / → | Lateral, **not turning**; smooth analog (lanes fallback) |
 | Jump | Space | Tap = small hop · hold = higher · double-tap = double jump |
-| Select power slot | 1 / 2 / 3 · Q · R | 1–3 select a slot. Q cycles to the next full slot, R to the previous one (#346). An emptied slot advances to the next full one |
-| Use power-up | E | Fires the selected slot (incl. **Boost**, now a pickup — LMB is not bound) |
-| Drop power-up | X | Empties the selected slot. The power is gone |
+| Select power slot | ↑ · 1 / 2 / 3 | ↑ cycles to the next full slot. 1–3 select a slot. An emptied slot advances to the next full one |
+| Use power-up | Right Ctrl or Left Shift | Fires the selected slot forward (incl. **Boost**, now a pickup — LMB is not bound) |
+| Fire back | Right Shift | Fires the selected slot backward |
+| Drop power-up | Left Ctrl or X | Empties the selected slot. The power is gone |
 | Mute | M | Someone always needs to mute fast |
 | Leave run | Esc | No pause; leaving drops you to spectate/menu |
+
+- **Blur layout (#358).** The keys follow the Blur (2010) PC default layout (Blur PC Manual p.2). SLUR adds
+  Jump (Space) and Mute (M), which Blur does not have. Blur's handbrake key (↓) brakes. Blur's pause,
+  camera, mini-map and look-back keys are not bound. W / S, E, F, X and R also work but are not shown.
+- **Mac keyboards.** A MacBook has no Right Ctrl, so Left Shift fires. macOS takes Ctrl + arrow keys for
+  Spaces, so the Mac HUD shows X for drop.
 
 - **Touch (#346, phones).** The left half of the screen holds a floating stick. Its base appears where the
   thumb lands. Touch = thrust. Slide left or right = strafe, digital, with hysteresis: it presses at 45% of
   the radius and releases at 25%, so a jittering thumb cannot re-fire the strafe kick. Pull down past 50% =
   brake. A d-pad sits bottom-right. The centre is Jump (tap / hold / double). Up = fire forward (E). Down =
-  fire back (F). Left / right = previous / next power-up (R / Q). A thumb that slides onto another arm
+  fire back (F). Left / right = previous / next power-up (R / ↑). A thumb that slides onto another arm
   fires that arm once.
 - **Aiming (design intent — NOT built).** Offensive power-ups should **auto-lock the nearest target in a
   forward cone** — combat is disruption, not precision, so no aim skill-wall. **As built the Bolt is dumb

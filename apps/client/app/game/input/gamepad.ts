@@ -1,6 +1,7 @@
 import { addEffect } from '@react-three/fiber';
 import { emptyInput, type PlayerInput } from '@slur/shared';
 import { latchJump } from './jump-latch';
+import { NEXT_SLOT_KEY } from './power-select';
 import { synthKey } from './synth-key';
 
 export const STICK_DEADZONE = 0.2;
@@ -18,8 +19,8 @@ export const PAD_KEYS: readonly ( readonly [ number, string ] )[] = [
     [ 1, 'KeyF' ],
     [ 2, 'KeyE' ],
     [ 5, 'KeyE' ],
-    [ 3, 'KeyQ' ],
-    [ 4, 'KeyQ' ],
+    [ 3, NEXT_SLOT_KEY ],
+    [ 4, NEXT_SLOT_KEY ],
     [ 8, 'KeyM' ],
     [ 9, 'Enter' ],
 ];
