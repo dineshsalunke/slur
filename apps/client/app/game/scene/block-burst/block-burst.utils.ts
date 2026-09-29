@@ -2,11 +2,11 @@ import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { accent } from '../accent';
 import type { Burst } from './block-burst';
-import { _c, _o, CORE, SLOTS } from './block-burst.constants';
+import { _c, _o, CORE } from './block-burst.constants';
 import { pending } from './block-burst.state';
 
 export function queueBurst( x: number, y: number, z: number, size: number ): void {
-    if ( pending.length < SLOTS ) pending.push( { x, y, z, size, born: -1 } );
+    pending.push( { x, y, z, size, born: -1 } );
 }
 
 export function draw( mesh: THREE.InstancedMesh, live: Burst[], now: number ): void {

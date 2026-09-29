@@ -3,11 +3,11 @@ import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { addHullPoint, resetBody, setBoxInertia } from '../debris-physics';
 import type { Chunk, ChunkBurst, Spawner } from './meteor-chunks';
-import { BASE_COUNT, CARRY, COUNT_PER_SIZE, HULL_SHRINK, LIMIT, QUEUE } from './meteor-chunks.constants';
+import { BASE_COUNT, CARRY, COUNT_PER_SIZE, HULL_SHRINK, LIMIT } from './meteor-chunks.constants';
 import { pending } from './meteor-chunks.state';
 
 export function queueChunks( b: ChunkBurst ): void {
-    if ( pending.length < QUEUE ) pending.push( b );
+    pending.push( b );
 }
 
 export function launch(
@@ -48,7 +48,7 @@ export function launch(
 }
 
 export function spawnPending( chunks: Chunk[], hull: readonly THREE.Vector3[], s: Spawner, now: number ): void {
-    for ( const b of pending ) {
+    for ( const b of pending.items ) {
         const rand = mulberry32( Math.imul( s.seed++, 0x9e37_79b1 ) );
         const n = Math.round( ( BASE_COUNT + b.size * COUNT_PER_SIZE ) * num( 'Meteor.chunks' ) );
         for ( let k = 0; k < n; k++ ) {
@@ -56,5 +56,5 @@ export function spawnPending( chunks: Chunk[], hull: readonly THREE.Vector3[], s
             s.cursor = ( s.cursor + 1 ) % LIMIT;
         }
     }
-    pending.length = 0;
+    pending.clear();
 }

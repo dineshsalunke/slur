@@ -1,4 +1,5 @@
 import type { MineEvent, PortalState } from '@slur/shared';
+import { createEventQueue } from './event-queue';
 import { pushHit } from './hit-events';
 
 export type ShockKind = 'big' | 'small' | 'fizzle' | 'portalIn' | 'portalOut';
@@ -13,18 +14,16 @@ export interface MineShock extends ShockSpot {
     kind: ShockKind;
 }
 
-const queue: MineShock[] = [];
 const MAX_QUEUED = 16;
 const SPARK_LIFT = 0.5;
+const queue = createEventQueue< MineShock >( MAX_QUEUED );
 
 export function pushMineShock( e: MineShock ): void {
     queue.push( e );
-    if ( queue.length > MAX_QUEUED ) queue.shift();
 }
 
 export function drainMineShocks( sink: ( e: MineShock ) => void ): void {
-    for ( const e of queue ) sink( e );
-    queue.length = 0;
+    queue.drain( sink );
 }
 
 function kindOf( e: MineEvent ): ShockKind {

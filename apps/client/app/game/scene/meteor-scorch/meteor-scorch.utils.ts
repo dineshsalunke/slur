@@ -1,23 +1,11 @@
 import * as THREE from 'three';
 import { accent } from '../accent';
 import type { Mark } from './meteor-scorch';
-import {
-    _c,
-    _o,
-    CORE,
-    EMBER_END,
-    FLASH,
-    FLASH_SHARE,
-    FLICKER,
-    LIFT,
-    LIMIT,
-    QUEUE,
-    SPREAD,
-} from './meteor-scorch.constants';
+import { _c, _o, CORE, EMBER_END, FLASH, FLASH_SHARE, FLICKER, LIFT, LIMIT, SPREAD } from './meteor-scorch.constants';
 import { pending } from './meteor-scorch.state';
 
 export function queueScorch( x: number, y: number, z: number, size: number, turn: number ): void {
-    if ( pending.length < QUEUE ) pending.push( { x, y, z, size, turn } );
+    pending.push( { x, y, z, size, turn } );
 }
 
 export function flatPlane(): THREE.PlaneGeometry {
@@ -28,14 +16,14 @@ export function flatPlane(): THREE.PlaneGeometry {
 
 export function stamp( marks: Mark[], cursor: number, now: number ): number {
     let next = cursor;
-    for ( const p of pending ) {
+    for ( const p of pending.items ) {
         const m = marks[ next ];
         next = ( next + 1 ) % LIMIT;
         Object.assign( m, p );
         m.born = now;
         m.live = true;
     }
-    pending.length = 0;
+    pending.clear();
     return next;
 }
 

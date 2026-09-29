@@ -21,12 +21,12 @@ export function BlockBurst() {
         const mesh = meshRef.current;
         if ( ! mesh ) return;
         const now = state.clock.elapsedTime;
-        for ( const b of pending ) {
+        for ( const b of pending.items ) {
             b.born = now;
             live.push( b );
             if ( live.length > SLOTS ) live.shift();
         }
-        pending.length = 0;
+        pending.clear();
         draw( mesh, live, now );
     } );
 
