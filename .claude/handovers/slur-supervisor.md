@@ -56,7 +56,8 @@ tuning-panel.tsx).
 1. DONE: #365 3f6f791 closed (workerone IDLE, no files; brief relayed). #368 code d65ada3 pushed; workerthree
    told "DECISIONS clear" for ADR-032 AND to explain the test-count drop (#367 98 files/668 → #368 73/495)
    before closing #368. CLAUDE.md controls line updated to #368 layout (this seam).
-2. Await workerthree: ADR-032 SHA + test-count answer → relay to owner.
+2. DONE: #368 closed (ADR-032 68d58ad). Full client vitest 98 files / 665 pass; −3 vs #367 are intended
+   (modifier label, Mac swap, old-key tests merged). All workers IDLE, no held files.
 3. Owner answers → forward.
 4. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
 
