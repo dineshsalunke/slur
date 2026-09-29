@@ -4,12 +4,13 @@ attribute vec4 aSealedSeams;
 attribute vec2 aSealedVariation;
 uniform float uBevel;
 
-bool reflEmitter( out vec3 base, out float h0, out float h1, out float power, out float point ) {
+bool reflEmitter( out vec3 base, out float h0, out float h1, out float power, out float point, out vec4 clear ) {
 	base = vec3( 0.0 );
 	h0 = 0.0;
 	h1 = 0.0;
 	power = 0.0;
 	point = 0.0;
+	clear = vec4( - 1e6, 1e6, - 1e6, 1e6 );
 	if ( aSlot + 0.5 > aSealedVariation.x ) return false;
 	vec3 centre = instanceMatrix[ 3 ].xyz;
 	vec3 size = vec3( length( instanceMatrix[ 0 ].xyz ), length( instanceMatrix[ 1 ].xyz ), length( instanceMatrix[ 2 ].xyz ) );

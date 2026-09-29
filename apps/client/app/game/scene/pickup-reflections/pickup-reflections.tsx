@@ -3,6 +3,7 @@ import type { Anchor } from '@slur/shared';
 import { useCallback, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
+import { useTrack } from '../../track-context/use-track';
 import { PICKUP_HOVER } from '../combat-look';
 import { streakMaterial, streakQuads } from '../deck-reflection/deck-reflection';
 import { reflection } from '../deck-reflection/deck-reflection.state';
@@ -10,6 +11,7 @@ import { PICKUP_EMITTER } from './pickup-reflections.constants';
 import { placePickupEmitters, syncPickupEmitters } from './pickup-reflections.utils';
 
 export function PickupReflections( { layout, isTaken }: { layout: Anchor[]; isTaken: ( id: string ) => boolean } ) {
+    const track = useTrack();
     const meshRef = useRef< THREE.InstancedMesh | null >( null );
     const geometry = useMemo( () => streakQuads( 1 ), [] );
     const material = useMemo(
@@ -20,7 +22,7 @@ export function PickupReflections( { layout, isTaken }: { layout: Anchor[]; isTa
         ( mesh: THREE.InstancedMesh | null ) => {
             meshRef.current = mesh;
             if ( ! mesh ) return;
-            placePickupEmitters( mesh.instanceMatrix.array as Float32Array, layout );
+            placePickupEmitters( mesh.instanceMatrix.array as Float32Array, layout, track );
             mesh.instanceMatrix.needsUpdate = true;
             return () => {
                 meshRef.current = null;
@@ -28,7 +30,7 @@ export function PickupReflections( { layout, isTaken }: { layout: Anchor[]; isTa
                 material.dispose();
             };
         },
-        [ geometry, material, layout ],
+        [ geometry, material, layout, track ],
     );
 
     useFrame( () => {

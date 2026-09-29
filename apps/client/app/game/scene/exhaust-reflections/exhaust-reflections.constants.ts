@@ -5,7 +5,7 @@ attribute vec3 aDrive;
 attribute float aDeckY;
 uniform float uExhaustReach;
 
-bool reflEmitter( out vec3 base, out float h0, out float h1, out float power, out float point ) {
+bool reflEmitter( out vec3 base, out float h0, out float h1, out float power, out float point, out vec4 clear ) {
 	vec3 origin = instanceMatrix[ 3 ].xyz;
 	float h = origin.y - aDeckY;
 	base = vec3( origin.x, aDeckY, origin.z );
@@ -13,6 +13,7 @@ bool reflEmitter( out vec3 base, out float h0, out float h1, out float power, ou
 	h1 = h;
 	power = aDrive.z;
 	point = 1.0;
+	clear = vec4( - 1e6, 1e6, - 1e6, 1e6 );
 	return h > 0.0 && h < uExhaustReach;
 }
 `;

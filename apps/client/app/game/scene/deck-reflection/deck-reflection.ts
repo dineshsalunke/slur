@@ -80,7 +80,8 @@ void main() {
 	float h1;
 	float power;
 	float point;
-	if ( ! reflEmitter( base, h0, h1, power, point ) || power <= 0.0 ) {
+	vec4 clear;
+	if ( ! reflEmitter( base, h0, h1, power, point, clear ) || power <= 0.0 ) {
 		gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );
 		return;
 	}
@@ -94,7 +95,12 @@ void main() {
 	float w = uReflWidth * ( 0.5 + uReflClean );
 	float spread = clamp( s0 * 0.6 * uReflStretch, w, 0.5 * uReflLength );
 	float start = mix( - 0.5 * w, s0 - spread, point );
-	float end = min( mix( min( s1 * uReflStretch, uReflLength ), s0 + spread, point ), d - 0.3 );
+	vec2 lo = clear.xz - base.xz;
+	vec2 hi = clear.yw - base.xz;
+	vec2 inv = 1.0 / max( abs( dir ), vec2( 1e-4 ) );
+	vec2 exit = mix( - lo, hi, step( 0.0, dir ) ) * inv;
+	float reach = min( exit.x, exit.y );
+	float end = min( min( mix( min( s1 * uReflStretch, uReflLength ), s0 + spread, point ), d - 0.3 ), reach );
 	if ( end <= start ) {
 		gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );
 		return;
@@ -138,7 +144,7 @@ void main() {
 	float across = 1.0 - qx * qx;
 	float v = clamp( vReflQuad.y, 0.0, 1.0 );
 	float line = pow( 1.0 - v, uReflFalloff ) * smoothstep( 0.0, 0.08, v );
-	float k = ( v - clamp( vReflCenter, 0.0, 1.0 ) ) * 3.5;
+	float k = ( v - vReflCenter ) * 3.5;
 	float spot = exp( - k * k );
 	float profile = mix( line, spot, vReflPoint ) * across * across;
 	vec3 toCam = cameraPosition - vReflWorld;
