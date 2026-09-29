@@ -41,8 +41,8 @@ assigns it.
 ## Open questions
 
 - Owner (#369): is the flatter nozzle OK? Does the near-camera streak still read orange after "reset tuning"?
-- Optional, not filed: rename the read-only `_zero`/`_one`/`_black`/`_identity` to UPPERCASE so a leading
-  `_` always means scratch. The supervisor decides.
+- Answered: the `_zero`/`_one`/`_black`/`_identity` → UPPERCASE rename is "not now". The supervisor will
+  revisit it when features move into modules.
 
 ## Lessons → memory
 
