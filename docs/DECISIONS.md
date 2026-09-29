@@ -1655,13 +1655,13 @@ The #358 layout copied the Blur (2010) PC keys: Q throttle, A or ↓ brake, Righ
    | Fire forward · fire back | E · D |
    | Previous · next power slot | S · F |
    | Drop | X |
-   | Rear-view mirror | B (kept after a reload, #367) |
    | Mute · leave | M · Esc |
 
 2. **No other key works.** Q, A, S as brake, both Ctrl keys, both Shift keys, V and 1–3 are removed. `fireKeyFor`, `dropKeyFor`, `MAC_*` and `macKeyboard` are deleted.
 3. **No modifiers.** A power key pressed with Ctrl, Cmd or Alt does nothing in the game, so the browser shortcut runs. This is the rule M and the mirror key already used. `keyboard.ts` no longer calls `preventDefault`. No key is held with Ctrl, and `html` and `body` are `overflow-hidden` (`root.tsx`), so ↑, ↓ and Space cannot scroll the page.
 4. **Gamepad and touch keep their buttons.** They send the new codes. S is a real previous-slot key now, so the touch d-pad's left arm sends S instead of the synthetic `PreviousSlot` code.
 5. **The lobby ship picker steps on ← / → only.** A / D were removed too (owner, 2026-09-29).
+6. **B is unbound.** The rear-view mirror it toggled is removed (#371, ADR-034).
 
 ### Consequences
 
@@ -1689,3 +1689,29 @@ The owner said the ship nozzles read peach, not marigold (#369). The nozzle is t
 - The scene lights are the HDRI and the VFX point lights. ADR-030 listed the engine light too.
 - A saved `Ship.engine*` value in `slur.tuning.v1` is dropped, because the default it was saved against changed.
 - Details: `ART_MATERIALS.md` §7 item 25.
+
+## ADR-034 — The rear-view mirror is removed
+
+**Date:** 2026-09-29 · **Status:** Accepted (owner decision, 2026-09-29) · **Issue:** #371 · **Amends:** ADR-032 (B mirror)
+
+### Context
+
+The mirror was a second scene render into an FBO, shown as a panel at the top centre (#367). B showed or hid it, and `slur.rearView` kept the choice. The quality tier turned it off on low. The owner said: "lets remove the rearview mirror please, its not adding any value".
+
+workertwo measured its cost on `/test-level?quality=high`, headless, GPU-synced median (handover `cdadd1f`):
+
+- Frame time: +0.55 ms at DPR 1 (1728×1080), +0.75 to +0.8 ms at DPR 2.
+- Draw calls: 129 with the mirror, 74 without. The mirror was 55 calls, 43% of the frame.
+- CPU per frame: about +0.3 ms.
+
+### Decision
+
+1. The mirror pass, its panel, its camera and its surface shader are deleted.
+2. B is unbound. The controls panel has no Mirror row. Gamepad and touch had no mirror button.
+3. The `rearView` quality flag and the `RearView.*` dials are deleted.
+
+### Consequences
+
+- The high and medium tiers save the cost above.
+- A stored `slur.rearView` or `RearView.*` value in a browser is no longer read.
+- The directional threat-warning HUD is the only rear awareness.

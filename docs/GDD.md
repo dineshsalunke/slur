@@ -222,7 +222,7 @@ racer skips the pickup, and the pickup stays. A dropped power is gone (ADR-017 a
 The arc moves with the ship. The selected slot is bright and slightly larger. A full slot that is not
 selected is dim. An empty slot is a faint outline. A pickup shows its glyph large over the ship, and the
 glyph then shrinks into its slot. A selection change (Q or 1–3) pulses the selected glyph and plays a
-short tick. Only the local ship has an arc. The rear-view mirror does not show it. The bottom-right
+short tick. Only the local ship has an arc. The bottom-right
 corner keeps only the key hint.
 
 | Type | Example | Effect |
@@ -645,7 +645,6 @@ Keyboard-first (office laptops). Gamepad = nice-to-have later. No pause (live mu
 | Fire back | D | Fires the selected slot backward |
 | Drop power-up | X | Empties the selected slot. The power is gone |
 | Mute | M | Someone always needs to mute fast |
-| Rear-view mirror | B | Shows or hides the mirror (#367). The choice is kept after a reload |
 | Leave run | Esc | No pause; leaving drops you to spectate/menu |
 
 - **One layout (#368, ADR-032).** The right hand drives on the arrow keys. The left hand holds the power keys

@@ -13,7 +13,6 @@ describe( 'keyboardControls', () => {
             Slot: [ 'S', 'F' ],
             Drop: [ 'X' ],
             Mute: [ 'M' ],
-            Mirror: [ 'B' ],
         } );
     } );
 } );

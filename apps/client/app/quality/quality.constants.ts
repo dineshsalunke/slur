@@ -12,7 +12,6 @@ export interface QualityProfile {
     msaa: boolean;
     post: boolean;
     rocks: boolean;
-    rearView: boolean;
 }
 
 export type QualityFeature = {
@@ -28,7 +27,6 @@ export const PROFILES: Record< QualityTier, QualityProfile > = {
         msaa: false,
         post: false,
         rocks: false,
-        rearView: false,
     },
     medium: {
         landing3d: true,
@@ -38,7 +36,6 @@ export const PROFILES: Record< QualityTier, QualityProfile > = {
         msaa: false,
         post: true,
         rocks: true,
-        rearView: true,
     },
     high: {
         landing3d: true,
@@ -48,7 +45,6 @@ export const PROFILES: Record< QualityTier, QualityProfile > = {
         msaa: true,
         post: true,
         rocks: true,
-        rearView: true,
     },
 };
 

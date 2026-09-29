@@ -100,9 +100,8 @@ React Router (SPA) — apps/client/app/routes.ts
 - **Local player:** client-side prediction from local input + **server reconciliation**
   (`lastProcessedInput` seq). This is what keeps web/WAN latency playable, not just a LAN nicety.
 - **Camera:** rubberband chase (`game/camera/chase.ts`, constants in `CHASE` — height/back/lookAhead/
-  lookAtLift/fov, owner-tuned per ADR-011). A **rearview mirror** (2nd render pass) was deferred at S5 in
-  favour of a **threat-warning HUD** (cheaper; no bloom/render-priority cost); the mirror rides with
-  homing/mines as a fast-follow.
+  lookAtLift/fov, owner-tuned per ADR-011). There is no rear-view mirror: the 2nd render pass shipped in
+  #367 and was removed in #371 (ADR-034). The **threat-warning HUD** gives the rear awareness.
 - **Deterministic track:** the room state carries a **descriptor** (opaque key — procgen `{seed, tier}` or
   authored `{levelId}`); both ends **materialize** an identical physics-and-anchors `Track` from it → never
   sync geometry tile-by-tile. The sim depends on the `Track` **interface**, not the descriptor's contents.

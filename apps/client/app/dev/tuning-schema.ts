@@ -149,14 +149,6 @@ export const NUMBER_TUNABLES = {
 
     'Boost.blur': { value: 1, min: 0, max: 2, step: 0.05, rebuild: false },
 
-    'RearView.fov': { value: 36, min: 15, max: 100, step: 1, rebuild: false },
-    'RearView.lift': { value: 3, min: 0, max: 12, step: 0.1, rebuild: false },
-    'RearView.tilt': { value: 4, min: -20, max: 30, step: 0.5, rebuild: false },
-    'RearView.gain': { value: 1, min: 0, max: 2, step: 0.01, rebuild: false },
-    'RearView.featherX': { value: 0.22, min: 0, max: 0.5, step: 0.01, rebuild: false },
-    'RearView.featherY': { value: 0.18, min: 0, max: 0.5, step: 0.01, rebuild: false },
-    'RearView.scale': { value: 1, min: 0.5, max: 2, step: 0.05, rebuild: true },
-
     'Exhaust.length': { value: 1.4, min: 0.5, max: 24, step: 0.1, rebuild: false },
     'Exhaust.spread': { value: 1.6, min: 0.5, max: 5, step: 0.05, rebuild: false },
     'Exhaust.glow': { value: 11, min: 0, max: 20, step: 0.05, rebuild: false },

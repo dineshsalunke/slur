@@ -105,7 +105,6 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [koota readEach tuple is exact](koota-readeach-tuple-is-exact.md) — `[ A, B, ...unknown[] ]`
 - [leva onChange fires on mount](leva-onchange-fires-on-mount.md) — compare hex case-insensitively
 - [Back-face flip mirrors a glyph](back-face-flip-mirrors-a-glyph.md) — rotateX(PI), not Y; test direction
-- [Rear-view panel looks like geometry](rear-view-panel-looks-like-geometry.md) — top-centre slab = mirror
 
 ## Look, light & materials
 - [Scene env intensity overrides material](scene-env-intensity-overrides-material.md) — only Environment.intensity

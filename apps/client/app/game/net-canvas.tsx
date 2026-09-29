@@ -33,7 +33,6 @@ import { NetPowerArc } from './scene/net-power-arc';
 import { PickupField } from './scene/pickup-field';
 import { PortalField } from './scene/portal-field/portal-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
-import { RearView } from './scene/rear-view';
 import { SeekerField } from './scene/seeker-field';
 import { TugLine } from './scene/tug-line/tug-line';
 import { WorldScene } from './scene/world-scene';
@@ -88,7 +87,6 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <PhaseGate phases={ ON_TRACK_PHASES }>
                                 <NetPowerArc />
                             </PhaseGate>
-                            <RearView />
                             <GameAudio />
                             <RemoteEngineAudio />
                             { children }

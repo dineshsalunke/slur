@@ -1,3 +1,0 @@
-export const REAR_PANEL_WIDTH = 448;
-export const REAR_PANEL_HEIGHT = 140;
-export const REAR_ASPECT = REAR_PANEL_WIDTH / REAR_PANEL_HEIGHT;
