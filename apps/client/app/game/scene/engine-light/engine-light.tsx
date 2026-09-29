@@ -3,9 +3,10 @@ import { useWorld } from 'koota/react';
 import { useRef } from 'react';
 import type * as THREE from 'three';
 import { col, num } from '../../../dev/tuning';
-import { LocalPlayer, Render } from '../../ecs/traits';
+import { LocalPlayer, Net, Render } from '../../ecs/traits';
 import { exhaustDrive } from '../exhaust-drive';
 import { AFTER_RENDER_SYNC } from './engine-light.constants';
+import { portTailZ } from './engine-light.utils';
 
 export function EngineLight() {
     const world = useWorld();
@@ -31,7 +32,7 @@ export function EngineLight() {
 
         const idle = num( 'Exhaust.idle' );
         light.position.copy( group.position );
-        light.position.z -= num( 'EngineLight.back' );
+        light.position.z += portTailZ( entity.get( Net )?.shipId ?? '' ) * group.scale.z - num( 'EngineLight.back' );
         light.position.y += num( 'EngineLight.lift' );
         light.intensity = num( 'EngineLight.intensity' ) * ( idle + ( 1 - idle ) * throttle );
         light.distance = num( 'EngineLight.distance' );
