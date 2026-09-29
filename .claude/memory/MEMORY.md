@@ -117,7 +117,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Fog hides emissive past 420u](fog-hides-emissive-past-420u.md) — far signals need `fog:false`
 - [Thin emissive needs pixel coverage](thin-emissive-needs-pixel-coverage.md) — edge-on strip barely blooms
 - [A point light at an emitter shifts its hue](point-light-at-an-emitter-shifts-its-hue.md) — turned red
-- [Engine light swamps an emissive A/B](engine-light-swamps-emissive-ab.md) — zero it (being removed)
+- [Nozzle colour is two GLB materials](nozzle-colour-lives-in-two-glb-materials.md) — tintNozzle; Exhaust.glow 0 to A/B
 - [Cavity channel is dead](cavity-channel-is-dead.md) — darken the albedo map instead
 - [Threshold noise makes worm pits](threshold-noise-makes-worm-pits.md) — use Worley distance
 - [Round lobes read as spots](round-lobes-read-as-spots.md) — angle-random strokes + fBm

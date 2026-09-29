@@ -1,41 +1,26 @@
-Agent: workerone · Lane: exhaust hue + EngineLight removal (#369) · Updated: 2026-09-29
+Agent: workerone · Lane: exhaust hue + EngineLight removal (#369) · Updated: 2026-09-29 09:50
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Make the nozzles and their deck reflection read as the marigold accent (#F5B024, 40°). Remove the
-EngineLight (owner decision). OWNER APPROVED option 2 + the EngineLight removal in one commit set (2026-09-29, via supervisor). Option 4 (hue-preserving tone map) stays parked.
+Make the nozzles read as the marigold accent (#F5B024, 40°) and remove the EngineLight. Done.
 
 ## Done
 
-- Filed #369. Investigation only. No code written.
+- 4c66045 — `tintNozzle` sets `Engine_core` + `Marigold_emission` emissive to `accent()` over a black base
+  (`collectSurfaces`). `Ship.engineIdle` 0.35, `Ship.engineCruise` 0.6. EngineLight component + 5 dials
+  deleted (world-scene, landing-scene, tuning panel/schema). ADR-033, ART_MATERIALS rev 12 / item 25.
+  RFC-349: engine-light refs dropped; memory links → `lint-footguns` (supervisor request).
+- Memory: `nozzle-colour-lives-in-two-glb-materials.md` replaces `engine-light-swamps-emissive-ab.md`.
 
 ## State
 
-All numbers are measured in headless /test-level (quality=high, 968×1062, EngineLight 0 = new baseline,
-cruising, KeyP frozen). Hue is the mean of each brightness band in a crop.
-
-- The nozzle has three parts. The face plates are GLB material `Marigold_emission`. Its emissive is linear
-  (0.913, 0.323, 0.018), which is sRGB ≈ #F59A24 at 34°, not the accent. The grille bars are
-  `Engine_core`: emissive (1, 0.462, 0.027) × 1.7 × engineCruise 2.2, with a peach base colour
-  (1, 0.665, 0.258). The U-shaped glow is the plume, at ~40°.
-- Default brightest nozzle pixels: 29.8°, sat 0.53 (peach). The owner's screenshot reads 27.6°, sat 0.49.
-- Isolation, brightest band: bloom 0 → 30.4 · plume off → 29.6 · Exhaust.hot = accent → 29.9 ·
-  engineCruise 1 → 30.1 · env 0 → 34.6 · light 18 → 28.0 · tone None → 50.4 (clips yellow) ·
-  ACES → 44.5 sat 0.36 · AgX → 37.5 sat 0.25.
-- Blank Marigold_emission → 34.6. Blank Engine_core → 28.8.
-- Candidate x5 = both materials: emissive = accent, base colour black, plus engineCruise 0.6 and
-  engineIdle 0.35. Nozzle bands read 38.0 / 40.0 / 40.5°, and no pixels are left over 240 (no peach).
-  x2 (same, but Marigold keeps an accent base colour) still has a 35° peach top band.
-- The exhaust reflection is on hue at defaults. Bands from dim to bright: 39.8 / 41.2 / 41.0 / 37.2°. The
-  top band loses saturation to Neutral (0.66). The dim tail keeps its 40° hue but is rgb(63,44,7),
-  which is brown by lightness, not by hue.
-- NOT reproduced: the owner's near-camera streak at 31° (sat 0.9 in every band). Headless reads
-  40–41° at DPR 1 and 2, with light on and light off. [inferred] Stored tuning in the owner's tab, or a view I
-  have not matched. The extension was not connected, so I could not read their `slur.tuning.v1`.
-- Scratchpad `73454a4d…/scratchpad/hue/`: cap.mjs (variants via localStorage, `__mat`/`__js` route
-  rewrites of ship-model.utils.ts), band.mjs (hue per brightness band), stat.mjs, shots/, crops c-*.png.
+- Typecheck clean. `pnpm lint` clean (9 pre-existing warnings). Client vitest 97 files / 669 tests pass.
+- Measured on real code, headless /test-level quality=high 968×1062, cruise, KeyP: nozzle bands
+  37.5 / 40.0 / 40.1 / 40.4°, sat 0.86; 22 px over 240 at 38.5°. Before: top band 29.9° sat 0.53.
+- Saved `Ship.engine*` values are dropped automatically (tuning-persist keys on the old default).
+- Owner's near-camera 31° streak still NOT reproduced [unmeasured in owner's tab].
 
 ## Uncommitted
 
@@ -43,21 +28,18 @@ cruising, KeyP frozen). Hue is the mean of each brightness band in a crop.
 
 ## Held files
 
-- Cleared by supervisor, not yet written: engine-light/ (delete, 4 files), world-scene.tsx, routes/home/landing-scene/landing-scene.tsx, dev/tuning-schema.ts, dev/tuning-panel/tuning-panel.tsx, ship-model/ship-model.utils.ts, ship-materials.ts (+ test), docs/RFC-349-ARCHITECTURE.md, docs/DECISIONS.md, docs/ART_MATERIALS.md. `.claude/memory/` is ON HOLD until the supervisor merge lands.
+- none (lane released).
 
 ## Next
 
-1. APPROVED, build now (start at HEAD, after workerthree d6cb3f6/28da8f8): remove the EngineLight, override the two nozzle materials from `accent()` in `collectSurfaces`, and
-   change the engine idle and cruise defaults.
-2. Tests + typecheck + lint, commit by pathspec. Re-measure x5 on the real code, then send the supervisor the SHAs, test counts and what to look at on /test-level. Close #369 with the SHA.
+1. Owner checks /test-level: nozzles marigold, no peach; nozzle flatter / less white-hot.
+2. If owner wants more punch: raise `Ship.engineCruise` in the panel and re-measure the top band [unmeasured].
 
 ## Open questions
 
-- Owner: does the near-camera streak still read orange after "reset tuning" in the dev panel?
-- Owner: is the flatter, less white-hot nozzle (x5) acceptable?
+- Owner: does the near-camera exhaust streak still read orange after "reset tuning"?
+- Owner: is the flatter nozzle acceptable? Option 4 (hue-preserving tone map) stays parked.
 
 ## Lessons → memory
 
-- Pending. Memory writes are on hold (supervisor is merging memories). To write later: "nozzle
-  colour lives in two GLB materials; Marigold_emission is authored at 34°, and Vite-served code
-  has no spaces inside parens, so route rewrites need a regex".
+- `.claude/memory/nozzle-colour-lives-in-two-glb-materials.md`.
