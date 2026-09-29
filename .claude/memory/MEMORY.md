@@ -49,6 +49,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Touch test over CDP](touch-test-over-cdp.md) — `pointer: coarse`; sample ≥300 ms after tap
 - [Test-level skips Overlays](test-level-skips-overlays.md) — in-race HUD goes in NetHud
 - [Count React renders over CDP](count-react-renders-over-cdp.md) — fake devtools hook
+- [Measure frame order over CDP](measure-frame-order-over-cdp.md) — wrap R3F subscribers; camera lag
 - [Grab the scene](grab-the-scene.md) — three devtools hook; wrap Object3D onBeforeRender
 - [koota universe reaches the page world](koota-universe-reaches-the-page-world.md) — reads ok; writes lost
 - [Decode audio in headless Chrome](decode-audio-in-headless-chrome.md) — decodeAudioData over CDP

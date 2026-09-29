@@ -1,22 +1,24 @@
-Agent: workerthree · Lane: RFC-349 S14 frame-phase constants (#378) · Updated: 2026-09-29 16:00
+Agent: workerthree · Lane: RFC-349 S15 readers after NetLoop (#379) · Updated: 2026-09-29
 
 ## Goal
-One frame-phase constants file. Every `useFrame` priority comes from it. No behaviour change.
+Camera, `Render` and `Sim` readers run after `NetLoop` by priority. Measure the lag before and after on /test-level.
 
 ## Done
-- db2552d (#378): new `apps/client/app/game/frame/frame-phase.constants.ts` — `FRAME_PHASE { base: 0, afterSync: 0.25, render: 1 }`. Replaced `AFTER_RENDER_SYNC` x2 (exhaust-field, boost-streaks), `PLAIN_RENDER_PRIORITY` (file deleted), frame-tap literal `0`. `EffectComposer` now passes `renderPriority={ FRAME_PHASE.render }` (its default is 1, read in node_modules/@react-three/postprocessing/dist/index.js: `renderPriority:n=1`).
+- db2552d (#378, CLOSED): `game/frame/frame-phase.constants.ts`.
+- dbaf3b22 (#379, CLOSED): `afterSync` renamed to `view` (0.25). 12 readers moved to `FRAME_PHASE.view`: AsteroidBand, BlockDebris, MeteorChunks, MeteorScorch, MeteorStrikes, TrackBlocks, ExplosionField, ShipModel, ShipShadow, TugLine, PowerArc, SceneEffects.
 
 ## State
-- `PASS_PRIORITY`, `HUD_PRIORITY`, `-1` named in the RFC no longer exist in source (grep).
-- ast-grep `useFrame($CB, $P)` found only the 4 priority sites above. All other `useFrame` calls use the implicit default 0.
-- `pnpm typecheck` clean. Client vitest 97 files / 678 tests pass. `pnpm lint` 0 errors, 9 warnings (pre-existing, other files).
-- Live frame order [unmeasured]. Values are identical, so the order cannot change [inferred].
+- Before (measured, :5173/test-level?quality=high, 180 frames, full throttle): 9 readers ran before NetLoop, stale in 100% of frames, mean 1.96 u, max 2.21 u.
+- After (measured): NetLoop first; all 16 readers 0 u lag.
+- typecheck clean · client vitest 99 files / 686 tests pass · lint 0 errors, 9 warnings (other files).
+- Shake onset from BlockDebris/MeteorStrikes now reaches the camera one frame later [inferred, not measured].
+- The headless Chrome was closed after each run (Playwright `browser.close`).
 
 ## Uncommitted
 none
 
 ## Held files
-none
+none (released to the supervisor at dbaf3b22)
 
 ## Next
 1. Idle. Wait for the supervisor.
@@ -25,4 +27,4 @@ none
 none
 
 ## Lessons → memory
-none
+.claude/memory/measure-frame-order-over-cdp.md
