@@ -59,7 +59,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #390 F2 tug pilot | BUILDING | tug files (shared combat/run/sim tug*, client tug-events/tug-line/tug-pickups) → features/tug/; registries; engine slots; central cuts: step.ts, types.ts, run-sim.ts, combat.ts, power-bag.ts, index.ts, player-fields.ts, attach-room-to-world.ts, net-canvas.tsx, pickup-field.tsx, seeker-pickups/*, glyph-atlas.ts, bind-room-audio.ts; listed tests; features.md §3 |
 | workertwo | w2Z:p3 | part 1 DIAL_SYNC → route schedules; part 2 S19 #391 | BUILDING (claim cleared except net-canvas.tsx = workerone; hand over at workerone seam) | 3 schedule constants (net-loop, landing-schedule, deck-loop), game/scene/dial-sync/*, track-view.tsx; quality/* (quality-gate → quality-latch, new quality-sync), game-environment.tsx (swap only), track-texture.ts, hdri/hdri.state.ts, routes/home/quality-picker/*, game/game-shell.tsx |
-| workerthree | w2Z:p5 | #389 landing gap (follow-up to #386) | BUILDING (claim cleared; cleared + resumed after e1c15534) | routes/home/{landing-backdrop/*, landing-scene/landing-scene.tsx, NEW landing-reveal/*} |
+| workerthree | w2Z:p5 | #389 landing gap | LANDED 6acf1345 (pushed via workertwo). Pane BLOCKED on a `git commit --amend` prompt that would rewrite workerone's HEAD — owner must press No; told it to commit by path instead | its handover only |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
@@ -68,6 +68,8 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
    worried about wire lag; validation is server-side after decode, 0 bytes). workerone told; folds into
    features.md. Q9 ANSWERED: reload-only (S19 unblocked after S18). Was: Q9 (tier change rebuilds sky/track textures mid-race, or reload-only). Q10 is ours (measure).
 2. Owner to try pad Start in a real lobby (#375).
+2b. perf-analysis skill: `.claude/skills/perf-analysis/scripts/perf.mjs` still presses KeyW (throttle is ArrowUp since #368) → measures a parked ship. Unassigned fix.
+2c. F2 baselines (workerone, HEAD c99945c4): /test-level 8.30 ms best, 74 draws; simulate() 2.36–2.41 µs/tick at 4× throttle.
 3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
    perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;
    #312/#313; #16; #342 gaps.
