@@ -56,7 +56,7 @@ REPS=2 T=baseline,allmesh,points,sky,stars,rocks,deck node perf.mjs
 resolvable from the repo (an `npx` cache path works). Env: `W`/`H` viewport (default 1728×1080), `DPR` (default 2, so 3456×2160), `URL`, `REPS`, `STORE`
 (a `slur.tuning.v1` JSON to preload tunables). `T` is the comma list of toggles; each hides one
 subsystem by traversing the scene, and `allmesh` hides everything drawable, which leaves the post chain,
-rear view, HUD and present as the floor. Add a toggle by adding a line to the `toggles` map.
+HUD and present as the floor. Add a toggle by adding a line to the `toggles` map.
 
 To see a look rather than time it, `scripts/tune.mjs` screenshots `/test-level` with a set of tunables
 preloaded through localStorage, resolving each key's schema default so `restore()` accepts it:
@@ -86,7 +86,7 @@ argument is how long to hold `W` before the shot; `0` parks the ship. `S` is the
 |---|---|
 | `RectAreaLight` | LTC runs per light on every fragment of every standard material. Six lights were 8 ms of a 17.7 ms DPR 2 frame. Replaced by an analytic line light, which was itself removed in #310 (no visible effect). Do not bring them back for a glow. |
 | Canvas `antialias`, `alpha` | Both off (`scene/canvas-gl.ts`). The composer's final quad gains nothing from MSAA; an opaque canvas skips the compositor blend. About 1 ms. |
-| Rear view | Half-scale rear view changed nothing measurable. Not a target. |
+| Rear view | Removed (#371, ADR-034): it cost 0.55–0.8 ms and 55 draw calls a frame. |
 | Sky pass | 1.4 ms at DPR 2 for four cube reads, three volume reads and two star hashes per pixel. Freezing motion saves nothing; the cost is the reads. Next step if needed: render the sky at half res, which softens stars. |
 | Rocks | 0.9 ms. The far-plane dither discard disables early-z on the rock shader; shrinking rocks at the far plane instead would restore it. Not yet worth it. |
 | Point lights | 0.5 ms combined with the directional fill, which #310 removed. Removing it saved nothing measurable. |

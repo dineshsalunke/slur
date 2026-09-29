@@ -34,7 +34,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 |---|---|---|---|---|
 | workerone | w2Z:p2 | — (#369 shipped 4c66045 + e5b1e6d; OPEN for owner sign-off) | IDLE | — |
 | workertwo | w2Z:p3 | #372 seeker lock warning: OWNER APPROVED bottom-edge red LOCK chevron (DOM addEffect, slides by dx, 1→3 BARS by time-to-impact, solid + vignette on committed, ×2, top edge for back-fired) + /test-level "Incoming seeker" button | BUILDING | overlays/seeker-warning/*, overlays/overlays.tsx, test-level/pickup-grants/pickup-grants.utils(+test).ts, docs/GDD.md §5.3 (shared with workerthree #371 — sequence commits); app.css only after asking |
-| workerthree | w2Z:p5 | REMOVE rear-view mirror entirely (owner, 2026-09-29): render, panel, B key, pad/touch, slur.rearView, quality flag, dials, tests, ADR bullet, GDD + CLAUDE.md controls line, delete memory rear-view-panel-looks-like-geometry | BRIEFED, claim list pending | — (awaiting claim) |
+| workerthree | w2Z:p5 | — (#371 mirror removed 46d794f, closed; ADR-034; CLAUDE.md + perf-analysis skill mirror lines fixed by supervisor) | IDLE | — |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
