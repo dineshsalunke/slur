@@ -33,7 +33,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | — (#369 shipped 4c66045 + e5b1e6d; OPEN for owner sign-off) | IDLE | — |
-| workertwo | w2Z:p3 | — (mirror cost measured, handover cdadd1f; context likely >15%: clear before next lane) | IDLE | — |
+| workertwo | w2Z:p3 | homing-seeker warning (owner: replaces the mirror's rear awareness). Cleared + briefed PLAN ONLY: ≥5 options, pick one, claims, owner approves before build | PLANNING | — |
 | workerthree | w2Z:p5 | REMOVE rear-view mirror entirely (owner, 2026-09-29): render, panel, B key, pad/touch, slur.rearView, quality flag, dials, tests, ADR bullet, GDD + CLAUDE.md controls line, delete memory rear-view-panel-looks-like-geometry | BRIEFED, claim list pending | — (awaiting claim) |
 | do-setup | w2Z:p4 | infra | idle | — |
 
