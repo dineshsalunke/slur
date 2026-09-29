@@ -50,9 +50,9 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #385 F1 | STARTING (cleared to 0%, prompted) | claim pending |
-| workertwo | w2Z:p3 | #383 S8 | STARTING (0%, prompted) | claim pending |
-| workerthree | w2Z:p5 | #384 S18 | STARTING (cleared to 0%, prompted) | claim pending |
+| workerone | w2Z:p2 | #385 F1 | BUILDING (claim cleared; DEFERRED until S8 lands: net/attach-room-to-world.ts + game/net-loop/net-loop.constants.ts) | shared: features/{define-sim-feature,registry,sim-hooks}.ts, player-fields.ts(+test), schema.ts, sim/types.ts, sim/step.ts, run/run-sim.ts, index.ts · client: engine/*, features/client-features.ts, game/net-canvas.tsx · .ls-lint.yml, conventions/features.md §3 |
+| workertwo | w2Z:p3 | #383 S8 | BUILDING (claim cleared; 2-tick flush = 30 Hz, server cap 60 msg/s; must measure hidden-tab case, old setInterval existed for it) | apps/client/app/: net/attach-room-to-world.ts, net/input-chunks.ts (+test), game/net-loop/net-loop.constants.ts, net-loop.utils.ts |
+| workerthree | w2Z:p5 | #384 S18 | BUILDING (claim cleared) | game/scene/scene-effects/*, game/scene/plain-render/* (may delete), game/scene/world-scene.tsx, routes/home/landing-scene/landing-scene.tsx |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner questions
@@ -69,8 +69,9 @@ None.
 
 ## Next
 
-1. Receive three claims; check against each other. F1 must not claim net/attach-room-to-world.ts until S8
-   lands (then tell workerone it is released), nor world-scene.tsx / landing-scene.tsx (S18).
+1. All three claims cleared. When workertwo reports S8 landed: mark RFC §7, then tell workerone that
+   net/attach-room-to-world.ts and net-loop.constants.ts are released. If S8's hidden-tab result is worse
+   than today, take it to the owner.
 2. Still free, unassigned: S17, S20, S21 (Q10 first); S4/S5 after F1 (both touch the bridge). S19 needs Q9.
 3. F1 → F2 tug pilot → F3 owner go/no-go on the §3.8 numbers.
 4. features.md §5 cites game/frame/schedule.ts `buildSchedule`; if it is renamed, update §5.
