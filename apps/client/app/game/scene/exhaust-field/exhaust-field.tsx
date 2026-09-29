@@ -3,12 +3,13 @@ import { useWorld } from 'koota/react';
 import { Fragment, useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Net, Render } from '../../ecs/traits';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
 import { buildExhaustGeometry } from '../exhaust-geometry';
 import { buildExhaustMaterial } from '../exhaust-material';
 import { PORT_HEIGHT, PORT_WIDTH } from '../exhaust-ports';
 import { ExhaustReflections } from '../exhaust-reflections/exhaust-reflections';
-import { AFTER_RENDER_SYNC, MAX_PLUMES } from './exhaust-field.constants';
+import { MAX_PLUMES } from './exhaust-field.constants';
 import { syncPalette, writeShip } from './exhaust-field.utils';
 
 export interface Palette {
@@ -57,7 +58,7 @@ export function ExhaustField() {
         mesh.instanceMatrix.needsUpdate = true;
         drive.needsUpdate = true;
         deckY.needsUpdate = true;
-    }, AFTER_RENDER_SYNC );
+    }, FRAME_PHASE.afterSync );
 
     return (
         <Fragment>

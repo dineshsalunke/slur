@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useRef } from 'react';
 import { num } from '../../../dev/tuning';
 import { localBoostSurplus } from '../../camera/boost-surplus';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { BoostBlurEffect } from '../boost-blur/boost-blur-effect';
 import { composerToneMode, toneExposure, toneMode } from '../tone-mapping';
 import { msaaSamples } from './scene-effects.utils';
@@ -48,7 +49,7 @@ export function SceneEffects() {
     } );
 
     return (
-        <EffectComposer ref={ composer } multisampling={ 0 }>
+        <EffectComposer ref={ composer } multisampling={ 0 } renderPriority={ FRAME_PHASE.render }>
             <primitive object={ blur } />
             <primitive object={ bloom } />
             <primitive object={ tone } />

@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { toneExposure, toneMode } from '../tone-mapping';
-import { PLAIN_RENDER_PRIORITY } from './plain-render.constants';
 
 export function PlainRender() {
     useFrame( ( { gl, scene, camera } ) => {
@@ -8,7 +8,7 @@ export function PlainRender() {
         if ( gl.toneMapping !== mode ) gl.toneMapping = mode;
         gl.toneMappingExposure = toneExposure();
         gl.render( scene, camera );
-    }, PLAIN_RENDER_PRIORITY );
+    }, FRAME_PHASE.render );
 
     return null;
 }

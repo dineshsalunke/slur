@@ -3,9 +3,10 @@ import { useWorld } from 'koota/react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { Net, Render } from '../../ecs/traits';
+import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { boostStreakGeometry } from '../boost-look';
 import { buildBoostStreakMaterial } from '../boost-streak-material';
-import { AFTER_RENDER_SYNC, MAX_STREAKS, PER_SHIP } from './boost-streaks.constants';
+import { MAX_STREAKS, PER_SHIP } from './boost-streaks.constants';
 import { writeShip } from './boost-streaks.utils';
 
 export function BoostStreaks() {
@@ -42,7 +43,7 @@ export function BoostStreaks() {
         mesh.count = i;
         mesh.instanceMatrix.needsUpdate = true;
         levels.needsUpdate = true;
-    }, AFTER_RENDER_SYNC );
+    }, FRAME_PHASE.afterSync );
 
     return (
         <instancedMesh

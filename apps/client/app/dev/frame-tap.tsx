@@ -1,12 +1,13 @@
 import { advance, useFrame, useStore } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
+import { FRAME_PHASE } from '../game/frame/frame-phase.constants';
 import { type DeltaLog, pumpAndCapture, recordDelta } from './frame-tap-pump';
 
 export function FrameTap() {
     const store = useStore();
     const log = useRef< DeltaLog >( { first: 0, last: 0, frames: 0 } );
 
-    useFrame( ( _state, delta ) => recordDelta( log.current, delta ), 0 );
+    useFrame( ( _state, delta ) => recordDelta( log.current, delta ), FRAME_PHASE.base );
 
     // Syncs with Vite's HMR channel: answers frame-tap capture requests from the dev server.
     useEffect( () => {
