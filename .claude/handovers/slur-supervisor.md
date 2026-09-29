@@ -50,7 +50,7 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 | S17 addEffect → phases | #387 | landed a3ee47ad, closed, pushed (HUD speed now this-frame 151/151) |
 | F1 engine skeleton | #385 | landed 1a5415c7 + f912f7ab; pushed (by workertwo's push); workerone to close #385. features.md §8 now empty (Q6, Q7 folded) |
 | S20 dial-sync | #388 | landed 9b5f38f2, closed, pushed. Material writes 29 → 7/frame |
-| S19 quality hooks | (workertwo files) | ASSIGNED workertwo after the dial-sync schedule move |
+| S19 quality hooks | #391 | landed 393e7480 (0 new objects on tier flip, was 11). Step-down move into net-canvas.tsx pending: hand net-canvas to workertwo when workerone pings; then workertwo closes #391 |
 | F2 tug pilot | #390 | BUILDING workerone (claim cleared). Owner: D1=B (tug fields to spread, wire order changes once; 2-client SDK proof required), D2=a (rules keys wait for S6), D3=keep HeldPower.tug central. Expected central count ~19 → 7. #385 closed |
 
 ## Workers
