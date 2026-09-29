@@ -40,7 +40,9 @@ until 0%. Use `bash -c '…'` for herdr loops. Reply to a worker's cross-session
   routes/home.tsx, new routes/home/controls-panel/*.
 - #354 part 2b anisotropy: OWNER CHOSE (a) DROP. workerone BUILDING: EngineLight marigold → fold albedo
   defaults + Reflect.blur → close #354. Told to re-check rotation 180 on the new HDRI.
-- Hidden W throttle: OWNER: remove. workerthree BUILDING (claims pending).
+- #363 W throttle removed 056e436 (closed). workerthree IDLE, no files. OPEN OWNER Q: hidden R (Ctrl+R
+  reloads mid-race), F (Ctrl+F find bar), E (Ctrl+E address bar): (a) remove [rec] / (b) preventDefault.
+- workerone: rotation 180 + #595c62 fits cyclorama (deck luma 122→79, frame 103→67); told GO to fold.
 - #362 DONE/closed. New HDRI ~2.5x brighter; band share falls 7–26% → 4–9%. Owner to test bandIntensity
   5–7 and Environment.intensity on /test-level, report dial values → workerthree folds defaults.
 
