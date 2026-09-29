@@ -1,31 +1,35 @@
-Agent: workerthree · Lane: RFC-349 S16 frame scheduler (#381) · Updated: 2026-09-29
+Agent: workerthree · Lane: RFC-349 S18 render system (#384) + landing canvas fix (#386) · Updated: 2026-09-29 17:30
 
 ## Goal
-Systems declare `{ id, phase, before?, after? }`; one sort at load; one `useFrame` per phase. NetLoop, DeckLoop and LandingRig become scheduled systems.
+One render system in the `render` phase owns `gl.render`; post effects come from a fixed slot list (RFC §5.3 P2).
 
 ## Done
-- f33da9f0 (#381, CLOSED): `game/frame/schedule.ts` (+ test), `frame-timing.state.ts`, `phase-runner/*`, `frame-schedule/frame-schedule.tsx`; nine `FRAME_PHASE` priorities (input −3 … cleanup 3; `base` removed); the three loops as system lists (`net-loop.constants.ts`, `deck-loop.constants.ts`, `landing-schedule.constants.ts`); `dev/frame-meter.ts` exposes `systemFrameMs()` / `phaseFrameMs()`.
+- 04684954 (#386, CLOSED): landing `<Canvas>` children wrapped in `<Suspense fallback={null}>`. The canvas no longer dies about 2 s after load.
+- ea385b6b (#384, CLOSED): `SceneEffects` = FrameSchedule with `render.post` (view: build/update/dispose composer by live tier) + `render.frame` (render: composer.render or gl.render). PlainRender + QualityGate(post) removed. Slots in `scene-effects.constants.ts` `POST_SLOTS`; descriptors in `post-effects.constants.ts`.
+- Both commits are local only: `git push origin HEAD:dev` was denied by the permission classifier. The supervisor knows about #386; tell it about ea385b6b too.
 
 ## State
-- Measured (:5173/test-level?quality=high, 180 frames, full throttle): simulate (−2) and sync (−1) runners run first; 33 priority-0 subscribers and 16 view readers 0 % stale, 0 u camera lag.
-- Dev medians read 0 ms for every system and phase — below the headless timer resolution [inferred].
-- Production build contains no timing or order-print code (grep of `build/client/assets`).
-- typecheck clean · client vitest 100 files / 692 tests · lint 0 errors, 9 warnings (other files).
-- Deviation from claim: LandingRig's schedule is in the new `landing-schedule.constants.ts`, not `landing-rig.constants.ts` (avoids a constants↔utils import cycle).
-- RFC §7 S16 row not yet marked landed (RFC doc not in my claim).
-- Headless Chrome closed by the probe (`browser.close`); none left running.
+- A/B, same tree, headless Metal DPR 1, stepped clock: test-level 74 draws both, median 6.3 → 5.9 ms (3 runs each). Landing 45 draws both, 5.5–6.3 → 5.0 ms, bit-identical.
+- Test-level pixel diff vs old: 1.1–1.2 % px > 2 levels; old-vs-old noise 0.6–1.2 %.
+- One run showed rocks missing (67 draws). Four reruns were identical to old, so that run was transient [inferred cause].
+- typecheck clean (except the known dev-gated `+types/route`), vitest 103 files / 702 tests, biome/ls-lint/comment/canvas-isolation clean.
+- RFC §7 S18 row not marked landed (RFC not in my claim).
+- No headless Chrome left running (checked `ps`).
 
 ## Uncommitted
 none
 
 ## Held files
-none (released at f33da9f0)
+game/scene/scene-effects/*, world-scene.tsx, routes/home/landing-scene/landing-scene.tsx. Release them once the supervisor confirms.
 
 ## Next
-1. Idle. Wait for the supervisor. S16 unblocks F1, S8, S9, S17–S21.
+1. Owner-approved follow-up to #386 (supervisor, 2026-09-29): "Landing: no blank gap before the 3D scene". File the issue linking #386 FIRST. Then send the supervisor a claim: landing-scene.tsx + a new reveal component (e.g. routes/home/landing-reveal/*) + possibly landing-backdrop.tsx.
+2. Design: keep StillBackdrop visible until the first 3D frame paints. Key the reveal off the first rendered frame (a system inside the Canvas Suspense, after `render`), not setTimeout. Weigh ≥5 options in the commit body (NN-13).
+3. Measure the gap in ms before and after (headless, DPR 1, muted, kill Chrome). Close the issue with the SHA after the push.
 
 ## Open questions
-none
+- Who pushes local commits, given that my push is denied?
 
 ## Lessons → memory
-none (the probe method is already in `.claude/memory/measure-frame-order-over-cdp.md`; adapted script in this session's scratchpad `lag-probe.mjs` labels phase runners by `runPhaseTimed` + priority)
+.claude/memory/suspense-escaping-a-canvas-kills-it.md (+ MEMORY.md index; composer hook updated)
+Probe scripts are in this session's scratchpad (`probe.mjs`, `diff.mjs`). They are gone after the session; rebuild them from the memory above and [[gpu-timing-without-repo-edits]].
