@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { QualityGate } from '../../quality/quality-gate/quality-gate';
+import { QualityLatch } from '../../quality/quality-latch/quality-latch';
 import { MeteorScorch } from './meteor-scorch/meteor-scorch';
 import { Monoliths } from './monoliths';
 import { RockField } from './rock-field/rock-field';
@@ -9,9 +9,9 @@ export function GameEnvironment() {
     return (
         <Fragment>
             <SceneBackdrop />
-            <QualityGate feature="rocks">
+            <QualityLatch feature="rocks">
                 <RockField />
-            </QualityGate>
+            </QualityLatch>
             <MeteorScorch />
             <Monoliths />
         </Fragment>

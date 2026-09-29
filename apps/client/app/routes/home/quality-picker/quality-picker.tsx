@@ -1,5 +1,5 @@
 import { QUALITY_TIERS, TIER_LABEL } from '../../../quality/quality.constants';
-import { clearQualityTier, setQualityTier } from '../../../quality/quality.state';
+import { clearQualityTier, reloadNeeded, setQualityTier } from '../../../quality/quality.state';
 import { useQuality } from '../../../quality/use-quality';
 import { LABEL } from '../../../ui/field-label/field-label.constants';
 import { PICK } from './quality-picker.constants';
@@ -10,7 +10,12 @@ export function QualityPicker() {
 
     return (
         <fieldset className="m-0 flex min-w-0 flex-1 flex-col gap-1.5 border-0 p-0 lg:flex-none">
-            <legend className={ `mb-1.5 flex p-0 ${ LABEL }` }>Graphics</legend>
+            <legend className={ `mb-1.5 flex p-0 ${ LABEL }` }>
+                Graphics
+                <span role="status" className="ml-2 text-marigold">
+                    { reloadNeeded() ? 'Reload to apply' : '' }
+                </span>
+            </legend>
             <div className="flex">
                 <button
                     type="button"

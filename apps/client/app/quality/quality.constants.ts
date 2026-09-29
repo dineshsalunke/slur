@@ -48,6 +48,8 @@ export const PROFILES: Record< QualityTier, QualityProfile > = {
     },
 };
 
+export const RELOAD_ONLY = [ 'surfaceRes', 'hdriRes' ] as const satisfies readonly ( keyof QualityProfile )[];
+
 export const TIER_LABEL: Record< QualityTier, string > = { low: 'Low', medium: 'Med', high: 'High' };
 
 export const DEFAULT_TIER: QualityTier = 'high';

@@ -1,4 +1,5 @@
 import { FEATURE_SYSTEMS } from '../../engine/active-features';
+import { QUALITY_SYNC_SYSTEM } from '../../quality/quality-sync/quality-sync.constants';
 import { scheduleSystems } from '../frame/schedule';
 import { writeHud } from '../hud/hud-writers/hud-writers.state';
 import { GAMEPAD_SYSTEM } from '../input/gamepad';
@@ -19,6 +20,7 @@ import {
 export const NET_SCHEDULE = scheduleSystems< NetFrame >( 'net', [
     GAMEPAD_SYSTEM,
     DIAL_SYNC_SYSTEM,
+    QUALITY_SYNC_SYSTEM,
     { id: 'net.host-tick', phase: 'simulate', before: [ 'net.flight' ], run: netHostTick },
     { id: 'net.flight', phase: 'simulate', run: netFlight },
     { id: 'net.send-input', phase: 'simulate', after: [ 'net.flight' ], run: netSendInput },

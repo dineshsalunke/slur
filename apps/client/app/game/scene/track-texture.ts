@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { col, num } from '../../dev/tuning';
 import { rebuildToken, subscribeRebuild } from '../../dev/tuning-rebuild';
-import { qualityProfile } from '../../quality/quality.state';
+import { loadProfile } from '../../quality/quality.state';
 
 export const AUTHOR_PLATE_U = 4;
 
@@ -12,7 +12,7 @@ export const TEX_SPAN_X = AUTHOR_PLATE_U * COLS;
 export const TEX_SPAN_Z = AUTHOR_PLATE_U * ROWS;
 
 function res(): number {
-    return qualityProfile().surfaceRes;
+    return loadProfile().surfaceRes;
 }
 
 export const NORMAL_SIGN_X = 1;

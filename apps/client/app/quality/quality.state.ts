@@ -6,6 +6,7 @@ import {
     QUALITY_PARAM,
     type QualityProfile,
     type QualityTier,
+    RELOAD_ONLY,
 } from './quality.constants';
 import { type DeviceProbe, detectTier, lowerTier, parseTier } from './quality.utils';
 
@@ -32,6 +33,7 @@ const SERVER: Quality = {
 };
 
 let current: Quality | null = null;
+let loaded: QualityProfile | null = null;
 const listeners = new Set< () => void >();
 
 function probeDevice(): DeviceProbe {
@@ -88,12 +90,26 @@ function publish( next: Quality ): void {
 
 export function quality(): Quality {
     if ( typeof window === 'undefined' ) return SERVER;
-    current ??= resolve();
+    if ( current === null ) {
+        current = resolve();
+        loaded = PROFILES[ current.tier ];
+    }
     return current;
 }
 
 export function qualityProfile(): QualityProfile {
     return PROFILES[ quality().tier ];
+}
+
+export function loadProfile(): QualityProfile {
+    quality();
+    return loaded ?? PROFILES[ SERVER.tier ];
+}
+
+export function reloadNeeded(): boolean {
+    const now = qualityProfile();
+    const was = loadProfile();
+    return RELOAD_ONLY.some( ( knob ) => now[ knob ] !== was[ knob ] );
 }
 
 export function serverQuality(): Quality {

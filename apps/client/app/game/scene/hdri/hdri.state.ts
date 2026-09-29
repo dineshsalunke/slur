@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { remember, restore } from '../../../dev/tuning-persist';
-import { qualityProfile } from '../../../quality/quality.state';
+import { loadProfile } from '../../../quality/quality.state';
 import { HDRI_DEFAULT_URL, HDRI_FILES_API, HDRI_LINK_PATH } from './hdri.constants';
 import { fileName, hdriFileUrl, type PolyHavenFiles, parseHdriLink } from './hdri.utils';
 
@@ -23,8 +23,8 @@ async function resolveUrl( link: string ): Promise< string > {
 
     const response = await fetch( `${ HDRI_FILES_API }${ parsed.slug }` );
     if ( ! response.ok ) throw new Error( `no Poly Haven asset "${ parsed.slug }"` );
-    const url = hdriFileUrl( ( await response.json() ) as PolyHavenFiles, qualityProfile().hdriRes );
-    if ( ! url ) throw new Error( `"${ parsed.slug }" has no ${ qualityProfile().hdriRes } HDRI` );
+    const url = hdriFileUrl( ( await response.json() ) as PolyHavenFiles, loadProfile().hdriRes );
+    if ( ! url ) throw new Error( `"${ parsed.slug }" has no ${ loadProfile().hdriRes } HDRI` );
     return url;
 }
 
