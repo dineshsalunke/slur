@@ -1,33 +1,32 @@
-Agent: workertwo · Lane: bolt ThreatHud → NetHud (#373) — DONE · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29
+Agent: workertwo · Lane: RFC-349 S2 (#375) + S3 (#376) — both DONE, closed · #348 PAUSED · #338/#340/#341 prod verify after deploy · Updated: 2026-09-29
 
 ## Goal
-Show the bolt ThreatHud on /test-level by mounting it in NetHud instead of Overlays.
+RFC-349 no-dependency stages: S2 input action map, S3 event-queue helper.
 
 ## Done
-- 65bcef2 #373: `game/overlays/threat-hud/*` → `game/hud/threat-hud/*` (test beside it, as `threat-hud.utils.test.ts`); mounted in `game/net-hud.tsx` after SeekerWarning; removed from `overlays.tsx`.
-- 85af607 #372 seeker lock warning (earlier lane).
+- f3382cb #376 S3: `game/scene/event-queue.ts` `createEventQueue<T>(cap)` → `{ items, push, drain, clear }`; all 6 scene queues use it. One rule: drop oldest. block-burst (16), meteor-chunks (8), meteor-scorch (4) changed from drop-newest.
+- cf8f95e #375 S2: `game/input/actions.ts` (`press`/`onAction`) + `bindings.ts` (`BINDINGS.keyboard/pad/touch`, `keyOf`). synth-key.ts and game-audio.constants.ts deleted. 7 actions incl. `start` (pad Start → GO / Race again / Create). M now shares the power-key filter (no mute while typing or with Cmd/Ctrl/Alt).
+- 65bcef2 #373: bolt ThreatHud moved to NetHud (`game/hud/threat-hud/`).
 
 ## State
-- 674/674 client tests; typecheck clean; lint 0 errors (9 old warnings).
-- NetHud mounts once (`net-canvas.tsx:96`), so there is one tick element, not two. Headless on both viewports: 1 tick element, `◀ ⚠`, opacity 1.
-- 1600×900: tick y 64–80; seeker row bottom y 747–774, top (back-fired) y 126–153; slot arc ~y 645–690. No overlap.
-- 844×390 touch: tick x 403–441 y 64–80; back-fired seeker row x 371–474 y 55–71 → OVERLAP. It already existed on /game (both were mounted there before). I did not fix it, because a move commit changes no behaviour.
-- No way to fire a bolt at the player on /test-level (no second racer; own bolts ignored). Not added; the supervisor is asking the owner.
+- 686/686 client tests; typecheck clean. My files pass biome + comment-ratio. Full `pnpm lint` has 13 format errors, all in other workers' uncommitted scene .tsx files (S15 #379 / #377).
+- #375 live on /test-level (Playwright, fake pad via `navigator.getGamepads` stub): keys E/F/M/Ctrl+E, pad X/Y/Select, touch up/down/right all correct. Pad Start → `start` [unmeasured live, unit-tested].
+- #376 [unmeasured live]: no visual check of meteor/burst VFX.
+- #373 open item: on a 844×390 phone the bolt tick (y 64–80) overlaps a back-fired seeker row (y 55–71). Pre-existing on /game. Fix proposal sent to supervisor.
 
 ## Uncommitted
 none.
 
 ## Held files
-none after the report (claim: overlays.tsx, net-hud.tsx, hud/threat-hud/*).
+none (released: S2 and S3 file sets).
 
 ## Next
-1. Wait for the owner: (a) "incoming bolt" Leva button? (b) fix the phone overlap?
-2. After the owner's deploy: verify #338/#340/#341 on prod.
-3. Later: resume #348.
+1. Wait for the supervisor's next lane.
+2. Pending owner answers: incoming-bolt button on /test-level? phone tick/seeker overlap fix?
+3. After the owner's deploy: verify #338/#340/#341 on prod. Later: resume #348 (Blur controls, now on the S2 action map).
 
 ## Open questions
-- Owner: add an "incoming bolt" button to /test-level Pickups (sibling of incoming seeker)?
-- Owner: phone overlap of the bolt tick and a back-fired seeker row. Option: move the tick below the ahead row on short screens.
+- Owner: the two #373 follow-ups above.
 
 ## Lessons → memory
-stage-enemy-fire-on-test-level.md (new); test-level-skips-overlays.md (updated).
+none new this seam (stage-enemy-fire-on-test-level.md was written at the #373 seam).
