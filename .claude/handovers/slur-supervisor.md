@@ -57,7 +57,11 @@ tuning-panel.tsx).
    told "DECISIONS clear" for ADR-032 AND to explain the test-count drop (#367 98 files/668 → #368 73/495)
    before closing #368. CLAUDE.md controls line updated to #368 layout (this seam).
 2. DONE: #368 closed (ADR-032 68d58ad). Full client vitest 98 files / 665 pass; −3 vs #367 are intended
-   (modifier label, Mac swap, old-key tests merged). All workers IDLE, no held files.
+   (modifier label, Mac swap, old-key tests merged).
+3. NOW: owner img 24: nozzles + exhaust deck reflections still orange, not marigold (despite #359 37.1° vs
+   ~40°). workerone cleared + briefed: measure hue per element (emissive, exhaust reflection, EngineLight, bloom,
+   Neutral tone map, dark deck, HDRI), name the orange puller, 5-option plan + claims → relay to owner, build
+   after OK. workertwo/workerthree IDLE.
 3. Owner answers → forward.
 4. On owner deploy → ping workerone (/metrics, close #337/#339) and workertwo (close #338/#340/#341).
 
