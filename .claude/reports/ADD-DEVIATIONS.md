@@ -1,158 +1,265 @@
 # ADD deviations — doc against code and against the art package
 
-Audit of `docs/ADD.md` against the shipped code and against the current
-`docs/art-direction/` layout, 2026-09-23. Every finding quotes the doc wording it relies on and the
-file, line or path that contradicts it. Nothing is fixed here.
+Audit of `docs/ADD.md` (388 lines) against shipped client code and `docs/art-direction/`, 2026-09-30.
+Every finding quotes the ADD wording (with §), gives the contradicting file:line, and states severity:
+**(a)** doc describes a contract that does not exist, **(b)** doc describes a look/behaviour the code
+no longer has (or vice versa), **(c)** stale pointer or number.
 
-`docs/art-direction/` is ChatGPT's read-only workspace. Nothing in this report touches it; where a
-finding is about that folder it is about **ADD's references into it**, which are ours to fix.
+This report re-checks every finding in the 2026-09-23 version (`git show 4607b2b3~1:.claude/reports/ADD-DEVIATIONS.md`)
+and marks each RESOLVED or STILL OPEN, then adds new findings from the look work that landed since
+(#352/#356/#362/#364 sky+HDRI+tone-mapping, #354 fake deck reflections, #369 nozzle glow, #371 mirror
+removal, #344/RFC-349 S19 quality tiers). `docs/art-direction/` was read-only (`README.md`, `AUDIT.md`);
+nothing in it was touched. Tug is mid-move (uncommitted) — not audited here since ADD never mentions tug.
 
 ## Summary
 
 | Severity | Count |
 |---|---|
-| Authority table points at paths that no longer exist | 1 (4 rows) |
-| The doc describes a number or mechanism the code does not have | 3 |
-| Internal inconsistency or stale claim | 3 |
+| (a) doc describes a contract that doesn't exist | 2 |
+| (b) doc/code look-and-feel mismatch | 3 |
+| (c) stale pointer or number | 4 |
+
+**Old-report disposition:** §1 (dead `handoff/`/`boards/` paths) RESOLVED. §2.1 (monolith 200–400u vs 50u)
+STILL OPEN but was mis-targeted — see new Finding 1 below, which replaces it with the real shape of the
+problem. §2.2 (monolith metalness) RESOLVED. §2.3 (camera knobs not commented/tunable) PARTIALLY
+RESOLVED — tunable is now true, "named…in chase.ts (CHASE)" is now newly false, folded into Finding 6.
+§3.1 (cyan bolts) RESOLVED. §3.2 ("one bitmap") RESOLVED. §3.3 (budget OPEN) STILL OPEN, restated as
+Finding 7.
 
 ---
 
-## 1. ADD §0's authority table points at a retired layout
-
-§0 is the section that tells a reader where the real direction lives. Four of its rows cite the
-`handoff/` + numbered `boards/` structure:
-
-> *"Visual direction, palette, material/shape language, A→B→C | **`docs/art-direction/handoff/`** —
-> supersedes v1"*
->
-> *"Concept boards | `docs/art-direction/boards/` (all 14 boards, consolidated — v1's + v2's board `12`)"*
->
-> *"The approved integrated look | **`docs/art-direction/boards/12_approved_scene_marigold_depth.png`**"*
-
-Neither directory exists. `docs/art-direction/` now contains `README.md`, `AUDIT.md`,
-`golden-reference/`, `background/`, `track/`, `ingredients/`, `vehicles/`, `progression/`. The folder
-was reorganised 2026-09-20/21; CLAUDE.md records it: *"the old `handoff/` + numbered `boards/` layout
-is gone"* and *"Docs elsewhere in the repo still cite the retired `handoff/`/`boards/NN_*` paths —
-treat any such reference as stale and resolve it through `README.md`."*
-
-ADD §7 carries a fourth dead reference: *"per its own `00_STATUS_AND_SCOPE.md`"*.
-
-**Impact:** the one table whose whole job is to route a reader to the authoritative source routes
-them to four 404s. Highest-value fix in this report and the cheapest — it is a pointer update, and
-`docs/art-direction/README.md` is the replacement index.
-
----
-
-## 2. Numbers and mechanisms the code does not have
-
-### 2.1 Monolith scale — doc says 200–400u, code ships 50u
+## 1. (a) "Environment monolith" (Obelisk · Gate · Arch, 200–400u, never track-adjacent) does not exist as shipped
 
 ADD §4:
 
-> *"**Environment monolith** | huge (200–400u), background-scale, framing — never track-adjacent mass"*
+> *"**Environment monolith** | huge (200–400u), background-scale, framing — never track-adjacent mass |
+> mistakable for a hazard"*
+>
+> *"monoliths (Obelisk · Gate · Arch) and asteroids... Monoliths and obstacle blocks use the deck
+> material"*
 
-`apps/client/app/game/scene/monolith-config.ts:63`:
+ADD §9 itself hedges this row differently from the built ones — *"Monoliths (Obelisk · Gate · Arch) |
+procedural — three box arrangements + scale/rotate variation | **~100%**"* (confidence, not "**BUILT**"/
+"**done**" like the pillar row above it).
 
-    height: 50,
+What shipped, read from source:
 
-A quarter of the bottom of the documented range. This is a **known, deliberate departure** — the
-phase index records the height as *"frozen at 50u (a departure from `ART_SCALE_REFERENCE.md` §5's
-200–400u, sided with the art board)"* — but ADD §4 still prints the old range as the contract, with
-no note that the build went elsewhere.
+- `apps/client/app/game/scene/monolith-config.ts:41-49` — `PILLAR`: `width: 12, depth: 12, height: 50,
+  below: 60`. This is the **track pillar**, ADR-018's own object, and it is correct against ADD's separate
+  "Track pillar" row. It is not the 200–400u row.
+- `apps/client/app/game/scene/monolith-frame.ts:26-43` — `GATE_FRAME` (`height: 240`) and `ARCH_FRAME`
+  (`height: 150`). `GATE_FRAME` is wired only into `apps/client/app/game/scene/finish-gate/finish-gate.tsx:18`
+  — it is the **finish gate**, not scenery. `ARCH_FRAME` is wired only into
+  `apps/client/app/game/scene/monoliths.tsx:17` as `<MonolithFrames frame={ARCH_FRAME} .../>`, and ADD's own
+  pillar bullet (§4) says what it is: *"An arch (#220) takes the place of a whole pillar pair at that pair's
+  z. It never shifts or drops the pairs around it"* — i.e. it is track-adjacent and load-bearing-row by
+  design, the opposite of "never track-adjacent."
+- No "Obelisk" object exists outside a test helper: `monolith-transforms.test.ts:10` —
+  `const obelisk: MonolithShapeConfig = { ...PILLAR, taper: 0.62 };` — a tapered pillar variant used only
+  to exercise geometry math, never placed in a scene.
 
-**Impact:** the "never mistakable for a hazard" read in the same table row is carried by scale. At 50u
-against 8u blocks the scale separation is 6×, not 25–50×. Whether that still reads is an art
-judgement, not a code one, but the doc should not claim a number the build abandoned.
+**There is no background-scale (200–400u), non-track-adjacent monolith category in the shipped scene.**
+The names "Obelisk/Gate/Arch" now belong to three different, all track-adjacent, structures: the pillar,
+the finish gate, and a pillar-pair replacement. §4's "never mistakable for a hazard because it's huge and
+set back from the track" contract has no object to apply to.
 
-### 2.2 Monolith metalness — ships 0.9 against a documented dielectric spec
-
-ADD §4 places monoliths on the block metal family. The engineering sheet `docs/ART_MATERIALS.md` §M3
-specifies metalness 0.0 (dielectric). The shipped value is inherited from graphite —
-`apps/client/app/dev/tuning-schema.ts:65`:
-
-    'Monolith.metalness': { value: GRAPHITE_METALNESS, ... }
-
-and `apps/client/app/game/scene/graphite.ts:2`:
-
-    export const GRAPHITE_METALNESS = 0.9;
-
-The phase index records this as an *"open departure, unresolved"* and cites the shipped value as 0.3.
-**The index is itself stale on this number** — the value today is `GRAPHITE_METALNESS`, 0.9. Either
-way it is not the 0.0 the materials sheet specifies.
-
-### 2.3 Camera knobs — half fixed 2026-09-23, half will stay false
-
-ADD §6:
-
-> *"Knobs are named + commented in `apps/client/app/game/camera/chase.ts` (`CHASE`), live-tunable."*
-
-When this report was written, two of the three claims were false. One has since been made true.
-
-- **Live-tunable — now correct.** Eight `Chase.*` entries were added to
-  `apps/client/app/dev/tuning-schema.ts` and a "Chase camera" group to `tuning-panel.tsx`;
-  `chase.ts` reads them per frame through `num()`, the same way `rear-view-camera.ts` already did.
-  Backtick opens the panel.
-- **Commented — still false, and should stay false.** `chase.ts` contains zero comments, correctly,
-  because non-negotiable #14 bans them outside `setTimeout`/`setInterval`/`useEffect`. **The ADD
-  sentence asks for something the build rules forbid, so the ADD is what should change here, not the
-  file.**
-
-Named is true — the knobs are now named as tunable paths (`Chase.back`, `Chase.height`,
-`Chase.lookAhead` …) rather than module constants.
-
-This section is additionally out of date as of commit `3b50857` (2026-09-23), which changed the
-camera's z from a smoothed follow to an exact copy with a smoothed follow *distance*, to fix the
-forward judder (issue #212). §6's framing discussion still describes the old four-lever tuning.
+**Suggested resolution:** rewrite ADD §4's "Environment monolith" row and §9's monolith row to describe
+what shipped (pillar / arch-in-row / finish-gate, all track-adjacent, sized by ADR-018), or file the
+200–400u background framing as a still-open backlog item if the owner still wants it. This is a doc
+correction, not an art-package edit — `docs/art-direction/` never specified these exact numbers; hand any
+correction to the *scale reference* only through `ART_SCALE_REFERENCE.md`, never edit the package.
 
 ---
 
-## 3. Internal inconsistencies and stale claims
+## 2. (a) Ship light-trails are documented as shipped; no such feature exists in code
 
-### 3.1 Cyan bolt tracers against a palette that demotes cyan
+ADD §5: *"**Trails:** each ship leaves a fading light-trail in its hue (identity + speed read)."*
+ADD §6: *"First-person is rejected: it hides your ship's hue/trail (your **identity** signal)..."*
 
-ADD §5: *"**(S5 built)** cyan bolt tracers (instanced+interpolated)"*.
+Grepped the whole client and shared packages for any ship exhaust/identity trail:
 
-ADD §3 retires cyan in the same document: *"Cyan is demoted from co-primary to a sparing support
-accent at `#3BD6FF`"*, under a system where *"Marigold is the signature and the only energy colour"*
-carrying *"projectiles"* explicitly. GDD §5.4 agrees with §3, not §5: *"Visually it reads as an
-**elongated energy streak/tracer**"* under the marigold-primary direction.
+    apps/client/app/game/scene/seeker-trail.ts       — homing-pickup trail, not a ship trail
+    packages/shared/src/combat/seeker-trail.ts        — same: `recordTrail`/`trailX` are seeker-only
 
-A bolt is a projectile, so by §3 it should be marigold. Flagged as an inconsistency to resolve, not
-as a verified code defect — I did not check what colour the bolt renders today.
+There is no `ship-trail`, `hull-trail`, or equivalent file, ECS trait, or shader anywhere. The only
+"trail" in the codebase belongs to the homing seeker pickup (`packages/shared/src/combat/seeker.ts:304`).
 
-### 3.2 "The one bitmap in the pipeline" is now six
+This also compounds a live internal contradiction: §3 says *"The world is uniformly marigold for every
+player... Hue-shifting is reserved for [opponents]... deferred"* — so "in its hue" in §5 describes a
+per-player colour system that §3 explicitly defers. Even if a trail existed, "in its hue" would be wrong
+under the current palette contract.
 
-ADD §9:
+**Suggested resolution:** ADD §5's Trails line and the trail clause in §6 are aspirational, not built.
+Move them under §10/§11 as an open item ("Planned: ship light-trails" — §5 already says this for
+"shield shimmer, hit-spin, ship light-trails" two lines up, so §5 is self-contradictory: it lists ship
+light-trails as **Planned** in one sentence and as a standing fact ("each ship leaves...") one bullet
+later). Pure doc fix.
 
-> *"**The one bitmap in the pipeline** is `public/textures/nebula-backdrop.jpg`"*
+---
 
-`apps/client/public/textures/` holds `nebula-backdrop.jpg` **and** a `metal/` directory with five
-Metal046B 1K JPEGs (Color, Displacement, Metalness, NormalGL, Roughness), landed with the block
-surface work. The §9 procedural-first claim and its "zero-asset-pipeline property" both need
-restating against that.
+## 3. (b) Quality tiers turn off the bloom signature and the rock field on low — undocumented
 
-This also puts pressure on §8 rule 3, *"Low-poly, no heavy textures. Light does the work, not
-texels"* — five 1K maps sampled in world space is a texture budget the section says the art does not
-have.
+ADD §5: *"**Bloom** (postprocessing EffectComposer) — the signature."*
+ADD §8 rule 4: *"One bloom pass, tuned — not per-object glow hacks."*
+ADD §1: *"the environment is vast, silent, severe... A cold, desaturated universe containing warm,
+saturated gameplay energy... everything else follows from protecting it."*
 
-### 3.3 §8 rule 5 budget is still OPEN
+`apps/client/app/quality/quality.constants.ts:21-29` — the `low` `QualityProfile`:
 
-> *"**Budget:** *OPEN* — set tri-count + draw-call budgets after first perf test."*
+    low: {
+        landing3d: false,
+        surfaceRes: 512,
+        hdriRes: '1k',
+        dprCap: 1,
+        msaa: false,
+        post: false,
+        rocks: false,
+    },
 
-Still open, and now load-bearing: the 2026-09-22 render additions (rearview pass, rail area lights,
-world-space metal maps, two asteroid fields) all landed with no budget to check them against. The
-frame-time variance behind issue #212 is the first symptom. Not a deviation so much as an open
-question that has started costing something.
+`post: false` means the entire postprocessing composer — bloom included — is off on low tier. `rocks:
+false` means the asteroid field (§4/§9 "Environment... asteroids") is absent. `landing3d: false` drops the
+3D landing scene entirely. None of this is mentioned anywhere in ADD. On low tier, the doc's stated
+"signature" look (bloom) and one of its two named environment object classes (asteroids) do not render.
+
+**Suggested resolution:** ADD needs a short quality-tier subsection (§5 or §8) stating which visual
+pillars are tier-gated and which are load-bearing at every tier — e.g. "bloom is the signature at
+medium/high; low tier trades it for frame budget, see `quality.constants.ts`." Pure doc addition, no code
+change implied.
+
+---
+
+## 4. (b) Fake deck reflections (ADR-031) and nozzle glow (ADR-033) are unmentioned in the VFX/material sections
+
+ADD §5 (VFX list) and §9 (asset pipeline) do not mention deck reflection streaks or nozzle glow anywhere.
+Both are real, owner-approved, shipped look features:
+
+- **ADR-031** (`docs/DECISIONS.md:1592`), built in `3c576aa`/`668df76`/`f0562e7`: additive streak quads
+  under every glowing element (rail sheen, block seams, pickups, exhausts) simulating a glossy-deck
+  reflection the material itself cannot produce. Code: `apps/client/app/game/scene/deck-reflection/`
+  (per ADR text; not separately re-verified path-by-path in this pass).
+- **ADR-033** (`docs/DECISIONS.md:1672`): *"The nozzles glow in the accent; the engine light is removed."*
+  `EngineLight` point light removed; nozzle emissive now driven off the accent colour instead of an
+  authored peach.
+
+ADD §4's material row for the track ("restrained gloss") and §5's VFX list predate both changes and give
+no reader a way to know the deck now fakes reflections or that engine lighting comes from material
+emissive rather than a light. This is a real look feature the doc simply has no section for — not a
+contradiction of an existing line, but a documented, owner-approved mechanism missing from the one file
+whose job is to record VFX.
+
+**Suggested resolution:** add one bullet each to ADD §5 (VFX) summarizing the ADR-031 streaks and the
+ADR-033 nozzle-glow change, pointing at the ADRs for detail. Doc addition, no art-package involvement —
+neither ADR references `docs/art-direction/` numbers.
+
+---
+
+## 5. (c) The rear-view mirror is documented as an open UI item; it was removed 2026-09-29
+
+ADD §7: *"Explicitly NOT frozen by the handoff (per its own `00_STATUS_AND_SCOPE.md`): final HUD/UI
+treatment, **including the rear-view mirror**."*
+
+**ADR-034** (`docs/DECISIONS.md:1693`), accepted 2026-09-29, issue #371: *"The owner said: 'lets remove
+the rearview mirror please, its not adding any value.'"* Code search for `mirror`/`Mirror` under
+`apps/client/app/game` and `apps/client/app/dev` returns **no matches** — the feature is gone, not
+merely deprioritized.
+
+ADD §9's DPR2 budget paragraph (added 2026-09-23, before the removal) also still lists *"rear view"* as
+a line item in the mesh-hidden breakdown (`docs/ADD.md:276`) — that number is now for a feature that no
+longer exists in the build.
+
+**Suggested resolution:** delete "including the rear-view mirror" from §7 (or reframe as "was considered,
+removed 2026-09-29, ADR-034") and drop "rear view" from the §9 budget sentence, or footnote it as
+pre-removal. Pure doc fix; §7's own `00_STATUS_AND_SCOPE.md` pointer is otherwise fine (package file,
+not verified path-by-path here — flag as unresolved from the old report's §1 category if it also turns
+out stale, not independently re-checked this pass).
+
+---
+
+## 6. (c) Camera knob pointer: "named ... in chase.ts (CHASE)" no longer matches — knobs moved to the tuning schema
+
+ADD §6: *"Knobs are named + commented in `apps/client/app/game/camera/chase.ts` (`CHASE`), live-tunable."*
+
+`apps/client/app/game/camera/chase.ts` today (read in full) has **no `CHASE` object and no named
+constants at all** — every knob is a bare string key read live via `num('Chase.back')`,
+`num('Chase.height')`, etc. (lines 10, 28-40). The actual named, documented table lives in
+`apps/client/app/dev/tuning-schema.ts:139-148`:
+
+    'Chase.back': { value: 14, ... },
+    'Chase.height': { value: 4, ... },
+    'Chase.lookAhead': { value: 17, ... },
+    ...
+
+**"live-tunable" is now TRUE** (RESOLVED from the old report — `4607b2b3 feat(dev): put the chase camera
+on the tuning panel`). But **"named...(CHASE)" is a new stale claim**: there is no `CHASE` identifier
+anywhere in the codebase to point a reader at; the source of truth moved to `tuning-schema.ts`. Also
+worth flagging: `Chase.height` defaults to `4` in the schema, while ADR-011 (`docs/DECISIONS.md:487`)
+records the camera lowered "to 7.5u" — this pass did not chase down whether 4 vs 7.5 is a further
+deliberate retune or drift; flagged as **inference, not verified**.
+
+**Suggested resolution:** change the §6 pointer to `apps/client/app/dev/tuning-schema.ts` (`Chase.*`
+keys), drop the `(CHASE)` parenthetical, and separately confirm whether `Chase.height: 4` vs ADR-011's
+7.5u is intentional.
+
+---
+
+## 7. (c) §8 rule 5 perf budget is still OPEN, and the one concrete budget on record (§9) is now stale
+
+ADD §8 rule 5: *"**Budget:** *OPEN* — set tri-count + draw-call budgets after first perf test."*
+Unchanged from the 2026-09-23 report. Still true — no tri-count/draw-call budget exists in ADD, the
+tuning schema, or `docs/DECISIONS.md`.
+
+The one concrete frame-time snapshot ADD does carry (§9, added 2026-09-23, `f46eae27`) predates:
+quality tiers (#344/RFC-349 S19), fake deck reflections (ADR-031, #354), nozzle glow (ADR-033, #369),
+and the mirror removal (ADR-034, #371) — all of which changed draw calls or per-frame cost (ADR-031's
+own consequences section reports "Draw calls: low 46 → 49, high 123 → 129" for the reflection streaks
+alone). The §9 numbers ("10.0 ms with everything... deck 2.1 ms, sky 1.4 ms, rocks 0.9 ms") are a
+snapshot from before four look changes that touched the render path, not a current budget.
+
+**Suggested resolution:** keep §8 rule 5 OPEN as written (still accurate), but add a one-line note under
+the §9 DPR2 paragraph that it is a pre-#354/#369/#371/quality-tier snapshot, pointing to the perf-analysis
+skill for a current number rather than letting a reader treat 10.0 ms as live. Pure doc fix.
+
+---
+
+## 8. (c) §3's own "hand-to-owner" note cites `accent.ts` as holding the hex; it has moved
+
+ADD §3's decisions-and-departures note: *"the brand marigold is now `#F5B024` in code (`app.css`,
+`accent.ts`)"*.
+
+Verified: `apps/client/app/app.css:18` — `--color-marigold: #f5b024;` (still correct). But
+`apps/client/app/game/scene/accent.ts` no longer contains the hex; it reads `col('Accent.color')` from
+the tuning store (`accent.ts:5`). The literal `'#F5B024'` now lives in
+`apps/client/app/game/scene/accent.constants.ts:1` (`export const ACCENT_ANCHOR = '#F5B024';`), which
+`tuning-schema.ts:198` uses as the default. Minor — the value is still correct everywhere, only the
+file pointer split in two.
+
+**Suggested resolution:** update the parenthetical to `app.css`, `accent.constants.ts`. Trivial doc fix.
+
+---
+
+## 9. (c) §11's "new `scene/environment.tsx` (built — env-lab)" points at a deleted route/file
+
+ADD §11 (marked as historical research, not live direction) references `scene/environment.tsx` and
+`/env-lab` three times (lines 335, 344, 352) as built artifacts of the 2026-08-10 S6 pass. Per CLAUDE.md,
+`/env-lab` was deleted 2026-09-22 with the lighting strip (issue #196). Confirmed: no
+`scene/environment.tsx` file exists under `apps/client/app/game/scene`, and no `env-lab` route exists
+under `apps/client/app/routes`.
+
+§11 is explicitly framed as *"kept here rather than deleted because this is the §11 research-and-history
+section... History is forward-framed"* (ADD:370-371), so this is lower priority than the §0 authority
+table was — a reader is told up front this section is history, not a live pointer. Still, three separate
+mentions of a since-deleted route with no "(removed)" annotation invite someone to go looking for it.
+
+**Suggested resolution:** low priority. If §11 is touched for other reasons, add "(removed 2026-09-22,
+issue #196)" after the three `env-lab`/`environment.tsx` mentions. Not worth a dedicated pass on its own.
 
 ---
 
 ## What to do with this
 
-§1 is a pure pointer fix and should just be done — four dead paths in the routing table is the worst
-kind of doc rot because it misroutes everyone who trusts the table.
-
-§2.1 and §2.2 are real departures where the build chose differently from the package. Per CLAUDE.md
-the correction is written on our side and handed to the owner to paste into ChatGPT, never edited
-into `docs/art-direction/`. `ART_MATERIALS.md` §7 shows the shape.
-
-§2.3 and §3.2 are stale claims that the build has simply outrun.
+Findings 1, 2 and 3 are the load-bearing ones: §1 says the doc asserts a whole object category and a
+whole ship-identity feature that were never built, and §3 says the doc's own "signature" claim (bloom)
+is false on the tier a meaningful share of players will actually run. All three are pure `docs/ADD.md`
+edits — nothing here touches `docs/art-direction/`, since none of the corrections change what the art
+package says, only what ADD claims the build does with it. Findings 4-9 are smaller pointer/staleness
+fixes, cheapest done in one pass together with 1-3.

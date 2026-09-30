@@ -1,163 +1,199 @@
 # GDD deviations — doc against code
 
-Audit of `docs/GDD.md` against the shipped code, 2026-09-23. Every finding quotes the doc wording it
-relies on and the file and line that contradicts it. Nothing here is fixed — this is the list.
-
-Verified this session by reading the code. Where a finding is inference rather than a direct
-contradiction, it says so.
+Audit of `docs/GDD.md` (709 lines) against shipped code, 2026-09-30. Re-checks every finding from the
+2026-09-23 report (git history) and adds new ones found this session. Tug feature is mid-move
+(uncommitted work moves it into `features/tug/`) — audited against committed HEAD, not reported as a
+deviation.
 
 ## Summary
 
 | Severity | Count |
 |---|---|
-| The doc describes a contract that does not exist | 3 *(1.2 and 1.3 resolved 2026-09-23 — ADR-013)* |
-| The doc describes behaviour the code no longer has | 4 |
-| Stale pointer or number | 4 |
+| (a) Doc describes a contract that does not exist | 1 |
+| (b) Doc/code behaviour mismatch (code lacks doc behaviour, or has behaviour doc lacks) | 2 |
+| (c) Stale pointer or number | 3 |
+| Resolved since 2026-09-23 | 3 |
 
 ---
 
-## 1. The doc describes a contract that does not exist
+## Carried over from the 2026-09-23 report
 
-### 1.1 `MIN_CLEAR`, `MAX_SHIP_WIDTH` and `CLEARANCE_MARGIN` are not in the code
-
-GDD §0 presents these as the single load-bearing spatial invariant:
-
-> *"The ONE load-bearing spatial invariant is threadable clearance: At every z-slice, the widest
-> contiguous lethal-free floor run must be ≥ `MIN_CLEAR`, where `MIN_CLEAR = MAX_SHIP_WIDTH +
-> CLEARANCE_MARGIN`, `MAX_SHIP_WIDTH = CELL` (4u, the ship-size contract) and `CLEARANCE_MARGIN = 3u`
-> → `MIN_CLEAR = 7u`."*
-
-None of the three identifiers occurs anywhere in `packages/shared/src` or `apps`. What ships is a
-single derived constant — `packages/shared/src/sim/space.ts:10`:
-
-    export const MIN_LANE = 2 * CELL;
-
-That is **8u**, not the documented 7u, and it is an axiom rather than a derivation. GDD §0 explicitly
-forbids exactly this shape: *"Any `MIN_LANE`-style constant is *derived*, **not an axiom**."*
-
-**Impact:** the clearance number the whole §0 argument is built on is not the number the generator
-uses, and the tunable the doc offers (`CLEARANCE_MARGIN`, *"the **only** clearance tunable"*) does not
-exist, so the documented way to make tracks easier or harder is not available.
-
-### 1.2 The roster-conformance guard is a test, not a module-load assertion — **RESOLVED 2026-09-23 (ADR-013)**
-
-> Resolved: `rosterContractFailures()` now runs at module load of `ship-classes.ts` and throws, covering both
-> the width contract and the new weave contract. The finding as written stands below.
+### 1. `MIN_CLEAR`/`CLEARANCE_MARGIN` still not in code — STILL OPEN — (a)
 
 GDD §0:
 
-> *"**Module-load guard (dev):** `assert 2·max(halfW over ALL_CLASS_TUNINGS) ≤ MAX_SHIP_WIDTH`."*
+> *"the widest contiguous lethal-free floor run must be ≥ `MIN_CLEAR`, where `MIN_CLEAR = MAX_SHIP_WIDTH +
+> CLEARANCE_MARGIN` … `CLEARANCE_MARGIN = 3u` → `MIN_CLEAR = 7u`."* Also: *"the only tunable is
+> `CLEARANCE_MARGIN`"* and *"Any `MIN_LANE`-style constant is derived, **not** an axiom."*
 
-There is no such assertion. `ALL_CLASS_TUNINGS` is exported at
-`packages/shared/src/ship-classes.ts:132` and consumed in exactly two places: `sim/weave.ts:15-16`
-(the slope/curvature caps) and `sim/track.test.ts`. The only width check is in the test file —
-`packages/shared/src/sim/track.test.ts:36`:
+Still true: `packages/shared/src/sim/space.ts:10` —
 
-    const WIDEST_HALF_W = Math.max( ...ALL_CLASS_TUNINGS.map( ( t ) => t.halfW ) );
+    export const MIN_LANE = 2 * CELL;
 
-**Impact:** a new or resized ship does not fail at module load as designed. It fails a test run, if
-one is run.
+8u, an axiom, not 7u derived from a margin. Neither `MIN_CLEAR` nor `CLEARANCE_MARGIN` exists anywhere in
+`packages/shared/src` or `apps`. The project's own ADR log already tracks this exact gap —
+`docs/DECISIONS.md:678`: *"GDD §0's clearance identifiers (`MIN_CLEAR 7u`, `CLEARANCE_MARGIN`) still do
+not exist in code; what ships is `MIN_LANE = 2·CELL = 8u` as an axiom … untouched here because correcting
+8u to 7u is itself a reshape of every seed and wants its own decision."*
 
-### 1.3 Clearance tracks the live roster — the exact failure §0 exists to prevent — **RESOLVED 2026-09-23 (ADR-013)**
+**Suggested resolution:** doc moves — rewrite §0's clearance block to document `MIN_LANE = 8u` as the
+shipped axiom, or code moves — introduce `CLEARANCE_MARGIN`/`MIN_CLEAR` and accept the seed reshape. Owner
+decides; `docs/DECISIONS.md` already frames the choice.
 
-> Resolved: the generator now reads `TRACK_CONTRACT` and never the roster — `weave.ts` no longer imports
-> `ALL_CLASS_TUNINGS`, and `corridor.ts`/`intensity.ts` no longer read `DEFAULT_TUNING.maxCruise`. The caps
-> were frozen bit-identical, so no existing seed moved. The finding as written stands below.
+### 2. Roster-conformance module-load guard — RESOLVED (ADR-013)
 
-This is the sharpest finding, and it is an inversion rather than an omission. GDD §0 argues for a
-fixed ceiling *because* roster-derived clearance is unsafe:
+GDD §0: *"Module-load guard: `rosterContractFailures( SHIP_CLASSES )` runs at import of
+`ship-classes.ts` and **throws**."* Confirmed live — `packages/shared/src/ship-classes.ts:164-166`:
 
-> *"Why a **fixed contractual ceiling**, not roster-max: a track seed must generate the **same
-> geometry forever**. If clearance tracked the live roster, adding/resizing a ship would silently
-> mutate every existing seed's track."*
+    const contractFailures = rosterContractFailures( Object.values( SHIP_CLASSES ) );
+    if ( contractFailures.length > 0 )
+        throw new Error( `ship roster breaks the GDD §0 track contract:\n  ${ contractFailures.join( '\n  ' ) }` );
 
-In code, the caps the generator is bound by are derived from the live roster —
-`packages/shared/src/sim/weave.ts:15-16`:
+Unconditional (not dev-gated), matches the doc. No action needed.
 
-    export const SLOPE_CAP = deriveWeaveSlopeCap( ALL_CLASS_TUNINGS );
-    export const CURV_CAP = deriveWeaveCurvatureCap( ALL_CLASS_TUNINGS, CELL );
+### 3. Clearance/caps derived from a fixed contract, not the roster — RESOLVED (ADR-013)
 
-`ALL_CLASS_TUNINGS` is `Object.values( SHIP_CLASSES ).map( c => c.tuning )` — the live roster. Adding
-or retuning a ship changes `SLOPE_CAP`/`CURV_CAP`, which changes the corridor, which changes the
-geometry a given seed produces.
+GDD §0: *"The generator reads `TRACK_CONTRACT` … and never the ship roster."* Confirmed —
+`packages/shared/src/constants.ts:140-149` hardcodes four literals (`pacingCruise: 55`, `weaveCruise: 62`,
+`weaveStrafeClamp: 65`, `weaveStrafeAccel: 118`), and `WEAVE_SLOPE_CAP`/`WEAVE_CURVATURE_CAP`
+(`constants.ts:161-165`) derive only from those, never from `ALL_CLASS_TUNINGS`. `sim/weave.ts` no longer
+imports the roster. Matches ADR-013 in `docs/DECISIONS.md:612`. No action needed.
 
-**Impact:** the determinism promise — *"a track seed must generate the same geometry forever"* — does
-not hold across a roster change. Ship balancing silently reshapes every existing seed. This is worth
-deciding deliberately: either the doc's fixed ceiling gets built, or §0's rationale is rewritten to
-admit that seeds are roster-versioned.
+### 4. Slow blocks — PARTIALLY RESOLVED, residual stale text — (c)
 
----
+GDD §5.2 (line 188) already says correctly: *"Three primitives remain: gaps · sealed · fractured. Slow
+blocks are gone."* And §10 (line 699): *"slow blocks: removed."* Both match code — no slow/drag block
+exists in `packages/shared/src/sim` (only the unrelated flight constant `coastDrag`).
 
-## 2. The doc describes behaviour the code no longer has
-
-### 2.1 Slow blocks are gone from the sim; the GDD still ships them
-
-GDD §5.2:
-
-> *"**Slow blocks stay live in the generator until that ADR is accepted.**"*
-
-and, describing the generator:
+But the doc contradicts itself two paragraphs later. GDD §5.2 line 203 still says:
 
 > *"The core game is **three primitives only: gaps + deadly blocks + slow blocks**"*
 
-There is no slow or drag block in the simulation. The only matches for "drag" in
-`packages/shared/src` are the unrelated flight constant `coastDrag`
-(`constants.ts:9`, `constants.ts:68`, `sim/step.ts:13`). `Block.lethal` was removed and one lethal
-family remains. ADR-009 in `docs/DECISIONS.md` still describes the family as live.
+and line 210: *"**slow blocks = grace-notes ON the line**"*. These two lines are leftover text from
+before ADR-009/ADR-015 and were never updated when lines 188/699 were fixed.
 
-**Impact:** two of the three documented core primitives are one primitive in code. Any design
-reasoning that counts on a speed-tax primitive is reasoning about something that does not exist.
+**Suggested resolution:** doc moves — delete "+ slow blocks" from line 203 and the slow-blocks clause from
+line 210; they contradict the doc's own lines 188 and 699.
 
-### 2.2 `tier` is in the descriptor but wired to nothing
+### 5. `tier` wired to nothing — STILL OPEN — (b)
 
-GDD §5.2 describes the descriptor as carrying difficulty: *"procgen `{seed, tier}`"*.
+GDD §5.2: *"procgen `{seed, tier}`"*, implying tier drives generation. Still hardcoded —
+`packages/shared/src/sim/track-provider.ts:19-24`:
 
-`tier` exists on the wire — `packages/shared/src/schema.ts:56`, `@type( 'uint8' ) tier = 0;` — and is
-copied in and out of room state at `schema.ts:67` and `schema.ts:81`. No generator code reads it.
-`packages/shared/src/sim/track-provider.ts:16` hardcodes it:
+    export function procgenDescriptor( seed: number, gen: TrackGen = DEFAULT_TRACK_GEN ): TrackDescriptor {
+        return {
+            kind: 'procgen',
+            seed,
+            tier: 0,
+            ...
 
-    return { kind: 'procgen', seed, tier: 0, length: TRACK_SEGMENTS };
+`tier` is still on the wire (`packages/shared/src/schema.ts:65`, `@type( 'uint8' ) tier = 0;`, copied at
+lines 77/92) but no generator code branches on it.
 
-**Impact:** a synced field that costs wire bytes and implies a feature that is not built.
+**Suggested resolution:** code moves — either wire `tier` to a real difficulty knob, or drop the field
+from the schema and the doc's descriptor shape.
 
-### 2.3 `/env-lab` is listed as a surviving art route; it was deleted
+### 6. `/env-lab` route — RESOLVED
 
-GDD §5.6:
+GDD §5.6 now correctly reads: *"REMOVED 2026-09-21 | Nothing replaces them. What is left: `/test-level`
+and a hosted room (`/env-lab` was removed 2026-09-22, #196)."* Matches `apps/client/app/routes.ts`, which
+lists only `home`, `game/:roomId`, and (dev-only) `test-level` and `beat-deck`. No action needed.
 
-> *"**Art review instruments** — `/art-lab`, `/art-gallery`, `/iso-*` … **REMOVED 2026-09-21** …
-> What is left: `/env-lab` and a hosted room."*
+### 7. Flight-stats table stale — unchanged, self-flagged — informational
 
-`apps/client/app/routes/` contains exactly three entries: `game`, `home`, `test-level`. `/env-lab` was
-deleted 2026-09-22 with the lighting strip (issue #196), as CLAUDE.md records. The row is also
-missing `/test-level`, which is the route that actually replaced them.
-
-### 2.4 The flight-stats table is stale, and says so
-
-GDD §5.5 carries its own warning: *"⚠ **STALE — do not code against this table.** … playtest tuning
-moved **strafe power and grip** past these numbers on every class."*
-
-Listed here for completeness because it is a known, self-declared divergence with a parked
-reconciliation, not an unknown one. The footprint table immediately above it **is** accurate —
-verified: Fighter is `DEFAULT_TUNING` with `halfW: 1.3` (`constants.ts:74`) → 2.6u, and the
-Interceptor/Comet/Phantom/Freighter `halfW` values 1.0 / 1.1 / 1.2 / 1.25 in `ship-classes.ts` match
-the documented widths.
+GDD §5.5 still carries its own warning (*"⚠ STALE — do not code against this table … playtest tuning
+moved strafe power and grip past these numbers"*). Not re-verified number-by-number since the doc already
+disclaims it; no new finding needed.
 
 ---
 
-## 3. Stale pointers and numbers
+## New findings this session
 
-| GDD says | Reality | Where |
-|---|---|---|
-| `MIN_CLEAR = 7u` per-slice floor | `MIN_LANE = 8u` | `sim/space.ts:10` |
-| "Any `MIN_LANE`-style constant is derived, not an axiom" | `MIN_LANE` is the axiom | `sim/space.ts:10` |
-| `/env-lab` survives | route deleted; `/test-level` is the survivor | `apps/client/app/routes/` |
-| ADR-009 slow blocks "stay live" | removed from the sim entirely | `packages/shared/src/sim/` |
+### 8. Portal radius and clear-spot sizes are stale — STILL OPEN — (c)/(b)
+
+GDD §5.3 (lines 338, 340-341, 356) documents:
+
+> *"The circle has radius **3u** (`portalR`) and its centre is 3u above the gate floor (`portalY`)."*
+> *"An end goes only on a floor spot with room for the widest ship plus **3u** (`portalClearW`), **6u**
+> each side in z (`portalClearHalfL`)."*
+> *"The drawn gate is a full ring with a **6u** clear aperture (`2 × portalR`)."*
+
+Code, `packages/shared/src/combat/portal.ts:24-38` (`DEFAULT_PORTAL_CONFIG`, unchanged at HEAD):
+
+    portalR: 5,
+    portalY: 3,
+    ...
+    portalClearW: 12,
+    portalClearHalfL: 11.5,
+
+`portalR` is 5u, not 3u — a 10u aperture, not 6u. `portalClearW`/`portalClearHalfL` are 12u/11.5u, not
+"widest ship + 3u" (≈5.6u) / 6u. Commit `350febce` — *"portal ring 10u across, 2u into the deck; clear
+window holds the exit hull and rim"* — resized the ring after issue #329 and the GDD Portal section was
+never updated (it still cites only #325, the earlier 6u-ring commit).
+
+**Impact:** a reader sizing anything off the Portal numbers (art scale, HUD, balance) gets the wrong
+aperture and clear-spot footprint. Player-facing size, not just an internal constant.
+
+**Suggested resolution:** doc moves — update §5.3's Portal radius/clear-spot numbers to match `350febce`
+and cite #329 alongside #325.
+
+### 9. Tug/Tow hold durations are stale — STILL OPEN — (c)
+
+GDD §5.3 (lines 306, 309-310):
+
+> *"For **0.6 s** (`TUG_S`) its speed cap rises to 1.5× cruise … eased in over **0.2 s** (`TUG_EASE_S`)."*
+> *"the same lifted cap for **0.8 s** (`TOW_S`, scaled by class)."*
+
+Code, `packages/shared/src/combat/tug-constants.ts` (HEAD, via `git show HEAD:...`):
+
+    export const TUG_S = 1;
+    export const TUG_EASE_S = 0.5;
+    export const TUG_RISE_S = 0.25;
+    ...
+    export const TOW_S = 1;
+
+`TUG_S` is 1s not 0.6s, `TUG_EASE_S` is 0.5s not 0.2s, and there's a `TUG_RISE_S` (0.25s) the doc never
+mentions. `TOW_S` is 1s not 0.8s. `sim-config.ts` wires these straight through with no override
+(`tugS: TUG_S`, `towS: TOW_S`), so these are the live values. Everything else in the Tug section (`TUG_KICK
+40`, `TUG_GAIN 0.5`, `TUG_RELEASE_S 0.35`, `TUG_SPEED_CUT 0.7`, `SLOW_CAP 0.6`, `TOW_KICK 40`,
+`TOW_STRAFE_SCALE 0.3`, `TOW_JUMP false`) matches code exactly.
+
+**Suggested resolution:** doc moves — update the two numbers and add the missing `TUG_RISE_S` term
+(inference: this was likely a retune that never made it back into the GDD prose, the same pattern as the
+Portal finding above).
+
+### 10. The phrase generator (ADR-023, #300) is undocumented in GDD §5.2 — STILL OPEN — (b) inference-light
+
+GDD §5.2's "Generation — rhythm-paced (ADR-006)" section (lines 202-214) describes only the original
+arrangement-envelope + discrete-slalom/flick generator. It never mentions phrases, motifs, arenas, set
+pieces, or acts.
+
+`docs/DECISIONS.md:1268` (ADR-023, accepted with amendments, S1-S3 built) describes a materially different
+generator that ships in code: `packages/shared/src/sim/phrase/` builds tracks as chains of phrase types
+(`weave`, `motif`, `arena`, `set piece`, `rest`) grouped into three acts, with per-class derived pitch
+(`pitch.ts`) replacing the fixed `WEAVE_PITCH` table. `TRACK_GENS` in `space.ts:127` lists
+`'weave' | 'score' | 'groove' | 'phrase'` — four generators, not the one GDD §5.2 describes.
+
+**This is an inference, not a contradiction**, because GDD §5.2 never claims to be exhaustive about
+generator internals and defers "dimensions and the as-built shape" to TDD §4 and ADR-006 specifically — it
+just doesn't cite ADR-023 at all, and ADR-023 is a live, partially-shipped generator with its own vocabulary
+(acts, motifs, set pieces) that changes how tracks read. `DEFAULT_TRACK_GEN` in `space.ts:132` is still
+`'groove'`, not `'phrase'` — ADR-023 §7 gates `'phrase'` behind `?gen=` until S7, so the doc's silence may
+be deliberate (not yet the shipped default). Flagging because a reader of GDD §5.2 alone would not know
+`'phrase'` exists.
+
+**Suggested resolution:** doc moves — once `'phrase'` becomes default (ADR-023 S7), fold a short pointer
+into GDD §5.2 alongside the ADR-006 paragraph; until then, optionally add one line noting `'phrase'` is
+staged behind ADR-023 so the doc isn't silently behind.
 
 ---
 
-## What to do with this
+## Not re-litigated
 
-None of it is fixed. Three of the findings are design decisions rather than typos — 1.1, 1.3 and 2.1
-each need a call on which side moves, the doc or the code. 1.3 is the one worth taking first: it is a
-correctness promise about seed stability that the code does not keep, and the GDD already contains
-the argument for why that matters.
+Sampled and found accurate, not re-reported: ship footprint/flight-stat base numbers (§5.5) match
+`ship-classes.ts`; Mine constants (§5.3) match `combat/constants.ts` exactly (`MINE_RATIO 0.15`,
+`MINE_LEAD_S 0.8`, `MINE_ARM_S 0.5`, `MINE_TRIGGER_R 3`, `MINE_STUN_S 1.5`, `MINE_SPEED_CUT 0.6`,
+`MINE_TTL 20`, `MINE_MAX_PER_OWNER 3`); pickup grab (`PICKUP_GRAB_R 3.2`); lobby chat limits (140 chars,
+`CHAT_BURST 5` / `CHAT_WINDOW_MS 5000`, `CHAT_HISTORY_LINES 30`); room-code/private-room shape; controls
+table (§8) matches ADR-032's shipped layout, and the no-rear-view-mirror / seeker-lock-HUD text matches
+ADR-034/#372.
