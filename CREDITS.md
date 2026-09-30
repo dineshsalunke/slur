@@ -49,6 +49,36 @@ the three CC-BY sounds above. The UI, countdown, pickup, stun, threat, death and
 **CC0** from **[Kenney.nl](https://kenney.nl/assets)**. Per-file mapping:
 [`apps/client/public/audio/CREDITS.md`](apps/client/public/audio/CREDITS.md).
 
+## Code
+
+The black hole effect (`apps/client/app/game/scene/black-hole/`) ports the shaders of the
+**[vgpu](https://github.com/vercel-labs/vgpu)** example *Optimized Black Hole*
+(https://vgpu.sh/examples/optimized-black-hole) from WGSL to GLSL. The source is **MIT**:
+
+```
+MIT License
+
+Copyright (c) 2025 Vercel, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Fonts
 
 No bundled font files — the UI uses native system font stacks

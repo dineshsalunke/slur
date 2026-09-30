@@ -156,3 +156,32 @@ shade → quad + lensed backdrop → tier switch → measure → screenshots to 
 2. Colour: the source's warm ramp as-is, a marigold tint, or the source's greyscale?
 3. OK to credit the MIT port in `CREDITS.md` under a new "Code" section?
 4. OK to ship the effect without an animated low tier (a frozen still)?
+
+## 9. As built — prototype (2026-09-30)
+
+Owner decisions: P2 finish-line landmark · cold tint on `BlackHole.*` dials · CREDITS.md Code section ·
+frozen still on low. Option A built. Look check: `/test-level?blackhole=finish`.
+
+- Module `apps/client/app/game/scene/black-hole/`. Passes run in the `prerender` phase. The quad is
+  placed in the `view` phase: clamped inside the far plane (`DRAW_MAX = 900`), same angular size as the
+  true place, floored at `BlackHole.minAngle`.
+- Changes from §4: no stars (the lensed nebula backdrop replaces them). The source's bloom and composite
+  are dropped; ours do that work. The disk ramp reads `BlackHole.deep/mid/hot` (defaults `#0e3a66` ·
+  `#3bd6ff` · `#eaf8ff`, ADD Cyan Accent in the middle).
+- Tier sizes as built: high 512² every frame · medium 384² every 2nd frame · low **384²** (not 256²:
+  256² stepped at the shadow edge), shaded once then frozen.
+- Bake is split into 8 bands and refine into 24 bands, one band per frame.
+
+Measured (headless Chrome, Metal, 1728×1080 at DPR 2, tier DPR caps apply, GPU-synced median with
+readPixels, best of two, landmark on vs off with `BlackHole.behind`, ship parked at `finishZ − 1400`):
+
+| Tier | Frame on | Frame off | Delta | Draw calls on/off |
+|---|---|---|---|---|
+| high | 17.7 ms | 18.0 ms | −0.3 ms | 76 / 74 |
+| medium | 13.3 ms | 13.0 ms | +0.3 ms | 76 / 74 |
+| low | 5.0 ms | 4.8 ms | +0.2 ms | 51 / 49 |
+
+- The steady cost is **below the meter's noise** (about ±0.5 ms) on every tier.
+- The one-off bake/refine (at mount, and on a pitch/roll/distance change) raises frames to **up to
+  ~34 ms for about 8 frames** at high (refine bands through the photon ring). With 8 refine bands
+  it was ~43 ms.

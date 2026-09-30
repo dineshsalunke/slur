@@ -192,6 +192,20 @@ export const NUMBER_TUNABLES = {
     'Bank.pitch': { value: 0.18, min: 0, max: 0.8, step: 0.01, rebuild: false },
     'Bank.stiffness': { value: 90, min: 5, max: 400, step: 1, rebuild: false },
     'Bank.damping': { value: 0.75, min: 0.2, max: 2, step: 0.01, rebuild: false },
+
+    'BlackHole.radius': { value: 900, min: 100, max: 4000, step: 10, rebuild: false },
+    'BlackHole.minAngle': { value: 7, min: 0, max: 30, step: 0.25, rebuild: false },
+    'BlackHole.height': { value: 150, min: -300, max: 1000, step: 5, rebuild: false },
+    'BlackHole.behind': { value: 400, min: 0, max: 4000, step: 10, rebuild: false },
+    'BlackHole.pitch': { value: 9, min: -60, max: 60, step: 0.5, rebuild: false },
+    'BlackHole.roll': { value: -15, min: -90, max: 90, step: 0.5, rebuild: false },
+    'BlackHole.distance': { value: 36, min: 15, max: 90, step: 0.5, rebuild: false },
+    'BlackHole.brightness': { value: 1.5, min: 0, max: 20, step: 0.05, rebuild: false },
+    'BlackHole.speed': { value: 0.75, min: 0, max: 4, step: 0.05, rebuild: false },
+    'BlackHole.doppler': { value: 1.21, min: 0, max: 3, step: 0.01, rebuild: false },
+    'BlackHole.lens': { value: 0.35, min: 0, max: 2, step: 0.01, rebuild: false },
+    'BlackHole.edge': { value: 0.8, min: 0.3, max: 0.99, step: 0.01, rebuild: false },
+    'BlackHole.parallax': { value: 8, min: 0, max: 40, step: 0.5, rebuild: false },
 } as const satisfies Record< string, NumberTunable >;
 
 export const COLOR_TUNABLES = {
@@ -202,6 +216,9 @@ export const COLOR_TUNABLES = {
     'Shadow.color': { value: '#01040a', rebuild: false },
     'Exhaust.hot': { value: '#fff1dc', rebuild: false },
     'Exhaust.cool': { value: ACCENT_ANCHOR, rebuild: false },
+    'BlackHole.deep': { value: '#0e3a66', rebuild: false },
+    'BlackHole.mid': { value: '#3bd6ff', rebuild: false },
+    'BlackHole.hot': { value: '#eaf8ff', rebuild: false },
 } as const satisfies Record< string, ColorTunable >;
 
 export type NumberPath = keyof typeof NUMBER_TUNABLES;

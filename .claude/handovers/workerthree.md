@@ -1,34 +1,32 @@
-Agent: workerthree · Lane: #394 black hole port — plan only · Updated: 2026-09-30
+Agent: workerthree · Lane: #394 black hole prototype (finish landmark) · Updated: 2026-09-30
 
 ## Goal
-Plan a port of the vgpu "optimized black hole" to three.js. Build nothing until the owner approves.
+Port the vgpu black hole (option A) as a finish-line landmark, cold tint, for the owner's look check on `/test-level?blackhole=finish`.
 
 ## Done
-- Plan written: `.claude/phases/2026-09-30-black-hole-plan.md` (this commit).
-- Earlier: exhaust blue-tail probe reported to slur-supervisor (no code). 6acf1345 (#389, CLOSED).
+- Plan: 87dd59db.
+- Prototype + CREDITS + as-built numbers: this commit (see `git log -1 -- apps/client/app/game/scene/black-hole`).
 
 ## State
-- Source: all fragment passes, no compute. Bake (768-step geodesic march) + refine run once; shade + bloom per frame. Verified from `source.md`.
-- Source output is greyscale (`SATURATION: f32 = 0.0`); the disk ramp under it is warm.
-- Licence MIT, Copyright (c) 2025 Vercel, Inc. (GitHub API, this session).
-- Our renderer is WebGL2 only; three 0.185.1 `RenderTarget` has `count` (MRT); `postprocessing` is WebGL-only.
-- Recommended: option A (GLSL port into fixed-size offscreen targets, `prerender` phase), placement P2 finish landmark then P1 landing.
-- GPU ms per tier in the plan are [unmeasured] estimates.
+- Renders on high/medium/low with no shader errors (headless Metal, DPR 1 shots in scratch, gone after clear).
+- Steady GPU delta on vs off: high −0.3, medium +0.3, low +0.2 ms — inside meter noise. +2 draw calls.
+- Rebake (mount or pitch/roll/distance change): up to ~34 ms frames for ~8 frames at high (refine through the photon ring).
+- Low tier is 384² frozen (256² showed stepping at the shadow edge).
+- Issue #394 left OPEN: owner signs off the look first.
 
 ## Uncommitted
 none
 
 ## Held files
-none
+- apps/client/app/game/scene/black-hole/** (until the owner's look verdict)
 
 ## Next
-1. Wait for the owner's answers via slur-supervisor (plan §8: placement, colour, CREDITS.md, frozen low tier).
-2. On approval: claim the §7 file list with the supervisor, then build the prototype in the §7 order and measure with perf-analysis.
-3. Exhaust: still parked until the owner says where the blue tail is seen.
+1. Wait for the owner's look verdict via slur-supervisor. Tune only through `BlackHole.*` dials.
+2. On approval: follow-up issue to move the landmark from the `/test-level` param into `WorldScene` (hosted rooms), drop the param, and decide the rebake hitch (more refine bands or bake during load).
+3. Exhaust blue tail: still parked.
 
 ## Open questions
-- Owner: plan §8 questions 1–4.
-- Owner: where is the exhaust blue tail seen; any leva Exhaust edits?
+- Owner: look verdict; landmark height/size defaults; keep the lensed nebula?
 
 ## Lessons → memory
 none
