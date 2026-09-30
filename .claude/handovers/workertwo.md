@@ -1,31 +1,36 @@
-Agent: workertwo · Lane: perf-skill key fix (done) + RFC-349 §8 Q10 measurement (done) · Updated: 2026-09-29 18:40
+Agent: workertwo · Lane: meteor polish — #393 (done) + #392 (not started) · Updated: 2026-09-30 15:05
 
 ## Goal
-Idle; waiting for the next lane from slur-supervisor.
+#393: end the meteor's deck "reflection" with the rock. #392: land strikes near the followed ship,
+ahead and inside the chase view (client-only VFX, no sim change). Measure before/after for both.
 
 ## Done
-- e5f71a16: perf-analysis perf.mjs/tune.mjs/SKILL.md drive with ArrowUp (throttle since #368). /test-level 1.5 s hold: KeyW dz 0 u, ArrowUp dz 29.7 u.
-- Q10 answered (no source edits; scratchpad q10/bench.js bundled with esbuild, run in headless Chrome, median of 9, ns per world.query call):
-  - (A,B): inline 257–334, hoisted createQuery 155–226 → saves ~105 ns/call, flat in N (hash + Map lookup only).
-  - (A,Not(C)): inline 575–644, hoisted 147–207 → saves ~430 ns/call (Not() modifier alloc + hash).
-  - Hoisted still grows ~0.27 ns/entity (0→256: 155→226): `runQuery` still does `query.entities.dense.slice()` + `createQueryResult` on both paths (koota dist chunk-ZWIGMIL4.js:2085, :2764-2798). createQuery removes the hash only, not the copy.
-- a50cd135 + 393e7480 #391 S19 (closed). Earlier: 80b9e8ef + 9b5f38f2 #388, a3ee47ad S17, 8681e05 S8, f3382cb S3, cf8f95e S2.
+- 745fc30b #393 (pushed, issue closed). The cause was the impact pointLight in
+  `meteor-strikes.utils.ts` `flash()`: it faded over 1.8 s while the rock collapses in 0.16 s.
+  It now uses the glow's collapse fade (`1 - age/COLLAPSE`, squared). LIGHT_DECAY/LIGHT_END are removed.
+  - A/B with the light pinned to 0: the wall lobes and the deck hot spot vanish. The burst ring and the scorch ember stay, so they are not the cause.
+  - Light excess at the impact (32 px luma box) was +84/+31/+11 at 0.27/0.67/0.93 s. After: intensity 0 from 0.16 s; 0.27 s luma 91 vs 90 light-off.
 
 ## State
-- Bench footgun: an esbuild IIFE bundle of koota needs `--banner:js='"use strict";'` — sloppy mode boxes `this` in koota's Number.prototype.add and addTrait throws "reading 'add'".
-- Owner /test-level check of S19 not done [unmeasured].
+- #392 baseline [partial]: in a 12 s full-throttle run from spawn, 2 strikes landed 100 u and 262 u ahead of the ship. The second was at x −36, behind a wall. No frustum share measured yet.
+- Probe driver: scratchpad `meteor/probe.mjs` (Playwright + system Chrome, env MODE/START/AHEAD/TAP/SECONDS/SHOTS). It may be gone after /clear; the recipe is in memory `stage-a-meteor-strike-on-test-level`.
+- The owner has not done the /test-level check of #393 [unmeasured].
 
 ## Uncommitted
 none.
 
-## Held files
-none.
+## Held files (claim cleared by supervisor, 2026-09-30)
+- apps/client/app/game/scene/meteor-schedule.ts, meteor-schedule.test.ts
+- apps/client/app/game/scene/meteor-strikes/* (constants, utils, tsx)
+- apps/client/app/dev/tuning-schema.ts — the 'Meteor.ahead' line only; commit it at once by pathspec (workerone F4a may need the file)
 
 ## Next
-1. Wait for the supervisor's next lane.
+1. Measure the #392 baseline: a 45 s run, chance 1, recording per strike the impact-to-ship distance, the z ahead and whether it is in the frustum.
+2. Plan (not built): keep `strikeAt`'s slot grid as the cadence, but return relative offsets (ahead fraction, side −1..1) rather than absolute x/z. In `schedule()`, place the impact at the focus pose: z = focusZ + v·flight + ahead (~30–80 u), x = focusX ± ~12, clamped to ±(HALF_WIDTH − EDGE). Take the focus from the camera (the chase camera follows the local ship and the spectated ship alike), with v from the camera's dz/dt. That avoids plumbing a spectator target through net-canvas (held by workerone). Update the tests: on the deck, ahead of focus, same determinism.
+3. Measure after, commit by pathspec, push, close #392 with the SHA, and brief the owner check on /test-level.
 
 ## Open questions
-- Owner (from #373): incoming-bolt button on /test-level? phone tick/seeker overlap fix?
+- Owner (from #373): an incoming-bolt button on /test-level? A phone tick/seeker overlap fix?
 
 ## Lessons → memory
-- none (strict-mode footgun is bench-only; recorded here).
+- .claude/memory/stage-a-meteor-strike-on-test-level.md (new; indexed in MEMORY.md).
