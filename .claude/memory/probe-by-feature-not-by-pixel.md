@@ -33,3 +33,19 @@ measured against it before `drawbox` caught it.
 `EffectComposer` including `ToneMapping`, so its **edges are trustworthy and its values are not**.
 For bloom off inside the shipped pipeline, set `Bloom.intensity` 0. Then verify every path with
 `drawbox` before believing a number ([[eyeballing-a-tap-lies-about-brightness]]).
+
+### Isolate one mesh by a hide-diff in the live page
+
+To get the exact pixels one mesh draws (a plume, a reflection), with no repo edit: collect scenes through
+the `__THREE_DEVTOOLS__` hook ([[grab-the-scene]]). Find the mesh by a uniform it alone has (the exhaust
+plume has `uHot`). Freeze the sim with KeyP. Then, inside `requestAnimationFrame` callbacks that run after
+R3F's, `gl.readPixels` the full buffer on two frames: first with the mesh visible, then with
+`visible = false`. Pixels whose RGB sum changes by more than 15 are the mesh. The final colour, the added
+colour and the colour underneath then come per pixel.
+
+**Why:** 2026-09-30 (the exhaust blue-tail probe). A plain scan for blue pixels found only the sky. The
+diff gave 880 plume px at hue 39° in one run.
+
+**How to apply:** hide EVERY match, because /test-level held 4 plume meshes and only one had count > 0.
+Hiding the last match changed only 283 px of rock drift. On a moving camera (the landing), the diff covers
+the whole frame and is useless. Freeze first, and expect about 10-level rock-drift noise in the sky.
