@@ -28,6 +28,9 @@ Full rule: `conventions/features.md`. Owner-approved 2026-09-29.
   numeric priority, no import or mount order. Sim hooks tie-break by feature `id`.
 - **Schema fields are composed with `schema()`.** Spread order is wire order. Append only; never
   reorder, insert or `@deprecated()`. A test asserts every field index is unchanged and `< 64`.
+  **Exception (owner, 2026-09-30):** an RFC-349 F-stage feature move may move that feature's fields
+  into its spread, once per feature. It needs the owner's approval, a client that decodes by reflection,
+  a two-SDK-client decode check, and the index test updated in the same commit (F2 did this).
 - **Rules and Track gen are server-owned and lock at GO. Look is client-only. Dev overrides one tier
   above.** A value `simulate()` reads never has a second client copy. A Rules dial goes through the
   B2 `overrides` map. One `defineRules` spec per feature gives defaults, clamp, key check and dial.

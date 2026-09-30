@@ -22,7 +22,9 @@
 6. **Four constant tiers.** Rules and Track gen are server-owned and lock at GO. Look is client-only. Dev
    overrides one tier above. **A value that `simulate()` reads never has a second client copy.**
 7. **Schema fields are composed, not decorated.** Spread order is wire order. Append only. At most 64 fields
-   per class; `PlayerState` uses 39.
+   per class; `PlayerState` uses 39. Exception (owner, 2026-09-30): an RFC-349 F-stage feature move may
+   move that feature's fields into its spread, once per feature, with owner approval, a two-SDK-client
+   decode check and the index test updated in the same commit.
 
 ## 1. Folder layout
 
