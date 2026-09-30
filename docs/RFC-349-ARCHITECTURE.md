@@ -404,6 +404,19 @@ The owner decides go / no-go on the numbers before any other feature moves.
 | Determinism | Shared 583/583, server 99/99 (incl. `room-tug.test.ts`), client 710/710. The final ship state is bit-equal between HEAD and F2, idle and tug active. |
 | Order is declared | `features/registry.test.ts` (shuffled registry, same order). The tug latch now runs after `stepCombat`. A test in `tug-run.test.ts` shows that it gives the same state before or after portals and pickups. Only the broadcast order within a tick changes. |
 
+**F4a result (#395, bolt, measured 2026-09-30).** Owner decisions: D4 `power.bagRest`, D5 fixed hook
+`run.strike` where `stepBolts` ran, D6 `projectiles` stays in `RunState`, D7 the shared streak, ember,
+`BOLT_*` palette, block shake, SFX and schema listeners stay central.
+
+| Measure | Result |
+|---|---|
+| Central files a feature edits | **34 → 29** non-test files name bolt outside the two folders (36 before, with the 2 moved pickup files). Target ≤ 2 is not met. Shared side, 5: `features/registry.ts`, the `index.ts` export, `schema.ts` (imports `Projectile` from `features/bolt/bolt-schema.ts`, D6), `sim-config.ts` (D2) and `HeldPower.bolt` in `combat/constants.ts` (D3). Client side, 24: `features/client-features.ts`, the test-level grant (D3) and 22 look, audio and listener files kept by D7. Test files outside the folders: 19 → 19; most import bolt through `index.ts`. |
+| Wire order | Unchanged. No field moved. Two SDK clients on the dev server decode 3 bolts with fields `x,y,z,ownerId,ttl,dir`, both see 2 bolt hits on B and 1 wall hit, and both read B's stun (peak 0.687). Zero decode logs. |
+| `step()` time per tick | Bolt has no ship hooks, so `simulate()` does not change. `RunSim.fixedStep` in node on `dist`, HEAD against F4a, 4 racers, 3600 ticks, 6 seeds: 29.3–47.5 µs → 29.2–46.8 µs. Within noise. |
+| Frame time on `/test-level` | Draw calls 74, the same as before (DPR 1, quality high, 3 runs). Frame ms not compared: there is no HEAD client to A/B on the one stack. |
+| Determinism | Bit-equal. The same 6 seeds hash every tick's state (ships, bolts, seekers, mines, broken blocks) and every broadcast; HEAD and F4a hashes match. The bench saw 425 ship hits, 635 wall hits and mine clears. 800 power bags over 5 configs match HEAD. Shared 585/585, server 99/99, client 721/721. |
+| Order is declared | Bolt runs at `run.strike`, the place `stepBolts` held, so no order changed. Registry order test updated to `[ bolt, tug ]`. |
+
 ## 4. Net, input, client state, room config (workertwo)
 
 Measured on `dev` at `4b58658` (§4.1–4.3) and `a25b332` (§4.4–4.5). Installed versions, read from the
@@ -874,9 +887,10 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S2 | **Landed cf8f95e (#375).** Input action map (`fireForward`, `fireBack`, `next`, `previous`, `drop`, `mute`). Delete `synthKey`. Base for #348. | `game/input/power-select.ts`, `gamepad.ts`, `synth-key.ts`, `touch-dpad.constants.ts`, `game/net-canvas.tsx`, `audio/game-audio/game-audio.tsx` | — |
 | S3 | **Landed f3382cb (#376).** Event-queue helper (A1). Move the 6 queues onto it. One overflow rule. | `hit-events.ts`, `mine-shock-events.ts`, `tug-events.ts`, `block-burst/*`, `meteor-chunks/*`, `meteor-scorch/*`, new helper | — |
 | **F1** | **Landed 1a5415c7 (sim) + f912f7ab (client) (#385).** Wire bytes identical; shared 578/578, server 99/99, client 702/702. `attach-room-to-world.ts` at 305/300 lines until handlers move into features. **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, feature systems fed to the S16 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, S16 |
-| **F2** | **Built (#390), waits on F3.** Tug is in `packages/shared/src/features/tug/` and `apps/client/app/features/tug/`. Numbers in §3.8 "F2 result". Pilot: move tug into two feature folders. Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
-| F3 | Owner go / no-go on the F2 numbers. | — | F2 |
-| F4… | One feature per stage: bolt, seeker, mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F3 |
+| **F2** | **Landed f4e78880 (#390).** Tug is in `packages/shared/src/features/tug/` and `apps/client/app/features/tug/`. Numbers in §3.8 "F2 result". Pilot: move tug into two feature folders. Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
+| F3 | **GO (owner, 2026-09-30).** Owner go / no-go on the F2 numbers. | — | F2 |
+| **F4a** | **Built (#395).** Bolt is in `packages/shared/src/features/bolt/` and `apps/client/app/features/bolt/`. Numbers in §3.8 "F4a result". Owner D4–D7 (2026-09-30). | bolt's sim code, pickup view and glyph (moved) + the central lines it left | F3 |
+| F4… | One feature per stage: seeker, mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F4a |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |

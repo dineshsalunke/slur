@@ -1,6 +1,6 @@
 import { ArraySchema, type InferValueType } from '@colyseus/schema';
 import { HeldPower, POWER_SLOTS } from './combat/constants.js';
-import type { SimFeature } from './features/define-sim-feature.js';
+import type { PlayerFieldSpec, SimFeature } from './features/define-sim-feature.js';
 import { SIM_FEATURES } from './features/registry.js';
 import { DEFAULT_SHIP } from './ship-classes.js';
 
@@ -111,7 +111,7 @@ export type FeatureShipFields = Omit< SimShipFields, keyof typeof CORE_PLAYER_FI
 function featureShipDefaults(): FeatureShipFields {
     const out: Record< string, unknown > = {};
     for ( const f of SIM_FEATURES ) {
-        for ( const [ name, spec ] of Object.entries( f.fields?.player ?? {} ) ) {
+        for ( const [ name, spec ] of Object.entries< PlayerFieldSpec >( f.fields?.player ?? {} ) ) {
             if ( spec.sim === true ) out[ name ] = spec.default;
         }
     }

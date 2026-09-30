@@ -1,7 +1,4 @@
 import {
-    BOLT_HALF,
-    BOLT_SPEED,
-    BOLT_TTL,
     BOOST_EASE_S,
     BOOST_GAIN,
     BOOST_GLIDE_S,
@@ -46,6 +43,7 @@ import {
     STUN_SECONDS,
 } from './combat/constants.js';
 import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
+import { BOLT_HALF, BOLT_SPEED, BOLT_TTL } from './features/bolt/bolt-constants.js';
 import {
     SLOW_CAP,
     TOW_JUMP,

@@ -10,6 +10,7 @@ export * from './combat/projectiles.js';
 export * from './combat/seeker.js';
 export * from './combat/shield.js';
 export * from './constants.js';
+export * from './features/bolt/bolt.feature.js';
 export * from './features/define-sim-feature.js';
 export * from './features/registry.js';
 export * from './features/run-features.js';

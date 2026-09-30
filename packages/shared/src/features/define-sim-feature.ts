@@ -1,6 +1,7 @@
 import type { PrimitiveType } from '@colyseus/schema';
 import type { HeldPower, HitMessage } from '../combat/constants.js';
 import type { FireDir } from '../combat/fire-dir.js';
+import type { MineEvent } from '../combat/mine-hit.js';
 import type { FlightTuning } from '../constants.js';
 import type { Broadcast } from '../run/combat.js';
 import type { PlayerState, RunState } from '../schema.js';
@@ -29,29 +30,40 @@ export interface ShipHooks {
 export interface RunContext {
     readonly state: RunState;
     readonly track: Track;
-    readonly broken: ReadonlySet< number >;
+    readonly broken: Set< number >;
     readonly config: SimConfig;
     readonly broadcast: Broadcast;
     readonly shieldAbsorbs: ( v: PlayerState, at: HitMessage ) => boolean;
+    readonly resolveMine: ( event: MineEvent ) => void;
+    readonly nextId: () => string;
 }
 
 export interface RunHooks< S > {
     readonly open: () => S;
     readonly use?: ( ctx: RunContext, run: S, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
+    readonly strike?: ( ctx: RunContext, run: S, dt: number ) => void;
     readonly tick?: ( ctx: RunContext, run: S, dt: number ) => void;
     readonly reset?: ( run: S ) => void;
 }
 
 export interface OpenRun {
     readonly use?: ( ctx: RunContext, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
+    readonly strike?: ( ctx: RunContext, dt: number ) => void;
     readonly tick?: ( ctx: RunContext, dt: number ) => void;
     readonly reset?: () => void;
 }
 
-export interface PowerSpec {
+export interface WeightedPower {
     readonly kind: HeldPower;
     readonly bagWeight: ( cfg: SimConfig ) => number;
 }
+
+export interface RestPower {
+    readonly kind: HeldPower;
+    readonly bagRest: true;
+}
+
+export type PowerSpec = WeightedPower | RestPower;
 
 export interface SimFeatureSpec< F extends PlayerFieldSpecs, S > {
     readonly id: string;
@@ -74,9 +86,10 @@ export interface SimFeature< F extends PlayerFieldSpecs = PlayerFieldSpecs > {
 function bindRun< S >( hooks: RunHooks< S > ): () => OpenRun {
     return () => {
         const run = hooks.open();
-        const { use, tick, reset } = hooks;
+        const { use, strike, tick, reset } = hooks;
         return {
             use: use && ( ( ctx, p, ownerId, slot, dir ) => use( ctx, run, p, ownerId, slot, dir ) ),
+            strike: strike && ( ( ctx, dt ) => strike( ctx, run, dt ) ),
             tick: tick && ( ( ctx, dt ) => tick( ctx, run, dt ) ),
             reset: reset && ( () => reset( run ) ),
         };

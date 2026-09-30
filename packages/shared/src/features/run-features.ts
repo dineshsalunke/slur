@@ -9,6 +9,7 @@ type PowerUse = NonNullable< OpenRun[ 'use' ] >;
 
 export interface RunFeatures {
     use( ctx: RunContext, p: PlayerState, ownerId: string, slot: number, dir: FireDir, kind: number ): boolean;
+    strike( ctx: RunContext, dt: number ): void;
     tick( ctx: RunContext, dt: number ): void;
     reset(): void;
 }
@@ -32,6 +33,9 @@ export function openRunFeatures( features: readonly SimFeature[] = SIM_FEATURES 
             if ( ! use ) return false;
             if ( use( ctx, p, ownerId, slot, dir ) ) spendPower( p, slot );
             return true;
+        },
+        strike( ctx, dt ) {
+            for ( const run of runs ) run.strike?.( ctx, dt );
         },
         tick( ctx, dt ) {
             for ( const run of runs ) run.tick?.( ctx, dt );

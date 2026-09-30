@@ -3,7 +3,6 @@ import { PickupInstances } from '../pickup-instances/pickup-instances';
 import { buildSeekerPickup } from './seeker-pickups.utils';
 
 export interface PickupLayouts {
-    bolts: Anchor[];
     seekers: Anchor[];
     mines: Anchor[];
     boosts: Anchor[];

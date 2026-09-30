@@ -3,10 +3,10 @@ import { test } from 'node:test';
 import { SIM_FEATURES } from './registry.js';
 import { FEATURE_POWERS, sortFeatures } from './sim-hooks.js';
 
-test( 'the registry loads first without a TDZ cycle and lists tug', () => {
+test( 'the registry loads first without a TDZ cycle and lists bolt and tug', () => {
     assert.deepEqual(
         SIM_FEATURES.map( ( f ) => f.id ),
-        [ 'tug' ],
+        [ 'bolt', 'tug' ],
     );
 } );
 
@@ -15,7 +15,7 @@ test( 'a shuffled registry sorts into the same order', () => {
     const forward = sortFeatures( ids ).map( ( f ) => f.id );
     const reversed = sortFeatures( [ ...ids ].reverse() ).map( ( f ) => f.id );
     assert.deepEqual( reversed, forward );
-    assert.deepEqual( forward, [ 'aim', 'mid', 'tug', 'zap' ] );
+    assert.deepEqual( forward, [ 'aim', 'bolt', 'mid', 'tug', 'zap' ] );
 } );
 
 test( 'a duplicate feature id throws', () => {
@@ -25,4 +25,8 @@ test( 'a duplicate feature id throws', () => {
 test( 'every feature power has a distinct kind', () => {
     const kinds = FEATURE_POWERS.map( ( p ) => p.kind );
     assert.equal( new Set( kinds ).size, kinds.length );
+} );
+
+test( 'exactly one feature power takes the rest of the bag', () => {
+    assert.equal( FEATURE_POWERS.filter( ( p ) => 'bagRest' in p ).length, 1 );
 } );

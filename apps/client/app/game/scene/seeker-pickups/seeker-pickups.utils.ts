@@ -13,8 +13,6 @@ import type { PickupLayouts } from './seeker-pickups';
 
 export function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] | null {
     switch ( power ) {
-        case HeldPower.bolt:
-            return out.bolts;
         case HeldPower.seeker:
             return out.seekers;
         case HeldPower.mine:
@@ -31,7 +29,7 @@ export function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] | nul
 }
 
 export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
-    const out: PickupLayouts = { bolts: [], seekers: [], mines: [], boosts: [], shields: [], portals: [] };
+    const out: PickupLayouts = { seekers: [], mines: [], boosts: [], shields: [], portals: [] };
     for ( const a of layout ) bucketOf( out, pickupPower( a.id ) )?.push( a );
     return out;
 }

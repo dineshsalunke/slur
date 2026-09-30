@@ -47,6 +47,8 @@ function context( blocks: Block[] = [] ) {
         config: CFG,
         broadcast,
         shieldAbsorbs: ( v, at ) => shieldAbsorbs( v, at, broadcast ),
+        resolveMine: () => {},
+        nextId: () => '0',
         run: openRunFeatures( [ tugFeature ] ),
     };
     return { ctx, sent, broken };

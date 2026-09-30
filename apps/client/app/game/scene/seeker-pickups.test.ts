@@ -20,14 +20,14 @@ function bounds( g: THREE.BufferGeometry ): THREE.Box3 {
 describe( 'splitPickupLayout', () => {
     it( 'puts every core pickup in exactly one field, by its shared power, and leaves feature powers out', () => {
         const layout = pickupsOf( resolveTrack( procgenDescriptor( 7, 'weave' ) ) );
-        const { bolts, seekers, mines, boosts, shields, portals } = splitPickupLayout( layout );
+        const { seekers, mines, boosts, shields, portals } = splitPickupLayout( layout );
         const featureKinds = new Set< number >( FEATURE_POWERS.map( ( p ) => p.kind ) );
         const featured = layout.filter( ( a ) => featureKinds.has( pickupPower( a.id ) ) ).length;
 
         expect( featured ).toBeGreaterThan( 0 );
-        expect(
-            bolts.length + seekers.length + mines.length + boosts.length + shields.length + portals.length + featured,
-        ).toBe( layout.length );
+        expect( seekers.length + mines.length + boosts.length + shields.length + portals.length + featured ).toBe(
+            layout.length,
+        );
         expect( seekers.length ).toBeGreaterThan( 0 );
         expect( mines.length ).toBeGreaterThan( 0 );
         expect( portals.length ).toBeGreaterThan( 0 );
@@ -36,7 +36,6 @@ describe( 'splitPickupLayout', () => {
         for ( const a of mines ) expect( pickupPower( a.id ) ).toBe( HeldPower.mine );
         for ( const a of boosts ) expect( pickupPower( a.id ) ).toBe( HeldPower.boost );
         for ( const a of shields ) expect( pickupPower( a.id ) ).toBe( HeldPower.shield );
-        for ( const a of bolts ) expect( pickupPower( a.id ) ).toBe( HeldPower.bolt );
     } );
 } );
 

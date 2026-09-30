@@ -12,23 +12,15 @@ import {
     polyPath,
     RIM,
     roundRectPath,
-    SHEEN,
     starPoints,
 } from './glyph-shapes';
 import { CELL_PAD, CELL_PX, CELLS, VIEWBOX } from './power-arc.constants';
 
 const SQUARE = roundRectPath( 8, 8, 32, 32, 2 );
-const DIAMOND = polyPath( '24,2 38,24 24,46 10,24' );
 const PORTAL_RING = { d: ellipsePath( 24, 24, 9, 14 ), stroke: ACCENT, width: 3 };
 
 const CORE_GLYPHS: Record< number, readonly GlyphShape[] > = {
     [ HeldPower.none ]: [ { d: SQUARE, stroke: ACCENT, width: 2.5 } ],
-    [ HeldPower.bolt ]: [
-        plate( DIAMOND ),
-        { d: polyPath( '24,2 31,24 24,46' ), fill: SHEEN },
-        { d: polyPath( '24,12 31,24 24,36 17,24' ), fill: ACCENT },
-        { d: polyPath( '24,16 28,24 24,32' ), fill: GOLD },
-    ],
     [ HeldPower.seeker ]: [
         plate( roundRectPath( 9, 9, 30, 30, 5 ) ),
         { d: circlePath( 24, 24, 8 ), fill: ACCENT },

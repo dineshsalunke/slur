@@ -25,7 +25,7 @@ import type { Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 import { copySimShip, createSimWorld, froundSimShip, spawnShip } from '../sim/types.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { type Broadcast, firePower, shieldAbsorbs, stepCombat } from './combat.js';
+import { type Broadcast, firePower, resolveMineEvent, shieldAbsorbs, stepCombat } from './combat.js';
 import {
     clearQueue,
     emptyQueue,
@@ -93,6 +93,8 @@ export class RunSim {
             config: this.config,
             broadcast: this.hooks.broadcast,
             shieldAbsorbs: ( v, at ) => shieldAbsorbs( v, at, this.hooks.broadcast ),
+            resolveMine: ( e ) => resolveMineEvent( this.state, e, this.hooks.broadcast, this.config ),
+            nextId: () => String( this.nextProjectileId++ ),
         };
         this.refreshMetadata();
     }
@@ -129,6 +131,7 @@ export class RunSim {
                         pickupRespawn: this.pickupRespawn,
                     },
                     dt,
+                    ( step ) => this.features.strike( this.featureCtx, step ),
                 );
                 this.features.tick( this.featureCtx, dt );
                 for ( const p of this.state.players.values() ) froundSimShip( p );

@@ -3,7 +3,6 @@ import { Fragment, useMemo } from 'react';
 import { FeatureViews } from '../../engine/feature-views/feature-views';
 import { isPickupTaken } from '../pickup-state';
 import { useTrack } from '../track-context/use-track';
-import { BoltPickups } from './bolt-pickups/bolt-pickups';
 import { BoostPickups } from './boost-pickups/boost-pickups';
 import { MinePickups } from './mine-pickups/mine-pickups';
 import { PickupReflections } from './pickup-reflections/pickup-reflections';
@@ -20,7 +19,6 @@ export function PickupField() {
     return (
         <Fragment>
             <PickupReflections layout={ all } isTaken={ isPickupTaken } />
-            <BoltPickups layout={ layout.bolts } isTaken={ isPickupTaken } />
             <SeekerPickups layout={ layout.seekers } isTaken={ isPickupTaken } />
             <MinePickups layout={ layout.mines } isTaken={ isPickupTaken } />
             <BoostPickups layout={ layout.boosts } isTaken={ isPickupTaken } />

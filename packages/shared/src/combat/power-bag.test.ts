@@ -115,3 +115,7 @@ test( 'pickupPower reads the bag by ordinal and honours ratio overrides', () => 
         HeldPower.bolt,
     );
 } );
+
+test( 'the bolt rest share deals the same bag as before the bolt feature moved (#395)', () => {
+    assert.deepEqual( powerBag( '42', 3 ), [ 3, 6, 5, 8, 5, 6, 4, 2, 4, 3, 5, 2, 4, 1, 2, 3, 1, 8, 1, 1 ] );
+} );

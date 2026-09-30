@@ -1,3 +1,4 @@
+import type { WeightedPower } from '../features/define-sim-feature.js';
 import { FEATURE_POWERS } from '../features/sim-hooks.js';
 import { hash2, mulberry32 } from '../sim/rng.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
@@ -15,6 +16,17 @@ export interface PowerCount {
     count: number;
 }
 
+function weighted(): WeightedPower[] {
+    return FEATURE_POWERS.filter( ( p ): p is WeightedPower => 'bagWeight' in p );
+}
+
+function restPower(): HeldPower {
+    const rest = FEATURE_POWERS.filter( ( p ) => 'bagRest' in p );
+    const only = rest[ 0 ];
+    if ( rest.length !== 1 || ! only ) throw new Error( `power bag: ${ rest.length } rest powers, need exactly 1` );
+    return only.kind;
+}
+
 export function bagCounts( cfg: SimConfig = DEFAULT_SIM_CONFIG ): PowerCount[] {
     let left = 1;
     const take = ( ratio: number ): number => {
@@ -28,9 +40,9 @@ export function bagCounts( cfg: SimConfig = DEFAULT_SIM_CONFIG ): PowerCount[] {
         [ HeldPower.boost, take( cfg.boostRatio ) ],
         [ HeldPower.shield, take( cfg.shieldRatio ) ],
         [ HeldPower.portal, take( cfg.portalRatio ) ],
-        ...FEATURE_POWERS.map( ( p ): [ HeldPower, number ] => [ p.kind, take( p.bagWeight( cfg ) ) ] ),
+        ...weighted().map( ( p ): [ HeldPower, number ] => [ p.kind, take( p.bagWeight( cfg ) ) ] ),
     ];
-    const shares: [ HeldPower, number ][] = [ [ HeldPower.bolt, left ], ...drawn ];
+    const shares: [ HeldPower, number ][] = [ [ restPower(), left ], ...drawn ];
     const counts = shares.map( ( [ power, share ] ) => ( {
         power,
         count: Math.floor( share * POWER_BAG_SIZE ),
@@ -91,7 +103,7 @@ const bags = new Map< string, HeldPower[] >();
 
 function featureWeightKey( cfg: SimConfig ): string {
     let key = '';
-    for ( const p of FEATURE_POWERS ) key += `|${ p.bagWeight( cfg ) }`;
+    for ( const p of weighted() ) key += `|${ p.bagWeight( cfg ) }`;
     return key;
 }
 

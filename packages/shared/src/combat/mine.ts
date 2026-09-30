@@ -1,17 +1,11 @@
 import type { Segment, Track } from '../sim/space.js';
 import { floorUnder } from '../sim/step.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { entryZ, sweptZ } from './fire-dir.js';
+import { type MineEvent, type MineState, mineEvent } from './mine-hit.js';
 import type { SeekerShip } from './seeker.js';
 
-export interface MineState {
-    x: number;
-    y: number;
-    z: number;
-    ownerId: string;
-    armed: boolean;
-    ttl: number;
-}
+export type { MineEvent, MineOutcome, MineState } from './mine-hit.js';
+export { mineEvent, mineShotFront } from './mine-hit.js';
 
 export interface MineLayer {
     x: number;
@@ -23,17 +17,6 @@ export interface MineLayer {
 export interface MineHull {
     halfL: number;
     stepTol: number;
-}
-
-export type MineOutcome = 'trigger' | 'cleared' | 'evicted' | 'expired' | 'fizzle';
-
-export interface MineEvent {
-    outcome: MineOutcome;
-    x: number;
-    y: number;
-    z: number;
-    victimId: string;
-    ownerId: string;
 }
 
 export function mineDropZ( ship: MineLayer, halfL: number, cfg: SimConfig = DEFAULT_SIM_CONFIG, dir = 1 ): number {
@@ -88,10 +71,6 @@ export function mineFizzle(
 ): MineEvent {
     const z = mineDropZ( ship, halfL, cfg, dir );
     return { outcome: 'fizzle', x: ship.x, y: ship.y, z, victimId: '', ownerId };
-}
-
-export function mineEvent( mine: MineState, outcome: MineOutcome, victimId = '' ): MineEvent {
-    return { outcome, x: mine.x, y: mine.y, z: mine.z, victimId, ownerId: mine.ownerId };
 }
 
 function oldestOf( mines: Map< string, MineState >, ownerId: string ): [ string, number ] {
@@ -161,23 +140,4 @@ export function stepMines(
         }
     } );
     for ( const id of spent ) mines.delete( id );
-}
-
-export function mineBoltFront(
-    mine: MineState,
-    bolt: { x: number; y: number; z: number; dir: number },
-    sweep: number,
-    boltHalf: number,
-    cfg: SimConfig = DEFAULT_SIM_CONFIG,
-): number | null {
-    const h = cfg.mineHalf;
-    const [ zLo, zHi ] = sweptZ( bolt.z, boltHalf, sweep, bolt.dir );
-    const hit =
-        bolt.x + boltHalf > mine.x - h &&
-        bolt.x - boltHalf < mine.x + h &&
-        bolt.y + boltHalf > mine.y &&
-        bolt.y - boltHalf < mine.y + cfg.mineHeight &&
-        zHi > mine.z - h &&
-        zLo < mine.z + h;
-    return hit ? entryZ( mine.z - h, mine.z + h, bolt.dir ) : null;
 }

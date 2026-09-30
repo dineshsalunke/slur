@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
+import { buildBoltBody } from '../../../features/bolt/bolt-pickups/bolt-pickups.utils';
 import { buildTugPickup } from '../../../features/tug/tug-pickups/tug-pickups.utils';
-import { buildBoltBody } from '../bolt-pickups/bolt-pickups.utils';
 import { buildBoostPickup } from '../boost-pickups/boost-pickups.utils';
 import { PICKUP_BOB, PICKUP_HOVER, PICKUP_SIZE } from '../combat-look';
 import { buildMinePickup } from '../mine-pickups/mine-pickups.utils';

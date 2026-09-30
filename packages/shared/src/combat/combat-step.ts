@@ -1,11 +1,7 @@
 import { tuningForShip } from '../ship-classes.js';
-import type { Track } from '../sim/space.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { BOLT_SPAWN_AHEAD, HeldPower, POWER_SLOTS } from './constants.js';
-import { entryZ } from './fire-dir.js';
-import { type MineEvent, type MineState, mineEvent } from './mine.js';
+import { HeldPower, POWER_SLOTS } from './constants.js';
 import { grabPickup, type Pickup, pickupPower } from './pickups.js';
-import { type HitShip, type ProjectileState, resolveBolt, stepProjectiles } from './projectiles.js';
 
 export interface Gunner {
     x: number;
@@ -19,13 +15,6 @@ export interface Gunner {
 
 export interface Grabber extends Gunner {
     shipId: string;
-}
-
-export interface BoltStrike {
-    x: number;
-    y: number;
-    z: number;
-    victimId: string;
 }
 
 export function emptySlots(): number[] {
@@ -69,52 +58,6 @@ export function grantPower( g: Gunner, power: number ): boolean {
 
 export function startBoost( ship: { boostTimer: number }, cfg: SimConfig = DEFAULT_SIM_CONFIG ): void {
     ship.boostTimer = cfg.boostS;
-}
-
-export function aimBolt(
-    bolt: ProjectileState,
-    g: Gunner,
-    ownerId: string,
-    cfg: SimConfig = DEFAULT_SIM_CONFIG,
-    dir = 1,
-): void {
-    bolt.x = g.x;
-    bolt.y = g.y;
-    bolt.z = g.z + dir * BOLT_SPAWN_AHEAD;
-    bolt.ownerId = ownerId;
-    bolt.ttl = cfg.boltTtl;
-    bolt.dir = dir;
-}
-
-export function stepBolts(
-    bolts: Map< string, ProjectileState >,
-    ships: readonly HitShip[],
-    track: Track,
-    broken: Set< number >,
-    dt: number,
-    onStrike: ( strike: BoltStrike ) => void,
-    cfg: SimConfig = DEFAULT_SIM_CONFIG,
-    mines: Map< string, MineState > = new Map(),
-    onMine: ( event: MineEvent ) => void = () => {},
-): void {
-    stepProjectiles( bolts.values(), dt, cfg );
-    const sweep = cfg.boltSpeed * dt;
-    const spent: string[] = [];
-    bolts.forEach( ( bolt, id ) => {
-        const out = resolveBolt( bolt, ships, track, broken, sweep, cfg, mines );
-        for ( const victimId of out.victims ) onStrike( { x: bolt.x, y: bolt.y, z: bolt.z, victimId } );
-        const mine = out.mine === null ? undefined : mines.get( out.mine );
-        if ( out.mine !== null && mine ) {
-            mines.delete( out.mine );
-            onMine( mineEvent( mine, 'cleared' ) );
-        }
-        if ( out.block?.kind === 'fractured' ) broken.add( out.block.id );
-        if ( out.block ) {
-            onStrike( { x: bolt.x, y: bolt.y, z: entryZ( out.block.z0, out.block.z1, bolt.dir ), victimId: '' } );
-        }
-        if ( out.spent ) spent.push( id );
-    } );
-    for ( const id of spent ) bolts.delete( id );
 }
 
 export function stepPickups(

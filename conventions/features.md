@@ -90,7 +90,7 @@ export const tugClient = defineClientFeature( {
 
 Every slot is optional. A feature fills only the slots it needs.
 
-**As built (F1 #385, F2 #390).** The sim half has `id`, `power`, `fields.player`, `ship`, `run` and
+**As built (F1 #385, F2 #390, F4a #395).** The sim half has `id`, `power`, `fields.player`, `ship`, `run` and
 `messages` (`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`,
 `systems`, `views.scene`, `views.pickups`, `hud.glyph` and `net`
 (`apps/client/app/engine/define-client-feature.ts`). The other slots in the table (`rules`, `traits`,
@@ -105,6 +105,21 @@ F2 added these slot rules:
 - A `net` handler gets `( payload, net )`. `net.sessionId` is the local player.
 - Tug plays its SFX from its `net` handler. There is no `audio` slot yet.
 
+F4a (#395, bolt) added these slot rules:
+
+- `run.strike` is a fixed hook point inside `stepCombat`. It runs after the shield step and before seekers,
+  mines, portals and pickups. Use it when a run hook must act before those, as bolt does: a bolt clears a
+  mine and breaks a block in the same tick. `run.tick` still runs after `stepCombat`.
+- `power.bagRest: true` in place of `bagWeight` gives the feature the share that is left after every weighted
+  power. It goes first in the bag, so the deal does not change. Exactly one feature has it (bolt). A test in
+  `features/registry.test.ts` checks this.
+- `RunContext` also gives `resolveMine( event )` (core mine outcome and broadcast), `nextId()` (the run's
+  shared projectile id counter) and a mutable `broken` set.
+- A feature may own its schema class in a leaf file (`features/bolt/bolt-schema.ts`). `schema.ts` imports it
+  and keeps the `RunState` field where it was, so the wire does not change.
+- A feature with no player fields annotates its contract as `SimFeature< Record< never, PlayerFieldSpec > >`.
+  A bare `SimFeature` widens `PLAYER_FIELDS` to a string index and breaks `SimShipFields`.
+
 **The sim half imports leaf modules only.** `player-fields.ts` (schema) and `sim-hooks.ts` (step) read the
 registry when their module loads. A sim half that imports heavy core (`combat-step`, `run/combat`) closes an
 import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initialization` on some entry orders
@@ -117,7 +132,8 @@ import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initializati
 | `ship.thrust` / `ship.cap` / `ship.tick` | `step()` sums `thrust`, folds `cap`, calls `tick`, in sorted feature order |
 | `ship.clear` | `markDead` and `respawn` call it after the core status clear |
 | `run.use` / `run.tick` / `run.reset` | `RunSim` calls `use` by power kind, `tick` every step after `stepCombat`, `reset` on run reset |
-| `power` | the power bag appends each feature's weight after the core powers |
+| `run.strike` | `stepCombat` calls it after the shield step, before seekers, mines, portals and pickups |
+| `power` | the power bag puts the one `bagRest` power first, then appends each `bagWeight` power after the core powers |
 | `rules` | default config, server clamp and key check for B2 overrides, dev dials (§7) |
 | `fields.player` | `PlayerState` composition and `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` (§4) |
 | `messages` / `net` | the room registers server handlers; the bridge subscribes client handlers |
