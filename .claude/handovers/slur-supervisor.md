@@ -54,12 +54,18 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #395 F4a bolt | cleared + resumed 2026-09-30, briefed | claim list pending |
-| workertwo | w2Z:p3 | #393 then #392 meteor strikes | cleared + resumed, planning | meteor-strikes/*, meteor-chunks/*, meteor-scorch/*, deck reflection layers (exact list pending) |
-| workerthree | w2Z:p5 | #394 black hole port — PLAN ONLY → `.claude/phases/2026-09-30-black-hole-plan.md` | cleared + resumed | none |
+| workerone | w2Z:p2 | #397 F4b seeker — PLAN ONLY (F4a #395 landed 85365ecc, closed) | cleared + resumed 2026-09-30 | claim list pending |
+| workertwo | w2Z:p3 | #392 meteor land near player (#393 landed 745fc30b, closed) | cleared + resumed, building | meteor-schedule.ts + test, meteor-strikes/*, tuning-schema.ts 'Meteor.ahead' line |
+| workerthree | w2Z:p5 | #394 black hole prototype landed 84be557c, open for owner look | cleared + resumed, idle | game/scene/black-hole/** |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner items
+
+00. #396 monolith size variation (owner ask 2026-09-30) — ON HOLD: reverses f9248efa / ADR-018 and
+    `docs/ADD.md` §4 "one identical square column". Owner picks: vary pillars again (new ADR + ADD
+    edit) or put variety on other props. Then assign (workerthree idle).
+01. #394 black hole look: defaults (height 150, radius 900, minAngle 7°)? keep lensed nebula? file the
+    hosted-room follow-up?
 
 0a. F4a #395 bolt — ANSWERED 2026-09-30: owner accepted all four picks; workerone told to build (also on
     #395 as a comment). Bolt stays first. The picks:
