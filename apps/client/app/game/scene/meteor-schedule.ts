@@ -4,25 +4,33 @@ import { hash01 } from './asteroid-field';
 export const STRIKE_SPACING = 220;
 export const STRIKE_START = 400;
 export const STRIKE_VARIANTS = 3;
+export const LATERAL = 10;
+export const EDGE = 6;
 
 const SALT = 0x6d3e_71a9;
-const EDGE = 6;
 const DEG = Math.PI / 180;
 const ELEVATION: readonly [ number, number ] = [ 18 * DEG, 50 * DEG ];
 const BEARING: readonly [ number, number ] = [ 10 * DEG, 55 * DEG ];
 const SIZE: readonly [ number, number ] = [ 2.2, 5.2 ];
+const REACH: readonly [ number, number ] = [ 0.7, 1.3 ];
 const Z_JITTER = 0.6;
 
 export interface Strike {
     slot: number;
-    x: number;
     z: number;
+    side: number;
+    reach: number;
     size: number;
     fromX: number;
     fromY: number;
     fromZ: number;
     spin: number;
     variant: number;
+}
+
+export interface Impact {
+    x: number;
+    z: number;
 }
 
 function lerp( range: readonly [ number, number ], t: number ): number {
@@ -39,8 +47,9 @@ export function strikeAt( slot: number, chance: number ): Strike | null {
     const bearing = lerp( BEARING, hash01( seed, 6 ) );
     return {
         slot,
-        x: ( hash01( seed, 3 ) * 2 - 1 ) * ( HALF_WIDTH - EDGE ),
         z: z0 + ( hash01( seed, 2 ) - 0.5 ) * STRIKE_SPACING * Z_JITTER,
+        side: hash01( seed, 3 ) * 2 - 1,
+        reach: lerp( REACH, hash01( seed, 10 ) ),
         size: lerp( SIZE, hash01( seed, 7 ) ),
         fromX: side * Math.cos( elevation ) * Math.cos( bearing ),
         fromY: Math.sin( elevation ),
@@ -52,4 +61,19 @@ export function strikeAt( slot: number, chance: number ): Strike | null {
 
 export function strikeWindow( slot: number ): number {
     return slot * STRIKE_SPACING + ( STRIKE_SPACING * Z_JITTER ) / 2;
+}
+
+export function impactFor(
+    s: Strike,
+    focusX: number,
+    focusZ: number,
+    speed: number,
+    flight: number,
+    ahead: number,
+    out: Impact,
+): Impact {
+    const edge = HALF_WIDTH - EDGE;
+    out.x = Math.max( -edge, Math.min( edge, focusX + s.side * LATERAL ) );
+    out.z = focusZ + speed * flight + ahead * s.reach;
+    return out;
 }

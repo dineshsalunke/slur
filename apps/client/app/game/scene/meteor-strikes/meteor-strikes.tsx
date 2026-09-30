@@ -1,10 +1,8 @@
 import { useFrame } from '@react-three/fiber';
-import { useWorld } from 'koota/react';
 import { Fragment, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { blockWorld } from '../../block-state';
-import { LocalPlayer, Sim } from '../../ecs/traits';
 import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
 import { asteroidGeometry } from '../asteroid-geometry';
@@ -35,6 +33,9 @@ export interface Director {
     ground: DebrisGround;
     cursor: number;
     lastZ: number;
+    refZ: number;
+    refT: number;
+    speed: number;
     lightAt: number;
     lightSize: number;
     lightX: number;
@@ -56,7 +57,6 @@ export interface ReadyMeshes {
 
 export function MeteorStrikes( { material }: { material: THREE.Material } ) {
     const track = useTrack();
-    const world = useWorld();
     const director = useMemo( () => makeDirector( trackGround( track, blockWorld.broken ) ), [ track ] );
     const head = useMemo( () => {
         const g = asteroidGeometry( HEAD_SEED, HEAD_DETAIL );
@@ -84,8 +84,7 @@ export function MeteorStrikes( { material }: { material: THREE.Material } ) {
         repaintTrail( trail );
         const m = meshes.current as ReadyMeshes;
         const now = state.clock.elapsedTime;
-        const sim = world.queryFirst( LocalPlayer, Sim )?.get( Sim );
-        if ( sim ) schedule( director, sim.z, sim.vz, now );
+        schedule( director, state.camera.position.x, state.camera.position.z, now );
         const gain = num( 'Meteor.trail' );
         let top = 0;
         for ( let i = 0; i < FLIGHTS; i++ ) {

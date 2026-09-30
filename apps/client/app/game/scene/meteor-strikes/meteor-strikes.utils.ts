@@ -6,7 +6,7 @@ import { queueBurst } from '../block-burst/block-burst.utils';
 import type { DebrisGround } from '../debris-physics';
 import { pushHit } from '../hit-events';
 import { queueChunks } from '../meteor-chunks/meteor-chunks.utils';
-import { STRIKE_SPACING, type Strike, strikeAt, strikeWindow } from '../meteor-schedule';
+import { type Impact, impactFor, STRIKE_SPACING, type Strike, strikeAt, strikeWindow } from '../meteor-schedule';
 import { queueScorch } from '../meteor-scorch/meteor-scorch.utils';
 import type { Director, Flight, ReadyMeshes } from './meteor-strikes';
 import {
@@ -18,19 +18,20 @@ import {
     GLOW_GAIN,
     GLOW_SIZE,
     LIGHT_GAIN,
-    MIN_LEAD,
+    MAX_SPEED,
     MIN_SPEED,
     PIT_DEPTH,
     SCAN,
     SHAKE_REACH,
     SHAKE_SIZE,
     SPARK_BURSTS,
+    SPEED_WINDOW,
     TRAIL_GAIN,
     TRAIL_SECONDS,
     TRAIL_WIDTH,
     UP,
 } from './meteor-strikes.constants';
-import { _c, _dir, _m, _p, _q, _s } from './meteor-strikes.scratch';
+import { _c, _dir, _impact, _m, _p, _q, _s } from './meteor-strikes.scratch';
 
 export function makeFlight(): Flight {
     return {
@@ -55,6 +56,9 @@ export function makeDirector( ground: DebrisGround ): Director {
         ground,
         cursor: 0,
         lastZ: Number.NaN,
+        refZ: 0,
+        refT: 0,
+        speed: 0,
         lightAt: -99,
         lightSize: 0,
         lightX: 0,
@@ -67,12 +71,12 @@ export function isPit( f: Flight ): boolean {
     return f.floor === Number.NEGATIVE_INFINITY;
 }
 
-export function launch( d: Director, s: Strike, now: number ): void {
+export function launch( d: Director, s: Strike, at: Impact, now: number ): void {
     const f = d.flights.find( ( x ) => ! x.live );
     if ( ! f ) return;
     const speed = num( 'Meteor.speed' );
     const flight = num( 'Meteor.flight' );
-    const floor = d.ground.floor( s.x, s.z, 60 );
+    const floor = d.ground.floor( at.x, at.z, 60 );
     f.live = true;
     f.landed = false;
     f.t0 = now;
@@ -82,25 +86,41 @@ export function launch( d: Director, s: Strike, now: number ): void {
     f.spin = s.spin;
     f.speed = speed;
     f.vel.set( -s.fromX, -s.fromY, -s.fromZ ).multiplyScalar( speed );
-    f.start.set( s.x, isPit( f ) ? 0 : floor, s.z ).addScaledVector( f.vel, -flight );
+    f.start.set( at.x, isPit( f ) ? 0 : floor, at.z ).addScaledVector( f.vel, -flight );
     f.tail.setFromUnitVectors( UP, _dir.set( s.fromX, s.fromY, s.fromZ ) );
     f.axis.set( s.fromZ, s.fromX, -s.fromY ).normalize();
 }
 
-export function schedule( d: Director, z: number, vz: number, now: number ): void {
-    if ( Number.isNaN( d.lastZ ) || z < d.lastZ - STRIKE_SPACING ) d.cursor = Math.floor( z / STRIKE_SPACING ) + 1;
+export function track( d: Director, z: number, now: number ): boolean {
+    if ( Number.isNaN( d.lastZ ) || z < d.lastZ - STRIKE_SPACING ) {
+        d.cursor = Math.floor( z / STRIKE_SPACING ) + 1;
+        d.lastZ = z;
+        d.refZ = z;
+        d.refT = now;
+        d.speed = 0;
+        return false;
+    }
+    if ( now - d.refT >= SPEED_WINDOW ) {
+        d.speed = ( z - d.refZ ) / ( now - d.refT );
+        d.refZ = z;
+        d.refT = now;
+    }
     d.lastZ = z;
-    const v = Math.max( MIN_SPEED, vz );
+    return true;
+}
+
+export function schedule( d: Director, x: number, z: number, now: number ): void {
+    if ( ! track( d, z, now ) ) return;
+    const v = Math.max( MIN_SPEED, Math.min( MAX_SPEED, d.speed ) );
     const flight = num( 'Meteor.flight' );
-    const lead = v * flight + num( 'Meteor.ahead' );
-    const soonest = v * flight * MIN_LEAD;
+    const ahead = num( 'Meteor.ahead' );
     const chance = num( 'Meteor.chance' );
     for ( let guard = 0; guard < SCAN; guard++ ) {
-        if ( strikeWindow( d.cursor ) - STRIKE_SPACING > z + lead ) return;
+        if ( strikeWindow( d.cursor ) - STRIKE_SPACING > z ) return;
         const s = strikeAt( d.cursor, chance );
-        if ( s && s.z - z > lead ) return;
+        if ( s && s.z > z ) return;
         d.cursor++;
-        if ( s && s.z - z >= soonest ) launch( d, s, now );
+        if ( s && z - s.z < STRIKE_SPACING ) launch( d, s, impactFor( s, x, z, v, flight, ahead, _impact ), now );
     }
 }
 

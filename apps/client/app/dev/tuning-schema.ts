@@ -174,7 +174,7 @@ export const NUMBER_TUNABLES = {
     'Meteor.speed': { value: 170, min: 40, max: 400, step: 5, rebuild: false },
     'Meteor.size': { value: 1, min: 0.3, max: 3, step: 0.05, rebuild: false },
     'Meteor.flight': { value: 1.4, min: 0.4, max: 4, step: 0.05, rebuild: false },
-    'Meteor.ahead': { value: 110, min: 20, max: 400, step: 5, rebuild: false },
+    'Meteor.ahead': { value: 65, min: 20, max: 200, step: 5, rebuild: false },
     'Meteor.trail': { value: 1, min: 0, max: 4, step: 0.05, rebuild: false },
     'Meteor.spray': { value: 22, min: 0, max: 80, step: 0.5, rebuild: false },
     'Meteor.chunks': { value: 1, min: 0, max: 2, step: 0.05, rebuild: false },
