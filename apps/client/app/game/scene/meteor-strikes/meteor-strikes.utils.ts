@@ -17,8 +17,6 @@ import {
     FLIGHTS,
     GLOW_GAIN,
     GLOW_SIZE,
-    LIGHT_DECAY,
-    LIGHT_END,
     LIGHT_GAIN,
     MIN_LEAD,
     MIN_SPEED,
@@ -171,7 +169,7 @@ export function commit( mesh: THREE.InstancedMesh, count: number ): void {
 
 export function flash( light: THREE.PointLight, d: Director, now: number ): void {
     light.position.set( d.lightX, d.lightY, d.lightZ );
-    const fade = Math.max( 0, 1 - ( now - d.lightAt ) / LIGHT_END );
-    light.intensity = LIGHT_GAIN * d.lightSize * Math.exp( -( now - d.lightAt ) / LIGHT_DECAY ) * fade * fade;
+    const fade = Math.max( 0, 1 - ( now - d.lightAt ) / COLLAPSE );
+    light.intensity = LIGHT_GAIN * d.lightSize * fade * fade;
     light.color.copy( CORE ).lerp( accent(), 0.5 );
 }

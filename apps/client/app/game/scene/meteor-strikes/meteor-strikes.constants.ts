@@ -18,8 +18,6 @@ export const SHAKE_REACH = 80;
 export const SHAKE_SIZE = 3.5;
 export const LIGHT_DISTANCE = 110;
 export const LIGHT_GAIN = 700;
-export const LIGHT_DECAY = 0.3;
-export const LIGHT_END = 1.8;
 export const BURST_SIZE = 3.2;
 export const SPARK_BURSTS = 3;
 
