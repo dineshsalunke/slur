@@ -64,7 +64,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Step the loopback room by hand](step-the-loopback-room-by-hand.md) — room.step + send + ?start=
 - [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — server `slots[0] = 3` + KeyE
 - [Stage enemy fire on /test-level](stage-enemy-fire-on-test-level.md) — fire, flip ownerId, pin per rAF
-- [Stage a meteor strike on /test-level](stage-a-meteor-strike-on-test-level.md) — chance 1, ahead 20, ?start=0,1650
+- [Stage a meteor strike on /test-level](stage-a-meteor-strike-on-test-level.md) — chance 1 + ghost-drive; camera-slot cadence
 - [Node bots](node-bots.md) — SDK second racer; batch inputs (60 msg/s cap); one event loop
 - [Scratch servers](scratch-servers.md) — `__finish` seeds racers; 30-segment short course
 - [Simulate a hidden tab over CDP](simulate-a-hidden-tab-over-cdp.md) — headless stays visible; hold rAF
