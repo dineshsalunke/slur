@@ -61,7 +61,8 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 ## Open owner items
 
-0a. F4a #395 bolt — workerone's claim is CLEAR, build waits on owner D4–D7 (relayed 2026-09-30). Picks:
+0a. F4a #395 bolt — ANSWERED 2026-09-30: owner accepted all four picks; workerone told to build (also on
+    #395 as a comment). Bolt stays first. The picks:
     D4 PowerSpec `bagRest: true` (bags bit-equal) · D5 fixed hook `run.strike` where stepBolts runs
     (bit-equal) · D6 keep `projectiles` in RunState this stage · D7 shared streak/ember/BOLT_* palette/
     block-shake/sfx stay central (central count 36 → ~18–22 inferred). Supervisor recommends all four.
