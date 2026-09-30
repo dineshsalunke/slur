@@ -59,7 +59,7 @@ paint). All pushed; dev = origin except workers' in-flight work.
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #390 F2 tug pilot | BUILDING (cleared + resumed after b5247df6) | tug files → features/tug/ (shared + client); registries; engine slots; central cuts: step.ts, types.ts, run-sim.ts, combat.ts, power-bag.ts, index.ts, player-fields.ts, sim-config.ts (import only), NEW sim/status.ts, attach-room-to-world.ts, net-canvas.tsx (back from workertwo), pickup-field.tsx, seeker-pickups/*, glyph-atlas.ts, bind-room-audio.ts; listed tests; features.md §3 |
 | workertwo | w2Z:p3 | none (perf skill fixed e5f71a16: ArrowUp moves 29.7 u; Q10 done → S21 deferred) | IDLE, needs a lane; context high → clear before next lane | — |
-| workerthree | w2Z:p5 | none (#389 done: gap 0.93–1.03 s → 0 frames; told to close #389) | IDLE. Its amend ran on my f2859165, then it undid it with reset --soft; history verified intact and pushed | — |
+| workerthree | w2Z:p5 | INVESTIGATE blue tail on ship exhaust (owner report 2026-09-30; related #369). Read-only; owner decides the fix | INVESTIGATING | — |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner items
@@ -78,7 +78,8 @@ None of mine.
 
 ## Next
 
-1. workertwo and workerthree both IDLE. Pick lanes that avoid F2 files (ask the owner, or pull non-F2
+0. Stack: the supervisor started `pnpm dev` as its background task bxut2x0u3 (2026-09-30); a /clear of the supervisor kills it. Proposed to owner: workertwo #341 stalled race; workerthree #313 + #312 (after the exhaust probe). No answer yet.
+1. workertwo IDLE. Pick lanes that avoid F2 files (ask the owner, or pull non-F2
    bugs from the issue list). S21 deferred (Q10 recorded in RFC §8).
 2. workerthree: once unblocked, get the #389 gap ms; mark it in this file. Its next lane: free (candidates:
    S6 prep reading, or a non-F2 bug from the issue list — ask the owner).
