@@ -135,4 +135,5 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Eyeballing a tap lies about brightness](eyeballing-a-tap-lies-about-brightness.md) — grey ramp
 - [Probe by feature, not by pixel](probe-by-feature-not-by-pixel.md) — find surface by its emissive
 - [A/B an old sim from git in scratch](ab-an-old-sim-from-git-in-scratch.md) — `git show` step.ts
+- [Check the headless frame cap first](check-headless-frame-cap-first.md) — menu at 16.7 ms = 60 Hz cap
 - [Force quality=high in headless](force-quality-high-in-headless.md) — no override = no mirror/post (low tier); `?quality=high` + `slur:quality`
