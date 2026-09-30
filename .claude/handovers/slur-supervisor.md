@@ -68,7 +68,9 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
     block-shake/sfx stay central (central count 36 → ~18–22 inferred). Supervisor recommends all four.
     Also offered: start F4 with a simpler feature (shield/boost); supervisor leans bolt first.
 0b. ANSWERED 2026-09-30: P2 finish line · COLD tint · CREDITS ok · low still ok. workerthree (14% at
-    brief — will seam soon) told to build the /test-level?blackhole=finish prototype; claim list pending.
+    brief — will seam soon) building the /test-level?blackhole=finish prototype. CLAIM CLEARED: new
+    game/scene/black-hole/**, routes/test-level/route.tsx, test-level-canvas.tsx, dev/tuning-schema.ts
+    (one additive BlackHole block; sequence if workertwo claims it), CREDITS.md.
     #394 black hole plan: `.claude/phases/2026-09-30-black-hole-plan.md` (87dd59db). Recommended
     option A (GLSL port, baked geodesic G-buffer, shaded in prerender into a fixed-size target, drawn
     on a quad; our bloom/tone map). MIT (Vercel). WebGL2 only. Budget high ≤0.6 ms, medium ≤0.25,
