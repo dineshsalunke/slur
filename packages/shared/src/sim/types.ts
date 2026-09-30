@@ -1,5 +1,5 @@
 import type { PortalState } from '../combat/portal.js';
-import { SIM_FLOAT_KEYS, SIM_SHIP_KEYS, type SimShipFields } from '../player-fields.js';
+import { FEATURE_SHIP_DEFAULTS, SIM_FLOAT_KEYS, SIM_SHIP_KEYS, type SimShipFields } from '../player-fields.js';
 
 export { SIM_FLOAT_KEYS, SIM_SHIP_KEYS };
 
@@ -26,14 +26,11 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         stunTimer: 0,
         boostTimer: 0,
         glideTimer: 0,
-        tugTimer: 0,
-        slowTimer: 0,
-        towTimer: 0,
-        tugAnchorZ: 0,
         portalHops: 0,
         strafeHeld: 0,
         kickLeft: 0,
         kicking: false,
+        ...FEATURE_SHIP_DEFAULTS,
     };
 }
 

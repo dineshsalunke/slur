@@ -1,5 +1,6 @@
 import { pickupsOf } from '@slur/shared';
 import { Fragment, useMemo } from 'react';
+import { FeatureViews } from '../../engine/feature-views/feature-views';
 import { isPickupTaken } from '../pickup-state';
 import { useTrack } from '../track-context/use-track';
 import { BoltPickups } from './bolt-pickups/bolt-pickups';
@@ -10,7 +11,6 @@ import { PortalPickups } from './portal-pickups/portal-pickups';
 import { SeekerPickups } from './seeker-pickups/seeker-pickups';
 import { splitPickupLayout } from './seeker-pickups/seeker-pickups.utils';
 import { ShieldPickups } from './shield-pickups/shield-pickups';
-import { TugPickups } from './tug-pickups/tug-pickups';
 
 export function PickupField() {
     const track = useTrack();
@@ -26,7 +26,7 @@ export function PickupField() {
             <BoostPickups layout={ layout.boosts } isTaken={ isPickupTaken } />
             <ShieldPickups layout={ layout.shields } isTaken={ isPickupTaken } />
             <PortalPickups layout={ layout.portals } isTaken={ isPickupTaken } />
-            <TugPickups layout={ layout.tugs } isTaken={ isPickupTaken } />
+            <FeatureViews slot="pickups" />
         </Fragment>
     );
 }

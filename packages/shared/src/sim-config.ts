@@ -67,7 +67,7 @@ import {
     TUG_SPEED_CUT,
     TUG_THROW_MAX_S,
     TUG_THROW_MIN_S,
-} from './combat/tug-constants.js';
+} from './features/tug/tug-constants.js';
 
 export interface SimConfig extends PortalConfig {
     boltSpeed: number;

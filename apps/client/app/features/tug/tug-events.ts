@@ -1,5 +1,5 @@
 import type { TugEvent } from '@slur/shared';
-import { createEventQueue } from './event-queue';
+import { createEventQueue } from '../../game/scene/event-queue';
 
 const MAX_QUEUED = 16;
 const queue = createEventQueue< TugEvent >( MAX_QUEUED );

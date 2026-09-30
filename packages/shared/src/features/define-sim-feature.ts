@@ -1,4 +1,5 @@
 import type { PrimitiveType } from '@colyseus/schema';
+import type { HeldPower, HitMessage } from '../combat/constants.js';
 import type { FireDir } from '../combat/fire-dir.js';
 import type { FlightTuning } from '../constants.js';
 import type { Broadcast } from '../run/combat.js';
@@ -18,9 +19,11 @@ export interface PlayerFieldSpec {
 export type PlayerFieldSpecs = Readonly< Record< string, PlayerFieldSpec > >;
 
 export interface ShipHooks {
+    readonly input?: ( s: SimShip, input: PlayerInput, cfg: SimConfig ) => PlayerInput;
     readonly thrust?: ( s: SimShip, input: PlayerInput, t: FlightTuning, cfg: SimConfig ) => number;
     readonly cap?: ( s: SimShip, t: FlightTuning, cap: number, cfg: SimConfig ) => number;
     readonly tick?: ( s: SimShip, t: FlightTuning, dt: number, cfg: SimConfig ) => void;
+    readonly clear?: ( s: SimShip ) => void;
 }
 
 export interface RunContext {
@@ -29,24 +32,25 @@ export interface RunContext {
     readonly broken: ReadonlySet< number >;
     readonly config: SimConfig;
     readonly broadcast: Broadcast;
+    readonly shieldAbsorbs: ( v: PlayerState, at: HitMessage ) => boolean;
 }
 
 export interface RunHooks< S > {
     readonly open: () => S;
-    readonly use?: ( ctx: RunContext, run: S, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => void;
+    readonly use?: ( ctx: RunContext, run: S, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
     readonly tick?: ( ctx: RunContext, run: S, dt: number ) => void;
     readonly reset?: ( run: S ) => void;
 }
 
 export interface OpenRun {
-    readonly use?: ( ctx: RunContext, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => void;
+    readonly use?: ( ctx: RunContext, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
     readonly tick?: ( ctx: RunContext, dt: number ) => void;
     readonly reset?: () => void;
 }
 
 export interface PowerSpec {
-    readonly kind: number;
-    readonly bagWeight: number;
+    readonly kind: HeldPower;
+    readonly bagWeight: ( cfg: SimConfig ) => number;
 }
 
 export interface SimFeatureSpec< F extends PlayerFieldSpecs, S > {

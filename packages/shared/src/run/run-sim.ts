@@ -4,7 +4,7 @@ import { type Pickup, pickupsOf } from '../combat/pickups.js';
 import { dropShield } from '../combat/shield.js';
 import { COLOR_COUNT, COUNTDOWN_SECONDS, FIXED_DT, RACE_GRACE_SECONDS } from '../constants.js';
 import type { RunContext } from '../features/define-sim-feature.js';
-import { openRunFeatures } from '../features/sim-hooks.js';
+import { openRunFeatures } from '../features/run-features.js';
 import {
     isColorId,
     isStalled,
@@ -25,7 +25,7 @@ import type { Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 import { copySimShip, createSimWorld, froundSimShip, spawnShip } from '../sim/types.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { type Broadcast, firePower, stepCombat } from './combat.js';
+import { type Broadcast, firePower, shieldAbsorbs, stepCombat } from './combat.js';
 import {
     clearQueue,
     emptyQueue,
@@ -39,7 +39,6 @@ import {
 import { isDoubleTap, type PortalTap, portalHopped, throwPortalFar } from './portal-run.js';
 import { type RaceWorld, stepRacer } from './racer.js';
 import { startPointFor } from './start-point.js';
-import type { TugThrow } from './tug-run.js';
 
 const MAX_NAME = 16;
 
@@ -65,7 +64,6 @@ export class RunSim {
     private readonly pickups: Pickup[];
     private readonly pickupRespawn = new Map< string, number >();
     private readonly portalTaps = new Map< string, PortalTap >();
-    private readonly tugThrows: TugThrow[] = [];
     private readonly config: SimConfig;
     private readonly features = openRunFeatures();
     private readonly featureCtx: RunContext;
@@ -94,6 +92,7 @@ export class RunSim {
             broken: this.world.blocks.broken,
             config: this.config,
             broadcast: this.hooks.broadcast,
+            shieldAbsorbs: ( v, at ) => shieldAbsorbs( v, at, this.hooks.broadcast ),
         };
         this.refreshMetadata();
     }
@@ -128,7 +127,6 @@ export class RunSim {
                         broadcast: this.hooks.broadcast,
                         pickups: this.pickups,
                         pickupRespawn: this.pickupRespawn,
-                        tugThrows: this.tugThrows,
                     },
                     dt,
                 );
@@ -243,7 +241,6 @@ export class RunSim {
         this.state.blockBroken.clear();
         this.world.blocks.broken.clear();
         this.pickupRespawn.clear();
-        this.tugThrows.length = 0;
         this.features.reset();
         this.nextProjectileId = 0;
         this.state.players.forEach( ( p ) => {
@@ -279,7 +276,6 @@ export class RunSim {
             broken: this.world.blocks.broken,
             config: this.config,
             broadcast: this.hooks.broadcast,
-            tugThrows: this.tugThrows,
         };
         const tap = this.portalTaps.get( sessionId );
         this.portalTaps.delete( sessionId );

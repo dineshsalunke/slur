@@ -393,6 +393,17 @@ Measure before and after:
 
 The owner decides go / no-go on the numbers before any other feature moves.
 
+**F2 result (#390, measured 2026-09-30).**
+
+| Measure | Result |
+|---|---|
+| Central files a feature edits | **19 → 8.** Target ≤ 2 is not met. 2 are registry lines (`features/registry.ts`, `features/client-features.ts`). 5 stay by owner decision: D2 keeps `sim-config.ts`, `tuning-schema.ts` and `tuned-sim-config.ts` until S6; D3 keeps `HeldPower.tug` in `combat/constants.ts` and the grant in `pickup-grants.constants.ts`. 1 is the `index.ts` export line. |
+| Wire order | Changed on purpose (D1 = B): tug fields at 35–38 of 39. Two SDK clients on the dev server decode all 39 fields with zero decode errors. A forward tug and a back tug both latch, and both clients read the pull timers. |
+| `step()` time per tick | Within noise. `simulate()` in node on `dist`, HEAD against F2, 5 alternating reps: idle 0.159 → 0.168 µs, tug active 0.185 → 0.181 µs. |
+| Frame time on `/test-level` | Not measured. Headless Chrome is capped at 60 Hz on the machine (the main menu also reads 16.6 ms). Draw calls: 74, the same as before. |
+| Determinism | Shared 583/583, server 99/99 (incl. `room-tug.test.ts`), client 710/710. The final ship state is bit-equal between HEAD and F2, idle and tug active. |
+| Order is declared | `features/registry.test.ts` (shuffled registry, same order). The tug latch now runs after `stepCombat`. A test in `tug-run.test.ts` shows that it gives the same state before or after portals and pickups. Only the broadcast order within a tick changes. |
+
 ## 4. Net, input, client state, room config (workertwo)
 
 Measured on `dev` at `4b58658` (§4.1–4.3) and `a25b332` (§4.4–4.5). Installed versions, read from the
@@ -863,7 +874,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | S2 | **Landed cf8f95e (#375).** Input action map (`fireForward`, `fireBack`, `next`, `previous`, `drop`, `mute`). Delete `synthKey`. Base for #348. | `game/input/power-select.ts`, `gamepad.ts`, `synth-key.ts`, `touch-dpad.constants.ts`, `game/net-canvas.tsx`, `audio/game-audio/game-audio.tsx` | — |
 | S3 | **Landed f3382cb (#376).** Event-queue helper (A1). Move the 6 queues onto it. One overflow rule. | `hit-events.ts`, `mine-shock-events.ts`, `tug-events.ts`, `block-burst/*`, `meteor-chunks/*`, `meteor-scorch/*`, new helper | — |
 | **F1** | **Landed 1a5415c7 (sim) + f912f7ab (client) (#385).** Wire bytes identical; shared 578/578, server 99/99, client 702/702. `attach-room-to-world.ts` at 305/300 lines until handlers move into features. **Engine skeleton.** Registries (D1), `defineSimFeature` / `defineClientFeature`, feature systems fed to the S16 scheduler, `FeatureViews`, bridge loop over `net` handlers, `step()` hook loop. `PlayerState` built with `schema()` from core fields + registry (b5); `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` from the same object; a field-index test. Zero features registered; behaviour and wire order unchanged. | new `apps/client/app/engine/*`, new `packages/shared/src/features/registry.ts`, `schema.ts`, `sim/types.ts`, `sim/step.ts`, `run/run-sim.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx` | S0, S16 |
-| **F2** | **Assigned workerone.** **Pilot: move tug into two feature folders.** Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
+| **F2** | **Built (#390), waits on F3.** Tug is in `packages/shared/src/features/tug/` and `apps/client/app/features/tug/`. Numbers in §3.8 "F2 result". Pilot: move tug into two feature folders. Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
 | F3 | Owner go / no-go on the F2 numbers. | — | F2 |
 | F4… | One feature per stage: bolt, seeker, mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F3 |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |

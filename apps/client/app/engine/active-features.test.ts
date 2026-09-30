@@ -1,11 +1,12 @@
-import { defineSimFeature } from '@slur/shared';
+import { defineSimFeature, tugFeature } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { ACTIVE_FEATURES, checkClientFeatures, FEATURE_SYSTEMS } from './active-features';
 import { defineClientFeature } from './define-client-feature';
 
 describe( 'active client features (#385)', () => {
-    it( 'ships with no features and no feature systems', () => {
-        expect( ACTIVE_FEATURES ).toEqual( [] );
+    it( 'ships tug, paired with its sim half, and no feature systems yet', () => {
+        expect( ACTIVE_FEATURES.map( ( f ) => f.id ) ).toEqual( [ 'tug' ] );
+        expect( ACTIVE_FEATURES[ 0 ]?.sim ).toBe( tugFeature );
         expect( FEATURE_SYSTEMS ).toEqual( [] );
     } );
 

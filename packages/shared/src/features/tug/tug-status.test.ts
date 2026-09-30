@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { catapult, reel, slowTarget, towTarget } from '../combat/tug.js';
-import { FIXED_DT } from '../constants.js';
-import { tuningForShip } from '../ship-classes.js';
-import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
-import { emptyInput } from './input.js';
-import { simulate } from './step.js';
-import { clearStatus } from './tug-status.js';
-import { copySimShip, froundSimShip, spawnShip } from './types.js';
+import { FIXED_DT } from '../../constants.js';
+import { tuningForShip } from '../../ship-classes.js';
+import { emptyInput } from '../../sim/input.js';
+import { simulate } from '../../sim/step.js';
+import { copySimShip, froundSimShip, spawnShip } from '../../sim/types.js';
+import { DEFAULT_SIM_CONFIG } from '../../sim-config.js';
+import { catapult, reel, slowTarget, towTarget } from './tug.js';
+import { clearTugStatus } from './tug-status.js';
 
 const cfg = DEFAULT_SIM_CONFIG;
 const full = { ...emptyInput(), throttle: 1 };
@@ -193,7 +193,6 @@ test( 'clear and fround reach every tug field', () => {
     froundSimShip( s );
     assert.equal( s.tugTimer, Math.fround( 0.1 ) );
     assert.equal( s.tugAnchorZ, Math.fround( 0.1 ) );
-    s.boostTimer = 0.1;
-    clearStatus( s );
-    assert.deepEqual( [ s.boostTimer, s.tugTimer, s.slowTimer, s.towTimer, s.tugAnchorZ ], [ 0, 0, 0, 0, 0 ] );
+    clearTugStatus( s );
+    assert.deepEqual( [ s.tugTimer, s.slowTimer, s.towTimer, s.tugAnchorZ ], [ 0, 0, 0, 0 ] );
 } );

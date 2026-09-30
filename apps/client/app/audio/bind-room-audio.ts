@@ -12,8 +12,6 @@ import {
     SEEKER_HIT_MESSAGE,
     type SeekerState,
     SHIELD_POP_MESSAGE,
-    TUG_MESSAGE,
-    type TugEvent,
 } from '@slur/shared';
 import { onLocalHop } from '../game/local-hop';
 import { ON_TRACK_PHASES } from '../game/phase-gate/phase-gate.constants';
@@ -29,15 +27,7 @@ const THREAT_X = 8;
 const MINE_FAR_GAIN = 0.6;
 const FAR_GAIN = { mineBurst: 0.85 * MINE_FAR_GAIN, mineFizzle: 0.55 * MINE_FAR_GAIN } as const;
 const BOOST_EDGE_S = 0.05;
-const TUG_RATE = 0.7;
-const TUG_FAR_GAIN = 0.4;
 const PORTAL_FAR_GAIN = 0.35;
-
-export function playTugEvent( e: TugEvent, me: string ): void {
-    if ( e.outcome === 'latch' && e.targetId === me ) playSfx( 'stun' );
-    if ( e.outcome !== 'throw' ) return;
-    playSfx( 'seekerFire', e.ownerId === me ? { rate: TUG_RATE } : { rate: TUG_RATE, gain: TUG_FAR_GAIN } );
-}
 
 export function playPortalHop( m: PortalHopMessage, me: string ): void {
     if ( m.victimId !== me ) playSfx( 'portalHop', { gain: PORTAL_FAR_GAIN } );
@@ -181,7 +171,6 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
     const offSeekerHit = room.onMessage( SEEKER_HIT_MESSAGE, () => playSfx( 'seekerHit' ) );
     const offShieldPop = room.onMessage( SHIELD_POP_MESSAGE, () => playSfx( 'shieldPop' ) );
     const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, ( e: MineEvent ) => playMineEvent( e, me ) );
-    const offTug = room.onMessage( TUG_MESSAGE, ( e: TugEvent ) => playTugEvent( e, me ) );
     const offPortalHop = room.onMessage( PORTAL_HOP_MESSAGE, ( m: PortalHopMessage ) => playPortalHop( m, me ) );
     const offLocalHop = onLocalHop( () => playSfx( 'portalHop' ) );
     const offPortalFizzle = room.onMessage( PORTAL_FIZZLE_MESSAGE, ( m: PortalFizzleMessage ) =>
@@ -214,7 +203,6 @@ export function bindRoomAudio( room: RunRoomLike ): () => void {
         offSeekerHit();
         offShieldPop();
         offMineBurst();
-        offTug();
         offPortalHop();
         offLocalHop();
         offPortalFizzle();

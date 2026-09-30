@@ -11,8 +11,10 @@ import {
 } from '../seeker-look';
 import type { PickupLayouts } from './seeker-pickups';
 
-export function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] {
+export function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] | null {
     switch ( power ) {
+        case HeldPower.bolt:
+            return out.bolts;
         case HeldPower.seeker:
             return out.seekers;
         case HeldPower.mine:
@@ -23,16 +25,14 @@ export function bucketOf( out: PickupLayouts, power: HeldPower ): Anchor[] {
             return out.shields;
         case HeldPower.portal:
             return out.portals;
-        case HeldPower.tug:
-            return out.tugs;
         default:
-            return out.bolts;
+            return null;
     }
 }
 
 export function splitPickupLayout( layout: readonly Anchor[] ): PickupLayouts {
-    const out: PickupLayouts = { bolts: [], seekers: [], mines: [], boosts: [], shields: [], portals: [], tugs: [] };
-    for ( const a of layout ) bucketOf( out, pickupPower( a.id ) ).push( a );
+    const out: PickupLayouts = { bolts: [], seekers: [], mines: [], boosts: [], shields: [], portals: [] };
+    for ( const a of layout ) bucketOf( out, pickupPower( a.id ) )?.push( a );
     return out;
 }
 

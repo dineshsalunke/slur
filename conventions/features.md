@@ -88,17 +88,34 @@ export const tugClient = defineClientFeature( {
 
 Every slot is optional. A feature fills only the slots it needs.
 
-**As built (F1, #385).** The sim half has `id`, `power`, `fields.player`, `ship`, `run` and `messages`
-(`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`, `systems`,
-`views.scene` and `net` (`apps/client/app/engine/define-client-feature.ts`). The other slots in the table
-(`rules`, `traits`, `views.pickups`, `hud`, `audio`, `dials`) come with their first consumer. Do not add a
-slot that has no engine consumer.
+**As built (F1 #385, F2 #390).** The sim half has `id`, `power`, `fields.player`, `ship`, `run` and
+`messages` (`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`,
+`systems`, `views.scene`, `views.pickups`, `hud.glyph` and `net`
+(`apps/client/app/engine/define-client-feature.ts`). The other slots in the table (`rules`, `traits`,
+`audio`, `dials`) come with their first consumer. Do not add a slot that has no engine consumer.
+
+F2 added these slot rules:
+
+- `run.use` returns `true` when the power fired. The engine then spends the charge. It returns `false`
+  when there is no target, and the player keeps the charge.
+- `power.bagWeight( cfg )` is a function of the config, so a dial can change the weight.
+- `RunContext` gives a run hook the engine services it needs, for example `shieldAbsorbs( v, at )`.
+- A `net` handler gets `( payload, net )`. `net.sessionId` is the local player.
+- Tug plays its SFX from its `net` handler. There is no `audio` slot yet.
+
+**The sim half imports leaf modules only.** `player-fields.ts` (schema) and `sim-hooks.ts` (step) read the
+registry when their module loads. A sim half that imports heavy core (`combat-step`, `run/combat`) closes an
+import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initialization` on some entry orders
+(memory `feature-registry-import-cycle.md`). Get engine services through `RunContext`, not through an import.
+`features/registry.test.ts` imports the registry first to catch the cycle.
 
 | Slot | Engine consumer (one loop over the registry) |
 |---|---|
+| `ship.input` | `step()` folds the input after the stun gate, in sorted feature order |
 | `ship.thrust` / `ship.cap` / `ship.tick` | `step()` sums `thrust`, folds `cap`, calls `tick`, in sorted feature order |
-| `run.use` / `run.tick` / `run.reset` | `RunSim` calls `use` by power kind, `tick` every step, `reset` on run reset |
-| `power` | the power bag and the `HeldPower` table |
+| `ship.clear` | `markDead` and `respawn` call it after the core status clear |
+| `run.use` / `run.tick` / `run.reset` | `RunSim` calls `use` by power kind, `tick` every step after `stepCombat`, `reset` on run reset |
+| `power` | the power bag appends each feature's weight after the core powers |
 | `rules` | default config, server clamp and key check for B2 overrides, dev dials (§7) |
 | `fields.player` | `PlayerState` composition and `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` (§4) |
 | `messages` / `net` | the room registers server handlers; the bridge subscribes client handlers |
@@ -154,9 +171,16 @@ export const PlayerState = schema(
 
 Rules:
 
-1. Never remove, reorder or insert a field. A new feature appends to the end of the registry.
+**Wire order is not append-only across F-stages** (owner, 2026-09-29, D1 = B). When a feature moves its
+fields out of core, the fields move to the end, and the indexes after them change. This is safe for one
+reason: the client decodes by reflection, so it reads the order from the server. Both ends deploy together.
+F2 moved the four tug fields to indexes 35–38, after `progressAt`.
+
+1. Between F-stages, never remove, reorder or insert a field. A new feature appends to the end of the
+   registry. An F-stage that moves fields changes the order on purpose and says so in its commit body.
 2. Keep a dead field as a plain field. Never `@deprecated()` (memory `deprecated-breaks-reflection-decoding.md`).
-3. A registry test fails when a change moves the index of an existing field.
+3. A golden test (`player-fields.test.ts`) fails when a change moves the index of a field. An F-stage
+   updates it in the same commit, and proves the move with two SDK clients (rule 5).
 4. **The same test asserts every index is `< 64`.** The library guard is `index > 64`
    (`src/Metadata.ts:73`), so index 64 passes and decodes as a DELETE of field 0, with no error.
 5. After a schema change, assert on the **client-decoded** state (as `run-room.test.ts` does).

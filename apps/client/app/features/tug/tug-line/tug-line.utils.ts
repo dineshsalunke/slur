@@ -2,8 +2,8 @@ import type { RootState } from '@react-three/fiber';
 import type { TugEvent } from '@slur/shared';
 import type { World } from 'koota';
 import * as THREE from 'three';
-import { Net, Render, Sim } from '../../ecs/traits';
-import { accent } from '../accent';
+import { Net, Render, Sim } from '../../../game/ecs/traits';
+import { accent } from '../../../game/scene/accent';
 import {
     coilAngle,
     coilRadius,

@@ -44,10 +44,6 @@ export const CORE_PLAYER_FIELDS = {
     boostTimer: SIM_FLOAT,
     shielded: FALSE,
     shieldTimer: LOCAL_FLOAT,
-    tugTimer: SIM_FLOAT,
-    slowTimer: SIM_FLOAT,
-    towTimer: SIM_FLOAT,
-    tugAnchorZ: SIM_FLOAT,
     portalHops: { type: 'uint8', default: 0, sim: true },
     strafeHeld: { type: 'int8', default: 0, sim: true },
     kickLeft: SIM_FLOAT,
@@ -109,3 +105,17 @@ function keysWhere< K extends string >( keep: ( spec: FieldFlags ) => boolean ):
 export const SIM_SHIP_KEYS = keysWhere< SimKey >( ( spec ) => spec.sim === true );
 
 export const SIM_FLOAT_KEYS = keysWhere< SimFloatKey >( ( spec ) => spec.sim === true && spec.type === 'float32' );
+
+export type FeatureShipFields = Omit< SimShipFields, keyof typeof CORE_PLAYER_FIELDS >;
+
+function featureShipDefaults(): FeatureShipFields {
+    const out: Record< string, unknown > = {};
+    for ( const f of SIM_FEATURES ) {
+        for ( const [ name, spec ] of Object.entries( f.fields?.player ?? {} ) ) {
+            if ( spec.sim === true ) out[ name ] = spec.default;
+        }
+    }
+    return out as FeatureShipFields;
+}
+
+export const FEATURE_SHIP_DEFAULTS: Readonly< FeatureShipFields > = featureShipDefaults();

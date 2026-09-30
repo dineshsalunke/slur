@@ -1,11 +1,11 @@
 import { hopThroughPortal } from '../combat/portal.js';
 import { type FlightTuning, STRAFE_PRESS } from '../constants.js';
-import { featureCap, featureThrust, tickFeatures } from '../features/sim-hooks.js';
+import { clearFeatures, featureCap, featureInput, featureThrust, tickFeatures } from '../features/sim-hooks.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
 import { type Block, HALF_WIDTH, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
-import { clearStatus, tickStatus, towedInput, tugCap, tugThrust } from './tug-status.js';
+import { clearStatus, tickStatus } from './status.js';
 import type { SimShip, SimWorld } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
@@ -214,6 +214,7 @@ function onBoostDeck( s: SimShip, prevY: number, t: FlightTuning ): boolean {
 function markDead( s: SimShip, t: FlightTuning ): void {
     s.dead = true;
     clearStatus( s );
+    clearFeatures( s );
     cancelKick( s );
     s.respawnTimer = t.respawnDelay;
     s.vx = 0;
@@ -234,6 +235,7 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.jumpsUsed = 0;
     s.stunTimer = 0;
     clearStatus( s );
+    clearFeatures( s );
     cancelKick( s );
 }
 
@@ -419,10 +421,10 @@ export function simulate(
         return null;
     }
 
-    const control = towedInput( s, s.stunTimer > 0 ? NEUTRAL_INPUT : input, cfg );
-    const push = boostThrust( s, input, t, cfg ) + tugThrust( s, input, t, cfg ) + featureThrust( s, input, t, cfg );
-    const cap = featureCap( s, t, tugCap( s, t, boostCap( s, t, cfg ), cfg ), cfg );
-    tickStatus( s, t, dt, cfg );
+    const control = featureInput( s, s.stunTimer > 0 ? NEUTRAL_INPUT : input, cfg );
+    const push = boostThrust( s, input, t, cfg ) + featureThrust( s, input, t, cfg );
+    const cap = featureCap( s, t, boostCap( s, t, cfg ), cfg );
+    tickStatus( s, dt, cfg );
     tickFeatures( s, t, dt, cfg );
 
     applyLongitudinal( s, control, t, dt, cap, push );

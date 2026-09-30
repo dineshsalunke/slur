@@ -36,16 +36,16 @@ const WIRE_ORDER = [
     [ 'slots', 'array:uint8' ],
     [ 'boostTimer', 'float32' ],
     [ 'shielded', 'boolean' ],
-    [ 'tugTimer', 'float32' ],
-    [ 'slowTimer', 'float32' ],
-    [ 'towTimer', 'float32' ],
-    [ 'tugAnchorZ', 'float32' ],
     [ 'portalHops', 'uint8' ],
     [ 'strafeHeld', 'int8' ],
     [ 'kickLeft', 'float32' ],
     [ 'kicking', 'boolean' ],
     [ 'glideTimer', 'float32' ],
     [ 'progressAt', 'float32' ],
+    [ 'tugTimer', 'float32' ],
+    [ 'slowTimer', 'float32' ],
+    [ 'towTimer', 'float32' ],
+    [ 'tugAnchorZ', 'float32' ],
 ] as const;
 
 const SIM_KEYS = [

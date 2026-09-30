@@ -37,7 +37,6 @@ import { PickupField } from './scene/pickup-field';
 import { PortalField } from './scene/portal-field/portal-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
 import { SeekerField } from './scene/seeker-field';
-import { TugLine } from './scene/tug-line/tug-line';
 import { WorldScene } from './scene/world-scene';
 import { TrackContext } from './track-context/track-context.constants';
 
@@ -83,7 +82,6 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <SeekerField />
                             <MineField />
                             <MineShock />
-                            <TugLine />
                             <PortalField />
                             <FeatureViews slot="scene" />
                             <PhaseGate phases={ ON_TRACK_PHASES }>

@@ -1,8 +1,8 @@
-import { stunDurationForShip } from '../ship-classes.js';
-import { segIndexForZ, type Track } from '../sim/space.js';
-import type { SimShip } from '../sim/types.js';
-import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { lockTarget, type SeekerShip } from './seeker.js';
+import { lockTarget, type SeekerShip } from '../../combat/seeker.js';
+import { stunDurationForShip } from '../../ship-classes.js';
+import { segIndexForZ, type Track } from '../../sim/space.js';
+import type { SimShip } from '../../sim/types.js';
+import { DEFAULT_SIM_CONFIG, type SimConfig } from '../../sim-config.js';
 
 export interface BlockAnchor {
     x: number;

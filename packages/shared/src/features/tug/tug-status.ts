@@ -1,7 +1,7 @@
-import type { FlightTuning } from '../constants.js';
-import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import type { PlayerInput } from './input.js';
-import type { SimShip } from './types.js';
+import type { FlightTuning } from '../../constants.js';
+import type { PlayerInput } from '../../sim/input.js';
+import type { SimShip } from '../../sim/types.js';
+import { DEFAULT_SIM_CONFIG, type SimConfig } from '../../sim-config.js';
 
 function pullOf( s: SimShip ): number {
     return Math.max( s.tugTimer, s.towTimer );
@@ -46,11 +46,7 @@ export function reelReleased( s: SimShip, t: FlightTuning, cfg: SimConfig = DEFA
     return s.tugAnchorZ - ( s.z + t.halfL ) <= Math.max( 0, s.vz ) * cfg.tugReleaseS;
 }
 
-export function tickStatus( s: SimShip, t: FlightTuning, dt: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): void {
-    if ( s.stunTimer > 0 ) s.stunTimer = Math.max( 0, s.stunTimer - dt );
-    if ( s.boostTimer > 0 ) s.boostTimer = Math.max( 0, s.boostTimer - dt );
-    if ( s.boostTimer > 0 ) s.glideTimer = s.boostTimer + cfg.boostGlideS;
-    else if ( s.glideTimer > 0 ) s.glideTimer = Math.max( 0, s.glideTimer - dt );
+export function tickTugStatus( s: SimShip, t: FlightTuning, dt: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): void {
     if ( reelReleased( s, t, cfg ) ) {
         s.tugTimer = Math.min( s.tugTimer, cfg.tugEaseS );
         s.tugAnchorZ = 0;
@@ -61,9 +57,7 @@ export function tickStatus( s: SimShip, t: FlightTuning, dt: number, cfg: SimCon
     if ( s.towTimer > 0 ) s.towTimer = Math.max( 0, s.towTimer - dt );
 }
 
-export function clearStatus( s: SimShip ): void {
-    s.boostTimer = 0;
-    s.glideTimer = 0;
+export function clearTugStatus( s: SimShip ): void {
     s.tugTimer = 0;
     s.slowTimer = 0;
     s.towTimer = 0;

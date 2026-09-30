@@ -1,3 +1,4 @@
+import { FEATURE_POWERS } from '../features/sim-hooks.js';
 import { hash2, mulberry32 } from '../sim/rng.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { HeldPower } from './constants.js';
@@ -27,7 +28,7 @@ export function bagCounts( cfg: SimConfig = DEFAULT_SIM_CONFIG ): PowerCount[] {
         [ HeldPower.boost, take( cfg.boostRatio ) ],
         [ HeldPower.shield, take( cfg.shieldRatio ) ],
         [ HeldPower.portal, take( cfg.portalRatio ) ],
-        [ HeldPower.tug, take( cfg.tugRatio ) ],
+        ...FEATURE_POWERS.map( ( p ): [ HeldPower, number ] => [ p.kind, take( p.bagWeight( cfg ) ) ] ),
     ];
     const shares: [ HeldPower, number ][] = [ [ HeldPower.bolt, left ], ...drawn ];
     const counts = shares.map( ( [ power, share ] ) => ( {
@@ -88,8 +89,14 @@ function dealBag( salt: string, index: number, cfg: SimConfig ): HeldPower[] {
 
 const bags = new Map< string, HeldPower[] >();
 
+function featureWeightKey( cfg: SimConfig ): string {
+    let key = '';
+    for ( const p of FEATURE_POWERS ) key += `|${ p.bagWeight( cfg ) }`;
+    return key;
+}
+
 export function powerBag( salt: string, index: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): readonly HeldPower[] {
-    const key = `${ salt }|${ index }|${ cfg.seekerRatio }|${ cfg.mineRatio }|${ cfg.boostRatio }|${ cfg.shieldRatio }|${ cfg.portalRatio }|${ cfg.tugRatio }`;
+    const key = `${ salt }|${ index }|${ cfg.seekerRatio }|${ cfg.mineRatio }|${ cfg.boostRatio }|${ cfg.shieldRatio }|${ cfg.portalRatio }${ featureWeightKey( cfg ) }`;
     let bag = bags.get( key );
     if ( bag === undefined ) {
         if ( bags.size >= BAG_CACHE_LIMIT ) bags.clear();

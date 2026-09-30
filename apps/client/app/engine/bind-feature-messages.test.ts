@@ -6,6 +6,7 @@ function fakeRoom() {
     const handlers = new Map< string, ( payload: unknown ) => void >();
     return {
         handlers,
+        sessionId: 'me',
         onMessage< Payload >( type: string, callback: ( payload: Payload ) => void ): () => void {
             handlers.set( type, callback as ( payload: unknown ) => void );
             return () => handlers.delete( type );
@@ -25,6 +26,15 @@ describe( 'bindFeatureMessages (#385)', () => {
         expect( got ).toEqual( [ 1, 20 ] );
         off();
         expect( room.handlers.size ).toBe( 0 );
+    } );
+
+    it( 'passes the local session id to every handler', () => {
+        const seen: string[] = [];
+        const a = defineClientFeature( { id: 'a', net: { ping: ( _n: number, net ) => seen.push( net.sessionId ) } } );
+        const room = fakeRoom();
+        bindFeatureMessages( room, [ a ] );
+        room.handlers.get( 'ping' )?.( 1 );
+        expect( seen ).toEqual( [ 'me' ] );
     } );
 
     it( 'throws on a message type two features claim, before it subscribes any', () => {

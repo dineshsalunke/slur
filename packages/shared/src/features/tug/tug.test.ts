@@ -4,19 +4,15 @@ import {
     BLOCK_HEIGHT,
     BLOCK_ID_STRIDE,
     type Block,
-    blockAnchor,
-    catapult,
     DEFAULT_SIM_CONFIG,
     HALF_WIDTH,
-    reel,
     SEG_LEN,
     type SeekerShip,
     type Segment,
     spawnShip,
     type Track,
-    throwSeconds,
-    tugTarget,
-} from '../index.js';
+} from '../../index.js';
+import { blockAnchor, catapult, reel, throwSeconds, tugTarget } from './tug.js';
 
 const cfg = DEFAULT_SIM_CONFIG;
 

@@ -1,67 +1,27 @@
 import { HeldPower } from '@slur/shared';
 import * as THREE from 'three';
+import { ACTIVE_FEATURES } from '../../../engine/active-features';
 import { accent, accentVersion } from '../accent';
+import {
+    ACCENT,
+    circlePath,
+    ellipsePath,
+    type GlyphShape,
+    GOLD,
+    plate,
+    polyPath,
+    RIM,
+    roundRectPath,
+    SHEEN,
+    starPoints,
+} from './glyph-shapes';
 import { CELL_PAD, CELL_PX, CELLS, VIEWBOX } from './power-arc.constants';
-
-const VOID = '#080b13';
-const ACCENT = 'accent';
-const GOLD = '#ffd24a';
-const SHEEN = 'rgba(230, 241, 255, 0.1)';
-const RIM = 2;
-const SEAM = 2.4;
-
-interface Shape {
-    d: string;
-    fill?: string;
-    stroke?: string;
-    width?: number;
-}
-
-export function polyPath( points: string ): string {
-    return `M${ points }Z`;
-}
-
-export function circlePath( cx: number, cy: number, r: number ): string {
-    return ellipsePath( cx, cy, r, r );
-}
-
-export function ellipsePath( cx: number, cy: number, rx: number, ry: number ): string {
-    return `M${ cx - rx } ${ cy } A${ rx } ${ ry } 0 1 0 ${ cx + rx } ${ cy } A${ rx } ${ ry } 0 1 0 ${ cx - rx } ${ cy }Z`;
-}
-
-export function roundRectPath( x: number, y: number, w: number, h: number, r: number ): string {
-    const arc = `A${ r } ${ r } 0 0 1`;
-    return `M${ x + r } ${ y } H${ x + w - r } ${ arc } ${ x + w } ${ y + r } V${ y + h - r } ${ arc } ${
-        x + w - r
-    } ${ y + h } H${ x + r } ${ arc } ${ x } ${ y + h - r } V${ y + r } ${ arc } ${ x + r } ${ y }Z`;
-}
-
-export function starPoints( spikes: number, outer: number, inner: number ): string {
-    const pts: string[] = [];
-    for ( let i = 0; i < spikes * 2; i++ ) {
-        const r = i % 2 === 0 ? outer : inner;
-        const a = ( i / ( spikes * 2 ) ) * Math.PI * 2 - Math.PI / 2;
-        pts.push( `${ ( 24 + r * Math.cos( a ) ).toFixed( 2 ) },${ ( 24 + r * Math.sin( a ) ).toFixed( 2 ) }` );
-    }
-    return pts.join( ' ' );
-}
-
-function plate( d: string ): Shape {
-    return { d, fill: VOID, stroke: ACCENT, width: RIM };
-}
-
-function inlay( d: string ): Shape[] {
-    return [
-        { d, stroke: VOID, width: SEAM },
-        { d, fill: ACCENT },
-    ];
-}
 
 const SQUARE = roundRectPath( 8, 8, 32, 32, 2 );
 const DIAMOND = polyPath( '24,2 38,24 24,46 10,24' );
 const PORTAL_RING = { d: ellipsePath( 24, 24, 9, 14 ), stroke: ACCENT, width: 3 };
 
-const GLYPHS: Record< number, Shape[] > = {
+const CORE_GLYPHS: Record< number, readonly GlyphShape[] > = {
     [ HeldPower.none ]: [ { d: SQUARE, stroke: ACCENT, width: 2.5 } ],
     [ HeldPower.bolt ]: [
         plate( DIAMOND ),
@@ -100,20 +60,23 @@ const GLYPHS: Record< number, Shape[] > = {
         PORTAL_RING,
         { d: 'M24 16 A4 8 0 0 1 24 32 Z', fill: GOLD },
     ],
-    [ HeldPower.tug ]: [
-        ...inlay( polyPath( '17.1,12.4 22.1,7.4 23.7,8.5 18.5,14' ) ),
-        ...inlay( polyPath( '26.1,5.4 29.1,15.5 15.1,30.6 24.4,43.9 16,43.9 6.6,31.9' ) ),
-        ...inlay( polyPath( '21.3,27.1 27.6,35.9 34.3,35.9 39.2,28.6 41.4,30.3 35.5,40.7 25.1,40.7 17.9,31.3' ) ),
-        ...inlay( polyPath( '40.3,14 36.3,18 30.6,18 26.6,14 26.6,8.3 30.6,4.3 36.3,4.3 40.3,8.3' ) ),
-        { d: circlePath( 32.4, 11.5, 3.4 ), fill: VOID },
-    ],
 };
+
+const GLYPHS: Record< number, readonly GlyphShape[] > = { ...CORE_GLYPHS };
+for ( const f of ACTIVE_FEATURES ) {
+    const kind = f.sim?.power?.kind;
+    const glyph = f.hud?.glyph;
+    if ( kind === undefined || ! glyph ) continue;
+    if ( GLYPHS[ kind ] ) throw new Error( `feature "${ f.id }": glyph for power ${ kind } is taken` );
+    if ( kind >= CELLS ) throw new Error( `feature "${ f.id }": power ${ kind } has no atlas cell` );
+    GLYPHS[ kind ] = glyph;
+}
 
 function ink( value: string, accentStyle: string ): string {
     return value === ACCENT ? accentStyle : value;
 }
 
-function drawShape( ctx: CanvasRenderingContext2D, s: Shape, accentStyle: string ): void {
+function drawShape( ctx: CanvasRenderingContext2D, s: GlyphShape, accentStyle: string ): void {
     const path = new Path2D( s.d );
     if ( s.fill ) {
         ctx.fillStyle = ink( s.fill, accentStyle );

@@ -9,7 +9,6 @@ export interface PickupLayouts {
     boosts: Anchor[];
     shields: Anchor[];
     portals: Anchor[];
-    tugs: Anchor[];
 }
 
 export function SeekerPickups( { layout, isTaken }: { layout: Anchor[]; isTaken: ( id: string ) => boolean } ) {
