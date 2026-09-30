@@ -1,12 +1,12 @@
-Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-29 (seam 18 — context warning at ~157k)
+Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-30 (seam 19 — context warning at ~155k)
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. Clear and resume steps: memory `supervisor-clears-workers-via-herdr.md`.
 Standing approval to clear workers at a seam. Read the context bar with `grep -oE "░+ [0-9]+%"`; re-read
-until 0%. Reply to a worker's cross-session message with SendMessage to its name (workerone, workertwo,
-workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
+until 0%. Reply to a worker's cross-session message with SendMessage to its `from=` address.
+Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 ## Standing owner decisions
 
@@ -14,63 +14,63 @@ workerthree). Older history: `git log -p -- .claude/handovers/slur-supervisor.md
 - OWNER RULE: the worker who fixes an issue closes it with a SHA comment. Put it in every lane brief.
 - OWNER RULE: the owner tests everything on /test-level. Every brief says so.
 - OWNER RULE: never ask about an issue by number alone (title + one line).
-- ONLY THE OWNER DEPLOYS: `! docker desktop start && ./scripts/deploy.sh` (refuses dirty tree / unpushed HEAD).
-- Pushes: workers push their own green commits; a push carries every local commit (memory
-  shared-tree-footguns "Amend and push"). The owner told the supervisor to push doc commits. Never push
-  for a worker whose push was denied (permission laundering) — tell the owner.
+- OWNER RULE (2026-09-30): every Agent-tool subagent runs with `model: "sonnet"` (memory
+  subagents-run-on-sonnet.md). Put it in every brief.
+- ONLY THE OWNER DEPLOYS: `! docker desktop start && ./scripts/deploy.sh`.
+- Pushes: workers push their own green commits. The owner told the supervisor to push doc commits and,
+  on 2026-09-30, to push F2.
 - Prod: https://slur.kurmah.studio. do-setup owns infra.
 - Look (#364 254d267): HDRI cyclorama_hard_light 1k, Environment.rotation 210, intensity 1, Metal + Hull
-  baseColor #232324, Neutral tone mapping exposure 1. Home, lobby and race all read one tuning.
-- Env band (d6cb3f6): colour = Accent.color, bandHeight 10, bandIntensity 2.
+  baseColor #232324, Neutral tone mapping exposure 1.
 - KEY LAYOUT (#368, ADR-032): ↑/↓ throttle/brake, ←/→ strafe, Space jump, E fire fwd, D fire back, S/F
-  prev/next slot, X drop, M mute, Esc. Pad Start = action 'start' (#375).
-- RFC-349 (`docs/RFC-349-ARCHITECTURE.md`) §8 all answered: Q1 yes, Q2 D1 now/D3 later, Q3 O1, Q4 rule C +
-  B2 + four tiers, Q5 = A (room config = combat/world rules only), Q6 = B (dev host dials in lobby, locked
-  at GO, S6), Q7 = a3 with HAND-WRITTEN StandardSchemaV1 objects, no library (owner: no wire lag;
-  54ff79b7), Q8 yes, Q9 = RELOAD-ONLY for build-time quality knobs (17afbb4f). Q10 is ours (workertwo
-  measuring). Each stage gets its own issue. Supervisor marks stage status in RFC §7.
-- F2 owner answers: D1 = B (tug fields move to the feature spread; wire order changes once; client decodes
-  by reflection — verified matchmaking.ts:75 passes no root class), D2 = a (tug rules keys wait for S6),
-  D3 = keep HeldPower.tug central.
+  prev/next slot, X drop, M mute, Esc.
+- RFC-349 §8 Q1–Q10 all answered (see RFC §8). F3 = GO (2026-09-30): F4 one feature per stage, bolt
+  first, then seeker, mine, boost, shield, portal — file one issue per stage when it starts.
+- Schema reorder exception for F-stage moves added (6ab55397), rules/features.md + conventions/features.md.
+
+## Done this seam
+
+- Issues closed 2026-09-30 (owner): #348 (superseded by #368), #345, #369, #337, #338, #339, #340, #341.
+- Doc audits (Sonnet agents): `.claude/reports/GDD-DEVIATIONS.md` (6 open, 3 resolved),
+  `TDD-DEVIATIONS.md` (12, first audit), `ADD-DEVIATIONS.md` (9) — ae7b6f6c. Nearly all are doc moves.
+- Filed #392 (meteor strikes land near the player), #393 (meteor deck reflection lingers), #394 (port
+  vgpu black hole, plan first), #395 (F4a bolt).
+- F2 #390 f4e78880 pushed with 6ce35c5d, 66a90ae4; rule exception 6ab55397 pushed.
 
 ## RFC-349 stages
 
 | Stage | Issue | State |
 |---|---|---|
-| S0 S1 S2 S3 S8 S10 S10b S14 S15 S16 | various | landed (see RFC §7) |
-| S17 addEffect → phases | #387 | landed a3ee47ad |
-| S18 render system | #384 | landed ea385b6b |
-| S20 dial-sync | #388 | landed 9b5f38f2 + 80b9e8ef (route schedules) |
-| S19 quality hooks | #391 | landed 393e7480 + a50cd135, closed. Owner check pending |
-| F1 engine skeleton | #385 | landed 1a5415c7 + f912f7ab, closed |
-| F2 tug pilot | #390 | BUILDING workerone. Sim half built, UNCOMMITTED on purpose until the D1 2-SDK-client proof. Expected central count ~19 → 7. Baselines (HEAD c99945c4): /test-level 8.30 ms best, 74 draws; simulate() 2.36–2.41 µs/tick at 4× throttle |
-| F3 | — | owner go/no-go on F2 §3.8 numbers |
-| S4/S5 | — | free, but both touch attach-room-to-world.ts (F2 holds it) → after F2 |
-| S21 | — | after Q10 measurement and after F2 |
-| S6 rules spec | — | free after F2; takes tug's 20 SimConfig keys (D2) |
-| S12 messages | — | after F1; Q7 = hand-written Standard Schema |
-
-Other landed today: #386 landing canvas 04684954; #389 landing gap 6acf1345 (still backdrop until first
-paint). All pushed; dev = origin except workers' in-flight work.
+| S0–S3 S8 S10 S10b S14–S20, F1 | various | landed (RFC §7) |
+| F2 tug pilot | #390 | landed f4e78880. Central tug files 19 → 8 (D2/D3 keep 6). simulate() within noise. Draws 74. workerone told to close #390 |
+| F3 | — | GO 2026-09-30 |
+| F4a bolt | #395 | ASSIGNED workerone (claim list pending) |
+| F4b… seeker, mine, boost, shield, portal | — | one issue each, in order |
+| S4/S5, S6 (closes #70), S12 | — | not filed; S4/S5/S7 touch attach-room-to-world.ts → sequence around F4 |
+| S21 | — | deferred (Q10) |
+| RFC §7 rows | — | F2 row + §3.8 updated by workerone in f4e78880 (verify); add F3 GO + F4a rows |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #390 F2 tug pilot | BUILDING (cleared + resumed after b5247df6) | tug files → features/tug/ (shared + client); registries; engine slots; central cuts: step.ts, types.ts, run-sim.ts, combat.ts, power-bag.ts, index.ts, player-fields.ts, sim-config.ts (import only), NEW sim/status.ts, attach-room-to-world.ts, net-canvas.tsx (back from workertwo), pickup-field.tsx, seeker-pickups/*, glyph-atlas.ts, bind-room-audio.ts; listed tests; features.md §3 |
-| workertwo | w2Z:p3 | none (perf skill fixed e5f71a16: ArrowUp moves 29.7 u; Q10 done → S21 deferred) | IDLE, needs a lane; context high → clear before next lane | — |
-| workerthree | w2Z:p5 | INVESTIGATE blue tail on ship exhaust (owner report 2026-09-30; related #369). Read-only; owner decides the fix | INVESTIGATING | — |
+| workerone | w2Z:p2 | #395 F4a bolt | cleared + resumed 2026-09-30, briefed | claim list pending |
+| workertwo | w2Z:p3 | #393 then #392 meteor strikes | cleared + resumed, planning | meteor-strikes/*, meteor-chunks/*, meteor-scorch/*, deck reflection layers (exact list pending) |
+| workerthree | w2Z:p5 | #394 black hole port — PLAN ONLY → `.claude/phases/2026-09-30-black-hole-plan.md` | cleared + resumed | none |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## Open owner items
 
-1. Assign workerthree a next lane (idle).
-2. Owner checks: S19 on /test-level (mid-race tier switch: no hitch; home picker "Reload to apply");
-   S20 dials (Deck/Rail/Monolith seamEmissive, Deck roughness then plate); #389 home page (no blank flash);
-   S17 HUD speed; #375 pad Start in a real lobby.
-3. Older: #369 streak after reset tuning; hue-preserving tone map (option 4); 60 fps cap / M1 → medium; #344
-   perf window; power-slot leak (S5 fixes it); .glb models; kick on results rows; #14 reconnection Q1/Q2;
-   #312/#313; #16; #342 gaps.
+1. Exhaust blue tail: workerthree's probe found no blue in any view (handover 66a90ae4). Owner to say
+   where it shows and whether Exhaust leva values were changed. Candidate fixes: Exhaust.hot #fff1dc →
+   ~#ffd9a0, Exhaust.heat 1 → 2–3.
+2. Audit follow-up: file one docs issue per doc (GDD, TDD, ADD) and give the fixes a lane. ADD blocker:
+   `docs/ADD.md:114` says pillars are "one identical square column, repeated in mirrored pairs", but
+   568c523 made them vary — owner picks doc or code.
+3. New-issue list from the 2026-09-30 triage still awaits the owner: RFC S4/S5/S6/S12 issues; vertical-reach
+   validator; four art issues (lighting to golden reference, track deck/wear, Split Crown, block art).
+4. Keep-open issues waiting on owner: #344 (real phone test), #300 S4 (on hold), #70 (→ S6).
+5. Older: S19/S20/#389/#375 owner checks; #14 reconnection Q1/Q2; #16; #312/#313 unassigned.
 
 ## Uncommitted
 
@@ -78,14 +78,12 @@ None of mine.
 
 ## Next
 
-0. Stack: the supervisor started `pnpm dev` as its background task bxut2x0u3 (2026-09-30); a /clear of the supervisor kills it. Proposed to owner: workertwo #341 stalled race; workerthree #313 + #312 (after the exhaust probe). No answer yet.
-1. workertwo IDLE. Pick lanes that avoid F2 files (ask the owner, or pull non-F2
-   bugs from the issue list). S21 deferred (Q10 recorded in RFC §8).
-2. workerthree: once unblocked, get the #389 gap ms; mark it in this file. Its next lane: free (candidates:
-   S6 prep reading, or a non-F2 bug from the issue list — ask the owner).
-3. F2: workerone proves D1 (2 SDK clients, no decode errors), commits, reports §3.8 → relay to owner as F3.
-4. After F2: S4/S5, S6, S12, S21.
+1. Answer workerone's and workertwo's claim lists (check for overlap: bolt files vs meteor/reflection).
+2. Relay workerthree's #394 plan to the owner when it lands.
+3. When #393/#392 land, remind the owner to check on /test-level.
+4. Fix `.claude/backlog.md` stale lines (#311 done; S7 line merged into S6 paragraph) when filing the
+   owner-approved issues.
 
 ## Lessons → memory
 
-Appended "Amend and push act on everyone's commits" to `shared-tree-footguns.md` (f2859165).
+subagents-run-on-sonnet.md (ae7b6f6c).
