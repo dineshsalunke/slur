@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: d5260a53-9e7d-4a83-98c9-96e308861cf9
-  modified: 2026-09-29T04:08:06.805Z
+  modified: 2026-09-30T09:36:57.113Z
 ---
 
 ### Node bot as second racer
@@ -17,9 +17,14 @@ second racer a node script, not a second Chrome. Verified 2026-09-26 (#269).
   `packages/shared/dist/index.js`, both by absolute path. `joinById(roomId, { name })` before the host
   sends `START_MESSAGE`, because the field locks at GO. Reflection decoding needs no schema import.
 - Track: `resolveTrack(toDescriptor(room.state.descriptor))` after `descriptorReady`.
-- Each 1/60 s tick: send `INPUT_MESSAGE` `{ inputs: [{ seq, throttle: 1, brake: 0, strafe, jump }] }`, steer
-  to the next untaken pickup, jump when `segmentAtZ(z+12).floors` has no span under x, drop unwanted
-  powers with `DROP_POWERUP_MESSAGE` so slots refill. The bot reached z 1900 and fired two boosts in 20 s.
+- Build one input per 1/60 s tick (`{ seq, throttle, brake: 0, strafe, jump }`) but **send them batched every
+  2nd tick** (`{ inputs: [a, b] }`), like the real client (S8). Drop unwanted powers with
+  `DROP_POWERUP_MESSAGE` at most every 0.5 s. The room caps `maxMessagesPerSecond = 60`
+  (`apps/server/src/limits.ts`). 60 inputs/s plus drops goes over it: the client closes with 4002 or
+  its state silently freezes (F4a #395, 2026-09-30).
+- Steer to the next untaken pickup and jump when `segmentAtZ(z+12).floors` has no span under x. Also steer
+  round blocks with `y0 < 2` in the next ~48 u, or the bot wedges on a wall. A 2-bot bolt check (A leads,
+  B follows A's x, A fires back) gave 2 hits in 30 s: scratch `d1-bolt.mjs`.
 - Warning `onMessage() not registered for type 'bounce'` on stderr is harmless.
 
 The host tab gets the room from `session.ts` over CDP ([[drive-a-hosted-room-over-cdp]]). Count sfx with a

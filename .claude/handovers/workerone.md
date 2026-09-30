@@ -1,52 +1,53 @@
-Agent: workerone · Lane: RFC-349 F2 tug pilot (#390) — BUILT + COMMITTED f4e78880, not pushed, waits on F3 · Updated: 2026-09-30
+Agent: workerone · Lane: RFC-349 F4a bolt (#395) — DONE, pushed 85365ecc, issue closed · Updated: 2026-09-30
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-#390: move tug into two feature folders, cut its lines from central files, measure per RFC §3.8. F3 = the
-owner's go/no-go on the numbers.
+#395: move bolt into two feature folders per owner D4–D7, measure per RFC §3.8.
 
 ## Done
 
-- F1 #385 closed (1a5415c7 + f912f7ab).
-- **F2 sim half + client half: f4e78880** (one commit; the body says the wire order changed on purpose).
-- Docs in the same commit: RFC §3.8 "F2 result" + §7 F2 row; `conventions/features.md` §3 as-built slots +
-  leaf-import rule, §4 wire-order note (rules 1–3 reworded).
-- Numbers posted on #390 (comment 5907837880). Seam report sent to the supervisor.
+- #390 closed (f4e78880, §3.8 numbers in the close comment).
+- **F4a: 85365ecc**, pushed to dev. #395 closed with the numbers.
+- Docs in the same commit: RFC §3.8 "F4a result" + §7 F2/F3/F4a rows; `conventions/features.md` §3 F4a slot rules
+  (run.strike, bagRest, RunContext.resolveMine/nextId, bolt-schema leaf, no-fields typing) + table rows.
 
 ## State (measured this session)
 
-- Tests: shared 583/583, server 99/99, client 710/710. Typecheck clean. Lint clean (9 old length warnings).
-- D1: two SDK clients on the owner's :2567 decode 39 fields, tug at 35–38, 0 decode logs in 6 rooms. Forward
-  tug: A.tugTimer 1, B.slowTimer 0.6. Back tug: B.towTimer 0.6. Both clients decoded the timers.
-- simulate() HEAD vs F2 (node on dist, 5 alternating reps): idle 0.159 → 0.168 µs, tug 0.185 → 0.181 µs.
-  The final ship state is bit-equal.
-- /test-level draws 74 = baseline. Frame ms NOT measured: headless capped at 60 Hz (menu 16.6 ms).
-- Central files naming tug: 19 → 8 (2 registry lines, 5 by D2/D3, 1 index.ts export).
-- Scratch drivers (lost if /private/tmp is cleared): `…/6d04acb8-3a53-47e6-b881-cef6c9768020/scratchpad/`
-  `d1-tug.mjs` (FORWARD=1), `inproc.mjs`, `f2-step.mjs`, `f2-frame.mjs`; `old/` = HEAD shared build.
+- RunSim A/B, HEAD dist vs F4a dist, 4 racers × 3600 ticks × 6 seeds: per-tick state + broadcast hashes all equal.
+- 800 power bags over 5 configs equal HEAD. `powerBag( '42', 3 )` pinned in `power-bag.test.ts`.
+- 2 SDK clients on :2567: 3 bolts decoded, 2 hits on B + 1 wall hit on both, 0 decode logs.
+- /test-level draws 74 (DPR 1, quality high). Frame ms not A/B'd (one stack, no HEAD client).
+- Every shared dist module imports alone: no TDZ.
+- Bolt outside the folders: 34 → 29 non-test (5 shared, 24 client, 22 of them D7).
+- shared 585/585, server 99/99, client 721/721; typecheck + lint clean.
+- Scratch (lost if /private/tmp clears): `…/c6578256-4dd3-4107-8f04-ad524f3c9aff/scratchpad/`
+  `run-bench.mjs` (run-level hash A/B), `bag-ab.mjs`, `inproc-bolt.mjs`, `d1-bolt.mjs` (2-client wire check),
+  `f4-frame.mjs` (draws), `old/` = pre-F4a shared dist.
 
 ## Uncommitted
 
-- none.
+- none of mine. The tree also holds workertwo's meteor-* files and `dev/tuning-schema.ts` (not mine).
 
 ## Held files
 
-- none after this seam. The supervisor can release the F2 claim.
+- none. The supervisor can release the F4a claim.
+- Claim addendum, now committed: `player-fields.ts` (1-line typed `Object.entries`), `engine/active-features.test.ts`,
+  `features/tug/tug-run.test.ts` (RunContext fields).
 
 ## Next
 
-1. Wait for F3 (owner go/no-go on the §3.8 numbers, relayed by the supervisor).
-2. On go: the owner pushes (or approves a push), then `gh issue close 390 -c "<what shipped + SHA>"`.
-3. Open follow-ups: `.claude/rules/features.md` still says "Append only; never reorder". It needs the F-stage
-   exception from `conventions/features.md` §4 (not claimed, so not edited).
+1. Wait for the next lane from slur-supervisor (F4b seeker would follow the same pattern; seeker shares
+   `HitShip`/`hitShipsOf` in `combat/projectiles.ts` and the `nextId` counter).
 
 ## Open questions
 
-- Owner: F3 go/no-go. The central count is 8, not ≤ 2, because of D2/D3.
-- Owner: `.claude/rules/features.md` wire rule wording (see Next 3).
+- Owner: 22 client files still name bolt under D7 (streaks, embers, BOLT_* palette used by mines/seekers/finish
+  gate/pickups, block shake, SFX, schema listeners). A later stage could rename the shared ones to neutral names
+  (e.g. `shot-streaks`, `HOT` palette) to reach the ≤ 2 target.
 
 ## Lessons → memory
 
-- `.claude/memory/check-headless-frame-cap-first.md` (written this seam).
+- `.claude/memory/node-bots.md` updated: batch SDK inputs every 2nd tick; the room caps 60 msg/s and kicks (4002)
+  or freezes a bot over it.

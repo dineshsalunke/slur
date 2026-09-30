@@ -65,7 +65,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Stage a mine on /test-level](stage-a-mine-on-test-level.md) — server `slots[0] = 3` + KeyE
 - [Stage enemy fire on /test-level](stage-enemy-fire-on-test-level.md) — fire, flip ownerId, pin per rAF
 - [Stage a meteor strike on /test-level](stage-a-meteor-strike-on-test-level.md) — chance 1, ahead 20, ?start=0,1650
-- [Node bots](node-bots.md) — node @colyseus/sdk second racer; one event loop per busy bot
+- [Node bots](node-bots.md) — SDK second racer; batch inputs (60 msg/s cap); one event loop
 - [Scratch servers](scratch-servers.md) — `__finish` seeds racers; 30-segment short course
 - [Simulate a hidden tab over CDP](simulate-a-hidden-tab-over-cdp.md) — headless stays visible; hold rAF
 - [Simulate a room drop over CDP](simulate-a-room-drop-over-cdp.md) — `connection.close(4010)` after 5 s
