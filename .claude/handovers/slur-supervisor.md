@@ -61,6 +61,18 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 ## Open owner items
 
+0a. F4a #395 bolt — workerone's claim is CLEAR, build waits on owner D4–D7 (relayed 2026-09-30). Picks:
+    D4 PowerSpec `bagRest: true` (bags bit-equal) · D5 fixed hook `run.strike` where stepBolts runs
+    (bit-equal) · D6 keep `projectiles` in RunState this stage · D7 shared streak/ember/BOLT_* palette/
+    block-shake/sfx stay central (central count 36 → ~18–22 inferred). Supervisor recommends all four.
+    Also offered: start F4 with a simpler feature (shield/boost); supervisor leans bolt first.
+0b. #394 black hole plan: `.claude/phases/2026-09-30-black-hole-plan.md` (87dd59db). Recommended
+    option A (GLSL port, baked geodesic G-buffer, shaded in prerender into a fixed-size target, drawn
+    on a quad; our bloom/tone map). MIT (Vercel). WebGL2 only. Budget high ≤0.6 ms, medium ≤0.25,
+    low = frozen still [unmeasured]. Owner questions: placement (P1 landing hero · P2 finish landmark
+    [worker pick] · P3 race sky · P4 portal) · colour (warm ramp · marigold tint · greyscale) ·
+    CREDITS.md "Code" section ok? · low tier frozen still ok? workerthree idle, holds no files.
+
 1. Exhaust blue tail: workerthree's probe found no blue in any view (handover 66a90ae4). Owner to say
    where it shows and whether Exhaust leva values were changed. Candidate fixes: Exhaust.hot #fff1dc →
    ~#ffd9a0, Exhaust.heat 1 → 2–3.
