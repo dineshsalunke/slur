@@ -33,9 +33,12 @@ describe( 'banded environment', () => {
         const b = stubRenderer();
         const old = bandedEnvironment( a.renderer, hdri );
         let disposed = false;
-        ( old as THREE.Texture & { renderTarget: THREE.RenderTarget } ).renderTarget.addEventListener( 'dispose', () => {
-            disposed = true;
-        } );
+        ( old as THREE.Texture & { renderTarget: THREE.RenderTarget } ).renderTarget.addEventListener(
+            'dispose',
+            () => {
+                disposed = true;
+            },
+        );
         const next = bandedEnvironment( b.renderer, hdri );
         expect( b.calls.render ).toBe( 1 );
         expect( next ).not.toBe( old );
