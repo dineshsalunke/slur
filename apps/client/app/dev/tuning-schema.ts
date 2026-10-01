@@ -194,8 +194,8 @@ export const NUMBER_TUNABLES = {
     'Bank.damping': { value: 0.75, min: 0.2, max: 2, step: 0.01, rebuild: false },
 
     'BlackHole.radius': { value: 900, min: 100, max: 4000, step: 10, rebuild: false },
-    'BlackHole.minAngle': { value: 7, min: 0, max: 30, step: 0.25, rebuild: false },
-    'BlackHole.side': { value: 0, min: -45, max: 45, step: 0.5, rebuild: false },
+    'BlackHole.minAngle': { value: 18, min: 0, max: 30, step: 0.25, rebuild: false },
+    'BlackHole.side': { value: 28, min: -45, max: 45, step: 0.5, rebuild: false },
     'BlackHole.height': { value: 150, min: -300, max: 1000, step: 5, rebuild: false },
     'BlackHole.behind': { value: 400, min: 0, max: 4000, step: 10, rebuild: false },
     'BlackHole.pitch': { value: 9, min: -60, max: 60, step: 0.5, rebuild: false },
