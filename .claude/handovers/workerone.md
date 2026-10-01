@@ -43,8 +43,8 @@ Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Open questions
 
-- For the supervisor: the 6 orphan files in `packages/shared/dist` (`combat/tug*.js`, `run/tug-run.js`,
-  `pacing/ngrams.js`, `sim/phrase/line.js`, `sim/tug-status.js`). Delete them, or leave them? Nothing imports them.
+- Resolved: the 6 orphan dist files (+ .d.ts, .d.ts.map) were deleted on supervisor's word; `tsc -b --force`;
+  101/101 dist modules import alone; typecheck clean.
 - 1 draw on /test-level since F4a is not attributed (not seeker). Worth a look only if someone is chasing draws.
 
 ## Lessons → memory
