@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DRAW_MAX, TIER_PLAN } from './black-hole.constants';
-import { type Landmark, type LandmarkConfig, parseBlackHole, placeLandmark, tierPlan } from './black-hole.utils';
+import { type Landmark, type LandmarkConfig, placeLandmark, tierPlan } from './black-hole.utils';
 import { hash31, noiseVolumeData } from './black-hole-noise.utils';
 
 const CFG: LandmarkConfig = { behind: 400, height: 150, radius: 900, minAngle: 7, side: 0, parallax: 1 };
@@ -80,11 +80,5 @@ describe( 'black hole tiers', () => {
         expect( tierPlan( 'low', false ).frozen ).toBe( true );
         expect( tierPlan( 'high', true ).frozen ).toBe( true );
         expect( tierPlan( 'high', false ) ).toBe( TIER_PLAN.high );
-    } );
-
-    it( 'reads only known placements from the URL', () => {
-        expect( parseBlackHole( new URLSearchParams( 'blackhole=finish' ) ) ).toBe( 'finish' );
-        expect( parseBlackHole( new URLSearchParams( 'blackhole=sky' ) ) ).toBeNull();
-        expect( parseBlackHole( new URLSearchParams( '' ) ) ).toBeNull();
     } );
 } );

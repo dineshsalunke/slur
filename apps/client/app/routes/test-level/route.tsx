@@ -1,8 +1,6 @@
 import { Fragment } from 'react';
 import { Outlet, type ShouldRevalidateFunctionArgs } from 'react-router';
 import { loadSfx } from '../../audio/sfx-map';
-import { BLACK_HOLE_PARAM } from '../../game/scene/black-hole/black-hole.constants';
-import { parseBlackHole } from '../../game/scene/black-hole/black-hole.utils';
 import type { Route } from './+types/route';
 import { EditButton } from './edit-button/edit-button';
 import { RecIndicator } from './flight-recorder/rec-indicator';
@@ -27,12 +25,11 @@ export async function clientLoader( { request }: Route.ClientLoaderArgs ) {
     return {
         room: openTestLevelRoom( descriptor, startOf( url.search ) ),
         descriptor,
-        blackHole: parseBlackHole( url.searchParams ),
     };
 }
 
 export function shouldRevalidate( { currentUrl, nextUrl }: ShouldRevalidateFunctionArgs ) {
-    return [ 'gen', 'seed', 'level', 'v', BLACK_HOLE_PARAM ].some(
+    return [ 'gen', 'seed', 'level', 'v' ].some(
         ( k ) => currentUrl.searchParams.get( k ) !== nextUrl.searchParams.get( k ),
     );
 }
@@ -40,11 +37,7 @@ export function shouldRevalidate( { currentUrl, nextUrl }: ShouldRevalidateFunct
 export default function TestLevel( { loaderData }: Route.ComponentProps ) {
     return (
         <Fragment>
-            <TestLevelCanvas
-                room={ loaderData.room }
-                descriptor={ loaderData.descriptor }
-                blackHole={ loaderData.blackHole }
-            />
+            <TestLevelCanvas room={ loaderData.room } descriptor={ loaderData.descriptor } />
             <EditButton />
             <ResetKey room={ loaderData.room } />
             <RecordKey />

@@ -12,11 +12,8 @@ export const TIER_PLAN: Record< QualityTier, TierPlan > = {
     low: { size: 384, shadeEvery: 1, frozen: true },
 };
 
-export const BLACK_HOLE_PARAM = 'blackhole';
-export const BLACK_HOLE_PLACEMENTS = [ 'finish' ] as const;
-
 export const BAKE_BANDS = 8;
-export const REFINE_BANDS = 24;
+export const REFINE_BANDS = 96;
 export const NOISE_SIZE = 64;
 export const NOISE_SEED = 13;
 export const DISK_OUTER = 9;

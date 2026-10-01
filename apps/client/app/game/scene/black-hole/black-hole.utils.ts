@@ -1,15 +1,5 @@
 import type { QualityTier } from '../../../quality/quality.constants';
-import {
-    BLACK_HOLE_PARAM,
-    BLACK_HOLE_PLACEMENTS,
-    DEG,
-    DRAW_MAX,
-    MIN_DISTANCE,
-    TIER_PLAN,
-    type TierPlan,
-} from './black-hole.constants';
-
-export type BlackHolePlacement = ( typeof BLACK_HOLE_PLACEMENTS )[ number ];
+import { DEG, DRAW_MAX, MIN_DISTANCE, TIER_PLAN, type TierPlan } from './black-hole.constants';
 
 export interface LandmarkConfig {
     behind: number;
@@ -28,11 +18,6 @@ export interface Landmark {
     half: number;
     drawDistance: number;
     yaw: number;
-}
-
-export function parseBlackHole( params: URLSearchParams ): BlackHolePlacement | null {
-    const value = params.get( BLACK_HOLE_PARAM );
-    return BLACK_HOLE_PLACEMENTS.find( ( p ) => p === value ) ?? null;
 }
 
 export function tierPlan( tier: QualityTier, reducedMotion: boolean ): TierPlan {
