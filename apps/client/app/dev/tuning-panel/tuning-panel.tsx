@@ -191,6 +191,26 @@ export function TuningPanel() {
         cool: numberControl( 'Meteor.cool' ),
     } );
 
+    useControls( 'BlackHole', {
+        radius: numberControl( 'BlackHole.radius' ),
+        minAngle: numberControl( 'BlackHole.minAngle' ),
+        side: numberControl( 'BlackHole.side' ),
+        height: numberControl( 'BlackHole.height' ),
+        behind: numberControl( 'BlackHole.behind' ),
+        pitch: numberControl( 'BlackHole.pitch' ),
+        roll: numberControl( 'BlackHole.roll' ),
+        distance: numberControl( 'BlackHole.distance' ),
+        brightness: numberControl( 'BlackHole.brightness' ),
+        speed: numberControl( 'BlackHole.speed' ),
+        doppler: numberControl( 'BlackHole.doppler' ),
+        lens: numberControl( 'BlackHole.lens' ),
+        edge: numberControl( 'BlackHole.edge' ),
+        parallax: numberControl( 'BlackHole.parallax' ),
+        deep: colorControl( 'BlackHole.deep' ),
+        mid: colorControl( 'BlackHole.mid' ),
+        hot: colorControl( 'BlackHole.hot' ),
+    } );
+
     useControls( 'Break', {
         speed: numberControl( 'Break.speed' ),
         up: numberControl( 'Break.up' ),
