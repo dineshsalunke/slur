@@ -21,6 +21,8 @@ import {
     MAX_SPEED,
     MIN_SPEED,
     PIT_DEPTH,
+    PIT_STEP,
+    PIT_TRIES,
     SCAN,
     SHAKE_REACH,
     SHAKE_SIZE,
@@ -76,7 +78,11 @@ export function launch( d: Director, s: Strike, at: Impact, now: number ): void 
     if ( ! f ) return;
     const speed = num( 'Meteor.speed' );
     const flight = num( 'Meteor.flight' );
-    const floor = d.ground.floor( at.x, at.z, 60 );
+    let floor = d.ground.floor( at.x, at.z, 60 );
+    for ( let k = 0; k < PIT_TRIES && floor === Number.NEGATIVE_INFINITY; k++ ) {
+        at.z += PIT_STEP;
+        floor = d.ground.floor( at.x, at.z, 60 );
+    }
     f.live = true;
     f.landed = false;
     f.t0 = now;
