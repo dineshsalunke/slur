@@ -19,6 +19,7 @@ const material = new THREE.ShaderMaterial( {
 const quad = new FullScreenQuad( material );
 
 const band = {
+    renderer: null as THREE.WebGLRenderer | null,
     target: null as THREE.WebGLRenderTarget | null,
     source: null as THREE.Texture | null,
     color: '',
@@ -26,9 +27,11 @@ const band = {
     height: Number.NaN,
 };
 
-function targetFor( width: number, height: number ): THREE.WebGLRenderTarget {
-    if ( band.target && band.target.width === width && band.target.height === height ) return band.target;
+function targetFor( renderer: THREE.WebGLRenderer, width: number, height: number ): THREE.WebGLRenderTarget {
+    const same = band.renderer === renderer;
+    if ( same && band.target && band.target.width === width && band.target.height === height ) return band.target;
     band.target?.dispose();
+    band.renderer = renderer;
     const target = new THREE.WebGLRenderTarget( width, height, {
         type: THREE.HalfFloatType,
         depthBuffer: false,
@@ -48,7 +51,7 @@ export function bandedEnvironment( renderer: THREE.WebGLRenderer, source: THREE.
     if ( source === null || ! ( intensity > 0 ) ) return source;
 
     const image = source.image as { width: number; height: number };
-    const target = targetFor( image.width, image.height );
+    const target = targetFor( renderer, image.width, image.height );
     const color = col( 'Accent.color' );
     const height = num( 'Environment.bandHeight' );
     if ( band.source === source && band.color === color && band.intensity === intensity && band.height === height ) {
