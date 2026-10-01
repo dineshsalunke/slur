@@ -100,6 +100,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 ## Rendering & React
 - [useFrame order is subscribe time](useframe-order-is-subscribe-time.md) — mount order, not JSX order
 - [Removing the composer blacks the canvas](removing-the-composer-blacks-the-canvas.md) — SceneEffects owns render since ea385b6
+- [Module GPU caches key on renderer](module-gpu-caches-must-key-on-renderer.md) — 2nd canvas got black env (#400)
 - [Suspense escaping a Canvas kills it](suspense-escaping-a-canvas-kills-it.md) — Suspense inside every Canvas
 - [R3F disposes only the object](r3f-disposes-only-the-object.md) — free prop geometry in ref cleanup
 - [InstancedMesh footguns](instanced-mesh-footguns.md) — geometry prop; shared buffers; bounds; audit
