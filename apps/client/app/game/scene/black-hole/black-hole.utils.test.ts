@@ -3,7 +3,7 @@ import { DRAW_MAX, TIER_PLAN } from './black-hole.constants';
 import { type Landmark, type LandmarkConfig, parseBlackHole, placeLandmark, tierPlan } from './black-hole.utils';
 import { hash31, noiseVolumeData } from './black-hole-noise.utils';
 
-const CFG: LandmarkConfig = { behind: 400, height: 150, radius: 900, minAngle: 7, parallax: 1 };
+const CFG: LandmarkConfig = { behind: 400, height: 150, radius: 900, minAngle: 7, side: 0, parallax: 1 };
 
 function fresh(): Landmark {
     return { visible: false, x: 0, y: 0, z: 0, half: 0, drawDistance: 0, yaw: 0 };
@@ -52,6 +52,15 @@ describe( 'black hole landmark placement', () => {
         expect( out.z ).toBeCloseTo( 8800, 6 );
         expect( out.y ).toBeCloseTo( CFG.height, 6 );
         expect( out.x ).toBeCloseTo( 0, 6 );
+    } );
+
+    it( 'holds a fixed bearing to screen right', () => {
+        const cfg = { ...CFG, side: 20 };
+        const tan = Math.tan( 20 * ( Math.PI / 180 ) );
+        for ( const camZ of [ 0, 4200, 8000 ] ) {
+            const out = placeLandmark( 0, 5, camZ, 8400, cfg, fresh() );
+            expect( -out.x / ( out.z - camZ ) ).toBeCloseTo( tan, 6 );
+        }
     } );
 
     it( 'hides once the ship is past it', () => {

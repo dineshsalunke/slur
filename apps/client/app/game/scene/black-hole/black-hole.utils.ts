@@ -16,6 +16,7 @@ export interface LandmarkConfig {
     height: number;
     radius: number;
     minAngle: number;
+    side: number;
     parallax: number;
 }
 
@@ -55,7 +56,7 @@ export function placeLandmark(
     const angle = Math.max( cfg.radius / distance, Math.tan( cfg.minAngle * DEG ) );
     out.drawDistance = drawDistance;
     out.half = angle * drawDistance;
-    out.x = camX - camX * k;
+    out.x = camX - camX * k - Math.tan( cfg.side * DEG ) * drawDistance;
     out.y = camY + ( cfg.height - camY ) * k;
     out.z = camZ + drawDistance;
     out.yaw = cfg.parallax * Math.atan2( camX, distance );

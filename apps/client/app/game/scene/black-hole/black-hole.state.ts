@@ -118,7 +118,7 @@ export function createBlackHole( plan: TierPlan, finishZ: number, backdrop: THRE
         time: 0,
         shaded: false,
         tuning: -1,
-        config: { behind: 0, height: 0, radius: 0, minAngle: 0, parallax: 0 },
+        config: { behind: 0, height: 0, radius: 0, minAngle: 0, side: 0, parallax: 0 },
         landmark: { visible: false, x: 0, y: 0, z: 0, half: 0, drawDistance: 0, yaw: 0 },
     };
 }
@@ -167,6 +167,7 @@ function syncTuning( hole: BlackHole ): void {
     c.height = num( 'BlackHole.height' );
     c.radius = num( 'BlackHole.radius' );
     c.minAngle = num( 'BlackHole.minAngle' );
+    c.side = num( 'BlackHole.side' );
     c.parallax = num( 'BlackHole.parallax' );
 }
 
