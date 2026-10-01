@@ -1,4 +1,4 @@
-Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-09-30 (seam 19 — context warning at ~155k)
+Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-10-01 (seam 20 — context warning at ~155k)
 
 ## Goal
 
@@ -14,86 +14,66 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 - OWNER RULE: the worker who fixes an issue closes it with a SHA comment. Put it in every lane brief.
 - OWNER RULE: the owner tests everything on /test-level. Every brief says so.
 - OWNER RULE: never ask about an issue by number alone (title + one line).
-- OWNER RULE (2026-09-30): every Agent-tool subagent runs with `model: "sonnet"` (memory
-  subagents-run-on-sonnet.md). Put it in every brief.
+- OWNER RULE (2026-09-30): every Agent-tool subagent runs with `model: "sonnet"`. Put it in every brief.
 - ONLY THE OWNER DEPLOYS: `! docker desktop start && ./scripts/deploy.sh`.
-- Pushes: workers push their own green commits. The owner told the supervisor to push doc commits and,
-  on 2026-09-30, to push F2.
+- Pushes: workers push their own green commits. The supervisor pushes doc commits.
 - Prod: https://slur.kurmah.studio. do-setup owns infra.
 - Look (#364 254d267): HDRI cyclorama_hard_light 1k, Environment.rotation 210, intensity 1, Metal + Hull
   baseColor #232324, Neutral tone mapping exposure 1.
 - KEY LAYOUT (#368, ADR-032): ↑/↓ throttle/brake, ←/→ strafe, Space jump, E fire fwd, D fire back, S/F
   prev/next slot, X drop, M mute, Esc.
-- RFC-349 §8 Q1–Q10 all answered (see RFC §8). F3 = GO (2026-09-30): F4 one feature per stage, bolt
-  first, then seeker, mine, boost, shield, portal — file one issue per stage when it starts.
-- Schema reorder exception for F-stage moves added (6ab55397), rules/features.md + conventions/features.md.
+- RFC-349 F3 = GO: F4 one feature per stage, bolt, seeker, mine, boost, shield, portal. One issue per stage.
+- Pillars stay identical (ADR-018). Owner closed #396 (per-pillar sizes) 2026-10-01 "for now".
+- Black hole look approved 2026-10-01: side 28, minAngle 18, radius 900. No lift dial. No spectator shake.
 
-## Done this seam
+## Done this seam (2026-09-30 → 10-01)
 
-- Issues closed 2026-09-30 (owner): #348 (superseded by #368), #345, #369, #337, #338, #339, #340, #341.
-- Doc audits (Sonnet agents): `.claude/reports/GDD-DEVIATIONS.md` (6 open, 3 resolved),
-  `TDD-DEVIATIONS.md` (12, first audit), `ADD-DEVIATIONS.md` (9) — ae7b6f6c. Nearly all are doc moves.
-- Filed #392 (meteor strikes land near the player), #393 (meteor deck reflection lingers), #394 (port
-  vgpu black hole, plan first), #395 (F4a bolt).
-- F2 #390 f4e78880 pushed with 6ce35c5d, 66a90ae4; rule exception 6ab55397 pushed.
+- #395 F4a bolt landed 85365ecc (workerone, closed). Central 34 → 29; ≤2 not met (D7).
+- #393 meteor flash lingers 745fc30b · #392 meteor lands near player 7a90abc6 · #398 meteor shake
+  c8d31137 (peak roll median 0.12° → 0.88°; pit strikes step onto deck) — workertwo, all closed.
+- #394 black hole prototype 84be557c, bigger + right f7d996d0/1419038d, panel dials e5a6232e — closed
+  by supervisor on owner sign-off. #399 into WorldScene, ?blackhole removed, refine hitch 22 → 13 ms
+  76426500 — workerthree, closed.
+- #396 monolith size variation filed, then closed not-planned (conflicts ADR-018).
+- #397 F4b seeker filed; owner approved S1–S6 as recommended (comment on #397).
+- #400 hosted room renders near-black filed.
 
 ## RFC-349 stages
 
 | Stage | Issue | State |
 |---|---|---|
-| S0–S3 S8 S10 S10b S14–S20, F1 | various | landed (RFC §7) |
-| F2 tug pilot | #390 | landed f4e78880. Central tug files 19 → 8 (D2/D3 keep 6). simulate() within noise. Draws 74. workerone told to close #390 |
-| F3 | — | GO 2026-09-30 |
-| F4a bolt | #395 | ASSIGNED workerone (claim list pending) |
-| F4b… seeker, mine, boost, shield, portal | — | one issue each, in order |
+| F2 tug | #390 | landed f4e78880 |
+| F4a bolt | #395 | landed 85365ecc |
+| F4b seeker | #397 | BUILDING workerone. Shared half done (it broke /test-level once mid-move; fixed, dist rebuilt). Client half next, leaf-first |
+| F4c… mine, boost, shield, portal | — | one issue each, in order |
 | S4/S5, S6 (closes #70), S12 | — | not filed; S4/S5/S7 touch attach-room-to-world.ts → sequence around F4 |
-| S21 | — | deferred (Q10) |
-| RFC §7 rows | — | F2 row + §3.8 updated by workerone in f4e78880 (verify); add F3 GO + F4a rows |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #397 F4b seeker — PLAN ONLY (F4a #395 landed 85365ecc, closed) | cleared + resumed 2026-09-30 | claim list pending |
-| workertwo | w2Z:p3 | #392 meteor land near player (#393 landed 745fc30b, closed) | cleared + resumed, building | meteor-schedule.ts + test, meteor-strikes/*, tuning-schema.ts 'Meteor.ahead' line |
-| workerthree | w2Z:p5 | #394 black hole prototype landed 84be557c, open for owner look | cleared + resumed, idle | game/scene/black-hole/** |
+| workerone | w2Z:p2 | #397 F4b seeker | building | shared features/seeker/**, combat/{target-lock,constants,power-bag,mine}.ts + tests, run/{combat,portal-run}.ts, schema.ts, sim-config.ts, index.ts, features/registry*, features/tug/*; client features/seeker/**, scene/pickup-layout/, client-features.ts, define-client-feature.ts, net-hud.tsx, net-canvas.tsx, pickup-field.tsx, glyph-atlas.ts, ecs/traits.ts, attach-room-to-world.ts, tests |
+| workertwo | w2Z:p3 | #400 dark hosted room | CLEARED to fix | env-band/env-band.state.ts |
+| workerthree | w2Z:p5 | — | cleared + resumed, idle | none |
 | do-setup | w2Z:p4 | infra | idle | — |
+
+## #400 cause (workertwo, measured)
+
+`env-band.state.ts` caches its band render target in a module object across WebGL contexts. The first
+canvas (landing) draws it. The next canvas gets a cache hit and an undrawn texture → black env → black
+deck/rocks/hull. Repro: `/test-level` direct = lit; `/` → navigate `/test-level` = black. Fix approved:
+renderer in the cache key, dispose and rebuild. Prod likely affected [inferred] → owner deploys after.
 
 ## Open owner items
 
-00. #396 monolith size variation (owner ask 2026-09-30) — ON HOLD: reverses f9248efa / ADR-018 and
-    `docs/ADD.md` §4 "one identical square column". Owner picks: vary pillars again (new ADR + ADD
-    edit) or put variety on other props. Then assign (workerthree idle).
-01. #394 black hole look: defaults (height 150, radius 900, minAngle 7°)? keep lensed nebula? file the
-    hosted-room follow-up?
-
-0a. F4a #395 bolt — ANSWERED 2026-09-30: owner accepted all four picks; workerone told to build (also on
-    #395 as a comment). Bolt stays first. The picks:
-    D4 PowerSpec `bagRest: true` (bags bit-equal) · D5 fixed hook `run.strike` where stepBolts runs
-    (bit-equal) · D6 keep `projectiles` in RunState this stage · D7 shared streak/ember/BOLT_* palette/
-    block-shake/sfx stay central (central count 36 → ~18–22 inferred). Supervisor recommends all four.
-    Also offered: start F4 with a simpler feature (shield/boost); supervisor leans bolt first.
-0b. ANSWERED 2026-09-30: P2 finish line · COLD tint · CREDITS ok · low still ok. workerthree (14% at
-    brief — will seam soon) building the /test-level?blackhole=finish prototype. CLAIM CLEARED: new
-    game/scene/black-hole/**, routes/test-level/route.tsx, test-level-canvas.tsx, dev/tuning-schema.ts
-    (one additive BlackHole block; sequence if workertwo claims it), CREDITS.md.
-    #394 black hole plan: `.claude/phases/2026-09-30-black-hole-plan.md` (87dd59db). Recommended
-    option A (GLSL port, baked geodesic G-buffer, shaded in prerender into a fixed-size target, drawn
-    on a quad; our bloom/tone map). MIT (Vercel). WebGL2 only. Budget high ≤0.6 ms, medium ≤0.25,
-    low = frozen still [unmeasured]. Owner questions: placement (P1 landing hero · P2 finish landmark
-    [worker pick] · P3 race sky · P4 portal) · colour (warm ramp · marigold tint · greyscale) ·
-    CREDITS.md "Code" section ok? · low tier frozen still ok? workerthree idle, holds no files.
-
-1. Exhaust blue tail: workerthree's probe found no blue in any view (handover 66a90ae4). Owner to say
-   where it shows and whether Exhaust leva values were changed. Candidate fixes: Exhaust.hot #fff1dc →
-   ~#ffd9a0, Exhaust.heat 1 → 2–3.
-2. Audit follow-up: file one docs issue per doc (GDD, TDD, ADD) and give the fixes a lane. ADD blocker:
-   `docs/ADD.md:114` says pillars are "one identical square column, repeated in mirrored pairs", but
-   568c523 made them vary — owner picks doc or code.
-3. New-issue list from the 2026-09-30 triage still awaits the owner: RFC S4/S5/S6/S12 issues; vertical-reach
-   validator; four art issues (lighting to golden reference, track deck/wear, Split Crown, block art).
-4. Keep-open issues waiting on owner: #344 (real phone test), #300 S4 (on hold), #70 (→ S6).
-5. Older: S19/S20/#389/#375 owner checks; #14 reconnection Q1/Q2; #16; #312/#313 unassigned.
+1. #400: after the fix lands, the owner should check a hosted room and decide on a deploy.
+2. First-use black hole shader compile: one ~20–29 ms frame at mount; `renderer.compileAsync` candidate
+   [untested]. Not filed.
+3. workerone's optional idea: give the 22 D7 client files neutral names to reach the ≤2 central target.
+4. Exhaust blue tail (handover 66a90ae4): owner to say where it shows.
+5. Audit follow-up: one docs issue per doc (GDD, TDD, ADD). The ADD pillar line now matches the code.
+6. Triage list still waiting: RFC S4/S5/S6/S12 issues; vertical-reach validator; four art issues.
+7. Keep-open issues waiting on owner: #344, #300 S4, #70. Older: #14 Q1/Q2, #16, #312/#313.
 
 ## Uncommitted
 
@@ -101,12 +81,10 @@ None of mine.
 
 ## Next
 
-1. Answer workerone's and workertwo's claim lists (check for overlap: bolt files vs meteor/reflection).
-2. Relay workerthree's #394 plan to the owner when it lands.
-3. When #393/#392 land, remind the owner to check on /test-level.
-4. Fix `.claude/backlog.md` stale lines (#311 done; S7 line merged into S6 paragraph) when filing the
-   owner-approved issues.
+1. Wait for workertwo's #400 report; verify the push; tell the owner how to check and that prod needs a deploy.
+2. Wait for workerone's #397 landing; verify; file F4c (mine) and get a plan from workerone.
+3. workerthree is free: offer the owner a lane (the shader compile hitch, or a triage item).
 
 ## Lessons → memory
 
-subagents-run-on-sonnet.md (ae7b6f6c).
+none (the env-band cross-context cache is workertwo's to record).
