@@ -16,7 +16,10 @@ Idle. Waiting for the next lane from slur-supervisor.
 - First-use shader compile still costs one ~20–29 ms lens frame at mount, inside page-load jank. Not fixed.
   `renderer.compileAsync` is the candidate (three 0.185 has it) [untested].
 - The hosted-room deck and rocks render far darker than on /test-level, with or without the hole.
-  Pre-existing; not reported as an issue.
+  Re-checked with the tier forced on both (`?quality=high` + `slur:quality`): both read `high/flag` from
+  `quality()`, and hosted is still dark (scratchpad `bh/ab-test-level.png`, `bh/ab-hosted.png`, driver
+  `bh/tierab.mjs`). No test-level-only lights exist; both mount the same `SceneEnvironment`. Cause unknown.
+  The supervisor is asking the owner about an issue.
 - Drivers in scratchpad `bh/`: `after.mjs` (STUB, REBAKE, TIERS, MODES env), `hosted.mjs`, `panel.mjs`.
 
 ## Uncommitted
@@ -29,7 +32,8 @@ none
 1. Wait for a lane from slur-supervisor.
 
 ## Open questions
-- Supervisor: should the dark hosted-room deck get an issue?
+- Owner (via supervisor): should the dark hosted-room deck get an issue? A first lead to check is whether
+  `scene.environment` is set or kept on the `/game/:roomId` path [unmeasured].
 
 ## Lessons → memory
 .claude/memory/tag-frames-by-shader-program.md
