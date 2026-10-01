@@ -9,6 +9,7 @@ Port the vgpu black hole (option A) as a finish-line landmark with a cold tint, 
 - `BlackHole.side` dial (schema): 6c7dfcab. Defaults minAngle 7→18, side 0→28: 1419038d.
 - Placement uses the side bearing (`black-hole.utils.ts` `placeLandmark`), plus a test: f7d996d0.
 - #394 comment with before/after numbers: issuecomment-5924260377.
+- Tuning panel BlackHole folder (all 14 numbers + 3 colours): e5a6232e. Verified headless: side 28→−28 moves the hole right→left of the start pillar. #394 comment: issuecomment-5924381009.
 
 ## State
 - side = degrees right of the track axis at a fixed bearing. The camera looks +z, so screen-right is world −x.
@@ -29,6 +30,7 @@ none
 ## Held files
 - apps/client/app/game/scene/black-hole/** (until the owner's look verdict)
 - BlackHole lines in apps/client/app/dev/tuning-schema.ts (committed; release on verdict)
+- BlackHole block in apps/client/app/dev/tuning-panel/tuning-panel.tsx (a future `lift` dial goes there too)
 
 ## Next
 1. Wait for the owner's verdict via slur-supervisor. Tune only through `BlackHole.*` dials.
