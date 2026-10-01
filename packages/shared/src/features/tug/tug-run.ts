@@ -1,5 +1,5 @@
 import type { FireDir } from '../../combat/fire-dir.js';
-import { seekerShipsOf } from '../../combat/seeker.js';
+import { targetShipsOf } from '../../combat/target-lock.js';
 import type { PlayerState } from '../../schema.js';
 import type { RunContext } from '../define-sim-feature.js';
 import { catapult, reel, slowTarget, type TugEvent, throwSeconds, towTarget, tugTarget } from './tug.js';
@@ -25,7 +25,7 @@ export function fireTug(
     _slot: number,
     dir: FireDir,
 ): boolean {
-    const ships = seekerShipsOf( ctx.state.players.entries() );
+    const ships = targetShipsOf( ctx.state.players.entries() );
     const target = tugTarget( p, ownerId, ships, ctx.track, ctx.broken, ctx.config, dir );
     if ( target === null ) return false;
     if ( target.kind === 'block' ) {

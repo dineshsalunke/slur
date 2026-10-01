@@ -19,6 +19,13 @@ import {
     MINE_TTL,
     PICKUP_GRAB_R,
     PICKUP_RESPAWN_S,
+    SHIELD_RATIO,
+    SHIELD_S,
+    STUN_SECONDS,
+} from './combat/constants.js';
+import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
+import { BOLT_HALF, BOLT_SPEED, BOLT_TTL } from './features/bolt/bolt-constants.js';
+import {
     SEEKER_DROP_RATE,
     SEEKER_FLY_Y,
     SEEKER_HALF,
@@ -38,12 +45,7 @@ import {
     SEEKER_WINDOW_S,
     SEEKER_WINDOW_U,
     type SeekerWindowMode,
-    SHIELD_RATIO,
-    SHIELD_S,
-    STUN_SECONDS,
-} from './combat/constants.js';
-import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
-import { BOLT_HALF, BOLT_SPEED, BOLT_TTL } from './features/bolt/bolt-constants.js';
+} from './features/seeker/seeker-constants.js';
 import {
     SLOW_CAP,
     TOW_JUMP,

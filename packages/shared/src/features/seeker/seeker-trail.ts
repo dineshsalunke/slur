@@ -1,4 +1,4 @@
-import type { SimConfig } from '../sim-config.js';
+import type { SimConfig } from '../../sim-config.js';
 
 interface Trail {
     zs: number[];

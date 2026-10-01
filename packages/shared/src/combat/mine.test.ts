@@ -15,11 +15,11 @@ import {
     type ProjectileState,
     pickupPower,
     SEG_LEN,
-    type SeekerShip,
     type Segment,
     type SimConfig,
     stepBolts,
     stepMines,
+    type TargetShip,
     type Track,
     tuningForShip,
 } from '../index.js';
@@ -62,7 +62,7 @@ function laid( x: number, z: number, ownerId = 'owner', t = track() ): MineState
     return m;
 }
 
-function ship( id: string, over: Partial< SeekerShip > = {} ): SeekerShip {
+function ship( id: string, over: Partial< TargetShip > = {} ): TargetShip {
     return {
         id,
         x: 0,
@@ -78,7 +78,7 @@ function ship( id: string, over: Partial< SeekerShip > = {} ): SeekerShip {
     };
 }
 
-function run( mines: Map< string, MineState >, ships: SeekerShip[], seconds: number ): MineEvent[] {
+function run( mines: Map< string, MineState >, ships: TargetShip[], seconds: number ): MineEvent[] {
     const events: MineEvent[] = [];
     for ( let t = 0; t < seconds - 1e-9; t += FIXED_DT ) stepMines( mines, ships, FIXED_DT, ( e ) => events.push( e ) );
     return events;
@@ -198,7 +198,7 @@ function bolt( z: number, ownerId = 'shooter', dir = 1 ): ProjectileState {
 function fire(
     b: ProjectileState,
     mines: Map< string, MineState >,
-    ships: SeekerShip[] = [],
+    ships: TargetShip[] = [],
     t = track(),
 ): { strikes: string[]; mines: MineEvent[]; bolts: number } {
     const bolts = new Map( [ [ 'b', b ] ] );

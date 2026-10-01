@@ -14,7 +14,6 @@ import {
     SEG_LEN,
     type SeekerEvent,
     type SeekerOutcome,
-    type SeekerShip,
     type SeekerState,
     type Segment,
     SHIP_CLASSES,
@@ -22,8 +21,9 @@ import {
     seekerTopSpeed,
     stepSeeker,
     stepSeekers,
+    type TargetShip,
     type Track,
-} from '../index.js';
+} from '../../index.js';
 
 function block( seg: number, x0: number, x1: number ): Block {
     return {
@@ -53,7 +53,7 @@ function trackWith( blocks: Block[] ): Track {
 
 const OPEN = trackWith( [] );
 
-function ship( id: string, over: Partial< SeekerShip > = {} ): SeekerShip {
+function ship( id: string, over: Partial< TargetShip > = {} ): TargetShip {
     return {
         id,
         x: 0,
@@ -75,9 +75,9 @@ function launched( targetId: string, over: Partial< SeekerState > = {}, cfg = DE
     return Object.assign( s, over );
 }
 
-type Strafe = ( seeker: SeekerState, target: SeekerShip ) => number;
+type Strafe = ( seeker: SeekerState, target: TargetShip ) => number;
 
-function fly( seeker: SeekerState, target: SeekerShip, strafe: Strafe, cfg = DEFAULT_SIM_CONFIG ): SeekerOutcome {
+function fly( seeker: SeekerState, target: TargetShip, strafe: Strafe, cfg = DEFAULT_SIM_CONFIG ): SeekerOutcome {
     for ( let i = 0; i < 60 * 10; i++ ) {
         target.z += target.vz * FIXED_DT;
         target.x += strafe( seeker, target ) * FIXED_DT;
@@ -100,8 +100,30 @@ test( 'lock picks the nearest living racer ahead within range', () => {
         ship( 'watching', { z: 14, spectating: true } ),
         ship( 'beyond', { z: DEFAULT_SIM_CONFIG.seekerLockRange + 1 } ),
     ];
-    assert.equal( lockTarget( { x: 0, z: 0 }, 'me', ships, OPEN, new Set() ), 'near' );
-    assert.equal( lockTarget( { x: 0, z: 0 }, 'me', [ ships[ 0 ], ships[ 1 ] ], OPEN, new Set() ), '' );
+    assert.equal(
+        lockTarget(
+            { x: 0, z: 0 },
+            'me',
+            ships,
+            OPEN,
+            new Set(),
+            DEFAULT_SIM_CONFIG.seekerLockRange,
+            DEFAULT_SIM_CONFIG.seekerHalf,
+        ),
+        'near',
+    );
+    assert.equal(
+        lockTarget(
+            { x: 0, z: 0 },
+            'me',
+            [ ships[ 0 ], ships[ 1 ] ],
+            OPEN,
+            new Set(),
+            DEFAULT_SIM_CONFIG.seekerLockRange,
+            DEFAULT_SIM_CONFIG.seekerHalf,
+        ),
+        '',
+    );
 } );
 
 test( 'a back lock picks the nearest living racer behind and ignores the racers ahead', () => {
@@ -114,8 +136,23 @@ test( 'a back lock picks the nearest living racer behind and ignores the racers 
         ship( 'dead', { z: 490, dead: true } ),
         ship( 'beyond', { z: 500 - cfg.seekerLockRange - 1 } ),
     ];
-    assert.equal( lockTarget( { x: 0, z: 500 }, 'me', ships, OPEN, new Set(), cfg, -1 ), 'near' );
-    assert.equal( lockTarget( { x: 0, z: 500 }, 'me', [ ships[ 0 ], ships[ 1 ] ], OPEN, new Set(), cfg, -1 ), '' );
+    assert.equal(
+        lockTarget( { x: 0, z: 500 }, 'me', ships, OPEN, new Set(), cfg.seekerLockRange, cfg.seekerHalf, -1 ),
+        'near',
+    );
+    assert.equal(
+        lockTarget(
+            { x: 0, z: 500 },
+            'me',
+            [ ships[ 0 ], ships[ 1 ] ],
+            OPEN,
+            new Set(),
+            cfg.seekerLockRange,
+            cfg.seekerHalf,
+            -1,
+        ),
+        '',
+    );
 } );
 
 test( 'a seeker fired back launches behind the shooter from rest and ramps to top speed toward -z', () => {
@@ -162,8 +199,30 @@ test( 'a standing block hides a racer; a broken one does not', () => {
     const wall = block( 5, -4, 4 );
     const track = trackWith( [ wall ] );
     const ships = [ ship( 'hidden', { z: 200 } ), ship( 'clear', { x: 20, z: 300 } ) ];
-    assert.equal( lockTarget( { x: 0, z: 0 }, 'me', ships, track, new Set() ), 'clear' );
-    assert.equal( lockTarget( { x: 0, z: 0 }, 'me', ships, track, new Set( [ wall.id ] ) ), 'hidden' );
+    assert.equal(
+        lockTarget(
+            { x: 0, z: 0 },
+            'me',
+            ships,
+            track,
+            new Set(),
+            DEFAULT_SIM_CONFIG.seekerLockRange,
+            DEFAULT_SIM_CONFIG.seekerHalf,
+        ),
+        'clear',
+    );
+    assert.equal(
+        lockTarget(
+            { x: 0, z: 0 },
+            'me',
+            ships,
+            track,
+            new Set( [ wall.id ] ),
+            DEFAULT_SIM_CONFIG.seekerLockRange,
+            DEFAULT_SIM_CONFIG.seekerHalf,
+        ),
+        'hidden',
+    );
 } );
 
 test( 'line of sight passes beside a block and fails through it', () => {

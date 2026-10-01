@@ -7,9 +7,9 @@ import {
     DEFAULT_SIM_CONFIG,
     HALF_WIDTH,
     SEG_LEN,
-    type SeekerShip,
     type Segment,
     spawnShip,
+    type TargetShip,
     type Track,
 } from '../../index.js';
 import { blockAnchor, catapult, reel, throwSeconds, tugTarget } from './tug.js';
@@ -35,7 +35,7 @@ function trackWith( blocks: Block[] ): Track {
     return { finishZ: 1e9, segmentAt: seg, segmentAtZ: ( z ) => seg( Math.floor( z / SEG_LEN ) ), anchors: [] };
 }
 
-function ship( id: string, z: number, x = 0 ): SeekerShip {
+function ship( id: string, z: number, x = 0 ): TargetShip {
     return { id, x, y: 0, z, vz: 55, halfW: 1.3, halfL: 1.26, dead: false, spectating: false, finished: false };
 }
 

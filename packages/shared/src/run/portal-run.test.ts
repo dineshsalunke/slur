@@ -1,13 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import {
-    HeldPower,
-    PORTAL_FIZZLE_MESSAGE,
-    PORTAL_HOP_MESSAGE,
-    type PortalHopMessage,
-    SEEKER_MISS_MESSAGE,
-} from '../combat/constants.js';
+import { HeldPower, PORTAL_FIZZLE_MESSAGE, PORTAL_HOP_MESSAGE, type PortalHopMessage } from '../combat/constants.js';
 import { FIXED_DT } from '../constants.js';
+import { SEEKER_MISS_MESSAGE } from '../features/seeker/seeker.feature.js';
 import { PHASE } from '../race/director.js';
 import { PlayerState, Portal, RunState, Seeker } from '../schema.js';
 import { tuningForShip } from '../ship-classes.js';

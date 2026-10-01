@@ -4,16 +4,14 @@ import {
     HIT_MESSAGE,
     type HitMessage,
     MINE_BURST_MESSAGE,
-    SEEKER_HIT_MESSAGE,
-    SEEKER_MISS_MESSAGE,
     SHIELD_POP_MESSAGE,
 } from '../combat/constants.js';
 import type { FireDir } from '../combat/fire-dir.js';
 import { aimMine, evictOldest, type MineEvent, mineFizzle, stepMines } from '../combat/mine.js';
 import type { Pickup } from '../combat/pickups.js';
-import { aimSeeker, lockTarget, type SeekerEvent, seekerShipsOf, stepSeekers } from '../combat/seeker.js';
 import { absorbHit, dropShield, raiseShield, stepShield } from '../combat/shield.js';
-import { Mine, type PlayerState, type RunState, Seeker } from '../schema.js';
+import { targetShipsOf } from '../combat/target-lock.js';
+import { Mine, type PlayerState, type RunState } from '../schema.js';
 import { stunDurationForShip, tuningForShip } from '../ship-classes.js';
 import type { Track } from '../sim/space.js';
 import type { SimConfig } from '../sim-config.js';
@@ -46,8 +44,7 @@ export function firePower(
     const power = powerIn( p, slot );
     if ( isPortalPower( power ) ) return placePortal( ctx, p, ownerId, slot, dir );
     spendPower( p, slot );
-    if ( power === HeldPower.seeker ) fireSeeker( ctx, id, p, ownerId, dir );
-    else if ( power === HeldPower.mine ) layMine( ctx, id, p, ownerId, dir );
+    if ( power === HeldPower.mine ) layMine( ctx, id, p, ownerId, dir );
     else if ( power === HeldPower.boost ) startBoost( p, ctx.config );
     else if ( power === HeldPower.shield ) raiseShield( p, ctx.config.shieldS );
     return null;
@@ -60,24 +57,14 @@ export function shieldAbsorbs( v: PlayerState, at: HitMessage, broadcast: Broadc
 }
 
 export function stepCombat( ctx: CombatContext, dt: number, strike: ( dt: number ) => void = () => {} ): void {
-    const { state, track, broken, config, broadcast } = ctx;
+    const { state, broken, config, broadcast } = ctx;
     state.players.forEach( ( p ) => {
         if ( p.dead ) dropShield( p );
         else stepShield( p, dt );
     } );
     const onMine = ( event: MineEvent ) => resolveMineEvent( state, event, broadcast, config );
     strike( dt );
-    const seekerShips = seekerShipsOf( state.players.entries() );
-    stepSeekers(
-        state.seekers,
-        seekerShips,
-        track,
-        broken,
-        dt,
-        ( event ) => resolveSeekerEvent( state, event, broadcast, config ),
-        config,
-    );
-    stepMines( state.mines, seekerShips, dt, onMine, config );
+    stepMines( state.mines, targetShipsOf( state.players.entries() ), dt, onMine, config );
     stepPortals( state, dt );
     stepPickups( state.players.values(), ctx.pickups, state.pickupTaken, ctx.pickupRespawn, dt, config );
     mirrorBreaks( state, broken );
@@ -89,14 +76,6 @@ function mirrorBreaks( state: RunState, broken: ReadonlySet< number > ): void {
         const key = String( id );
         if ( ! state.blockBroken.has( key ) ) state.blockBroken.set( key, true );
     }
-}
-
-function fireSeeker( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {
-    const ships = seekerShipsOf( ctx.state.players.entries() );
-    const targetId = lockTarget( p, ownerId, ships, ctx.track, ctx.broken, ctx.config, dir );
-    const seeker = new Seeker();
-    aimSeeker( seeker, p, ownerId, targetId, ctx.config, dir );
-    ctx.state.seekers.set( id, seeker );
 }
 
 function layMine( ctx: FireContext, id: string, p: PlayerState, ownerId: string, dir: FireDir ): void {
@@ -120,26 +99,4 @@ export function resolveMineEvent( state: RunState, event: MineEvent, broadcast: 
         broadcast( HIT_MESSAGE, { x, y, z, victimId } );
     }
     broadcast( MINE_BURST_MESSAGE, event );
-}
-
-export function resolveSeekerEvent(
-    state: RunState,
-    event: SeekerEvent,
-    broadcast: Broadcast,
-    config: SimConfig,
-): void {
-    const { x, y, z } = event;
-    if ( event.outcome === 'miss' ) {
-        broadcast( SEEKER_MISS_MESSAGE, event );
-        return;
-    }
-    if ( event.outcome === 'blocked' ) {
-        broadcast( HIT_MESSAGE, { x, y, z, victimId: '' } );
-        return;
-    }
-    const v = state.players.get( event.targetId );
-    if ( v && shieldAbsorbs( v, { x, y, z, victimId: event.targetId }, broadcast ) ) return;
-    if ( v ) v.stunTimer = stunDurationForShip( v.shipId, config, config.seekerStunS );
-    broadcast( HIT_MESSAGE, { x, y, z, victimId: event.targetId } );
-    broadcast( SEEKER_HIT_MESSAGE, event );
 }

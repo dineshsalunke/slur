@@ -14,7 +14,6 @@ import {
     mineFizzle,
     type PlayerInput,
     SEG_LEN,
-    type SeekerShip,
     type Segment,
     SHIP_CLASSES,
     type SimShip,
@@ -22,6 +21,7 @@ import {
     spawnShip,
     stepMines,
     strafeToward,
+    type TargetShip,
     type Track,
 } from '../index.js';
 
@@ -55,7 +55,7 @@ function blank(): MineState {
     return { x: 0, y: 0, z: 0, ownerId: '', armed: false, ttl: 0 };
 }
 
-function hullOf( id: string, s: SimShip, t: FlightTuning ): SeekerShip {
+function hullOf( id: string, s: SimShip, t: FlightTuning ): TargetShip {
     return {
         id,
         x: s.x,

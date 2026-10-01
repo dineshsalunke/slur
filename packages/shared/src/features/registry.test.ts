@@ -3,10 +3,10 @@ import { test } from 'node:test';
 import { SIM_FEATURES } from './registry.js';
 import { FEATURE_POWERS, sortFeatures } from './sim-hooks.js';
 
-test( 'the registry loads first without a TDZ cycle and lists bolt and tug', () => {
+test( 'the registry loads first without a TDZ cycle and lists bolt, seeker and tug', () => {
     assert.deepEqual(
         SIM_FEATURES.map( ( f ) => f.id ),
-        [ 'bolt', 'tug' ],
+        [ 'bolt', 'seeker', 'tug' ],
     );
 } );
 
@@ -15,7 +15,7 @@ test( 'a shuffled registry sorts into the same order', () => {
     const forward = sortFeatures( ids ).map( ( f ) => f.id );
     const reversed = sortFeatures( [ ...ids ].reverse() ).map( ( f ) => f.id );
     assert.deepEqual( reversed, forward );
-    assert.deepEqual( forward, [ 'aim', 'bolt', 'mid', 'tug', 'zap' ] );
+    assert.deepEqual( forward, [ 'aim', 'bolt', 'mid', 'seeker', 'tug', 'zap' ] );
 } );
 
 test( 'a duplicate feature id throws', () => {

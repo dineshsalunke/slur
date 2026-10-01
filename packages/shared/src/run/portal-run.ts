@@ -6,11 +6,10 @@ import {
     POWER_SLOTS,
     type PortalFizzleMessage,
     type PortalHopMessage,
-    SEEKER_MISS_MESSAGE,
 } from '../combat/constants.js';
 import type { FireDir } from '../combat/fire-dir.js';
 import { type PortalSpot, placePortalEnd } from '../combat/portal.js';
-import type { SeekerEvent } from '../combat/seeker.js';
+import { SEEKER_MISS_MESSAGE, type SeekerEvent } from '../features/seeker/seeker.feature.js';
 import { type PlayerState, Portal, type RunState } from '../schema.js';
 import { tuningForShip } from '../ship-classes.js';
 import type { SimConfig } from '../sim-config.js';

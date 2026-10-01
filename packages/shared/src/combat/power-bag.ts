@@ -34,14 +34,16 @@ export function bagCounts( cfg: SimConfig = DEFAULT_SIM_CONFIG ): PowerCount[] {
         left -= share;
         return share;
     };
-    const drawn: [ HeldPower, number ][] = [
-        [ HeldPower.seeker, take( cfg.seekerRatio ) ],
-        [ HeldPower.mine, take( cfg.mineRatio ) ],
-        [ HeldPower.boost, take( cfg.boostRatio ) ],
-        [ HeldPower.shield, take( cfg.shieldRatio ) ],
-        [ HeldPower.portal, take( cfg.portalRatio ) ],
-        ...weighted().map( ( p ): [ HeldPower, number ] => [ p.kind, take( p.bagWeight( cfg ) ) ] ),
+    const weights: [ HeldPower, number ][] = [
+        [ HeldPower.mine, cfg.mineRatio ],
+        [ HeldPower.boost, cfg.boostRatio ],
+        [ HeldPower.shield, cfg.shieldRatio ],
+        [ HeldPower.portal, cfg.portalRatio ],
+        ...weighted().map( ( p ): [ HeldPower, number ] => [ p.kind, p.bagWeight( cfg ) ] ),
     ];
+    const drawn = weights
+        .sort( ( a, b ) => a[ 0 ] - b[ 0 ] )
+        .map( ( [ power, ratio ] ): [ HeldPower, number ] => [ power, take( ratio ) ] );
     const shares: [ HeldPower, number ][] = [ [ restPower(), left ], ...drawn ];
     const counts = shares.map( ( [ power, share ] ) => ( {
         power,
@@ -108,7 +110,7 @@ function featureWeightKey( cfg: SimConfig ): string {
 }
 
 export function powerBag( salt: string, index: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): readonly HeldPower[] {
-    const key = `${ salt }|${ index }|${ cfg.seekerRatio }|${ cfg.mineRatio }|${ cfg.boostRatio }|${ cfg.shieldRatio }|${ cfg.portalRatio }${ featureWeightKey( cfg ) }`;
+    const key = `${ salt }|${ index }|${ cfg.mineRatio }|${ cfg.boostRatio }|${ cfg.shieldRatio }|${ cfg.portalRatio }${ featureWeightKey( cfg ) }`;
     let bag = bags.get( key );
     if ( bag === undefined ) {
         if ( bags.size >= BAG_CACHE_LIMIT ) bags.clear();

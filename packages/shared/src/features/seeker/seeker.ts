@@ -1,9 +1,9 @@
-import { FASTEST_CRUISE, tuningForShip } from '../ship-classes.js';
-import { type Block, segIndexForZ, type Track } from '../sim/space.js';
-import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { SEEKER_SPAWN_AHEAD } from './constants.js';
-import { sweptZ } from './fire-dir.js';
-import type { HitShip } from './projectiles.js';
+import { sweptZ } from '../../combat/fire-dir.js';
+import type { TargetShip } from '../../combat/target-lock.js';
+import { FASTEST_CRUISE } from '../../ship-classes.js';
+import { type Block, segIndexForZ, type Track } from '../../sim/space.js';
+import { DEFAULT_SIM_CONFIG, type SimConfig } from '../../sim-config.js';
+import { SEEKER_SPAWN_AHEAD } from './seeker-constants.js';
 import { forgetTrail, recordTrail, trailX } from './seeker-trail.js';
 
 export interface SeekerState {
@@ -16,11 +16,6 @@ export interface SeekerState {
     ttl: number;
     committed: boolean;
     dir: number;
-}
-
-export interface SeekerShip extends HitShip {
-    vz: number;
-    finished: boolean;
 }
 
 export interface SeekerShooter {
@@ -41,106 +36,7 @@ export interface SeekerEvent {
     ownerId: string;
 }
 
-export interface SeekerRacer {
-    x: number;
-    y: number;
-    z: number;
-    vz: number;
-    shipId: string;
-    dead: boolean;
-    spectating: boolean;
-    finished: boolean;
-}
-
 const CLOSING_EPS = 1e-3;
-
-export function seekerShipsOf( racers: Iterable< [ string, SeekerRacer ] > ): SeekerShip[] {
-    const ships: SeekerShip[] = [];
-    for ( const [ id, r ] of racers ) {
-        if ( r.spectating ) continue;
-        const t = tuningForShip( r.shipId );
-        ships.push( {
-            id,
-            x: r.x,
-            y: r.y,
-            z: r.z,
-            vz: r.vz,
-            halfW: t.halfW,
-            halfL: t.halfL,
-            dead: r.dead,
-            spectating: false,
-            finished: r.finished,
-        } );
-    }
-    return ships;
-}
-
-function segmentCrossesBlock( ax: number, az: number, bx: number, bz: number, b: Block, margin: number ): boolean {
-    let lo = 0;
-    let hi = 1;
-    const dx = bx - ax;
-    const dz = bz - az;
-    const slabs: [ number, number, number, number ][] = [
-        [ ax, dx, b.x0 - margin, b.x1 + margin ],
-        [ az, dz, b.z0 - margin, b.z1 + margin ],
-    ];
-    for ( const [ p, d, min, max ] of slabs ) {
-        if ( d === 0 ) {
-            if ( p <= min || p >= max ) return false;
-            continue;
-        }
-        const t0 = ( min - p ) / d;
-        const t1 = ( max - p ) / d;
-        lo = Math.max( lo, Math.min( t0, t1 ) );
-        hi = Math.min( hi, Math.max( t0, t1 ) );
-        if ( lo >= hi ) return false;
-    }
-    return true;
-}
-
-export function lineOfSight(
-    track: Track,
-    broken: ReadonlySet< number >,
-    ax: number,
-    az: number,
-    bx: number,
-    bz: number,
-    margin = 0,
-): boolean {
-    const first = segIndexForZ( Math.min( az, bz ) - margin );
-    const last = segIndexForZ( Math.max( az, bz ) + margin );
-    for ( let i = first; i <= last; i++ ) {
-        for ( const b of track.segmentAt( i ).blocks ) {
-            if ( ! broken.has( b.id ) && segmentCrossesBlock( ax, az, bx, bz, b, margin ) ) return false;
-        }
-    }
-    return true;
-}
-
-function lockable( s: SeekerShip, ownerId: string ): boolean {
-    return s.id !== ownerId && ! s.dead && ! s.spectating && ! s.finished;
-}
-
-export function lockTarget(
-    shooter: { x: number; z: number },
-    ownerId: string,
-    ships: readonly SeekerShip[],
-    track: Track,
-    broken: ReadonlySet< number >,
-    cfg: SimConfig = DEFAULT_SIM_CONFIG,
-    dir = 1,
-): string {
-    let best: SeekerShip | null = null;
-    for ( const s of ships ) {
-        const dz = dir * ( s.z - shooter.z );
-        if ( ! lockable( s, ownerId ) || dz <= 0 || dz > cfg.seekerLockRange ) continue;
-        const bestDz = best === null ? 0 : dir * ( best.z - shooter.z );
-        if ( best !== null && ( dz > bestDz || ( dz === bestDz && s.id > best.id ) ) ) continue;
-        if ( ! lineOfSight( track, broken, shooter.x, shooter.z, s.x, s.z, cfg.seekerHalf ) ) continue;
-        best = s;
-    }
-    return best?.id ?? '';
-}
 
 export function aimSeeker(
     seeker: SeekerState,
@@ -164,7 +60,7 @@ export function aimSeeker(
 
 export function inTerminalWindow(
     seeker: SeekerState,
-    target: SeekerShip,
+    target: TargetShip,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
 ): boolean {
     const dz = seeker.dir * ( target.z - seeker.z );
@@ -178,7 +74,7 @@ function approach( from: number, to: number, maxStep: number ): number {
     return from + Math.max( -maxStep, Math.min( maxStep, to - from ) );
 }
 
-function strikes( seeker: SeekerState, t: SeekerShip, sweep: number, cfg: SimConfig ): boolean {
+function strikes( seeker: SeekerState, t: TargetShip, sweep: number, cfg: SimConfig ): boolean {
     const half = cfg.seekerHalf;
     const [ zLo, zHi ] = sweptZ( seeker.z, half, sweep, seeker.dir );
     return (
@@ -227,7 +123,7 @@ function blockAt(
 
 function clearTo(
     seeker: SeekerState,
-    target: SeekerShip,
+    target: TargetShip,
     track: Track,
     broken: ReadonlySet< number >,
     cfg: SimConfig,
@@ -255,7 +151,7 @@ function crashed(
 
 export function stepSeeker(
     seeker: SeekerState,
-    ships: readonly SeekerShip[],
+    ships: readonly TargetShip[],
     track: Track,
     broken: Set< number >,
     dt: number,
@@ -272,7 +168,7 @@ export function stepSeeker(
     return homeOn( seeker, target, track, broken, sweep, dt, cfg );
 }
 
-function targetAlive( t: SeekerShip | undefined ): t is SeekerShip {
+function targetAlive( t: TargetShip | undefined ): t is TargetShip {
     return t !== undefined && ! t.dead && ! t.spectating && ! t.finished;
 }
 
@@ -293,7 +189,7 @@ function advance( seeker: SeekerState, dt: number, cfg: SimConfig ): number {
 
 function homeOn(
     seeker: SeekerState,
-    target: SeekerShip,
+    target: TargetShip,
     track: Track,
     broken: Set< number >,
     sweep: number,
@@ -321,7 +217,7 @@ function homeOn(
 
 export function stepSeekers(
     seekers: Map< string, SeekerState >,
-    ships: readonly SeekerShip[],
+    ships: readonly TargetShip[],
     track: Track,
     broken: Set< number >,
     dt: number,

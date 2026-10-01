@@ -1,31 +1,19 @@
 import { MapSchema, Schema, type SchemaType, schema, type } from '@colyseus/schema';
 import type { MineState } from './combat/mine.js';
 import type { PortalState } from './combat/portal.js';
-import type { SeekerState } from './combat/seeker.js';
 import { Projectile } from './features/bolt/bolt-schema.js';
+import { Seeker } from './features/seeker/seeker-schema.js';
 import { PLAYER_FIELDS } from './player-fields.js';
 import { FULL_DENSITY, isTrackGen, type TrackGen } from './sim/space.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
 
-export { Projectile };
+export { Projectile, Seeker };
 
 export const ROOM_NAME = 'run';
 
 export const PlayerState = schema( PLAYER_FIELDS, 'PlayerState' );
 
 export type PlayerState = SchemaType< typeof PlayerState >;
-
-export class Seeker extends Schema implements SeekerState {
-    @type( 'float32' ) x = 0;
-    @type( 'float32' ) y = 0;
-    @type( 'float32' ) z = 0;
-    @type( 'float32' ) vz = 0;
-    @type( 'string' ) ownerId = '';
-    @type( 'string' ) targetId = '';
-    @type( 'float32' ) ttl = 0;
-    @type( 'boolean' ) committed = false;
-    @type( 'int8' ) dir = 1;
-}
 
 export class Mine extends Schema implements MineState {
     @type( 'float32' ) x = 0;

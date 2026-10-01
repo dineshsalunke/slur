@@ -1,4 +1,4 @@
-import { lockTarget, type SeekerShip } from '../../combat/seeker.js';
+import { lockTarget, type TargetShip } from '../../combat/target-lock.js';
 import { stunDurationForShip } from '../../ship-classes.js';
 import { segIndexForZ, type Track } from '../../sim/space.js';
 import type { SimShip } from '../../sim/types.js';
@@ -51,13 +51,13 @@ export function blockAnchor(
 export function tugTarget(
     shooter: { x: number; z: number },
     ownerId: string,
-    ships: readonly SeekerShip[],
+    ships: readonly TargetShip[],
     track: Track,
     broken: ReadonlySet< number >,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
     dir = 1,
 ): TugTarget {
-    const id = lockTarget( shooter, ownerId, ships, track, broken, { ...cfg, seekerLockRange: cfg.tugRange }, dir );
+    const id = lockTarget( shooter, ownerId, ships, track, broken, cfg.tugRange, cfg.seekerHalf, dir );
     if ( id !== '' ) return { kind: 'rival', id };
     if ( dir < 0 ) return null;
     const anchor = blockAnchor( shooter, track, broken, cfg );

@@ -2,7 +2,7 @@ import type { Segment, Track } from '../sim/space.js';
 import { floorUnder } from '../sim/step.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { type MineEvent, type MineState, mineEvent } from './mine-hit.js';
-import type { SeekerShip } from './seeker.js';
+import type { TargetShip } from './target-lock.js';
 
 export type { MineEvent, MineOutcome, MineState } from './mine-hit.js';
 export { mineEvent, mineShotFront } from './mine-hit.js';
@@ -103,7 +103,7 @@ export function evictOldest(
     }
 }
 
-export function mineTriggers( mine: MineState, s: SeekerShip, cfg: SimConfig = DEFAULT_SIM_CONFIG ): boolean {
+export function mineTriggers( mine: MineState, s: TargetShip, cfg: SimConfig = DEFAULT_SIM_CONFIG ): boolean {
     if ( ! mine.armed || s.dead || s.spectating || s.finished ) return false;
     const r = cfg.mineTriggerR;
     return (
@@ -113,7 +113,7 @@ export function mineTriggers( mine: MineState, s: SeekerShip, cfg: SimConfig = D
     );
 }
 
-function victimOf( mine: MineState, ships: readonly SeekerShip[], cfg: SimConfig ): string {
+function victimOf( mine: MineState, ships: readonly TargetShip[], cfg: SimConfig ): string {
     let victim = '';
     for ( const s of ships ) if ( mineTriggers( mine, s, cfg ) && ( victim === '' || s.id < victim ) ) victim = s.id;
     return victim;
@@ -121,7 +121,7 @@ function victimOf( mine: MineState, ships: readonly SeekerShip[], cfg: SimConfig
 
 export function stepMines(
     mines: Map< string, MineState >,
-    ships: readonly SeekerShip[],
+    ships: readonly TargetShip[],
     dt: number,
     onEvent: ( event: MineEvent ) => void,
     cfg: SimConfig = DEFAULT_SIM_CONFIG,
