@@ -1210,6 +1210,36 @@ reflected spill"* only if the rig gives it something warm to reflect; today it d
     lights."* The engine light is gone. The GLB authors `Marigold_emission` at 34°; the engine
     overrides it. None in `docs/art-direction/`.
 
+26. **Cratered asteroid meteor, fissure glow, and a break along the fissures — 2026-10-01 (#401),
+    provisional.** Before this change the meteor body was the shared knob-cluster rock, and at impact it
+    threw generic hot chunks (item 18). The meteor now has its own body. It breaks into pieces that come
+    from that body.
+
+    - **The body is a cratered asteroid.** It is a low-poly icosahedron of 320 triangles. The craters
+      and boulders are shading only, so they add no triangles. The meteor has its own material. The
+      asteroid field and block debris keep the `loose` M5 material.
+    - **Light sits deep in narrow fissures.** The fissures follow a seeded Voronoi partition. The
+      default is 5 cells. The glow is M7, from the accent to the `#FFE0A0` core. View angle occludes
+      it, so a fissure shows light only when the camera looks into it. The glow builds up in flight.
+      This is fissure glow in flight. Item 18 did not allow it: *"Hot chunks glow in their crevices
+      only."*
+    - **At impact the rock breaks along the same fissures.** The pieces are closed rigid bodies, at most
+      400 triangles in total. One instanced mesh draws them. They use the existing debris physics from
+      item 18.
+    - **Fracture faces are plain fresh stone.** A thin rim heat on each face cools in about 0.3 s. Small
+      debris stays, about 8 chunks.
+    - **Crust and fracture colour is `#4a443e` by default.** This is below the M5 base colour `#524c47`
+      (item 18).
+
+    **Open, for the owner (#401).** M5 says *"the contrast between weathered outer faces and brighter
+    fresh fracture planes — that is what says rock rather than dark shape."* The fracture colour now
+    equals the crust colour, so the faces are not brighter. The owner decides whether to brighten them.
+    `Meteor.innerGlow` is 0.2. The owner also decides whether that glow stays inside *"crevices only"*.
+
+    **Departures from package wording.** M5 says *"Emissive | rare marigold veins at environmental
+    intensity"*. The meteor fissures glow in flight, and not only at impact. The meteor pieces come
+    from the meteor head. They are not generic chunks.
+
 ## 8. Review log
 
 **Revision 11 → 12, nozzles in the accent (2026-09-29).** No family table changes. §7 gains item 25.

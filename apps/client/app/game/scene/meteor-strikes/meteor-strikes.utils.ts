@@ -6,6 +6,7 @@ import { queueBurst } from '../block-burst/block-burst.utils';
 import type { DebrisGround } from '../debris-physics';
 import { pushHit } from '../hit-events';
 import { queueChunks } from '../meteor-chunks/meteor-chunks.utils';
+import { queuePieces } from '../meteor-pieces/meteor-pieces.utils';
 import { type Impact, impactFor, STRIKE_SPACING, type Strike, strikeAt, strikeWindow } from '../meteor-schedule';
 import { queueScorch } from '../meteor-scorch/meteor-scorch.utils';
 import type { Director, Flight, ReadyMeshes } from './meteor-strikes';
@@ -17,6 +18,8 @@ import {
     FLIGHTS,
     GLOW_GAIN,
     GLOW_SIZE,
+    HEAD_ATTRIBUTES,
+    HEAD_LIFT,
     LIGHT_GAIN,
     MAX_SPEED,
     MIN_SPEED,
@@ -140,6 +143,19 @@ export function land( d: Director, f: Flight, now: number ): void {
     }
     queueScorch( _p.x, f.floor, _p.z, f.size, f.spin * 7 );
     queueChunks( { x: _p.x, y: f.floor, z: _p.z, size: f.size, vx: f.vel.x, vz: f.vel.z } );
+    _q.setFromAxisAngle( f.axis, f.spin * f.flight );
+    queuePieces( {
+        x: _p.x,
+        y: f.floor + ( f.size / 2 ) * HEAD_LIFT,
+        z: _p.z,
+        qx: _q.x,
+        qy: _q.y,
+        qz: _q.z,
+        qw: _q.w,
+        scale: f.size / 2,
+        vx: f.vel.x,
+        vz: f.vel.z,
+    } );
     shakeFrom( _p.x, f.floor, _p.z, ( num( 'Meteor.shake' ) * f.size ) / SHAKE_SIZE, SHAKE_REACH );
     d.lightAt = now;
     d.lightSize = f.size;
@@ -170,6 +186,11 @@ export function draw( m: ReadyMeshes, f: Flight, i: number, now: number, gain: n
     _p.copy( f.start ).addScaledVector( f.vel, grounded ? f.flight : t );
     _q.setFromAxisAngle( f.axis, f.spin * t );
     m.heads.setMatrixAt( i, grounded ? _zero : _m.compose( _p, _q, _s.setScalar( f.size / 2 ) ) );
+    const heat = m.heads.geometry.getAttribute( 'aMeteorHeat' ) as THREE.InstancedBufferAttribute;
+    const vel = m.heads.geometry.getAttribute( 'aMeteorVel' ) as THREE.InstancedBufferAttribute;
+    heat.setX( i, 1 + num( 'Meteor.build' ) * Math.min( 1, t / f.flight ) ** 2 );
+    _dir.copy( f.vel ).normalize();
+    vel.setXYZ( i, _dir.x, _dir.y, _dir.z );
 
     const width = f.size * TRAIL_WIDTH;
     _s.set( width, f.speed * TRAIL_SECONDS * collapse, width );
@@ -191,6 +212,10 @@ export function commit( mesh: THREE.InstancedMesh, count: number ): void {
     mesh.count = count;
     mesh.instanceMatrix.needsUpdate = true;
     if ( mesh.instanceColor ) mesh.instanceColor.needsUpdate = true;
+    for ( const name of HEAD_ATTRIBUTES ) {
+        const attribute = mesh.geometry.getAttribute( name );
+        if ( attribute ) attribute.needsUpdate = true;
+    }
 }
 
 export function flash( light: THREE.PointLight, d: Director, now: number ): void {

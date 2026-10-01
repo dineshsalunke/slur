@@ -1,0 +1,13 @@
+export const ROCK_DETAIL = 3;
+export const PIECE_BUDGET = 400;
+export const MAX_CELLS = 16;
+export const MAX_CRATERS = 48;
+export const MAX_BOULDERS = 24;
+export const SEED_RADIUS = 0.55;
+export const SEED_JITTER = 0.5;
+export const SEED_SALT = 9973;
+export const CLIP_STEPS = 14;
+export const CLIP_SNAP = 0.08;
+export const CENTER_PULL = 0.65;
+export const FAR_SEED = 99;
+export const EPSILON_SQ = 1e-10;

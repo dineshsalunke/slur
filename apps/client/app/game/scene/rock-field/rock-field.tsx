@@ -8,6 +8,7 @@ import { AsteroidBand } from '../asteroid-band/asteroid-band';
 import { ASTEROID_BANDS, ROCK_FAR } from '../asteroid-config';
 import { packRockSurface, patchRock, prepareRockNormal, rockUniforms } from '../asteroid-surface';
 import { MeteorChunks } from '../meteor-chunks/meteor-chunks';
+import { MeteorPieces } from '../meteor-pieces/meteor-pieces';
 import { MeteorStrikes } from '../meteor-strikes/meteor-strikes';
 import { prefersReducedMotion } from '../reduced-motion';
 import { ROCK_TEXTURES } from './rock-field.constants';
@@ -66,7 +67,8 @@ export function RockField() {
             { ASTEROID_BANDS.map( ( band ) => (
                 <AsteroidBand key={ band.key } band={ band } material={ field } />
             ) ) }
-            <MeteorStrikes material={ loose } />
+            <MeteorStrikes />
+            <MeteorPieces />
             <MeteorChunks material={ loose } />
         </Fragment>
     );

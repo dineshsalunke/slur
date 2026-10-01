@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { FRACTURE_CORE_HEX } from '../fractured-block-shader';
 
 export const FLIGHTS = 6;
-export const HEAD_SEED = 0x3e7e_0a11;
-export const HEAD_DETAIL = 5;
+export const HEAD_LIFT = 0.8;
+export const HEAD_ATTRIBUTES = [ 'aMeteorHeat', 'aMeteorVel' ] as const;
 export const TRAIL_SECONDS = 0.36;
 export const TRAIL_WIDTH = 0.55;
 export const TRAIL_GAIN = 2.2;
