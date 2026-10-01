@@ -54,7 +54,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #397 F4b seeker | building | shared features/seeker/**, combat/{target-lock,constants,power-bag,mine}.ts + tests, run/{combat,portal-run}.ts, schema.ts, sim-config.ts, index.ts, features/registry*, features/tug/*; client features/seeker/**, scene/pickup-layout/, client-features.ts, define-client-feature.ts, net-hud.tsx, net-canvas.tsx, pickup-field.tsx, glyph-atlas.ts, ecs/traits.ts, attach-room-to-world.ts, tests |
 | workertwo | w2Z:p3 | #400 landed f3a0d370 (closed) | AT SEAM ~171k, handover e72f235d — /clear + resume it (idle, no lane) | none |
-| workerthree | w2Z:p5 | PROD DEPLOY of origin/dev (owner authorized 2026-10-01, this one only) from a scratch git clone, since F4b WIP dirties the tree and deploy.sh:24 refuses | deploying | none (scratch clone only) |
+| workerthree | w2Z:p5 | PROD DEPLOY of origin/dev (owner authorized 2026-10-01, this one only) from a scratch git clone, since F4b WIP dirties the tree and deploy.sh:24 refuses | BLOCKED: its permission layer denied the first step ("[Production Deploy]"); nothing ran; idle. Owner to deploy or approve in a session | none |
 | do-setup | w2Z:p4 | infra | idle | — |
 
 ## #400 cause (workertwo, measured)
