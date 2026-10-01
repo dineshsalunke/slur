@@ -5,11 +5,12 @@ import { num } from '../../../dev/tuning';
 import { blockWorld } from '../../block-state';
 import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
-import { asteroidGeometry } from '../asteroid-geometry';
 import { trackGround } from '../debris-ground';
 import type { DebrisGround } from '../debris-physics';
 import { meteorTrailGeometry, repaintTrail } from '../meteor-assets';
-import { FLIGHTS, HEAD_DETAIL, HEAD_SEED, LIGHT_DISTANCE } from './meteor-strikes.constants';
+import { applyShape, meteorMaterial, meteorUniforms, tuneMeteor } from '../meteor-material';
+import { useMeteorRock } from '../meteor-rock/use-meteor-rock';
+import { FLIGHTS, LIGHT_DISTANCE } from './meteor-strikes.constants';
 import { _c } from './meteor-strikes.scratch';
 import { advance, commit, draw, flash, hide, makeDirector, schedule } from './meteor-strikes.utils';
 
@@ -55,27 +56,35 @@ export interface ReadyMeshes {
     glows: THREE.InstancedMesh;
 }
 
-export function MeteorStrikes( { material }: { material: THREE.Material } ) {
+export function MeteorStrikes() {
     const track = useTrack();
+    const rock = useMeteorRock();
     const director = useMemo( () => makeDirector( trackGround( track, blockWorld.broken ) ), [ track ] );
+    const uniforms = useMemo( meteorUniforms, [] );
+    const material = useMemo( () => meteorMaterial( uniforms, false ), [ uniforms ] );
     const head = useMemo( () => {
-        const g = asteroidGeometry( HEAD_SEED, HEAD_DETAIL );
-        g.setAttribute( 'aRockHeat', new THREE.InstancedBufferAttribute( new Float32Array( FLIGHTS ).fill( 1 ), 1 ) );
-        return g;
-    }, [] );
+        applyShape( uniforms, rock.shape );
+        const heat = new THREE.InstancedBufferAttribute( new Float32Array( FLIGHTS ).fill( 1 ), 1 );
+        const vel = new THREE.InstancedBufferAttribute( new Float32Array( FLIGHTS * 3 ), 3 );
+        heat.setUsage( THREE.DynamicDrawUsage );
+        vel.setUsage( THREE.DynamicDrawUsage );
+        rock.head.setAttribute( 'aMeteorHeat', heat );
+        rock.head.setAttribute( 'aMeteorVel', vel );
+        return rock.head;
+    }, [ rock, uniforms ] );
     const trail = useMemo( meteorTrailGeometry, [] );
     const glow = useMemo( () => new THREE.IcosahedronGeometry( 1, 2 ), [] );
     const meshes = useRef< Meshes >( { heads: null, trails: null, glows: null } );
     const lightRef = useRef< THREE.PointLight | null >( null );
 
-    // JUSTIFIED EFFECT — brackets the lifetime of GPU geometry we built ourselves.
+    // JUSTIFIED EFFECT — brackets the lifetime of GPU geometry and a material we built ourselves.
     useEffect(
         () => () => {
-            head.dispose();
+            material.dispose();
             trail.dispose();
             glow.dispose();
         },
-        [ head, trail, glow ],
+        [ material, trail, glow ],
     );
 
     useFrame( ( state ) => {
@@ -84,6 +93,7 @@ export function MeteorStrikes( { material }: { material: THREE.Material } ) {
         repaintTrail( trail );
         const m = meshes.current as ReadyMeshes;
         const now = state.clock.elapsedTime;
+        tuneMeteor( uniforms, material, now );
         schedule( director, state.camera.position.x, state.camera.position.z, now );
         const gain = num( 'Meteor.trail' );
         let top = 0;

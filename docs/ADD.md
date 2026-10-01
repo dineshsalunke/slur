@@ -223,7 +223,7 @@ makes this cheap, and it keeps the zero-asset-pipeline property.
 | Track pillars | **BUILT** — one instanced chamfered box, mirrored pairs (ADR-018) | **done** |
 | Monoliths (Obelisk · Gate · Arch) | procedural — three box arrangements + scale/rotate variation | **~100%** |
 | Asteroids (Angular · Plate · Broken) | **BUILT** — displaced icosahedron with planar cuts and boulder knobs, three streamed bands, shader spin and straight-line travel, triplanar CC0 rock maps (see below) | **done** |
-| Meteor strikes | **BUILT** — seeded strikes ahead of the player: heat trail, flash, point light, camera shake, scorch, rigid-body rock chunks. Visual only (`ART_MATERIALS.md` §7 item 18, #235 for a sim hazard) | **done** |
+| Meteor strikes | **BUILT** — seeded strikes ahead of the player: heat trail, flash, point light, camera shake, scorch. The meteor is a cratered asteroid with glowing fissures. It shatters along them into rigid pieces, plus small debris. Visual only (`ART_MATERIALS.md` §7 items 18 and 26, #401; #235 for a sim hazard) | **done** |
 | Block fracture | **BUILT** — 18 Voronoi cells, CPU rigid bodies that land, bounce and rest on the deck (`ART_MATERIALS.md` §7 item 18) | **done** |
 | Sky | **BUILT** — one flat image, `nebula-backdrop.jpg`, cover-fitted as `scene.background` (#352; the procedural nebula of #215 is removed) | **done** |
 | Environment light | **BUILT** — a Poly Haven HDRI as `scene.environment`, set from a link in the dev panel (see below) | **done** |

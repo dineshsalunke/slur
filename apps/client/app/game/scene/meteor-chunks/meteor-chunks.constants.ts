@@ -9,7 +9,7 @@ export const SPARK_SLAM = 8;
 export const HEAT_SHARE = 0.25;
 export const CHUNK_SEED = 0x5eed_c4ac;
 export const CHUNK_DETAIL = 3;
-export const BASE_COUNT = 9;
-export const COUNT_PER_SIZE = 2.2;
+export const BASE_COUNT = 6;
+export const COUNT_PER_SIZE = 2;
 
 export const _zero = new THREE.Matrix4().makeScale( 0, 0, 0 );
