@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: reference
   originSessionId: ef69ce2d-8ae5-46f7-9069-a58ab94ecde4
-  modified: 2026-09-30T09:43:30.897Z
+  modified: 2026-10-01T03:32:15.986Z
 ---
 
 Meteor strikes are client-only VFX. Since #392 (7a90abc6) the slot grid (`meteor-schedule.ts`
@@ -22,6 +22,9 @@ held-window dz/dt of the camera. Verified 2026-09-30:
   per-frame speed estimate with per-step clamps reads far low (52 at a true 110); use a window.
 - **Impact light:** walk the scene (see [[grab-the-scene]]) for `o.isPointLight && o.distance === 110`.
   Detect landing as intensity jumping above 50. Override `intensity` with `Object.defineProperty` to A/B.
+- **Camera shake:** only `applyShake` (`game/camera/shake.ts`) rotates the chase camera. Wrap
+  `camera.rotateZ` on the instance and log its argument: peak |arg| over 0.5 s after impact is the
+  roll (ROLL 0.036 × trauma² × strength × wobble). Under ~0.15° reads as "no shake" (#398).
 - Deck luma: `gl.readPixels` a 32 px box around the projected impact in your own rAF callback,
   registered after R3F's, so it reads the current frame.
 
