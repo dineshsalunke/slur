@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { accent } from '../accent';
+import { accent } from '../../../game/scene/accent';
 import {
     SEEKER_FLIGHT,
     SEEKER_TRAIL_BRIGHT,

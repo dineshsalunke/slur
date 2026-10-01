@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { buildBoltBody } from '../../../features/bolt/bolt-pickups/bolt-pickups.utils';
+import { buildSeekerPickup } from '../../../features/seeker/seeker-pickups/seeker-pickups.utils';
 import { buildTugPickup } from '../../../features/tug/tug-pickups/tug-pickups.utils';
 import { buildBoostPickup } from '../boost-pickups/boost-pickups.utils';
 import { PICKUP_BOB, PICKUP_HOVER, PICKUP_SIZE } from '../combat-look';
 import { buildMinePickup } from '../mine-pickups/mine-pickups.utils';
 import { buildPortalPickup } from '../portal-pickups/portal-pickups.utils';
-import { buildSeekerPickup } from '../seeker-pickups/seeker-pickups.utils';
 import { buildShieldPickup } from '../shield-pickups/shield-pickups.utils';
 import type { PickupPart } from './pickup-instances';
 import { fitPickup } from './pickup-instances.utils';

@@ -36,7 +36,6 @@ import { NetPowerArc } from './scene/net-power-arc';
 import { PickupField } from './scene/pickup-field';
 import { PortalField } from './scene/portal-field/portal-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
-import { SeekerField } from './scene/seeker-field';
 import { WorldScene } from './scene/world-scene';
 import { TrackContext } from './track-context/track-context.constants';
 
@@ -79,7 +78,6 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <NetLoop predictor={ predictor } room={ room } />
                             <PickupField />
                             <ProjectileField />
-                            <SeekerField />
                             <MineField />
                             <MineShock />
                             <PortalField />

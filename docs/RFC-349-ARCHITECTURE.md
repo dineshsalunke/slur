@@ -417,6 +417,23 @@ The owner decides go / no-go on the numbers before any other feature moves.
 | Determinism | Bit-equal. The same 6 seeds hash every tick's state (ships, bolts, seekers, mines, broken blocks) and every broadcast; HEAD and F4a hashes match. The bench saw 425 ship hits, 635 wall hits and mine clears. 800 power bags over 5 configs match HEAD. Shared 585/585, server 99/99, client 721/721. |
 | Order is declared | Bolt runs at `run.strike`, the place `stepBolts` held, so no order changed. Registry order test updated to `[ bolt, tug ]`. |
 
+**F4b result (#397, seeker, measured 2026-10-01).** Two commits: f80acb55 (sim half) and the client half.
+Owner decisions S1–S6 (2026-10-01): S1 a neutral `combat/target-lock.ts` leaf (`lockTarget( range, margin )`)
+that seeker, mine and tug share; S2 the power bag draws weighted powers in `HeldPower` kind order; S3 the
+`Seeker` schema class in `features/seeker/seeker-schema.ts`, `RunState.seekers` stays; S4 seeker fires
+through `run.use` and steps at `run.strike` after bolt; S5 `portal-run.ts` keeps the hop cancel and imports
+the seeker contract; S6 the client half moves the view, pickups, glyph and lock warning, and a new
+`hud.overlay` slot carries the warning.
+
+| Measure | Result |
+|---|---|
+| Central files a feature edits | **34 → 16** non-test files name seeker outside the two folders (shared 13 → 8, client 21 → 8). With tests: 53 → 30. Target ≤ 2 is not met. Shared side: `features/registry.ts`, the `index.ts` export, `schema.ts` (S3), `sim-config.ts` (D2), `HeldPower.seeker` in `combat/constants.ts` (D3), `portal-run.ts` (S5), `run-sim.ts` (clears `RunState.seekers` on reset) and tug's `tug.ts` (uses `cfg.seekerHalf` as its lock margin). Client side: `features/client-features.ts`, `traits.ts` (`SeekerTrail`), `attach-room-to-world.ts`, `bind-room-audio.ts`, `sfx-map.ts`, the tuning panel and schema (D2) and the test-level grant (D3), all kept as D7. |
+| Wire order | Unchanged. No field moved. Two SDK clients on the dev server decode 2 seekers with fields `x,y,z,vz,ownerId,targetId,ttl,committed,dir` (target B), both see 2 `seekerHit` broadcasts, and both read B's stun (peak 1.18). Zero decode logs. |
+| `step()` time per tick | Seeker has no ship hooks, so `simulate()` does not change. `RunSim.fixedStep` in node on `dist`, HEAD against part 1: within noise (seed 1: 57.9 → 58.1 µs). |
+| Frame time on `/test-level` | Draw calls 76 (DPR 1, quality high, 3 runs). The seeker views own 4 of them: with seeker dropped from `CLIENT_FEATURES` in the tab only, the count reads 72. The views are the same components with the same props as before, now mounted through `FeatureViews`. Against F4a's 74: the black hole (#399, now in every world scene) adds 1, and 1 is not attributed. There is no HEAD client to A/B on the one stack. |
+| Determinism | Bit-equal. 6 seeds × 4 racers × 3600 ticks with a seeker-heavy mix hash every tick's seeker state and every broadcast; HEAD and part 1 match (296 seeker hits, 3 misses). 800 power bags match HEAD. Shared 585/585, server 99/99, client 726/726. Each of the 101 shared `dist` modules imports alone (no TDZ cycle). |
+| Order is declared | Seeker steps at `run.strike` after bolt (id order), where `stepSeekers` ran. `stepCombat` builds the mine target list after `strike`. Registry order `[ bolt, seeker, tug ]`. |
+
 ## 4. Net, input, client state, room config (workertwo)
 
 Measured on `dev` at `4b58658` (§4.1–4.3) and `a25b332` (§4.4–4.5). Installed versions, read from the
@@ -890,7 +907,8 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | **F2** | **Landed f4e78880 (#390).** Tug is in `packages/shared/src/features/tug/` and `apps/client/app/features/tug/`. Numbers in §3.8 "F2 result". Pilot: move tug into two feature folders. Measure per §3.8. | tug's 11 files (moved) + the 19 central files in §1.8 (tug lines removed) | F1 |
 | F3 | **GO (owner, 2026-09-30).** Owner go / no-go on the F2 numbers. | — | F2 |
 | **F4a** | **Built (#395).** Bolt is in `packages/shared/src/features/bolt/` and `apps/client/app/features/bolt/`. Numbers in §3.8 "F4a result". Owner D4–D7 (2026-09-30). | bolt's sim code, pickup view and glyph (moved) + the central lines it left | F3 |
-| F4… | One feature per stage: seeker, mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F4a |
+| **F4b** | **Built (#397).** Seeker is in `packages/shared/src/features/seeker/` and `apps/client/app/features/seeker/`. Numbers in §3.8 "F4b result". Owner S1–S6 (2026-10-01). | seeker's sim code, view, pickups, glyph and lock warning (moved) + the central lines it left | F4a |
+| F4… | One feature per stage: mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F4b |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |

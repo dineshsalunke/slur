@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import type { FrameSystem } from '../game/frame/schedule';
 import type { NetFrame } from '../game/net-loop/net-loop.utils';
 import type { GlyphShape } from '../game/scene/power-arc/glyph-shapes';
+import type { RunRoomLike } from '../net/run-room-like';
 
 export type ViewSlot = 'scene' | 'pickups';
 
@@ -14,6 +15,7 @@ export type NetHandlers = Readonly< Record< string, ( payload: never, net: NetCo
 
 export interface HudSlots {
     readonly glyph?: readonly GlyphShape[];
+    readonly overlay?: ComponentType< { room: RunRoomLike } >;
 }
 
 export interface ClientFeature {

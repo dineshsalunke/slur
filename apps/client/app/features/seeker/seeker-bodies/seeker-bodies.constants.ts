@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BOLT_HOT } from '../combat-look';
+import { BOLT_HOT } from '../../../game/scene/combat-look';
 import { MAX_SEEKERS } from '../seeker-look';
 import { TRAIL_POINTS } from '../seeker-trail';
 

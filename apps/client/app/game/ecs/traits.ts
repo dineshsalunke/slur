@@ -1,7 +1,7 @@
 import { DEFAULT_SHIP, emptySlots, spawnShip } from '@slur/shared';
 import { trait } from 'koota';
 import * as THREE from 'three';
-import { makeSeekerTrail } from '../scene/seeker-trail';
+import { makeSeekerTrail } from '../../features/seeker/seeker-trail';
 
 export const Sim = trait( () => spawnShip() );
 

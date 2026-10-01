@@ -1,13 +1,14 @@
-import { boltFeature, defineSimFeature, tugFeature } from '@slur/shared';
+import { boltFeature, defineSimFeature, seekerFeature, tugFeature } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { ACTIVE_FEATURES, checkClientFeatures, FEATURE_SYSTEMS } from './active-features';
 import { defineClientFeature } from './define-client-feature';
 
 describe( 'active client features (#385)', () => {
-    it( 'ships bolt and tug, each paired with its sim half, and no feature systems yet', () => {
-        expect( ACTIVE_FEATURES.map( ( f ) => f.id ) ).toEqual( [ 'bolt', 'tug' ] );
+    it( 'ships bolt, seeker and tug, each paired with its sim half, and no feature systems yet', () => {
+        expect( ACTIVE_FEATURES.map( ( f ) => f.id ) ).toEqual( [ 'bolt', 'seeker', 'tug' ] );
         expect( ACTIVE_FEATURES[ 0 ]?.sim ).toBe( boltFeature );
-        expect( ACTIVE_FEATURES[ 1 ]?.sim ).toBe( tugFeature );
+        expect( ACTIVE_FEATURES[ 1 ]?.sim ).toBe( seekerFeature );
+        expect( ACTIVE_FEATURES[ 2 ]?.sim ).toBe( tugFeature );
         expect( FEATURE_SYSTEMS ).toEqual( [] );
     } );
 

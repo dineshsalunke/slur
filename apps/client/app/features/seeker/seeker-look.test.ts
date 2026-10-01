@@ -1,45 +1,12 @@
-import {
-    DEFAULT_SIM_CONFIG,
-    FEATURE_POWERS,
-    HeldPower,
-    pickupPower,
-    pickupsOf,
-    procgenDescriptor,
-    resolveTrack,
-} from '@slur/shared';
+import { DEFAULT_SIM_CONFIG } from '@slur/shared';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { SEEKER_FLIGHT, SEEKER_PICKUP, seekerCoreGeometry, seekerShellGeometry, seekerTail } from './seeker-look';
-import { splitPickupLayout } from './seeker-pickups/seeker-pickups.utils';
 
 function bounds( g: THREE.BufferGeometry ): THREE.Box3 {
     g.computeBoundingBox();
     return g.boundingBox ?? new THREE.Box3();
 }
-
-describe( 'splitPickupLayout', () => {
-    it( 'puts every core pickup in exactly one field, by its shared power, and leaves feature powers out', () => {
-        const layout = pickupsOf( resolveTrack( procgenDescriptor( 7, 'weave' ) ) );
-        const { seekers, mines, boosts, shields, portals } = splitPickupLayout( layout );
-        const featureKinds = new Set< number >(
-            FEATURE_POWERS.map( ( p ) => p.kind ).filter( ( k ) => k !== HeldPower.seeker ),
-        );
-        const featured = layout.filter( ( a ) => featureKinds.has( pickupPower( a.id ) ) ).length;
-
-        expect( featured ).toBeGreaterThan( 0 );
-        expect( seekers.length + mines.length + boosts.length + shields.length + portals.length + featured ).toBe(
-            layout.length,
-        );
-        expect( seekers.length ).toBeGreaterThan( 0 );
-        expect( mines.length ).toBeGreaterThan( 0 );
-        expect( portals.length ).toBeGreaterThan( 0 );
-        for ( const a of portals ) expect( pickupPower( a.id ) ).toBe( HeldPower.portal );
-        for ( const a of seekers ) expect( pickupPower( a.id ) ).toBe( HeldPower.seeker );
-        for ( const a of mines ) expect( pickupPower( a.id ) ).toBe( HeldPower.mine );
-        for ( const a of boosts ) expect( pickupPower( a.id ) ).toBe( HeldPower.boost );
-        for ( const a of shields ) expect( pickupPower( a.id ) ).toBe( HeldPower.shield );
-    } );
-} );
 
 describe( 'seeker in flight', () => {
     it( 'lies nose-forward along z with its hot core on the nose', () => {

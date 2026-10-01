@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
-import { advanceEmbers, type EmberPool, MAX_EMBERS, makeEmberPool, shedEmbers } from '../bolt-embers';
+import { advanceEmbers, type EmberPool, MAX_EMBERS, makeEmberPool, shedEmbers } from '../../../game/scene/bolt-embers';
 import { MAX_SEEKERS, SEEKER_EMBER_SPAN } from '../seeker-look';
 import { advanceSeekerTrail, type SeekerTrailRing } from '../seeker-trail';
 import { _black, FORWARD, MAX_SEGMENTS } from './seeker-bodies.constants';

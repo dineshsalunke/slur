@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef } from 'react';
+import { addHudWriter } from '../../../game/hud/hud-writers/hud-writers.state';
 import type { RunRoomLike } from '../../../net/run-room-like';
-import { addHudWriter } from '../hud-writers/hud-writers.state';
 import { COMMIT_VIGNETTE } from './seeker-warning.constants';
 import { lockShift, lockText, lockVisible, makeLock, nearestLock } from './seeker-warning.utils';
 

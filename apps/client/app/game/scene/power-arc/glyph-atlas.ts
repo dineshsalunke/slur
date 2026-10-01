@@ -21,11 +21,6 @@ const PORTAL_RING = { d: ellipsePath( 24, 24, 9, 14 ), stroke: ACCENT, width: 3 
 
 const CORE_GLYPHS: Record< number, readonly GlyphShape[] > = {
     [ HeldPower.none ]: [ { d: SQUARE, stroke: ACCENT, width: 2.5 } ],
-    [ HeldPower.seeker ]: [
-        plate( roundRectPath( 9, 9, 30, 30, 5 ) ),
-        { d: circlePath( 24, 24, 8 ), fill: ACCENT },
-        { d: circlePath( 24, 24, 4 ), fill: GOLD },
-    ],
     [ HeldPower.mine ]: [
         plate( polyPath( starPoints( 8, 22, 11 ) ) ),
         { d: circlePath( 24, 24, 6.5 ), fill: ACCENT },

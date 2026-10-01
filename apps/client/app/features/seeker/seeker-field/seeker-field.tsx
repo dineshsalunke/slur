@@ -1,10 +1,10 @@
 import { useWorld } from 'koota/react';
 import { useMemo } from 'react';
-import { RENDER_DELAY_MS } from '../ecs/net-systems';
-import { NetSeeker, ProjInterp, type ProjSnapshot, SeekerTrail } from '../ecs/traits';
-import { sampleAt } from './projectile-field/projectile-field.utils';
-import { SeekerBodies, type SeekerSink } from './seeker-bodies/seeker-bodies';
-import type { SeekerTrailRing } from './seeker-trail';
+import { RENDER_DELAY_MS } from '../../../game/ecs/net-systems';
+import { NetSeeker, ProjInterp, type ProjSnapshot, SeekerTrail } from '../../../game/ecs/traits';
+import { sampleAt } from '../../../game/scene/projectile-field/projectile-field.utils';
+import { SeekerBodies, type SeekerSink } from '../seeker-bodies/seeker-bodies';
+import type { SeekerTrailRing } from '../seeker-trail';
 
 export function SeekerField() {
     const world = useWorld();
