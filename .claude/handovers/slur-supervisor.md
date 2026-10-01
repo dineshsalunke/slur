@@ -53,7 +53,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
 | workerone | w2Z:p2 | #397 F4b seeker | building | shared features/seeker/**, combat/{target-lock,constants,power-bag,mine}.ts + tests, run/{combat,portal-run}.ts, schema.ts, sim-config.ts, index.ts, features/registry*, features/tug/*; client features/seeker/**, scene/pickup-layout/, client-features.ts, define-client-feature.ts, net-hud.tsx, net-canvas.tsx, pickup-field.tsx, glyph-atlas.ts, ecs/traits.ts, attach-room-to-world.ts, tests |
-| workertwo | w2Z:p3 | #400 dark hosted room | CLEARED to fix | env-band/env-band.state.ts |
+| workertwo | w2Z:p3 | #400 landed f3a0d370 (closed) | AT SEAM ~171k, handover e72f235d — /clear + resume it (idle, no lane) | none |
 | workerthree | w2Z:p5 | — | cleared + resumed, idle | none |
 | do-setup | w2Z:p4 | infra | idle | — |
 
@@ -66,7 +66,7 @@ renderer in the cache key, dispose and rebuild. Prod likely affected [inferred] 
 
 ## Open owner items
 
-1. #400: after the fix lands, the owner should check a hosted room and decide on a deploy.
+1. #400 landed f3a0d370 (told owner): owner checks home → host a room; prod needs the owner's deploy.
 2. First-use black hole shader compile: one ~20–29 ms frame at mount; `renderer.compileAsync` candidate
    [untested]. Not filed.
 3. workerone's optional idea: give the 22 D7 client files neutral names to reach the ≤2 central target.
