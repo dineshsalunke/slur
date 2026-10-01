@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 0ea6e189-ddaa-44c7-93f4-57c51a7741fb
-  modified: 2026-09-26T07:51:32.823Z
+  modified: 2026-10-01T11:45:46.170Z
 ---
 
 The owner's `:5173` stack runs from this checkout and hot-reloads each file as it is saved. A refactor
@@ -20,3 +20,7 @@ switched to `useTrack()`. For that moment every Canvas route threw
 **How to apply:** order the edits so each save leaves the tree renderable. Add the new source
 (provider, context, export) first. Then switch each consumer to read it BEFORE its parent stops
 passing the old prop. Remove the old path last. Leaf-first for removals, root-first for additions.
+
+**Feature moves (RFC-349 F4) invert the last step.** Remove the central mount and the `CORE_GLYPHS` entry
+BEFORE adding the feature to `CLIENT_FEATURES`. The glyph atlas throws `glyph for power N is taken` on a
+duplicate, and a doubled view renders twice. Missing for one save is harmless; doubled crashes (F4b, 2026-10-01).
