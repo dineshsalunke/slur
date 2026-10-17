@@ -53,7 +53,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w3C:p3 | #406 F4f portal | PLANNING, no edits. (Shield DONE: sim 24e4df3e, client adab9982, docs 88fb4f95, #405 closed.) Shield history: Owner chose E2=A (wire move), E6=A (reset gets ctx), E8=A (views.ship slot + NetContext.entityOf); E3=A run.ward. Plan on the #405 comment | the #405 claim list |
+| workerone | w3C:p3 | #406 F4f portal | BUILDING. Owner approved P1–P12 all as recommended; plan on the #406 comment. (Shield DONE: sim 24e4df3e, client adab9982, docs 88fb4f95, #405 closed.) Shield history: Owner chose E2=A (wire move), E6=A (reset gets ctx), E8=A (views.ship slot + NetContext.entityOf); E3=A run.ward. Plan on the #405 comment | the #405 claim list |
 
 ## Open owner items
 
@@ -70,8 +70,9 @@ None of mine.
 
 ## Next
 
-0. Shield is done (#405 closed). Wait for the portal plan. Approve it if it follows the pattern; owner
-   decides wire/contract changes. Post the approved plan on #406.
+0. Portal is building (plan approved and posted on #406). On landing: verify the push and that #406 is
+   closed, run the full test suite once, then tell the owner the F4 series is done and offer a deploy.
+   Boost and shield moved wire fields, so open tabs need a reload after that deploy.
 1. (done) Shield sim half 24e4df3e pushed (bit-equal, 108 pops; negative control diverges 4/6 seeds with short
    shields). Client half (E8) building. On landing: verify the push and that #405 is closed, then report to the owner.
 2. Shield plan: approve if it follows the pattern and stays bit-equal; post it on #405; else ask the owner.
