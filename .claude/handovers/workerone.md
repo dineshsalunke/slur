@@ -1,30 +1,28 @@
-Agent: workerone · Lane: RFC-349 F4f portal (#406) — sim half shipped, client half next · Updated: 2026-10-17
+Agent: workerone · Lane: RFC-349 F4f portal (#406) — DONE, issue closed · Updated: 2026-10-17
 
-Older versions (incl. the full approved plan P1–P12): `git log -p -- .claude/handovers/workerone.md`. The plan
-is also the latest comment on #406.
+Older versions (incl. the approved plan P1–P12): `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-Move portal into two feature folders (#406), owner-approved plan (P2=A, P3=A, P4=A, P5=A, P6=A, P8=A, P11=A).
+Move portal into two feature folders (#406), owner-approved plan. Finished.
 
 ## Done
 
-- Sim half (P1–P10) `1408cce9`, pushed. `packages/shared/src/features/portal/` = portal-constants,
-  portal-hop (PortalState, PortalSpot, PortalRider, hopThroughPortal), portal-place, portal-schema, portal-run
-  (tap/use/hop/settle/reset; run state `{ taps, seq }`), portal.feature.ts. New hooks in
-  define-sim-feature: `run.tap`, `run.hop`, `HopOrigin`, `PowerSpec.uses`. Seeker has `hop: loseHopLocks`.
-  firePower + RunSim fallback + `portalTaps` gone; bag reads portal's bagWeight.
-- Portal's `use` sets the slot itself and returns false (it cannot import combat-step: TDZ cycle via
-  pickups → power-bag → sim-hooks → registry).
-- Stop-gap in client `pickup-layout.utils.test.ts`: featureKinds excludes portal. P11 deletes that test.
+- Sim half (P1–P10) `1408cce9`.
+- Client half (P11) `18a5cff2`: `apps/client/app/features/portal/` = portal.client.ts, portal-glyph.ts,
+  portal-ring(.test), portal-field/ (scene slot), portal-pickups/ (own `portalAnchors` filter + test). New
+  `HudSlots.glyphs`; glyph-atlas registers `glyph` for `power.kind` and `glyphs` for kinds in `power.uses`
+  (throws otherwise). `splitPickupLayout` + test deleted. Hop/fizzle listeners moved from
+  attach-room-to-world into portal's `net` slot. active-features roster test includes portal.
+- Docs `dcae4c24`: RFC §3.8 "F4f result" + §7 F4f row; conventions/features.md F4f slot rules + table rows.
+- Pushed to origin/dev; #406 closed with SHAs.
 
 ## State (measured)
 
-- A/B vs HEAD dist (bench `scratchpad/f4f-ab.mjs`, session fda47919): 6 seeds × 3600 ticks bit-equal, every
-  PLAYER_FIELDS key by name, portals incl. armTimer/ttl, 505 hops, 44 fizzles, 1921 double taps, 20
-  unused-portalB expiries, 800 bags equal. Negative control (drop `ctx.nextId()`) diverges on 6/6 seeds.
-- Every shared dist module imports alone (TDZ check): 0 fails.
-- `pnpm lint`, `pnpm typecheck`, `pnpm test` (shared, server, client 730/730) all pass at `1408cce9`.
+- /test-level draws (DPR 1, quality high, script `scratchpad/portal-draws.mjs`, session 64c74057): idle 76
+  before and after; staged portal pair (2 ends read back) 80 before and after.
+- lint, typecheck pass; shared 586/586, server 101/101, client 730/730 at `18a5cff2`.
+- Central non-test files naming portal: 34 → 21 (shared 9, client 12).
 
 ## Uncommitted
 
@@ -32,20 +30,11 @@ Move portal into two feature folders (#406), owner-approved plan (P2=A, P3=A, P4
 
 ## Held files
 
-- Every file in the plan's Claims list (cleared by the supervisor). Client half untouched.
+- none (release all #406 claims).
 
 ## Next
 
-1. Load `conventions` (`conv cards` on the client paths).
-2. Client half (P11) in `apps/client/app/features/portal/`: portal.client.ts; `views.scene` = PortalField
-   (out of net-canvas); `views.pickups` = PortalPickups with its own anchor filter (shield precedent), delete
-   `splitPickupLayout` + its test + pickup-field's portal lines; move portal-ring (+test); `net` slot takes
-   PORTAL_HOP (skip own victim via `net.sessionId`) and PORTAL_FIZZLE; `hud.glyphs` map for `power.uses`
-   kinds (atlas checks each kind belongs to the feature). Keep central: shock queue, local-hop, bridge
-   portals mirror, block-state, audio, sfx-map, Portal.* dials, test-level grant.
-3. Gates: all tests; draws on /test-level idle + staged portal pair (owner's stack :5173, headless Chrome DPR 1,
-   muted, kill after).
-4. Docs: RFC §3.8/§7, conventions/features.md (new hooks tap/hop/uses). Close #406 with SHAs.
+1. Supervisor: release the #406 claims and assign the next lane.
 
 ## Open questions
 
@@ -53,4 +42,4 @@ Move portal into two feature folders (#406), owner-approved plan (P2=A, P3=A, P4
 
 ## Lessons → memory
 
-- none new (the TDZ rule is already in `feature-registry-import-cycle.md`).
+- none new.
