@@ -27,6 +27,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Typegen runs in production mode](typegen-runs-in-production-mode.md) — dev-gated routes lose `+types`
 - [Shared watcher can leave dist stale](shared-watcher-can-leave-dist-stale.md) — `tsc -b --force`
 - [Shared tests need an in-package outDir](shared-tests-need-in-package-outdir.md) — use `pnpm test`
+- [Sim-half commit runs client tests](sim-half-commit-runs-client-tests.md) — shared-only change broke a client test
 - [Share a vi.mock through a dynamic import](share-a-vi-mock-through-a-dynamic-import.md) — `await import(h)`
 - [Aim tests need a clear approach](aim-tests-need-a-clear-approach.md) — seed Math.random; whole file
 - [Fixtures must be width-relative](fixtures-must-be-width-relative.md) — `HALF_WIDTH - n`, no literal ±32
