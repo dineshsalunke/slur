@@ -1,35 +1,19 @@
 import { MapSchema, Schema, type SchemaType, schema, type } from '@colyseus/schema';
-import type { PortalState } from './combat/portal.js';
 import { Projectile } from './features/bolt/bolt-schema.js';
 import { Mine } from './features/mine/mine-schema.js';
+import { Portal } from './features/portal/portal-schema.js';
 import { Seeker } from './features/seeker/seeker-schema.js';
 import { PLAYER_FIELDS } from './player-fields.js';
 import { FULL_DENSITY, isTrackGen, type TrackGen } from './sim/space.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
 
-export { Mine, Projectile, Seeker };
+export { Mine, Portal, Projectile, Seeker };
 
 export const ROOM_NAME = 'run';
 
 export const PlayerState = schema( PLAYER_FIELDS, 'PlayerState' );
 
 export type PlayerState = SchemaType< typeof PlayerState >;
-
-export class Portal extends Schema implements PortalState {
-    @type( 'float32' ) ax = 0;
-    @type( 'float32' ) ay = 0;
-    @type( 'float32' ) az = 0;
-    @type( 'float32' ) bx = 0;
-    @type( 'float32' ) by = 0;
-    @type( 'float32' ) bz = 0;
-    @type( 'uint8' ) ends = 0;
-    @type( 'boolean' ) armA = false;
-    @type( 'boolean' ) armB = false;
-    @type( 'string' ) ownerId = '';
-    armTimerA = 0;
-    armTimerB = 0;
-    ttl = 0;
-}
 
 export class TrackDescriptorState extends Schema {
     @type( 'string' ) kind = 'procgen';

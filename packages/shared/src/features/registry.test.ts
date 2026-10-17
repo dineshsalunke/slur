@@ -1,13 +1,22 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { HeldPower } from '../combat/constants.js';
 import { SIM_FEATURES } from './registry.js';
 import { FEATURE_POWERS, sortFeatures } from './sim-hooks.js';
 
-test( 'the registry loads first without a TDZ cycle and lists bolt, mine, seeker, tug, boost and shield', () => {
+test( 'the registry loads first without a TDZ cycle and lists bolt, mine, seeker, tug, boost, shield and portal', () => {
     assert.deepEqual(
         SIM_FEATURES.map( ( f ) => f.id ),
-        [ 'bolt', 'mine', 'seeker', 'tug', 'boost', 'shield' ],
+        [ 'bolt', 'mine', 'seeker', 'tug', 'boost', 'shield', 'portal' ],
     );
+} );
+
+test( 'every held power except none has a run.use', () => {
+    const used = SIM_FEATURES.flatMap( ( f ) =>
+        f.power && f.openRun?.().use ? [ f.power.kind, ...( f.power.uses ?? [] ) ] : [],
+    );
+    const kinds = Object.values( HeldPower ).filter( ( k ) => k !== HeldPower.none );
+    assert.deepEqual( [ ...used ].sort(), [ ...kinds ].sort() );
 } );
 
 test( 'a shuffled registry sorts into the same order', () => {
@@ -15,7 +24,7 @@ test( 'a shuffled registry sorts into the same order', () => {
     const forward = sortFeatures( ids ).map( ( f ) => f.id );
     const reversed = sortFeatures( [ ...ids ].reverse() ).map( ( f ) => f.id );
     assert.deepEqual( reversed, forward );
-    assert.deepEqual( forward, [ 'aim', 'bolt', 'boost', 'mid', 'mine', 'seeker', 'shield', 'tug', 'zap' ] );
+    assert.deepEqual( forward, [ 'aim', 'bolt', 'boost', 'mid', 'mine', 'portal', 'seeker', 'shield', 'tug', 'zap' ] );
 } );
 
 test( 'a duplicate feature id throws', () => {

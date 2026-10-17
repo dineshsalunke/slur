@@ -6,7 +6,9 @@ describe( 'splitPickupLayout', () => {
     it( 'puts every core pickup in exactly one field, by its shared power, and leaves feature powers out', () => {
         const layout = pickupsOf( resolveTrack( procgenDescriptor( 7, 'weave' ) ) );
         const { portals } = splitPickupLayout( layout );
-        const featureKinds = new Set< number >( FEATURE_POWERS.map( ( p ) => p.kind ) );
+        const featureKinds = new Set< number >(
+            FEATURE_POWERS.map( ( p ) => p.kind ).filter( ( k ) => k !== HeldPower.portal ),
+        );
         const featured = layout.filter( ( a ) => featureKinds.has( pickupPower( a.id ) ) ).length;
 
         expect( featured ).toBeGreaterThan( 0 );

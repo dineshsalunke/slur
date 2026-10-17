@@ -1,5 +1,5 @@
-import { hopThroughPortal } from '../combat/portal.js';
 import { type FlightTuning, STRAFE_PRESS } from '../constants.js';
+import { hopThroughPortal } from '../features/portal/portal-hop.js';
 import { clearFeatures, featureCap, featureInput, featureThrust, tickFeatures } from '../features/sim-hooks.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
 import { floorUnder } from './floor-under.js';

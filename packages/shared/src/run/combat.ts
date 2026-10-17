@@ -1,10 +1,8 @@
-import { powerIn, spendPower, stepPickups } from '../combat/combat-step.js';
-import type { FireDir } from '../combat/fire-dir.js';
+import { stepPickups } from '../combat/combat-step.js';
 import type { Pickup } from '../combat/pickups.js';
-import type { PlayerState, RunState } from '../schema.js';
+import type { RunState } from '../schema.js';
 import type { Track } from '../sim/space.js';
 import type { SimConfig } from '../sim-config.js';
-import { isPortalPower, type PortalEnd, placePortal, stepPortals } from './portal-run.js';
 
 export type Broadcast = ( type: string, message: unknown ) => void;
 
@@ -28,24 +26,11 @@ export interface CombatPhases {
     readonly settle: ( dt: number ) => void;
 }
 
-export function firePower(
-    ctx: FireContext,
-    p: PlayerState,
-    ownerId: string,
-    slot: number,
-    dir: FireDir = 1,
-): PortalEnd | null {
-    if ( isPortalPower( powerIn( p, slot ) ) ) return placePortal( ctx, p, ownerId, slot, dir );
-    spendPower( p, slot );
-    return null;
-}
-
 export function stepCombat( ctx: CombatContext, dt: number, phases: CombatPhases ): void {
     const { state, broken, config } = ctx;
     phases.ward( dt );
     phases.strike( dt );
     phases.settle( dt );
-    stepPortals( state, dt );
     stepPickups( state.players.values(), ctx.pickups, state.pickupTaken, ctx.pickupRespawn, dt, config );
     mirrorBreaks( state, broken );
 }

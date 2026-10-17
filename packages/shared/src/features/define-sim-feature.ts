@@ -4,6 +4,7 @@ import type { FireDir } from '../combat/fire-dir.js';
 import type { MineEvent } from '../combat/mine-hit.js';
 import type { FlightTuning } from '../constants.js';
 import type { Broadcast } from '../run/combat.js';
+import type { FireIntent } from '../run/input-queue.js';
 import type { PlayerState, RunState } from '../schema.js';
 import type { PlayerInput } from '../sim/input.js';
 import type { Track } from '../sim/space.js';
@@ -38,9 +39,17 @@ export interface RunContext {
     readonly nextId: () => string;
 }
 
+export interface HopOrigin {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+}
+
 export interface RunHooks< S > {
     readonly open: () => S;
+    readonly tap?: ( ctx: RunContext, run: S, p: PlayerState, ownerId: string, intent: FireIntent ) => boolean;
     readonly use?: ( ctx: RunContext, run: S, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
+    readonly hop?: ( ctx: RunContext, run: S, victimId: string, from: HopOrigin, p: PlayerState ) => void;
     readonly ward?: ( ctx: RunContext, run: S, dt: number ) => void;
     readonly strike?: ( ctx: RunContext, run: S, dt: number ) => void;
     readonly settle?: ( ctx: RunContext, run: S, dt: number ) => void;
@@ -49,7 +58,9 @@ export interface RunHooks< S > {
 }
 
 export interface OpenRun {
+    readonly tap?: ( ctx: RunContext, p: PlayerState, ownerId: string, intent: FireIntent ) => boolean;
     readonly use?: ( ctx: RunContext, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
+    readonly hop?: ( ctx: RunContext, victimId: string, from: HopOrigin, p: PlayerState ) => void;
     readonly ward?: ( ctx: RunContext, dt: number ) => void;
     readonly strike?: ( ctx: RunContext, dt: number ) => void;
     readonly settle?: ( ctx: RunContext, dt: number ) => void;
@@ -57,13 +68,16 @@ export interface OpenRun {
     readonly reset?: ( ctx: RunContext ) => void;
 }
 
-export interface WeightedPower {
+interface PowerKinds {
     readonly kind: HeldPower;
+    readonly uses?: readonly HeldPower[];
+}
+
+export interface WeightedPower extends PowerKinds {
     readonly bagWeight: ( cfg: SimConfig ) => number;
 }
 
-export interface RestPower {
-    readonly kind: HeldPower;
+export interface RestPower extends PowerKinds {
     readonly bagRest: true;
 }
 
@@ -90,9 +104,11 @@ export interface SimFeature< F extends PlayerFieldSpecs = PlayerFieldSpecs > {
 function bindRun< S >( hooks: RunHooks< S > ): () => OpenRun {
     return () => {
         const run = hooks.open();
-        const { use, ward, strike, settle, tick, reset } = hooks;
+        const { tap, use, hop, ward, strike, settle, tick, reset } = hooks;
         return {
+            tap: tap && ( ( ctx, p, ownerId, intent ) => tap( ctx, run, p, ownerId, intent ) ),
             use: use && ( ( ctx, p, ownerId, slot, dir ) => use( ctx, run, p, ownerId, slot, dir ) ),
+            hop: hop && ( ( ctx, victimId, from, p ) => hop( ctx, run, victimId, from, p ) ),
             ward: ward && ( ( ctx, dt ) => ward( ctx, run, dt ) ),
             strike: strike && ( ( ctx, dt ) => strike( ctx, run, dt ) ),
             settle: settle && ( ( ctx, dt ) => settle( ctx, run, dt ) ),

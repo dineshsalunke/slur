@@ -34,25 +34,3 @@ export const HeldPower = {
     tug: 8,
 } as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
-
-export const PORTAL_HOP_MESSAGE = 'portalHop';
-export const PORTAL_FIZZLE_MESSAGE = 'portalFizzle';
-
-export interface PortalHopMessage {
-    fromX: number;
-    fromY: number;
-    fromZ: number;
-    x: number;
-    y: number;
-    z: number;
-    victimId: string;
-}
-
-export interface PortalFizzleMessage {
-    x: number;
-    y: number;
-    z: number;
-    ownerId: string;
-}
-
-export const PORTAL_RATIO = 0.1;

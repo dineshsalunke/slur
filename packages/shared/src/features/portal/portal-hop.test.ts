@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { PortalState } from '../combat/portal.js';
-import { FIXED_DT } from '../constants.js';
-import { SHIP_CLASSES } from '../ship-classes.js';
-import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
-import type { PlayerInput } from './input.js';
-import { HALF_WIDTH, SEG_LEN, type Segment, type Track } from './space.js';
-import { simulate } from './step.js';
-import { copySimShip, createSimWorld, type SimShip, spawnShip } from './types.js';
+import { FIXED_DT } from '../../constants.js';
+import { SHIP_CLASSES } from '../../ship-classes.js';
+import type { PlayerInput } from '../../sim/input.js';
+import { HALF_WIDTH, SEG_LEN, type Segment, type Track } from '../../sim/space.js';
+import { simulate } from '../../sim/step.js';
+import { copySimShip, createSimWorld, type SimShip, spawnShip } from '../../sim/types.js';
+import { DEFAULT_SIM_CONFIG } from '../../sim-config.js';
+import type { PortalState } from './portal.feature.js';
 
 const T = SHIP_CLASSES.fighter.tuning;
 

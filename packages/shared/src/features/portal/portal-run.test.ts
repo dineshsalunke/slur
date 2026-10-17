@@ -1,17 +1,27 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HeldPower, PORTAL_FIZZLE_MESSAGE, PORTAL_HOP_MESSAGE, type PortalHopMessage } from '../combat/constants.js';
-import { FIXED_DT } from '../constants.js';
-import { SEEKER_MISS_MESSAGE } from '../features/seeker/seeker.feature.js';
-import { PHASE } from '../race/director.js';
-import { PlayerState, Portal, RunState, Seeker } from '../schema.js';
-import { tuningForShip } from '../ship-classes.js';
-import { HALF_WIDTH, SEG_LEN, type Segment, type Track } from '../sim/space.js';
-import { procgenDescriptor } from '../sim/track-provider.js';
-import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
-import type { FireContext } from './combat.js';
-import { isDoubleTap, placePortal, portalHopped, stepPortals, throwPortalFar } from './portal-run.js';
-import { RunSim } from './run-sim.js';
+import { HeldPower } from '../../combat/constants.js';
+import { FIXED_DT } from '../../constants.js';
+import { PHASE } from '../../race/director.js';
+import type { FireContext } from '../../run/combat.js';
+import { RunSim } from '../../run/run-sim.js';
+import { PlayerState, RunState, Seeker } from '../../schema.js';
+import { tuningForShip } from '../../ship-classes.js';
+import { HALF_WIDTH, SEG_LEN, type Segment, type Track } from '../../sim/space.js';
+import { procgenDescriptor } from '../../sim/track-provider.js';
+import { DEFAULT_SIM_CONFIG } from '../../sim-config.js';
+import { openRunFeatures } from '../run-features.js';
+import { SEEKER_MISS_MESSAGE } from '../seeker/seeker.feature.js';
+import {
+    isDoubleTap,
+    PORTAL_FIZZLE_MESSAGE,
+    PORTAL_HOP_MESSAGE,
+    Portal,
+    type PortalHopMessage,
+    placePortal,
+    stepPortals,
+    throwPortalFar,
+} from './portal.feature.js';
 
 const CFG = DEFAULT_SIM_CONFIG;
 
@@ -141,10 +151,14 @@ test( 'a hop broadcasts both points and makes every seeker on the victim miss', 
     other.targetId = 'w';
     ctx.state.seekers.set( '1', chasing );
     ctx.state.seekers.set( '2', other );
-    portalHopped( ctx.state, 'v', { x: 0, y: 0, z: 50 }, p, ctx.broadcast );
+    const run = { ...ctx, broken: new Set< number >(), shieldAbsorbs: () => false, resolveMine: () => {} };
+    openRunFeatures().hop( { ...run, nextId: () => '0' }, 'v', { x: 0, y: 0, z: 50 }, p );
     const hop = sent.find( ( s ) => s.type === PORTAL_HOP_MESSAGE )?.message as PortalHopMessage;
     assert.deepEqual( [ hop.fromZ, hop.z, hop.victimId ], [ 50, 400, 'v' ] );
-    assert.equal( sent.filter( ( s ) => s.type === SEEKER_MISS_MESSAGE ).length, 1 );
+    assert.deepEqual(
+        sent.map( ( s ) => s.type ),
+        [ PORTAL_HOP_MESSAGE, SEEKER_MISS_MESSAGE ],
+    );
     assert.deepEqual( [ ...ctx.state.seekers.keys() ], [ '2' ] );
 } );
 

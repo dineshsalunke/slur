@@ -1,7 +1,7 @@
 import { HeldPower } from '../../combat/constants.js';
 import { defineSimFeature, type PlayerFieldSpec, type SimFeature } from '../define-sim-feature.js';
 import { SEEKER_HIT_MESSAGE, SEEKER_MISS_MESSAGE } from './seeker-constants.js';
-import { fireSeeker, strikeSeekers } from './seeker-run.js';
+import { fireSeeker, loseHopLocks, strikeSeekers } from './seeker-run.js';
 
 export {
     aimSeeker,
@@ -23,6 +23,7 @@ export const seekerFeature: SimFeature< Record< never, PlayerFieldSpec > > = def
     run: {
         open: () => undefined,
         use: fireSeeker,
+        hop: loseHopLocks,
         strike: strikeSeekers,
     },
     messages: [ SEEKER_HIT_MESSAGE, SEEKER_MISS_MESSAGE ],

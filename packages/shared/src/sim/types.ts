@@ -1,4 +1,4 @@
-import type { PortalState } from '../combat/portal.js';
+import type { PortalState } from '../features/portal/portal-hop.js';
 import { FEATURE_SHIP_DEFAULTS, SIM_FLOAT_KEYS, SIM_SHIP_KEYS, type SimShipFields } from '../player-fields.js';
 
 export { SIM_FLOAT_KEYS, SIM_SHIP_KEYS };

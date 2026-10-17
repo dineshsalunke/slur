@@ -2,7 +2,7 @@ import type { WeightedPower } from '../features/define-sim-feature.js';
 import { FEATURE_POWERS } from '../features/sim-hooks.js';
 import { hash2, mulberry32 } from '../sim/rng.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { HeldPower } from './constants.js';
+import type { HeldPower } from './constants.js';
 
 export const POWER_BAG_SIZE = 20;
 export const POWER_RUN_CAP = 2;
@@ -34,11 +34,8 @@ export function bagCounts( cfg: SimConfig = DEFAULT_SIM_CONFIG ): PowerCount[] {
         left -= share;
         return share;
     };
-    const weights: [ HeldPower, number ][] = [
-        [ HeldPower.portal, cfg.portalRatio ],
-        ...weighted().map( ( p ): [ HeldPower, number ] => [ p.kind, p.bagWeight( cfg ) ] ),
-    ];
-    const drawn = weights
+    const drawn = weighted()
+        .map( ( p ): [ HeldPower, number ] => [ p.kind, p.bagWeight( cfg ) ] )
         .sort( ( a, b ) => a[ 0 ] - b[ 0 ] )
         .map( ( [ power, ratio ] ): [ HeldPower, number ] => [ power, take( ratio ) ] );
     const shares: [ HeldPower, number ][] = [ [ restPower(), left ], ...drawn ];
@@ -107,7 +104,7 @@ function featureWeightKey( cfg: SimConfig ): string {
 }
 
 export function powerBag( salt: string, index: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): readonly HeldPower[] {
-    const key = `${ salt }|${ index }|${ cfg.portalRatio }${ featureWeightKey( cfg ) }`;
+    const key = `${ salt }|${ index }${ featureWeightKey( cfg ) }`;
     let bag = bags.get( key );
     if ( bag === undefined ) {
         if ( bags.size >= BAG_CACHE_LIMIT ) bags.clear();

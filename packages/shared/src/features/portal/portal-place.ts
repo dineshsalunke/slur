@@ -1,61 +1,8 @@
-import { intersectRuns, type Run } from '../sim/clearance.js';
-import { HALF_WIDTH, type Segment, spanZ0, spanZ1, type Track } from '../sim/space.js';
-import { PORTAL_RATIO } from './constants.js';
-import type { FireDir } from './fire-dir.js';
-
-export interface PortalConfig {
-    portalR: number;
-    portalY: number;
-    portalRideY: number;
-    portalNearLeadS: number;
-    portalFarS: number;
-    portalBackGap: number;
-    portalArmS: number;
-    portalTtl: number;
-    portalDoubleTapTicks: number;
-    portalClearW: number;
-    portalClearHalfL: number;
-    portalExitGap: number;
-    portalFinishGap: number;
-    portalZStep: number;
-    portalRatio: number;
-}
-
-export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
-    portalR: 5,
-    portalY: 3,
-    portalRideY: 0.8,
-    portalNearLeadS: 0.4,
-    portalFarS: 1,
-    portalBackGap: 1,
-    portalArmS: 0.3,
-    portalTtl: 9,
-    portalDoubleTapTicks: 15,
-    portalClearW: 12,
-    portalClearHalfL: 11.5,
-    portalExitGap: 0.5,
-    portalFinishGap: 20,
-    portalZStep: 1,
-    portalRatio: PORTAL_RATIO,
-};
-
-export interface PortalSpot {
-    x: number;
-    y: number;
-    z: number;
-}
-
-export interface PortalState {
-    ax: number;
-    ay: number;
-    az: number;
-    bx: number;
-    by: number;
-    bz: number;
-    ends: number;
-    armA: boolean;
-    armB: boolean;
-}
+import type { FireDir } from '../../combat/fire-dir.js';
+import { intersectRuns, type Run } from '../../sim/clearance.js';
+import { HALF_WIDTH, type Segment, spanZ0, spanZ1, type Track } from '../../sim/space.js';
+import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './portal-constants.js';
+import type { PortalSpot } from './portal-hop.js';
 
 export interface PortalPlacer {
     x: number;
@@ -66,18 +13,6 @@ export interface PortalPlacer {
 export interface PortalHull {
     halfL: number;
     maxCruise: number;
-}
-
-export interface PortalRider {
-    x: number;
-    y: number;
-    z: number;
-    vz: number;
-    dead: boolean;
-    finished: boolean;
-    lastSafeX: number;
-    lastSafeZ: number;
-    portalHops: number;
 }
 
 export function portalReach( hull: PortalHull, cfg: PortalConfig, dir: FireDir ): number {
@@ -198,53 +133,4 @@ export function placePortalEnd(
         z -= dir * cfg.portalZStep;
     }
     return null;
-}
-
-function crossed( prevZ: number, z: number, plane: number ): boolean {
-    return ( prevZ < plane && z >= plane ) || ( prevZ > plane && z <= plane );
-}
-
-export function portalHalfChord( dy: number, cfg: PortalConfig = DEFAULT_PORTAL_CONFIG ): number {
-    const r2 = cfg.portalR * cfg.portalR - dy * dy;
-    return r2 > 0 ? Math.sqrt( r2 ) : -1;
-}
-
-function enters( s: PortalRider, prevZ: number, halfW: number, x: number, y: number, z: number, cfg: PortalConfig ) {
-    if ( ! crossed( prevZ, s.z, z ) ) return false;
-    const chord = portalHalfChord( s.y + cfg.portalRideY - y - cfg.portalY, cfg );
-    return chord >= 0 && Math.abs( s.x - x ) < chord + halfW;
-}
-
-function exitAt( s: PortalRider, halfL: number, from: PortalSpot, to: PortalSpot, cfg: PortalConfig ): void {
-    const sign = s.vz >= 0 ? 1 : -1;
-    s.y = to.y + Math.max( 0, s.y - from.y );
-    s.x = to.x;
-    s.z = to.z + sign * ( cfg.portalR + halfL + cfg.portalExitGap );
-    s.lastSafeX = to.x;
-    s.lastSafeZ = to.z;
-    s.portalHops = ( s.portalHops + 1 ) & 0xff;
-}
-
-export function hopThroughPortal(
-    s: PortalRider,
-    prevZ: number,
-    hull: { halfW: number; halfL: number },
-    portals: Iterable< PortalState >,
-    cfg: PortalConfig = DEFAULT_PORTAL_CONFIG,
-): boolean {
-    if ( s.dead || s.finished ) return false;
-    for ( const p of portals ) {
-        if ( p.ends < 2 ) continue;
-        const a = { x: p.ax, y: p.ay, z: p.az };
-        const b = { x: p.bx, y: p.by, z: p.bz };
-        if ( p.armA && enters( s, prevZ, hull.halfW, a.x, a.y, a.z, cfg ) ) {
-            exitAt( s, hull.halfL, a, b, cfg );
-            return true;
-        }
-        if ( p.armB && enters( s, prevZ, hull.halfW, b.x, b.y, b.z, cfg ) ) {
-            exitAt( s, hull.halfL, b, a, cfg );
-            return true;
-        }
-    }
-    return false;
 }

@@ -1,5 +1,4 @@
 import { PICKUP_GRAB_R, PICKUP_RESPAWN_S, STUN_SECONDS } from './combat/constants.js';
-import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
 import { BOLT_HALF, BOLT_SPEED, BOLT_TTL } from './features/bolt/bolt-constants.js';
 import {
     BOOST_EASE_S,
@@ -23,6 +22,7 @@ import {
     MINE_TRIGGER_R,
     MINE_TTL,
 } from './features/mine/mine-constants.js';
+import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './features/portal/portal-constants.js';
 import {
     SEEKER_DROP_RATE,
     SEEKER_FLY_Y,

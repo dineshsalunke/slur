@@ -64,3 +64,15 @@ export function resolveSeekerEvent( ctx: RunContext, event: SeekerEvent ): void 
     broadcast( HIT_MESSAGE, { x, y, z, victimId: event.targetId } );
     broadcast( SEEKER_HIT_MESSAGE, event );
 }
+
+export function loseHopLocks( ctx: RunContext, _run: undefined, victimId: string ): void {
+    const { state, broadcast } = ctx;
+    const lost: string[] = [];
+    state.seekers.forEach( ( s, id ) => {
+        if ( s.targetId !== victimId ) return;
+        lost.push( id );
+        const miss: SeekerEvent = { outcome: 'miss', x: s.x, y: s.y, z: s.z, targetId: victimId, ownerId: s.ownerId };
+        broadcast( SEEKER_MISS_MESSAGE, miss );
+    } );
+    for ( const id of lost ) state.seekers.delete( id );
+}

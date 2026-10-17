@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SHIP_CLASSES } from '../ship-classes.js';
-import { BLOCK_HEIGHT, type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from '../sim/space.js';
+import { SHIP_CLASSES } from '../../ship-classes.js';
+import { BLOCK_HEIGHT, type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from '../../sim/space.js';
 import {
     DEFAULT_PORTAL_CONFIG as CFG,
     clearSpotAt,
@@ -12,7 +12,7 @@ import {
     portalHalfChord,
     portalReach,
     portalTargetZ,
-} from './portal.js';
+} from './portal.feature.js';
 
 const HULL = SHIP_CLASSES.fighter.tuning;
 const HALF_CLEAR = CFG.portalClearW / 2;

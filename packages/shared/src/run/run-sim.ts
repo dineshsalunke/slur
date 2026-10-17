@@ -26,7 +26,7 @@ import type { Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 import { copySimShip, createSimWorld, froundSimShip, spawnShip } from '../sim/types.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { type Broadcast, firePower, stepCombat } from './combat.js';
+import { type Broadcast, stepCombat } from './combat.js';
 import {
     clearQueue,
     emptyQueue,
@@ -37,7 +37,6 @@ import {
     type PlayerQueue,
     takeFire,
 } from './input-queue.js';
-import { isDoubleTap, type PortalTap, portalHopped, throwPortalFar } from './portal-run.js';
 import { type RaceWorld, stepRacer } from './racer.js';
 import { startPointFor } from './start-point.js';
 
@@ -64,7 +63,6 @@ export class RunSim {
     private readonly world: RaceWorld;
     private readonly pickups: Pickup[];
     private readonly pickupRespawn = new Map< string, number >();
-    private readonly portalTaps = new Map< string, PortalTap >();
     private readonly config: SimConfig;
     private readonly features = openRunFeatures();
     private readonly featureCtx: RunContext;
@@ -220,7 +218,6 @@ export class RunSim {
 
     leave( sessionId: string ): void {
         this.queues.delete( sessionId );
-        this.portalTaps.delete( sessionId );
         this.state.players.delete( sessionId );
         this.reassignHost();
     }
@@ -243,8 +240,6 @@ export class RunSim {
         this.state.projectiles.clear();
         this.state.seekers.clear();
         this.state.mines.clear();
-        this.state.portals.clear();
-        this.portalTaps.clear();
         this.state.pickupTaken.clear();
         this.state.blockBroken.clear();
         this.world.blocks.broken.clear();
@@ -266,7 +261,7 @@ export class RunSim {
             const hops = player.portalHops;
             const from = { x: player.x, y: player.y, z: player.z };
             stepRacer( this.world, player, sessionId, input, dt, this.hooks.broadcast );
-            if ( player.portalHops !== hops ) portalHopped( this.state, sessionId, from, player, this.hooks.broadcast );
+            if ( player.portalHops !== hops ) this.features.hop( this.featureCtx, sessionId, from, player );
             this.fireReady( player, sessionId, q );
         }
     }
@@ -277,22 +272,10 @@ export class RunSim {
     }
 
     private fire( player: PlayerState, sessionId: string, intent: FireIntent ): void {
-        const ctx = {
-            state: this.state,
-            track: this.track,
-            broken: this.world.blocks.broken,
-            config: this.config,
-            broadcast: this.hooks.broadcast,
-        };
-        const tap = this.portalTaps.get( sessionId );
-        this.portalTaps.delete( sessionId );
-        if ( tap && isDoubleTap( tap, intent, this.config ) && throwPortalFar( ctx, player, sessionId, tap ) ) return;
+        if ( this.features.tap( this.featureCtx, player, sessionId, intent ) ) return;
         if ( ! canFire( player, intent.slot ) ) return;
         const kind = powerIn( player, intent.slot );
-        if ( this.features.use( this.featureCtx, player, sessionId, intent.slot, intent.dir, kind ) ) return;
-        this.nextProjectileId++;
-        const end = firePower( ctx, player, sessionId, intent.slot, intent.dir );
-        if ( end ) this.portalTaps.set( sessionId, { slot: intent.slot, dir: intent.dir, seq: intent.seq, end } );
+        this.features.use( this.featureCtx, player, sessionId, intent.slot, intent.dir, kind );
     }
 
     private stepRace( dt: number ): void {

@@ -1,20 +1,20 @@
-import { powerIn, spendPower } from '../combat/combat-step.js';
+import { HeldPower, POWER_SLOTS } from '../../combat/constants.js';
+import type { FireDir } from '../../combat/fire-dir.js';
+import type { FireContext } from '../../run/combat.js';
+import type { FireIntent } from '../../run/input-queue.js';
+import type { PlayerState, RunState } from '../../schema.js';
+import { tuningForShip } from '../../ship-classes.js';
+import type { SimConfig } from '../../sim-config.js';
+import type { HopOrigin, RunContext } from '../define-sim-feature.js';
 import {
-    HeldPower,
     PORTAL_FIZZLE_MESSAGE,
     PORTAL_HOP_MESSAGE,
-    POWER_SLOTS,
     type PortalFizzleMessage,
     type PortalHopMessage,
-} from '../combat/constants.js';
-import type { FireDir } from '../combat/fire-dir.js';
-import { type PortalSpot, placePortalEnd } from '../combat/portal.js';
-import { SEEKER_MISS_MESSAGE, type SeekerEvent } from '../features/seeker/seeker.feature.js';
-import { type PlayerState, Portal, type RunState } from '../schema.js';
-import { tuningForShip } from '../ship-classes.js';
-import type { SimConfig } from '../sim-config.js';
-import type { Broadcast, FireContext } from './combat.js';
-import type { FireIntent } from './input-queue.js';
+} from './portal-constants.js';
+import type { PortalSpot } from './portal-hop.js';
+import { placePortalEnd } from './portal-place.js';
+import { Portal } from './portal-schema.js';
 
 export type PortalEnd = 'a' | 'b';
 
@@ -25,14 +25,13 @@ export interface PortalTap {
     end: PortalEnd;
 }
 
-export interface HopOrigin {
-    x: number;
-    y: number;
-    z: number;
+export interface PortalRun {
+    readonly taps: Map< string, PortalTap >;
+    seq: number;
 }
 
-export function isPortalPower( power: number ): boolean {
-    return power === HeldPower.portal || power === HeldPower.portalB;
+export function openPortalRun(): PortalRun {
+    return { taps: new Map(), seq: 0 };
 }
 
 function setEnd( pair: Portal, end: PortalEnd, spot: PortalSpot, cfg: SimConfig ): void {
@@ -76,11 +75,11 @@ export function placePortal(
         return null;
     }
     const pair = ctx.state.portals.get( ownerId );
-    if ( powerIn( p, slot ) === HeldPower.portalB && pair?.ends === 1 ) {
+    if ( p.slots[ slot ] === HeldPower.portalB && pair?.ends === 1 ) {
         setEnd( pair, 'b', spot, ctx.config );
         pair.ends = 2;
         pair.ttl = ctx.config.portalTtl;
-        spendPower( p, slot );
+        p.slots[ slot ] = HeldPower.none;
         return 'b';
     }
     dropSecondCharge( p );
@@ -108,6 +107,33 @@ export function throwPortalFar( ctx: FireContext, p: PlayerState, ownerId: strin
     return true;
 }
 
+export function tapPortal(
+    ctx: RunContext,
+    run: PortalRun,
+    p: PlayerState,
+    ownerId: string,
+    intent: FireIntent,
+): boolean {
+    run.seq = intent.seq;
+    const tap = run.taps.get( ownerId );
+    run.taps.delete( ownerId );
+    return tap !== undefined && isDoubleTap( tap, intent, ctx.config ) && throwPortalFar( ctx, p, ownerId, tap );
+}
+
+export function usePortal(
+    ctx: RunContext,
+    run: PortalRun,
+    p: PlayerState,
+    ownerId: string,
+    slot: number,
+    dir: FireDir,
+): boolean {
+    ctx.nextId();
+    const end = placePortal( ctx, p, ownerId, slot, dir );
+    if ( end ) run.taps.set( ownerId, { slot, dir, seq: run.seq, end } );
+    return false;
+}
+
 export function stepPortals( state: RunState, dt: number ): void {
     const expired: string[] = [];
     state.portals.forEach( ( pair, ownerId ) => {
@@ -132,13 +158,11 @@ export function stepPortals( state: RunState, dt: number ): void {
     }
 }
 
-export function portalHopped(
-    state: RunState,
-    victimId: string,
-    from: HopOrigin,
-    p: PlayerState,
-    broadcast: Broadcast,
-): void {
+export function settlePortals( ctx: RunContext, _run: PortalRun, dt: number ): void {
+    stepPortals( ctx.state, dt );
+}
+
+export function hopPortal( ctx: RunContext, _run: PortalRun, victimId: string, from: HopOrigin, p: PlayerState ): void {
     const hop: PortalHopMessage = {
         fromX: from.x,
         fromY: from.y,
@@ -148,13 +172,10 @@ export function portalHopped(
         z: p.z,
         victimId,
     };
-    broadcast( PORTAL_HOP_MESSAGE, hop );
-    const lost: string[] = [];
-    state.seekers.forEach( ( s, id ) => {
-        if ( s.targetId !== victimId ) return;
-        lost.push( id );
-        const miss: SeekerEvent = { outcome: 'miss', x: s.x, y: s.y, z: s.z, targetId: victimId, ownerId: s.ownerId };
-        broadcast( SEEKER_MISS_MESSAGE, miss );
-    } );
-    for ( const id of lost ) state.seekers.delete( id );
+    ctx.broadcast( PORTAL_HOP_MESSAGE, hop );
+}
+
+export function resetPortals( ctx: RunContext, run: PortalRun ): void {
+    ctx.state.portals.clear();
+    run.taps.clear();
 }
