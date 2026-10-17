@@ -35,11 +35,6 @@ export const HeldPower = {
 } as const;
 export type HeldPower = ( typeof HeldPower )[ keyof typeof HeldPower ];
 
-export const SHIELD_POP_MESSAGE = 'shieldPop';
-
-export const SHIELD_RATIO = 0.15;
-export const SHIELD_S = 5;
-
 export const PORTAL_HOP_MESSAGE = 'portalHop';
 export const PORTAL_FIZZLE_MESSAGE = 'portalFizzle';
 

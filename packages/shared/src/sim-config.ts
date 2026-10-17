@@ -1,4 +1,4 @@
-import { PICKUP_GRAB_R, PICKUP_RESPAWN_S, SHIELD_RATIO, SHIELD_S, STUN_SECONDS } from './combat/constants.js';
+import { PICKUP_GRAB_R, PICKUP_RESPAWN_S, STUN_SECONDS } from './combat/constants.js';
 import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
 import { BOLT_HALF, BOLT_SPEED, BOLT_TTL } from './features/bolt/bolt-constants.js';
 import {
@@ -44,6 +44,7 @@ import {
     SEEKER_WINDOW_U,
     type SeekerWindowMode,
 } from './features/seeker/seeker-constants.js';
+import { SHIELD_RATIO, SHIELD_S } from './features/shield/shield-constants.js';
 import {
     SLOW_CAP,
     TOW_JUMP,

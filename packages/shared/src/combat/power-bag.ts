@@ -35,7 +35,6 @@ export function bagCounts( cfg: SimConfig = DEFAULT_SIM_CONFIG ): PowerCount[] {
         return share;
     };
     const weights: [ HeldPower, number ][] = [
-        [ HeldPower.shield, cfg.shieldRatio ],
         [ HeldPower.portal, cfg.portalRatio ],
         ...weighted().map( ( p ): [ HeldPower, number ] => [ p.kind, p.bagWeight( cfg ) ] ),
     ];
@@ -108,7 +107,7 @@ function featureWeightKey( cfg: SimConfig ): string {
 }
 
 export function powerBag( salt: string, index: number, cfg: SimConfig = DEFAULT_SIM_CONFIG ): readonly HeldPower[] {
-    const key = `${ salt }|${ index }|${ cfg.shieldRatio }|${ cfg.portalRatio }${ featureWeightKey( cfg ) }`;
+    const key = `${ salt }|${ index }|${ cfg.portalRatio }${ featureWeightKey( cfg ) }`;
     let bag = bags.get( key );
     if ( bag === undefined ) {
         if ( bags.size >= BAG_CACHE_LIMIT ) bags.clear();

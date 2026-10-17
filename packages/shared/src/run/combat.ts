@@ -1,8 +1,6 @@
 import { powerIn, spendPower, stepPickups } from '../combat/combat-step.js';
-import { HeldPower, type HitMessage, SHIELD_POP_MESSAGE } from '../combat/constants.js';
 import type { FireDir } from '../combat/fire-dir.js';
 import type { Pickup } from '../combat/pickups.js';
-import { absorbHit, dropShield, raiseShield, stepShield } from '../combat/shield.js';
 import type { PlayerState, RunState } from '../schema.js';
 import type { Track } from '../sim/space.js';
 import type { SimConfig } from '../sim-config.js';
@@ -25,6 +23,7 @@ export interface CombatContext extends FireContext {
 }
 
 export interface CombatPhases {
+    readonly ward: ( dt: number ) => void;
     readonly strike: ( dt: number ) => void;
     readonly settle: ( dt: number ) => void;
 }
@@ -36,25 +35,14 @@ export function firePower(
     slot: number,
     dir: FireDir = 1,
 ): PortalEnd | null {
-    const power = powerIn( p, slot );
-    if ( isPortalPower( power ) ) return placePortal( ctx, p, ownerId, slot, dir );
+    if ( isPortalPower( powerIn( p, slot ) ) ) return placePortal( ctx, p, ownerId, slot, dir );
     spendPower( p, slot );
-    if ( power === HeldPower.shield ) raiseShield( p, ctx.config.shieldS );
     return null;
-}
-
-export function shieldAbsorbs( v: PlayerState, at: HitMessage, broadcast: Broadcast ): boolean {
-    if ( ! absorbHit( v ) ) return false;
-    broadcast( SHIELD_POP_MESSAGE, at );
-    return true;
 }
 
 export function stepCombat( ctx: CombatContext, dt: number, phases: CombatPhases ): void {
     const { state, broken, config } = ctx;
-    state.players.forEach( ( p ) => {
-        if ( p.dead ) dropShield( p );
-        else stepShield( p, dt );
-    } );
+    phases.ward( dt );
     phases.strike( dt );
     phases.settle( dt );
     stepPortals( state, dt );

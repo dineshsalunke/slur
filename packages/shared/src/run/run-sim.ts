@@ -1,11 +1,11 @@
 import { canFire, dropPower, isSlot, powerIn } from '../combat/combat-step.js';
 import { HeldPower, POWER_SLOTS, type PowerSlotMessage } from '../combat/constants.js';
 import { type Pickup, pickupsOf } from '../combat/pickups.js';
-import { dropShield } from '../combat/shield.js';
 import { COLOR_COUNT, COUNTDOWN_SECONDS, FIXED_DT, RACE_GRACE_SECONDS } from '../constants.js';
 import type { RunContext } from '../features/define-sim-feature.js';
 import { resolveMineEvent } from '../features/mine/mine.feature.js';
 import { openRunFeatures } from '../features/run-features.js';
+import { shieldAbsorbs } from '../features/shield/shield.feature.js';
 import {
     isColorId,
     isStalled,
@@ -26,7 +26,7 @@ import type { Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 import { copySimShip, createSimWorld, froundSimShip, spawnShip } from '../sim/types.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { type Broadcast, firePower, shieldAbsorbs, stepCombat } from './combat.js';
+import { type Broadcast, firePower, stepCombat } from './combat.js';
 import {
     clearQueue,
     emptyQueue,
@@ -133,6 +133,7 @@ export class RunSim {
                     },
                     dt,
                     {
+                        ward: ( step ) => this.features.ward( this.featureCtx, step ),
                         strike: ( step ) => this.features.strike( this.featureCtx, step ),
                         settle: ( step ) => this.features.settle( this.featureCtx, step ),
                     },
@@ -248,11 +249,10 @@ export class RunSim {
         this.state.blockBroken.clear();
         this.world.blocks.broken.clear();
         this.pickupRespawn.clear();
-        this.features.reset();
+        this.features.reset( this.featureCtx );
         this.nextProjectileId = 0;
         this.state.players.forEach( ( p ) => {
             for ( let i = 0; i < POWER_SLOTS; i++ ) p.slots[ i ] = HeldPower.none;
-            dropShield( p );
         } );
     }
 

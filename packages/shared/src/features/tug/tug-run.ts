@@ -52,7 +52,7 @@ export function stepTugThrows( ctx: RunContext, throws: TugThrow[], dt: number )
     throws.length = kept;
 }
 
-export function clearTugThrows( throws: TugThrow[] ): void {
+export function clearTugThrows( _ctx: RunContext, throws: TugThrow[] ): void {
     throws.length = 0;
 }
 

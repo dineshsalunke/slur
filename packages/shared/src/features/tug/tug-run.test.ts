@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { stepPickups } from '../../combat/combat-step.js';
-import { HeldPower, SHIELD_POP_MESSAGE } from '../../combat/constants.js';
+import { HeldPower } from '../../combat/constants.js';
 import type { FireDir } from '../../combat/fire-dir.js';
-import { raiseShield } from '../../combat/shield.js';
 import { FIXED_DT } from '../../constants.js';
-import { shieldAbsorbs } from '../../run/combat.js';
 import { stepPortals } from '../../run/portal-run.js';
 import { PlayerState, Portal, RunState } from '../../schema.js';
 import { stunDurationForShip } from '../../ship-classes.js';
@@ -13,6 +11,7 @@ import { type Block, HALF_WIDTH, SEG_LEN, type Segment, type Track } from '../..
 import { DEFAULT_SIM_CONFIG } from '../../sim-config.js';
 import type { RunContext } from '../define-sim-feature.js';
 import { openRunFeatures, type RunFeatures } from '../run-features.js';
+import { raiseShield, SHIELD_POP_MESSAGE, shieldAbsorbs } from '../shield/shield.feature.js';
 import { tugFeature } from './tug.feature.js';
 import { type TugEvent, throwSeconds } from './tug.js';
 import { TUG_MESSAGE } from './tug-constants.js';

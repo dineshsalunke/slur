@@ -41,6 +41,13 @@ function playerOf( room: RunRoom, sessionId: string ): PlayerState {
     return p;
 }
 
+function wireValues( p: PlayerState ): Record< string, unknown > {
+    const json: Record< string, unknown > = p.toJSON();
+    return Object.fromEntries(
+        Object.entries( json ).map( ( [ k, v ] ) => [ k, typeof v === 'number' ? Math.fround( v ) : v ] ),
+    );
+}
+
 function arm( p: PlayerState, ...powers: HeldPower[] ): void {
     for ( let i = 0; i < POWER_SLOTS; i++ ) p.slots[ i ] = powers[ i ] ?? HeldPower.none;
 }
@@ -110,7 +117,7 @@ describe( 'RunRoom shield', () => {
             await room.waitForMessage( USE_POWERUP_MESSAGE );
         }
 
-        return { room, other, shooter, victim, pops, hits: () => hits, raise, shoot };
+        return { room, host, other, shooter, victim, pops, hits: () => hits, raise, shoot };
     }
 
     test( 'a shield raises for shieldS, fires nothing, and lapses at the end of the window', async () => {
@@ -180,6 +187,27 @@ describe( 'RunRoom shield', () => {
         room.sim.clearCombat();
         assert.equal( victim.shielded, false );
         assert.equal( victim.shieldTimer, 0 );
+    } );
+
+    test( 'a raised shield reaches both clients, and every player field decodes at its new index', async () => {
+        const { host, other, victim, raise } = await duel();
+        victim.boostTimer = 1.5;
+        victim.tugTimer = 0.75;
+        victim.glideTimer = 1.25;
+        await raise();
+        assert.equal( victim.shielded, true );
+
+        await delay( 100 );
+        const want = wireValues( victim );
+        assert.ok( Object.keys( want ).length >= 37, `${ Object.keys( want ).length } wire fields` );
+        assert.equal( 'shieldTimer' in want, false, 'shieldTimer stays off the wire' );
+        for ( const client of [ host, other ] ) {
+            const decoded = client.state.players.get( other.sessionId );
+            assert.ok( decoded, 'the client decodes the shielded racer' );
+            assert.deepEqual( wireValues( decoded ), want );
+            assert.equal( decoded.shielded, true, 'shielded decodes at its new index' );
+            assert.ok( decoded.boostTimer > 0, 'the field before it still decodes' );
+        }
     } );
 } );
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { absorbHit, raiseShield, type ShieldHolder, stepShield } from './shield.js';
+import { absorbHit, raiseShield, type ShieldHolder, stepShield } from './shield-status.js';
 
 const DT = 1 / 60;
 
