@@ -34,7 +34,6 @@ const WIRE_ORDER = [
     [ 'stunTimer', 'float32' ],
     [ 'heldPower', 'uint8' ],
     [ 'slots', 'array:uint8' ],
-    [ 'boostTimer', 'float32' ],
     [ 'shielded', 'boolean' ],
     [ 'portalHops', 'uint8' ],
     [ 'strafeHeld', 'int8' ],
@@ -46,6 +45,7 @@ const WIRE_ORDER = [
     [ 'slowTimer', 'float32' ],
     [ 'towTimer', 'float32' ],
     [ 'tugAnchorZ', 'float32' ],
+    [ 'boostTimer', 'float32' ],
 ] as const;
 
 const SIM_KEYS = [

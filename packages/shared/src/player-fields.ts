@@ -41,7 +41,6 @@ export const CORE_PLAYER_FIELDS = {
         array: 'uint8',
         default: new ArraySchema< number >( ...Array< number >( POWER_SLOTS ).fill( HeldPower.none ) ),
     },
-    boostTimer: SIM_FLOAT,
     shielded: FALSE,
     shieldTimer: LOCAL_FLOAT,
     portalHops: { type: 'uint8', default: 0, sim: true },

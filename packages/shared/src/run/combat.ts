@@ -1,4 +1,4 @@
-import { powerIn, spendPower, startBoost, stepPickups } from '../combat/combat-step.js';
+import { powerIn, spendPower, stepPickups } from '../combat/combat-step.js';
 import { HeldPower, type HitMessage, SHIELD_POP_MESSAGE } from '../combat/constants.js';
 import type { FireDir } from '../combat/fire-dir.js';
 import type { Pickup } from '../combat/pickups.js';
@@ -39,8 +39,7 @@ export function firePower(
     const power = powerIn( p, slot );
     if ( isPortalPower( power ) ) return placePortal( ctx, p, ownerId, slot, dir );
     spendPower( p, slot );
-    if ( power === HeldPower.boost ) startBoost( p, ctx.config );
-    else if ( power === HeldPower.shield ) raiseShield( p, ctx.config.shieldS );
+    if ( power === HeldPower.shield ) raiseShield( p, ctx.config.shieldS );
     return null;
 }
 

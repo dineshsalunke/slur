@@ -11,6 +11,7 @@ export * from './combat/shield.js';
 export * from './combat/target-lock.js';
 export * from './constants.js';
 export * from './features/bolt/bolt.feature.js';
+export * from './features/boost/boost.feature.js';
 export * from './features/define-sim-feature.js';
 export * from './features/mine/mine.feature.js';
 export * from './features/registry.js';

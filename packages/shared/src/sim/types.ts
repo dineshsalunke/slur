@@ -24,7 +24,6 @@ export function spawnShip( x = 0, z = 0 ): SimShip {
         lastSafeZ: z,
         finished: false,
         stunTimer: 0,
-        boostTimer: 0,
         glideTimer: 0,
         portalHops: 0,
         strafeHeld: 0,

@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { canFire, startBoost } from '../combat/combat-step.js';
-import { HeldPower } from '../combat/constants.js';
-import { FIXED_DT, type FlightTuning } from '../constants.js';
-import { ALL_CLASS_TUNINGS } from '../ship-classes.js';
-import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
-import { emptyInput } from './input.js';
-import { HALF_WIDTH, type Segment, type Track } from './space.js';
-import { boostCap, simulate } from './step.js';
-import { copySimShip, type SimShip, spawnShip } from './types.js';
+import { canFire } from '../../combat/combat-step.js';
+import { HeldPower } from '../../combat/constants.js';
+import { FIXED_DT, type FlightTuning } from '../../constants.js';
+import { ALL_CLASS_TUNINGS } from '../../ship-classes.js';
+import { emptyInput } from '../../sim/input.js';
+import { HALF_WIDTH, type Segment, type Track } from '../../sim/space.js';
+import { simulate } from '../../sim/step.js';
+import { copySimShip, type SimShip, spawnShip } from '../../sim/types.js';
+import { DEFAULT_SIM_CONFIG } from '../../sim-config.js';
+import { boostCap, startBoost } from './boost-status.js';
 
 const cfg = DEFAULT_SIM_CONFIG;
 const full = { ...emptyInput(), throttle: 1 };

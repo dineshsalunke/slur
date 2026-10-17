@@ -6,7 +6,7 @@ import { floorUnder } from './floor-under.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
 import { type Block, HALF_WIDTH, type Segment, spanOverlapsZ, type Track } from './space.js';
-import { clearStatus, tickStatus } from './status.js';
+import { tickStatus } from './status.js';
 import type { SimShip, SimWorld } from './types.js';
 
 const NEUTRAL_INPUT: PlayerInput = { seq: 0, throttle: 0, brake: 0, strafe: 0, jump: false };
@@ -17,22 +17,6 @@ const CONTACTS = {
     scrape: { [ -1 ]: { kind: 'scrape', dir: -1 }, 1: { kind: 'scrape', dir: 1 } },
 } as const satisfies Record< BlockContact[ 'kind' ], Record< BlockContact[ 'dir' ], BlockContact > >;
 const DECK_Y = 0;
-
-export function boostCap( s: SimShip, t: FlightTuning, cfg: SimConfig = DEFAULT_SIM_CONFIG ): number {
-    if ( s.boostTimer <= 0 ) return t.maxCruise;
-    const ease = cfg.boostEaseS > 0 ? Math.min( 1, s.boostTimer / cfg.boostEaseS ) : 1;
-    return t.maxCruise * ( 1 + cfg.boostGain * ease );
-}
-
-export function boostThrust(
-    s: SimShip,
-    input: PlayerInput,
-    t: FlightTuning,
-    cfg: SimConfig = DEFAULT_SIM_CONFIG,
-): number {
-    if ( s.boostTimer <= 0 || s.stunTimer > 0 || input.brake > 0 || cfg.boostRiseS <= 0 ) return 0;
-    return ( cfg.boostGain * t.maxCruise ) / cfg.boostRiseS;
-}
 
 export function applyLongitudinal(
     s: SimShip,
@@ -203,7 +187,6 @@ function onBoostDeck( s: SimShip, prevY: number, t: FlightTuning ): boolean {
 
 function markDead( s: SimShip, t: FlightTuning ): void {
     s.dead = true;
-    clearStatus( s );
     clearFeatures( s );
     cancelKick( s );
     s.respawnTimer = t.respawnDelay;
@@ -224,7 +207,6 @@ function respawn( s: SimShip, track: Track, t: FlightTuning ): void {
     s.grounded = true;
     s.jumpsUsed = 0;
     s.stunTimer = 0;
-    clearStatus( s );
     clearFeatures( s );
     cancelKick( s );
 }
@@ -412,9 +394,9 @@ export function simulate(
     }
 
     const control = featureInput( s, s.stunTimer > 0 ? NEUTRAL_INPUT : input, cfg );
-    const push = boostThrust( s, input, t, cfg ) + featureThrust( s, input, t, cfg );
-    const cap = featureCap( s, t, boostCap( s, t, cfg ), cfg );
-    tickStatus( s, dt, cfg );
+    const push = featureThrust( s, input, t, cfg );
+    const cap = featureCap( s, t, t.maxCruise, cfg );
+    tickStatus( s, dt );
     tickFeatures( s, t, dt, cfg );
 
     applyLongitudinal( s, control, t, dt, cap, push );
