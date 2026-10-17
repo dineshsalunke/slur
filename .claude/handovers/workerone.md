@@ -31,9 +31,13 @@ issue with SHAs.
 
 ## Next
 
-1. Survey boost: sim code, schema fields, client views, HUD, central lines. Count central files naming boost.
-2. Send the F4d plan to `slur-supervisor`.
-3. Build after approval; same gates as F4c.
+1. DONE: F4d plan B1–B8 sent to `slur-supervisor` (2026-10-17). Waiting for approval. B2 (move `boostTimer`
+   to boost fields, index 27 → 38) is an owner call; rec A = move. Others: ship hooks thrust/cap/tick/clear
+   (bit-equal by id order), glideTimer stays core, run.use spends `ctx.nextId()` first, bagWeight boostRatio,
+   client moves look/streaks/pickups/glyph, blur + camera surplus stay central. Baseline: 36 non-test central
+   files name boost (shared 9, client 27).
+2. On approval: baseline HEAD dist first (as F4c, scratch `f4c-ab.mjs` in session 9a159aac), then sim half,
+   then client half; same gates as F4c + beat-deck draws.
 
 ## Open questions
 
