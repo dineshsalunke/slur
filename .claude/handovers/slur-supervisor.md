@@ -53,7 +53,8 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w3C:p3 | #406 F4f portal | BUILDING. Owner approved P1–P12 all as recommended; plan on the #406 comment. (Shield DONE: sim 24e4df3e, client adab9982, docs 88fb4f95, #405 closed.) Shield history: Owner chose E2=A (wire move), E6=A (reset gets ctx), E8=A (views.ship slot + NetContext.entityOf); E3=A run.ward. Plan on the #405 comment | the #405 claim list |
+| workerone | w3C:p3 | none, idle, cleared to 0k. Portal DONE: sim 1408cce9, client 18a5cff2, docs dcae4c24, #406 closed. Claims released. | none |
+| (old row) | | #406 F4f portal | BUILDING. Owner approved P1–P12 all as recommended; plan on the #406 comment. (Shield DONE: sim 24e4df3e, client adab9982, docs 88fb4f95, #405 closed.) Shield history: Owner chose E2=A (wire move), E6=A (reset gets ctx), E8=A (views.ship slot + NetContext.entityOf); E3=A run.ward. Plan on the #405 comment | the #405 claim list |
 
 ## Open owner items
 
@@ -70,7 +71,10 @@ None of mine.
 
 ## Next
 
-0. Portal sim half 1408cce9 pushed (bit-equal: 505 hops, 1921 double taps; control diverges 6/6; all
+00. F4 SERIES DONE (mine, boost, shield, portal all closed). Supervisor verified at e6816890: typecheck
+    ok; shared 586, server 101, client 730 pass. Offered the owner a deploy (needs tab reload). Next:
+    the owner picks the next lane (RFC S4/S5/S6/S12 or the triage list).
+0. (done) Portal sim half 1408cce9 pushed (bit-equal: 505 hops, 1921 double taps; control diverges 6/6; all
    tests green). Client half (P11) building. On landing: verify the push and that #406 is
    closed, run the full test suite once, then tell the owner the F4 series is done and offer a deploy.
    Boost and shield moved wire fields, so open tabs need a reload after that deploy.
