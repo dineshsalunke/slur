@@ -1,9 +1,95 @@
 # Work log — multi-agent harness
 
-Last summarised: e656f1820326403f5bcc4e3b57d6e09a1c8dcc24 · 2026-09-23
+Last summarised: 6196581b3031ced0d30ebf62ca57e2684288ef78 · 2026-10-17
 
 Newest run first. Each run covers handover commits after the previous `Last summarised` SHA.
 Source of truth for any detail: `git log -p -- .claude/handovers/<agent>.md`.
+
+## Run 2 — 2026-10-17 (covers e656f18..6196581)
+
+848 handover commits over 2026-09-23 to 2026-10-17. Five workers (workerone to workerfive) ran under
+`slur-supervisor`. Headline results: seeker, power slots, finish gate, track generator, mines, portals and
+tug line shipped; the app went live at https://slur.kurmah.studio (2026-09-28); architecture RFC-349 was
+written and its feature-module stages S0 to S20 and F1 to F4f all landed. On 2026-10-17 the owner restarted
+every Claude session; no worker is running now.
+
+### slur-supervisor — owner relay, claims, seams
+- Ran about 20 numbered seams. Relayed plans to the owner, held the claim table, cleared and resumed workers.
+- Standing owner decisions recorded: dev branch only, one stack (:5173/:2567), worker closes its issue
+  with a SHA, owner tests on /test-level, subagents run on Sonnet, only the owner deploys.
+- 2026-09-24: merged PRs 188, 225, 230, 237 to dev (`74a7b89`, via workertwo). 2026-09-25: PR 195 held on
+  semantic conflicts, then ported by workerthree (`0c8594b`, `9d45eb3`, `c71634e`) and the PR closed.
+- 2026-09-27: MEMORY.md compacted 20892 to 16052 bytes (`39102e7`); backlog and design docs reconciled
+  with landed work (`a6a8eb0`).
+- RFC-349 Q1 to Q10 answered by the owner; F3 = GO on 2026-09-30 (one F4 stage per power).
+- Prod live at `b156a41` (2026-10-17). F4c to F4f are not deployed yet.
+- Open: see "Open owner items" in `.claude/handovers/slur-supervisor.md` (deploy, next RFC stage,
+  mine shock queue rename, Docker build-stage warning, first-use black hole shader hitch, triage).
+
+### workerone — pacing, song lab, graphite, tooling, RFC-349 F-series
+- Pacing board (`/pacing`): R1 `2812078`, R2 `6e67f53`, X rule + 6u hull `1e7160c`, R3 board `85077ca`,
+  slope bug (#246) fixed in #287 (`2bc0292`), R4 phrase RFC then S0 `c24f2bb`, S1 to S3 (score composer,
+  emitter), JJ motifs `72948ae`.
+- Song lab (#253) built, then wound down: archived to `archive/song-lab` (`ef311285`), removed with the
+  tapper (`9388a67`). Replaced by `/beat-deck` v1 (`1ab0a3f`) and a groove generator (`20c9e02`).
+- Materials: graphite unification (#258, `3948541`), arch/groove/colour `3b62bc4`, Wear and cast iron.
+- Sessions 2026-09-26 to 09-27: hosted-room loopback hooks (#288 slices 1 to 4), portal models (#303
+  `5e9abd0`), editor UI (#304 `0130a63`, eraser `ff54424`, zoom `249d47f`), reset key (#306 `6b982c6`),
+  #307, #308, #315, #318, #320 to #327 (each shipped and closed).
+- Deploy lane: #336 live (`dc2af77`), metrics #337, matchmake guard + deploy.sh + ADR-026 (#339), #342.
+- Lighting: #345 (`8c94537`), blue-tail and nozzle colour (#369), black-high fix (#354, closed `cb21183`).
+- RFC-349 lead author (af25d7c draft); F1 sim half `1a5415c7`, client `f912f7ab` (#385); F2 tug pilot
+  (#390, `f4e78880`); F4a bolt (#395, `85365ecc`); F4b seeker (#397, `f80acb55` then `65784e33`).
+- F4c mine (#403): `2b8c9d53`, `90446c94`, `7c5a28f8`. F4d boost (#404): `843882ee`, `2eab6b3b`.
+  F4e shield (#405): `24e4df3e`, `adab9982`, `88fb4f95`. F4f portal (#406): `1408cce9`, `18a5cff2`,
+  `dcae4c24`. Each stage was checked bit-equal against the old sim over 6 seeds x 3600 ticks, with a
+  diverging negative control. All four issues closed.
+- Last seam: idle, no held files. The tab was closed in the 2026-10-17 restart.
+
+### workertwo — fractured blocks follow-ups, mines, tug line, net, chat, PR merges
+- Pillars `f9248ef`, finish gate (#220, `c36518a`), mine (#261, `71b64c4`), mine throw as bolt (#266),
+  tug line (#290 S1 to S4 `403f8de`, `72eafc0`, `86060aa`, GDD `387302c`), race end (#301 `f811400`).
+- Width work: width-80 trial then 96u (#257). Strafe kick (#305 `b6e3372`), boost gap glide (#319).
+- UI/net: lobby chat (#338 `282428f`), room caps and stall retire (#340 `cf922f8`, #341), Blur key
+  bindings (#358 `93df4d2`), seeker lock warning (#372), RFC-349 S20 (#388 `9b5f38f2`), S19 (#391
+  `a50cd135`), S8 (#383 `8681e05`), S17 (#387 `a3ee47ad`).
+- Merged PRs 188, 225, 230, 237 to dev; reconciled backlog and docs.
+- Memories this period include place-the-ship, step-the-r3f-clock, step-the-loopback-room, simulate a
+  hidden tab, fake a gamepad, schema fields cap at 64.
+
+### workerthree — seeker, power slots, meteors, black hole, lighting, perf
+- Homing seeker (#219) in steps 1 to 5, ship-height + breadcrumb `a2223ca`; 3-slot power system (#223,
+  `eb4b8bd`, `c362fab`, `738ebd3`), seekers back to back `eae791d`.
+- Rendering: MSAA tunable `0bf4e88`, `31d870e`, auto MSAA `64718c9`; sub-pixel monolith seam diagnosis;
+  rail lip (#229 `db2660c`); engine-light removal (#310 `31e3131`, fix `e5f8e20`).
+- Pickup SFX (#239 `b0e9235`), seeker speed (#243), block merge (#244 `59ee8df`), power bag 6/4/4/3/3
+  (`842fd8c`), shield core (#270 `26badb9`), #280, #281, #286.
+- Track generator: unified RFC (#300), S1 `8a4f1dd`, S2 `b90f436`, S3 straight-lane weave `4ca02e7`,
+  derived pitch `afcc66c`, ADR-023 re-measured `8d3abdb`. S4 is on owner hold.
+- Perf: #344 P1 `5ecbc6c`, P2 `286c8ef`; #299, #311, #356, #362, #363, #366 to #368 (key layout, ADR-032),
+  #370, rear-view mirror removed (#371).
+- RFC-349 render section (S16 #381 `f33da9f0`, S18 #384 `ea385b6b`); #386, #389 (landing gap, 0 blank frames).
+- Meteors and black hole: #393 `745fc30b`, #392 `7a90abc6`, #398 `c8d31137`, #400 `f3a0d370`
+  (module GPU caches key on renderer); black hole prototype (#394 `84be557c`, panel folder `e5a6232e`,
+  closed); #399 shipped (`76426500`). Owner approved the look: side 28, minAngle 18, radius 900.
+- Last known state: idle; also did the deploy prep that was blocked by worker permissions.
+
+### workerfour — main menu, ship pick, results, phone play, audits
+- Main menu (`f23ef50`), DESIGN.md, in-room ship pick (comp B `7b4579f`, `e26a79c`, `3a92a96`), results
+  redesign (#238 `1d1f9f2`, `7943126`, `dc856e7`), #242 `0ab2cb9`, landing-ship bank branch removed.
+- Ship retune (#247), phone play (#251 `9b365f3`, `6bb632f` plus follow-ups), song-lab pilots (200/200 and
+  260/260 MATCH), #262, #264 seamless blocks (`9208d5b`), #265 pickup spread, #268 solid mirror, #252.
+- Review fixes: #276 (`d7cfca8`), #277 slices (`b7df188`, `1b111b6`, `6b0fc62`, `acdffa9`), #278, #279, #287.
+- Portal (#289 S1 to S4, `6dd1368`, `664cc60`, `7857886`, `ff00915`, `3124971`, done `077796b`), ADR-022
+  bloom, #295 plan, perf diagnosis.
+- Last known state: idle.
+
+### workerfive — audio, room lifetime, boost/blur
+- Sci-fi audio lane: #267 (`ab12a98`), #271 room lifetime (`573fa90`), #274 (`afcd0e7`), #172 (`4a8e1a8`),
+  #284 (`9d9779c`).
+- Boost 0.75 and blur: #269 (`f0056b3`, fix `16bc5ef`); #283 closed after scene-effects and error switch
+  were handed over by workertwo. #14 plan sent, not built.
+- Last known state: idle.
 
 ## Run 1 — 2026-09-23 (covers d595f9b..e656f18)
 
