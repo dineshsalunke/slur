@@ -1,36 +1,34 @@
-Agent: workerone · Lane: RFC-349 F4c mine (#403) — sim half DONE, client half next · Updated: 2026-10-17
+Agent: workerone · Lane: RFC-349 F4c mine (#403) — client half COMMITTED, live burst check + docs next · Updated: 2026-10-17
 
-Older versions: `git log -p -- .claude/handovers/workerone.md` (approved M1–M8 text is in the previous version).
+Older versions: `git log -p -- .claude/handovers/workerone.md`. Approved M1–M8 text: `git show 67af3dc5:.claude/handovers/workerone.md`.
 
 ## Goal
 
-#403: move mine into two feature folders. Sim half → `packages/shared/src/features/mine/` (done). Client half →
-`apps/client/app/features/mine/` (M7–M8, next). Owner approved M1–M8 (2026-10-17).
+#403: move mine into two feature folders. Sim half (done, `2b8c9d53`) and client half (done, `90446c94`).
+Left: live check, docs, push, close.
 
 ## Done
 
-- `2b8c9d53` sim half (M1–M6), pushed:
-  - `run.settle` hook (RunHooks/OpenRun/bindRun/RunFeatures). `stepCombat( ctx, dt, { strike, settle } )` — required
-    object `CombatPhases`, no default.
-  - `sim/floor-under.ts` leaf; `step.ts` imports it; index exports it.
-  - `features/mine/{mine.ts, mine-run.ts (layMine, settleMines, resolveMineEvent(ctx, e)), mine-schema.ts,
-    mine-constants.ts, mine.feature.ts, mine.test.ts, mine-drop.test.ts}`.
-  - `combat/mine-hit.ts` stays the neutral leaf (bolt uses it); index exports it directly.
-  - `firePower( ctx, p, ownerId, slot, dir )` lost its id param; `run-sim.fire` does `this.nextProjectileId++`
-    before it so ids stay bit-equal.
-  - power-bag: mine removed from core list and cache key; mine is a feature power (`bagWeight: cfg.mineRatio`).
-  - Server tests `room-mine-fizzle` (now via `openRunFeatures().use`) and `room-shield` (RunContext) updated.
-  - Client `pickup-layout.utils.test.ts`: INTERIM — `featured` excludes `HeldPower.mine` because the mines bucket
-    still exists. Remove that exclusion when the client half drops the bucket.
+- `2b8c9d53` sim half (M1–M6), pushed.
+- `90446c94` client half (M7–M8), NOT pushed yet:
+  - `features/mine/{mine.client.ts, mine.traits.ts (NetMine), mine-burst.ts (burstMine), mine-glyph.ts,
+    mine-look*, mine-throw*, mine-shots.ts, mine-body-material.ts, mine-field/, mine-bodies/, mine-pickups/}`.
+  - `mine-pickups.utils.ts` gained `mineAnchors` (+ test); `MinePickups` takes no props.
+  - `client-features.ts` lists mineClient. `active-features.test.ts` expects bolt, mine, seeker, tug.
+  - Bridge: mineBurst listener removed (feature `net` handler owns it); mines onAdd/onRemove stay.
+  - `mine-shock-events.ts` keeps queue + `nearestPortalEnd` + `burstPortalHop` only.
+  - `splitPickupLayout` lost the mines bucket; interim exclusion in its test removed.
 
 ## State (measured)
 
-- A/B vs HEAD dist (bench `<scratch>/f4c-ab.mjs`, scratch = previous session's, gone after clear): 6 seeds × 3600
-  ticks, 5 racers: identical per-tick hashes; 800 bags identical. Outcomes: trigger 447, evicted 480, cleared 143,
-  fizzle 90, expired 21, seeker+mine+shield ticks 2. Negative control (mine as `run.strike`) diverged on 6/6 seeds.
-- Gates at `2b8c9d53`: typecheck clean; tests shared 585/0, server 99/0, client 726/0; lint 0 errors (8 warnings,
-  file length, pre-existing). TDZ sweep: every shared dist module imports alone (0 fails); orphan
-  `dist/combat/mine.*` deleted.
+- /test-level draws: 76 at HEAD before edits, 76 after (DPR 1, `?quality=high`, 3 runs each). Mine dropped from
+  CLIENT_FEATURES in the tab (CDP Fetch rewrite): 72 → mine's slot views own 4.
+- Gates at `90446c94`: typecheck clean; client 727/727; lint exit 0 (7 warnings, pre-existing file length).
+  Shared/server tests not re-run (no shared/server edit in this commit).
+- Dev stack: started by me with `pnpm dev` (owner OK via supervisor). LEAVE IT RUNNING. No Chrome left open.
+- Two-SDK-client decode: covered by server test `apps/server/src/rooms/mine-sync.test.ts` (two
+  `@colyseus/testing` clients decode x, z, ownerId, armed; burst + victim stun) — passed at `2b8c9d53`.
+  A live :2567 run is [unmeasured]: the server has no grant, so a bot must fly to a mine pickup.
 
 ## Uncommitted
 
@@ -38,22 +36,18 @@ Older versions: `git log -p -- .claude/handovers/workerone.md` (approved M1–M8
 
 ## Held files
 
-- Client half claim (unchanged from the approved list): `apps/client/app/features/mine/**`,
-  `features/client-features.ts`, `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/net-canvas.tsx`,
-  `game/scene/{pickup-field.tsx, pickup-layout/*, pickup-instances/pickup-instances.test.ts,
-  power-arc/glyph-atlas.ts, power-arc/power-arc.utils.test.ts, projectile-field/projectile-field.tsx,
-  mine-shock-events.ts}`, the moved `game/scene/mine-*` files. Docs: `docs/RFC-349-ARCHITECTURE.md`,
-  `conventions/features.md`.
+- Same claim as before (client mine files above, `docs/RFC-349-ARCHITECTURE.md`, `conventions/features.md`).
 
 ## Next
 
-1. Client half per M7–M8 (see previous handover version: `git show 67af3dc5:.claude/handovers/workerone.md`).
-   Follow the seeker client move (`65784e33`) as the pattern. Drop the interim exclusion in
-   `pickup-layout.utils.test.ts` along with the mines bucket.
-2. Gates; /test-level draws headless (DPR 1, `?quality=high`, F4b read 76); two SDK clients on :2567 decode mines
-   `x,y,z,ownerId,armed,ttl`, both see `mineBurst` and the victim stun. Kill any Chrome you start.
-3. Commit + push. RFC §3.8 "F4c result" + §7 row; `conventions/features.md` `run.settle` slot rule (runs after
-   every strike, before portals; for effects that must see all strikes land). Close #403 with SHAs + numbers.
+1. Live burst check on /test-level (headless, DPR 1, mute): get the loopback room (memory
+   `place-the-ship-over-cdp`), `room.sim.state.players.get(room.sessionId).slots[0] = 3`, KeyE, wait `mineArmS`,
+   place own ship on the mine (self-trigger), confirm `room.state.mines` decoded and a draw spike from
+   `<MineShock/>`. Negative control: same with mine dropped (scratch `draws.mjs` DROP=1 trick) → no shock draws.
+   Kill Chrome after.
+2. Docs: RFC §3.8 "F4c result" + §7 row; `conventions/features.md` `run.settle` slot rule (runs after every
+   strike, before portals; for effects that must see all strikes land) + `net` slot used by mine.
+3. Push `dev`; close #403 with SHAs `2b8c9d53`, `90446c94`, docs SHA + numbers above.
 
 ## Open questions
 
@@ -61,4 +55,4 @@ Older versions: `git log -p -- .claude/handovers/workerone.md` (approved M1–M8
 
 ## Lessons → memory
 
-- `.claude/memory/ab-bench-needs-a-negative-control.md`.
+- `.claude/memory/preview-a-constant-by-route-rewrite.md` (new section: drop a feature over raw CDP Fetch).

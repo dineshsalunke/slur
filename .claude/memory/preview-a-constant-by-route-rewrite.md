@@ -20,3 +20,12 @@ Each launch has a clean profile, so `tuning-schema` defaults can be rewritten to
 computed colour back to prove that the rewrite applied. The driver is `marigold-variants.mjs` in the #302
 scratchpad. Related: [[headless-game-tabs-starve-the-gpu]],
 [[tuning-over-cdp]].
+
+### Same trick over raw CDP: drop a feature to count its draws
+
+No Playwright needed. Before navigating, send `Fetch.enable` with
+`{ urlPattern: '*features/client-features.ts*', requestStage: 'Response' }`. On `Fetch.requestPaused`, read the
+body with `Fetch.getResponseBody` (it may be base64), remove the `\n\tmineClient,` line from Vite's served array,
+and answer with `Fetch.fulfillRequest` (base64 body, `Content-Type: text/javascript`). Log whether the replace
+matched. F4c #403 (2026-10-17): /test-level drew 76 with mine and 72 without, so mine's slot views own 4.
+Driver: scratch `draws.mjs` with `DROP=1` (draw counter as in [[gpu-timing-without-repo-edits]]).
