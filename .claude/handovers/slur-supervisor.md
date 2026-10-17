@@ -45,7 +45,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 |---|---|---|
 | F4a bolt · F4b seeker | #395 · #397 | landed |
 | F4c mine | #403 | landed, closed |
-| F4d boost | #404 | sim half 843882ee; CLIENT HALF building (workerone) |
+| F4d boost | #404 | landed, closed: sim 843882ee, client 2eab6b3b, docs 01c11636. Draws 76→76, central 36→23 |
 | F4e shield | #405 | next: plan → supervisor approves if pattern + bit-equal |
 | F4f portal | #406 | after shield. Mine shock queue rename waits for this stage (F4c M7) |
 
@@ -53,7 +53,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w3C:p3 | #404 F4d boost client half | building | the #404 claim list + room-boost.test.ts |
+| workerone | w3C:p3 | #405 F4e shield | PLANNING, no edits; plan comes to the supervisor | none |
 
 ## Open owner items
 
@@ -70,7 +70,7 @@ None of mine.
 
 ## Next
 
-1. On workerone's boost landing: verify the push, `gh issue view 404 --json state`, report to the owner.
+1. Boost is done and was reported to the owner. Wait for workerone's shield plan.
 2. Shield plan: approve if it follows the pattern and stays bit-equal; post it on #405; else ask the owner.
 3. Same for portal. Then report the F4 series done and offer a deploy.
 
