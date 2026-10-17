@@ -90,7 +90,7 @@ export const tugClient = defineClientFeature( {
 
 Every slot is optional. A feature fills only the slots it needs.
 
-**As built (F1 #385, F2 #390, F4a #395, F4b #397).** The sim half has `id`, `power`, `fields.player`, `ship`,
+**As built (F1 #385, F2 #390, F4a #395, F4b #397, F4c #403).** The sim half has `id`, `power`, `fields.player`, `ship`,
 `run` and `messages` (`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`,
 `systems`, `views.scene`, `views.pickups`, `hud.glyph`, `hud.overlay` and `net`
 (`apps/client/app/engine/define-client-feature.ts`). The other slots in the table (`rules`, `traits`,
@@ -132,6 +132,18 @@ F4b (#397, seeker) added these slot rules:
   `<FeatureOverlays room={ room } />` inside the HUD layer. Seeker's lock warning uses it.
 - `splitPickupLayout` (`game/scene/pickup-layout/`) buckets core pickups only. A feature's pickups filter
   their own anchors in their `views.pickups` component.
+
+F4c (#403, mine) added these slot rules:
+
+- `run.settle` is a fixed hook point inside `stepCombat`. It runs after every `run.strike` hook and before
+  portals. Use it for an effect that must see every strike land first, as mine does: a bolt or seeker that
+  clears a mine in this tick removes it before the mine steps.
+- A `run.use` hook that spends a projectile id takes it first, every time, even when the fire fizzles.
+  `run-sim` still spends one for each non-feature power, so ids stay the same on both ends.
+- A feature whose broadcast already had a client listener moves that listener into its `net` slot (mine's
+  `mineBurst` → `burstMine`). The bridge keeps only the schema `onAdd`/`onRemove` listeners.
+- A shared visual that another feature also pushes to stays central until that feature moves. The shock
+  queue and `<MineShock/>` stay in `game/scene/` because portal pushes to them.
 
 **The sim half imports leaf modules only.** `player-fields.ts` (schema) and `sim-hooks.ts` (step) read the
 registry when their module loads. A sim half that imports heavy core (`combat-step`, `run/combat`) closes an

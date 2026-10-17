@@ -434,6 +434,23 @@ the seeker contract; S6 the client half moves the view, pickups, glyph and lock 
 | Determinism | Bit-equal. 6 seeds × 4 racers × 3600 ticks with a seeker-heavy mix hash every tick's seeker state and every broadcast; HEAD and part 1 match (296 seeker hits, 3 misses). 800 power bags match HEAD. Shared 585/585, server 99/99, client 726/726. Each of the 101 shared `dist` modules imports alone (no TDZ cycle). |
 | Order is declared | Seeker steps at `run.strike` after bolt (id order), where `stepSeekers` ran. `stepCombat` builds the mine target list after `strike`. Registry order `[ bolt, seeker, tug ]`. |
 
+**F4c result (#403, mine, measured 2026-10-17).** Two commits: 2b8c9d53 (sim half) and 90446c94 (client
+half). Owner decisions M1–M8 (2026-10-17): a new fixed hook `run.settle` that runs after every `run.strike`
+and before portals; mine steps there and fires through `run.use`; mine joins the bag with `bagWeight =
+mineRatio`; `floorUnder` moves to the leaf `sim/floor-under.ts`; the `Mine` schema class moves to
+`features/mine/mine-schema.ts` and `RunState.mines` stays; the client half moves the field, bodies, pickups,
+glyph and the `mineBurst` handler; the shock queue, `burstPortalHop` and `<MineShock/>` stay central because
+portal pushes to them.
+
+| Measure | Result |
+|---|---|
+| Central files a feature edits | **35 → 22** non-test files name mine outside the two folders (shared 12 → 10, client 23 → 12). With tests: 52 → 36. Target ≤ 2 is not met. Shared side: `features/registry.ts`, the `index.ts` export, `schema.ts`, `sim-config.ts` (D2), `HeldPower.mine` in `combat/constants.ts` (D3), `combat/mine-hit.ts` (core outcome, `resolveMine`), `define-sim-feature.ts` (`RunContext.resolveMine`), bolt's `bolt.ts` and `bolt-run.ts` (a bolt clears a mine), `run-sim.ts`. Client side: `features/client-features.ts`, `attach-room-to-world.ts` (mines onAdd/onRemove), `bind-room-audio.ts`, `sfx-map.ts`, the shock queue and `<MineShock/>` (4 files), `local-hop.ts`, `projectile-field.tsx` (`collectMineShots`), `net-canvas.tsx` and the test-level grant. |
+| Wire order | Unchanged. No field moved. A server test with two `@colyseus/testing` clients (`apps/server/src/rooms/mine-sync.test.ts`) decodes `x, z, ownerId, armed`, the burst and the victim's stun on both. A live two-client run on :2567 was not done: the server has no grant, so a bot would have to fly to a mine pickup. |
+| `step()` time per tick | Not measured. Mine has no ship hooks, and `stepMines` runs once per tick as before, now through `run.settle`. |
+| Frame time on `/test-level` | Draw calls 76 before and 76 after (DPR 1, quality high, 3 runs each). With mine dropped from `CLIENT_FEATURES` in the tab: 72, so mine's slot views own 4. Live burst: a mine dropped with E and moved onto the ship sends `mineBurst` (`trigger`, victim `local`) and leaves both state maps. Draws then run 2 above the dropped-feature control for about 0.6 s (the shock), then settle at +4. The control gets the same message and draws no shock. |
+| Determinism | Bit-equal. A/B against HEAD `dist`: 6 seeds × 3600 ticks × 5 racers hash mines, seekers, projectiles, every player field, the broadcast log and the id counter each tick; all match. Outcomes covered: trigger 447, evicted 480, cleared 143, fizzle 90, expired 21. 800 power bags match. Negative control (mine at `run.strike`) diverges on all 6 seeds. |
+| Order is declared | Mine steps at `run.settle`, after bolt and seeker at `run.strike` and before portals, where `stepMines` ran. The id is taken first on every fire, fizzle included, so ids stay bit-equal. |
+
 ## 4. Net, input, client state, room config (workertwo)
 
 Measured on `dev` at `4b58658` (§4.1–4.3) and `a25b332` (§4.4–4.5). Installed versions, read from the
@@ -908,7 +925,8 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | F3 | **GO (owner, 2026-09-30).** Owner go / no-go on the F2 numbers. | — | F2 |
 | **F4a** | **Built (#395).** Bolt is in `packages/shared/src/features/bolt/` and `apps/client/app/features/bolt/`. Numbers in §3.8 "F4a result". Owner D4–D7 (2026-09-30). | bolt's sim code, pickup view and glyph (moved) + the central lines it left | F3 |
 | **F4b** | **Built (#397).** Seeker is in `packages/shared/src/features/seeker/` and `apps/client/app/features/seeker/`. Numbers in §3.8 "F4b result". Owner S1–S6 (2026-10-01). | seeker's sim code, view, pickups, glyph and lock warning (moved) + the central lines it left | F4a |
-| F4… | One feature per stage: mine, boost, shield, portal. | that feature's files + the lines it leaves in central files | F4b |
+| **F4c** | **Built (#403).** Mine is in `packages/shared/src/features/mine/` and `apps/client/app/features/mine/`. Numbers in §3.8 "F4c result". Owner M1–M8 (2026-10-17). | mine's sim code, field, bodies, pickups, glyph and burst handler (moved) + the central lines it left | F4b |
+| F4… | One feature per stage: boost, shield, portal. | that feature's files + the lines it leaves in central files | F4c |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |
