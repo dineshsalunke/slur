@@ -1,88 +1,72 @@
-Agent: slur-supervisor · Lane: supervision + RFC-349 F4 staging · Updated: 2026-10-17 (context warning at ~150k)
+Agent: slur-supervisor · Lane: supervision · Updated: 2026-10-17 (all Claude sessions being restarted by the owner)
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
 The rules are in `CLAUDE.local.md`. Clear, resume and spawn steps: memory `supervisor-clears-workers-via-herdr.md`.
-Standing approval to clear workers at a seam. Read the context bar with `grep -oE "[0-9]+k/1.0M"` (the new
-status line); re-read after ~10 s until it shows 0k. Reply to a worker with SendMessage to `workerone`.
-Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
+Standing approval to clear workers at a seam. Read a worker's context with `grep -oE "[0-9]+k/1.0M"` on
+`herdr pane read <pane>`; re-read after ~10 s until it shows 0k.
+Older history: `git log -p -- .claude/handovers/slur-supervisor.md`. Lane history: `.claude/phases/worklog.md`.
 
 ## Standing owner decisions
 
 - OWNER RULE: dev only, ONE stack (:5173/:2567). No worktrees, no scratch stacks.
-- OWNER OK 2026-10-17: workerone may start that one stack with `pnpm dev` and leave it running. It is up now.
+- OWNER OK 2026-10-17: a worker may start that one stack with `pnpm dev` and leave it running.
 - OWNER RULE: the worker who fixes an issue closes it with a SHA comment. Put it in every lane brief.
 - OWNER RULE: the owner tests everything on /test-level. Every brief says so.
 - OWNER RULE: never ask about an issue by number alone (title + one line).
 - OWNER RULE (2026-09-30): every Agent-tool subagent runs with `model: "sonnet"`. Put it in every brief.
 - ONLY THE OWNER DEPLOYS: `! docker desktop start && ./scripts/deploy.sh`. The supervisor's auto mode blocks it.
 - Pushes: workers push their own green commits. The supervisor pushes doc commits.
-- Prod: https://slur.kurmah.studio, live at b156a41 (owner deploy 2026-10-17).
-- **OWNER GO-AHEAD 2026-10-17 for F4 mine → boost → shield → portal.** The supervisor approves a stage plan
-  when it follows the F4a–F4c pattern and stays bit-equal. Anything that changes behaviour, the wire or the
-  feature contract (beyond a new fixed hook) goes to the owner by AskUserQuestion.
-- Post each approved plan as a comment on its issue. Workers seam often (~150k), and a handover may hold
-  only a pointer to the plan.
+- Prod: https://slur.kurmah.studio, live at b156a41 (owner deploy 2026-10-17). Not yet carrying F4c–F4f.
+- Plan gate: the supervisor may approve a plan that follows an established pattern and stays bit-equal.
+  Wire, behaviour and feature-contract changes go to the owner by AskUserQuestion.
 - Look (#364 254d267), KEY LAYOUT (#368, ADR-032), pillars identical (ADR-018), black hole look: unchanged.
 
 ## Done this seam (2026-10-17)
 
-- Filed F4c mine #403, F4d boost #404, F4e shield #405, F4f portal #406.
-- Spawned workerone (pane w3C:p3, Opus 5.5 1M, auto mode). Lesson in memory (spawn needs config env).
-- #403 F4c mine DONE, closed: sim 2b8c9d53, client 90446c94, docs 7c5a28f8. New fixed hook `run.settle`.
-  Central files 35 → 22, draws 76 → 76, A/B bit-equal with a negative control. The live two-client run on
-  :2567 was not done ("no server grant"); the server test mine-sync covers it.
-- #404 F4d boost: owner chose B2 = A (boostTimer into boost fields.player, wire index 27 → 38, shifts 11
-  fields). Plan on the #404 comment. Sim half 843882ee pushed (A/B bit-equal, boost fired 1342×, negative
-  control diverges). New file apps/server/src/rooms/room-boost.test.ts (two-client decode) cleared.
-- workerone saw 1 uncaptured server test failure once. Supervisor reran the server suite 5×: 100/100 each.
-  Flake not reproduced.
+RFC-349 F4 series complete. Every power now lives in its own feature folder on both ends.
 
-## RFC-349 stages
+| Stage | Issue | Commits | Notes |
+|---|---|---|---|
+| F4c mine | #403 closed | 2b8c9d53, 90446c94, 7c5a28f8 | new fixed hook `run.settle`; central 35 → 22 |
+| F4d boost | #404 closed | 843882ee, 2eab6b3b, 01c11636 | owner B2=A: boostTimer wire index 27 → 38; central 36 → 23 |
+| F4e shield | #405 closed | 24e4df3e, adab9982, 88fb4f95 | owner E2/E6/E8=A: shield fields moved, `run.reset(ctx)`, `views.ship`, `NetContext.entityOf`; new `run.ward` |
+| F4f portal | #406 closed | 1408cce9, 18a5cff2, dcae4c24 | owner all-A: `run.tap`, `run.hop`, `PowerSpec.uses`, `hud.glyphs`; firePower deleted; central 34 → 21 |
 
-| Stage | Issue | State |
-|---|---|---|
-| F4a bolt · F4b seeker | #395 · #397 | landed |
-| F4c mine | #403 | landed, closed |
-| F4d boost | #404 | landed, closed: sim 843882ee, client 2eab6b3b, docs 01c11636. Draws 76→76, central 36→23 |
-| F4e shield | #405 | next: plan → supervisor approves if pattern + bit-equal |
-| F4f portal | #406 | after shield. Mine shock queue rename waits for this stage (F4c M7) |
+Every stage: RunSim A/B bit-equal over 6 seeds × 3600 ticks plus a diverging negative control; draws
+unchanged (/test-level 76 idle). Approved plans are comments on each issue. Supervisor check at e6816890:
+typecheck ok; shared 586, server 101, client 730 pass.
 
 ## Workers
 
-| Worker | Pane | Lane | State | Held files |
-|---|---|---|---|---|
-| workerone | w3C:p3 | none, idle, cleared to 0k. Portal DONE: sim 1408cce9, client 18a5cff2, docs dcae4c24, #406 closed. Claims released. | none |
-| (old row) | | #406 F4f portal | BUILDING. Owner approved P1–P12 all as recommended; plan on the #406 comment. (Shield DONE: sim 24e4df3e, client adab9982, docs 88fb4f95, #405 closed.) Shield history: Owner chose E2=A (wire move), E6=A (reset gets ctx), E8=A (views.ship slot + NetContext.entityOf); E3=A run.ward. Plan on the #405 comment | the #405 claim list |
+None. The owner restarted every Claude session on 2026-10-17. workerone's tab was closed. The dev stack it
+had started stopped with it, so :5173/:2567 are down. `katta-supervisor` (pane w3F:p1) belongs to another
+project; it is not ours.
+
+To start a worker again: memory `supervisor-clears-workers-via-herdr.md`, section "Spawning a worker".
 
 ## Open owner items
 
-1. Next deploy: boost moves a wire field, so open game tabs need a reload after it.
-2. Build-stage warning: `msgpackr-extract` native compile fails in the Docker build stage (no Python). Runtime
-   stage installs it cleanly. Not blocking. Not filed.
-3. First-use black hole shader compile hitch, ~20–29 ms at mount. Not filed.
-4. Audit follow-up docs issues; triage list (RFC S4/S5/S6/S12, vertical-reach validator, four art issues);
-   keep-open #344, #300 S4, #70, #14, #16, #312/#313.
+1. Deploy F4c–F4f: `! ./scripts/deploy.sh`. Boost and shield moved wire fields, so open tabs must reload.
+2. Next lane: RFC S4/S5, S6 (closes #70), S12 are not filed. S4/S5/S7 touch attach-room-to-world.ts.
+3. Mine shock queue (`mine-shock-events.ts`) is used by portal too; a neutral rename is still open.
+4. Build-stage warning: `msgpackr-extract` native compile fails in the Docker build stage (no Python).
+   Runtime stage installs it cleanly. Not blocking. Not filed.
+5. The conventions skill reports no rule card for `@colyseus/schema` (`/conventions-build`).
+6. First-use black hole shader compile hitch, ~20–29 ms at mount. Not filed.
+7. Triage: vertical-reach validator; four art issues; docs issues per GDD/TDD/ADD; keep-open #344, #300 S4,
+   #70, #14, #16, #312/#313.
 
 ## Uncommitted
 
-None of mine.
+None.
 
 ## Next
 
-00. F4 SERIES DONE (mine, boost, shield, portal all closed). Supervisor verified at e6816890: typecheck
-    ok; shared 586, server 101, client 730 pass. Offered the owner a deploy (needs tab reload). Next:
-    the owner picks the next lane (RFC S4/S5/S6/S12 or the triage list).
-0. (done) Portal sim half 1408cce9 pushed (bit-equal: 505 hops, 1921 double taps; control diverges 6/6; all
-   tests green). Client half (P11) building. On landing: verify the push and that #406 is
-   closed, run the full test suite once, then tell the owner the F4 series is done and offer a deploy.
-   Boost and shield moved wire fields, so open tabs need a reload after that deploy.
-1. (done) Shield sim half 24e4df3e pushed (bit-equal, 108 pops; negative control diverges 4/6 seeds with short
-   shields). Client half (E8) building. On landing: verify the push and that #405 is closed, then report to the owner.
-2. Shield plan: approve if it follows the pattern and stays bit-equal; post it on #405; else ask the owner.
-3. Same for portal. Then report the F4 series done and offer a deploy.
+1. On resume: `ListAgents`, `git status`, `git log -3`. Confirm the worklog run 2 commit landed.
+2. Ask the owner for the next lane and whether to deploy.
 
 ## Lessons → memory
 
-none new this seam (the herdr spawn lesson was saved earlier today).
+`post-approved-plans-on-the-issue.md` (new). `supervisor-clears-workers-via-herdr.md` (spawn section, earlier today).
