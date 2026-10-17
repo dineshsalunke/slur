@@ -277,6 +277,7 @@ The engine side is a small, fixed set of consumers. Each loops over the registry
 - `step()` sums `ship.thrust` and folds `ship.cap` over all sim features, in sorted order.
 - `RunSim` calls `run.use` by power kind and `run.tick` / `run.reset` for every feature.
 - `<FeatureViews slot="scene" />` and `<FeatureViews slot="pickups" />` render every feature's view.
+- `<FeatureShipViews entity shipId />` renders every feature's `views.ship` inside each ship's group (F4e).
 - The bridge subscribes every `net` handler.
 - The scheduler runs every `systems` entry by phase (§3.5).
 - The dev panel builds its schema from every `dials` entry.
@@ -468,6 +469,25 @@ test-level grant stay central (B8).
 | Frame time | Draw calls on `/test-level` 76 before and 76 after; on `/beat-deck` 45 before and 45 after (DPR 1, quality high, 3 runs each). With a staged boost on `/test-level` (slot 4 + E, `boostTimer` 1.48 s read back): 76 → 77 while boosting, so the streak view draws from its slot. The streaks now mount only in `NetCanvas`; beat-deck never boosts. |
 | Determinism | Bit-equal. A/B against HEAD `dist`: 6 seeds × 3600 ticks × 5 racers hash every player field by name, the ids and the broadcast log each tick; all match. Coverage: boost fired 1342, boosting ticks 80428, gliding 3153, boost with stun 10011, boost with tug 8114. 800 power bags match. Negative control (no id spend in `fireBoost`) diverges on all 6 seeds, first at ticks 7–29. Shared 585/585, server 100/100, client 728/728. |
 | Order is declared | Ship hooks run in id order (bolt < boost < mine < seeker < tug). Thrust: old `boost + (0 + tug)`, new `(0 + boost) + tug`, the same value. Boost is the first `cap` hook, so its incoming cap is `t.maxCruise`, and tug still gets the boosted cap. Boost and glide decay run first in `tickFeatures`, before tug. `clearFeatures` runs right after `clearStatus` in `markDead` and respawn. |
+
+**F4e result (#405, shield, measured 2026-10-17).** Two commits: 24e4df3e (sim half) and adab9982 (client
+half). Approved plan E1–E9 (2026-10-17); the owner chose E2, E6 and E8 option A. A new fixed hook
+`run.ward` runs first in `stepCombat`, before `run.strike`: shield drops when the ship is dead, else it
+steps. `run.reset` now takes `( ctx, run )`, and shield's reset drops every shield. `shielded` and
+`shieldTimer` move into shield's `fields.player`. Shield fires through `run.use` and spends one id first,
+then discards it. `shieldAbsorbs` and the `shieldPop` broadcast live in the feature; `RunContext` keeps
+the same `shieldAbsorbs` name. Shield joins the bag with `bagWeight = shieldRatio`. The client half adds a
+`views.ship` slot (the dome) and `NetContext.entityOf`, and moves the pop listener into shield's `net` slot,
+the trait, the pickups and the glyph. Audio, `sfx-map` and the test-level grant stay central (E8).
+
+| Measure | Result |
+|---|---|
+| Central files a feature edits | **27 → 15** non-test files name shield outside the two folders (shared 13 → 10, client 14 → 5). With tests: 39 → 27. Target ≤ 2 is not met. Several shared hits are the `ctx.shieldAbsorbs` service name in other features' run files (bolt, mine, seeker, tug). Client side: `features/client-features.ts`, `attach-room-to-world.ts` (the `shielded` listen and spawn), `bind-room-audio.ts`, `sfx-map.ts`, the test-level grant. |
+| Wire order | `shielded` moves from index 27 to 38. The 11 fields after it shift down by one; still 39 fields. `shieldTimer` stays off the wire. The golden index test is updated. A server test with two `@colyseus/testing` clients (`apps/server/src/rooms/room-shield.test.ts`) decodes `shielded` on both. |
+| `step()` time per tick | Not measured. Shield's step runs at `run.ward`, where the inline step ran. |
+| Frame time | Draw calls on `/test-level` idle: 76 (76 at the F4d baseline). With a staged shield (slot 5 + E, `shielded` true read back): median 77, so the dome draws from `views.ship` (DPR 1, quality high, 3 runs each). |
+| Determinism | Bit-equal. A/B against HEAD `dist`: 6 seeds × 3600 ticks hash every player field by name, the ids and the broadcast log each tick, with short random shields and a mid-race `clearCombat`; all match. 108 shield pops. 800 power bags match. Negative control (shield step at `run.strike`) diverges on 4 of 6 seeds. Shared 585/585, server 101/101, client 730/730. |
+| Order is declared | `run.ward` is the first combat phase, so the shield steps before any strike, as it did at the top of `stepCombat`. |
 
 ## 4. Net, input, client state, room config (workertwo)
 
@@ -945,7 +965,8 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | **F4b** | **Built (#397).** Seeker is in `packages/shared/src/features/seeker/` and `apps/client/app/features/seeker/`. Numbers in §3.8 "F4b result". Owner S1–S6 (2026-10-01). | seeker's sim code, view, pickups, glyph and lock warning (moved) + the central lines it left | F4a |
 | **F4c** | **Built (#403).** Mine is in `packages/shared/src/features/mine/` and `apps/client/app/features/mine/`. Numbers in §3.8 "F4c result". Owner M1–M8 (2026-10-17). | mine's sim code, field, bodies, pickups, glyph and burst handler (moved) + the central lines it left | F4b |
 | **F4d** | **Built (#404).** Boost is in `packages/shared/src/features/boost/` and `apps/client/app/features/boost/`. Numbers in §3.8 "F4d result". Plan B1–B8 (2026-10-17). | boost's sim code, ship hooks, streaks, pickups and glyph (moved) + the central lines it left | F4c |
-| F4… | One feature per stage: shield, portal. | that feature's files + the lines it leaves in central files | F4d |
+| **F4e** | **Built (#405).** Shield is in `packages/shared/src/features/shield/` and `apps/client/app/features/shield/`. Numbers in §3.8 "F4e result". Plan E1–E9 (2026-10-17). | shield's sim code, dome, pickups, glyph, trait and pop handler (moved) + the central lines it left | F4d |
+| F4… | One feature per stage: portal. | that feature's files + the lines it leaves in central files | F4e |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |

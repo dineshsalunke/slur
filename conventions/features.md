@@ -90,9 +90,9 @@ export const tugClient = defineClientFeature( {
 
 Every slot is optional. A feature fills only the slots it needs.
 
-**As built (F1 #385, F2 #390, F4a #395, F4b #397, F4c #403, F4d #404).** The sim half has `id`, `power`, `fields.player`, `ship`,
+**As built (F1 #385, F2 #390, F4a #395, F4b #397, F4c #403, F4d #404, F4e #405).** The sim half has `id`, `power`, `fields.player`, `ship`,
 `run` and `messages` (`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`,
-`systems`, `views.scene`, `views.pickups`, `hud.glyph`, `hud.overlay` and `net`
+`systems`, `views.scene`, `views.pickups`, `views.ship`, `hud.glyph`, `hud.overlay` and `net`
 (`apps/client/app/engine/define-client-feature.ts`). The other slots in the table (`rules`, `traits`,
 `audio`, `dials`) come with their first consumer. Do not add a slot that has no engine consumer.
 
@@ -107,7 +107,7 @@ F2 added these slot rules:
 
 F4a (#395, bolt) added these slot rules:
 
-- `run.strike` is a fixed hook point inside `stepCombat`. It runs after the shield step and before mines,
+- `run.strike` is a fixed hook point inside `stepCombat`. It runs after the shield step (`run.ward` since F4e) and before mines,
   portals and pickups. Use it when a run hook must act before those, as bolt does: a bolt clears a
   mine and breaks a block in the same tick. `run.tick` still runs after `stepCombat`.
 - `power.bagRest: true` in place of `bagWeight` gives the feature the share that is left after every weighted
@@ -160,6 +160,18 @@ F4d (#404, boost) added these slot rules:
 - A feature's `views.scene` mounts only in `NetCanvas`. A view that also drew on another route (beat-deck
   `WorldScene`) stops drawing there; check that route's draws before and after.
 
+F4e (#405, shield) added these slot rules:
+
+- `run.ward` is a fixed hook point, the first phase in `stepCombat`, before every `run.strike` hook. Use it
+  for a ship state that strikes in the same tick must already see, as shield does.
+- `run.reset( ctx, run )` gets the `RunContext`, so a reset can reach the players (shield drops every shield).
+- `views.ship` is a component that takes `{ entity, shipId }`. `ship-view` renders each one inside the ship's
+  group through `<FeatureShipViews />`, so it moves with the ship. Shield's dome uses it.
+- `net.entityOf( sessionId )` returns that player's entity, or `undefined`. Use it in a `net` handler that
+  acts on a ship (shield's pop).
+- A feature's trait lives in `<name>.traits.ts` in its client folder. The bridge may import it to spawn and
+  mirror schema fields until S4 moves that mirroring.
+
 **The sim half imports leaf modules only.** `player-fields.ts` (schema) and `sim-hooks.ts` (step) read the
 registry when their module loads. A sim half that imports heavy core (`combat-step`, `run/combat`) closes an
 import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initialization` on some entry orders
@@ -171,14 +183,16 @@ import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initializati
 | `ship.input` | `step()` folds the input after the stun gate, in sorted feature order |
 | `ship.thrust` / `ship.cap` / `ship.tick` | `step()` sums `thrust`, folds `cap`, calls `tick`, in sorted feature order |
 | `ship.clear` | `markDead` and `respawn` call it after the core status clear |
-| `run.use` / `run.tick` / `run.reset` | `RunSim` calls `use` by power kind, `tick` every step after `stepCombat`, `reset` on run reset |
-| `run.strike` | `stepCombat` calls it after the shield step, before mines, portals and pickups, in feature id order |
+| `run.use` / `run.tick` / `run.reset` | `RunSim` calls `use` by power kind, `tick` every step after `stepCombat`, `reset( ctx, run )` on run reset |
+| `run.ward` | `stepCombat` calls it first, before every `run.strike` hook, in feature id order |
+| `run.strike` | `stepCombat` calls it after `run.ward`, before mines, portals and pickups, in feature id order |
 | `power` | the power bag puts the one `bagRest` power first, then draws the core and `bagWeight` powers in `HeldPower` kind order |
 | `rules` | default config, server clamp and key check for B2 overrides, dev dials (§7) |
 | `fields.player` | `PlayerState` composition and `SIM_SHIP_KEYS` / `SIM_FLOAT_KEYS` (§4) |
 | `messages` / `net` | the room registers server handlers; the bridge subscribes client handlers |
 | `systems` | the frame scheduler (§5) |
 | `views.scene` / `views.pickups` | `<FeatureViews slot="…" />` renders each feature's view |
+| `views.ship` | `<FeatureShipViews entity shipId />` in `ship-view` renders it inside each ship's group |
 | `hud.glyph` | the power glyph atlas |
 | `hud.overlay` | `<FeatureOverlays room={ room } />` in `NetHud` renders each feature's DOM overlay |
 | `audio` | room audio binding |
