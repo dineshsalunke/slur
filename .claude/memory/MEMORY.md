@@ -78,6 +78,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 
 ## Sim, track & pilots
 - [Feature registry import cycle](feature-registry-import-cycle.md) — sim half imports leaves only; TDZ
+- [Run hooks run in feature id order](run-hooks-run-in-feature-id-order.md) — a moved feature can reorder the tick
 - [Sim ship y is 0 on the deck](sim-ship-y-is-zero-on-deck.md) — hover is client-only
 - [tuningForShip takes a ship id](tuningforship-takes-a-ship-id.md) — use `SHIP_CLASSES.<c>.tuning`
 - [Strafe kick re-contacts every tick](strafe-kick-recontacts-every-tick.md) — charge fresh contacts only
