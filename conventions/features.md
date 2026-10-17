@@ -90,7 +90,7 @@ export const tugClient = defineClientFeature( {
 
 Every slot is optional. A feature fills only the slots it needs.
 
-**As built (F1 #385, F2 #390, F4a #395, F4b #397, F4c #403).** The sim half has `id`, `power`, `fields.player`, `ship`,
+**As built (F1 #385, F2 #390, F4a #395, F4b #397, F4c #403, F4d #404).** The sim half has `id`, `power`, `fields.player`, `ship`,
 `run` and `messages` (`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`,
 `systems`, `views.scene`, `views.pickups`, `hud.glyph`, `hud.overlay` and `net`
 (`apps/client/app/engine/define-client-feature.ts`). The other slots in the table (`rules`, `traits`,
@@ -144,6 +144,21 @@ F4c (#403, mine) added these slot rules:
   `mineBurst` → `burstMine`). The bridge keeps only the schema `onAdd`/`onRemove` listeners.
 - A shared visual that another feature also pushes to stays central until that feature moves. The shock
   queue and `<MineShock/>` stay in `game/scene/` because portal pushes to them.
+
+F4d (#404, boost) added these slot rules:
+
+- `ship.clear( s )` resets a feature's ship state. `clearFeatures` runs right after `clearStatus` in
+  `markDead` and respawn.
+- `ship` hooks run in feature id order. `thrust` hooks add up from 0; each `cap` hook gets the cap the hook
+  before it returned. A feature that must see the unmodified cap needs an id that sorts first (boost before
+  tug).
+- A timer that core code reads stays a core field, even when only the feature writes it. `glideTimer`
+  stays core because core collision (`onBoostDeck`) reads it; boost's `tick` and `clear` are its only
+  writers.
+- A `run.use` hook for a power that never spent an id before the move still takes one with `ctx.nextId()`
+  and discards it, because `run-sim` spent one for every core power. That keeps the ids bit-equal.
+- A feature's `views.scene` mounts only in `NetCanvas`. A view that also drew on another route (beat-deck
+  `WorldScene`) stops drawing there; check that route's draws before and after.
 
 **The sim half imports leaf modules only.** `player-fields.ts` (schema) and `sim-hooks.ts` (step) read the
 registry when their module loads. A sim half that imports heavy core (`combat-step`, `run/combat`) closes an

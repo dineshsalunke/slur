@@ -451,6 +451,24 @@ portal pushes to them.
 | Determinism | Bit-equal. A/B against HEAD `dist`: 6 seeds × 3600 ticks × 5 racers hash mines, seekers, projectiles, every player field, the broadcast log and the id counter each tick; all match. Outcomes covered: trigger 447, evicted 480, cleared 143, fizzle 90, expired 21. 800 power bags match. Negative control (mine at `run.strike`) diverges on all 6 seeds. |
 | Order is declared | Mine steps at `run.settle`, after bolt and seeker at `run.strike` and before portals, where `stepMines` ran. The id is taken first on every fire, fizzle included, so ids stay bit-equal. |
 
+**F4d result (#404, boost, measured 2026-10-17).** Two commits: 843882ee (sim half) and 2eab6b3b (client
+half). Approved plan B1–B8 (2026-10-17); the owner chose B2 option A. Boost fills the `ship` slot
+(`thrust`, `cap`, `tick`, `clear`); `boostThrust`, `boostCap` and the boost and glide decay leave `step.ts`
+and `status.ts`. `boostTimer` moves into boost's `fields.player`. `glideTimer` stays core, because core
+collision (`onBoostDeck`) reads it. Boost fires through `run.use` and spends one id first, then discards
+it. Boost joins the bag with `bagWeight = boostRatio`. The client half moves the streaks, pickups and glyph.
+The boost-blur post effect, the boost-surplus camera, the Interp `boost` value, audio, tuning and the
+test-level grant stay central (B8).
+
+| Measure | Result |
+|---|---|
+| Central files a feature edits | **36 → 23** non-test files name boost outside the two folders (shared 9 → 5, client 27 → 18). With tests: 50 → 36. Target ≤ 2 is not met. Shared side: `features/registry.ts`, the `index.ts` export, `sim-config.ts` (D2), `HeldPower.boost` in `combat/constants.ts` (D3), `step.ts` (`onBoostDeck`, core collision). Client side: `features/client-features.ts`, the boost-blur effect and its constants, `post-effects.{constants,utils}.ts`, `boost-surplus.ts` and `chase.ts` (camera), `traits.ts` and `attach-room-to-world.ts` (Interp `boost`), `bind-room-audio.ts`, `sfx-map.ts`, the tuning panel and schema, the test-level grant, the flight recorder and three track-editor files (labels). |
+| Wire order | `boostTimer` moves from index 27 to 38. The 11 fields after it shift down by one; still 39 fields. The golden index test is updated. A server test with two `@colyseus/testing` clients (`apps/server/src/rooms/room-boost.test.ts`) decodes `boostTimer` on both. |
+| `step()` time per tick | Not measured. Boost's ship hooks run where the inline calls ran. |
+| Frame time | Draw calls on `/test-level` 76 before and 76 after; on `/beat-deck` 45 before and 45 after (DPR 1, quality high, 3 runs each). With a staged boost on `/test-level` (slot 4 + E, `boostTimer` 1.48 s read back): 76 → 77 while boosting, so the streak view draws from its slot. The streaks now mount only in `NetCanvas`; beat-deck never boosts. |
+| Determinism | Bit-equal. A/B against HEAD `dist`: 6 seeds × 3600 ticks × 5 racers hash every player field by name, the ids and the broadcast log each tick; all match. Coverage: boost fired 1342, boosting ticks 80428, gliding 3153, boost with stun 10011, boost with tug 8114. 800 power bags match. Negative control (no id spend in `fireBoost`) diverges on all 6 seeds, first at ticks 7–29. Shared 585/585, server 100/100, client 728/728. |
+| Order is declared | Ship hooks run in id order (bolt < boost < mine < seeker < tug). Thrust: old `boost + (0 + tug)`, new `(0 + boost) + tug`, the same value. Boost is the first `cap` hook, so its incoming cap is `t.maxCruise`, and tug still gets the boosted cap. Boost and glide decay run first in `tickFeatures`, before tug. `clearFeatures` runs right after `clearStatus` in `markDead` and respawn. |
+
 ## 4. Net, input, client state, room config (workertwo)
 
 Measured on `dev` at `4b58658` (§4.1–4.3) and `a25b332` (§4.4–4.5). Installed versions, read from the
@@ -926,7 +944,8 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | **F4a** | **Built (#395).** Bolt is in `packages/shared/src/features/bolt/` and `apps/client/app/features/bolt/`. Numbers in §3.8 "F4a result". Owner D4–D7 (2026-09-30). | bolt's sim code, pickup view and glyph (moved) + the central lines it left | F3 |
 | **F4b** | **Built (#397).** Seeker is in `packages/shared/src/features/seeker/` and `apps/client/app/features/seeker/`. Numbers in §3.8 "F4b result". Owner S1–S6 (2026-10-01). | seeker's sim code, view, pickups, glyph and lock warning (moved) + the central lines it left | F4a |
 | **F4c** | **Built (#403).** Mine is in `packages/shared/src/features/mine/` and `apps/client/app/features/mine/`. Numbers in §3.8 "F4c result". Owner M1–M8 (2026-10-17). | mine's sim code, field, bodies, pickups, glyph and burst handler (moved) + the central lines it left | F4b |
-| F4… | One feature per stage: boost, shield, portal. | that feature's files + the lines it leaves in central files | F4c |
+| **F4d** | **Built (#404).** Boost is in `packages/shared/src/features/boost/` and `apps/client/app/features/boost/`. Numbers in §3.8 "F4d result". Plan B1–B8 (2026-10-17). | boost's sim code, ship hooks, streaks, pickups and glyph (moved) + the central lines it left | F4c |
+| F4… | One feature per stage: shield, portal. | that feature's files + the lines it leaves in central files | F4d |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |
