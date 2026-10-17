@@ -90,9 +90,9 @@ export const tugClient = defineClientFeature( {
 
 Every slot is optional. A feature fills only the slots it needs.
 
-**As built (F1 #385, F2 #390, F4a #395, F4b #397, F4c #403, F4d #404, F4e #405).** The sim half has `id`, `power`, `fields.player`, `ship`,
+**As built (F1 #385, F2 #390, F4a #395, F4b #397, F4c #403, F4d #404, F4e #405, F4f #406).** The sim half has `id`, `power`, `fields.player`, `ship`,
 `run` and `messages` (`packages/shared/src/features/define-sim-feature.ts`). The client half has `id`, `sim`,
-`systems`, `views.scene`, `views.pickups`, `views.ship`, `hud.glyph`, `hud.overlay` and `net`
+`systems`, `views.scene`, `views.pickups`, `views.ship`, `hud.glyph`, `hud.glyphs`, `hud.overlay` and `net`
 (`apps/client/app/engine/define-client-feature.ts`). The other slots in the table (`rules`, `traits`,
 `audio`, `dials`) come with their first consumer. Do not add a slot that has no engine consumer.
 
@@ -130,8 +130,8 @@ F4b (#397, seeker) added these slot rules:
   that needs a lock imports that leaf, not another feature's files.
 - `hud.overlay` is a DOM component that takes `{ room }`. `NetHud` renders each one through
   `<FeatureOverlays room={ room } />` inside the HUD layer. Seeker's lock warning uses it.
-- `splitPickupLayout` (`game/scene/pickup-layout/`) buckets core pickups only. A feature's pickups filter
-  their own anchors in their `views.pickups` component.
+- A feature's pickups filter their own anchors in their `views.pickups` component. (`splitPickupLayout`
+  bucketed the core pickups until F4f removed the last one.)
 
 F4c (#403, mine) added these slot rules:
 
@@ -172,6 +172,24 @@ F4e (#405, shield) added these slot rules:
 - A feature's trait lives in `<name>.traits.ts` in its client folder. The bridge may import it to spawn and
   mirror schema fields until S4 moves that mirroring.
 
+F4f (#406, portal) added these slot rules:
+
+- `power.uses` lists extra `HeldPower` kinds that the same `run.use` fires (portal's `portalB`). The registry
+  rejects a kind that two features claim. Every `HeldPower` except `none` now has a use, so `run-sim` has no
+  core fire path.
+- `run.tap( ctx, run, p, ownerId, intent )` runs on every fire intent before the slot check, in feature id
+  order. It returns `true` to consume the intent; the first `true` stops the loop. Portal uses it for the
+  double-tap far throw and to park the intent's `seq` for the `use` call that follows.
+- `run.hop( ctx, run, victimId, from, p )` runs when `run-sim` sees a ship's `portalHops` count go up, in
+  feature id order. Portal broadcasts the hop; seeker drops the seekers locked on that ship. A feature reacts
+  to a hop through this hook, never by importing portal.
+- A `run.use` hook that owns its slot (it swaps or keeps the charge itself) sets the slot and returns
+  `false`, so the engine does not spend it.
+- `hud.glyphs` maps each extra kind in `power.uses` to its glyph. The atlas throws when a kind is not in the
+  feature's `power.uses`.
+- `portalHops` stays a core field (the F4d `glideTimer` rule): prediction, the bridge and remote
+  interpolation read it.
+
 **The sim half imports leaf modules only.** `player-fields.ts` (schema) and `sim-hooks.ts` (step) read the
 registry when their module loads. A sim half that imports heavy core (`combat-step`, `run/combat`) closes an
 import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initialization` on some entry orders
@@ -184,6 +202,8 @@ import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initializati
 | `ship.thrust` / `ship.cap` / `ship.tick` | `step()` sums `thrust`, folds `cap`, calls `tick`, in sorted feature order |
 | `ship.clear` | `markDead` and `respawn` call it after the core status clear |
 | `run.use` / `run.tick` / `run.reset` | `RunSim` calls `use` by power kind, `tick` every step after `stepCombat`, `reset( ctx, run )` on run reset |
+| `run.tap` | `RunSim.fire` calls it on every fire intent before the slot check, in feature id order; the first `true` consumes the intent |
+| `run.hop` | `RunSim` calls it when a ship's `portalHops` goes up, in feature id order |
 | `run.ward` | `stepCombat` calls it first, before every `run.strike` hook, in feature id order |
 | `run.strike` | `stepCombat` calls it after `run.ward`, before mines, portals and pickups, in feature id order |
 | `power` | the power bag puts the one `bagRest` power first, then draws the core and `bagWeight` powers in `HeldPower` kind order |
@@ -193,7 +213,7 @@ import cycle. The cycle throws `Cannot access 'SIM_FEATURES' before initializati
 | `systems` | the frame scheduler (§5) |
 | `views.scene` / `views.pickups` | `<FeatureViews slot="…" />` renders each feature's view |
 | `views.ship` | `<FeatureShipViews entity shipId />` in `ship-view` renders it inside each ship's group |
-| `hud.glyph` | the power glyph atlas |
+| `hud.glyph` / `hud.glyphs` | the power glyph atlas: `glyph` for `power.kind`, `glyphs` for each kind in `power.uses` |
 | `hud.overlay` | `<FeatureOverlays room={ room } />` in `NetHud` renders each feature's DOM overlay |
 | `audio` | room audio binding |
 | `dials` | the dev tunables panel |

@@ -489,6 +489,28 @@ the trait, the pickups and the glyph. Audio, `sfx-map` and the test-level grant 
 | Determinism | Bit-equal. A/B against HEAD `dist`: 6 seeds × 3600 ticks hash every player field by name, the ids and the broadcast log each tick, with short random shields and a mid-race `clearCombat`; all match. 108 shield pops. 800 power bags match. Negative control (shield step at `run.strike`) diverges on 4 of 6 seeds. Shared 585/585, server 101/101, client 730/730. |
 | Order is declared | `run.ward` is the first combat phase, so the shield steps before any strike, as it did at the top of `stepCombat`. |
 
+**F4f result (#406, portal, measured 2026-10-17).** Two commits: 1408cce9 (sim half) and 18a5cff2 (client
+half). Approved plan P1–P12 (2026-10-17); the owner chose option A for P2, P3, P4, P5, P6, P8 and P11.
+`PowerSpec.uses` lets one `run.use` fire two kinds (`portal`, `portalB`); every `HeldPower` except `none` now
+has a use, so `firePower` and the core fire path in `RunSim` are gone. Two new fixed hooks: `run.tap` runs on
+every fire intent before the slot check (portal's double-tap far throw), and `run.hop` runs when a ship's
+`portalHops` goes up (portal broadcasts the hop, seeker drops its locks, so seeker no longer imports portal).
+Portal steps at `run.settle` after mine, resets its portals and tap map in `run.reset`, and joins the bag
+with `bagWeight = portalRatio`. `portalHops` stays core (P2) and `step()` keeps its direct hop call (P3).
+The client half moves the field to `views.scene`, the pickups to `views.pickups` with their own anchor
+filter, the hop and fizzle listeners to the `net` slot, and both glyphs into the feature through a new
+`hud.glyphs` slot. `splitPickupLayout` is gone. The shock queue, local hop, the bridge's portals mirror,
+`block-state`, audio, `sfx-map`, the `Portal.*` dials and the test-level grant stay central (P11).
+
+| Measure | Result |
+|---|---|
+| Central files a feature edits | **34 → 21** non-test files name portal outside the two folders (shared 12 → 9, client 22 → 12). With tests: 48 → 31. Target ≤ 2 is not met. Shared side: `features/registry.ts`, the `index.ts` export, `schema.ts` (`RunState.portals`), `player-fields.ts` and `sim/types.ts` (`portalHops`, P2), `sim/step.ts` (the hop call, P3), `run-sim.ts` (hop detection), `sim-config.ts` (D2), `HeldPower.portal`/`portalB` (D3). Client side: `client-features.ts`, `attach-room-to-world.ts` (portals mirror and local hop), `block-state.ts`, `local-hop.ts`, `net-systems.ts`, the shock queue and its constants, audio, `sfx-map`, the tuning panel and schema, the test-level grant. |
+| Wire order | Unchanged. No field moves (P2 = A). |
+| `step()` time per tick | Not measured. `step()` keeps the same direct hop call. |
+| Frame time | Draw calls on `/test-level` (DPR 1, quality high, 2 runs each): idle 76 before and after; with a staged portal pair (2 ends read back) 80 before and after. The field now mounts through `FeatureViews` in id order, so its `useFrame` subscribes later; the draws do not change. |
+| Determinism | Bit-equal. A/B against HEAD `dist`: 6 seeds × 3600 ticks, every player field by name, the portals map incl. arm timers and ttl, ids and the broadcast log; 505 hops, 44 fizzles, 1921 double taps, 20 unused-`portalB` expiries. 800 power bags match. Negative control (no `ctx.nextId()` in portal's use) diverges on 6 of 6 seeds. Every shared `dist` module imports alone. Shared 586/586, server 101/101, client 730/730. |
+| Order is declared | Portal settles after mine (id order), where `stepPortals` ran, and before pickups refill the `portalB` slots expiry cleared. Hop broadcasts run portal before seeker, as before. A tap entry is deleted on every intent, even when the slot check fails, as before. |
+
 ## 4. Net, input, client state, room config (workertwo)
 
 Measured on `dev` at `4b58658` (§4.1–4.3) and `a25b332` (§4.4–4.5). Installed versions, read from the
@@ -966,7 +988,7 @@ Each stage merges alone. No stage blocks a feature lane. "Needs" lists hard depe
 | **F4c** | **Built (#403).** Mine is in `packages/shared/src/features/mine/` and `apps/client/app/features/mine/`. Numbers in §3.8 "F4c result". Owner M1–M8 (2026-10-17). | mine's sim code, field, bodies, pickups, glyph and burst handler (moved) + the central lines it left | F4b |
 | **F4d** | **Built (#404).** Boost is in `packages/shared/src/features/boost/` and `apps/client/app/features/boost/`. Numbers in §3.8 "F4d result". Plan B1–B8 (2026-10-17). | boost's sim code, ship hooks, streaks, pickups and glyph (moved) + the central lines it left | F4c |
 | **F4e** | **Built (#405).** Shield is in `packages/shared/src/features/shield/` and `apps/client/app/features/shield/`. Numbers in §3.8 "F4e result". Plan E1–E9 (2026-10-17). | shield's sim code, dome, pickups, glyph, trait and pop handler (moved) + the central lines it left | F4d |
-| F4… | One feature per stage: portal. | that feature's files + the lines it leaves in central files | F4e |
+| **F4f** | **Built (#406).** Portal is in `packages/shared/src/features/portal/` and `apps/client/app/features/portal/`. Numbers in §3.8 "F4f result". Plan P1–P12 (2026-10-17). | portal's sim code, hop, field, pickups, ring, glyphs and hop/fizzle handlers (moved) + the central lines it left | F4e |
 | S4 | Tags `Dead`, `Stunned`, `Shielded`, `Spectating`. Readers switch one at a time. | `game/ecs/traits.ts`, `net/attach-room-to-world.ts`, `game/spectator.ts`, the 13 `.dead` readers | S0 |
 | S5 | World traits `Phase`, `SpectatorTarget`, `Standings`, `Blocks`, `PowerSlot` + the one run reset. | `game/spectator.ts`, `game/block-state.ts`, `game/pickup-state.ts`, `game/input/power-select.ts`, `game/net/standings-store.ts`, `game/net/run-view-store.ts`, `net/attach-room-to-world.ts`, `net/prediction.ts` | S0 |
 | S6 | Room config (B2). ADR for #70. `defineRules` specs (c4) give defaults, server clamp, key check and dials; c3 bridges flat readers; the server merges fround-ed values. Lock at GO. | `packages/shared/src/schema.ts`, `sim-config.ts`, `run/run-sim.ts`, `apps/server/src/rooms/run-room.ts`, `dev/tuning-schema.ts`, `docs/DECISIONS.md` | S1, F1, ADR |
