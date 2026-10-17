@@ -12,7 +12,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Claim the lane before the first write](claim-the-lane-before-the-first-write.md) — unclaimed item lost files
 - [Shared tree footguns](shared-tree-footguns.md) — one index; pathspec skips untracked; peers' HMR
 - [Merge PRs in a detached worktree](merge-prs-in-a-detached-worktree.md) — `push HEAD:dev`; needs owner OK now
-- [Supervisor drives workers via herdr](supervisor-clears-workers-via-herdr.md) — clear/resume; % of 1M; prompt, not keys
+- [Supervisor drives workers via herdr](supervisor-clears-workers-via-herdr.md) — spawn with config env; clear/resume; % of 1M
 - [Subagents run on Sonnet](subagents-run-on-sonnet.md) — pass `model: "sonnet"` on every Agent call
 - [Project memory lives in the repo](project-memory-in-repo.md) — `.claude/memory/` via autoMemoryDirectory
 - [Backlog is split two ways](backlog-split.md) — global parking lot vs project roadmap

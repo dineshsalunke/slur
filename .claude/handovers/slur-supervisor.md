@@ -1,9 +1,9 @@
-Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-10-01 (seam 20 — context warning at ~155k)
+Agent: slur-supervisor · Lane: supervision + RFC-349 staging · Updated: 2026-10-17
 
 ## Goal
 
 Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
-The rules are in `CLAUDE.local.md`. Clear and resume steps: memory `supervisor-clears-workers-via-herdr.md`.
+The rules are in `CLAUDE.local.md`. Clear, resume and spawn steps: memory `supervisor-clears-workers-via-herdr.md`.
 Standing approval to clear workers at a seam. Read the context bar with `grep -oE "░+ [0-9]+%"`; re-read
 until 0%. Reply to a worker's cross-session message with SendMessage to its `from=` address.
 Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
@@ -15,7 +15,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 - OWNER RULE: the owner tests everything on /test-level. Every brief says so.
 - OWNER RULE: never ask about an issue by number alone (title + one line).
 - OWNER RULE (2026-09-30): every Agent-tool subagent runs with `model: "sonnet"`. Put it in every brief.
-- ONLY THE OWNER DEPLOYS: `! docker desktop start && ./scripts/deploy.sh`.
+- ONLY THE OWNER DEPLOYS: `! docker desktop start && ./scripts/deploy.sh`. The supervisor's auto mode blocks it.
 - Pushes: workers push their own green commits. The supervisor pushes doc commits.
 - Prod: https://slur.kurmah.studio. do-setup owns infra.
 - Look (#364 254d267): HDRI cyclorama_hard_light 1k, Environment.rotation 210, intensity 1, Metal + Hull
@@ -23,20 +23,17 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 - KEY LAYOUT (#368, ADR-032): ↑/↓ throttle/brake, ←/→ strafe, Space jump, E fire fwd, D fire back, S/F
   prev/next slot, X drop, M mute, Esc.
 - RFC-349 F3 = GO: F4 one feature per stage, bolt, seeker, mine, boost, shield, portal. One issue per stage.
+  Owner 2026-10-17: "lets take care of this" for mine → portal. Each stage still needs plan approval.
 - Pillars stay identical (ADR-018). Owner closed #396 (per-pillar sizes) 2026-10-01 "for now".
 - Black hole look approved 2026-10-01: side 28, minAngle 18, radius 900. No lift dial. No spectator shake.
 
-## Done this seam (2026-09-30 → 10-01)
+## Done this seam (2026-10-01 → 10-17)
 
-- #395 F4a bolt landed 85365ecc (workerone, closed). Central 34 → 29; ≤2 not met (D7).
-- #393 meteor flash lingers 745fc30b · #392 meteor lands near player 7a90abc6 · #398 meteor shake
-  c8d31137 (peak roll median 0.12° → 0.88°; pit strikes step onto deck) — workertwo, all closed.
-- #394 black hole prototype 84be557c, bigger + right f7d996d0/1419038d, panel dials e5a6232e — closed
-  by supervisor on owner sign-off. #399 into WorldScene, ?blackhole removed, refine hitch 22 → 13 ms
-  76426500 — workerthree, closed.
-- #396 monolith size variation filed, then closed not-planned (conflicts ADR-018).
-- #397 F4b seeker filed; owner approved S1–S6 as recommended (comment on #397).
-- #400 hosted room renders near-black filed.
+- #397 F4b seeker landed f80acb55 (sim) + 65784e33 (client), closed by workerone. Numbers in RFC §3.8.
+- 589788c5 env-band test format fix (supervisor).
+- Owner deployed prod 2026-10-17: live at b156a41 (black hole, meteor fixes, #400, F4b).
+- Filed F4c mine #403, F4d boost #404, F4e shield #405, F4f portal #406. Sequential: one worker.
+- Old worker panes were gone. Spawned a fresh workerone (pane w3C:p3, Opus 5.5 1M, auto mode).
 
 ## RFC-349 stages
 
@@ -44,36 +41,31 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 |---|---|---|
 | F2 tug | #390 | landed f4e78880 |
 | F4a bolt | #395 | landed 85365ecc |
-| F4b seeker | #397 | BUILDING workerone. Shared half done (it broke /test-level once mid-move; fixed, dist rebuilt). Client half next, leaf-first |
-| F4c… mine, boost, shield, portal | — | one issue each, in order |
+| F4b seeker | #397 | landed f80acb55 + 65784e33 |
+| F4c mine | #403 | PLANNING workerone. Plan → owner before the first edit |
+| F4d boost | #404 | after F4c |
+| F4e shield | #405 | after F4d |
+| F4f portal | #406 | after F4e |
 | S4/S5, S6 (closes #70), S12 | — | not filed; S4/S5/S7 touch attach-room-to-world.ts → sequence around F4 |
 
 ## Workers
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w2Z:p2 | #397 F4b seeker | building | shared features/seeker/**, combat/{target-lock,constants,power-bag,mine}.ts + tests, run/{combat,portal-run}.ts, schema.ts, sim-config.ts, index.ts, features/registry*, features/tug/*; client features/seeker/**, scene/pickup-layout/, client-features.ts, define-client-feature.ts, net-hud.tsx, net-canvas.tsx, pickup-field.tsx, glyph-atlas.ts, ecs/traits.ts, attach-room-to-world.ts, tests |
-| workertwo | w2Z:p3 | #400 landed f3a0d370 (closed) | AT SEAM ~171k, handover e72f235d — /clear + resume it (idle, no lane) | none |
-| workerthree | w2Z:p5 | PROD DEPLOY of origin/dev (owner authorized 2026-10-01, this one only) from a scratch git clone, since F4b WIP dirties the tree and deploy.sh:24 refuses | BLOCKED: its permission layer denied the first step ("[Production Deploy]"); nothing ran; idle. Owner to deploy or approve in a session | none |
-| do-setup | w2Z:p4 | infra | idle | — |
-
-## #400 cause (workertwo, measured)
-
-`env-band.state.ts` caches its band render target in a module object across WebGL contexts. The first
-canvas (landing) draws it. The next canvas gets a cache hit and an undrawn texture → black env → black
-deck/rocks/hull. Repro: `/test-level` direct = lit; `/` → navigate `/test-level` = black. Fix approved:
-renderer in the cache key, dispose and rebuild. Prod likely affected [inferred] → owner deploys after.
+| workerone | w3C:p3 | #403 F4c mine | planning, no edits | none until the plan is approved |
 
 ## Open owner items
 
-1. #400 landed f3a0d370 (told owner): owner checks home → host a room; prod needs the owner's deploy.
-2. First-use black hole shader compile: one ~20–29 ms frame at mount; `renderer.compileAsync` candidate
+1. F4c mine plan: relay to the owner when workerone sends it.
+2. Build-stage warning: `msgpackr-extract` native compile fails in the Docker build stage (no Python). The
+   runtime stage installs it cleanly. Not blocking. Not filed.
+3. First-use black hole shader compile: one ~20–29 ms frame at mount; `renderer.compileAsync` candidate
    [untested]. Not filed.
-3. workerone's optional idea: give the 22 D7 client files neutral names to reach the ≤2 central target.
-4. Exhaust blue tail (handover 66a90ae4): owner to say where it shows.
-5. Audit follow-up: one docs issue per doc (GDD, TDD, ADD). The ADD pillar line now matches the code.
-6. Triage list still waiting: RFC S4/S5/S6/S12 issues; vertical-reach validator; four art issues.
-7. Keep-open issues waiting on owner: #344, #300 S4, #70. Older: #14 Q1/Q2, #16, #312/#313.
+4. workerone's optional idea: give the 22 D7 client files neutral names to reach the ≤2 central target.
+5. Exhaust blue tail (handover 66a90ae4): owner to say where it shows.
+6. Audit follow-up: one docs issue per doc (GDD, TDD, ADD).
+7. Triage list still waiting: RFC S4/S5/S6/S12 issues; vertical-reach validator; four art issues.
+8. Keep-open issues waiting on owner: #344, #300 S4, #70. Older: #14 Q1/Q2, #16, #312/#313.
 
 ## Uncommitted
 
@@ -81,10 +73,10 @@ None of mine.
 
 ## Next
 
-1. Wait for workertwo's #400 report; verify the push; tell the owner how to check and that prod needs a deploy.
-2. Wait for workerone's #397 landing; verify; file F4c (mine) and get a plan from workerone.
-3. workerthree is free: offer the owner a lane (the shader compile hitch, or a triage item).
+1. Wait for workerone's F4c plan. Relay it to the owner by title, with each decision and its recommendation.
+2. On approval, take workerone's claim list and answer "clear".
+3. On landing: verify the push, check that the issue is closed, then brief F4d boost.
 
 ## Lessons → memory
 
-none (the env-band cross-context cache is workertwo's to record).
+`supervisor-clears-workers-via-herdr.md`: a new section on spawning a worker (the env vars a new pane needs).

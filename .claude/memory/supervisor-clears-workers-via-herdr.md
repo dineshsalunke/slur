@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: e4aeb333-55e9-44fc-ad07-db2ed1a9e60b
-  modified: 2026-09-29T04:04:39.946Z
+  modified: 2026-10-17T07:06:23.857Z
 ---
 
 ### Supervisor clears workers via herdr
@@ -57,3 +57,17 @@ clear/resume cycle.
 **How to apply:** before giving a lane to a worker, read its bar. **Under 10%** is fit for a real lane.
 **10–15%** is fit for a small task only. **15% or more** means clear it first: ask for a seam, then
 /clear and resume.
+
+### Spawning a worker needs the personal config env
+
+To start a worker, run `herdr tab create --workspace <ws> --cwd <repo> --label <name> --no-focus --env
+CLAUDE_CONFIG_DIR=/Users/apple/.claude-personal --env CLAUDE_CODE_SUBAGENT_MODEL=sonnet --env
+CLAUDE_CTX_WARN_TOKENS=150000`. Then run `herdr agent start <name> --kind claude --pane <pane> -- --name
+<name>`, then `/model claude-opus-5-5[1m]`, then brief the worker with `herdr agent prompt`.
+
+**Why:** on 2026-10-17 a tab created without `--env` launched `claude` against `~/.claude`, the other
+config. That config defaults to Bypass Permissions mode, and the brief's Enter chose "No, exit" on the
+consent screen. A bare launch also starts on Sonnet 5.
+
+**How to apply:** always pass the three `--env` flags. Copy them from this session's own `env | grep
+^CLAUDE`. Never accept the bypass screen for the owner.
