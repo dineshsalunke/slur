@@ -1,7 +1,6 @@
 import { Fragment, type ReactNode, Suspense } from 'react';
 import { RenderScale } from '../../dev/render-scale';
 import { BlackHole } from './black-hole/black-hole';
-import { BoostStreaks } from './boost-streaks/boost-streaks';
 import { ExhaustField } from './exhaust-field/exhaust-field';
 import { ExplosionField } from './explosion-field/explosion-field';
 import { FinishGate } from './finish-gate/finish-gate';
@@ -20,7 +19,6 @@ export function WorldScene( { children }: { children?: ReactNode } ) {
             <RenderScale />
             <ExplosionField />
             <ExhaustField />
-            <BoostStreaks />
             <HitSpark />
             <TrackView />
             <FinishGate />

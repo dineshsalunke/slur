@@ -1,15 +1,16 @@
-import { boltFeature, defineSimFeature, mineFeature, seekerFeature, tugFeature } from '@slur/shared';
+import { boltFeature, boostFeature, defineSimFeature, mineFeature, seekerFeature, tugFeature } from '@slur/shared';
 import { describe, expect, it } from 'vitest';
 import { ACTIVE_FEATURES, checkClientFeatures, FEATURE_SYSTEMS } from './active-features';
 import { defineClientFeature } from './define-client-feature';
 
 describe( 'active client features (#385)', () => {
-    it( 'ships bolt, mine, seeker and tug, each paired with its sim half, and no feature systems yet', () => {
-        expect( ACTIVE_FEATURES.map( ( f ) => f.id ) ).toEqual( [ 'bolt', 'mine', 'seeker', 'tug' ] );
+    it( 'ships bolt, boost, mine, seeker and tug, each paired with its sim half, and no feature systems yet', () => {
+        expect( ACTIVE_FEATURES.map( ( f ) => f.id ) ).toEqual( [ 'bolt', 'boost', 'mine', 'seeker', 'tug' ] );
         expect( ACTIVE_FEATURES[ 0 ]?.sim ).toBe( boltFeature );
-        expect( ACTIVE_FEATURES[ 1 ]?.sim ).toBe( mineFeature );
-        expect( ACTIVE_FEATURES[ 2 ]?.sim ).toBe( seekerFeature );
-        expect( ACTIVE_FEATURES[ 3 ]?.sim ).toBe( tugFeature );
+        expect( ACTIVE_FEATURES[ 1 ]?.sim ).toBe( boostFeature );
+        expect( ACTIVE_FEATURES[ 2 ]?.sim ).toBe( mineFeature );
+        expect( ACTIVE_FEATURES[ 3 ]?.sim ).toBe( seekerFeature );
+        expect( ACTIVE_FEATURES[ 4 ]?.sim ).toBe( tugFeature );
         expect( FEATURE_SYSTEMS ).toEqual( [] );
     } );
 

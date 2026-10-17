@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { accent } from './accent';
+import { accent } from '../../game/scene/accent';
+import { BOLT_HOT } from '../../game/scene/combat-look';
 import { BOOST_STREAK_INTENSITY } from './boost-look';
-import { BOLT_HOT } from './combat-look';
 
 const VERTEX = `
 attribute float aLevel;

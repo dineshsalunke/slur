@@ -21,12 +21,6 @@ const PORTAL_RING = { d: ellipsePath( 24, 24, 9, 14 ), stroke: ACCENT, width: 3 
 
 const CORE_GLYPHS: Record< number, readonly GlyphShape[] > = {
     [ HeldPower.none ]: [ { d: SQUARE, stroke: ACCENT, width: 2.5 } ],
-    [ HeldPower.boost ]: [
-        plate( polyPath( '24,3 42,21 42,28 24,10 6,28 6,21' ) ),
-        plate( polyPath( '24,19 42,37 42,44 24,26 6,44 6,37' ) ),
-        { d: polyPath( '24,5 36,17 36,20 24,8 12,20 12,17' ), fill: GOLD },
-        { d: polyPath( '24,21 36,33 36,36 24,24 12,36 12,33' ), fill: ACCENT },
-    ],
     [ HeldPower.shield ]: [
         plate( circlePath( 24, 24, 19 ) ),
         { d: circlePath( 24, 24, 13 ), stroke: ACCENT, width: 3 },
