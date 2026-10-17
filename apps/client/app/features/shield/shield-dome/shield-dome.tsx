@@ -1,9 +1,9 @@
 import { useFrame } from '@react-three/fiber';
-import { tuningForShip } from '@slur/shared';
+import { DEFAULT_SIM_CONFIG, tuningForShip } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { Shield } from '../../ecs/traits';
+import { Shield } from '../shield.traits';
 import {
     SHIELD_DOME_HEIGHT,
     SHIELD_DOME_MARGIN,
@@ -15,7 +15,8 @@ import {
 } from '../shield-look';
 import { DOME } from './shield-dome.constants';
 
-export function ShieldDome( { entity, shipId, windowS }: { entity: Entity; shipId: string; windowS: number } ) {
+export function ShieldDome( { entity, shipId }: { entity: Entity; shipId: string } ) {
+    const windowS = DEFAULT_SIM_CONFIG.shieldS;
     const mesh = useRef< THREE.Mesh | null >( null );
     const uniforms = useMemo( shieldDomeUniforms, [] );
     const tuning = tuningForShip( shipId );

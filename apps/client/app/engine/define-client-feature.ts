@@ -1,4 +1,5 @@
 import type { SimFeature } from '@slur/shared';
+import type { Entity } from 'koota';
 import type { ComponentType } from 'react';
 import type { FrameSystem } from '../game/frame/schedule';
 import type { NetFrame } from '../game/net-loop/net-loop.utils';
@@ -7,8 +8,18 @@ import type { RunRoomLike } from '../net/run-room-like';
 
 export type ViewSlot = 'scene' | 'pickups';
 
+export interface ShipViewProps {
+    readonly entity: Entity;
+    readonly shipId: string;
+}
+
+export interface ViewSlots extends Readonly< Partial< Record< ViewSlot, ComponentType > > > {
+    readonly ship?: ComponentType< ShipViewProps >;
+}
+
 export interface NetContext {
     readonly sessionId: string;
+    entityOf( sessionId: string ): Entity | undefined;
 }
 
 export type NetHandlers = Readonly< Record< string, ( payload: never, net: NetContext ) => void > >;
@@ -22,7 +33,7 @@ export interface ClientFeature {
     readonly id: string;
     readonly sim?: SimFeature;
     readonly systems?: readonly FrameSystem< NetFrame >[];
-    readonly views?: Readonly< Partial< Record< ViewSlot, ComponentType > > >;
+    readonly views?: ViewSlots;
     readonly hud?: HudSlots;
     readonly net?: NetHandlers;
 }

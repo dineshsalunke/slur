@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { accent } from './accent';
+import { accent } from '../../game/scene/accent';
 
 export const SHIELD_RING_R = 1.05;
 const SHIELD_RING_TUBE = 0.2;

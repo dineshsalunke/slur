@@ -5,14 +5,13 @@ import { splitPickupLayout } from './pickup-layout.utils';
 describe( 'splitPickupLayout', () => {
     it( 'puts every core pickup in exactly one field, by its shared power, and leaves feature powers out', () => {
         const layout = pickupsOf( resolveTrack( procgenDescriptor( 7, 'weave' ) ) );
-        const { shields, portals } = splitPickupLayout( layout );
+        const { portals } = splitPickupLayout( layout );
         const featureKinds = new Set< number >( FEATURE_POWERS.map( ( p ) => p.kind ) );
         const featured = layout.filter( ( a ) => featureKinds.has( pickupPower( a.id ) ) ).length;
 
         expect( featured ).toBeGreaterThan( 0 );
-        expect( shields.length + portals.length + featured ).toBe( layout.length );
+        expect( portals.length + featured ).toBe( layout.length );
         expect( portals.length ).toBeGreaterThan( 0 );
         for ( const a of portals ) expect( pickupPower( a.id ) ).toBe( HeldPower.portal );
-        for ( const a of shields ) expect( pickupPower( a.id ) ).toBe( HeldPower.shield );
     } );
 } );

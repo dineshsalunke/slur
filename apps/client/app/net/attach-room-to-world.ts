@@ -11,7 +11,6 @@ import {
     type PortalHopMessage,
     type ProjectileState,
     type SeekerState,
-    SHIELD_POP_MESSAGE,
     type SimConfig,
     type Track,
 } from '@slur/shared';
@@ -21,6 +20,8 @@ import { ACTIVE_FEATURES } from '../engine/active-features';
 import { bindFeatureMessages } from '../engine/bind-feature-messages';
 import { NetMine } from '../features/mine/mine.traits';
 import { launchMine } from '../features/mine/mine-shots';
+import { Shield } from '../features/shield/shield.traits';
+import { mirrorShield } from '../features/shield/shield-mirror';
 import { blockWorld, clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import { sparkAt } from '../game/ecs/bounce-spark';
 import { holdRunConfig, runConfig } from '../game/ecs/run-config';
@@ -38,7 +39,6 @@ import {
     Remote,
     Render,
     SeekerTrail,
-    Shield,
     Sim,
 } from '../game/ecs/traits';
 import { settleSlot } from '../game/input/power-select';
@@ -117,16 +117,6 @@ function spawnPlayer(
         : world.spawn( Render, Hover, Attitude, Net( net ), Remote, Interp, Shield );
 }
 
-function mirrorShield( ent: Entity | undefined, on: boolean ): void {
-    if ( ! ent ) return;
-    const now = performance.now() / 1000;
-    ent.set( Shield, ( prev ) => ( on ? { on, since: now, popAt: -1 } : { ...prev, on } ) );
-}
-
-function popShield( ent: Entity | undefined ): void {
-    ent?.set( Shield, ( prev ) => ( { ...prev, on: false, popAt: performance.now() / 1000 } ) );
-}
-
 export function attachRoomToWorld(
     room: RunRoomLike,
     world: World,
@@ -134,9 +124,9 @@ export function attachRoomToWorld(
     trackRef: RefObject< Track >,
 ): () => void {
     const releaseConfig = holdRunConfig( world, room.simConfig ?? DEFAULT_SIM_CONFIG );
-    const offFeatures = bindFeatureMessages( room, ACTIVE_FEATURES );
-    const $ = stateCallbacks( room );
     const byId = new Map< string, Entity >();
+    const offFeatures = bindFeatureMessages( room, ACTIVE_FEATURES, ( sid ) => byId.get( sid ) );
+    const $ = stateCallbacks( room );
     const projById = new Map< string, Entity >();
     const seekerById = new Map< string, Entity >();
     const perPlayer = new Map< string, () => void >();
@@ -277,11 +267,6 @@ export function attachRoomToWorld(
         pushHit( { x: m.x, y: m.y, z: m.z } );
     } );
 
-    const offShieldPop = room.onMessage( SHIELD_POP_MESSAGE, ( m: HitMessage ) => {
-        popShield( byId.get( m.victimId ) );
-        pushHit( { x: m.x, y: m.y, z: m.z } );
-    } );
-
     const offBounce = room.onMessage( BOUNCE_MESSAGE, ( m: BounceMessage ) => {
         if ( m.victimId !== room.sessionId ) sparkAt( m );
     } );
@@ -303,7 +288,6 @@ export function attachRoomToWorld(
         offPortalHop();
         offPortalFizzle();
         offHit();
-        offShieldPop();
         offBounce();
         offBreak();
         offUnbreak();

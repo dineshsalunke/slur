@@ -2,18 +2,7 @@ import { HeldPower } from '@slur/shared';
 import * as THREE from 'three';
 import { ACTIVE_FEATURES } from '../../../engine/active-features';
 import { accent, accentVersion } from '../accent';
-import {
-    ACCENT,
-    circlePath,
-    ellipsePath,
-    type GlyphShape,
-    GOLD,
-    plate,
-    polyPath,
-    RIM,
-    roundRectPath,
-    starPoints,
-} from './glyph-shapes';
+import { ACCENT, circlePath, ellipsePath, type GlyphShape, GOLD, plate, RIM, roundRectPath } from './glyph-shapes';
 import { CELL_PAD, CELL_PX, CELLS, VIEWBOX } from './power-arc.constants';
 
 const SQUARE = roundRectPath( 8, 8, 32, 32, 2 );
@@ -21,11 +10,6 @@ const PORTAL_RING = { d: ellipsePath( 24, 24, 9, 14 ), stroke: ACCENT, width: 3 
 
 const CORE_GLYPHS: Record< number, readonly GlyphShape[] > = {
     [ HeldPower.none ]: [ { d: SQUARE, stroke: ACCENT, width: 2.5 } ],
-    [ HeldPower.shield ]: [
-        plate( circlePath( 24, 24, 19 ) ),
-        { d: circlePath( 24, 24, 13 ), stroke: ACCENT, width: 3 },
-        { d: polyPath( starPoints( 3, 6, 6 ) ), fill: GOLD },
-    ],
     [ HeldPower.portal ]: [
         plate( circlePath( 24, 24, 19 ) ),
         PORTAL_RING,

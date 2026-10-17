@@ -4,10 +4,10 @@ import { buildBoltBody } from '../../../features/bolt/bolt-pickups/bolt-pickups.
 import { buildBoostPickup } from '../../../features/boost/boost-pickups/boost-pickups.utils';
 import { buildMinePickup } from '../../../features/mine/mine-pickups/mine-pickups.utils';
 import { buildSeekerPickup } from '../../../features/seeker/seeker-pickups/seeker-pickups.utils';
+import { buildShieldPickup } from '../../../features/shield/shield-pickups/shield-pickups.utils';
 import { buildTugPickup } from '../../../features/tug/tug-pickups/tug-pickups.utils';
 import { PICKUP_BOB, PICKUP_HOVER, PICKUP_SIZE } from '../combat-look';
 import { buildPortalPickup } from '../portal-pickups/portal-pickups.utils';
-import { buildShieldPickup } from '../shield-pickups/shield-pickups.utils';
 import type { PickupPart } from './pickup-instances';
 import { fitPickup } from './pickup-instances.utils';
 

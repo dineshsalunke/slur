@@ -1,9 +1,9 @@
-import { DEFAULT_SHIP, DEFAULT_SIM_CONFIG } from '@slur/shared';
+import { DEFAULT_SHIP } from '@slur/shared';
 import type { Entity } from 'koota';
 import { useTrait } from 'koota/react';
 import { Fragment, Suspense } from 'react';
+import { FeatureShipViews } from '../../engine/feature-ship-views/feature-ship-views';
 import { Net, Render } from '../ecs/traits';
-import { ShieldDome } from './shield-dome/shield-dome';
 import { ShipModel } from './ship-model/ship-model';
 import { ShipShadow } from './ship-shadow/ship-shadow';
 
@@ -18,7 +18,7 @@ export function ShipView( { entity }: { entity: Entity } ) {
                 <Suspense fallback={ null }>
                     <ShipModel key={ shipId } entity={ entity } shipId={ shipId } />
                 </Suspense>
-                <ShieldDome entity={ entity } shipId={ shipId } windowS={ DEFAULT_SIM_CONFIG.shieldS } />
+                <FeatureShipViews entity={ entity } shipId={ shipId } />
             </primitive>
             <ShipShadow entity={ entity } shipId={ shipId } />
         </Fragment>
