@@ -30,7 +30,6 @@ import { PhaseGate } from './phase-gate/phase-gate';
 import { ON_TRACK_PHASES } from './phase-gate/phase-gate.constants';
 import { QualityStepDown } from './quality-step-down/quality-step-down';
 import { CANVAS_GL } from './scene/canvas-gl';
-import { MineField } from './scene/mine-field';
 import { MineShock } from './scene/mine-shock/mine-shock';
 import { NetPowerArc } from './scene/net-power-arc';
 import { PickupField } from './scene/pickup-field';
@@ -78,7 +77,6 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <NetLoop predictor={ predictor } room={ room } />
                             <PickupField />
                             <ProjectileField />
-                            <MineField />
                             <MineShock />
                             <PortalField />
                             <FeatureViews slot="scene" />

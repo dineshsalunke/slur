@@ -1,5 +1,5 @@
 import type * as THREE from 'three';
-import { graphiteShellMaterial } from './track-materials';
+import { graphiteShellMaterial } from '../../game/scene/track-materials';
 
 const HEAD = `#include <common>
 attribute vec3 aHinge;

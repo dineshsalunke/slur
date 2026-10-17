@@ -4,7 +4,6 @@ import {
     DEFAULT_SIM_CONFIG,
     HIT_MESSAGE,
     type HitMessage,
-    MINE_BURST_MESSAGE,
     type PlayerState,
     PORTAL_FIZZLE_MESSAGE,
     PORTAL_HOP_MESSAGE,
@@ -20,6 +19,8 @@ import type { Entity, World } from 'koota';
 import type { RefObject } from 'react';
 import { ACTIVE_FEATURES } from '../engine/active-features';
 import { bindFeatureMessages } from '../engine/bind-feature-messages';
+import { NetMine } from '../features/mine/mine.traits';
+import { launchMine } from '../features/mine/mine-shots';
 import { blockWorld, clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import { sparkAt } from '../game/ecs/bounce-spark';
 import { holdRunConfig, runConfig } from '../game/ecs/run-config';
@@ -30,7 +31,6 @@ import {
     Interp,
     LocalPlayer,
     Net,
-    NetMine,
     NetProjectile,
     NetSeeker,
     Prev,
@@ -45,8 +45,7 @@ import { settleSlot } from '../game/input/power-select';
 import { noteLocalHops } from '../game/local-hop';
 import { clearPickupState, markPickup } from '../game/pickup-state';
 import { pushHit } from '../game/scene/hit-events';
-import { burstMine, burstPortalHop, pushMineShock } from '../game/scene/mine-shock-events';
-import { launchMine } from '../game/scene/mine-shots';
+import { burstPortalHop, pushMineShock } from '../game/scene/mine-shock-events';
 import { localRole, runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
 import type { RunRoomLike } from './run-room-like';
@@ -256,8 +255,6 @@ export function attachRoomToWorld(
         mineById.delete( id );
     } );
 
-    const offMineBurst = room.onMessage( MINE_BURST_MESSAGE, burstMine );
-
     const offPortalAdd = $( room.state ).portals.onAdd( ( p, id ) => blockWorld.portals.set( id, p ) );
     const offPortalRemove = $( room.state ).portals.onRemove( ( _p, id ) => blockWorld.portals.delete( id ) );
     const offPortalHop = room.onMessage( PORTAL_HOP_MESSAGE, ( m: PortalHopMessage ) => {
@@ -301,7 +298,6 @@ export function attachRoomToWorld(
         offSeekerRemove();
         offMineAdd();
         offMineRemove();
-        offMineBurst();
         offPortalAdd();
         offPortalRemove();
         offPortalHop();

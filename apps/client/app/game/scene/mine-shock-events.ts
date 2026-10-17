@@ -1,6 +1,5 @@
-import type { MineEvent, PortalState } from '@slur/shared';
+import type { PortalState } from '@slur/shared';
 import { createEventQueue } from './event-queue';
-import { pushHit } from './hit-events';
 
 export type ShockKind = 'big' | 'small' | 'fizzle' | 'portalIn' | 'portalOut';
 
@@ -15,7 +14,6 @@ export interface MineShock extends ShockSpot {
 }
 
 const MAX_QUEUED = 16;
-const SPARK_LIFT = 0.5;
 const queue = createEventQueue< MineShock >( MAX_QUEUED );
 
 export function pushMineShock( e: MineShock ): void {
@@ -24,16 +22,6 @@ export function pushMineShock( e: MineShock ): void {
 
 export function drainMineShocks( sink: ( e: MineShock ) => void ): void {
     queue.drain( sink );
-}
-
-function kindOf( e: MineEvent ): ShockKind {
-    if ( e.outcome === 'trigger' ) return 'big';
-    return e.outcome === 'fizzle' ? 'fizzle' : 'small';
-}
-
-export function burstMine( e: MineEvent ): void {
-    pushMineShock( { x: e.x, y: e.y, z: e.z, kind: kindOf( e ) } );
-    if ( e.outcome === 'cleared' || e.outcome === 'fizzle' ) pushHit( { x: e.x, y: e.y + SPARK_LIFT, z: e.z } );
 }
 
 export function nearestPortalEnd( portals: Iterable< PortalState >, at: ShockSpot ): ShockSpot | null {

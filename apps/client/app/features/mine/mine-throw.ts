@@ -1,5 +1,5 @@
 import { DEFAULT_SIM_CONFIG } from '@slur/shared';
-import { BOLT_STREAK_LENGTH } from './combat-look';
+import { BOLT_STREAK_LENGTH } from '../../game/scene/combat-look';
 
 export const SHOT_LAND_S = 0.25;
 export const BACK_LAND_S = 0.12;

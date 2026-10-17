@@ -1,8 +1,8 @@
 import { useFrame } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo } from 'react';
 import type * as THREE from 'three';
-import { accent } from '../accent';
-import { commitInstances } from '../instanced-commit';
+import { accent } from '../../../game/scene/accent';
+import { commitInstances } from '../../../game/scene/instanced-commit';
 import { MAX_MINES, MINE_CORE_INTENSITY, MINE_DECAL_INTENSITY, mineGlow } from '../mine-look';
 import type { BodyPose } from '../mine-throw';
 import { HOT } from './mine-bodies.constants';
