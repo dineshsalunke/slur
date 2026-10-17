@@ -1,9 +1,9 @@
 import type { PortalState } from '@slur/shared';
 import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
-import { accent } from '../accent';
+import { accent } from '../../../game/scene/accent';
+import { graphiteSurface } from '../../../game/scene/track-materials';
 import { boxPart, mergeParts, ringGeometry, ringSleeveGeometry } from '../portal-ring';
-import { graphiteSurface } from '../track-materials';
 import { buildMembraneMaterial, membraneGeometry } from './membrane-material';
 import {
     GATE_RING,

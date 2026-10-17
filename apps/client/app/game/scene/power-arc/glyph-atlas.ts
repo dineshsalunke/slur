@@ -1,35 +1,39 @@
 import { HeldPower } from '@slur/shared';
 import * as THREE from 'three';
 import { ACTIVE_FEATURES } from '../../../engine/active-features';
+import type { ClientFeature } from '../../../engine/define-client-feature';
 import { accent, accentVersion } from '../accent';
-import { ACCENT, circlePath, ellipsePath, type GlyphShape, GOLD, plate, RIM, roundRectPath } from './glyph-shapes';
+import { ACCENT, type GlyphShape, RIM, roundRectPath } from './glyph-shapes';
 import { CELL_PAD, CELL_PX, CELLS, VIEWBOX } from './power-arc.constants';
 
 const SQUARE = roundRectPath( 8, 8, 32, 32, 2 );
-const PORTAL_RING = { d: ellipsePath( 24, 24, 9, 14 ), stroke: ACCENT, width: 3 };
 
-const CORE_GLYPHS: Record< number, readonly GlyphShape[] > = {
+const GLYPHS: Record< number, readonly GlyphShape[] > = {
     [ HeldPower.none ]: [ { d: SQUARE, stroke: ACCENT, width: 2.5 } ],
-    [ HeldPower.portal ]: [
-        plate( circlePath( 24, 24, 19 ) ),
-        PORTAL_RING,
-        { d: ellipsePath( 24, 24, 4, 8 ), stroke: GOLD, width: 2 },
-    ],
-    [ HeldPower.portalB ]: [
-        plate( circlePath( 24, 24, 19 ) ),
-        PORTAL_RING,
-        { d: 'M24 16 A4 8 0 0 1 24 32 Z', fill: GOLD },
-    ],
 };
 
-const GLYPHS: Record< number, readonly GlyphShape[] > = { ...CORE_GLYPHS };
+function claimGlyph( featureId: string, kind: number, glyph: readonly GlyphShape[] ): void {
+    if ( GLYPHS[ kind ] ) throw new Error( `feature "${ featureId }": glyph for power ${ kind } is taken` );
+    if ( kind >= CELLS ) throw new Error( `feature "${ featureId }": power ${ kind } has no atlas cell` );
+    GLYPHS[ kind ] = glyph;
+}
+
+function claimUseGlyphs( f: ClientFeature ): void {
+    const uses = f.sim?.power?.uses ?? [];
+    for ( const [ key, glyph ] of Object.entries( f.hud?.glyphs ?? {} ) ) {
+        const kind = Number( key );
+        if ( ! uses.some( ( u ) => u === kind ) ) {
+            throw new Error( `feature "${ f.id }": power ${ kind } is not in its power uses` );
+        }
+        if ( glyph ) claimGlyph( f.id, kind, glyph );
+    }
+}
+
 for ( const f of ACTIVE_FEATURES ) {
     const kind = f.sim?.power?.kind;
     const glyph = f.hud?.glyph;
-    if ( kind === undefined || ! glyph ) continue;
-    if ( GLYPHS[ kind ] ) throw new Error( `feature "${ f.id }": glyph for power ${ kind } is taken` );
-    if ( kind >= CELLS ) throw new Error( `feature "${ f.id }": power ${ kind } has no atlas cell` );
-    GLYPHS[ kind ] = glyph;
+    if ( kind !== undefined && glyph ) claimGlyph( f.id, kind, glyph );
+    claimUseGlyphs( f );
 }
 
 function ink( value: string, accentStyle: string ): string {

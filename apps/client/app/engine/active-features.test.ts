@@ -3,6 +3,7 @@ import {
     boostFeature,
     defineSimFeature,
     mineFeature,
+    portalFeature,
     seekerFeature,
     shieldFeature,
     tugFeature,
@@ -12,21 +13,17 @@ import { ACTIVE_FEATURES, checkClientFeatures, FEATURE_SYSTEMS } from './active-
 import { defineClientFeature } from './define-client-feature';
 
 describe( 'active client features (#385)', () => {
-    it( 'ships bolt, boost, mine, seeker, shield and tug, each paired with its sim half, and no feature systems yet', () => {
-        expect( ACTIVE_FEATURES.map( ( f ) => f.id ) ).toEqual( [
-            'bolt',
-            'boost',
-            'mine',
-            'seeker',
-            'shield',
-            'tug',
-        ] );
-        expect( ACTIVE_FEATURES[ 0 ]?.sim ).toBe( boltFeature );
-        expect( ACTIVE_FEATURES[ 1 ]?.sim ).toBe( boostFeature );
-        expect( ACTIVE_FEATURES[ 2 ]?.sim ).toBe( mineFeature );
-        expect( ACTIVE_FEATURES[ 3 ]?.sim ).toBe( seekerFeature );
-        expect( ACTIVE_FEATURES[ 4 ]?.sim ).toBe( shieldFeature );
-        expect( ACTIVE_FEATURES[ 5 ]?.sim ).toBe( tugFeature );
+    it( 'ships bolt, boost, mine, portal, seeker, shield and tug, each paired with its sim half, and no feature systems yet', () => {
+        const pairs = [
+            [ 'bolt', boltFeature ],
+            [ 'boost', boostFeature ],
+            [ 'mine', mineFeature ],
+            [ 'portal', portalFeature ],
+            [ 'seeker', seekerFeature ],
+            [ 'shield', shieldFeature ],
+            [ 'tug', tugFeature ],
+        ] as const;
+        expect( ACTIVE_FEATURES.map( ( f ) => [ f.id, f.sim ] ) ).toEqual( pairs );
         expect( FEATURE_SYSTEMS ).toEqual( [] );
     } );
 

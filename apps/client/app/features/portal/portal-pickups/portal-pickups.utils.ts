@@ -1,10 +1,15 @@
+import { type Anchor, HeldPower, pickupPower } from '@slur/shared';
 import * as THREE from 'three';
-import { accent } from '../accent';
-import { PICKUP_GLYPH_INTENSITY } from '../combat-look';
-import type { PickupPart } from '../pickup-instances/pickup-instances';
+import { accent } from '../../../game/scene/accent';
+import { PICKUP_GLYPH_INTENSITY } from '../../../game/scene/combat-look';
+import type { PickupPart } from '../../../game/scene/pickup-instances/pickup-instances';
+import { graphiteSurface } from '../../../game/scene/track-materials';
 import { dashedSleeveGeometry, mergeParts, ringGeometry } from '../portal-ring';
-import { graphiteSurface } from '../track-materials';
 import { PICKUP_DASH, PICKUP_LINK, PICKUP_RING, PICKUP_SLEEVE, PICKUP_TILT } from './portal-pickups.constants';
+
+export function portalAnchors( layout: readonly Anchor[] ): Anchor[] {
+    return layout.filter( ( a ) => pickupPower( a.id ) === HeldPower.portal );
+}
 
 function linkedPair( ring: () => THREE.BufferGeometry ): THREE.BufferGeometry {
     const a = ring().translate( -PICKUP_LINK, 0, 0 );

@@ -1,8 +1,8 @@
 import { useFrame } from '@react-three/fiber';
 import { useCallback, useMemo } from 'react';
 import type * as THREE from 'three';
-import { blockWorld } from '../../block-state';
-import { commitInstances } from '../instanced-commit';
+import { blockWorld } from '../../../game/block-state';
+import { commitInstances } from '../../../game/scene/instanced-commit';
 import { MAX_PORTAL_ENDS, MAX_PORTAL_MARKS } from './portal-field.constants';
 import {
     buildPortalLook,

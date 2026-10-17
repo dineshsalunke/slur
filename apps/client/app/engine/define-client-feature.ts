@@ -1,4 +1,4 @@
-import type { SimFeature } from '@slur/shared';
+import type { HeldPower, SimFeature } from '@slur/shared';
 import type { Entity } from 'koota';
 import type { ComponentType } from 'react';
 import type { FrameSystem } from '../game/frame/schedule';
@@ -26,6 +26,7 @@ export type NetHandlers = Readonly< Record< string, ( payload: never, net: NetCo
 
 export interface HudSlots {
     readonly glyph?: readonly GlyphShape[];
+    readonly glyphs?: Readonly< Partial< Record< HeldPower, readonly GlyphShape[] > > >;
     readonly overlay?: ComponentType< { room: RunRoomLike } >;
 }
 

@@ -33,7 +33,6 @@ import { CANVAS_GL } from './scene/canvas-gl';
 import { MineShock } from './scene/mine-shock/mine-shock';
 import { NetPowerArc } from './scene/net-power-arc';
 import { PickupField } from './scene/pickup-field';
-import { PortalField } from './scene/portal-field/portal-field';
 import { ProjectileField } from './scene/projectile-field/projectile-field';
 import { WorldScene } from './scene/world-scene';
 import { TrackContext } from './track-context/track-context.constants';
@@ -78,7 +77,6 @@ export function NetCanvas( { descriptor, children }: { descriptor: TrackDescript
                             <PickupField />
                             <ProjectileField />
                             <MineShock />
-                            <PortalField />
                             <FeatureViews slot="scene" />
                             <PhaseGate phases={ ON_TRACK_PHASES }>
                                 <NetPowerArc />
