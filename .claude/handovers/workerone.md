@@ -1,30 +1,32 @@
-Agent: workerone · Lane: RFC-349 F4d boost (#404) — DONE; F4e shield (#405) next · Updated: 2026-10-17
+Agent: workerone · Lane: RFC-349 F4e shield (#405) — plan sent, awaiting approval · Updated: 2026-10-17
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
 ## Goal
 
-F4d boost is built and closed. Next: F4e shield (#405), then F4f portal (#406), each with a plan to the
-supervisor first.
+Build F4e shield once the owner approves the plan, then F4f portal (#406) with a plan first.
 
 ## Done
 
-- F4d part 1, sim half: `843882ee`.
-- F4d part 2, client half: `2eab6b3b` (pushed). `apps/client/app/features/boost/` holds boost-look(+test),
-  boost-streak-material, boost-streaks/, boost-pickups/ (+ new `boostAnchors` test), boost-glyph,
-  boost.client.ts. splitPickupLayout drops boosts; world-scene drops BoostStreaks; glyph-atlas drops boost.
-- F4d docs: RFC §3.8 "F4d result" + §7 F4d row, `conventions/features.md` F4d slot rules (commit with this
-  handover).
+- F4d boost closed: sim `843882ee`, client `2eab6b3b`, docs `01c11636`.
+- F4e plan E1–E9 sent to slur-supervisor (2026-10-17). It is in the supervisor's inbox and in this session's
+  transcript. If the approval comes back as an issue comment on #405, build from that comment.
 
 ## State (measured)
 
-- Draws, DPR 1, quality high, 3 runs each: /test-level 76 → 76, /beat-deck 45 → 45. Staged boost on
-  /test-level (slot 4 + KeyE): 76 → 77 while boosting. Script: `draws.mjs` / `boost-draws.mjs` in
-  `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/4dda2a95-6658-44c2-b44c-88d1d58f0371/scratchpad/`.
-- Client 728/728, typecheck clean, lint 0 errors (7 old warnings).
-- Central files naming boost (git grep -il, outside features/boost): 36 → 23 non-test, 50 → 36 with tests.
-- `engine/active-features.test.ts` was edited (registry list) — not on the claim list; reported to the
-  supervisor.
+- Shield names 39 files (git grep -il): shared 21, client 15, server 3.
+- Sim: `combat/shield.ts` (raise/drop/step/absorb). `run/combat.ts` fires it (`firePower`), steps it at the TOP
+  of `stepCombat` (dead → drop, else step) before `phases.strike`, and owns `shieldAbsorbs` + SHIELD_POP
+  broadcast. `run-sim.ts` gives `ctx.shieldAbsorbs` (used by bolt-run, seeker-run, mine-run, tug-run), spends
+  `nextProjectileId++` for every non-feature power (line ~293), and `clearCombat` calls `dropShield` per
+  player. `run.reset` hooks get no ctx/state.
+- Fields: `shielded` (FALSE, synced) and `shieldTimer` (LOCAL_FLOAT) are core in `player-fields.ts`, after
+  `slots`.
+- Bag: `power-bag.ts` core list `[HeldPower.shield, cfg.shieldRatio]` + cache key.
+- Client: `ShieldDome` is per ship inside `ship-view.tsx` (`windowS = DEFAULT_SIM_CONFIG.shieldS`). `Shield`
+  trait in `game/ecs/traits.ts`. `attach-room-to-world.ts` spawns with Shield, listens `'shielded'`
+  (`mirrorShield`) and SHIELD_POP (`popShield` by victimId → needs entity lookup; NetContext has only
+  sessionId). Audio + sfx-map + test-level grant name shield.
 
 ## Uncommitted
 
@@ -32,16 +34,22 @@ supervisor first.
 
 ## Held files
 
-- none (F4d released).
+- none until the plan is approved (claims listed in the plan message).
 
 ## Next
 
-1. Plan F4e shield (#405): survey shield's sim + client files, send plan to the supervisor, wait for
-   approval.
+1. Wait for approval of E2, E3, E6 and E8 (the four with choices).
+2. Build the sim half (E1–E7), A/B against HEAD dist with a negative control (shield step at run.strike),
+   800 bags, decode test if E2=A. Commit + push.
+3. Client half (E8), draws idle + with a staged shield (slot 5 + KeyE). Scripts `draws.mjs` and
+   `boost-draws.mjs` are in
+   `/private/tmp/claude-501/-Users-apple-Projects-personal-slur/4dda2a95-6658-44c2-b44c-88d1d58f0371/scratchpad/`
+   (set the slot to 5 for shield). F4d A/B script `f4d-ab.mjs` is in the `cc75d6b3-…` scratchpad.
+4. Docs (RFC §3.8/§7, conventions/features.md), close #405 with SHAs.
 
 ## Open questions
 
-- none.
+- E2, E3, E6, E8 (see the plan message).
 
 ## Lessons → memory
 
