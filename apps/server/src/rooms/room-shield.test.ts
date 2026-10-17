@@ -14,14 +14,18 @@ import {
     PHASE,
     PlayerState,
     POWER_SLOTS,
+    procgenDescriptor,
     ROOM_NAME,
+    type RunContext,
     RunState,
     resolveMineEvent,
+    resolveTrack,
     SEEKER_HIT_MESSAGE,
     SEEKER_MISS_MESSAGE,
     SHIELD_POP_MESSAGE,
     START_MESSAGE,
     STUN_SECONDS,
+    shieldAbsorbs,
     USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import { RunRoom } from './run-room.js';
@@ -189,14 +193,25 @@ test( 'a shield eats a mine trigger: no stun, no speed cut, the mine still burst
     state.players.set( 'v', v );
     const sent: string[] = [];
     const event = { outcome: 'trigger' as const, x: 0, y: 0, z: 10, victimId: 'v', ownerId: 'o' };
+    const broadcast = ( t: string ) => sent.push( t );
+    const ctx: RunContext = {
+        state,
+        track: resolveTrack( procgenDescriptor( 1 ) ),
+        broken: new Set(),
+        config: DEFAULT_SIM_CONFIG,
+        broadcast,
+        shieldAbsorbs: ( hit, at ) => shieldAbsorbs( hit, at, broadcast ),
+        resolveMine: () => {},
+        nextId: () => '0',
+    };
 
-    resolveMineEvent( state, event, ( t ) => sent.push( t ), DEFAULT_SIM_CONFIG );
+    resolveMineEvent( ctx, event );
     assert.equal( v.stunTimer, 0 );
     assert.equal( v.vz, 100 );
     assert.equal( v.shielded, false );
     assert.deepEqual( sent, [ SHIELD_POP_MESSAGE, MINE_BURST_MESSAGE ] );
 
-    resolveMineEvent( state, event, ( t ) => sent.push( t ), DEFAULT_SIM_CONFIG );
+    resolveMineEvent( ctx, event );
     assert.equal( v.stunTimer, DEFAULT_SIM_CONFIG.mineStunS );
     assert.deepEqual( sent.slice( 2 ), [ 'hit', MINE_BURST_MESSAGE ] );
 } );

@@ -5,6 +5,15 @@ import {
     BOOST_RATIO,
     BOOST_RISE_S,
     BOOST_S,
+    PICKUP_GRAB_R,
+    PICKUP_RESPAWN_S,
+    SHIELD_RATIO,
+    SHIELD_S,
+    STUN_SECONDS,
+} from './combat/constants.js';
+import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
+import { BOLT_HALF, BOLT_SPEED, BOLT_TTL } from './features/bolt/bolt-constants.js';
+import {
     MINE_ARM_S,
     MINE_BACK_GAP,
     MINE_HALF,
@@ -17,14 +26,7 @@ import {
     MINE_TRIGGER_H,
     MINE_TRIGGER_R,
     MINE_TTL,
-    PICKUP_GRAB_R,
-    PICKUP_RESPAWN_S,
-    SHIELD_RATIO,
-    SHIELD_S,
-    STUN_SECONDS,
-} from './combat/constants.js';
-import { DEFAULT_PORTAL_CONFIG, type PortalConfig } from './combat/portal.js';
-import { BOLT_HALF, BOLT_SPEED, BOLT_TTL } from './features/bolt/bolt-constants.js';
+} from './features/mine/mine-constants.js';
 import {
     SEEKER_DROP_RATE,
     SEEKER_FLY_Y,

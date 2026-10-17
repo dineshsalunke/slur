@@ -1,11 +1,8 @@
-import type { Segment, Track } from '../sim/space.js';
-import { floorUnder } from '../sim/step.js';
-import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { type MineEvent, type MineState, mineEvent } from './mine-hit.js';
-import type { TargetShip } from './target-lock.js';
-
-export type { MineEvent, MineOutcome, MineState } from './mine-hit.js';
-export { mineEvent, mineShotFront } from './mine-hit.js';
+import { type MineEvent, type MineState, mineEvent } from '../../combat/mine-hit.js';
+import type { TargetShip } from '../../combat/target-lock.js';
+import { floorUnder } from '../../sim/floor-under.js';
+import type { Segment, Track } from '../../sim/space.js';
+import { DEFAULT_SIM_CONFIG, type SimConfig } from '../../sim-config.js';
 
 export interface MineLayer {
     x: number;

@@ -22,7 +22,7 @@ import {
     type TargetShip,
     type Track,
     tuningForShip,
-} from '../index.js';
+} from '../../index.js';
 
 const HULL = tuningForShip( 'fighter' );
 

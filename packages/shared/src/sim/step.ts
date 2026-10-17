@@ -2,9 +2,10 @@ import { hopThroughPortal } from '../combat/portal.js';
 import { type FlightTuning, STRAFE_PRESS } from '../constants.js';
 import { clearFeatures, featureCap, featureInput, featureThrust, tickFeatures } from '../features/sim-hooks.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
+import { floorUnder } from './floor-under.js';
 import type { PlayerInput } from './input.js';
 import { respawnPoint } from './respawn-point.js';
-import { type Block, HALF_WIDTH, type Segment, spanHasZ, spanOverlapsZ, type Track } from './space.js';
+import { type Block, HALF_WIDTH, type Segment, spanOverlapsZ, type Track } from './space.js';
 import { clearStatus, tickStatus } from './status.js';
 import type { SimShip, SimWorld } from './types.js';
 
@@ -168,17 +169,6 @@ function clampToEdges( s: SimShip, t: FlightTuning ): void {
         s.x = limit;
         if ( s.vx > 0 ) s.vx = 0;
     }
-}
-
-export function floorUnder( seg: Segment, x: number, z: number, y: number, stepTol: number ): number | null {
-    let best: number | null = null;
-    for ( const f of seg.floors ) {
-        if ( ! spanHasZ( seg, f, z ) ) continue;
-        if ( x >= f.x0 && x <= f.x1 && f.y <= y + stepTol ) {
-            if ( best === null || f.y > best ) best = f.y;
-        }
-    }
-    return best;
 }
 
 function footprintSegs( track: Track, z: number, halfL: number ): Segment[] {

@@ -42,6 +42,7 @@ export interface RunHooks< S > {
     readonly open: () => S;
     readonly use?: ( ctx: RunContext, run: S, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
     readonly strike?: ( ctx: RunContext, run: S, dt: number ) => void;
+    readonly settle?: ( ctx: RunContext, run: S, dt: number ) => void;
     readonly tick?: ( ctx: RunContext, run: S, dt: number ) => void;
     readonly reset?: ( run: S ) => void;
 }
@@ -49,6 +50,7 @@ export interface RunHooks< S > {
 export interface OpenRun {
     readonly use?: ( ctx: RunContext, p: PlayerState, ownerId: string, slot: number, dir: FireDir ) => boolean;
     readonly strike?: ( ctx: RunContext, dt: number ) => void;
+    readonly settle?: ( ctx: RunContext, dt: number ) => void;
     readonly tick?: ( ctx: RunContext, dt: number ) => void;
     readonly reset?: () => void;
 }
@@ -86,10 +88,11 @@ export interface SimFeature< F extends PlayerFieldSpecs = PlayerFieldSpecs > {
 function bindRun< S >( hooks: RunHooks< S > ): () => OpenRun {
     return () => {
         const run = hooks.open();
-        const { use, strike, tick, reset } = hooks;
+        const { use, strike, settle, tick, reset } = hooks;
         return {
             use: use && ( ( ctx, p, ownerId, slot, dir ) => use( ctx, run, p, ownerId, slot, dir ) ),
             strike: strike && ( ( ctx, dt ) => strike( ctx, run, dt ) ),
+            settle: settle && ( ( ctx, dt ) => settle( ctx, run, dt ) ),
             tick: tick && ( ( ctx, dt ) => tick( ctx, run, dt ) ),
             reset: reset && ( () => reset( run ) ),
         };

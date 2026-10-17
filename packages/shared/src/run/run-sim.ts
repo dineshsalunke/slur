@@ -4,6 +4,7 @@ import { type Pickup, pickupsOf } from '../combat/pickups.js';
 import { dropShield } from '../combat/shield.js';
 import { COLOR_COUNT, COUNTDOWN_SECONDS, FIXED_DT, RACE_GRACE_SECONDS } from '../constants.js';
 import type { RunContext } from '../features/define-sim-feature.js';
+import { resolveMineEvent } from '../features/mine/mine.feature.js';
 import { openRunFeatures } from '../features/run-features.js';
 import {
     isColorId,
@@ -25,7 +26,7 @@ import type { Track } from '../sim/space.js';
 import { resolveTrack, type TrackDescriptor } from '../sim/track-provider.js';
 import { copySimShip, createSimWorld, froundSimShip, spawnShip } from '../sim/types.js';
 import { DEFAULT_SIM_CONFIG, type SimConfig } from '../sim-config.js';
-import { type Broadcast, firePower, resolveMineEvent, shieldAbsorbs, stepCombat } from './combat.js';
+import { type Broadcast, firePower, shieldAbsorbs, stepCombat } from './combat.js';
 import {
     clearQueue,
     emptyQueue,
@@ -93,7 +94,7 @@ export class RunSim {
             config: this.config,
             broadcast: this.hooks.broadcast,
             shieldAbsorbs: ( v, at ) => shieldAbsorbs( v, at, this.hooks.broadcast ),
-            resolveMine: ( e ) => resolveMineEvent( this.state, e, this.hooks.broadcast, this.config ),
+            resolveMine: ( e ) => resolveMineEvent( this.featureCtx, e ),
             nextId: () => String( this.nextProjectileId++ ),
         };
         this.refreshMetadata();
@@ -131,7 +132,10 @@ export class RunSim {
                         pickupRespawn: this.pickupRespawn,
                     },
                     dt,
-                    ( step ) => this.features.strike( this.featureCtx, step ),
+                    {
+                        strike: ( step ) => this.features.strike( this.featureCtx, step ),
+                        settle: ( step ) => this.features.settle( this.featureCtx, step ),
+                    },
                 );
                 this.features.tick( this.featureCtx, dt );
                 for ( const p of this.state.players.values() ) froundSimShip( p );
@@ -286,7 +290,8 @@ export class RunSim {
         if ( ! canFire( player, intent.slot ) ) return;
         const kind = powerIn( player, intent.slot );
         if ( this.features.use( this.featureCtx, player, sessionId, intent.slot, intent.dir, kind ) ) return;
-        const end = firePower( ctx, String( this.nextProjectileId++ ), player, sessionId, intent.slot, intent.dir );
+        this.nextProjectileId++;
+        const end = firePower( ctx, player, sessionId, intent.slot, intent.dir );
         if ( end ) this.portalTaps.set( sessionId, { slot: intent.slot, dir: intent.dir, seq: intent.seq, end } );
     }
 

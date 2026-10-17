@@ -7,7 +7,9 @@ describe( 'splitPickupLayout', () => {
         const layout = pickupsOf( resolveTrack( procgenDescriptor( 7, 'weave' ) ) );
         const { mines, boosts, shields, portals } = splitPickupLayout( layout );
         const featureKinds = new Set< number >( FEATURE_POWERS.map( ( p ) => p.kind ) );
-        const featured = layout.filter( ( a ) => featureKinds.has( pickupPower( a.id ) ) ).length;
+        const featured = layout.filter(
+            ( a ) => featureKinds.has( pickupPower( a.id ) ) && pickupPower( a.id ) !== HeldPower.mine,
+        ).length;
 
         expect( featured ).toBeGreaterThan( 0 );
         expect( mines.length + boosts.length + shields.length + portals.length + featured ).toBe( layout.length );

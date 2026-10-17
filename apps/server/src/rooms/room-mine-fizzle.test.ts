@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
     DEFAULT_SIM_CONFIG,
-    type FireContext,
-    firePower,
     HALF_WIDTH,
     HeldPower,
     MINE_BURST_MESSAGE,
     type MineEvent,
+    openRunFeatures,
     PlayerState,
+    type RunContext,
     RunState,
     SEG_LEN,
     type Segment,
@@ -39,14 +39,17 @@ function layOver( deck: boolean ) {
     p.slots[ 0 ] = HeldPower.mine;
     state.players.set( 'layer', p );
     const sent: [ string, MineEvent ][] = [];
-    const ctx: FireContext = {
+    const ctx: RunContext = {
         state,
         track: track( deck ),
         broken: new Set(),
         config: DEFAULT_SIM_CONFIG,
         broadcast: ( type, message ) => sent.push( [ type, message as MineEvent ] ),
+        shieldAbsorbs: () => false,
+        resolveMine: () => {},
+        nextId: () => 'm1',
     };
-    firePower( ctx, 'm1', p, 'layer', 0 );
+    openRunFeatures().use( ctx, p, 'layer', 0, 1, HeldPower.mine );
     return { state, p, sent };
 }
 

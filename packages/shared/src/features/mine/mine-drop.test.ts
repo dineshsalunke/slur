@@ -23,7 +23,7 @@ import {
     strafeToward,
     type TargetShip,
     type Track,
-} from '../index.js';
+} from '../../index.js';
 
 const HULL = SHIP_CLASSES.fighter.tuning;
 const R = DEFAULT_SIM_CONFIG.mineTriggerR;
