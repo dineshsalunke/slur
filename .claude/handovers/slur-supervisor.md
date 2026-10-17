@@ -53,7 +53,7 @@ Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
 
 | Worker | Pane | Lane | State | Held files |
 |---|---|---|---|---|
-| workerone | w3C:p3 | #405 F4e shield | PLANNING, no edits; plan comes to the supervisor | none |
+| workerone | w3C:p3 | #405 F4e shield | BUILDING. Owner chose E2=A (wire move), E6=A (reset gets ctx), E8=A (views.ship slot + NetContext.entityOf); E3=A run.ward. Plan on the #405 comment | the #405 claim list |
 
 ## Open owner items
 
@@ -70,7 +70,7 @@ None of mine.
 
 ## Next
 
-1. Boost is done and was reported to the owner. Wait for workerone's shield plan.
+1. Shield is building. On landing: verify the push and that #405 is closed, then report to the owner.
 2. Shield plan: approve if it follows the pattern and stays bit-equal; post it on #405; else ask the owner.
 3. Same for portal. Then report the F4 series done and offer a deploy.
 
