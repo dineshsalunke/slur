@@ -1,4 +1,4 @@
-Agent: workerone · Lane: RFC-349 F4f portal (#406) — plan sent, waiting for approval · Updated: 2026-10-17
+Agent: workerone · Lane: RFC-349 F4f portal (#406) — plan APPROVED, build not started · Updated: 2026-10-17
 
 Older versions: `git log -p -- .claude/handovers/workerone.md`.
 
@@ -10,7 +10,9 @@ supervisor.
 ## Done
 
 - F4e shield closed: sim `24e4df3e`, client `adab9982`, docs `88fb4f95`.
-- F4f plan written and sent to slur-supervisor (full text below). Not yet posted on #406.
+- F4f plan written and sent to slur-supervisor (full text below).
+- **Approved 2026-10-17**: owner chose every recommendation (P2=A, P3=A, P4=A, P5=A, P6=A, P8=A,
+  P11=A). The supervisor posted the plan + approval on #406. Claim list cleared; I hold it all.
 
 ## State (measured)
 
@@ -25,17 +27,20 @@ supervisor.
 
 ## Held files
 
-- none. Claims go to the supervisor after approval (list in the plan).
+- Every file in the plan's **Claims** list (cleared by the supervisor). Nothing edited yet.
 
 ## Next
 
-1. Wait for the owner's choices (P2, P3, P4, P5, P6, P8, P11 glyphs).
-2. Post the approved plan on #406, send claims, then build the sim half first.
-3. Run client tests before pushing the sim-half commit (memory `sim-half-commit-runs-client-tests.md`).
+1. Load the `conventions` skill (`conv cards` on the claimed paths). It reports no doc for
+   `npm:@colyseus/schema`; already told the supervisor.
+2. Build the sim half (P1–P10) in one commit. Hooks to add: `run.tap` (gets the FireIntent; portal parks
+   `seq` for its `use`), `run.hop`, `PowerSpec.uses`. Seeker implements `run.hop`. A/B gates per P12.
+3. Run ALL tests (shared, server, client) before each push (supervisor rule).
+4. Client half (P11) in a second commit, then docs (RFC §3.8/§7, conventions/features.md), close #406.
 
 ## Open questions
 
-- The seven owner choices in the plan.
+- none.
 
 ## Lessons → memory
 
