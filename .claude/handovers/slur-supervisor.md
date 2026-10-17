@@ -70,7 +70,8 @@ None of mine.
 
 ## Next
 
-0. Portal is building (plan approved and posted on #406). On landing: verify the push and that #406 is
+0. Portal sim half 1408cce9 pushed (bit-equal: 505 hops, 1921 double taps; control diverges 6/6; all
+   tests green). Client half (P11) building. On landing: verify the push and that #406 is
    closed, run the full test suite once, then tell the owner the F4 series is done and offer a deploy.
    Boost and shield moved wire fields, so open tabs need a reload after that deploy.
 1. (done) Shield sim half 24e4df3e pushed (bit-equal, 108 pops; negative control diverges 4/6 seeds with short
