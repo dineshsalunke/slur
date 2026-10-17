@@ -70,7 +70,8 @@ None of mine.
 
 ## Next
 
-1. Shield is building. On landing: verify the push and that #405 is closed, then report to the owner.
+1. Shield sim half 24e4df3e pushed (bit-equal, 108 pops; negative control diverges 4/6 seeds with short
+   shields). Client half (E8) building. On landing: verify the push and that #405 is closed, then report to the owner.
 2. Shield plan: approve if it follows the pattern and stays bit-equal; post it on #405; else ask the owner.
 3. Same for portal. Then report the F4 series done and offer a deploy.
 
