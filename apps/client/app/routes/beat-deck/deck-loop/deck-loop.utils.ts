@@ -4,6 +4,7 @@ import type { World } from 'koota';
 import type { PerspectiveCamera } from 'three';
 import { updateChaseCamera } from '../../../game/camera/chase';
 import { hoverSystem } from '../../../game/ecs/hover';
+import { mirrorLocalStatus } from '../../../game/ecs/status-tags';
 import { syncRenderSystem } from '../../../game/ecs/systems';
 import { LocalPlayer, Net, Prev, Sim } from '../../../game/ecs/traits';
 import { deckFlightSystem } from '../deck-flight';
@@ -37,6 +38,7 @@ export function restartDeckRun( world: World ): void {
         prev.y = s.y;
         prev.z = s.z;
     } );
+    mirrorLocalStatus( world );
 }
 
 export function applyShipChoice( world: World ): void {
