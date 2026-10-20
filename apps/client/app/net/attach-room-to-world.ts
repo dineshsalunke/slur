@@ -21,6 +21,7 @@ import { mirrorShield } from '../features/shield/shield-mirror';
 import { blockWorld, clearBlockState, confirmBreak, unconfirmBreak } from '../game/block-state';
 import { sparkAt } from '../game/ecs/bounce-spark';
 import { holdRunConfig, runConfig } from '../game/ecs/run-config';
+import { mirrorShipStatus, mirrorSpectating } from '../game/ecs/status-tags';
 import {
     Attitude,
     Held,
@@ -53,11 +54,13 @@ function mirrorNet( ent: Entity, sessionId: string, shipId: string, colorId: num
 
 function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, track: Track, config: SimConfig ): void {
     localRole.spectating = p.spectating;
+    mirrorSpectating( ent, p.spectating );
     const s = ent.get( Sim );
     if ( ! s ) return;
     const hops = s.portalHops;
     const from = { x: s.x, y: s.y, z: s.z };
     predictor.reconcile( s, p, track, config );
+    mirrorShipStatus( ent, s );
     if ( s.portalHops === hops ) return;
     noteLocalHops( hops, s.portalHops, from, s, blockWorld.portals.values() );
     ent.set( Prev, { x: s.x, y: s.y, z: s.z } );
@@ -66,6 +69,7 @@ function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, trac
 function pushRemote( ent: Entity, p: PlayerState ): void {
     const interp = ent.get( Interp );
     if ( ! interp ) return;
+    mirrorShipStatus( ent, p );
     interp.buffer.push( {
         t: performance.now(),
         x: p.x,
@@ -142,8 +146,12 @@ export function attachRoomToWorld(
 
         if ( isLocal ) {
             localRole.spectating = p.spectating;
+            mirrorSpectating( e, p.spectating );
             const s = e.get( Sim );
-            if ( s ) copyShip( s, p );
+            if ( s ) {
+                copyShip( s, p );
+                mirrorShipStatus( e, s );
+            }
         }
 
         const offChange = $( p ).onChange( () => {

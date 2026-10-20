@@ -21,6 +21,12 @@ export const Net = trait( { sessionId: '', shipId: DEFAULT_SHIP as string, color
 
 export const Remote = trait();
 
+export const Dead = trait();
+
+export const Stunned = trait();
+
+export const Spectating = trait();
+
 export interface Snapshot {
     t: number;
     x: number;

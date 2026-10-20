@@ -2,6 +2,7 @@ import { emptyInput, simulate, type Track, tuningForShip } from '@slur/shared';
 import type { World } from 'koota';
 import { blockWorld } from '../../game/block-state';
 import { runConfig } from '../../game/ecs/run-config';
+import { mirrorLocalStatus } from '../../game/ecs/status-tags';
 import { LocalPlayer, Net, Prev, Sim } from '../../game/ecs/traits';
 import { currentInput } from '../../game/input/current-input';
 import { recording, recordTick } from './take-recorder';
@@ -23,4 +24,5 @@ export function deckFlightSystem( world: World, dt: number, track: Track, perfNo
         simulate( s, held, dt, tuningForShip( net.shipId ), track, config, blockWorld );
         recordTick( raw, s, perfNow );
     } );
+    mirrorLocalStatus( world );
 }

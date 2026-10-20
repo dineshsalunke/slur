@@ -8,6 +8,7 @@ import { localRole } from '../spectator';
 import { bankTuning, driveAttitude } from './attitude';
 import { sparkIfBounced } from './bounce-spark';
 import { runConfig } from './run-config';
+import { mirrorLocalStatus } from './status-tags';
 import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim, type Snapshot } from './traits';
 
 export function freezeLocalPrev( world: World ): void {
@@ -58,6 +59,7 @@ export function netFlightSystem( world: World, dt: number, predictor: Predictor,
         }
         sparkIfBounced( s, contact, tuning );
     } );
+    mirrorLocalStatus( world );
 }
 
 const lerp = ( a: number, b: number, t: number ) => a + ( b - a ) * t;
