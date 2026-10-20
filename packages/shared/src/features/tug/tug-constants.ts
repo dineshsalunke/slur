@@ -1,4 +1,7 @@
-export const TUG_MESSAGE = 'tug';
+import { runEvent } from '../../run/run-event.js';
+import type { TugEvent } from './tug.js';
+
+export const TUG_MESSAGE = runEvent< TugEvent >( 'tug' );
 
 export const TUG_RATIO = 0.1;
 export const TUG_RANGE = 150;

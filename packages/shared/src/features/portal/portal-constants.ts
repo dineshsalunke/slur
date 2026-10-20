@@ -1,5 +1,7 @@
-export const PORTAL_HOP_MESSAGE = 'portalHop';
-export const PORTAL_FIZZLE_MESSAGE = 'portalFizzle';
+import { runEvent } from '../../run/run-event.js';
+
+export const PORTAL_HOP_MESSAGE = runEvent< PortalHopMessage >( 'portalHop' );
+export const PORTAL_FIZZLE_MESSAGE = runEvent< PortalFizzleMessage >( 'portalFizzle' );
 
 export interface PortalHopMessage {
     fromX: number;

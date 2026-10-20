@@ -6,6 +6,7 @@ import type { FlightTuning } from '../constants.js';
 import type { RuleEntry } from '../rules/define-rules.js';
 import type { Broadcast } from '../run/combat.js';
 import type { FireIntent } from '../run/input-queue.js';
+import type { RunEvent } from '../run/run-event.js';
 import type { PlayerState, RunState } from '../schema.js';
 import type { PlayerInput } from '../sim/input.js';
 import type { Track } from '../sim/space.js';
@@ -90,7 +91,7 @@ export interface SimFeatureSpec< F extends PlayerFieldSpecs, S > {
     readonly fields?: { readonly player?: F };
     readonly ship?: ShipHooks;
     readonly run?: RunHooks< S >;
-    readonly messages?: readonly string[];
+    readonly messages?: readonly RunEvent< unknown >[];
     readonly rules?: readonly RuleEntry[];
 }
 
@@ -100,7 +101,7 @@ export interface SimFeature< F extends PlayerFieldSpecs = PlayerFieldSpecs > {
     readonly fields?: { readonly player?: F };
     readonly ship?: ShipHooks;
     readonly openRun?: () => OpenRun;
-    readonly messages?: readonly string[];
+    readonly messages?: readonly RunEvent< unknown >[];
     readonly rules?: readonly RuleEntry[];
 }
 

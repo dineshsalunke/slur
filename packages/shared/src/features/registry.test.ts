@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HeldPower } from '../combat/constants.js';
+import { HeldPower, HIT_MESSAGE } from '../combat/constants.js';
+import { BOUNCE_MESSAGE } from '../sim/bounce-contact.js';
 import { SIM_FEATURES } from './registry.js';
-import { FEATURE_POWERS, sortFeatures } from './sim-hooks.js';
+import { claimEvents, FEATURE_POWERS, RUN_EVENT_OWNERS, sortFeatures } from './sim-hooks.js';
+import { TUG_MESSAGE } from './tug/tug-constants.js';
 
 test( 'the registry loads first without a TDZ cycle and lists bolt, mine, seeker, tug, boost, shield and portal', () => {
     assert.deepEqual(
@@ -38,4 +40,20 @@ test( 'every feature power has a distinct kind', () => {
 
 test( 'exactly one feature power takes the rest of the bag', () => {
     assert.equal( FEATURE_POWERS.filter( ( p ) => 'bagRest' in p ).length, 1 );
+} );
+
+test( 'each run event has one owner, and core keeps hit and bounce', () => {
+    assert.equal( RUN_EVENT_OWNERS.get( HIT_MESSAGE ), 'core' );
+    assert.equal( RUN_EVENT_OWNERS.get( BOUNCE_MESSAGE ), 'core' );
+    assert.equal( RUN_EVENT_OWNERS.get( TUG_MESSAGE ), 'tug' );
+    assert.equal( RUN_EVENT_OWNERS.size, 9 );
+} );
+
+test( 'a feature that claims a taken event throws', () => {
+    const tug = { id: 'tug', messages: [ TUG_MESSAGE ] };
+    assert.throws(
+        () => claimEvents( [ tug, { id: 'zap', messages: [ TUG_MESSAGE ] } ], [] ),
+        /"zap" claims event "tug" of "tug"/,
+    );
+    assert.throws( () => claimEvents( [ { id: 'zap', messages: [ HIT_MESSAGE ] } ], [ HIT_MESSAGE ] ), /of "core"/ );
 } );

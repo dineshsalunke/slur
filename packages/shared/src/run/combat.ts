@@ -3,8 +3,9 @@ import type { Pickup } from '../combat/pickups.js';
 import type { RunState } from '../schema.js';
 import type { Track } from '../sim/space.js';
 import type { SimConfig } from '../sim-config.js';
+import type { RunEvent } from './run-event.js';
 
-export type Broadcast = ( type: string, message: unknown ) => void;
+export type Broadcast = < T >( event: RunEvent< T >, message: NoInfer< T > ) => void;
 
 export interface FireContext {
     state: RunState;

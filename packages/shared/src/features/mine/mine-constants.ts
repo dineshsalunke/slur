@@ -1,4 +1,7 @@
-export const MINE_BURST_MESSAGE = 'mineBurst';
+import type { MineEvent } from '../../combat/mine-hit.js';
+import { runEvent } from '../../run/run-event.js';
+
+export const MINE_BURST_MESSAGE = runEvent< MineEvent >( 'mineBurst' );
 
 export const MINE_RATIO = 0.15;
 export const MINE_LEAD_S = 0.8;

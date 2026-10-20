@@ -1,8 +1,9 @@
 import type { FlightTuning } from '../constants.js';
+import { runEvent } from '../run/run-event.js';
 import type { Contact } from './step.js';
 import type { SimShip } from './types.js';
 
-export const BOUNCE_MESSAGE = 'bounce';
+export const BOUNCE_MESSAGE = runEvent< BounceMessage >( 'bounce' );
 
 export interface BounceContact {
     x: number;

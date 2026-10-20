@@ -42,6 +42,7 @@ export * from './run/command-format.js';
 export * from './run/input-queue.js';
 export * from './run/racer.js';
 export * from './run/run-commands.js';
+export * from './run/run-event.js';
 export * from './run/run-sim.js';
 export * from './run/start-point.js';
 export * from './schema.js';

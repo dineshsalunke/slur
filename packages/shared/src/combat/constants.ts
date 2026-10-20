@@ -1,3 +1,5 @@
+import { runEvent } from '../run/run-event.js';
+
 export const USE_POWERUP_MESSAGE = 'usePowerUp';
 export const DROP_POWERUP_MESSAGE = 'dropPowerUp';
 
@@ -7,7 +9,7 @@ export interface PowerSlotMessage {
     seq?: number;
 }
 
-export const HIT_MESSAGE = 'hit';
+export const HIT_MESSAGE = runEvent< HitMessage >( 'hit' );
 
 export interface HitMessage {
     x: number;

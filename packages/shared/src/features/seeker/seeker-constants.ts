@@ -1,7 +1,10 @@
+import { runEvent } from '../../run/run-event.js';
+import type { SeekerEvent } from './seeker.js';
+
 export type SeekerWindowMode = 'time' | 'distance';
 
-export const SEEKER_HIT_MESSAGE = 'seekerHit';
-export const SEEKER_MISS_MESSAGE = 'seekerMiss';
+export const SEEKER_HIT_MESSAGE = runEvent< SeekerEvent >( 'seekerHit' );
+export const SEEKER_MISS_MESSAGE = runEvent< SeekerEvent >( 'seekerMiss' );
 
 export const SEEKER_RATIO = 0.15;
 export const SEEKER_LOCK_RANGE = 600;

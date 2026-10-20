@@ -1,4 +1,7 @@
+import { HIT_MESSAGE } from '../combat/constants.js';
 import type { FlightTuning } from '../constants.js';
+import type { RunEvent } from '../run/run-event.js';
+import { BOUNCE_MESSAGE } from '../sim/bounce-contact.js';
 import type { PlayerInput } from '../sim/input.js';
 import type { SimShip } from '../sim/types.js';
 import type { SimConfig } from '../sim-config.js';
@@ -21,6 +24,24 @@ const TICK = SORTED.flatMap( ( f ) => f.ship?.tick ?? [] );
 const CLEAR = SORTED.flatMap( ( f ) => f.ship?.clear ?? [] );
 
 export const FEATURE_POWERS: readonly PowerSpec[] = SORTED.flatMap( ( f ) => f.power ?? [] );
+
+export function claimEvents(
+    features: readonly Pick< SimFeature, 'id' | 'messages' >[],
+    reserved: readonly RunEvent< unknown >[],
+): ReadonlyMap< RunEvent< unknown >, string > {
+    const owners = new Map< RunEvent< unknown >, string >( reserved.map( ( e ) => [ e, 'core' ] ) );
+    for ( const { id, messages = [] } of features ) {
+        for ( const event of messages ) {
+            const owner = owners.get( event );
+            if ( owner !== undefined )
+                throw new Error( `feature registry: "${ id }" claims event "${ event }" of "${ owner }"` );
+            owners.set( event, id );
+        }
+    }
+    return owners;
+}
+
+export const RUN_EVENT_OWNERS = claimEvents( SORTED, [ HIT_MESSAGE, BOUNCE_MESSAGE ] );
 
 export function featureInput( s: SimShip, input: PlayerInput, cfg: SimConfig ): PlayerInput {
     let out = input;
