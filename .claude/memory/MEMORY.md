@@ -76,6 +76,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Server rounds floats each tick](fround-makes-float-asserts-fail.md) — assert `Math.fround`; SIM_FLOAT_KEYS
 - [@deprecated breaks reflection decoding](deprecated-breaks-reflection-decoding.md) — keep dead fields plain
 - [Schema fields cap at 64](schema-fields-cap-at-64.md) — PlayerState 39/64; order = wire order
+- [Colyseus validate kicks on issues](colyseus-validate-kicks-on-issues.md) — normalise, never return issues
 - [Short bolts skip the patch](short-bolts-skip-the-patch.md) — hit within ~45 u: client sees only HIT
 
 ## Sim, track & pilots
