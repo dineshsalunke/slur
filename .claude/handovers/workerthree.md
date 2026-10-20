@@ -7,17 +7,15 @@ and import paths only. Order (supervisor): post → track → sky → ships.
 ## Done
 - post: ff3f5162 — scene-effects/, boost-blur/, tone-mapping, canvas-gl → `game/scene/post/`.
 - track: 56f2ad79 — 93 files → `game/scene/track/` (incl. shader-patch); 24 importers; ADD.md,
-  ART_SCALE_REFERENCE.md and 3 memory pointers. shared 0 fail, server 101/101, client 736/736, build ok.
+  ART_SCALE_REFERENCE.md and 3 memory pointers.
 
 ## State
 - Supervisor decisions: shader-patch → track/; canvas-gl → post/; asteroids + meteors → sky/; root leftovers
   stay at root, no 5th group.
 - Verification agreed: typecheck, lint, 3 suites, build per commit; /test-level draws + landing/beat-deck
   load check at the end. No RunSim A/B (no shared/server file changes).
-- post commit: shared 586/586, server 101/101, client 735/735, build ok.
-- Ships waits for workerone (S4 holds ship-dead, ship-model, ship-shadow, explosion-field, exhaust-drive,
-  power-arc). Sky waits for workertwo (dev/tuning-schema.ts).
-- Track done; workerone told about the two ship-model import lines.
+- track commit: shared 0 fail, server 101/101, client 736/736, build ok.
+- Red full `pnpm lint` at 56f2ad79 came from workerfour's uncommitted `packages/shared/src/run/*`, not S11.
 
 ## Uncommitted
 none
@@ -26,16 +24,28 @@ none
 none
 
 ## Next
-1. Wait for supervisor: sky (blocked on workertwo's dev/tuning-schema.ts), then ships (workerone S4).
-2. Per group: build a map json, `node <scratch>/s11/move.mjs <map>` (dry), then `write`; biome check
-   --write on touched files (xargs from the status diff; zsh does not split `$F`); doc pointers; checks;
-   commit by pathspec. Recompute importers each time (the script resolves live).
-3. End: /test-level draws, landing + beat-deck load; close #412 with SHAs.
-- Tools in scratchpad `s11/`: `move.mjs <map.json> [write]` (ast-grep JSON string ranges, resolves every
-  relative and `~/` specifier, moves with fs), `importers.mjs`, `groups.mjs`.
+1. **Blocked.** Sky: workertwo holds `dev/tuning-schema.ts` and `dev/tuning-panel/tuning-panel.utils.ts`
+   uncommitted (a pathspec commit would sweep its edits). Ships: after #407 closes (workerone's
+   reader-parity harness runs over ship readers). Wait for the supervisor's go.
+2. Sky group (→ `game/scene/sky/`): game-environment, scene-environment, scene-backdrop/, env-band/, hdri/,
+   black-hole/, rock-field/, asteroid-band/, asteroid-config/-field/-geometry/-surface (+tests),
+   meteor-assets, meteor-schedule(+test), meteor-scorch.test, meteor-chunks/, meteor-scorch/,
+   meteor-strikes/. Prose: CREDITS.md:54 (black-hole path).
+3. Ships group (→ `game/scene/ships/`): ships, ship-view, ship-model/, ship-shadow/, ship-dead,
+   ship-materials(+test), ship-visuals, hull-look, gltf-lfs-guard(+test), exhaust-drive/-geometry/
+   -material/-ports(+tests), exhaust-field/, exhaust-reflections/, explosion-field/. Prose:
+   conventions/r3f.md:36, apps/client/PRODUCT.md:56.
+4. Per group: re-claim with the supervisor (dry-run lists importers). Map json = `[[from,to],…]` relative to
+   `apps/client/app` (dirs allowed). `node .claude/handovers/workerthree-move.mjs <map>` (dry), then with
+   `write`. Capture `git status --short -uall` before/after; touched = new `M`/`??` lines.
+   `xargs pnpm exec biome check --write < touched` (zsh does not split `$F`). Doc pointers. typecheck, lint,
+   3 suites, build. `xargs git add -A --` then `xargs git commit -m … --` from the path list. Push.
+5. End: /test-level draws, landing + beat-deck load (ask before starting the stack; it may be up). Close
+   #412 with post/track/sky/ships SHAs.
 
 ## Open questions
 none
 
 ## Lessons → memory
-none
+none (move-script lesson is in `bulk-ast-edits-via-ast-grep-json.md`; tool saved as
+`.claude/handovers/workerthree-move.mjs`)
