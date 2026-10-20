@@ -1,8 +1,9 @@
+import { RULE_SPECS } from '@slur/shared';
 import { syncAccent } from '../../game/scene/accent';
 import { hdriLink, showHdri } from '../../game/scene/hdri/hdri.state';
 import { TONE_MODE_OPTIONS } from '../../game/scene/post/tone-mapping';
 import { col, num, setCol, setNum } from '../tuning';
-import { type ColorPath, NUMBER_TUNABLES, type NumberPath } from '../tuning-schema';
+import { type ColorPath, isNumberPath, NUMBER_TUNABLES, type NumberPath } from '../tuning-schema';
 
 export function numberControl( path: NumberPath ) {
     const spec = NUMBER_TUNABLES[ path ];
@@ -14,6 +15,14 @@ export function numberControl( path: NumberPath ) {
         onChange: ( value: number ) => setNum( path, value ),
         transient: true as const,
     };
+}
+
+export function ruleControls() {
+    const controls: Record< string, ReturnType< typeof numberControl > > = {};
+    for ( const { id } of RULE_SPECS.values() ) {
+        if ( isNumberPath( id ) ) controls[ id.replace( '.', ' ' ) ] = numberControl( id );
+    }
+    return controls;
 }
 
 export function colorControl( path: ColorPath ) {

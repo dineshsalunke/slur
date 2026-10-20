@@ -1,38 +1,12 @@
-import { DEFAULT_SIM_CONFIG, type SimConfig } from '@slur/shared';
+import { DEFAULT_SIM_CONFIG, RULE_SPECS, type SimConfig } from '@slur/shared';
 import { num } from '../../dev/tuning';
+import { isNumberPath } from '../../dev/tuning-schema';
 
 export function tunedSimConfig(): SimConfig {
-    return {
-        ...DEFAULT_SIM_CONFIG,
-        get pickupGrabR() {
-            return num( 'Pickup.grabR' );
-        },
-        get tugThrowMinS() {
-            return num( 'Tug.throwMinS' );
-        },
-        get tugThrowMaxS() {
-            return num( 'Tug.throwMaxS' );
-        },
-        get tugS() {
-            return num( 'Tug.pullS' );
-        },
-        get towS() {
-            return num( 'Tug.towS' );
-        },
-        get tugRange() {
-            return num( 'Tug.range' );
-        },
-        get tugBlockMin() {
-            return num( 'Tug.blockMin' );
-        },
-        get tugBlockMax() {
-            return num( 'Tug.blockMax' );
-        },
-        get tugLatchSlack() {
-            return num( 'Tug.latchSlack' );
-        },
-        get seekerFlyY() {
-            return num( 'Seeker.flyY' );
-        },
-    };
+    const config = { ...DEFAULT_SIM_CONFIG };
+    for ( const { id, key } of RULE_SPECS.values() ) {
+        if ( ! isNumberPath( id ) ) throw new Error( `tuning: rule "${ id }" has no dial` );
+        Object.defineProperty( config, key, { get: () => num( id ), enumerable: true, configurable: true } );
+    }
+    return config;
 }

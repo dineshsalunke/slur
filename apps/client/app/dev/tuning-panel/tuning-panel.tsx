@@ -5,6 +5,7 @@ import {
     copyAccent,
     hdriLinkControl,
     numberControl,
+    ruleControls,
     toneModeControl,
 } from './tuning-panel.utils';
 
@@ -140,13 +141,7 @@ export function TuningPanel() {
         bobRate: numberControl( 'Hover.bobRate' ),
     } );
 
-    useControls( 'Seeker', {
-        flyY: numberControl( 'Seeker.flyY' ),
-    } );
-
-    useControls( 'Pickup', {
-        grabR: numberControl( 'Pickup.grabR' ),
-    } );
+    useControls( 'Rules', ruleControls() );
 
     useControls( 'Chase camera', {
         back: numberControl( 'Chase.back' ),

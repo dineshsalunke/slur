@@ -1,4 +1,4 @@
-import { DEFAULT_SIM_CONFIG } from '@slur/shared';
+import { DEFAULT_SIM_CONFIG, RULE_SPECS } from '@slur/shared';
 import { ACCENT_ANCHOR } from '../game/scene/accent.constants';
 import { ROCK_ALBEDO } from '../game/scene/asteroid-surface';
 import { HULL_BASE_COLOR, METAL_BASE_COLOR, METAL_METALNESS, METAL_ROUGHNESS } from '../game/scene/metal';
@@ -17,6 +17,12 @@ interface ColorTunable {
 }
 
 const DEVICE_DPR = Math.max( 0.5, globalThis.devicePixelRatio ?? 1 );
+
+function ruleTunable( id: string ): NumberTunable {
+    const spec = RULE_SPECS.get( id );
+    if ( ! spec ) throw new Error( `tuning: no rule spec "${ id }"` );
+    return { value: DEFAULT_SIM_CONFIG[ spec.key ], min: spec.min, max: spec.max, step: spec.step, rebuild: false };
+}
 
 export const NUMBER_TUNABLES = {
     'Render.dpr': { value: 0, min: 0, max: DEVICE_DPR, step: 0.25, rebuild: false },
@@ -115,18 +121,16 @@ export const NUMBER_TUNABLES = {
     'Hover.bob': { value: 0.06, min: 0, max: 1, step: 0.01, rebuild: false },
     'Hover.bobRate': { value: 0.8, min: 0, max: 5, step: 0.05, rebuild: false },
 
-    'Seeker.flyY': { value: DEFAULT_SIM_CONFIG.seekerFlyY, min: 0.5, max: 7, step: 0.1, rebuild: false },
-
-    'Pickup.grabR': { value: DEFAULT_SIM_CONFIG.pickupGrabR, min: 0, max: 10, step: 0.1, rebuild: false },
-
-    'Tug.throwMinS': { value: DEFAULT_SIM_CONFIG.tugThrowMinS, min: 0, max: 1.5, step: 0.01, rebuild: false },
-    'Tug.throwMaxS': { value: DEFAULT_SIM_CONFIG.tugThrowMaxS, min: 0, max: 1.5, step: 0.01, rebuild: false },
-    'Tug.pullS': { value: DEFAULT_SIM_CONFIG.tugS, min: 0.2, max: 5, step: 0.05, rebuild: false },
-    'Tug.towS': { value: DEFAULT_SIM_CONFIG.towS, min: 0.2, max: 5, step: 0.05, rebuild: false },
-    'Tug.range': { value: DEFAULT_SIM_CONFIG.tugRange, min: 20, max: 400, step: 5, rebuild: false },
-    'Tug.blockMin': { value: DEFAULT_SIM_CONFIG.tugBlockMin, min: 0, max: 800, step: 5, rebuild: false },
-    'Tug.blockMax': { value: DEFAULT_SIM_CONFIG.tugBlockMax, min: 20, max: 1000, step: 5, rebuild: false },
-    'Tug.latchSlack': { value: DEFAULT_SIM_CONFIG.tugLatchSlack, min: 1, max: 3, step: 0.05, rebuild: false },
+    'seeker.flyY': ruleTunable( 'seeker.flyY' ),
+    'pickup.grabR': ruleTunable( 'pickup.grabR' ),
+    'tug.throwMinS': ruleTunable( 'tug.throwMinS' ),
+    'tug.throwMaxS': ruleTunable( 'tug.throwMaxS' ),
+    'tug.pullS': ruleTunable( 'tug.pullS' ),
+    'tug.towS': ruleTunable( 'tug.towS' ),
+    'tug.range': ruleTunable( 'tug.range' ),
+    'tug.blockMin': ruleTunable( 'tug.blockMin' ),
+    'tug.blockMax': ruleTunable( 'tug.blockMax' ),
+    'tug.latchSlack': ruleTunable( 'tug.latchSlack' ),
 
     'Shadow.opacity': { value: 0.8, min: 0, max: 1, step: 0.01, rebuild: false },
     'Shadow.size': { value: 2.4, min: 0.5, max: 10, step: 0.05, rebuild: false },
@@ -224,3 +228,7 @@ export const COLOR_TUNABLES = {
 
 export type NumberPath = keyof typeof NUMBER_TUNABLES;
 export type ColorPath = keyof typeof COLOR_TUNABLES;
+
+export function isNumberPath( path: string ): path is NumberPath {
+    return Object.hasOwn( NUMBER_TUNABLES, path );
+}
