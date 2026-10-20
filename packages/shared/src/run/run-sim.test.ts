@@ -5,6 +5,7 @@ import { COUNTDOWN_SECONDS, FIXED_DT, RACE_GRACE_SECONDS, STALL_SECONDS } from '
 import { PHASE, type RunMetadata } from '../race/director.js';
 import { AUTHORED_LEVEL_VERSION, registerAuthoredLevel } from '../sim/authored/authored-level.js';
 import { procgenDescriptor } from '../sim/track-provider.js';
+import { DEFAULT_SIM_CONFIG } from '../sim-config.js';
 import { RunSim } from './run-sim.js';
 
 function harness() {
@@ -220,4 +221,82 @@ test( 'only the host ends the race, and only in countdown or racing (#341)', () 
     tick( sim, COUNTDOWN_SECONDS + FIXED_DT );
     sim.endRace( 'a' );
     assert.equal( sim.state.phase, PHASE.finished );
+} );
+
+function fireSeekerAfterGo( sim: RunSim ): number | undefined {
+    sim.start( 'a' );
+    tick( sim, COUNTDOWN_SECONDS + FIXED_DT );
+    const p = sim.state.players.get( 'a' );
+    assert.ok( p );
+    p.slots[ 0 ] = HeldPower.seeker;
+    sim.usePower( 'a', { slot: 0 } );
+    return [ ...sim.state.seekers.values() ][ 0 ]?.y;
+}
+
+test( 'the host rules map is locked into the run config at GO', () => {
+    const { sim } = harness();
+    sim.join( 'a' );
+    sim.setRules( 'a', { 'seeker.flyY': 6 } );
+    assert.equal( fireSeekerAfterGo( sim ), 6 );
+} );
+
+test( 'an empty rules map runs the default config', () => {
+    const { sim } = harness();
+    sim.join( 'a' );
+    assert.equal( fireSeekerAfterGo( sim ), DEFAULT_SIM_CONFIG.seekerFlyY );
+} );
+
+test( 'a guest cannot write the rules map', () => {
+    const { sim } = harness();
+    sim.join( 'a' );
+    sim.join( 'b' );
+    sim.setRules( 'b', { 'tug.range': 50 } );
+    assert.equal( sim.state.rules.overrides.size, 0 );
+} );
+
+test( 'a rules write after the lobby changes nothing', () => {
+    const { sim } = harness();
+    sim.join( 'a' );
+    sim.setRules( 'a', { 'tug.range': 50 } );
+    sim.start( 'a' );
+    sim.setRules( 'a', { 'tug.range': 60 } );
+    assert.deepEqual( [ ...sim.state.rules.overrides.entries() ], [ [ 'tug.range', 50 ] ] );
+} );
+
+test( 'a bad rules payload keeps the stored map', () => {
+    const { sim } = harness();
+    sim.join( 'a' );
+    sim.setRules( 'a', { 'tug.range': 50 } );
+    sim.setRules( 'a', { 'tug.nope': 1 } );
+    sim.setRules( 'a', null );
+    assert.deepEqual( [ ...sim.state.rules.overrides.entries() ], [ [ 'tug.range', 50 ] ] );
+} );
+
+test( 'a rules write replaces the whole map and clamps each value', () => {
+    const { sim } = harness();
+    sim.join( 'a' );
+    sim.setRules( 'a', { 'tug.range': 50, 'seeker.flyY': 6 } );
+    sim.setRules( 'a', { 'tug.range': 9000 } );
+    assert.deepEqual( [ ...sim.state.rules.overrides.entries() ], [ [ 'tug.range', 400 ] ] );
+} );
+
+test( 'the rules map survives a restart and a cleared map restores the defaults', () => {
+    const { sim } = harness();
+    sim.join( 'a' );
+    sim.setRules( 'a', { 'seeker.flyY': 6 } );
+    sim.start( 'a' );
+    sim.endRace( 'a' );
+    sim.restart( 'a' );
+    assert.equal( sim.state.rules.overrides.get( 'seeker.flyY' ), 6 );
+    sim.setRules( 'a', {} );
+    assert.equal( fireSeekerAfterGo( sim ), DEFAULT_SIM_CONFIG.seekerFlyY );
+} );
+
+test( 'a passed-in config is never overwritten by the rules map', () => {
+    const config = { ...DEFAULT_SIM_CONFIG };
+    const sim = new RunSim( procgenDescriptor( 1 ), { broadcast: () => {}, onMeta: () => {} }, { config } );
+    sim.join( 'a' );
+    sim.setRules( 'a', { 'seeker.flyY': 6 } );
+    config.seekerFlyY = 2;
+    assert.equal( fireSeekerAfterGo( sim ), 2 );
 } );

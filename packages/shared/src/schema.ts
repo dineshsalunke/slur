@@ -4,6 +4,7 @@ import { Mine } from './features/mine/mine-schema.js';
 import { Portal } from './features/portal/portal-schema.js';
 import { Seeker } from './features/seeker/seeker-schema.js';
 import { PLAYER_FIELDS } from './player-fields.js';
+import { RulesState } from './rules/rules-schema.js';
 import { FULL_DENSITY, isTrackGen, type TrackGen } from './sim/space.js';
 import type { TrackDescriptor } from './sim/track-provider.js';
 
@@ -76,4 +77,5 @@ export class RunState extends Schema {
     @type( { map: Mine } ) mines = new MapSchema< Mine >();
     @type( { map: Portal } ) portals = new MapSchema< Portal >();
     @type( 'float32' ) raceCap = 0;
+    @type( RulesState ) rules = new RulesState();
 }

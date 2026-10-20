@@ -18,6 +18,7 @@ import {
     shouldSpectateOnJoin,
     startGridX,
 } from '../race/director.js';
+import { parseRuleOverrides, resolveRules } from '../rules/resolve-rules.js';
 import { applyDescriptor, PlayerState, RunState } from '../schema.js';
 import { isShipId } from '../ship-classes.js';
 import { createFixedStep } from '../sim/fixed-step.js';
@@ -64,6 +65,7 @@ export class RunSim {
     private readonly pickups: Pickup[];
     private readonly pickupRespawn = new Map< string, number >();
     private readonly config: SimConfig;
+    private readonly isConfigFixed: boolean;
     private readonly features = openRunFeatures();
     private readonly featureCtx: RunContext;
     private nextProjectileId = 0;
@@ -75,7 +77,8 @@ export class RunSim {
         options: RunSimOptions = {},
     ) {
         this.countdownSeconds = options.countdownSeconds ?? COUNTDOWN_SECONDS;
-        this.config = options.config ?? DEFAULT_SIM_CONFIG;
+        this.isConfigFixed = options.config !== undefined;
+        this.config = options.config ?? { ...DEFAULT_SIM_CONFIG };
         applyDescriptor( this.state.descriptor, descriptor );
         this.track = resolveTrack( descriptor );
         this.state.raceCap = ( options.raceLimits ?? true ) ? raceCapSeconds( this.track.finishZ ) : 0;
@@ -157,6 +160,15 @@ export class RunSim {
         if ( this.state.phase !== PHASE.lobby || ! isColorId( colorId ) ) return;
         const p = this.state.players.get( sessionId );
         if ( p ) p.colorId = colorId;
+    }
+
+    setRules( sessionId: string, payload: unknown ): void {
+        if ( sessionId !== this.state.hostId || this.state.phase !== PHASE.lobby ) return;
+        const overrides = parseRuleOverrides( payload );
+        if ( ! overrides ) return;
+        const stored = this.state.rules.overrides;
+        stored.clear();
+        for ( const [ id, value ] of overrides ) stored.set( id, value );
     }
 
     start( sessionId: string ): void {
@@ -315,9 +327,15 @@ export class RunSim {
     }
 
     private startRace(): void {
+        this.lockRules();
         this.queues.forEach( clearQueue );
         if ( this.countdownSeconds > 0 ) this.resetRun( PHASE.countdown, this.countdownSeconds );
         else this.resetRun( PHASE.racing, 0 );
+    }
+
+    private lockRules(): void {
+        if ( this.isConfigFixed ) return;
+        Object.assign( this.config, resolveRules( this.state.rules.overrides ) );
     }
 
     private resetRun( phase: number, countdown: number ): void {
