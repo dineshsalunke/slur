@@ -1,69 +1,90 @@
-Agent: slur-supervisor · Lane: supervision · Updated: 2026-10-20
+# Handover — slur-supervisor
+Role: supervisor
+Agent: slur-supervisor
+Fleet dir: /Users/apple/Projects/personal/slur/.claude/fleet (not created yet; see Next)
+Written: 2026-10-20, context ~152k
 
 ## Goal
 
-Assign lanes, hold the file-claim table, relay plans and questions between the owner and the workers.
-The rules are in `CLAUDE.local.md`. Clear, resume and spawn steps: memory `supervisor-clears-workers-via-herdr.md`.
-Standing approval to clear workers at a seam. Read a worker's context with `grep -oE "[0-9]+k/1.0M"` on
-`herdr pane read <pane>`. Older history: `git log -p -- .claude/handovers/slur-supervisor.md`.
+Owner 2026-10-20: "continue with the architecture and code organisation" — RFC-349 remaining stages, all
+four lanes in parallel. Also: CLAUDE.local.md retired in favour of the global fleet skill.
 
 ## Standing owner decisions
 
-- OWNER RULE: dev only, ONE stack (:5173/:2567). No worktrees, no scratch stacks. A worker may start it.
-- OWNER RULE: the worker who fixes an issue closes it with a SHA comment. Owner tests on /test-level.
-- OWNER RULE: never ask about an issue by number alone. Subagents run with `model: "sonnet"`.
-- ONLY THE OWNER DEPLOYS. Prod at b156a41, without F4c–F4f. Owner 2026-10-20: deploy later, after the next lanes.
-- Plan gate: supervisor may approve bit-equal plans on an established pattern; wire, behaviour and
-  feature-contract changes go to the owner. Post every approved plan as a comment on its issue.
+- dev only, ONE stack (:5173/:2567). No worktrees, no scratch stacks. A worker may start it (workerone allowed).
+- The worker who fixes an issue closes it with the SHA. Owner tests on /test-level. Never ask by bare issue number.
+- Every Agent-tool subagent runs with `model: "sonnet"`. Only the owner deploys; deploy F4c–F4f LATER (after these lanes).
+- Plan gate: supervisor may approve bit-equal plans on an established pattern; wire/behaviour/contract → owner.
+  Post every approved plan as a comment on its issue.
+- ADR-035 (rules config) owner-approved all-recommended: child RulesState, no preset; 10 dialled keys;
+  SLUR_DEV_RULES=1 fail-closed; whole sparse map message. Committed 0beaf14e (local, unpushed docs).
+- Typed messages: malformed commands ignored silently (owner). P4 (run-room.ts messages table) lands before S6.
+- S11 decisions: shader-patch → track/, canvas-gl → post/, asteroids+meteors → sky/, no 5th group.
+  Order post → track → sky → ships.
 
-## Current work (owner 2026-10-20: "continue with the architecture and code organisation", all four lanes)
+## Workers (herdr workspace w3C, all Opus 5.5 1M, auto mode)
 
 | Worker | Pane | Lane | Issues | State |
 |---|---|---|---|---|
-| workerone | w3C:p4 | ECS state S4 → S5 → S7 → S9 | #407 #408 #409 #410 | S4 plan approved (on #407), building; may start the stack |
-| workertwo | w3C:p5 | Room rules config S6 | #411 (+ #70) | owner approved ADR-035 all-recommended (on #411); claim list pending |
-| workerthree | w3C:p6 | Scene grouping S11, order post → track → sky → ships | #412 | plan approved (on #412), building post |
-| workerfour | w3C:p7 | Typed messages S12, P1–P3 then P4 (run-room.ts) before S6 | #413 | approved (on #413); owner: bad commands ignored silently |
-
-File clashes to police: `net/attach-room-to-world.ts` (workerone vs workerfour), `apps/server/src/rooms/run-room.ts`
-and `packages/shared/src/schema.ts` (workertwo vs workerfour), S11 importer rewrites (workerthree vs everyone).
-S13 (action edges in PlayerInput) not filed: needs a netcode ADR and S12.
+| workerone | w3C:p4 | ECS state S4 → S5 → S7 → S9 | #407 #408 #409 #410 | S4 building (plan on #407) |
+| workertwo | w3C:p5 | Rules config S6 | #411 (+ #70) | resumed after clear; landing define-sim-feature.ts + index.ts first |
+| workerthree | w3C:p6 | Scene grouping S11 | #412 | post pushed ff3f5162; track group cleared, building |
+| workerfour | w3C:p7 | Typed messages S12 | #413 | resumed after clear; P1 building |
 
 ## Claims
 
-- workerone (S4): ecs/traits.ts, ecs/status-tags.ts (new), ecs/net-systems.ts, net/attach-room-to-world.ts,
-  game/spectator.ts, net-loop/net-loop.utils.ts, scene/ship-dead.ts, ship-model, ship-shadow,
-  explosion-field.utils, exhaust-drive(+test), camera/boost-surplus(+test), boost-streaks.utils,
-  power-arc.state, remote-engine-audio, beat-deck deck-flight + deck-ship, features/shield/{shield.traits,
-  shield-mirror, shield-dome}, status-tags.test, spectator.test.
-- workerthree (S11 post group): scene-effects/, boost-blur/, tone-mapping, canvas-gl → scene/post/; importers
-  tuning-panel.utils, net-canvas.tsx, world-scene.tsx, beat-deck-canvas, landing-scene, prepare-landing.
-  Ships group waits for workerone; sky waits for workertwo's tuning-schema.ts.
-- workerfour (S12 P1–P3): shared run/{standard-schema, command-format, run-commands(+test), run-event,
-  combat, input-queue}.ts, combat/constants, sim/bounce-contact, sim/input, chat, moderation, race/director,
-  ship-classes, features/*/…-constants, define-sim-feature, registry.test, shared index.ts; client
-  loopback-room.ts, run-room-like.ts. Next: server run-room.ts (P4), claim then.
+- workerone (S4): ecs/traits.ts, ecs/status-tags.ts(+test), ecs/net-systems.ts, net/attach-room-to-world.ts,
+  game/spectator.ts(+test), net-loop.utils, scene/ship-dead, ship-model/ship-model.tsx (not .state/.utils),
+  ship-shadow, explosion-field.utils, exhaust-drive(+test), camera/boost-surplus(+test), boost-streaks.utils,
+  power-arc.state, remote-engine-audio, beat-deck deck-flight + deck-ship, features/shield/{traits,mirror,dome}.
+- workerthree (S11 track group): 93 track files → game/scene/track/ + their importers (incl. sky files,
+  ship-model.state/utils one import line each) + ART_SCALE_REFERENCE, ADD.md, 3 memory files.
+  Sky group waits for workertwo's dev/tuning-schema.ts; ships group waits for workerone S4.
 - workertwo (S6): DECISIONS.md, new shared rules/*, tug-rules, seeker-rules, tug.feature, seeker.feature,
-  schema.ts, run-sim.ts(+test), server package.json, new room-rules.test, new client net/host-rules/*,
-  dev/tuning-schema.ts, test-level/tuned-sim-config.ts, conventions/features.md.
-  Waiting: define-sim-feature.ts + shared index.ts (from workerfour, asked to release early), run-room.ts
-  (after workerfour P4), attach-room-to-world.ts (after workerone S4).
+  schema.ts, run-sim.ts(+test), define-sim-feature.ts, shared index.ts, server package.json, new
+  room-rules.test, new client net/host-rules/*, dev/tuning-schema.ts, tuned-sim-config.ts, conventions/features.md.
+  Waiting: run-room.ts (after workerfour P4), attach-room-to-world.ts (after workerone S4).
+- workerfour (S12): shared run/{standard-schema, command-format, run-commands(+test), run-event, combat,
+  input-queue}, combat/constants, sim/bounce-contact, sim/input, chat, moderation, race/director, ship-classes,
+  features/*/…-constants, registry.test; client loopback-room.ts, run-room-like.ts.
+  QUEUED re-claim: shared index.ts + define-sim-feature.ts when workertwo releases them. Then run-room.ts (P4).
 
-## Open owner items
+## Done this seam
 
-1. Deploy F4c–F4f later. Boost and shield moved wire fields, so open tabs must reload.
-2. `msgpackr-extract` native compile fails in the Docker build stage (no Python). Not blocking. Not filed.
-3. No conventions rule card for `@colyseus/schema` (`/conventions-build`).
-4. First-use black hole shader compile hitch, ~20–29 ms at mount. Not filed.
+- Filed #407–#413 (S4, S5, S7, S9, S6, S11, S12). Spawned 4 workers. Posted approved plans on #407 #411 #412 #413.
+- Deleted CLAUDE.local.md (gitignored; backup at
+  /private/tmp/claude-501/-Users-apple-Projects-personal-slur/6fab0c88-6a63-450b-bcbb-3206255300ae/scratchpad/CLAUDE.local.md.bak).
+  Memory refs fixed 248740e5.
+- Ported to the global fleet skill (~/.claude/skills/fleet, not a git repo; backup in the same scratchpad
+  folder as fleet-skill-backup/): supervisor.md — brief `Tracker` line, plan gate + approved plan recorded on the
+  issue, work log section; worker.md — plan first, close your tracker issue. Owner chose all four.
 
-## Uncommitted
+## Uncommitted (not mine)
 
-None.
+`.claude/skills/perf-analysis/SKILL.md` is modified by someone unknown — ask before touching. Rest of the dirty tree is
+workers' in-flight lanes.
 
 ## Next
 
-1. Review plans as they arrive; relay workertwo's ADR to the owner.
-2. Answer claims; keep the table above current.
+1. Migration to the fleet skill, owner choice "at each worker's next seam":
+   a. `fleet init` (creates .claude/fleet/{board.md,…}); fill the board from this handover (goal, decisions, task table
+      with issue links, claims).
+   b. Set `FLEET_HANDOVER_DIR=.claude/handovers` for this project (project `.claude/settings.json` env block) so
+      `fleet handover <name>` = `.claude/handovers/<name>.md` and existing files keep working.
+   c. `fleet register supervisor supervisor slur-supervisor`; register each worker
+      (`fleet register worker <name> <name>` from its session, or the hook) at its next seam, then resume it with
+      `fleet reset <name> .claude/handovers/<name>.md` instead of raw herdr.
+2. Route claims as they arrive: the define-sim-feature/index.ts handoff from workertwo to workerfour; run-room.ts to
+   workerfour P4 then workertwo; attach-room-to-world.ts after workerone S4; sky group after workertwo; ships after S4.
+3. Verify each landed SHA (`git show --stat`) before telling the owner.
+
+## Gotchas
+
+- CLAUDE.local.md is gone: resume prompts must carry the rules inline (claims, pathspec commits, 3 suites, close issue,
+  AT A SEAM) until workers run under `/fleet resume`.
+- After herdr `/clear`, the status bar lags; re-read until it shows 0k.
+- Colyseus 0.17.47 validate(): a throw or `issues` kicks the client, even with no payload (memory
+  colyseus-validate-kicks-on-issues.md, workerfour).
 
 ## Lessons → memory
 
