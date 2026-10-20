@@ -102,3 +102,4 @@ none
 - Full pnpm lint is red from workerfour uncommitted run/{command-format,run-commands}.ts + run-sim.ts formatting [reported by workerthree]; workerfour should fix before its push.
 - workerthree cleared + resumed (handover e8d29fa2), idle WAITING for the sky clear. Message it when workertwo commits tuning-schema.ts + tuning-panel.utils.ts.
 - workerfour: P1 3503a33d, P2 0d7bdeac, P3 851ed9c1 local (3 suites green incl. workertwo commits). Cleared + resumed (handover 2378f58f): A/B + lint green, then push dev (OK to carry workertwo commits), then P4 run-room.ts (cleared). index.ts + define-sim-feature.ts released to workertwo.
+- workerone S4 parity vs ca6fd595: 0 diffs on 8 readers, late-sync control diverges on all 8. Found beat-deck restart tag-sync gap (deck-loop.utils.ts:33, ≤1 frame); cleared to workerone as a separate fix commit before c4 (Shielded).
