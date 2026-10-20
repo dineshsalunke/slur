@@ -1,6 +1,7 @@
 import { HeldPower } from '../../combat/constants.js';
 import { defineSimFeature, type PlayerFieldSpec, type SimFeature } from '../define-sim-feature.js';
 import { SEEKER_HIT_MESSAGE, SEEKER_MISS_MESSAGE } from './seeker-constants.js';
+import { SEEKER_RULES } from './seeker-rules.js';
 import { fireSeeker, loseHopLocks, strikeSeekers } from './seeker-run.js';
 
 export {
@@ -27,4 +28,5 @@ export const seekerFeature: SimFeature< Record< never, PlayerFieldSpec > > = def
         strike: strikeSeekers,
     },
     messages: [ SEEKER_HIT_MESSAGE, SEEKER_MISS_MESSAGE ],
+    rules: SEEKER_RULES,
 } );

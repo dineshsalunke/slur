@@ -3,6 +3,7 @@ import type { HeldPower, HitMessage } from '../combat/constants.js';
 import type { FireDir } from '../combat/fire-dir.js';
 import type { MineEvent } from '../combat/mine-hit.js';
 import type { FlightTuning } from '../constants.js';
+import type { RuleEntry } from '../rules/define-rules.js';
 import type { Broadcast } from '../run/combat.js';
 import type { FireIntent } from '../run/input-queue.js';
 import type { PlayerState, RunState } from '../schema.js';
@@ -90,6 +91,7 @@ export interface SimFeatureSpec< F extends PlayerFieldSpecs, S > {
     readonly ship?: ShipHooks;
     readonly run?: RunHooks< S >;
     readonly messages?: readonly string[];
+    readonly rules?: readonly RuleEntry[];
 }
 
 export interface SimFeature< F extends PlayerFieldSpecs = PlayerFieldSpecs > {
@@ -99,6 +101,7 @@ export interface SimFeature< F extends PlayerFieldSpecs = PlayerFieldSpecs > {
     readonly ship?: ShipHooks;
     readonly openRun?: () => OpenRun;
     readonly messages?: readonly string[];
+    readonly rules?: readonly RuleEntry[];
 }
 
 function bindRun< S >( hooks: RunHooks< S > ): () => OpenRun {

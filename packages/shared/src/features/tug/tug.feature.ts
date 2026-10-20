@@ -1,6 +1,7 @@
 import { HeldPower } from '../../combat/constants.js';
 import { defineSimFeature, type SimFeature } from '../define-sim-feature.js';
 import { TUG_MESSAGE } from './tug-constants.js';
+import { TUG_RULES } from './tug-rules.js';
 import { clearTugThrows, fireTug, stepTugThrows, type TugThrow } from './tug-run.js';
 import { clearTugStatus, tickTugStatus, towedInput, tugCap, tugThrust } from './tug-status.js';
 
@@ -23,4 +24,5 @@ export const tugFeature: SimFeature< typeof TUG_FIELDS > = defineSimFeature( {
         reset: clearTugThrows,
     },
     messages: [ TUG_MESSAGE ],
+    rules: TUG_RULES,
 } );
