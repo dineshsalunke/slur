@@ -42,6 +42,9 @@ Cleared by the supervisor: the P1/P2 shared files and P3 client files from the p
 `run/input-queue.ts` (claim add sent, no objection yet). **Not** `run/run-sim.ts`: do not edit it. The
 supervisor wants run-sim.ts and `index.ts` released fast for workertwo (S6); tell the supervisor when done.
 `run-room.ts`: claim it with the supervisor after P1–P3 are pushed.
+**Released to workertwo (S6, 2026-10-20):** `features/define-sim-feature.ts` and `packages/shared/src/index.ts`.
+Re-claim them through the supervisor before the P2 `messages`-slot edit and the new exports. Start with
+P1 files that need neither (export them later in one small index.ts edit).
 
 ## Next — design worked out, nothing written yet
 
