@@ -1,39 +1,38 @@
-Agent: workerthree · Lane: idle (last: #399 black hole in hosted rooms, closed) · Updated: 2026-10-01
+Agent: workerthree · Lane: scene folder grouping, RFC-349 S11 (#412) · Updated: 2026-10-20
 
 ## Goal
-Idle. Waiting for the next lane from slur-supervisor.
+Group the world no feature owns under `game/scene/{post,track,sky,ships}/`, one commit per group. File moves
+and import paths only. Order (supervisor): post → track → sky → ships.
 
 ## Done
-- #394 closed (look approved): 87dd59db 84be557c 6c7dfcab 1419038d f7d996d0, panel folder e5a6232e.
-- #399 closed: 76426500. BlackHole mounts in WorldScene (own Suspense), `?blackhole` removed,
-  `REFINE_BANDS` 24 → 96. Close comment carries the before/after table.
+- post: ff3f5162 — scene-effects/, boost-blur/, tone-mapping, canvas-gl → `game/scene/post/`.
 
 ## State
-- Worst rebake frame at high (clean phase, DPR 2): 22.4/20.5 → 13.2/13.0 ms on a 10.1 ms base.
-  Medium: 14.7/16.9 → 12.2 ms on a 7.0 ms base. Low: no clean after reading.
-- Steady on−off cost is ≤ 0.2 ms on every tier. Draws +2 (high/medium) and +1 (low).
-- Hosted room: one bake (8/96/1 draws), done in the lobby before GO.
-- First-use shader compile still costs one ~20–29 ms lens frame at mount, inside page-load jank. Not fixed.
-  `renderer.compileAsync` is the candidate (three 0.185 has it) [untested].
-- The hosted-room deck and rocks render far darker than on /test-level, with or without the hole.
-  Re-checked with the tier forced on both (`?quality=high` + `slur:quality`): both read `high/flag` from
-  `quality()`, and hosted is still dark (scratchpad `bh/ab-test-level.png`, `bh/ab-hosted.png`, driver
-  `bh/tierab.mjs`). No test-level-only lights exist; both mount the same `SceneEnvironment`. Cause unknown.
-  The supervisor is asking the owner about an issue.
-- Drivers in scratchpad `bh/`: `after.mjs` (STUB, REBAKE, TIERS, MODES env), `hosted.mjs`, `panel.mjs`.
+- Supervisor decisions: shader-patch → track/; canvas-gl → post/; asteroids + meteors → sky/; root leftovers
+  stay at root, no 5th group.
+- Verification agreed: typecheck, lint, 3 suites, build per commit; /test-level draws + landing/beat-deck
+  load check at the end. No RunSim A/B (no shared/server file changes).
+- post commit: shared 586/586, server 101/101, client 735/735, build ok.
+- Ships waits for workerone (S4 holds ship-dead, ship-model, ship-shadow, explosion-field, exhaust-drive,
+  power-arc). Sky waits for workertwo (dev/tuning-schema.ts).
+- Track claim sent; conflict: ship-model.state.ts and ship-model.utils.ts (workerone) need one import line.
 
 ## Uncommitted
 none
 
 ## Held files
-none
+none (track claim pending)
 
 ## Next
-1. Wait for a lane from slur-supervisor.
+1. On track clear: `node <scratch>/s11/move.mjs <scratch>/s11/track.json` (dry), then `write`; biome check
+   --write on touched files (list paths explicitly; zsh does not split `$F`); doc pointers; checks; commit.
+2. Claim sky, then ships, the same way. Recompute importers each time (the script resolves live).
+3. End: /test-level draws, landing + beat-deck load; close #412 with SHAs.
+- Tools in scratchpad `s11/`: `move.mjs <map.json> [write]` (ast-grep JSON string ranges, resolves every
+  relative and `~/` specifier, moves with fs), `importers.mjs`, `groups.mjs`.
 
 ## Open questions
-- Owner (via supervisor): should the dark hosted-room deck get an issue? A first lead to check is whether
-  `scene.environment` is set or kept on the `/game/:roomId` path [unmeasured].
+none
 
 ## Lessons → memory
-.claude/memory/tag-frames-by-shader-program.md
+none
