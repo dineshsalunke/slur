@@ -93,3 +93,6 @@ none
 ## Late update
 
 - workertwo landed define-sim-feature.ts + shared index.ts in 383ef6b5 (local, unpushed; checked with git show --stat). Both handed back to workerfour.
+- workertwo shared half landed: 383ef6b5 + e2a5d0ee (RunState.rules field 15, RunSim.setRules; A/B bit-equal 6 seeds, control diverges; local, unpushed). Call: after workerfour P4 is pushed, run-commands.ts + run-room.ts pass to workertwo for the SET_RULES_MESSAGE entry (parseRuleOverrides → RuleOverrides|null, null = drop) and the SLUR_DEV_RULES gate in RunRoom. Meanwhile workertwo does host-rules, tuning-schema, tuned-sim-config.
+- Context at 2026-10-20: workerone 161k (seam due), workertwo 138k, workerthree 145k, workerfour 138k.
+- Fleet skill: plan gate now says the worker runs its plan past the built-in advisor first; the supervisor checks only scope, conflicts, earlier owner decisions and owner-only choices.
