@@ -1,45 +1,60 @@
-Agent: workerone · Lane: RFC-349 F4f portal (#406) — DONE, issue closed · Updated: 2026-10-17
-
-Older versions (incl. the approved plan P1–P12): `git log -p -- .claude/handovers/workerone.md`.
+Agent: workerone · Lane: ECS state, RFC-349 S4 (#407) → S5 (#408) → S7 (#409) → S9 (#410) · Updated: 2026-10-20
 
 ## Goal
 
-Move portal into two feature folders (#406), owner-approved plan. Finished.
+S4: Dead, Stunned, Shielded, Spectating tags; ECS readers switch to them. Plan approved by slur-supervisor
+2026-10-20 (posted on #407). Then S5, S7, S9 in order, each plan-first.
 
 ## Done
 
-- Sim half (P1–P10) `1408cce9`.
-- Client half (P11) `18a5cff2`: `apps/client/app/features/portal/` = portal.client.ts, portal-glyph.ts,
-  portal-ring(.test), portal-field/ (scene slot), portal-pickups/ (own `portalAnchors` filter + test). New
-  `HudSlots.glyphs`; glyph-atlas registers `glyph` for `power.kind` and `glyphs` for kinds in `power.uses`
-  (throws otherwise). `splitPickupLayout` + test deleted. Hop/fizzle listeners moved from
-  attach-room-to-world into portal's `net` slot. active-features roster test includes portal.
-- Docs `dcae4c24`: RFC §3.8 "F4f result" + §7 F4f row; conventions/features.md F4f slot rules + table rows.
-- Pushed to origin/dev; #406 closed with SHAs.
+- c1 `af6f6037`: tags Dead/Stunned/Spectating in `game/ecs/traits.ts`; `game/ecs/status-tags.ts`
+  (mirrorStatus, mirrorShipStatus, mirrorSpectating, mirrorLocalStatus, isLocalSpectating). Local tags
+  sync after simulate() (netFlightSystem, deckFlightSystem), after predictor.reconcile, after copyShip at
+  onAdd. Remote tags set in pushRemote.
+- c2 `8241fd08`: Spectating replaces `localRole.spectating` (deleted) in net-loop.utils, net-systems,
+  deck-ship.
+- c3 `f2766d96`: Dead/Stunned readers: ship-dead.ts deleted (ship-model, ship-shadow, explosion-field
+  use `has( Dead )`), exhaust-drive, boost-surplus, boost-streaks, power-arc.state,
+  remote-engine-audio, both stun blinks. Snapshot lost dead/stunned.
 
-## State (measured)
+## State
 
-- /test-level draws (DPR 1, quality high, script `scratchpad/portal-draws.mjs`, session 64c74057): idle 76
-  before and after; staged portal pair (2 ends read back) 80 before and after.
-- lint, typecheck pass; shared 586/586, server 101/101, client 730/730 at `18a5cff2`.
-- Central non-test files naming portal: 34 → 21 (shared 9, client 12).
+- All pushed. At c3: client 736/736, shared 623/623, server 101/101, client typecheck and biome clean.
+- localRole staleness delta: schema `onAdd` defaults `immediate = true`
+  (`@colyseus/schema` 4.0.30 `build/index.mjs:5252`), so the local ship spawns synchronously inside
+  attachRoomToWorld. The only window is NetCanvas mount → attach effect (≤ 1 frame, no local entity).
+  [unmeasured in a live rejoin]
+- Dev stack: not started by me.
 
 ## Uncommitted
 
-- none.
+None.
 
 ## Held files
 
-- none (release all #406 claims).
+All files in the approved S4 claim. Still to touch: `features/shield/shield.traits.ts`,
+`shield-mirror.ts`, `shield-dome/shield-dome.tsx`. The game/scene ship files (ship-model, ship-shadow,
+explosion-field, exhaust-drive, power-arc) are released to workerthree once S4 closes.
 
 ## Next
 
-1. Supervisor: release the #406 claims and assign the next lane.
+1. c4 Shielded: tag in `features/shield/shield.traits.ts`; Shield trait keeps `since`/`popAt`, drops `on`;
+   mirrorShield adds/removes; popShield removes; ShieldDome reads `entity.has( Shielded )`. All 3 suites,
+   commit, push.
+2. Reader-parity harness in scratch (vitest, not committed): HEAD copies of the readers (git show) vs new,
+   local predicted + remote snapshot feeds through death/stun/respawn/spectate, 6 seeds × 3600 ticks,
+   expect 0 diffs; negative control = tag synced one tick late, must diverge.
+3. Ask supervisor before `pnpm dev`; /test-level draw count (expect 74) + death/stun visual check over CDP
+   (headless rules in CLAUDE.local.md §7). Kill Chrome after.
+4. Close #407 with SHAs, listing the deferred room.state readers: flight-recorder, bind-room-audio,
+   threat-hud, seeker-warning, finish-watch, idle-warning, roster, spectator-bar, run-view-store,
+   standings-store. Carry them into #408. Tell supervisor S4 landed (releases the game/scene ship files).
+5. S5 (#408): read the issue, map, send plan.
 
 ## Open questions
 
-- none.
+None.
 
 ## Lessons → memory
 
-- none new.
+`.claude/memory/shared-tree-footguns.md`: concurrent shared test runs collide on `test-dist`.

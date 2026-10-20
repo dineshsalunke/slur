@@ -121,3 +121,7 @@ under a peer's commit or already pushed.
 
 **How to apply:** never amend; make a new commit by path. Before a push, run
 `git log --oneline origin/dev..dev` and push only when every listed commit has green gates.
+
+**Concurrent shared test runs collide (2026-10-20).** `pnpm test` in shared starts with `rm -rf test-dist`.
+If another worker runs it at the same moment, your run fails with `ERR_MODULE_NOT_FOUND` for a file that
+exists in `src/`. Re-run `pnpm --filter @slur/shared test` alone before you suspect your change.
