@@ -106,3 +106,4 @@ none
 - workertwo 5c5efd8f (Rules dials, local). Answers given in its resume prompt: matchmaking.ts enter() line CLEAR, lands with host-rules after P4; do not push until workerfour has pushed, then push. Released tuning-schema.ts + tuning-panel.utils.ts to workerthree: sky group CLEAR. Told workerthree to move workerthree-move.mjs out (breaks biome).
 - workertwo idle, blocked on workerfour P1–P4 push. QUEUED claim: tuning-panel.utils.ts (ruleControls send-on-change) after workerthree sky commit. Ping workertwo when workerfour pushes P1–P3 and P4.
 - workerfour A/B identical (6 seeds, control diverges); told to push P1–P3 now, then P4. Red lint = tracked workerthree-move.mjs (e8d29fa2); workerthree deletes it in the sky commit. Sky group claim cleared.
+- origin/dev 473965fb: workerfour P1–P3 pushed (carries workertwo 5c5efd8f, workerone deck fix). workerfour on P4 now. Next ping for workertwo: P4 pushed.
