@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 153f7ede-baaa-4571-990b-1a0fa4c0473c
-  modified: 2026-09-29T04:06:15.829Z
+  modified: 2026-10-20T04:26:15.482Z
 ---
 
 ### Shared checkout shares one git index
@@ -52,7 +52,7 @@ failure, so say what you are doing if one is watching.
 
 ### Pathspec commit skips untracked
 
-`git commit -- <dir>` (the explicit-pathspec rule in CLAUDE.local.md) takes only TRACKED files. A new
+`git commit -- <dir>` (the fleet skill's explicit-pathspec rule) takes only TRACKED files. A new
 file under that dir stays `??` and is not in the commit. If a committed file imports it, the pushed
 HEAD does not build.
 

@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: ae3e81c7-4a75-4a73-b692-4950c0c58040
-  modified: 2026-09-24T14:20:34.490Z
+  modified: 2026-10-20T04:26:14.379Z
 ---
 
 Never use `pkill`, `killall` or `pkill -f <pattern>` to clean up. Record the PID of each process you
@@ -18,5 +18,5 @@ every user process whose command line held "--" or "501": Chrome, Arc and Matter
 ChatGPT Codex app-server, Spotlight workers, and every dev server on the machine.
 
 **How to apply:** a pattern kill cannot tell your process from the owner's or another worker's. This
-applies even to a pattern that looks narrow. CLAUDE.local.md §7 already says "never kill a process you
-did not start"; a pattern kill breaks that by construction.
+applies even to a pattern that looks narrow. The fleet skill already says "stop what you start" and never
+touch other processes; a pattern kill breaks that by construction.
