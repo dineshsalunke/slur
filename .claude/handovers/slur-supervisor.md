@@ -89,3 +89,7 @@ workers' in-flight lanes.
 ## Lessons → memory
 
 none
+
+## Late update
+
+- workertwo landed define-sim-feature.ts + shared index.ts in 383ef6b5 (local, unpushed; checked with git show --stat). Both handed back to workerfour.
