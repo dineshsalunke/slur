@@ -64,11 +64,19 @@ export function inputsThisTick( queued: number ): number {
     return 1 + Math.min( MAX_CATCHUP_INPUTS, Math.max( 0, queued - 1 - TARGET_QUEUED_INPUTS ) );
 }
 
+export function parseFire( raw: unknown ): FireIntent | null {
+    if ( typeof raw !== 'object' || raw === null ) return null;
+    const slot = 'slot' in raw ? raw.slot : undefined;
+    if ( ! isSlot( slot ) ) return null;
+    const dir = 'dir' in raw ? raw.dir : undefined;
+    const seq = 'seq' in raw ? raw.seq : undefined;
+    return { slot, dir: fireDir( dir ), seq: typeof seq === 'number' && Number.isSafeInteger( seq ) ? seq : 0 };
+}
+
 export function enqueueFire( q: PlayerQueue, raw: unknown ): void {
-    if ( typeof raw !== 'object' || raw === null ) return;
-    const { slot, dir, seq } = raw as Record< string, unknown >;
-    if ( ! isSlot( slot ) ) return;
-    q.fires.push( { slot, dir: fireDir( dir ), seq: Number.isSafeInteger( seq ) ? ( seq as number ) : 0 } );
+    const fire = parseFire( raw );
+    if ( ! fire ) return;
+    q.fires.push( fire );
     if ( q.fires.length > MAX_QUEUED_FIRES ) q.fires.shift();
 }
 
