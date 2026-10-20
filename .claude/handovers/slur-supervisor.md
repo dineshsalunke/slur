@@ -100,3 +100,4 @@ none
 - workerone S4: pushed af6f6037, 8241fd08, f2766d96 (suites green) BEFORE the parity proof; cleared + resumed (handover 583616f7) with orders to run the reader-parity harness vs the pre-S4 tree + negative control before c4 (Shielded). localRole staleness: reasoned from source (onAdd immediate=true), ≤1 frame, no local entity [unmeasured live].
 - workerthree: track pushed 56f2ad79. Told to seam. Sky waits for workertwo to commit tuning-schema.ts + tuning-panel.utils.ts; ships waits for #407 close. Resume it then.
 - Full pnpm lint is red from workerfour uncommitted run/{command-format,run-commands}.ts + run-sim.ts formatting [reported by workerthree]; workerfour should fix before its push.
+- workerthree cleared + resumed (handover e8d29fa2), idle WAITING for the sky clear. Message it when workertwo commits tuning-schema.ts + tuning-panel.utils.ts.
