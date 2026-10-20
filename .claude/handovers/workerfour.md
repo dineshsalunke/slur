@@ -1,4 +1,4 @@
-Agent: workerfour · Lane: typed messages, RFC-349 S12, issue #413 · Updated: 2026-10-20
+Agent: workerfour · Lane: typed messages, RFC-349 S12, issue #413 · Updated: 2026-10-20 (P1–P3 seam)
 
 ## Goal
 
@@ -7,80 +7,66 @@ Server → client events typed through `ctx.broadcast` (a6). Client → server c
 
 ## Done
 
-- Plan approved by slur-supervisor (P1–P3; P4 lands before S6). Handover plan commit 66465f50.
-- **Owner answer:** a malformed command is ignored silently. The client stays connected. Validators never
-  return `issues`.
+- P1 `3503a33d`: `run/command-format.ts` (`commandFormat( normalise )`), `parseFire` split out of
+  `enqueueFire`, `run/run-commands.ts` (`RunCommandInputs/Outputs`, `RUN_COMMAND_FORMATS`,
+  `RUN_COMMAND_HANDLERS`, `RUN_COMMAND_TYPES`, `isRunCommand`, `applyRunCommand< K >`), with tests.
+- P2 `0d7bdeac`: `run/run-event.ts` (`RunEvent< T >` brand, `runEvent< T >( type )`, no cast).
+  `Broadcast = < T >( event: RunEvent< T >, message: NoInfer< T > ) => void`. Nine sim event constants are
+  typed. The feature `messages` slot is `readonly RunEvent< unknown >[]`, and `claimEvents` in
+  `features/sim-hooks.ts` builds `RUN_EVENT_OWNERS` and throws on a clash. Core `hit` and `bounce` are reserved.
+- P3 `851ed9c1`: `LoopbackRoom.send` runs `isRunCommand` + `applyRunCommand` (command map and casts
+  removed). `RunRoomLike` gets additive typed `send`/`onMessage` overloads.
+- **None of P1–P3 is pushed.** dev also carries peers' unpushed commits (workertwo `383ef6b5`, `8241fd08`).
 
 ## State
 
-- 22 `*_MESSAGE` constants in 12 shared files (`rg "_MESSAGE\s*=" packages/shared/src`).
-- S→C: `hit` (bolt-run, mine-run, seeker-run → attach-room-to-world:254), `bounce` (racer.ts → attach:258,
-  flight-recorder.state.ts:69), `tug`, `mineBurst`, `shieldPop`, `portalHop`, `portalFizzle` (feature `net`
-  slots; mine/shield/portal also bind-room-audio), `seekerHit`/`seekerMiss` (bind-room-audio only), room-only
-  `chatLine`, `chatHistory`, `kicked`.
-- C→S: 8 sim commands registered twice: run-room.ts:87–98 and the loopback-room.ts `commands` map. 3 room
-  commands (`kick chat chatHistory`), server only.
-- The sim `messages: [...]` slot (5 features) has no consumer.
-- Colyseus 0.17.47 `Room.mjs` `_onMessage`: when a validator returns `issues`, the server calls
-  `client.leave(CloseCode.WITH_ERROR)`. The `messages` table registers in `__init` through
-  `onMessage( type, format, handler.bind( this ) )`.
-- `@standard-schema/spec` 1.1.0 `Props`: `version: 1`, `vendor: string`, `validate( value, options? ) =>
-  Result | Promise<Result>`, `types?: { input, output }`. `InferOutput` reads `types.output`, so declare
-  `types?` as a phantom.
-- Payload shapes: `start/restart/endRace/chatHistory` = `undefined`; `setClass/kick/chat` = bare string;
-  `setColor` = bare number; room-hardening.test.ts sends `{ inputs: [], pad }` (extra keys must pass).
-- `RunSim.usePower` calls `fireReady` even when `enqueueFire` rejects the payload. Keep that: the handler
-  always calls `usePower`, with `undefined` for a bad payload.
+- Suites at `851ed9c1` (measured): shared 625/625, server 101/101, client 740/740. `pnpm typecheck` was
+  clean at P2. At P3, client `tsc` shows errors only in peers' uncommitted tuning-panel /
+  tuned-sim-config files and dev-gated `+types`. None are in my files.
+- Colyseus 0.17.47 `_onMessage` runs the validator **even when no payload is sent**. `standardValidate`
+  throws on a Promise or on `issues`, and the throw → `client.leave(WITH_ERROR)`. So the normalisers never
+  throw (tested over odd payloads).
+- Probe (throwaway, deleted): server `validate( RUN_COMMAND_FORMATS.usePowerUp, … )` infers
+  `FireIntent | null`. A negative control (assigning it to `string`) fails, as expected.
+- Probe (deleted): `broadcast( HIT_MESSAGE, { x: 1 } )` and `broadcast( TUG_MESSAGE, hitPayload )` fail to
+  compile. A raw string `broadcast( 'raw', 42 )` still compiles (T = unknown). Put this in the PR body.
+- The handler result is bit-equal by construction: every handler re-enters the RunSim method, which re-checks.
+  `fireDir` and `sanitizeInputs` are idempotent. `input` is sanitised twice (CPU only; PR body note).
 
 ## Uncommitted
 
-- none.
+- none (this handover is committed with the seam).
 
 ## Held files
 
-Cleared by the supervisor: the P1/P2 shared files and P3 client files from the plan, plus
-`run/input-queue.ts` (claim add sent, no objection yet). **Not** `run/run-sim.ts`: do not edit it. The
-supervisor wants run-sim.ts and `index.ts` released fast for workertwo (S6); tell the supervisor when done.
-`run-room.ts`: claim it with the supervisor after P1–P3 are pushed.
-**Released to workertwo (S6, 2026-10-20):** `features/define-sim-feature.ts` and `packages/shared/src/index.ts`.
-Re-claim them through the supervisor before the P2 `messages`-slot edit and the new exports. Start with
-P1 files that need neither (export them later in one small index.ts edit).
+P1/P2 shared files above, plus `packages/shared/src/index.ts` and `features/define-sim-feature.ts` (re-claimed via
+the supervisor), and `apps/client/app/net/loopback-room/loopback-room.ts` + `run-room-like.ts`. Not
+`run/run-sim.ts` (workertwo).
 
-## Next — design worked out, nothing written yet
+## Next
 
-1. `packages/shared/src/run/command-format.ts`:
-   `interface CommandFormat< Input, Output > { '~standard': { version: 1; vendor: 'slur';
-   validate( value: unknown ): { readonly value: Output }; types?: { input: Input; output: Output } } }` +
-   `commandFormat< I, O >( normalise: ( v: unknown ) => O )`. Typecheck early that server `validate()`
-   accepts it structurally.
-2. `run/input-queue.ts`: extract `parseFire( raw ): FireIntent | null` from `enqueueFire`; `enqueueFire`
-   calls it.
-3. `run/run-commands.ts`: `RunCommandInputs` (what the client sends) and `RunCommandOutputs` (normalised)
-   interfaces keyed by the literal constants. Outputs: input → `{ inputs: sanitizeInputs( v.inputs ) }`
-   (narrow with `'inputs' in v`, no cast); setClass → `ShipId | null`; setColor → `number | null`;
-   start/restart/endRace → `undefined`; usePowerUp → `parseFire( v )`; dropPowerUp → slot `number | null`.
-   `RUN_COMMAND_FORMATS` and `RUN_COMMAND_HANDLERS` are mapped types over `RunCommandType`.
-   `CommandTarget = Pick< RunSim, … >`. Use the correlated generic `applyRunCommand< K >( target, id, type: K,
-   raw )` (no casts), `isRunCommand( type )` and `RUN_COMMAND_TYPES`. Every handler re-enters the RunSim
-   method, which re-checks idempotently, so the result is bit-equal. Add a test for each command: valid,
-   undefined, a bare string, `{}` and extra keys.
-4. P2: brand `RunEvent< T > = string & { readonly [ payload ]?: T }`, built by the constructor
-   `runEvent< T >( type )`. `Broadcast = < T >( e: RunEvent< T >, m: NoInfer< T > ) => void` in
-   `run/combat.ts`. Type the event constants. The sim `messages` slot gets a registry clash check. Weigh ≥5
-   typing mechanisms in the PR body.
-5. P3: loopback-room.ts calls `applyRunCommand` (silent drop). `RunRoomLike` gets additive typed
-   `onMessage` / `send` overloads. attach-room-to-world.ts gets no edit.
-6. P4 (claim run-room.ts first): `messages = { …RUN_COMMAND_TYPES via validate(), kick, chat, chatHistory }`,
-   plus the new `apps/server/src/rooms/room-commands.test.ts`: an SDK client sends every command valid and
-   malformed, the test asserts state and that the client is still connected, and a broadcast capture is
-   identical before and after. workertwo's `SET_RULES_MESSAGE` joins the table after P4.
-7. Proof: RunSim A/B 6 seeds × 3600 ticks + a negative control; /test-level draws; all 3 suites before each
-   push; close #413 with the SHA.
+1. Push P1–P3 only after you tell the supervisor that the push carries peers' unpushed dev commits, and it
+   agrees.
+2. Proof before or with P4: RunSim A/B, 6 seeds × 3600 ticks. Old = `git show 35f35ee8:` sim files in scratch
+   (memory `ab-an-old-sim-from-git-in-scratch.md`), new = HEAD. Drive the commands through
+   `applyRunCommand`. Add a negative control (memory `ab-bench-needs-a-negative-control.md`).
+3. P4: claim `apps/server/src/rooms/run-room.ts` from the supervisor. Set `messages = { …RUN_COMMAND_TYPES via
+   validate( RUN_COMMAND_FORMATS[t], ( client, m ) => RUN_COMMAND_HANDLERS[t]( this.sim, client.sessionId,
+   m ) ), kick, chat, chatHistory }`, replacing the 11 `onMessage` calls. New
+   `apps/server/src/rooms/room-commands.test.ts`: an SDK client sends every command valid and malformed, the
+   test asserts state and that the client is still connected, and a broadcast capture is identical before
+   and after.
+   **Do NOT add the `SET_RULES_MESSAGE` entry.** After the P4 push, tell the supervisor. `run-commands.ts`
+   and `run-room.ts` then pass to workertwo.
+4. /test-level draws (owner tests there), all 3 suites, push, PR body (weigh ≥5 typing mechanisms: brand
+   + generic Broadcast, event map interface, Colyseus Room generic `~messages`, class-per-event, tagged
+   tuple, zod-like lib — rejected by Q7). Then `gh issue close 413` with the SHAs.
 
 ## Open questions
 
-- none (owner answered the kick question: silent ignore).
+- none.
 
 ## Lessons → memory
 
-- `.claude/memory/colyseus-validate-kicks-on-issues.md`
+- none new this seam (`colyseus-validate-kicks-on-issues.md` already covers it). The new fact that the
+  validator runs for an empty payload goes into that file at the next seam.
