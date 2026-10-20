@@ -1,8 +1,9 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { tuningForShip } from '@slur/shared';
+import { Not } from 'koota';
 import { useQuery, useWorld } from 'koota/react';
 import { useEffect, useRef, useState } from 'react';
-import { Interp, LocalPlayer, Net, Remote, Render, Sim } from '../../game/ecs/traits';
+import { Dead, Interp, LocalPlayer, Net, Remote, Render, Sim } from '../../game/ecs/traits';
 import { useRunPhase } from '../../game/net/run-view-store';
 import { ON_TRACK_PHASES } from '../../game/phase-gate/phase-gate.constants';
 import { useRoom } from '../../net/room-context/use-room';
@@ -53,10 +54,10 @@ export function RemoteEngineAudio() {
         const map = active.current;
         const ctx = getContext();
         if ( map.size === 0 || ! ctx || dt <= 0 ) return;
-        const me = world.queryFirst( Sim, LocalPlayer )?.get( Sim );
+        const me = world.queryFirst( Sim, LocalPlayer, Not( Dead ) )?.get( Sim );
         const now = ctx.currentTime;
         const k = 1 - Math.exp( -dt / VZ_TAU_S );
-        world.query( Remote, Render, Net, Interp ).readEach( ( [ grp, net, interp ], e ) => {
+        world.query( Render, Net, Remote, Interp ).readEach( ( [ grp, net ], e ) => {
             const em = map.get( e.id() );
             if ( ! em ) return;
             const max = tuningForShip( net.shipId ).maxCruise;
@@ -66,8 +67,7 @@ export function RemoteEngineAudio() {
             const p = engineParams( max > 0 ? em.vz / max : 0, engineVoice( net.shipId ), params );
             em.audio.setPlaybackRate( p.rate );
             em.filter.frequency.setTargetAtTime( p.cutoff, now, SMOOTH_S );
-            const dead = interp.buffer[ interp.buffer.length - 1 ]?.dead ?? false;
-            if ( ! me || me.dead || dead ) return;
+            if ( ! me || e.has( Dead ) ) return;
             mine.x = me.x;
             mine.z = me.z;
             mine.vz = me.vz;

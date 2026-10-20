@@ -1,7 +1,6 @@
 import type { World } from 'koota';
 import type * as THREE from 'three';
-import { LocalPlayer, Render } from '../../ecs/traits';
-import { isDead } from '../ship-dead';
+import { Dead, LocalPlayer, Render } from '../../ecs/traits';
 import { type Shard, type ShardPool, spawnBurst } from '../vfx-shard-pool';
 import { BRIGHT, LOCAL_CORE, MARIGOLD, REMOTE_CORE, SIZE } from './explosion-field.constants';
 import { _c, _o } from './explosion-field.scratch';
@@ -10,7 +9,7 @@ export function detectDeaths( world: World, pool: ShardPool, wasDead: Map< numbe
     for ( const e of world.query( Render ) ) {
         const grp = e.get( Render );
         if ( ! grp ) continue;
-        const dead = isDead( e );
+        const dead = e.has( Dead );
         const id = e.id();
         if ( dead && ! wasDead.get( id ) ) {
             spawnBurst(

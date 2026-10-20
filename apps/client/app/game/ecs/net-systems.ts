@@ -8,7 +8,20 @@ import { bankTuning, driveAttitude } from './attitude';
 import { sparkIfBounced } from './bounce-spark';
 import { runConfig } from './run-config';
 import { mirrorLocalStatus } from './status-tags';
-import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim, type Snapshot, Spectating } from './traits';
+import {
+    Attitude,
+    Dead,
+    Interp,
+    LocalPlayer,
+    Net,
+    Prev,
+    Remote,
+    Render,
+    Sim,
+    type Snapshot,
+    Spectating,
+    Stunned,
+} from './traits';
 
 export function freezeLocalPrev( world: World ): void {
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
@@ -25,12 +38,12 @@ function stunBlink(): boolean {
 
 export function localDeathVfxSystem( world: World ): void {
     const blink = stunBlink();
-    world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ], e ) => {
+    world.query( Render, Sim, LocalPlayer ).readEach( ( [ grp ], e ) => {
         if ( e.has( Spectating ) ) {
             grp.visible = false;
             return;
         }
-        grp.visible = ! s.dead && s.stunTimer > 0 ? blink : true;
+        grp.visible = ! e.has( Dead ) && e.has( Stunned ) ? blink : true;
     } );
 }
 
@@ -74,7 +87,7 @@ export function remoteInterpSystem( world: World, dt: number ): void {
     const renderTime = performance.now() - RENDER_DELAY_MS;
     const blink = stunBlink();
     const bank = bankTuning();
-    world.query( Interp, Render, Net, Attitude, Remote ).readEach( ( [ interp, grp, net, att ] ) => {
+    world.query( Interp, Render, Net, Attitude, Remote ).readEach( ( [ interp, grp, net, att ], e ) => {
         const buf = interp.buffer;
         if ( buf.length === 0 ) return;
         const i = spanAt( buf, renderTime );
@@ -103,7 +116,6 @@ export function remoteInterpSystem( world: World, dt: number ): void {
         }
         grp.position.set( x, y, z );
         driveAttitude( att, grp, vx, vy, tuningForShip( net.shipId ), bank, dt );
-        const latest = buf[ buf.length - 1 ];
-        grp.visible = ! latest.dead && latest.stunned ? blink : true;
+        grp.visible = ! e.has( Dead ) && e.has( Stunned ) ? blink : true;
     } );
 }

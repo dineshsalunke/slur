@@ -75,8 +75,6 @@ function pushRemote( ent: Entity, p: PlayerState ): void {
         y: p.y,
         z: p.z,
         vx: p.vx,
-        dead: p.dead,
-        stunned: p.stunTimer > 0,
         boost: p.boostTimer,
         hops: p.portalHops,
     } );

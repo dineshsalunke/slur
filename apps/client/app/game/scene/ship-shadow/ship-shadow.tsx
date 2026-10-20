@@ -4,10 +4,9 @@ import type { Entity } from 'koota';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { col, num } from '../../../dev/tuning';
-import { Render } from '../../ecs/traits';
+import { Dead, Render } from '../../ecs/traits';
 import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { useTrack } from '../../track-context/use-track';
-import { isDead } from '../ship-dead';
 import { FRAGMENT, VERTEX } from './ship-shadow.constants';
 import { floorBelow } from './ship-shadow.utils';
 
@@ -31,7 +30,7 @@ export function ShipShadow( { entity, shipId }: { entity: Entity; shipId: string
 
         const { x, y, z } = grp.position;
         const floor = floorBelow( track, x, y, z );
-        if ( floor === null || isDead( entity ) ) {
+        if ( floor === null || entity.has( Dead ) ) {
             mesh.visible = false;
             return;
         }

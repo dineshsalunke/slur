@@ -1,7 +1,7 @@
 import { classOfShip, DEFAULT_SHIP, HeldPower, POWER_SLOTS } from '@slur/shared';
-import type { Entity, World } from 'koota';
+import { type Entity, Not, type World } from 'koota';
 import type * as THREE from 'three';
-import { Held, Hover, LocalPlayer, Net, Render, Sim } from '../../ecs/traits';
+import { Dead, Held, Hover, LocalPlayer, Net, Render, Sim } from '../../ecs/traits';
 import { selectedSlot } from '../../input/power-select';
 import {
     ARC_LAYER,
@@ -89,8 +89,7 @@ function drawFlash( f: ArcFrame, mesh: THREE.InstancedMesh, look: ArcLook, power
 }
 
 function localShip( world: World ): Entity | undefined {
-    const e = world.queryFirst( LocalPlayer, Held, Render, Sim );
-    return e && ! e.get( Sim )?.dead ? e : undefined;
+    return world.queryFirst( Held, Render, Sim, LocalPlayer, Not( Dead ) );
 }
 
 export function stepArc( f: ArcFrame, look: ArcLook, world: World, camera: THREE.Camera, dt: number ): void {

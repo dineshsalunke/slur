@@ -33,8 +33,6 @@ export interface Snapshot {
     y: number;
     z: number;
     vx: number;
-    dead: boolean;
-    stunned: boolean;
     boost: number;
     hops: number;
 }

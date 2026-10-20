@@ -1,6 +1,6 @@
 import { DEFAULT_SIM_CONFIG, DEFAULT_TUNING, tuningForShip } from '@slur/shared';
-import type { Entity, World } from 'koota';
-import { LocalPlayer, Net, Sim } from '../ecs/traits';
+import { type Entity, Not, type World } from 'koota';
+import { Dead, LocalPlayer, Net, Sim } from '../ecs/traits';
 
 export function boostSurplus( vz: number, maxCruise: number, gain = DEFAULT_SIM_CONFIG.boostGain ): number {
     if ( maxCruise <= 0 || gain <= 0 ) return 0;
@@ -14,8 +14,8 @@ export function maxCruiseOf( e: Entity ): number {
 }
 
 export function localBoostSurplus( world: World ): number {
-    const e = world.queryFirst( LocalPlayer, Sim );
+    const e = world.queryFirst( Sim, LocalPlayer, Not( Dead ) );
     const sim = e?.get( Sim );
-    if ( ! e || ! sim || sim.dead ) return 0;
+    if ( ! e || ! sim ) return 0;
     return boostSurplus( sim.vz, maxCruiseOf( e ) );
 }

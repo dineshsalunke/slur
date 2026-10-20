@@ -4,11 +4,11 @@ import type { Entity } from 'koota';
 import { useCallback, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { rebuildToken } from '../../../dev/tuning-rebuild';
+import { Dead } from '../../ecs/traits';
 import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { accent } from '../accent';
 import { guardLfsPointer } from '../gltf-lfs-guard';
 import { applyHullLook } from '../hull-look';
-import { isDead } from '../ship-dead';
 import { shipVisual } from '../ship-visuals';
 import {
     DISSOLVE_DURATION,
@@ -72,7 +72,7 @@ export function ShipModel( { entity, shipId }: { entity: Entity; shipId: string 
         }
         applyHullLook( surfaces.current.hulls, tinted );
         driveEngines( surfaces.current.engines, entity );
-        const target = isDead( entity ) ? 1 : 0;
+        const target = entity.has( Dead ) ? 1 : 0;
         const u = uniforms.uDissolve;
         const step = delta / DISSOLVE_DURATION;
         if ( u.value < target ) u.value = Math.min( target, u.value + step );

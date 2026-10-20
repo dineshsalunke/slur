@@ -1,7 +1,7 @@
 import { DEFAULT_SIM_CONFIG, DEFAULT_TUNING } from '@slur/shared';
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
-import { LocalPlayer, Sim } from '../ecs/traits';
+import { Dead, LocalPlayer, Sim } from '../ecs/traits';
 import { boostSurplus, localBoostSurplus } from './boost-surplus';
 
 const CRUISE = DEFAULT_TUNING.maxCruise;
@@ -27,7 +27,7 @@ describe( 'boostSurplus', () => {
         const e = world.spawn( LocalPlayer, Sim );
         e.set( Sim, ( prev ) => ( { ...prev, vz: FULL } ) );
         expect( localBoostSurplus( world ) ).toBeCloseTo( 1, 9 );
-        e.set( Sim, ( prev ) => ( { ...prev, dead: true } ) );
+        e.add( Dead );
         expect( localBoostSurplus( world ) ).toBe( 0 );
     } );
 } );
