@@ -1,50 +1,60 @@
-Agent: workerfour · Lane: URGENT perf regression (owner saw 5–12 fps), diagnose only; #295 Blink on hold · Updated: 2026-09-27
+Agent: workerfour · Lane: typed messages, RFC-349 S12, issue #413 · Updated: 2026-10-20
 
 ## Goal
 
-Find why the owner saw 5–12 fps in the game: measure, name the subsystem or commit, and send the supervisor
-the cause, a fix plan and a file claim. No edits. #295 Blink waits for the owner's approval of the plan.
+Server → client events typed through `ctx.broadcast` (a6). Client → server commands through the 0.17
+`messages` table with hand-written `StandardSchemaV1` validators (a3, Q7: no library). Wire bytes unchanged.
 
 ## Done
 
-- 1ef88f0 — ADR-022: the exit-ring bloom is kept as the hop flash.
-- #295 plan sent to the supervisor: 4 slices, 5 questions, S1 claim. No approval relayed yet.
-- dfdbecf — memory `three-devtools-hook-gives-the-scene.md` (scene handle with no repo edit).
-- Perf verdict sent to the supervisor: not reproduced in Chrome. The owner's repro was requested.
+- none (plan stage).
 
 ## State
 
-- Headless Chrome with Metal, readPixels GPU wait per frame, driving W, /test-level [measured]:
-  - DPR1: default gen, ?gen=phrase and ?level=phrase-20260921 all ~17.5 ms (vsync cap). JS ≤ 2.1 ms. 70–126 draws.
-  - DPR2 default gen: GPU 17.5–20 ms, JS 1.5–2.2 ms, 126 draws → ~50 fps.
-  - CPU profile: 64% readPixels (GPU wait), no hot JS. 4b17a2e emitWindow and 59feea6 onBoostDeck are not visible.
-  - DPR2 bisect: hiding MeshStandardMaterial saves ~0 ms; hiding ShaderMaterial (sky + post) takes 18 → 11 ms.
-  - The shared dist has glideTimer, so there is no schema skew.
-- The owner plays in Zen (Firefox). Headless Firefox fails here (sandbox, software GL). Firefox is not measured.
-- Drivers are in the old session scratchpad (`perf/gpu.mjs`, `frame.mjs`, `top.mjs`). They may not survive the
-  restart; the memory above describes how to rebuild them.
-- Not mine, uncommitted: `tracks/groove-20260921.json` (deleted), `tracks/phrase-20260921.json` (untracked).
+- 22 `*_MESSAGE` constants in 12 shared files (`rg "_MESSAGE\s*=" packages/shared/src`).
+- S→C: `hit` (bolt-run, mine-run, seeker-run → attach-room-to-world:254), `bounce` (racer.ts → attach:258,
+  flight-recorder.state.ts:69), `tug`, `mineBurst`, `shieldPop`, `portalHop`, `portalFizzle` (feature `net`
+  slots; mine/shield/portal also bind-room-audio), `seekerHit`/`seekerMiss` (bind-room-audio only), room-only
+  `chatLine`, `chatHistory`, `kicked`.
+- C→S: 8 sim commands (`input setClass setColor start restart endRace usePowerUp dropPowerUp`) registered
+  twice — run-room.ts:87–98 and loopback-room.ts commands map. 3 room commands (`kick chat chatHistory`),
+  server only.
+- The sim `messages: [...]` slot (5 features) has no consumer (grep of `.messages` is empty).
+- Colyseus 0.17.47 `Room.mjs` `_onMessage`: a validator that returns `issues` throws, and the catch runs
+  `client.leave(CloseCode.WITH_ERROR)`. Today every handler silently ignores a bad payload. The `messages`
+  table registers in `__init` through the same `onMessage( type, format, handler )`.
+- Payload shapes: `start/restart/endRace/chatHistory` = `undefined`; `setClass/kick/chat` = bare string;
+  `setColor` = bare number; room-hardening.test.ts sends `{ inputs: [], pad }` (extra keys must pass).
 
 ## Uncommitted
 
-None of mine.
+- none.
 
 ## Held files
 
-None.
+- none yet (claim sent with the plan).
 
 ## Next
 
-1. Wait for the owner's repro through the supervisor: browser, URL, DPR/window, slow from the start or after
-   some distance, Chrome on the same URL, and a Zen `about:profiling` capture if possible.
-2. With the repro: measure that exact route (a hosted /game room if that is where it happens), bisect, and send the cause + fix plan + claim.
-3. Then resume #295 once the owner approves the Blink plan (S1 shared sim first).
+Plan sent to slur-supervisor 2026-10-20, waiting for approval. Plan summary:
+
+- **P1 (shared, neutral):** `run/standard-schema.ts` (hand-written `StandardSchemaV1` type) +
+  `run/run-commands.ts` (one validator + one `run( sim, sessionId, msg )` per sim command; validators
+  normalise, never return issues). Typecheck early that server `validate()` accepts the type structurally.
+- **P2 (shared, neutral):** typed event ids (mechanism chosen from ≥5, weighed in the PR body), typed
+  `Broadcast` in `run/combat.ts`, typed constants; the sim `messages` slot gets a consumer (clash check).
+- **P3 (client):** loopback-room.ts uses the shared table (drop silently); additive typed `onMessage`
+  overload on `RunRoomLike`, so attach-room-to-world.ts needs no edit.
+- **P4 (waits for run-room.ts):** server `messages = { ...RUN_COMMANDS via validate, kick, chat,
+  chatHistory }`. S6 adds its lobby override command to the same table after.
+- Proof: RunSim A/B 6×3600 + negative control; new SDK room test: every command valid + malformed, client
+  still connected, state asserted; broadcast capture identical before/after.
 
 ## Open questions
 
-- Perf: the owner's exact repro (above).
-- #295: distance fixed or speed-scaled; lateral offset from the held strafe; back-hop vz; prediction deferred; share 0.1 taken from the bolt.
+- Owner: should a malformed command disconnect the client (validator returns issues) or stay a silent no-op
+  (today)? Default in the plan: silent no-op.
 
 ## Lessons → memory
 
-- `.claude/memory/three-devtools-hook-gives-the-scene.md` (dfdbecf).
+- none yet.
