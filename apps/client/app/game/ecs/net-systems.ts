@@ -4,12 +4,11 @@ import type { Predictor } from '../../net/prediction';
 import { blockWorld } from '../block-state';
 import { currentInput } from '../input/current-input';
 import { noteLocalHops } from '../local-hop';
-import { localRole } from '../spectator';
 import { bankTuning, driveAttitude } from './attitude';
 import { sparkIfBounced } from './bounce-spark';
 import { runConfig } from './run-config';
 import { mirrorLocalStatus } from './status-tags';
-import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim, type Snapshot } from './traits';
+import { Attitude, Interp, LocalPlayer, Net, Prev, Remote, Render, Sim, type Snapshot, Spectating } from './traits';
 
 export function freezeLocalPrev( world: World ): void {
     world.query( Sim, Prev, LocalPlayer ).updateEach( ( [ s, prev ] ) => {
@@ -26,8 +25,8 @@ function stunBlink(): boolean {
 
 export function localDeathVfxSystem( world: World ): void {
     const blink = stunBlink();
-    world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ] ) => {
-        if ( localRole.spectating ) {
+    world.query( Sim, Render, LocalPlayer ).readEach( ( [ s, grp ], e ) => {
+        if ( e.has( Spectating ) ) {
             grp.visible = false;
             return;
         }

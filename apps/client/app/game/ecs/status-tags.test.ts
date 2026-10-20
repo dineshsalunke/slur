@@ -1,6 +1,6 @@
 import { createWorld } from 'koota';
 import { afterEach, describe, expect, it } from 'vitest';
-import { mirrorLocalStatus, mirrorShipStatus, mirrorSpectating } from './status-tags';
+import { isLocalSpectating, mirrorLocalStatus, mirrorShipStatus, mirrorSpectating } from './status-tags';
 import { Dead, LocalPlayer, Remote, Sim, Spectating, Stunned } from './traits';
 
 const world = createWorld();
@@ -50,5 +50,15 @@ describe( 'mirrorSpectating', () => {
         expect( e.has( Spectating ) ).toBe( true );
         mirrorSpectating( e, false );
         expect( e.has( Spectating ) ).toBe( false );
+    } );
+} );
+
+describe( 'isLocalSpectating', () => {
+    it( 'reads the tag on the local ship only', () => {
+        expect( isLocalSpectating( world ) ).toBe( false );
+        world.spawn( Remote, Spectating );
+        expect( isLocalSpectating( world ) ).toBe( false );
+        world.spawn( LocalPlayer, Spectating );
+        expect( isLocalSpectating( world ) ).toBe( true );
     } );
 } );

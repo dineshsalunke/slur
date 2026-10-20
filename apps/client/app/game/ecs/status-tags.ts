@@ -25,6 +25,10 @@ export function mirrorSpectating( ent: Entity, isSpectating: boolean ): void {
     setTag( ent, Spectating, isSpectating );
 }
 
+export function isLocalSpectating( world: World ): boolean {
+    return world.queryFirst( LocalPlayer, Spectating ) !== undefined;
+}
+
 export function mirrorLocalStatus( world: World ): void {
     world.query( Sim, LocalPlayer ).readEach( ( [ s ], e ) => mirrorShipStatus( e, s ) );
 }

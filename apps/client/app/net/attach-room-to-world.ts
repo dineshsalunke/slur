@@ -42,7 +42,7 @@ import { settleSlot } from '../game/input/power-select';
 import { noteLocalHops } from '../game/local-hop';
 import { clearPickupState, markPickup } from '../game/pickup-state';
 import { pushHit } from '../game/scene/hit-events';
-import { localRole, runPhase } from '../game/spectator';
+import { runPhase } from '../game/spectator';
 import { copyShip, type Predictor } from './prediction';
 import type { RunRoomLike } from './run-room-like';
 import { stateCallbacks } from './state-callbacks';
@@ -53,7 +53,6 @@ function mirrorNet( ent: Entity, sessionId: string, shipId: string, colorId: num
 }
 
 function reconcileLocal( ent: Entity, p: PlayerState, predictor: Predictor, track: Track, config: SimConfig ): void {
-    localRole.spectating = p.spectating;
     mirrorSpectating( ent, p.spectating );
     const s = ent.get( Sim );
     if ( ! s ) return;
@@ -145,7 +144,6 @@ export function attachRoomToWorld(
         byId.set( sid, e );
 
         if ( isLocal ) {
-            localRole.spectating = p.spectating;
             mirrorSpectating( e, p.spectating );
             const s = e.get( Sim );
             if ( s ) {

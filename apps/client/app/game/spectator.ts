@@ -1,7 +1,5 @@
 import { PHASE } from '@slur/shared';
 
-export const localRole = { spectating: false };
-
 export const spectatorCam = { targetSessionId: null as string | null };
 
 export const runPhase = { value: PHASE.lobby as number };

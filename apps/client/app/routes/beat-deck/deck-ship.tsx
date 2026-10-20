@@ -2,7 +2,6 @@ import { useWorld } from 'koota/react';
 import { useEffect } from 'react';
 import { Attitude, Hover, LocalPlayer, Net, Prev, Render, Sim } from '../../game/ecs/traits';
 import { attachKeyboard } from '../../game/input/keyboard';
-import { localRole } from '../../game/spectator';
 import { deckState } from './take-recorder';
 
 export function DeckShip() {
@@ -13,7 +12,6 @@ export function DeckShip() {
 
     // Syncs with the koota world, a module singleton: spawns the deck ship entity and destroys it at unmount.
     useEffect( () => {
-        localRole.spectating = false;
         const ship = world.spawn(
             Render,
             Hover,

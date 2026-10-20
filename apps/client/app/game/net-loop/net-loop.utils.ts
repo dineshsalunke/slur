@@ -9,10 +9,11 @@ import type { RunRoomLike } from '../../net/run-room-like';
 import { updateChaseCamera, updateLobbyCamera, updateSpectatorCamera } from '../camera/chase';
 import { hoverSystem } from '../ecs/hover';
 import { freezeLocalPrev, localDeathVfxSystem, netFlightSystem, remoteInterpSystem } from '../ecs/net-systems';
+import { isLocalSpectating } from '../ecs/status-tags';
 import { syncRenderSystem } from '../ecs/systems';
 import { finishReset, showFinishFade, stepFinishReset } from '../finish/finish-reset';
 import { CUT_DT, finishWatch, localFinished, pickWatchTarget, resetFinishWatch } from '../finish/finish-watch';
-import { localRole, resetSpectatorTarget, resolveSpectatorTarget, runPhase } from '../spectator';
+import { resetSpectatorTarget, resolveSpectatorTarget, runPhase } from '../spectator';
 
 export interface NetFrame {
     world: World;
@@ -56,7 +57,7 @@ export function netHostTick( f: NetFrame, _state: RootState, delta: number ): vo
 export function netFlight( f: NetFrame, _state: RootState, delta: number ): void {
     f.phase = runPhase.value;
     if ( simFreeze.on ) return;
-    f.racing = f.phase === PHASE.racing && ! localRole.spectating;
+    f.racing = f.phase === PHASE.racing && ! isLocalSpectating( f.world );
     f.alpha = f.advance( delta, f.step );
     if ( ! f.racing ) freezeLocalPrev( f.world );
 }
@@ -94,7 +95,7 @@ export function netCamera( f: NetFrame, state: RootState, delta: number ): void 
 export function stepFinishCurtain( world: World, phase: number, delta: number ): boolean {
     if ( phase === PHASE.lobby || phase === PHASE.countdown ) resetFinishWatch( finishWatch );
     const ending =
-        ! finishWatch.spent && ! localRole.spectating && ( phase === PHASE.finished || localFinished( world ) );
+        ! finishWatch.spent && ! isLocalSpectating( world ) && ( phase === PHASE.finished || localFinished( world ) );
     const cut = stepFinishReset( finishReset, ending, delta ) === 'reset';
     if ( cut ) {
         finishWatch.spent = true;
@@ -115,7 +116,7 @@ export function updateNetCamera(
     if ( phase === PHASE.lobby ) {
         resetSpectatorTarget();
         updateLobbyCamera( cam, world, delta );
-    } else if ( localRole.spectating )
+    } else if ( isLocalSpectating( world ) )
         updateSpectatorCamera( cam, world, delta, resolveSpectatorTarget( room.state.players ) );
     else if ( finishWatch.cut ) updateFinishCamera( cam, world, cut ? CUT_DT : delta, room );
     else updateChaseCamera( cam, world, delta );
