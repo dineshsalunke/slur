@@ -43,7 +43,11 @@ S13 (action edges in PlayerInput) not filed: needs a netcode ADR and S12.
   combat, input-queue}.ts, combat/constants, sim/bounce-contact, sim/input, chat, moderation, race/director,
   ship-classes, features/*/…-constants, define-sim-feature, registry.test, shared index.ts; client
   loopback-room.ts, run-room-like.ts. Next: server run-room.ts (P4), claim then.
-- workertwo: run/run-sim.ts released to it; rest of claim pending.
+- workertwo (S6): DECISIONS.md, new shared rules/*, tug-rules, seeker-rules, tug.feature, seeker.feature,
+  schema.ts, run-sim.ts(+test), server package.json, new room-rules.test, new client net/host-rules/*,
+  dev/tuning-schema.ts, test-level/tuned-sim-config.ts, conventions/features.md.
+  Waiting: define-sim-feature.ts + shared index.ts (from workerfour, asked to release early), run-room.ts
+  (after workerfour P4), attach-room-to-world.ts (after workerone S4).
 
 ## Open owner items
 
