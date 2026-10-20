@@ -1,21 +1,13 @@
 import { Decoder, Encoder } from '@colyseus/schema';
 import {
+    applyRunCommand,
     DEFAULT_SIM_CONFIG,
-    DROP_POWERUP_MESSAGE,
-    END_RACE_MESSAGE,
-    INPUT_MESSAGE,
-    type InputMessage,
-    type PowerSlotMessage,
-    RESTART_MESSAGE,
+    isRunCommand,
     RunSim,
     type RunSimOptions,
     RunState,
-    SET_CLASS_MESSAGE,
-    SET_COLOR_MESSAGE,
     type SimConfig,
-    START_MESSAGE,
     type TrackDescriptor,
-    USE_POWERUP_MESSAGE,
 } from '@slur/shared';
 import type { RunRoomLike } from '../run-room-like';
 import {
@@ -42,7 +34,6 @@ export class LoopbackRoom implements RunRoomLike {
     private readonly handlers = new Map< string, Set< Handler > >();
     private readonly tickListeners = new Set< () => void >();
     private readonly outbox: [ string, unknown ][] = [];
-    private readonly commands: Record< string, Handler >;
     private sincePatch = 0;
     private pausedWhile: ( () => boolean ) | null = null;
 
@@ -59,18 +50,7 @@ export class LoopbackRoom implements RunRoomLike {
             },
             { ...options, config: this.simConfig },
         );
-        const id = this.sessionId;
-        this.commands = {
-            [ INPUT_MESSAGE ]: ( p ) => this.sim.input( id, p as InputMessage ),
-            [ SET_CLASS_MESSAGE ]: ( p ) => this.sim.setClass( id, p ),
-            [ SET_COLOR_MESSAGE ]: ( p ) => this.sim.setColor( id, p ),
-            [ START_MESSAGE ]: () => this.sim.start( id ),
-            [ RESTART_MESSAGE ]: () => this.sim.restart( id ),
-            [ END_RACE_MESSAGE ]: () => this.sim.endRace( id ),
-            [ USE_POWERUP_MESSAGE ]: ( p ) => this.sim.usePower( id, p as PowerSlotMessage ),
-            [ DROP_POWERUP_MESSAGE ]: ( p ) => this.sim.dropPower( id, p as PowerSlotMessage ),
-        };
-        this.sim.join( id, name );
+        this.sim.join( this.sessionId, name );
         this.encoder = new Encoder( this.sim.state );
         this.serializer = { decoder: new Decoder( new RunState() ) };
         this.serializer.decoder.decode( this.encoder.encodeAll() );
@@ -82,7 +62,7 @@ export class LoopbackRoom implements RunRoomLike {
     }
 
     send( type: string, payload?: unknown ): void {
-        this.commands[ type ]?.( structuredClone( payload ) );
+        if ( isRunCommand( type ) ) applyRunCommand( this.sim, this.sessionId, type, structuredClone( payload ) );
     }
 
     onMessage< Payload >( type: string, callback: ( payload: Payload ) => void ): () => void {
