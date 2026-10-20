@@ -97,3 +97,4 @@ none
 - Context at 2026-10-20: workerone 161k (seam due), workertwo 138k, workerthree 145k, workerfour 138k.
 - Fleet skill: plan gate now says the worker runs its plan past the built-in advisor first; the supervisor checks only scope, conflicts, earlier owner decisions and owner-only choices.
 - workertwo cleared + resumed again (its handover 3f035d9e). Cleared to it: dev/tuning-panel/tuning-panel.tsx + .utils.ts (clean in git), host-rules, tuning-schema, tuned-sim-config. 383ef6b5 + e2a5d0ee still unpushed until its suites run.
+- workerone S4: pushed af6f6037, 8241fd08, f2766d96 (suites green) BEFORE the parity proof; cleared + resumed (handover 583616f7) with orders to run the reader-parity harness vs the pre-S4 tree + negative control before c4 (Shielded). localRole staleness: reasoned from source (onAdd immediate=true), ≤1 frame, no local entity [unmeasured live].
