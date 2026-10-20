@@ -1715,3 +1715,55 @@ workertwo measured its cost on `/test-level?quality=high`, headless, GPU-synced 
 - The high and medium tiers save the cost above.
 - A stored `slur.rearView` or `RearView.*` value in a browser is no longer read.
 - The directional threat-warning HUD is the only rear awareness.
+
+## ADR-035 — Per-room Rules: a sparse override map on the room, written by a dev host in the lobby, locked at GO
+
+**Date:** 2026-10-20 · **Status:** Accepted (owner approved W1, P1, K1, G1, M1, 2026-10-20) · **Issues:** #411 (RFC-349 S6), #70 · **Extends:** ADR-000 (the descriptor is the synced contract) · **Builds on:** RFC-349 §4.3 B (B2), §4.5 c (c3 + c4), §8 Q4–Q6
+
+### Context
+
+`simulate()` and `RunSim` read a `SimConfig` (64 fields, `packages/shared/src/sim-config.ts`). Today each end picks it alone:
+
+- The server: `RunSim` takes `options.config ?? DEFAULT_SIM_CONFIG` once, in its constructor (`run/run-sim.ts:78`). `RunRoom` passes no config, so a hosted room always runs the defaults.
+- The client: `attach-room-to-world.ts:121` — *"`holdRunConfig( world, room.simConfig ?? DEFAULT_SIM_CONFIG )`"*. Only the loopback room has `simConfig`. On `/test-level` it is `tunedSimConfig()`, an object of getters that read 10 dev dials live.
+- The 10 dials (`dev/tuning-schema.ts:118–129`: `Pickup.grabR`, `Seeker.flyY`, 8 `Tug.*`) repeat their min/max by hand.
+
+So a dial works only on `/test-level`. In a hosted room, a server value that differs from the client value makes the predictor mispredict (the #78 caveat on #70). The owner has already decided the shape:
+
+- Q4: B2, a sparse float32 override map on the room, merged over the defaults on both ends, locked at GO.
+- Q5: combat and world rules only. Ship tuning (`SHIP_CLASSES`) stays fixed data.
+- Q6 = B: in a dev build, the host's Rules dials write the map in the lobby only. A production server rejects the writes.
+
+This ADR fixes the wire shape, the merge, the checks and the lock.
+
+### Options
+
+- **Wire shape.** **W1: a child `RulesState` appended to `RunState`** (one slot, like `TrackDescriptorState`). W2: two flat fields appended to `RunState`; same bytes, but the lock covers two loose fields. W3: the map inside `TrackDescriptorState`; it mixes track gen with combat rules, and the descriptor is fixed for the room's life while rules change between rounds.
+- **The `preset` field.** **P1: leave it out in v1.** No preset exists, and nothing would write it. A later stage appends `preset` to `RulesState` with the first preset. P2: add it now with one fixed `standard` preset.
+- **v1 keys.** **K1: only keys that have a `defineRules` spec**: the 10 keys with dials today. Any other key is rejected until a lane gives it a spec. K2: specs for all 64 keys now; 54 min/max guesses with no dial and no owner review.
+- **Dev gate.** **G1: opt-in env `SLUR_DEV_RULES=1`, set only by the server's `pnpm dev` script.** Fail-closed. G2: `NODE_ENV !== 'production'`; the Dockerfile sets it, but a LAN `pnpm start` without it accepts writes. Fail-open.
+- **Write message.** **M1: `SET_RULES_MESSAGE` with the whole sparse map**; the server replaces the map. It is idempotent, and a removed key means "back to default". M2: one message per key, plus a "clear" message.
+
+### Decision
+
+1. **Wire (W1, P1).** `RunState` appends one field, after `raceCap`: `rules: RulesState`, where `RulesState` holds `@type( { map: 'float32' } ) overrides`. Key = `'<namespace>.<rule>'`, for example `'tug.pullS'`. Empty map = the defaults, bit for bit. `RunState` goes from 14 to 15 fields.
+2. **One spec per rule (c4).** `defineRules( namespace, { rule: { key, value, min, max, step } } )`. `key` names the flat `SimConfig` field (the c3 bridge: `'tug.pullS'` ↔ `config.tugS`), so no reader changes. A feature declares its specs in its sim half through a `rules` slot on `defineSimFeature`. Core rules (`pickup.grabR`) use a core spec list. One `RULE_SPECS` table holds them all; a duplicate key throws at boot.
+3. **v1 keys (K1).** `pickup.grabR`, `seeker.flyY`, `tug.throwMinS`, `tug.throwMaxS`, `tug.pullS`, `tug.towS`, `tug.range`, `tug.blockMin`, `tug.blockMax`, `tug.latchSlack`. Each spec takes its min/max from today's dial. All are numbers. A boolean or enum key (`towJump`, `seekerWindowMode`) needs a spec kind that encodes it as a float; that is a later, additive change.
+4. **One merge on both ends.** `resolveRules( overrides )` returns `{ ...DEFAULT_SIM_CONFIG }` with each override written to its spec's flat key. The server stores `Math.fround( clamp( value, min, max ) )`, so the stored number is the number the client decodes. An empty map returns a config equal to `DEFAULT_SIM_CONFIG`.
+5. **Server checks on `SET_RULES_MESSAGE` (M1, G1).** The server applies the write only when it runs with `SLUR_DEV_RULES=1`, the sender is the host, `phase === lobby`, and the payload is a plain object with at most one entry per spec, a spec for every key and a finite number for every value. Otherwise it drops the whole write, changes nothing and keeps the client connected.
+6. **Lock at GO.** `RunSim.startRace()` builds the config from `state.rules.overrides` before the countdown. The lobby runs no sim (`fixedStep` steps only countdown and racing). Writes after the lobby are rejected, so the map and the config stay fixed for the round.
+7. **Between rounds.** The map survives `restart` → lobby. The host may change it again. A new host inherits it.
+8. **Client.** The bridge derives the config from `room.state.rules.overrides` with the same `resolveRules` and holds it in the `RunConfig` world trait. It updates on every map change, so a late joiner and a reconnect get it from state with no extra message. `room.simConfig` stays as a loopback-only override.
+9. **Dials (Q6).** The 10 hand-written Rules dials in `dev/tuning-schema.ts` are built from `RULE_SPECS`. In a dev build, when the local player is the host and the phase is lobby, the client sends its Rules dial values that differ from the spec default as one `SET_RULES_MESSAGE`: when it enters the lobby as host, and after each Rules dial change. A non-host's dials do not change a hosted room.
+10. **`/test-level` keeps live dials.** Its loopback room still passes the live getter config, built from `RULE_SPECS`. The authority and the predictor run in one page and read one object, so it cannot mispredict. This is the one place a Rules value changes after GO, and only in a dev build.
+11. **Forward hook.** The config is a value built from the map. A later ADR can let the map change mid-round by storing the resolved config per tick next to the inputs in the prediction and replay buffers. This shape does not block that.
+
+### Consequences
+
+- Wire: `RunState` gains one trailing child field. Both ends deploy together; the client decodes by reflection.
+- A hosted room with an empty map is bit-equal to before. Proof: RunSim A/B (6 seeds × 3600 ticks, with a diverging negative control) and a two-SDK-client decode check of `rules.overrides`.
+- Dial keys change from `Tug.pullS` style to the rule key (`tug.pullS`). A value saved under an old name in `slur.tuning.v1` is no longer read.
+- In production, `SET_RULES_MESSAGE` is always rejected, so a production room always runs the defaults. A production host panel (#70 Slice 3) is a separate design.
+- Ship tuning is never a key. Adding it later is additive: new specs, and the server runs `rosterContractFailures()` on the merged table before it accepts a write (Q5).
+- Track gen is not part of this ADR. It stays in `TrackDescriptorState`.
+- `conventions/features.md` §7 "Room config shape (B2)" follows the as-built shape (no `preset` field in v1).
