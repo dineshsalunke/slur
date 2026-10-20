@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 0a3379a2-ce04-403d-9d59-7e6565f31e3b
-  modified: 2026-09-29T04:11:54.045Z
+  modified: 2026-10-20T04:30:00.705Z
 ---
 
 A material patch that wraps `material.onBeforeCompile` from an R3F ref callback runs again on every
@@ -14,7 +14,7 @@ shader edit runs twice (throws, or "redefinition" compile errors → invisible m
 `customProgramCacheKey` rebuilds programs every frame (black frame, ~2 fps in Zen).
 
 A guard keyed on `prior` fails when two helpers chain on one material: each helper's `prior` is the other's
-wrapper. Use `chainShaderPatch( material, tag, fn )` in `apps/client/app/game/scene/shader-patch.ts`
+wrapper. Use `chainShaderPatch( material, tag, fn )` in `apps/client/app/game/scene/track/shader-patch.ts`
 (e5f8e20). It tracks tags per material and resets if `onBeforeCompile` is replaced.
 
 **Why:** #310. Removing `patchRailGlow`, which reset the chain by assigning it, exposed this.

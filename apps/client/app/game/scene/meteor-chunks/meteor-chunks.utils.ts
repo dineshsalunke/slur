@@ -1,7 +1,7 @@
 import { mulberry32 } from '@slur/shared';
 import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
-import { addHullPoint, resetBody, setBoxInertia } from '../debris-physics';
+import { addHullPoint, resetBody, setBoxInertia } from '../track/debris-physics';
 import type { Chunk, ChunkBurst, Spawner } from './meteor-chunks';
 import { BASE_COUNT, CARRY, COUNT_PER_SIZE, HULL_SHRINK, LIMIT } from './meteor-chunks.constants';
 import { pending } from './meteor-chunks.state';

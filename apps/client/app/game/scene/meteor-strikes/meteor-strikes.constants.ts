@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FRACTURE_CORE_HEX } from '../fractured-block-shader';
+import { FRACTURE_CORE_HEX } from '../track/fractured-block-shader';
 
 export const FLIGHTS = 6;
 export const HEAD_SEED = 0x3e7e_0a11;

@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { emberTexture, sootTexture } from '../meteor-assets';
-import { BACK } from '../track-instancing';
+import { BACK } from '../track/track-instancing';
 import { LIMIT } from './meteor-scorch.constants';
 import { _c, _o } from './meteor-scorch.scratch';
 import { emberColor, flatPlane, place, stamp } from './meteor-scorch.utils';

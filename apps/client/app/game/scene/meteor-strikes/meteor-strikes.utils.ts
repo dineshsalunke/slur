@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { shakeFrom } from '../../camera/shake';
 import { accent } from '../accent';
-import { queueBurst } from '../block-burst/block-burst.utils';
-import type { DebrisGround } from '../debris-physics';
 import { pushHit } from '../hit-events';
 import { queueChunks } from '../meteor-chunks/meteor-chunks.utils';
 import { type Impact, impactFor, STRIKE_SPACING, type Strike, strikeAt, strikeWindow } from '../meteor-schedule';
 import { queueScorch } from '../meteor-scorch/meteor-scorch.utils';
+import { queueBurst } from '../track/block-burst/block-burst.utils';
+import type { DebrisGround } from '../track/debris-physics';
 import type { Director, Flight, ReadyMeshes } from './meteor-strikes';
 import {
     _zero,

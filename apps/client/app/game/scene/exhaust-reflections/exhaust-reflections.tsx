@@ -2,8 +2,8 @@ import { useFrame } from '@react-three/fiber';
 import { type RefObject, useCallback, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
-import { streakMaterial, streakQuads } from '../deck-reflection/deck-reflection';
-import { reflection } from '../deck-reflection/deck-reflection.state';
+import { streakMaterial, streakQuads } from '../track/deck-reflection/deck-reflection';
+import { reflection } from '../track/deck-reflection/deck-reflection.state';
 import { EXHAUST_EMITTER, EXHAUST_REFLECTION_REACH } from './exhaust-reflections.constants';
 
 export function ExhaustReflections( {

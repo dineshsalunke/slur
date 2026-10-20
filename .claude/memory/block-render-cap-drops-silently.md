@@ -5,10 +5,10 @@ metadata:
   node_type: memory
   type: project
   originSessionId: bc84f310-6260-4659-8ea3-f86ec90cc664
-  modified: 2026-09-29T04:11:44.109Z
+  modified: 2026-10-20T04:30:00.849Z
 ---
 
-`put()` (`game/scene/track-instancing.ts`) returns without writing once the instance index reaches the
+`put()` (`game/scene/track/track-instancing.ts`) returns without writing once the instance index reaches the
 limit. The sim keeps every block, so the symptom is "an invisible block I still crash into".
 
 **Fixed for blocks (#318, 2026-09-27).** In 4b17a2e, `blockCapacity(track)` sizes the sealed and fractured

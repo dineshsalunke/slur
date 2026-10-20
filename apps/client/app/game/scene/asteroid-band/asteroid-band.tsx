@@ -5,7 +5,7 @@ import { FRAME_PHASE } from '../../frame/frame-phase.constants';
 import { type AsteroidBand as Band, bandAhead } from '../asteroid-config';
 import { type AsteroidPlacement, forEachAsteroid } from '../asteroid-field';
 import { asteroidGeometry } from '../asteroid-geometry';
-import { AHEAD, BACK } from '../track-instancing';
+import { AHEAD, BACK } from '../track/track-instancing';
 import { _o } from './asteroid-band.scratch';
 import { writeSpin } from './asteroid-band.utils';
 

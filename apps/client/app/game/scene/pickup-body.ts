@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { accent } from './accent';
 import { BOLT_HOT, PICKUP_CORE_INTENSITY, PICKUP_GLYPH_INTENSITY } from './combat-look';
 import type { PickupPart } from './pickup-instances/pickup-instances';
-import { graphiteShellMaterial } from './track-materials';
+import { graphiteShellMaterial } from './track/track-materials';
 
 export function pickupBody(
     shell: THREE.BufferGeometry,

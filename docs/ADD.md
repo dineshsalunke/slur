@@ -236,7 +236,7 @@ noise is natively a crack generator**, which is exactly the destructible-block f
 GLSL functions, so "procedural textures" rather than "texture assets".
 
 > **AS-BUILT (2026-09-18) — the track slab took the canvas route, not the shader route.**
-> `scene/track-texture.ts` generates a `CanvasTexture` rather than writing GLSL. Cheaper to build, trivially
+> `scene/track/track-texture.ts` generates a `CanvasTexture` rather than writing GLSL. Cheaper to build, trivially
 > tunable from named constants (which is what an art pass actually needs), and it costs no per-pixel ALU.
 > The shader approach stays the plan for anything needing *world-space continuous* detail — asteroid stone
 > and destructible fractures — where a tiling canvas would visibly repeat.
@@ -373,7 +373,7 @@ unversioned at `docs/art-direction/`) was adopted as the frozen scene/world dire
 ## 12. Physics ⇄ visual split — **FROZEN** (ADR-002, 2026-08-10)
 
 **WYSIWYG collision stays a documented rule, not code.** The hull the player sees IS the collidable
-footprint, and the rendered track IS the physics `Segment` set — `scene/track-view.tsx` renders the shared
+footprint, and the rendered track IS the physics `Segment` set — `scene/track/track-view.tsx` renders the shared
 sim's physics `Segment`s **directly**. There is deliberately **no** `resolveVisual` / `VisualTrack` / visual
 abstraction: introducing one before authored content or the art pass actually needs the visual to diverge from
 the hull would be speculative structure.

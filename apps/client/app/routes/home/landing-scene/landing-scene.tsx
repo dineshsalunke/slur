@@ -9,7 +9,7 @@ import { GameEnvironment } from '../../../game/scene/game-environment';
 import { CANVAS_GL } from '../../../game/scene/post/canvas-gl';
 import { SceneEffects } from '../../../game/scene/post/scene-effects/scene-effects';
 import { SceneEnvironment } from '../../../game/scene/scene-environment';
-import { TrackView } from '../../../game/scene/track-view';
+import { TrackView } from '../../../game/scene/track/track-view';
 import { TrackContext } from '../../../game/track-context/track-context.constants';
 import { LandingReveal } from '../landing-reveal/landing-reveal';
 import type { Reveal } from '../landing-reveal/landing-reveal.utils';

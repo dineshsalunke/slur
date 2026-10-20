@@ -2,7 +2,7 @@ import { mulberry32 } from '@slur/shared';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { accent, accentVersion } from './accent';
-import { FRACTURE_CORE_HEX } from './fractured-block-shader';
+import { FRACTURE_CORE_HEX } from './track/fractured-block-shader';
 
 const TRAIL_SIDES = 14;
 const TRAIL_RINGS = 10;

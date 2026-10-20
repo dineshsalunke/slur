@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FRACTURE_CORE_HEX } from '../fractured-block-shader';
+import { FRACTURE_CORE_HEX } from '../track/fractured-block-shader';
 
 export const LIMIT = 12;
 export const QUEUE = 4;

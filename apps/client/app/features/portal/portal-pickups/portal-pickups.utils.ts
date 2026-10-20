@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { accent } from '../../../game/scene/accent';
 import { PICKUP_GLYPH_INTENSITY } from '../../../game/scene/combat-look';
 import type { PickupPart } from '../../../game/scene/pickup-instances/pickup-instances';
-import { graphiteSurface } from '../../../game/scene/track-materials';
+import { graphiteSurface } from '../../../game/scene/track/track-materials';
 import { dashedSleeveGeometry, mergeParts, ringGeometry } from '../portal-ring';
 import { PICKUP_DASH, PICKUP_LINK, PICKUP_RING, PICKUP_SLEEVE, PICKUP_TILT } from './portal-pickups.constants';
 

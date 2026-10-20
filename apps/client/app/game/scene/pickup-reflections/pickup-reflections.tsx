@@ -5,8 +5,8 @@ import type * as THREE from 'three';
 import { num } from '../../../dev/tuning';
 import { useTrack } from '../../track-context/use-track';
 import { PICKUP_HOVER } from '../combat-look';
-import { streakMaterial, streakQuads } from '../deck-reflection/deck-reflection';
-import { reflection } from '../deck-reflection/deck-reflection.state';
+import { streakMaterial, streakQuads } from '../track/deck-reflection/deck-reflection';
+import { reflection } from '../track/deck-reflection/deck-reflection.state';
 import { PICKUP_EMITTER } from './pickup-reflections.constants';
 import { placePickupEmitters, syncPickupEmitters } from './pickup-reflections.utils';
 

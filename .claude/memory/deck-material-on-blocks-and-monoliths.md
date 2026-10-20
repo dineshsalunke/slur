@@ -5,12 +5,12 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 4afb0d05-a56b-4b5a-a7f7-8e5ea56201cd
-  modified: 2026-09-23T19:53:44.075Z
+  modified: 2026-10-20T04:30:00.538Z
 ---
 
 Since 2026-09-24 (#228, `81c2b76`, `9688d40`, `f6e9874`), sealed, fractured and debris blocks, the
 monoliths and the finish-gate body all render with the deck material: `floorSurface()` /
-`monolithSurface()` in `apps/client/app/game/scene/track-materials.ts`, finish from the `Deck.*` keys.
+`monolithSurface()` in `apps/client/app/game/scene/track/track-materials.ts`, finish from the `Deck.*` keys.
 The `Metal046B` photographic maps and `Metal.mapTint` are deleted. `docs/ART_MATERIALS.md` rev. 8
 (§7 item 16) and `docs/ADD.md` §4 record it.
 

@@ -1,5 +1,5 @@
 import { HALF_WIDTH } from '@slur/shared';
-import { RAIL_W } from './track-geometry';
+import { RAIL_W } from './track/track-geometry';
 
 export type AsteroidBandName = 'flank' | 'mid' | 'belt';
 

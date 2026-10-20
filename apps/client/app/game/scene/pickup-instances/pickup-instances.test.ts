@@ -11,7 +11,7 @@ import { PICKUP_BOB, PICKUP_HOVER, PICKUP_SIZE } from '../combat-look';
 import type { PickupPart } from './pickup-instances';
 import { fitPickup } from './pickup-instances.utils';
 
-vi.mock( '../track-materials', () => ( {
+vi.mock( '../track/track-materials', () => ( {
     graphiteSurface: () => ( {} ),
     graphiteShellMaterial: () => new THREE.MeshStandardMaterial(),
 } ) );

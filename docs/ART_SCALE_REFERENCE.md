@@ -56,7 +56,7 @@ The rail is positioned by **span**, not by pivot: inner face `x = 48`, outer fac
 Stated for a centred pivot that is `±(48 + RAIL_W/2)` = **±49**, *not* ±48 (which straddles the edge
 and eats `RAIL_W/2` of deck) and *not* ±50 (which leaves a `RAIL_W/2` gap).
 
-**The rail is its own mesh, not part of the deck.** `apps/client/app/game/scene/track-rail.tsx` builds
+**The rail is its own mesh, not part of the deck.** `apps/client/app/game/scene/track/track-rail/track-rail.tsx` builds
 it from the same `RailRun` list that feeds the rail emitters, so geometry and lighting can never drift
 apart. `track-floor.tsx` draws the deck slab and stops at ±`HALF_WIDTH`; it no longer extends itself
 outboard to lend the rail an outer wall. The rail box draws top, outer wall, underside and end caps —
