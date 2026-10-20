@@ -274,7 +274,7 @@ of the baked env.
 **DPR 2 frame budget, M3 Pro, 3456×2160, GPU-synced medians while driving** (`readPixels` each
 frame; plain rAF timing does not track the GPU under ANGLE Metal): 10.0 ms with everything, 5.4 ms
 with every mesh hidden (post chain, rear view, HUD, present), deck 2.1 ms, sky 1.4 ms, rocks 0.9 ms,
-point lights 0.5 ms. The canvas is created with `antialias: false, alpha: false` (`scene/canvas-gl.ts`):
+point lights 0.5 ms. The canvas is created with `antialias: false, alpha: false` (`scene/post/canvas-gl.ts`):
 the composer's final quad gains nothing from a multisampled default framebuffer, and an opaque
 canvas skips the compositor blend. The next millisecond lives in the post chain, not the scene.
 

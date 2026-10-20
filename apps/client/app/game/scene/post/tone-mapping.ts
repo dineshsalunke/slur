@@ -1,6 +1,6 @@
 import { ToneMappingMode } from 'postprocessing';
 import * as THREE from 'three';
-import { num } from '../../dev/tuning';
+import { num } from '../../../dev/tuning';
 
 export const TONE_MODE_OPTIONS = {
     None: THREE.NoToneMapping,

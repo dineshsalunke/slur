@@ -1,6 +1,6 @@
 import { useWorld } from 'koota/react';
 import { useEffect, useMemo } from 'react';
-import { FrameSchedule } from '../../frame/frame-schedule/frame-schedule';
+import { FrameSchedule } from '../../../frame/frame-schedule/frame-schedule';
 import { disposeComposer, type ScenePipeline } from './scene-effects.utils';
 import { SCENE_RENDER_SCHEDULE } from './scene-effects-schedule.constants';
 

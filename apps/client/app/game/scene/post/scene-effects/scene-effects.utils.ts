@@ -12,8 +12,8 @@ import {
     ToneMappingMode,
 } from 'postprocessing';
 import { type Camera, HalfFloatType, NoToneMapping } from 'three';
-import { num } from '../../../dev/tuning';
-import { qualityProfile } from '../../../quality/quality.state';
+import { num } from '../../../../dev/tuning';
+import { qualityProfile } from '../../../../quality/quality.state';
 import { composerToneMode, toneExposure, toneMode } from '../tone-mapping';
 import { POST_CHAIN } from './post-effects.constants';
 import { AUTO_MSAA_MAX_DPR, AUTO_MSAA_SAMPLES, type POST_SLOTS } from './scene-effects.constants';

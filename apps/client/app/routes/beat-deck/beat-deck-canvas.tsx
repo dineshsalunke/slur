@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber';
 import { WorldProvider } from 'koota/react';
 import { Fragment, useMemo } from 'react';
 import { world } from '../../game/ecs/world';
-import { CANVAS_GL } from '../../game/scene/canvas-gl';
+import { CANVAS_GL } from '../../game/scene/post/canvas-gl';
 import { WorldScene } from '../../game/scene/world-scene';
 import { TrackContext } from '../../game/track-context/track-context.constants';
 import { DeckHud } from './deck-hud';

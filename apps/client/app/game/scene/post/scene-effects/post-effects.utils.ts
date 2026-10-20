@@ -1,8 +1,8 @@
 import type { RootState } from '@react-three/fiber';
 import type { World } from 'koota';
 import { BlendFunction, BloomEffect } from 'postprocessing';
-import { num } from '../../../dev/tuning';
-import { localBoostSurplus } from '../../camera/boost-surplus';
+import { num } from '../../../../dev/tuning';
+import { localBoostSurplus } from '../../../camera/boost-surplus';
 import { BoostBlurEffect } from '../boost-blur/boost-blur-effect';
 
 export function createBoostBlur(): BoostBlurEffect {

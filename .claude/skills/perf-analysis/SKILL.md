@@ -85,7 +85,7 @@ argument is how long to hold `ArrowUp` before the shot; `0` parks the ship. `S` 
 | lever | verdict |
 |---|---|
 | `RectAreaLight` | LTC runs per light on every fragment of every standard material. Six lights were 8 ms of a 17.7 ms DPR 2 frame. Replaced by an analytic line light, which was itself removed in #310 (no visible effect). Do not bring them back for a glow. |
-| Canvas `antialias`, `alpha` | Both off (`scene/canvas-gl.ts`). The composer's final quad gains nothing from MSAA; an opaque canvas skips the compositor blend. About 1 ms. |
+| Canvas `antialias`, `alpha` | Both off (`scene/post/canvas-gl.ts`). The composer's final quad gains nothing from MSAA; an opaque canvas skips the compositor blend. About 1 ms. |
 | Rear view | Removed (#371, ADR-034): it cost 0.55–0.8 ms and 55 draw calls a frame. |
 | Sky pass | 1.4 ms at DPR 2 for four cube reads, three volume reads and two star hashes per pixel. Freezing motion saves nothing; the cost is the reads. Next step if needed: render the sky at half res, which softens stars. |
 | Rocks | 0.9 ms. The far-plane dither discard disables early-z on the rock shader; shrinking rocks at the far plane instead would restore it. Not yet worth it. |
