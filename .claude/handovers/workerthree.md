@@ -18,10 +18,20 @@ and import paths only. Order (supervisor): post → track → sky → ships.
 - Red full `pnpm lint` at 56f2ad79 came from workerfour's uncommitted `packages/shared/src/run/*`, not S11.
 
 ## Uncommitted
-none
+- Sky group MOVED on disk, NOT verified (session killed 2026-10-20 by the owner before checks ran). The
+  supervisor cleared the sky claim. In the tree: the old `game/scene/` sky files deleted, new
+  `game/scene/sky/` untracked, importers edited (`world-scene.tsx`, `landing-scene.tsx`,
+  `track/block-debris/block-debris.utils.ts`, `dev/tuning-schema.ts`, `dev/tuning-panel/tuning-panel.utils.ts`),
+  `CREDITS.md` path, and `.claude/handovers/workerthree-move.mjs` deleted (it broke biome).
+  To finish: typecheck, lint, 3 suites, build; then a pathspec commit. CAREFUL: `tuning-schema.ts` and
+  `tuning-panel.utils.ts` also carry workertwo's committed rules work. Check `git diff` on them shows only
+  import paths before committing.
+- The move script is now gone from the tree. Recover with `git show e8d29fa2:.claude/handovers/workerthree-move.mjs`
+  for the ships group.
+- Old session id (for `claude --resume`): 3c893b3e-0f7e-4a9c-948e-3aac449db4cb.
 
 ## Held files
-none
+- Sky group (cleared by the supervisor): the files above.
 
 ## Next
 1. **Blocked.** Sky: workertwo holds `dev/tuning-schema.ts` and `dev/tuning-panel/tuning-panel.utils.ts`

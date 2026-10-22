@@ -4,6 +4,26 @@ Agent: slur-supervisor
 Fleet dir: /Users/apple/Projects/personal/slur/.claude/fleet (not created yet; see Next)
 Written: 2026-10-20, context ~152k
 
+## ⚠ Restart state (2026-10-22)
+
+The owner killed all four workers on 2026-10-20 (herdr tabs closed; they were idle) and then restarted the
+machine. The supervisor restarts under the user-wide fleet skill, not CLAUDE.local.md. The Workers table
+below is STALE: no panes exist. Spawn new workers and resume each from its handover file.
+
+Uncommitted in the tree, not verified by any suite:
+- workerone: c4 Shielded (3 shield files). See workerone.md.
+- workerthree: sky group move (S11), done on disk. See workerthree.md.
+- workertwo: `net/host-rules/*`, held on purpose until workerfour P4. See workertwo.md.
+- workerfour: nothing. P1–P3 pushed (473965fb); P4 (run-room.ts) not started.
+- Not ours, leave alone: untracked `.Codex/agents/`, `.agents/`, `AGENTS.md`.
+
+Old session ids (`claude --resume <id>`): workerone 829fea21-d655-4c68-a3d0-306587156147, workertwo
+2f828b7f-ef81-4274-9537-1fb11afc342c, workerthree 3c893b3e-0f7e-4a9c-948e-3aac449db4cb, workerfour
+f553a0f3-83fd-4fe1-a4f6-8486dd995ef4, supervisor 9fb19534-5241-467c-b93a-56514cbb54ee.
+
+The scratchpad backups (CLAUDE.local.md.bak, fleet-skill-backup/, plan drafts 407–413.md) were copied to
+`~/.claude-personal/backups/slur-fleet-migration-2026-10-20/` before the restart wiped /private/tmp.
+
 ## Goal
 
 Owner 2026-10-20: "continue with the architecture and code organisation" — RFC-349 remaining stages, all

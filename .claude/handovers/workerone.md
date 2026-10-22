@@ -28,7 +28,11 @@ S4: Dead, Stunned, Shielded, Spectating tags; ECS readers switch to them. Plan a
 
 ## Uncommitted
 
-None.
+- c4 Shielded, written but NOT verified (session killed 2026-10-20 by the owner before suites ran):
+  `shield.traits.ts` (Shield = `{ since, popAt }`, new `Shielded` tag), `shield-mirror.ts` (mirrorShield
+  adds/removes Shielded, popShield removes it), `shield-dome.tsx` (reads `entity.has( Shielded )`). Check
+  nothing else reads `Shield.on` (`rg "\.on\b" features/shield`), then run all 3 suites and commit.
+- Old session id (for `claude --resume`): 829fea21-d655-4c68-a3d0-306587156147.
 
 ## Held files
 

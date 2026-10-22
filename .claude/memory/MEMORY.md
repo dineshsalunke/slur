@@ -19,6 +19,7 @@ One line per memory, grouped by topic. Keep each hook under ~70 characters.
 - [Backlog is split two ways](backlog-split.md) — global parking lot vs project roadmap
 
 ## Shell, tools & machine
+- [Scratch backups die on reboot](scratch-backups-die-on-reboot.md) — /private/tmp wiped; use ~/.claude-personal/backups
 - [Bash tool shell varies](bash-tool-runs-fish.md) — fish or zsh; `bash -c` is 3.2, no mapfile
 - [Kill by PID, never pkill](kill-by-pid-never-pkill.md) — BSD pkill hit the owner's apps
 - [Bulk move without git mv](bulk-move-without-git-mv.md) — scripted `git mv` denied; node fs

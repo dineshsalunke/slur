@@ -14,9 +14,18 @@ A dev host writes it in the lobby. ADR-035 is approved and committed. Build it n
 - AT A SEAM sent: set-rules belongs in workerfour's `RUN_COMMAND_FORMATS`/`HANDLERS` (3503a33d). Format =
   `parseRuleOverrides`; a bad payload must become null, never `{}`. Waiting on who edits run-commands.ts and
   run-room.ts.
+- 5c5efd8f (2026-10-20, local only): Rules dials come from RULE_SPECS via `ruleTunable( id )` in tuning-schema.ts.
+  The keys are literal rule ids. `isNumberPath` is the guard. tuned-sim-config builds enumerable getters, and
+  the panel has a 'Rules' folder (`ruleControls()`). Suites are green except biome on workerthree's untracked
+  `.claude/handovers/workerthree-move.mjs`. I asked the supervisor whether to push.
+- Written, uncommitted: `net/host-rules/host-rules.ts` (+ test): `changedRules`, `sendHostRules`,
+  `attachHostRules( room )`, which listens to phase and hostId. I asked the supervisor for one line in
+  `net/matchmaking.ts enter()`: `if ( import.meta.env.DEV ) void import( './host-rules/host-rules' ).then( m =>
+  m.attachHostRules( room ) )`. HOLD until step 2: Colyseus kicks or errors a client on an unregistered message
+  (`Room.mjs:95`). Still to do: `ruleControls` onChange calls `sendHostRules()` after `setNum`.
 
 ## State
-- No code written yet. The conventions cards are loaded (general and typescript; there is no `@colyseus/schema` card).
+- Shared index.ts and define-sim-feature.ts are mine again (supervisor, 2026-10-20); no edits pending there.
 - `RunSim` takes its config once in the constructor (`run/run-sim.ts:78`). `RunRoom` passes none.
   `world.config` and `featureCtx.config` capture the same object.
 - `fixedStep` steps only countdown and racing (verified), so the lobby reads no config.
@@ -50,7 +59,7 @@ A dev host writes it in the lobby. ADR-035 is approved and committed. Build it n
   `setRules( sessionId, map )` applies only for the host in the lobby: clear the map, then set it.
 
 ## Uncommitted
-- none. Both code commits are on local dev, NOT pushed (push needs all three suites, after step 4).
+- `apps/client/app/net/host-rules/*` (held until step 2). 383ef6b5 and e2a5d0ee ride workerfour's push.
 
 ## Held files (cleared by slur-supervisor)
 - Mine: docs/DECISIONS.md; `packages/shared/src/rules/*`; `tug-rules.ts`; `seeker-rules.ts`; `tug.feature.ts`;
